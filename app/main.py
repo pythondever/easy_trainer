@@ -560,11 +560,39 @@ class App(QWidget, MainUI):
         changes = getattr(dlg, "_cls_changes", [])
         if changes:
             self._apply_cls_changes(proj, ds, changes)
+        deleted = getattr(dlg, "_deleted_labels", [])
+        if deleted:
+            self._apply_deleted_labels(proj, ds, deleted)
         self._refresh_dataset_labels(proj, ds)
         self._refresh_label_filter(proj, ds)
         self._refresh_annotation_progress(proj, ds)
         if self.current_label:
             self.show_dataset_images(proj, ds)
+
+    def _apply_deleted_labels(self, project_name, dataset_name, label_names):
+        """标注界面删除了标签：补全清理所有 json + 内存缓存。
+
+        标注界面的 image_list 只是打开时的筛选视图，json 清理会漏掉其他
+        图像；这里基于完整 dataset_cache 再清一遍（带进度框），
+        并清理缓存中的 labels/boxes/rois、重建分组。
+        """
+        if not label_names:
+            return
+        for lb in label_names:
+            self._delete_label_in_files(project_name, dataset_name, lb)
+        index = self.dataset_cache.get(project_name, {}).get(dataset_name)
+        if not index:
+            return
+        for rec in index.get("all", []):
+            rec_labels = rec.get("labels") or []
+            new_labels = [l for l in rec_labels if l not in label_names]
+            if len(new_labels) != len(rec_labels):
+                rec["labels"] = new_labels
+            if rec.get("boxes"):
+                rec["boxes"] = [b for b in rec["boxes"]
+                                if b[-1] not in label_names]
+            rec["rois"] = {}
+        self._rebuild_index_labels(project_name, dataset_name)
 
     def _apply_cls_changes(self, project_name, dataset_name, changes):
         """分类数据集修改了类别：同步缓存中的 image_path/cls/labels，重建标签分组。"""
@@ -798,7 +826,8 @@ class App(QWidget, MainUI):
     def _delete_label_in_files(self, project_name, dataset_name, label_name):
         """
         本地 labelme json: 删除 shape.label == label_name 的所有 shapes。
-        文件较多时弹进度框。
+        文件较多时弹进度框；先用文本快速检查跳过不含该标签的文件
+        （省去 json.load 解析），仅命中文件才解析+过滤+写回。
         """
         index = self.dataset_cache.get(project_name, {}).get(dataset_name)
         if not index:
@@ -819,7 +848,10 @@ class App(QWidget, MainUI):
                     continue
                 try:
                     with open(json_path, "r", encoding="utf-8") as f:
-                        data = json.load(f)
+                        text = f.read()
+                    if label_name not in text:
+                        continue   # 快速跳过：文本不含该标签，无需解析
+                    data = json.loads(text)
                     before = len(data.get("shapes", []))
                     data["shapes"] = [s for s in data.get("shapes", [])
                                       if normalize_label(s.get("label")) != label_name]

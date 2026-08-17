@@ -15,9 +15,9 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QDialog, QGridLayout, QHBoxLayout,
-    QLabel, QLineEdit, QPushButton, QSizePolicy,
-    QSpacerItem, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QComboBox, QDialog, QGridLayout,
+    QHBoxLayout, QLabel, QLineEdit, QPushButton,
+    QSizePolicy, QSpacerItem, QVBoxLayout, QWidget)
 
 class Ui_addLabelDialog(object):
     def setupUi(self, addLabelDialog):
@@ -44,6 +44,27 @@ class Ui_addLabelDialog(object):
 
         self.verticalLayout = QVBoxLayout()
         self.verticalLayout.setObjectName(u"verticalLayout")
+        self.horizontalLayout_6 = QHBoxLayout()
+        self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
+        self.horizontalLayout_6.setContentsMargins(-1, 0, -1, 0)
+        self.load_project_label_combo = QComboBox(addLabelDialog)
+        self.load_project_label_combo.setObjectName(u"load_project_label_combo")
+        self.load_project_label_combo.setMinimumSize(QSize(185, 0))
+
+        self.horizontalLayout_6.addWidget(self.load_project_label_combo)
+
+        self.load_label_btn = QPushButton(addLabelDialog)
+        self.load_label_btn.setObjectName(u"load_label_btn")
+
+        self.horizontalLayout_6.addWidget(self.load_label_btn)
+
+        self.horizontalSpacer_4 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_6.addItem(self.horizontalSpacer_4)
+
+
+        self.verticalLayout.addLayout(self.horizontalLayout_6)
+
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.color1_btn = QPushButton(addLabelDialog)
@@ -160,6 +181,7 @@ class Ui_addLabelDialog(object):
 
     def retranslateUi(self, addLabelDialog):
         addLabelDialog.setWindowTitle(QCoreApplication.translate("addLabelDialog", u"Dialog", None))
+        self.load_label_btn.setText(QCoreApplication.translate("addLabelDialog", u"\u5bfc\u5165", None))
         self.color1_btn.setText("")
         self.color2_btn.setText("")
         self.color3_btn.setText("")

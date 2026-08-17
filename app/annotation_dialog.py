@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 """标注对话框：封装 ui/annotation.py + annotation 引擎。
 - 矩形/多边形标注（颜色 = 标签颜色，支持中文标签）
-- 左侧标签列表（点击切换当前标签），添加标签弹窗（10 默认色 + 自定义色）
+- 左侧标签列表（点击切换当前标签），添加标签弹窗（10 默认色 + 自定义色 + 跨数据集导入）
 - A/D 切换上一张/下一张，切换/关闭时保存 labelme json（图像同路径）
 """
 import os
 import json
+import re
 import shutil
 
 from PIL import Image
@@ -335,13 +336,22 @@ def save_labelme(image_path, shapes, version="5.0.1"):
 
 
 class AddLabelDialog(QDialog):
-    """添加标签弹窗:名称输入 + 10 个默认色按钮 + 自定义颜色。"""
+    """添加标签弹窗:名称输入 + 10 个默认色按钮 + 自定义颜色 + 同项目标签导入。
 
-    def __init__(self, parent=None, preset_name="", preset_color=""):
+    通过 load_project_label_combo 选择同项目其他数据集，点击 load_label_btn
+    导入该数据集已有标签（逗号分隔填入输入框），确定后批量入库并沿用源颜色。
+    """
+
+    def __init__(self, parent=None, preset_name="", preset_color="",
+                 db=None, project="", dataset=""):
         super().__init__(parent)
         self.ui = AddLabelUI()
         self.ui.setupUi(self)
         self.setWindowTitle("添加标签")
+        self._db = db
+        self._project = project
+        self._dataset = dataset
+        self._source_colors = {}   # 导入的数据集标签 → 颜色（用于确定时还原颜色）
         self._selected_color = ""
         self._setup()
         if preset_name:
@@ -374,7 +384,46 @@ class AddLabelDialog(QDialog):
         self.ui.color10_btn_2.setStyleSheet(
             "QPushButton {{ background-color: {0}; border: 2px solid #3a3f4d;"
             " border-radius: 6px; }}".format(self._selected_color or "#5B8CFF"))
-        self.ui.input_label_name_txt.setPlaceholderText("标签名称")
+        self.ui.input_label_name_txt.setPlaceholderText(
+            "标签名称，多个用逗号分隔")
+        # 同项目标签导入
+        self._fill_project_label_combo()
+        self.ui.load_label_btn.setText("导入")
+        self.ui.load_label_btn.clicked.connect(self._load_labels_from_project)
+
+    def _fill_project_label_combo(self):
+        """填充同项目其他数据集的标签（单选）：排除当前数据集，只列有标签的。"""
+        combo = self.ui.load_project_label_combo
+        combo.clear()
+        combo.addItem("选择数据集…", None)
+        if not self._db or not self._project:
+            combo.setEnabled(False)
+            return
+        for ds in self._db.get_datasets(self._project):
+            ds_name = ds["dataset_name"]
+            if ds_name == self._dataset:
+                continue
+            labels = self._db.get_dataset_labels(self._project, ds_name)
+            if labels:
+                combo.addItem(ds_name, ds_name)
+        if combo.count() <= 1:
+            combo.setEnabled(False)
+
+    def _load_labels_from_project(self):
+        """把所选数据集的标签以逗号分隔填入输入框，并记住其颜色。"""
+        combo = self.ui.load_project_label_combo
+        src = combo.currentData()
+        if not src:
+            MessageBox.warning(self, "导入标签", "请先选择一个数据集")
+            return
+        labels = self._db.get_dataset_labels(self._project, src)
+        if not labels:
+            MessageBox.warning(self, "导入标签",
+                               "数据集「{}」还没有标签".format(src))
+            return
+        self._source_colors = dict(labels)
+        names = sorted(labels.keys(), key=label_sort_key)
+        self.ui.input_label_name_txt.setText(", ".join(names))
 
     def _select_color(self, color, btn=None):
         self._selected_color = color
@@ -404,7 +453,22 @@ class AddLabelDialog(QDialog):
             self._select_color(color.name())
 
     def result_data(self):
-        return self.ui.input_label_name_txt.text().strip(), self._selected_color
+        """返回 [(name, color), ...]。多个标签以逗号分隔。
+
+        颜色优先取导入数据集的源颜色（_source_colors），
+        否则用当前选中颜色，再否则按 label_color 哈希确定性分配。
+        """
+        text = self.ui.input_label_name_txt.text().strip()
+        if not text:
+            return []
+        names = [n.strip() for n in re.split(r"[,\uff0c]+", text) if n.strip()]
+        items = []
+        for n in names:
+            color = self._source_colors.get(n) or self._selected_color or ""
+            if not color:
+                color = label_color(n).name()
+            items.append((n, color))
+        return items
 
 
 class AnnotationDialog(QDialog):
@@ -421,6 +485,7 @@ class AnnotationDialog(QDialog):
         self.label_fmt = label_fmt
         self.cls_mode = cls_mode
         self._cls_changes = []
+        self._deleted_labels = []   # 本次会话删除的标签（供主界面清理缓存）
         self.image_list = list(image_list) if image_list else []
         self.index = current_index
         self.view = None
@@ -835,9 +900,97 @@ class AnnotationDialog(QDialog):
             rl.addWidget(name_lbl)
             rl.addStretch(1)
             row.mousePressEvent = (lambda ev, n=name, r=row: self._select_label(n, r))
+            row.setContextMenuPolicy(Qt.CustomContextMenu)
+            row.customContextMenuRequested.connect(
+                lambda pos, n=name, r=row: self._show_label_context_menu(n, r, pos))
             layout.addWidget(row)
             self._label_buttons[name] = row
         layout.addStretch(1)
+
+    def _show_label_context_menu(self, name, row, pos):
+        """标签行右键菜单：删除标签（含其所有标注）。"""
+        menu = QMenu(self)
+        act_del = menu.addAction("删除标签")
+        chosen = menu.exec(row.mapToGlobal(pos))
+        if chosen == act_del:
+            self._delete_label_from_list(name)
+
+    def _delete_label_from_list(self, name):
+        """删除标签并同步清理其标注：db / 本地 labelme json / 当前场景。
+
+        删除前统计该标签在场景和所有可见图像 json 中的标注数；
+        有标注时提示影响范围，确认后才执行（删除不可恢复）。
+
+        性能：文件多时弹进度框；先用文本快速检查跳过不含该标签的文件
+        （省去 json.load 解析），只有命中的文件才解析+过滤+写回。
+        """
+        needle = normalize_label(name)
+        # 统计并清理所有可见图像 json 中该标签的 shapes（含当前图像）
+        removed = 0
+        progress = None
+        if len(self.image_list) > 50:
+            from app.message_box import ProgressDialog
+            progress = ProgressDialog("删除标签", "正在清理标注文件…", self,
+                                      maximum=len(self.image_list),
+                                      cancellable=False)
+        try:
+            for i, img_path in enumerate(self.image_list):
+                if progress is not None:
+                    progress.set_progress(i)
+                base, _ = os.path.splitext(img_path)
+                jp = base + ".json"
+                if not os.path.exists(jp):
+                    continue
+                try:
+                    with open(jp, "r", encoding="utf-8") as f:
+                        text = f.read()
+                    if needle not in text:
+                        continue   # 快速跳过：文本不含该标签，无需解析
+                    data = json.loads(text)
+                    before = len(data.get("shapes", []))
+                    data["shapes"] = [s for s in data.get("shapes", [])
+                                      if normalize_label(s.get("label")) != needle]
+                    if len(data["shapes"]) != before:
+                        removed += before - len(data["shapes"])
+                        with open(jp, "w", encoding="utf-8") as f:
+                            json.dump(data, f, ensure_ascii=False, indent=2)
+                except Exception:
+                    continue
+        finally:
+            if progress is not None:
+                progress.close()
+        # 当前场景中该标签的标注项（json 已清理，场景内仍需删除）
+        scene_items = [it for it in self.scene.all_items()
+                       if getattr(it, "label", None) == name]
+        total = removed + len(scene_items)
+        if total > 0:
+            if not MessageBox.question(
+                    self, "删除标签",
+                    "标签「{}」已有 {} 处标注，删除后这些标注将被一并删除"
+                    "且不可恢复。\n确定删除吗？".format(name, total),
+                    default_yes=True):
+                return
+        else:
+            if not MessageBox.question(
+                    self, "删除标签",
+                    "确定删除标签「{}」吗？".format(name),
+                    default_yes=True):
+                return
+        for item in scene_items:
+            self.scene.delete_item(item)
+        self.db.remove_dataset_label(self.project, self.dataset, name)
+        self._deleted_labels.append(name)
+        write_log("删除标签: {} ({}/{})".format(
+            name, self.project, self.dataset))
+        self.label_colors.pop(name, None)
+        self.scene.label_colors.pop(name, None)
+        if self.scene.current_label == name:
+            self.scene.current_label = (sorted(self.label_colors,
+                                               key=label_sort_key)[0]
+                                        if self.label_colors else "")
+        self._refresh_labels()
+        self._refresh_labeled_list()
+        self._update_draw_buttons()
 
     def _select_label(self, name, row):
         self.scene.current_label = name
@@ -848,23 +1001,22 @@ class AnnotationDialog(QDialog):
                 "QFrame {{ background: {0}; border-radius: 6px; }}".format(bg))
 
     def _add_label_clicked(self):
-        dlg = AddLabelDialog(self)
+        dlg = AddLabelDialog(self, db=self.db, project=self.project,
+                             dataset=self.dataset)
         if dlg.exec() != QDialog.Accepted:
             return
-        name, color = dlg.result_data()
-        if not name:
+        items = dlg.result_data()
+        if not items:
             MessageBox.warning(self, "添加标签", "标签名称不能为空")
             return
-        if not color:
-            MessageBox.warning(self, "添加标签", "请选择一个颜色")
-            return
-        self.db.add_dataset_label(self.project, self.dataset, name, color)
-        write_log("创建标签: {} 颜色={} ({}/{})".format(
-            name, color, self.project, self.dataset))
-        self.label_colors[name] = color
-        self.scene.label_colors[name] = QColor(color)
+        for name, color in items:
+            self.db.add_dataset_label(self.project, self.dataset, name, color)
+            write_log("创建标签: {} 颜色={} ({}/{})".format(
+                name, color, self.project, self.dataset))
+            self.label_colors[name] = color
+            self.scene.label_colors[name] = QColor(color)
         self._refresh_labels()
-        self.scene.current_label = name
+        self.scene.current_label = items[0][0]
         self._update_draw_buttons()
 
     def _refresh_labeled_list(self):
