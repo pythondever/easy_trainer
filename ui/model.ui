@@ -1,0 +1,145 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<ui version="4.0">
+ <class>ModelDialog</class>
+ <widget class="QDialog" name="ModelDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>960</width>
+    <height>540</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>模型管理</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QTableWidget" name="tableWidget">
+     <property name="alternatingRowColors">
+      <bool>true</bool>
+     </property>
+     <property name="selectionBehavior">
+      <enum>QAbstractItemView::SelectRows</enum>
+     </property>
+     <property name="columnCount">
+      <number>12</number>
+     </property>
+     <column>
+      <property name="text">
+       <string>开始训练时间</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>完成训练时间</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>耗时</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>模型大小</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>模型精度</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>图像尺寸</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>模型路径</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>数据集信息</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>导出模型</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>指标</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>删除</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>测试</string>
+      </property>
+     </column>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="pagerLayout">
+     <item>
+      <spacer name="horizontalSpacer_left">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pre_page_btn">
+       <property name="text">
+        <string>上一页</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="page_label">
+       <property name="text">
+        <string>1/1</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="next_page_btn">
+       <property name="text">
+        <string>下一页</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_right">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources />
+ <connections />
+</ui>

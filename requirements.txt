@@ -1,0 +1,10 @@
+PySide6>=6.6.0
+lmdb>=1.4
+Pillow>=9.0
+matplotlib>=3.5
+numpy>=1.21
+# 训练/推理(RF-DETR)rfdetr 要求 Python 3.10+
+# 需要用 Python 3.10+ 的新环境安装运行训练功能
+# torch>=2.0
+# torchvision>=0.15
+# rfdetr>=1.9.2

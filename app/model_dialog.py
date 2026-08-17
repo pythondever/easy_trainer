@@ -1,0 +1,263 @@
+# -*- coding: utf-8 -*-
+import os
+import shutil
+from math import ceil
+
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import (QDialog, QTableWidgetItem, QPushButton,
+                               QFileDialog, QAbstractItemView, QHeaderView,
+                               QSizePolicy, QHBoxLayout, QWidget)
+
+import traceback
+
+from PySide6.QtCore import QTimer
+
+from app.message_box import MessageBox
+from app.metrics_dialog import MetricsDialog
+from app.test_dialog import TestDialog
+from ui.model import Ui_ModelDialog
+
+
+class ModelDialog(QDialog):
+    """模型管理：分页表格展示 db 训练记录，支持导出模型/查看指标/删除。"""
+
+    def __init__(self, app, project="", dataset="", parent=None):
+        super().__init__(parent)
+        self.ui = Ui_ModelDialog()
+        self.ui.setupUi(self)
+        self.setWindowTitle("模型管理")
+        self.setWindowState(Qt.WindowMaximized)
+        self.app = app
+        self._project = project
+        self._dataset = dataset
+        self._records = []
+        self._page = 0
+        self._page_size = 15
+        self._setup_table()
+        self.ui.pre_page_btn.clicked.connect(self._prev_page)
+        self.ui.next_page_btn.clicked.connect(self._next_page)
+        self._load_records()
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        self._calc_page_size()
+        self._render_page()
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        old = self._page_size
+        self._calc_page_size()
+        if self._page_size != old:
+            self._render_page()
+
+    def done(self, result):
+        """关闭前清理 cellWidget：避免 PySide6 对话框 GC 时按钮 lambda 循环引用导致 0xC0000005。"""
+        try:
+            t = self.ui.tableWidget
+            for r in range(t.rowCount()):
+                for c in range(t.columnCount()):
+                    w = t.cellWidget(r, c)
+                    if w is not None:
+                        t.removeCellWidget(r, c)
+                        w.deleteLater()
+        except Exception:
+            pass
+        super().done(result)
+
+    def _setup_table(self):
+        t = self.ui.tableWidget
+        t.verticalHeader().setVisible(False)
+        t.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        t.setSelectionBehavior(QAbstractItemView.SelectRows)
+        t.setSelectionMode(QAbstractItemView.SingleSelection)
+        t.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        h = t.horizontalHeader()
+        # 列宽：列 6/7 给较大初始宽度（不使用 Stretch，避免 Qt cellWidget 重影 bug）
+        for i, w in enumerate([150, 150, 150, 90, 160, 80, 380, 300, 90, 80, 80]):
+            h.setSectionResizeMode(i, QHeaderView.Interactive)
+            t.setColumnWidth(i, w)
+        h.setMinimumSectionSize(60)
+        h.setStretchLastSection(False)
+        # 行高加大（默认 30px 装不下 26px 按钮+上下 padding）
+        t.verticalHeader().setDefaultSectionSize(40)
+        t.verticalHeader().setMinimumSectionSize(40)
+        for c in (8, 9, 10):
+            t.setHorizontalHeaderItem(c, QTableWidgetItem(""))
+
+    def _calc_page_size(self):
+        """每页行数 = 视口能容纳的行数，尽量铺满窗口。"""
+        t = self.ui.tableWidget
+        row_h = t.verticalHeader().defaultSectionSize()
+        if row_h <= 0:
+            row_h = 40
+        self._page_size = max(10, t.viewport().height() // row_h)
+
+    def _load_records(self):
+        recs = []
+        for r in self.app.db.get_train_records():
+            if self._project and r.get("project") != self._project:
+                continue
+            if self._dataset:
+                ds_list = [x.strip() for x in str(r.get("dataset", "")).split(",")]
+                val_list = [x.strip() for x in str(r.get("val_dataset", "")).split(",")]
+                if self._dataset not in ds_list and self._dataset not in val_list:
+                    continue
+            recs.append(r)
+        # 按开始时间倒序（最近的在最前；无时间的排最后）
+        recs.sort(key=lambda r: r.get("start_time", ""), reverse=True)
+        self._records = recs
+        self._page = 0
+        self._render_page()
+
+    def _render_page(self):
+        t = self.ui.tableWidget
+        total = len(self._records)
+        pages = max(1, ceil(total / self._page_size))
+        self._page = min(self._page, pages - 1)
+        start = self._page * self._page_size
+        page_recs = self._records[start:start + self._page_size]
+        rows = self._page_size
+        # 清空上一轮残留（删除/翻页后旧行 cellWidget 不清会重复显示）
+        t.clearContents()
+        t.setRowCount(rows)
+        for i, r in enumerate(page_recs):
+            map50 = r.get("map50", "")
+            if map50:
+                # 兼容历史记录：旧数据可能存了十几位尾数，统一保留 3 位小数
+                try:
+                    map50 = "{:.3f}".format(float(map50))
+                except (TypeError, ValueError):
+                    pass
+            # 分类模型显示精度（准确率），检测/分割显示 mAP@0.5
+            acc = r.get("accuracy", "")
+            if acc:
+                try:
+                    metric_val = "{:.1f}%".format(float(acc) * 100)
+                except (TypeError, ValueError):
+                    metric_val = str(acc)
+            else:
+                metric_val = map50
+            vals = [r.get("start_time", ""), r.get("end_time", ""),
+                    r.get("duration", ""), r.get("model_size", ""),
+                    metric_val, r.get("img_size", ""),
+                    r.get("model_path", ""), r.get("dataset_info", "")]
+            for j, v in enumerate(vals):
+                text = str(v)
+                if j == 6:
+                    # 只显示目录部分(不含文件名),tooltip 显示完整路径
+                    text = os.path.dirname(str(v)) if v else ""
+                    item = QTableWidgetItem(text)
+                    item.setToolTip(str(v))
+                elif j == 7:
+                    full = str(v)
+                    text = (full[:12] + "...") if len(full) > 12 else full
+                    item = QTableWidgetItem(text)
+                    item.setToolTip(full)
+                else:
+                    item = QTableWidgetItem(text)
+                item.setTextAlignment(Qt.AlignCenter)
+                t.setItem(i, j, item)
+            btn = QPushButton("导出")
+            path = r.get("model_path", "")
+            btn.setEnabled(bool(path))
+            btn.setFixedSize(60, 26)
+            btn.clicked.connect(lambda checked=False, p=path: self._export(p))
+            t.setCellWidget(i, 8, self._make_centered_cell(btn))
+            mbtn = QPushButton("指标")
+            mbtn.setFixedSize(60, 26)
+            mbtn.clicked.connect(
+                lambda checked=False, rec=r: self._show_metrics(rec))
+            t.setCellWidget(i, 9, self._make_centered_cell(mbtn))
+            dbtn = QPushButton("删除")
+            dbtn.setFixedSize(60, 26)
+            dbtn.clicked.connect(
+                lambda checked=False, rec=r: self._delete(rec))
+            t.setCellWidget(i, 10, self._make_centered_cell(dbtn))
+            tbtn = QPushButton("测试")
+            tbtn.setFixedSize(60, 26)
+            tbtn.setEnabled(bool(r.get("model_path")))
+            tbtn.clicked.connect(
+                lambda checked=False, rec=r: self._test(rec))
+            t.setCellWidget(i, 11, self._make_centered_cell(tbtn))
+        self.ui.page_label.setText("{}/{}".format(self._page + 1, pages))
+        self.ui.pre_page_btn.setEnabled(self._page > 0)
+        self.ui.next_page_btn.setEnabled(self._page < pages - 1)
+
+    def _make_centered_cell(self, widget):
+        """包裹按钮到 QWidget + QHBoxLayout，让 cellWidget 居中显示。"""
+        wrap = QWidget()
+        wrap.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        h = QHBoxLayout(wrap)
+        h.setContentsMargins(0, 0, 0, 0)
+        h.setSpacing(0)
+        h.addStretch(1)
+        h.addWidget(widget)
+        h.addStretch(1)
+        h.setAlignment(Qt.AlignCenter)
+        return wrap
+
+    def _prev_page(self):
+        if self._page > 0:
+            self._page -= 1
+            self._render_page()
+
+    def _next_page(self):
+        if (self._page + 1) * self._page_size < len(self._records):
+            self._page += 1
+            self._render_page()
+
+    def _show_metrics(self, record):
+        try:
+            MetricsDialog(record, self).exec()
+        except Exception as e:
+            print("[model_dialog] 打开指标失败: {}\n{}".format(
+                e, traceback.format_exc()), flush=True)
+            MessageBox.warning(self, "查看指标失败", str(e))
+
+    def _delete(self, record):
+        ds = record.get("dataset", "")
+        st = record.get("start_time", "")
+        try:
+            if not MessageBox.question(
+                    self, "删除训练记录",
+                    "确定删除该条训练记录？\n项目={}\n数据集={}\n开始时间={}\n（不会删除磁盘上的模型文件）".format(
+                        record.get("project", ""), ds, st)):
+                return
+            self.app.db.delete_train_record(record.get("id"))
+            QTimer.singleShot(0, self._load_records)
+        except Exception as e:
+            trace = traceback.format_exc()
+            print("[model_dialog] 删除失败: {}\n{}".format(e, trace), flush=True)
+
+    def _test(self, record):
+        """点击测试 → 弹 TestDialog，默认选中当前行的模型。
+        用户点「开始测试」后 TestDialog 自行 accept，这里再关闭模型管理窗口回首页。"""
+        try:
+
+            dlg = TestDialog(
+                self.app, record,
+                project=self._project, dataset=self._dataset,
+                parent=self.app,
+            )
+            self.app._test_dlg = dlg
+            dlg.exec()
+            self.accept()
+        except Exception as e:
+            trace = traceback.format_exc()
+            print("[model_dialog] 打开测试失败: {}\n{}".format(
+                e, trace), flush=True)
+            MessageBox.warning(self, "打开测试失败", str(e))
+
+    def _export(self, model_path):
+        if not model_path or not os.path.exists(model_path):
+            MessageBox.warning(self, "导出模型", "模型文件不存在：\n{}".format(model_path))
+            return
+        d = QFileDialog.getExistingDirectory(self, "选择导出目录")
+        if not d:
+            return
+        try:
+            dst = os.path.join(d, os.path.basename(model_path))
+            shutil.copy2(model_path, dst)
+            MessageBox.information(self, "导出模型", "已导出到：\n{}".format(dst))
+        except OSError as e:
+            MessageBox.warning(self, "导出模型", "导出失败：{}".format(e))

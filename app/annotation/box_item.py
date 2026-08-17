@@ -1,0 +1,621 @@
+# -*- coding: utf-8 -*-
+"""标注图形项：矩形框 + 多边形，均支持选中、拖动、标签 chip 渲染。"""
+from PySide6.QtCore import QPointF, QRectF, Qt
+from PySide6.QtGui import QBrush, QColor, QPen, QFont, QPainter, QPolygonF, QPainterPath
+import hashlib
+
+from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsPolygonItem, QGraphicsItem
+
+# 深色背景下鲜艳的标签配色
+LABEL_COLORS = [
+    "#5B8CFF", "#3DDC97", "#F5B942", "#F0646E", "#C08BFF",
+    "#4FC3F7", "#FF8A65", "#81C784", "#F06292", "#AED581",
+    "#4DD0E1", "#FFD54F",
+]
+
+
+def label_color(label):
+    """标签固定颜色（确定性哈希，md5 → 调色板索引）。
+
+    同一标签名在任何进程/会话中颜色都一致（Python 内置 hash() 受
+    PYTHONHASHSEED 随机化影响，跨进程会变，不能用于颜色分配）。"""
+    try:
+        digest = hashlib.md5(str(label).encode("utf-8")).hexdigest()
+        idx = int(digest[:8], 16) % len(LABEL_COLORS)
+    except Exception:
+        idx = 0
+    return QColor(LABEL_COLORS[idx])
+
+
+class AnnotationBoxItem(QGraphicsRectItem):
+    """场景坐标下的标注框（rect 即像素坐标）。"""
+
+    # 八向缩放手柄
+    H_TL, H_TM, H_TR, H_ML, H_MR, H_BL, H_BM, H_BR = range(8)
+    HANDLE_SIZE = 12.0
+    HANDLE_CURSORS = {
+        H_TL: Qt.SizeFDiagCursor, H_TM: Qt.SizeVerCursor, H_TR: Qt.SizeBDiagCursor,
+        H_ML: Qt.SizeHorCursor, H_MR: Qt.SizeHorCursor,
+        H_BL: Qt.SizeBDiagCursor, H_BM: Qt.SizeVerCursor, H_BR: Qt.SizeFDiagCursor,
+    }
+
+    def __init__(self, rect, label, editable=True, color=None):
+        super().__init__(rect)
+        self.label = label
+        self.editable = editable
+        self._handles = {}
+        self._handle_selected = None
+        self._press_pos = None
+        self._press_rect = None
+        # 自定义颜色（None 则用 label_color 哈希色）
+        self._color = color
+
+        pen_color = color if color is not None else label_color(label)
+        self.setPen(QPen(pen_color, 2.0))
+        fill = QColor(pen_color)
+        fill.setAlpha(28)
+        self.setBrush(QBrush(fill))
+
+        self.setAcceptHoverEvents(True)
+        self.setFlag(QGraphicsItem.ItemIsSelectable, True)
+        self.setFlag(QGraphicsItem.ItemIsMovable, True)
+        self.setFlag(QGraphicsItem.ItemSendsGeometryChanges, True)
+        self.setZValue(10)
+        self._update_handles()
+
+    # ---------------- 几何 ---------------- 
+    def shape(self):
+        """命中测试范围 = 框本体 + 标签 chip + 缩放手柄。
+
+        QGraphicsRectItem.shape() 默认只有框本体矩形，而 chip 画在框上方
+        22px（框外）、手柄一半在框外 → 场景命中测试（scene.items/itemAt）
+        根本不会把点击事件派发给本 item。必须重载 shape 包含这些区域，
+        否则点击标签名改类别、点手柄外侧调整大小都"没反应"。"""
+        path = QPainterPath()
+        path.addRect(self.rect())
+        path.addRect(self._chip_rect_local())
+        if self.isSelected():
+            for hrect in self._handles.values():
+                path.addEllipse(hrect.adjusted(-3, -3, 3, 3))
+        return path
+
+    def _compute_handle_size(self):
+        """按矩形较短边计算手柄直径（圆形），范围 [2, 10]（场景坐标）。
+        直径 ≤ min(同边间距, 上下中点距离) = min(w/2, h) 的 1/3，避免相邻手柄粘连。"""
+        r = self.rect()
+        short = min(r.width(), r.height())
+        return max(2.0, min(10.0, short / 3.0))
+
+    def _update_handles(self):
+        """每个矩形固定 6 个圆形手柄：4 个角点 + 2 个长边中点。
+        按实际方向判断长边是哪一对：
+        - w ≥ h：长边是 top/bottom 边（长 = w）→ 中点 H_TM/H_BM（分布在水平中线 cx 上）
+        - h > w：长边是 left/right 边（长 = h）→ 中点 H_ML/H_MR（分布在垂直中线 cy 上）
+        中点放长边保证手柄间距足够大，避免粘连。"""
+        r = self.rect()
+        s = self._compute_handle_size()
+        self._handle_size = s
+        cx = (r.left() + r.right()) / 2
+        cy = (r.top() + r.bottom()) / 2
+        self._handles = {
+            # 4 角点
+            self.H_TL: QRectF(r.left() - s / 2, r.top() - s / 2, s, s),
+            self.H_TR: QRectF(r.right() - s / 2, r.top() - s / 2, s, s),
+            self.H_BL: QRectF(r.left() - s / 2, r.bottom() - s / 2, s, s),
+            self.H_BR: QRectF(r.right() - s / 2, r.bottom() - s / 2, s, s),
+        }
+        if r.width() >= r.height():
+            self._handles.update({
+                self.H_TM: QRectF(cx - s / 2, r.top() - s / 2, s, s),
+                self.H_BM: QRectF(cx - s / 2, r.bottom() - s / 2, s, s),
+            })
+        else:
+            self._handles.update({
+                self.H_ML: QRectF(r.left() - s / 2, cy - s / 2, s, s),
+                self.H_MR: QRectF(r.right() - s / 2, cy - s / 2, s, s),
+            })
+
+    def set_label(self, label, color=None):
+        """修改类别。未显式传 color 时按新标签重新取色：
+        优先场景标签色映射（scene.label_colors，db 自定义色），
+        否则确定性哈希色——保证改类别后框和 chip 颜色跟随新标签。"""
+        self.label = label
+        if color is None:
+            scene = self.scene()
+            if scene is not None:
+                color = scene.label_colors.get(label)
+            if color is None:
+                color = label_color(label)
+        self._color = color
+        pen_color = color
+        self.setPen(QPen(pen_color, 2.0))
+        fill = QColor(pen_color)
+        fill.setAlpha(28)
+        self.setBrush(QBrush(fill))
+        self.update()
+
+    def boxes(self):
+        r = self.rect().translated(self.pos())
+        return [r.left(), r.top(), r.right(), r.bottom()]
+
+    # ---------------- 交互 ---------------- 
+    def handle_at(self, point):
+        if not self.isSelected():
+            return None
+        for key, rect in self._handles.items():
+            center = rect.center()
+            radius = rect.width() / 2 + 3
+            dx = point.x() - center.x()
+            dy = point.y() - center.y()
+            if dx * dx + dy * dy <= radius * radius:
+                return key
+        return None
+
+    # ---------------- 标签 chip 点击（修改类别） ----------------
+    def _view_scale(self):
+        """当前 view 的缩放系数（无 view 时 1.0）。
+
+        chip 绘制在屏幕坐标（恒定像素大小），点击检测在局部坐标，
+        必须把屏幕宽度按 scale 换算回局部坐标，否则缩小视图时点不中。"""
+        scene = self.scene()
+        if scene is None:
+            return 1.0
+        views = scene.views()
+        if not views:
+            return 1.0
+        return views[0].transform().m11() or 1.0
+
+    def _chip_rect_local(self):
+        """标签 chip 在局部坐标的近似区域（与 paint 绘制位置一致，用于点击检测）。
+
+        chip 起点 = 框左上角，绘制在框上方 22px；顶部越界时下移到框内 +4。
+        文字宽度估算：中文≈13px/字、ASCII≈7px/字（pixelSize 13 字体），
+        按 view 缩放换算回局部坐标。"""
+        r = self.rect()
+        top = r.top() - 22
+        if top < 0:
+            top = r.top() + 4
+        text = self.label[:12]
+        w_screen = sum(13 if ord(c) > 127 else 7 for c in text) + 12
+        w_screen = max(30, w_screen)
+        scale = self._view_scale()
+        w = w_screen / scale if scale > 1e-6 else w_screen
+        return QRectF(r.left(), top, w, 20)
+
+    def chip_scene_pos(self):
+        """chip 中心点（场景坐标），用于菜单弹出定位。"""
+        c = self._chip_rect_local().center()
+        return QPointF(self.pos().x() + c.x(), self.pos().y() + c.y())
+
+    def hoverMoveEvent(self, event):
+        scene = self.scene()
+        if scene is not None and getattr(scene, "draw_mode", False):
+            super().hoverMoveEvent(event)
+            return
+        if self._chip_rect_local().adjusted(-3, -3, 3, 3).contains(event.pos()):
+            self.setCursor(Qt.PointingHandCursor)
+            super().hoverMoveEvent(event)
+            return
+        if self.isSelected():
+            handle = self.handle_at(event.pos())
+            cursor = Qt.ArrowCursor if handle is None else self.HANDLE_CURSORS[handle]
+            self.setCursor(cursor)
+        else:
+            self.setCursor(Qt.SizeAllCursor)
+        super().hoverMoveEvent(event)
+
+    def hoverLeaveEvent(self, event):
+        self.setCursor(Qt.ArrowCursor)
+        super().hoverLeaveEvent(event)
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self._press_geom = (self.pos(), self.rect())
+            scene = self.scene()
+            if scene is not None and self._chip_rect_local().adjusted(-2, -2, 2, 2).contains(event.pos()):
+                scene.label_change_requested.emit(self)
+                event.accept()
+                return
+            self._handle_selected = self.handle_at(event.pos())
+            if self._handle_selected is not None:
+                self._press_pos = event.pos()
+                self._press_rect = self.rect()
+                event.accept()
+                return
+        super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event):
+        if self._handle_selected is not None:
+            self._resize(event.pos())
+            return
+        if self.isSelected() and event.buttons() & Qt.LeftButton:
+            super().mouseMoveEvent(event)
+            self._update_handles()
+            return
+        super().mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        geom_changed = False
+        if getattr(self, "_press_geom", None) is not None:
+            geom_changed = (self.pos(), self.rect()) != self._press_geom
+            self._press_geom = None
+        self._handle_selected = None
+        self._press_pos = None
+        self._press_rect = None
+        super().mouseReleaseEvent(event)
+        if geom_changed:
+            scene = self.scene()
+            if scene is not None:
+                scene.boxes_changed.emit()
+
+    def itemChange(self, change, value):
+        if change == QGraphicsItem.ItemPositionChange and self.scene() is not None:
+            # 移动时限制在图像范围内
+            # 注意：rect 是局部坐标，场景坐标 = position + rect 偏移
+            img_rect = self.scene().image_rect
+            if img_rect is not None:
+                scene_left = value.x() + self.rect().left()
+                scene_top = value.y() + self.rect().top()
+                scene_right = scene_left + self.rect().width()
+                scene_bottom = scene_top + self.rect().height()
+                if scene_left < img_rect.left():
+                    value.setX(img_rect.left() - self.rect().left())
+                if scene_top < img_rect.top():
+                    value.setY(img_rect.top() - self.rect().top())
+                if scene_right > img_rect.right():
+                    value.setX(img_rect.right() - self.rect().right())
+                if scene_bottom > img_rect.bottom():
+                    value.setY(img_rect.bottom() - self.rect().bottom())
+        return super().itemChange(change, value)
+
+    def _resize(self, mouse_pos):
+        r = self.rect()
+        img_rect = self.scene().image_rect if self.scene() else None
+        pos = self.pos()
+
+        def clamp(v, lo, hi):
+            return max(lo, min(hi, v))
+
+        if img_rect is not None:
+            lo_x = img_rect.left() - pos.x()
+            hi_x = img_rect.right() - pos.x()
+            lo_y = img_rect.top() - pos.y()
+            hi_y = img_rect.bottom() - pos.y()
+        else:
+            lo_x, hi_x, lo_y, hi_y = -1e9, 1e9, -1e9, 1e9
+
+        if self._handle_selected in (self.H_TL, self.H_ML, self.H_BL):
+            r.setLeft(clamp(mouse_pos.x(), lo_x, r.right() - 4))
+        if self._handle_selected in (self.H_TR, self.H_MR, self.H_BR):
+            r.setRight(clamp(mouse_pos.x(), r.left() + 4, hi_x))
+        if self._handle_selected in (self.H_TL, self.H_TM, self.H_TR):
+            r.setTop(clamp(mouse_pos.y(), lo_y, r.bottom() - 4))
+        if self._handle_selected in (self.H_BL, self.H_BM, self.H_BR):
+            r.setBottom(clamp(mouse_pos.y(), r.top() + 4, hi_y))
+        self.setRect(r)
+        self._update_handles()
+        self.update()
+
+    # ---------------- 绘制 ---------------- 
+    def boundingRect(self):
+        """重绘范围：必须包含框、上方的标签 chip、缩放手柄。
+
+        默认 QGraphicsRectItem 的 boundingRect 只有框本身，标签 chip 画在
+        框上方 22px 处（超出默认范围），导致移动/缩放时 chip 旧位置不重绘，
+        留下文字拖影。这里向上额外扩展 24px 并把手柄也算进去。
+        """
+        r = self.rect()
+        o = getattr(self, "_handle_size", self.HANDLE_SIZE)
+        return r.adjusted(-o, -o - 24, o, o)
+
+    def paint(self, painter, option, widget=None):
+        painter.setRenderHint(QPainter.Antialiasing)
+        pen = QPen(self.pen())
+        pen.setCosmetic(True)
+        painter.setPen(pen)
+        painter.setBrush(self.brush())
+        painter.drawRect(self.rect())
+        r = self.rect()
+        label_rect = QRectF(r.left(), r.top() - 22, max(30.0, r.width()), 20)
+        if label_rect.top() < 0:
+            label_rect.moveTop(r.top() + 4)
+        self._draw_label(painter, label_rect)
+        if self.isSelected():
+            painter.setPen(QPen(QColor("#5B8CFF"), 1.0))
+            painter.setBrush(QBrush(QColor("#ffffff")))
+            for rect in self._handles.values():
+                painter.drawEllipse(rect)
+
+    def _draw_label(self, painter, label_rect):
+        color = self._color if self._color is not None else label_color(self.label)
+        painter.save()
+        transform = painter.transform()
+        scale = transform.m11()
+        if abs(scale) < 1e-6:
+            scale = 1.0
+        device_rect = QRectF(transform.map(QPointF(label_rect.left(), label_rect.top())),
+                             transform.map(QPointF(label_rect.right(), label_rect.bottom())))
+        painter.resetTransform()
+        font = QFont("Microsoft YaHei UI")
+        if not font.exactMatch():
+            font.setFamily("Microsoft YaHei UI, Microsoft YaHei, sans-serif")
+        font.setStyleHint(QFont.SansSerif)
+        font.setPixelSize(13)
+        painter.setFont(font)
+        painter.setPen(QPen(QColor("#1c1e25"), 1.0))
+        painter.setBrush(QBrush(color))
+        text = self.label[:12]
+        w = max(30, painter.fontMetrics().horizontalAdvance(text) + 12)
+        chip = QRectF(device_rect.left(), device_rect.top(), w, 20)
+        painter.drawRoundedRect(chip, 4, 4)
+        luminance = 0.299 * color.red() + 0.587 * color.green() + 0.114 * color.blue()
+        text_color = QColor("#1c1e25") if luminance > 160 else QColor("#ffffff")
+        painter.setPen(text_color)
+        painter.drawText(chip, Qt.AlignCenter, text)
+        painter.restore()
+
+
+# ---------------- 多边形标注项 ----------------
+
+class AnnotationPolygonItem(QGraphicsPolygonItem):
+    """场景坐标下的多边形标注（顶点即像素坐标）。与 BoxItem 共用 chip 渲染与配色。"""
+
+    HANDLE_SIZE = 8.0
+
+    def __init__(self, points, label, editable=True, color=None):
+        super().__init__()
+        self.label = label
+        self.editable = editable
+        self._color = color
+        # points: [[x, y], ...]（场景/像素坐标）
+        poly = QPolygonF([QPointF(p[0], p[1]) for p in points])
+        self.setPolygon(poly)
+        pen_color = color if color is not None else label_color(label)
+        self.setPen(QPen(pen_color, 2.0))
+        fill = QColor(pen_color)
+        fill.setAlpha(28)
+        self.setBrush(QBrush(fill))
+        self.setAcceptHoverEvents(True)
+        self.setFlag(QGraphicsItem.ItemIsSelectable, True)
+        self.setFlag(QGraphicsItem.ItemIsMovable, True)
+        self.setFlag(QGraphicsItem.ItemSendsGeometryChanges, True)
+        self.setZValue(10)
+        self._handles = {}
+        self._handle_size = 8.0
+        self._vertex_idx = None
+        self._press_geom = None
+        self._update_handles()
+
+    def _update_handles(self):
+        s = self._compute_handle_size()
+        self._handle_size = s
+        self._handles = {
+            i: QRectF(p.x() - s / 2, p.y() - s / 2, s, s)
+            for i, p in enumerate(self.polygon())
+        }
+
+    def handle_at(self, point):
+        if not self.isSelected():
+            return None
+        for idx, rect in self._handles.items():
+            center = rect.center()
+            radius = rect.width() / 2 + 3
+            dx = point.x() - center.x()
+            dy = point.y() - center.y()
+            if dx * dx + dy * dy <= radius * radius:
+                return idx
+        return None
+
+    def shape_type(self):
+        return "polygon"
+
+    def _compute_handle_size(self):
+        """按多边形包围盒面积设置手柄大小（圆形），范围 [2, 6]。"""
+        r = self.polygon().boundingRect()
+        area = max(1.0, r.width() * r.height())
+        return max(2.0, min(6.0, area ** 0.5 * 0.25))
+
+    def set_label(self, label, color=None):
+        """修改类别。未显式传 color 时按新标签重新取色：
+        优先场景标签色映射（scene.label_colors，db 自定义色），
+        否则确定性哈希色——保证改类别后框和 chip 颜色跟随新标签。"""
+        self.label = label
+        if color is None:
+            scene = self.scene()
+            if scene is not None:
+                color = scene.label_colors.get(label)
+            if color is None:
+                color = label_color(label)
+        self._color = color
+        pen_color = color
+        self.setPen(QPen(pen_color, 2.0))
+        fill = QColor(pen_color)
+        fill.setAlpha(28)
+        self.setBrush(QBrush(fill))
+        self.update()
+
+    def points(self):
+        """返回 [[x, y], ...]（场景/像素坐标，含 pos 偏移）。
+        拖动后保存必须叠加 pos，否则关闭再打开位置丢失。"""
+        pos = self.pos()
+        return [[p.x() + pos.x(), p.y() + pos.y()] for p in self.polygon()]
+
+    # ---------------- 标签 chip 点击（修改类别） ----------------
+    def _view_scale(self):
+        """当前 view 的缩放系数（无 view 时 1.0），供 chip 点击区域换算。"""
+        scene = self.scene()
+        if scene is None:
+            return 1.0
+        views = scene.views()
+        if not views:
+            return 1.0
+        return views[0].transform().m11() or 1.0
+
+    def _chip_rect_local(self):
+        """标签 chip 在局部坐标的近似区域（与 paint 绘制位置一致，按 view 缩放换算）。"""
+        r = self.polygon().boundingRect()
+        top = r.top() - 22
+        if top < 0:
+            top = r.top() + 4
+        text = self.label[:12]
+        w_screen = sum(13 if ord(c) > 127 else 7 for c in text) + 12
+        w_screen = max(30, w_screen)
+        scale = self._view_scale()
+        w = w_screen / scale if scale > 1e-6 else w_screen
+        return QRectF(r.left(), top, w, 20)
+
+    def chip_scene_pos(self):
+        c = self._chip_rect_local().center()
+        return QPointF(self.pos().x() + c.x(), self.pos().y() + c.y())
+
+    # ---------------- 交互（拖动 + 图像范围限制）----------------
+    def shape(self):
+        """命中测试范围 = 多边形本体 + 标签 chip + 顶点手柄（选中时）。"""
+        path = QPainterPath()
+        path.addPolygon(self.polygon())
+        path.addRect(self._chip_rect_local())
+        if self.isSelected():
+            for hrect in self._handles.values():
+                path.addEllipse(hrect.adjusted(-3, -3, 3, 3))
+        return path
+
+    def hoverMoveEvent(self, event):
+        scene = self.scene()
+        if scene is not None and getattr(scene, "draw_mode", False):
+            super().hoverMoveEvent(event)
+            return
+        if self._chip_rect_local().adjusted(-3, -3, 3, 3).contains(event.pos()):
+            self.setCursor(Qt.PointingHandCursor)
+        else:
+            self.setCursor(Qt.ArrowCursor)
+        super().hoverMoveEvent(event)
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self._press_geom = (self.pos(), self.polygon())
+            scene = self.scene()
+            if scene is not None and self._chip_rect_local().adjusted(-2, -2, 2, 2).contains(event.pos()):
+                scene.label_change_requested.emit(self)
+                event.accept()
+                return
+            if self.isSelected():
+                idx = self.handle_at(event.pos())
+                if idx is not None:
+                    self._vertex_idx = idx
+                    self._press_poly = QPolygonF(self.polygon())
+                    event.accept()
+                    return
+        super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event):
+        if self._vertex_idx is not None:
+            self._resize_vertex(event.pos())
+            return
+        super().mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        geom_changed = False
+        if self._vertex_idx is not None:
+            self._vertex_idx = None
+            if getattr(self, "_press_poly", None) is not None:
+                geom_changed = self.polygon() != self._press_poly
+                self._press_poly = None
+            super().mouseReleaseEvent(event)
+        else:
+            if getattr(self, "_press_geom", None) is not None:
+                geom_changed = (self.pos(), self.polygon()) != self._press_geom
+                self._press_geom = None
+            super().mouseReleaseEvent(event)
+        if geom_changed:
+            scene = self.scene()
+            if scene is not None:
+                scene.boxes_changed.emit()
+
+    def _resize_vertex(self, point):
+        """把顶点拖到局部坐标 point，限制在图像范围内。"""
+        scene = self.scene()
+        if scene is None or scene.image_rect is None:
+            return
+        sp = self.mapToScene(point)
+        img = scene.image_rect
+        x = max(img.left(), min(img.right(), sp.x()))
+        y = max(img.top(), min(img.bottom(), sp.y()))
+        local = self.mapFromScene(QPointF(x, y))
+        pts = list(self.polygon())
+        pts[self._vertex_idx] = local
+        self.setPolygon(QPolygonF(pts))
+        self._update_handles()
+        self.update()
+
+    def itemChange(self, change, value):
+        if change == QGraphicsItem.ItemPositionChange and self.scene() is not None:
+            img_rect = self.scene().image_rect
+            if img_rect is not None:
+                rect = self.polygon().boundingRect()
+                scene_left = value.x() + rect.left()
+                scene_top = value.y() + rect.top()
+                if scene_left < img_rect.left():
+                    value.setX(img_rect.left() - rect.left())
+                if scene_top < img_rect.top():
+                    value.setY(img_rect.top() - rect.top())
+                if scene_left + rect.width() > img_rect.right():
+                    value.setX(img_rect.right() - rect.right())
+                if scene_top + rect.height() > img_rect.bottom():
+                    value.setY(img_rect.bottom() - rect.bottom())
+        return super().itemChange(change, value)
+
+    # ---------------- 绘制 ----------------
+    def boundingRect(self):
+        r = self.polygon().boundingRect()
+        o = getattr(self, "_handle_size", self.HANDLE_SIZE)
+        return r.adjusted(-o, -o - 24, o, o)
+
+    def paint(self, painter, option, widget=None):
+        painter.setRenderHint(QPainter.Antialiasing)
+        pen = QPen(self.pen())
+        pen.setCosmetic(True)
+        painter.setPen(pen)
+        painter.setBrush(self.brush())
+        painter.drawPolygon(self.polygon())
+
+        r = self.polygon().boundingRect()
+        label_rect = QRectF(r.left(), r.top() - 22, max(30.0, r.width()), 20)
+        if label_rect.top() < 0:
+            label_rect.moveTop(r.top() + 4)
+        self._draw_label(painter, label_rect)
+
+        if self.isSelected():
+            painter.setPen(QPen(QColor("#5B8CFF"), 1.0))
+            painter.setBrush(QBrush(QColor("#ffffff")))
+            for p in self.polygon():
+                self._handle_size = self._compute_handle_size()
+                painter.drawRect(QRectF(p.x() - self._handle_size / 2, p.y() - self._handle_size / 2,
+                                        self._handle_size, self._handle_size))
+
+    def _draw_label(self, painter, label_rect):
+        color = self._color if self._color is not None else label_color(self.label)
+        painter.save()
+        transform = painter.transform()
+        scale = transform.m11()
+        if abs(scale) < 1e-6:
+            scale = 1.0
+        device_rect = QRectF(transform.map(QPointF(label_rect.left(), label_rect.top())),
+                             transform.map(QPointF(label_rect.right(), label_rect.bottom())))
+        painter.resetTransform()
+        font = QFont("Microsoft YaHei UI")
+        if not font.exactMatch():
+            font.setFamily("Microsoft YaHei UI, Microsoft YaHei, sans-serif")
+        font.setStyleHint(QFont.SansSerif)
+        font.setPixelSize(13)
+        painter.setFont(font)
+        painter.setPen(QPen(QColor("#1c1e25"), 1.0))
+        painter.setBrush(QBrush(color))
+        text = self.label[:12]
+        w = max(30, painter.fontMetrics().horizontalAdvance(text) + 12)
+        chip = QRectF(device_rect.left(), device_rect.top(), w, 20)
+        painter.drawRoundedRect(chip, 4, 4)
+        luminance = 0.299 * color.red() + 0.587 * color.green() + 0.114 * color.blue()
+        text_color = QColor("#1c1e25") if luminance > 160 else QColor("#ffffff")
+        painter.setPen(text_color)
+        painter.drawText(chip, Qt.AlignCenter, text)
+        painter.restore()
