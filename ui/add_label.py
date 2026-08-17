@@ -39,6 +39,8 @@ class Ui_addLabelDialog(object):
 
         self.horizontalLayout_5.addItem(self.horizontalSpacer_3)
 
+        self.horizontalLayout_5.setStretch(0, 8)
+        self.horizontalLayout_5.setStretch(1, 2)
 
         self.verticalLayout_2.addLayout(self.horizontalLayout_5)
 
@@ -49,7 +51,7 @@ class Ui_addLabelDialog(object):
         self.horizontalLayout_6.setContentsMargins(-1, 0, -1, 0)
         self.load_project_label_combo = QComboBox(addLabelDialog)
         self.load_project_label_combo.setObjectName(u"load_project_label_combo")
-        self.load_project_label_combo.setMinimumSize(QSize(185, 0))
+        self.load_project_label_combo.setMinimumSize(QSize(0, 0))
 
         self.horizontalLayout_6.addWidget(self.load_project_label_combo)
 
@@ -58,10 +60,8 @@ class Ui_addLabelDialog(object):
 
         self.horizontalLayout_6.addWidget(self.load_label_btn)
 
-        self.horizontalSpacer_4 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_6.addItem(self.horizontalSpacer_4)
-
+        self.horizontalLayout_6.setStretch(0, 8)
+        self.horizontalLayout_6.setStretch(1, 2)
 
         self.verticalLayout.addLayout(self.horizontalLayout_6)
 
@@ -92,36 +92,36 @@ class Ui_addLabelDialog(object):
 
         self.horizontalLayout.addWidget(self.color5_btn)
 
+        self.color7_btn = QPushButton(addLabelDialog)
+        self.color7_btn.setObjectName(u"color7_btn")
+
+        self.horizontalLayout.addWidget(self.color7_btn)
+
+        self.color6_btn = QPushButton(addLabelDialog)
+        self.color6_btn.setObjectName(u"color6_btn")
+
+        self.horizontalLayout.addWidget(self.color6_btn)
+
+        self.color10_btn = QPushButton(addLabelDialog)
+        self.color10_btn.setObjectName(u"color10_btn")
+
+        self.horizontalLayout.addWidget(self.color10_btn)
+
+        self.color9_btn = QPushButton(addLabelDialog)
+        self.color9_btn.setObjectName(u"color9_btn")
+
+        self.horizontalLayout.addWidget(self.color9_btn)
+
+        self.color8_btn = QPushButton(addLabelDialog)
+        self.color8_btn.setObjectName(u"color8_btn")
+
+        self.horizontalLayout.addWidget(self.color8_btn)
+
 
         self.verticalLayout.addLayout(self.horizontalLayout)
 
         self.horizontalLayout_2 = QHBoxLayout()
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
-        self.color6_btn = QPushButton(addLabelDialog)
-        self.color6_btn.setObjectName(u"color6_btn")
-
-        self.horizontalLayout_2.addWidget(self.color6_btn)
-
-        self.color7_btn = QPushButton(addLabelDialog)
-        self.color7_btn.setObjectName(u"color7_btn")
-
-        self.horizontalLayout_2.addWidget(self.color7_btn)
-
-        self.color8_btn = QPushButton(addLabelDialog)
-        self.color8_btn.setObjectName(u"color8_btn")
-
-        self.horizontalLayout_2.addWidget(self.color8_btn)
-
-        self.color9_btn = QPushButton(addLabelDialog)
-        self.color9_btn.setObjectName(u"color9_btn")
-
-        self.horizontalLayout_2.addWidget(self.color9_btn)
-
-        self.color10_btn = QPushButton(addLabelDialog)
-        self.color10_btn.setObjectName(u"color10_btn")
-
-        self.horizontalLayout_2.addWidget(self.color10_btn)
-
 
         self.verticalLayout.addLayout(self.horizontalLayout_2)
 
@@ -187,12 +187,12 @@ class Ui_addLabelDialog(object):
         self.color3_btn.setText("")
         self.color4_btn.setText("")
         self.color5_btn.setText("")
-        self.color6_btn.setText("")
         self.color7_btn.setText("")
-        self.color8_btn.setText("")
-        self.color9_btn.setText("")
+        self.color6_btn.setText("")
         self.color10_btn.setText("")
-        self.select_color.setText(QCoreApplication.translate("addLabelDialog", u"\u9009\u62e9", None))
+        self.color9_btn.setText("")
+        self.color8_btn.setText("")
+        self.select_color.setText(QCoreApplication.translate("addLabelDialog", u"\u9009\u4e2d", None))
         self.color10_btn_2.setText("")
         self.custom_color.setText(QCoreApplication.translate("addLabelDialog", u"\u81ea\u5b9a\u4e49\u989c\u8272", None))
         self.add_label_done_btn.setText(QCoreApplication.translate("addLabelDialog", u"\u786e\u5b9a", None))

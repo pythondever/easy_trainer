@@ -353,6 +353,7 @@ class AddLabelDialog(QDialog):
         self._dataset = dataset
         self._source_colors = {}   # 导入的数据集标签 → 颜色（用于确定时还原颜色）
         self._selected_color = ""
+        self._imported_mode = False   # 本次弹窗是否走"导入"路径（导入后输入框只读）
         self._setup()
         if preset_name:
             self.ui.input_label_name_txt.setText(preset_name)
@@ -361,8 +362,8 @@ class AddLabelDialog(QDialog):
 
     def _setup(self):
         BTN_H = 36
-        color_btns = [getattr(self.ui, "color{}_btn".format(i)) for i in range(1, 11)]
-        for btn, color in zip(color_btns, LABEL_COLORS[:10]):
+        self._color_btns = [getattr(self.ui, "color{}_btn".format(i)) for i in range(1, 11)]
+        for btn, color in zip(self._color_btns, LABEL_COLORS[:10]):
             btn.setFixedHeight(BTN_H)
             btn.setStyleSheet(
                 "QPushButton {{ background-color: {0}; border: 2px solid transparent;"
@@ -410,7 +411,11 @@ class AddLabelDialog(QDialog):
             combo.setEnabled(False)
 
     def _load_labels_from_project(self):
-        """把所选数据集的标签以逗号分隔填入输入框，并记住其颜色。"""
+        """把所选数据集的标签以逗号分隔填入输入框，并记住其颜色。
+
+        导入后输入框置为只读（导入的标签以源数据集为准，不允许手动改动），
+        数据仅在用户点「确定」后才写入当前数据集。
+        """
         combo = self.ui.load_project_label_combo
         src = combo.currentData()
         if not src:
@@ -424,6 +429,13 @@ class AddLabelDialog(QDialog):
         self._source_colors = dict(labels)
         names = sorted(labels.keys(), key=label_sort_key)
         self.ui.input_label_name_txt.setText(", ".join(names))
+        self.ui.input_label_name_txt.setReadOnly(True)
+        self._imported_mode = True
+        # 导入模式下颜色由源数据集决定，禁用颜色按钮避免无效点击
+        for btn in self._color_btns:
+            btn.setEnabled(False)
+        self.ui.custom_color.setEnabled(False)
+        self.ui.color10_btn_2.setEnabled(False)
 
     def _select_color(self, color, btn=None):
         self._selected_color = color
@@ -1009,14 +1021,23 @@ class AnnotationDialog(QDialog):
         if not items:
             MessageBox.warning(self, "添加标签", "标签名称不能为空")
             return
+        # 导入路径：重复标签跳过（不覆盖已有颜色/标注）；手动输入仍按原逻辑
+        existing = set(self.label_colors)
+        imported = getattr(dlg, "_imported_mode", False)
+        added = []
         for name, color in items:
+            if imported and name in existing:
+                continue
             self.db.add_dataset_label(self.project, self.dataset, name, color)
             write_log("创建标签: {} 颜色={} ({}/{})".format(
                 name, color, self.project, self.dataset))
             self.label_colors[name] = color
             self.scene.label_colors[name] = QColor(color)
+            added.append(name)
+        if not added:
+            return
         self._refresh_labels()
-        self.scene.current_label = items[0][0]
+        self.scene.current_label = added[0]
         self._update_draw_buttons()
 
     def _refresh_labeled_list(self):

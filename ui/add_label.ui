@@ -17,7 +17,7 @@
    <item row="0" column="0">
     <layout class="QVBoxLayout" name="verticalLayout_2">
      <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_5">
+      <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="8,2">
        <item>
         <widget class="QLineEdit" name="input_label_name_txt"/>
        </item>
@@ -39,7 +39,7 @@
      <item>
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_6">
+        <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="8,2">
          <property name="topMargin">
           <number>0</number>
          </property>
@@ -50,7 +50,7 @@
           <widget class="QComboBox" name="load_project_label_combo">
            <property name="minimumSize">
             <size>
-             <width>185</width>
+             <width>0</width>
              <height>0</height>
             </size>
            </property>
@@ -62,19 +62,6 @@
             <string>导入</string>
            </property>
           </widget>
-         </item>
-         <item>
-          <spacer name="horizontalSpacer_4">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
          </item>
         </layout>
        </item>
@@ -115,17 +102,6 @@
            </property>
           </widget>
          </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_2">
-         <item>
-          <widget class="QPushButton" name="color6_btn">
-           <property name="text">
-            <string/>
-           </property>
-          </widget>
-         </item>
          <item>
           <widget class="QPushButton" name="color7_btn">
            <property name="text">
@@ -134,7 +110,14 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="color8_btn">
+          <widget class="QPushButton" name="color6_btn">
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="color10_btn">
            <property name="text">
             <string/>
            </property>
@@ -148,7 +131,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="color10_btn">
+          <widget class="QPushButton" name="color8_btn">
            <property name="text">
             <string/>
            </property>
@@ -157,11 +140,14 @@
         </layout>
        </item>
        <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_2"/>
+       </item>
+       <item>
         <layout class="QHBoxLayout" name="horizontalLayout_3">
          <item>
           <widget class="QLabel" name="select_color">
            <property name="text">
-            <string>选择</string>
+            <string>选中</string>
            </property>
           </widget>
          </item>
