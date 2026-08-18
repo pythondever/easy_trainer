@@ -1747,6 +1747,9 @@ class App(QWidget, MainUI):
         project, dataset = self._current_dataset
         dlg = QDialog(self)
         dlg.setWindowTitle("数据集属性 - {} / {}".format(project, dataset))
+        # 支持最小化/最大化(默认 dialog 只有关闭按钮)
+        dlg.setWindowFlags(
+            dlg.windowFlags() | Qt.WindowMinimizeButtonHint | Qt.WindowMaximizeButtonHint)
         ui = DatasetPropertiesUI()
         ui.setupUi(dlg)
         info = self.db.get_dataset_import(project, dataset) or {}

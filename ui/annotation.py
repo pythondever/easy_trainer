@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'annotation.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.3
+## Created by: Qt User Interface Compiler version 6.11.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -34,7 +34,7 @@ class Ui_annotationDialog(object):
         self.draw_rect_btn = QPushButton(annotationDialog)
         self.draw_rect_btn.setObjectName(u"draw_rect_btn")
         icon = QIcon()
-        icon.addFile(u"../resources/\u77e9\u5f62.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon.addFile(u"../resources/\u77e9\u5f62.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.draw_rect_btn.setIcon(icon)
 
         self.horizontalLayout.addWidget(self.draw_rect_btn)
@@ -42,7 +42,7 @@ class Ui_annotationDialog(object):
         self.poly_btn = QPushButton(annotationDialog)
         self.poly_btn.setObjectName(u"poly_btn")
         icon1 = QIcon()
-        icon1.addFile(u"../resources/\u591a\u8fb9\u5f62.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon1.addFile(u"../resources/\u591a\u8fb9\u5f62.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.poly_btn.setIcon(icon1)
 
         self.horizontalLayout.addWidget(self.poly_btn)
@@ -50,7 +50,7 @@ class Ui_annotationDialog(object):
         self.format_painter_btn = QPushButton(annotationDialog)
         self.format_painter_btn.setObjectName(u"format_painter_btn")
         icon2 = QIcon()
-        icon2.addFile(u"../resources/\u5237\u5b50.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon2.addFile(u"../resources/\u5237\u5b50.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.format_painter_btn.setIcon(icon2)
 
         self.horizontalLayout.addWidget(self.format_painter_btn)
@@ -193,7 +193,7 @@ class Ui_annotationDialog(object):
         annotationDialog.setWindowTitle(QCoreApplication.translate("annotationDialog", u"Dialog", None))
         self.draw_rect_btn.setText("")
         self.poly_btn.setText("")
-        self.format_painter_btn.setText("")
+        self.format_painter_btn.setText(QCoreApplication.translate("annotationDialog", u"\u683c\u5f0f\u5237", None))
         self.label_list.setText(QCoreApplication.translate("annotationDialog", u"\u6807\u7b7e\u5217\u8868", None))
         self.add_label.setText(QCoreApplication.translate("annotationDialog", u"\u6dfb\u52a0", None))
         self.labeled_list.setText(QCoreApplication.translate("annotationDialog", u"\u6807\u6ce8\u4fe1\u606f", None))

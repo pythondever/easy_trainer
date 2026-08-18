@@ -43,7 +43,7 @@
        <item>
         <widget class="QPushButton" name="format_painter_btn">
          <property name="text">
-          <string/>
+          <string>格式刷</string>
          </property>
          <property name="icon">
           <iconset>
