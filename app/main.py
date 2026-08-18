@@ -575,11 +575,8 @@ class App(QWidget, MainUI):
             self.show_dataset_images(proj, ds)
 
     def _apply_deleted_labels(self, project_name, dataset_name, label_names):
-        """标注界面删除了标签：补全清理所有 json + 内存缓存。
-
-        标注界面的 image_list 只是打开时的筛选视图，json 清理会漏掉其他
-        图像；这里基于完整 dataset_cache 再清一遍（带进度框），
-        并清理缓存中的 labels/boxes/rois、重建分组。
+        """
+        清理缓存中的 labels/boxes/rois、重建分组。
         """
         if not label_names:
             return
