@@ -1755,8 +1755,16 @@ class App(QWidget, MainUI):
         dlg.exec()
 
     def _render_label_stats(self, view, project, dataset, label_counts):
-        """标签分布柱状图。"""
-        fig = Figure(figsize=(8, 6), dpi=100, facecolor="#1c1e25")
+        """标签分布柱状图。
+
+        图表宽度按标签数量动态扩展:QGraphicsView 自带滚动条,
+        scene 保持原始像素尺寸,超出视口后由用户横向滚动查看。
+        """
+        num_bars = max(1, len(label_counts))
+        # 每个标签分配 ~0.3 英寸水平空间,最小 8 英寸,保证稀疏时不至于太窄
+        fig_width = max(8.0, num_bars * 0.3)
+        fig_height = 6.0
+        fig = Figure(figsize=(fig_width, fig_height), dpi=100, facecolor="#1c1e25")
         axes = fig.add_subplot(111, facecolor="#1c1e25")
         scene = QGraphicsScene()
         if not label_counts:
@@ -1769,7 +1777,6 @@ class App(QWidget, MainUI):
             labels = list(label_counts.keys())
             values = list(label_counts.values())
             colors = [label_colors.get(name, "#5B8CFF") for name in labels]
-            num_bars = len(labels)
             bar_width = max(0.15, min(0.5, 0.6 / max(1, num_bars)))
             x_positions = np.arange(num_bars)
             bars = axes.bar(x_positions, values, color=colors, width=bar_width,
@@ -1803,8 +1810,10 @@ class App(QWidget, MainUI):
         scene.addPixmap(pixmap)
         scene.update()
         view.setScene(scene)
-        QTimer.singleShot(
-            0, lambda: view.fitInView(scene.itemsBoundingRect(), Qt.KeepAspectRatio))
+        # 不做 fitInView:scene 保持原尺寸,QGraphicsView 自动按需出现滚动条
+        # 仅在场景范围尚未设置时初始化,避免重复重置导致缩放抖动
+        if view.sceneRect().isEmpty():
+            view.setSceneRect(scene.itemsBoundingRect())
 
     def _start_import_thread(self, project_name, dataset_name,
                              image_path, label_path="", fmt="",
@@ -1980,6 +1989,31 @@ class App(QWidget, MainUI):
         if cur and cur in data.get("labels", {}):
             return data["labels"][cur]
         return all_records
+
+    def _expand_by_label(self, data):
+        """按 current_label 把图像列表按 box 展开为 (rec, box_idx) 列表。
+
+        仅供分页/渲染使用,保证:
+          len(view_data) == 实际小图个数,分页粒度 == cell 粒度。
+        未标注 / 全部 / 分类数据集原样返回(按图像计)。
+        """
+        cur = self.current_label
+        if not cur or cur == "__unlabeled__":
+            return data
+        expanded = []
+        for rec in data:
+            if rec.get("cls"):
+                expanded.append(rec)
+                continue
+            matched = False
+            for box_idx, box in enumerate(rec.get("boxes") or []):
+                if len(box) >= 5 and box[4] == cur:
+                    expanded.append((rec, box_idx))
+                    matched = True
+            # 兜底:无 box 的图(理论上不会出现)按整图算一项
+            if not matched and not (rec.get("boxes") or []):
+                expanded.append(rec)
+        return expanded
 
     def show_dataset_images(self, project_name, dataset_name, update_stats=False):
         """
@@ -2163,6 +2197,31 @@ class App(QWidget, MainUI):
         rois[label] = result
         return result
 
+    def _get_roi_at(self, rec, label, box_idx):
+        """按具体标签筛选展开时,取第 box_idx 个匹配 box 的 ROI 缩略图并按需缓存。
+
+        区别于 _get_rois(整图一次性裁全部):只裁剪指定那一个 box,
+        内存更省;展开模式按 box 翻页时按需缓存到 rois_by_idx[label][box_idx]。
+        """
+        cache = rec.setdefault("rois_by_idx", {}).setdefault(label, {})
+        if box_idx in cache:
+            return cache[box_idx]
+        qimg = None
+        boxes = rec.get("boxes") or []
+        img_path = rec.get("image_path", "")
+        if 0 <= box_idx < len(boxes) and img_path and PILImage is not None:
+            box = boxes[box_idx]
+            if len(box) >= 5 and box[4] == label:
+                try:
+                    im = PILImage.open(img_path).convert("RGB")
+                    x, y, w, h = box[0], box[1], box[2], box[3]
+                    crop = im.crop((x, y, x + w, y + h))
+                    qimg = _pil_to_qimage(_make_uniform_thumb(crop, fill=True))
+                except Exception:
+                    qimg = None
+        cache[box_idx] = qimg
+        return qimg
+
     def _render_scene(self, data):
         """
         把当前页的数据集记录渲染成多张小图网格(使用 Paginator 分页)。
@@ -2173,19 +2232,33 @@ class App(QWidget, MainUI):
         scene = self.graphics_view.scene()
         scene.clear()
         page_size = getattr(self, "page_size", 50)
-        total_pages = max(1, (len(data) + page_size - 1) // page_size)
+        cur_label = getattr(self, "current_label", None)
+        # 按具体标签筛选时:展开为 (rec, box_idx) 列表,
+        # len(view_data) == 实际小图个数,分页粒度 = cell 粒度。
+        view_data = self._expand_by_label(data)
+        total_pages = max(1, (len(view_data) + page_size - 1) // page_size)
         self.current_page = max(0, min(getattr(self, "current_page", 0), total_pages - 1))
-        page_data = list(Paginator(data, page_size)[self.current_page])
+        page_data = list(Paginator(view_data, page_size)[self.current_page])
         cell_w, cell_h = 230, 230
         pad = 10
         cols = max(1, int((self.graphics_view.viewport().width() - pad) // cell_w))
         pos = 0
-        for rec in page_data:
+        for entry in page_data:
+            if isinstance(entry, tuple):
+                rec, box_idx = entry
+                single_box = True
+            else:
+                rec, box_idx = entry, None
+                single_box = False
             # 分类数据集(rec 有 cls)按类别筛选时显示整图(无框可裁剪),
-            # 检测/分割数据集仍按标签显示 ROI 小图
-            if (self.current_label and self.current_label != "__unlabeled__"
+            # 检测/分割数据集按 box 展开,每个 cell 仅显示该 box 的 ROI
+            if (cur_label and cur_label != "__unlabeled__"
                     and not rec.get("cls")):
-                qimgs = self._get_rois(rec, self.current_label)
+                if single_box:
+                    qimg = self._get_roi_at(rec, cur_label, box_idx)
+                else:
+                    qimg = self._get_thumb(rec)
+                qimgs = [qimg] if qimg is not None else []
             else:
                 qimg = self._get_thumb(rec)
                 qimgs = [qimg] if qimg is not None else []
@@ -2204,12 +2277,13 @@ class App(QWidget, MainUI):
                 item.setData(0, rec.get("image_path", ""))  # 双击定位用
                 pos += 1
         scene.setSceneRect(scene.itemsBoundingRect().adjusted(-10, -10, 20, 20))
-        if self.current_label == "__unlabeled__":
-            self.pageInfoLabel.setText("第 {}/{} 页".format(
-                self.current_page + 1, total_pages))
-        else:
+        # 分页信息:未标注 / 全部按图像数(张),具体标签按 box 数(个)
+        if cur_label and cur_label != "__unlabeled__":
             self.pageInfoLabel.setText("第 {}/{} 页 · 共 {} 个".format(
-                self.current_page + 1, total_pages, len(data)))
+                self.current_page + 1, total_pages, len(view_data)))
+        else:
+            self.pageInfoLabel.setText("第 {}/{} 页 · 共 {} 张".format(
+                self.current_page + 1, total_pages, len(view_data)))
         self.pre_page_btn.setEnabled(self.current_page > 0)
         self.next_page_btn.setEnabled(self.current_page < total_pages - 1)
 
@@ -2222,10 +2296,11 @@ class App(QWidget, MainUI):
         data = self.dataset_cache.get(proj, {}).get(ds)
         if not data:
             return
-        view_data = self._view_data_by_label(data)
+        # 按 box 展开后再算 total_pages,与 _render_scene 显示一致
+        view_data = self._expand_by_label(self._view_data_by_label(data))
         total_pages = max(1, (len(view_data) + self.page_size - 1) // self.page_size)
         self.current_page = max(0, min(self.current_page + offset, total_pages - 1))
-        self._render_scene(view_data)
+        self._render_scene(self._view_data_by_label(data))
 
     def pre_page(self):
         self._show_page(-1)
