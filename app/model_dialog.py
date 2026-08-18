@@ -94,7 +94,7 @@ class ModelDialog(QDialog):
 
     def _load_records(self):
         recs = []
-        for r in self.app.db.get_train_records():
+        for r in self.app.db.get_model_records():
             if self._project and r.get("project") != self._project:
                 continue
             if self._dataset:
@@ -219,11 +219,12 @@ class ModelDialog(QDialog):
         st = record.get("start_time", "")
         try:
             if not MessageBox.question(
-                    self, "删除训练记录",
-                    "确定删除该条训练记录？\n项目={}\n数据集={}\n开始时间={}\n（不会删除磁盘上的模型文件）".format(
+                    self, "删除模型记录",
+                    "确定删除该条模型记录？\n项目={}\n数据集={}\n开始时间={}\n"
+                    "（仅从模型列表移除,不影响训练参数回填,也不删除磁盘上的模型文件）".format(
                         record.get("project", ""), ds, st)):
                 return
-            self.app.db.delete_train_record(record.get("id"))
+            self.app.db.delete_model_record(record.get("id"))
             QTimer.singleShot(0, self._load_records)
         except Exception as e:
             trace = traceback.format_exc()

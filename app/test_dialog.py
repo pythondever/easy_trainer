@@ -151,7 +151,7 @@ class TestDialog(QDialog):
         combo.clear()
         cur_type = self._current_dataset_type()
         recs = []
-        for r in self.app.db.get_train_records():
+        for r in self.app.db.get_model_records():
             path = r.get("model_path") or ""
             if not path or not r.get("end_time"):
                 continue

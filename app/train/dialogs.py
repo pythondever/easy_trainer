@@ -394,26 +394,82 @@ class TrainDialogBase(QDialog):
                 btn.setToolTip("已有训练在进行中，请先停止")
 
     def _restore_last_config(self):
-        """
-        仅回填当前项目最近一次训练的数据集选择（训练集/验证集）。
-
-        参数一律不沿用上次训练：不同任务类型（检测/分割/分类）的默认
-        batch_size / img_size / lr 差异大，分类的 224/32 串到检测分割
-        界面不合理，统一用本任务类型的固定默认值。
-        """
-        # 训练集/验证集 -> 仅当前项目(跨项目数据集名不适用,留空让用户选)
-        last = None
-        for r in self.app.db.get_train_records():
-            if r.get("project") == self.project and r.get("dataset"):
-                last = r
-        if not last:
+        """回填最近一次训练的配置:匹配训练/验证集包含当前数据集的记录
+        (多数据集共用一份参数),否则回退到项目最近一次训练。"""
+        recs = [r for r in self.app.db.get_train_records()
+                if r.get("project") == self.project and r.get("dataset")]
+        if not recs:
             return
+        recs.sort(key=lambda r: str(r.get("start_time", "")), reverse=True)
+        cur = self.dataset
+        last = None
+        for r in recs:
+            train_names = [x.strip() for x in str(r.get("dataset", "")).split(",") if x.strip()]
+            val_names = [x.strip() for x in str(r.get("val_dataset", "")).split(",") if x.strip()]
+            if cur in train_names or cur in val_names:
+                last = r
+                break
+        if last is None:
+            last = recs[0]
         train_names = [x.strip() for x in str(last.get("dataset", "")).split(",") if x.strip()]
         val_names = [x.strip() for x in str(last.get("val_dataset", "")).split(",") if x.strip()]
         if train_names:
             self._fill_dataset_multi(self.ui.dataset_combo, train_names)
         if val_names:
             self._fill_dataset_multi(self.ui.val_combo, val_names)
+        self._apply_record_params(last)
+
+    def _apply_record_params(self, rec):
+        """把训练记录参数回填到界面(控件按存在性防护)。"""
+
+        def _set_int(name, val):
+            edit = getattr(self.ui, name, None)
+            if edit is not None and val not in (None, ""):
+                try:
+                    edit.setText(str(int(val)))
+                except (TypeError, ValueError):
+                    pass
+
+        def _set_float(name, val):
+            edit = getattr(self.ui, name, None)
+            if edit is not None and val not in (None, ""):
+                try:
+                    edit.setText(str(float(val)))
+                except (TypeError, ValueError):
+                    pass
+
+        def _set_combo(name, val):
+            combo = getattr(self.ui, name, None)
+            if combo is not None and val not in (None, ""):
+                idx = combo.findText(str(val))
+                if idx >= 0:
+                    combo.setCurrentIndex(idx)
+
+        _set_int("epochs_line_txt", rec.get("epochs"))
+        _set_int("batch_size_line_txt", rec.get("batch_size"))
+        _set_float("lr_line_txt", rec.get("lr"))
+        _set_int("grad_accum_line_txt", rec.get("grad_accum"))
+        _set_int("batch_size_line_txt_2", rec.get("num_workers"))
+        _set_int("early_stop_line_txt", rec.get("early_stop"))
+        img = rec.get("img_size")
+        if img not in (None, ""):
+            edit = getattr(self.ui, "img_size_line_txt", None)
+            combo = getattr(self.ui, "img_size_comboBox", None)
+            if edit is not None:
+                try:
+                    edit.setText(str(int(img)))
+                except (TypeError, ValueError):
+                    pass
+            elif combo is not None:
+                idx = combo.findText(str(img))
+                if idx >= 0:
+                    combo.setCurrentIndex(idx)
+        _set_combo("network_combo", rec.get("model_size"))
+        _set_combo("device_combo", rec.get("device"))
+        _set_combo("optimizer_comboBox", rec.get("optimizer"))
+        out = rec.get("output_path")
+        if out and hasattr(self.ui, "output_line_txt"):
+            self.ui.output_line_txt.setText(str(out))
 
     def _fill_network_combo(self):
         raise NotImplementedError
@@ -487,7 +543,7 @@ class TrainDialogBase(QDialog):
         _TrainStartDialog(parent=self).exec()
 
     def _save_train_record(self):
-        """启动训练时把 项目-训练集-验证集-参数 记录到 db（模型管理界面展示）。"""
+        """把本次训练的项目/数据集/参数记录到 db(供训练界面下次回填)。"""
         ds_names = self._selected_datasets() or [self.dataset]
         val_names = self._selected_val_datasets()
         record = {
@@ -502,7 +558,6 @@ class TrainDialogBase(QDialog):
                 if hasattr(self.ui, "network_combo") else "",
             "map50": "",
             "img_size": self._img_size(),
-            # 模型路径:启动时即确定(output/timestamp/model_final.pth), 训练中/失败也可显示
             "model_path": self._predict_model_path(),
             "dataset_info": "{}/{}".format(self.project, ", ".join(ds_names)),
             "output_path": self.ui.output_line_txt.text().strip(),
@@ -512,6 +567,14 @@ class TrainDialogBase(QDialog):
                 if hasattr(self.ui, "batch_size_line_txt") else "",
             "lr": self.param_float(self.ui.lr_line_txt, 1e-4)
                 if hasattr(self.ui, "lr_line_txt") else "",
+            "grad_accum": self.param_int(self.ui.grad_accum_line_txt, 4)
+                if hasattr(self.ui, "grad_accum_line_txt") else "",
+            "num_workers": self.param_int(self.ui.batch_size_line_txt_2, 4)
+                if hasattr(self.ui, "batch_size_line_txt_2") else "",
+            "early_stop": self.param_int(self.ui.early_stop_line_txt, 20)
+                if hasattr(self.ui, "early_stop_line_txt") else "",
+            "optimizer": self.ui.optimizer_comboBox.currentText()
+                if hasattr(self.ui, "optimizer_comboBox") else "",
             "metrics": {},   # 训练中实时更新：{"epochs": [...], "series": {名称: [...]}}
             "labels": self._collect_dataset_labels(ds_names),
             "device": self.ui.device_combo.currentText()

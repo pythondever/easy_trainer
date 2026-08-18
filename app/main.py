@@ -382,6 +382,10 @@ class App(QWidget, MainUI):
     def __init__(self):
         super().__init__()
         self.db = DataBase(os.path.join(os.path.expanduser("~"), ".easy_trainer"))
+        try:
+            self.db.migrate_model_records()
+        except Exception:
+            pass
         self.dataset_cache = {}
         self._loading_tasks = {}
         # 分页状态
@@ -905,6 +909,7 @@ class App(QWidget, MainUI):
                                default_yes=True):
             self.db.delete_project(name)
             self.db.delete_project_info(name)
+            self.db.delete_project_records(name)
             self.dataset_cache.pop(name, None)
             cur_ds = getattr(self, "_current_dataset", None)
             if cur_ds and cur_ds[0] == name:
@@ -1107,6 +1112,8 @@ class App(QWidget, MainUI):
                 "确定删除数据集「{}」吗?\n".format(ds_name),
                 default_yes=True):
             self.db.delete_dataset(project_name, ds_name)
+            # 训练/模型记录可能被多个数据集共用,只移除该数据集,无引用才删记录
+            self.db.remove_dataset_from_records(project_name, ds_name)
             self._log("删除数据集: {}/{}".format(project_name, ds_name))
             proj_cache = self.dataset_cache.get(project_name, {})
             proj_cache.pop(ds_name, None)
@@ -1752,18 +1759,17 @@ class App(QWidget, MainUI):
         if not counts:
             labels_index = cache.get("labels") or {}
             counts = {label: len(recs) for label, recs in labels_index.items()}
+        if counts:
+            self.db.save_dataset_label_counts(project, dataset, counts)
+        else:
+            counts = self.db.get_dataset_label_counts(project, dataset)
         self._render_label_stats(ui.label_stats_view, project, dataset, counts)
         dlg.exec()
 
     def _render_label_stats(self, view, project, dataset, label_counts):
-        """标签分布柱状图。
-
-        图表宽度按标签数量动态扩展:QGraphicsView 自带滚动条,
-        scene 保持原始像素尺寸,超出视口后由用户横向滚动查看。
-        """
+        """标签分布柱状图(宽度随标签数量扩展,超宽用滚动条)。"""
         num_bars = max(1, len(label_counts))
-        # 每个标签分配 ~0.3 英寸水平空间,最小 8 英寸,保证稀疏时不至于太窄
-        fig_width = max(8.0, num_bars * 0.3)
+        fig_width = max(4.0, num_bars * 0.3)
         fig_height = 6.0
         fig = Figure(figsize=(fig_width, fig_height), dpi=100, facecolor="#1c1e25")
         axes = fig.add_subplot(111, facecolor="#1c1e25")
@@ -1778,7 +1784,8 @@ class App(QWidget, MainUI):
             labels = list(label_counts.keys())
             values = list(label_counts.values())
             colors = [label_colors.get(name, "#5B8CFF") for name in labels]
-            bar_width = max(0.15, min(0.5, 0.6 / max(1, num_bars)))
+            # 柱宽(数据单位)≈ n/15.5:使柱宽像素 = 图宽/20;多标签时收紧防重叠
+            bar_width = max(0.05, min(0.15, num_bars / 15.5))
             x_positions = np.arange(num_bars)
             bars = axes.bar(x_positions, values, color=colors, width=bar_width,
                             edgecolor="none")
@@ -1811,8 +1818,6 @@ class App(QWidget, MainUI):
         scene.addPixmap(pixmap)
         scene.update()
         view.setScene(scene)
-        # 不做 fitInView:scene 保持原尺寸,QGraphicsView 自动按需出现滚动条
-        # 仅在场景范围尚未设置时初始化,避免重复重置导致缩放抖动
         if view.sceneRect().isEmpty():
             view.setSceneRect(scene.itemsBoundingRect())
 
@@ -1899,11 +1904,17 @@ class App(QWidget, MainUI):
                 progress_lbl.setText("{}/{}{}".format(labeled, total, suffix))
             proj_cache = self.dataset_cache.setdefault(project_name, {})
             proj_cache[dataset_name] = self._build_dataset_index(result)
-            # 导入完成日志:标签列表 + 每类别数量(检测按框,分类按类别)
+            # 检测/分割按框,分类按类别;持久化供属性页无缓存时展示
             label_counts = {}
             for rec in result:
-                for lbl in (rec.get("labels") or []):
+                for b in (rec.get("boxes") or []):
+                    lbl = b[-1]
                     label_counts[lbl] = label_counts.get(lbl, 0) + 1
+            if not label_counts:
+                for rec in result:
+                    for lbl in (rec.get("labels") or []):
+                        label_counts[lbl] = label_counts.get(lbl, 0) + 1
+            self.db.save_dataset_label_counts(project_name, dataset_name, label_counts)
             counts_str = ", ".join(
                 "{}: {}个".format(k, v) for k, v in
                 sorted(label_counts.items(), key=lambda kv: label_sort_key(kv[0])))
@@ -1992,12 +2003,7 @@ class App(QWidget, MainUI):
         return all_records
 
     def _expand_by_label(self, data):
-        """
-        按 current_label 把图像列表按 box 展开为 (rec, box_idx) 列表。
-        仅供分页/渲染使用,保证:
-          len(view_data) == 实际小图个数,分页粒度 == cell 粒度。
-        未标注 / 全部 / 分类数据集原样返回(按图像计)。
-        """
+        """按标签把图像列表按 box 展开为 (rec, box_idx);未标注/全部/分类原样返回。"""
         cur = self.current_label
         if not cur or cur == "__unlabeled__":
             return data
@@ -2011,7 +2017,6 @@ class App(QWidget, MainUI):
                 if len(box) >= 5 and box[4] == cur:
                     expanded.append((rec, box_idx))
                     matched = True
-            # 兜底:无 box 的图(理论上不会出现)按整图算一项
             if not matched and not (rec.get("boxes") or []):
                 expanded.append(rec)
         return expanded
@@ -2170,13 +2175,7 @@ class App(QWidget, MainUI):
         return qimg
 
     def _get_rois(self, rec, label):
-        """
-        懒生成某标签的 ROI 裁剪小图并缓存到 rec["rois"][label]。
-        性能设计:
-        - 默认（大图）模式只显示 rec["thumb"]，不生成 ROI，内存 = 图数 × 1 张小图；
-        - 只有按标签筛选时才读原图裁剪该标签的 box 区域，并缓存结果，
-          同标签再次筛选 / 翻页直接命中缓存，不重复读图。
-        """
+        """懒生成某标签的 ROI 裁剪小图并缓存到 rec["rois"][label]。"""
         rois = rec.setdefault("rois", {})
         if label in rois:
             return rois[label]
@@ -2199,11 +2198,7 @@ class App(QWidget, MainUI):
         return result
 
     def _get_roi_at(self, rec, label, box_idx):
-        """按具体标签筛选展开时,取第 box_idx 个匹配 box 的 ROI 缩略图并按需缓存。
-
-        区别于 _get_rois(整图一次性裁全部):只裁剪指定那一个 box,
-        内存更省;展开模式按 box 翻页时按需缓存到 rois_by_idx[label][box_idx]。
-        """
+        """取第 box_idx 个匹配 box 的 ROI 缩略图并缓存(区别于 _get_rois 只裁一个,省内存)。"""
         cache = rec.setdefault("rois_by_idx", {}).setdefault(label, {})
         if box_idx in cache:
             return cache[box_idx]
@@ -2224,18 +2219,12 @@ class App(QWidget, MainUI):
         return qimg
 
     def _render_scene(self, data):
-        """
-        把当前页的数据集记录渲染成多张小图网格(使用 Paginator 分页)。
-        分页单位:筛选具体标签时每个 cell 显示该标签的一个 ROI 框
-        （data 中同一 rec 可能多次，对应 box 计数）→ "个"；
-        全部 / 未标注每页显示整图缩略，按图像计数 → "张"。
-        """
+        """渲染当前页图像网格。按具体标签筛选时每个 cell 一个 ROI(box 计数),
+        未标注/全部按整图缩略(图像计数)。"""
         scene = self.graphics_view.scene()
         scene.clear()
         page_size = getattr(self, "page_size", 50)
         cur_label = getattr(self, "current_label", None)
-        # 按具体标签筛选时:展开为 (rec, box_idx) 列表,
-        # len(view_data) == 实际小图个数,分页粒度 = cell 粒度。
         view_data = self._expand_by_label(data)
         total_pages = max(1, (len(view_data) + page_size - 1) // page_size)
         self.current_page = max(0, min(getattr(self, "current_page", 0), total_pages - 1))
@@ -2251,8 +2240,6 @@ class App(QWidget, MainUI):
             else:
                 rec, box_idx = entry, None
                 single_box = False
-            # 分类数据集(rec 有 cls)按类别筛选时显示整图(无框可裁剪),
-            # 检测/分割数据集按 box 展开,每个 cell 仅显示该 box 的 ROI
             if (cur_label and cur_label != "__unlabeled__"
                     and not rec.get("cls")):
                 if single_box:
@@ -2278,7 +2265,6 @@ class App(QWidget, MainUI):
                 item.setData(0, rec.get("image_path", ""))  # 双击定位用
                 pos += 1
         scene.setSceneRect(scene.itemsBoundingRect().adjusted(-10, -10, 20, 20))
-        # 分页信息:未标注 / 全部按图像数(张),具体标签按 box 数(个)
         if cur_label and cur_label != "__unlabeled__":
             self.pageInfoLabel.setText("第 {}/{} 页 · 共 {} 个".format(
                 self.current_page + 1, total_pages, len(view_data)))
@@ -2297,7 +2283,6 @@ class App(QWidget, MainUI):
         data = self.dataset_cache.get(proj, {}).get(ds)
         if not data:
             return
-        # 按 box 展开后再算 total_pages,与 _render_scene 显示一致
         view_data = self._expand_by_label(self._view_data_by_label(data))
         total_pages = max(1, (len(view_data) + self.page_size - 1) // self.page_size)
         self.current_page = max(0, min(self.current_page + offset, total_pages - 1))
@@ -2730,7 +2715,22 @@ class App(QWidget, MainUI):
                 else:
                     r["status"] = "失败/已停止"
                 self.db.update_train_record(r)
+                if result and result.get("model_path"):
+                    self._save_model_record(r)
                 break
+
+    def _save_model_record(self, train_record):
+        """把训练记录副本写入 model_history(独立 id,幂等,删除不影响训练参数)。"""
+        rid = train_record.get("id")
+        for m in self.db.get_model_records():
+            if m.get("train_id") == rid:
+                return
+        rec = dict(train_record)
+        rec["id"] = str(uuid.uuid4())
+        rec["train_id"] = rid
+        self.db.add_model_record(rec)
+        write_log("已保存模型记录: {} | {}".format(
+            rec.get("model_path", ""), rec.get("dataset_info", "")))
 
     def show_ui(self):
         self.showMaximized()

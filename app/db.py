@@ -1,6 +1,8 @@
 import lmdb
 import json
 import os
+import time
+import uuid
 import keys
 
 
@@ -342,6 +344,25 @@ class DataBase:
                 return dict(info.get('labels') or {})
         return {}
 
+    def save_dataset_label_counts(self, project_name, dataset_name, counts):
+        """持久化数据集标签数量统计 {标签名: 数量},供属性页无缓存时展示。"""
+        info_list = self.get_project_info()
+        for info in info_list:
+            if (info.get('project_name') == project_name
+                    and info.get('dataset_name') == dataset_name):
+                info['label_counts'] = dict(counts)
+                self.update_project_info(info_list)
+                return True
+        return False
+
+    def get_dataset_label_counts(self, project_name, dataset_name):
+        """返回该数据集标签数量统计 {标签名: 数量},无则 {}。"""
+        for info in self.get_project_info():
+            if (info.get('project_name') == project_name
+                    and info.get('dataset_name') == dataset_name):
+                return dict(info.get('label_counts') or {})
+        return {}
+
     def save_dataset_labels(self, project_name, dataset_name, labels):
         """整体保存该数据集标签映射 {标签名: 颜色#hex}。"""
         info_list = self.get_project_info()
@@ -414,6 +435,133 @@ class DataBase:
         else:
             recs.append(record)
         txn.put(key, json.dumps(recs).encode())
+        txn.commit()
+
+    # ---------- 模型记录(独立于训练记录存储) ----------
+    def add_model_record(self, record):
+        """追加一条模型记录(有模型文件的训练)。"""
+        key = keys.model_history
+        txn = self.mdb.begin(write=True)
+        recs = txn.get(key)
+        recs = json.loads(recs.decode()) if recs else []
+        recs.append(record)
+        txn.put(key, json.dumps(recs, ensure_ascii=False).encode())
+        txn.commit()
+
+    def get_model_records(self):
+        key = keys.model_history
+        txn = self.mdb.begin(write=False)
+        recs = txn.get(key)
+        if recs is None:
+            return []
+        try:
+            return json.loads(recs.decode())
+        except Exception:
+            return []
+
+    def delete_model_record(self, record_id):
+        """按 id 删除一条模型记录(不影响训练记录)。"""
+        key = keys.model_history
+        txn = self.mdb.begin(write=True)
+        data = txn.get(key)
+        recs = json.loads(data.decode()) if data else []
+        new_recs = [r for r in recs if r.get("id") != record_id]
+        if len(new_recs) != len(recs):
+            txn.put(key, json.dumps(new_recs, ensure_ascii=False).encode())
+        txn.commit()
+
+    def update_model_record(self, record):
+        """按 id 覆盖一条模型记录。"""
+        key = keys.model_history
+        txn = self.mdb.begin(write=True)
+        data = txn.get(key)
+        recs = json.loads(data.decode()) if data else []
+        rid = record.get("id")
+        for i, r in enumerate(recs):
+            if r.get("id") == rid:
+                recs[i] = record
+                break
+        else:
+            recs.append(record)
+        txn.put(key, json.dumps(recs, ensure_ascii=False).encode())
+        txn.commit()
+
+    # ---------- 训练/模型记录级联删除 ----------
+    def migrate_model_records(self):
+        """一次性迁移:train_history 中带模型的历史记录补录到 model_history(幂等)。"""
+        txn = self.mdb.begin(write=True)
+        existing = txn.get(keys.model_history)
+        existing = json.loads(existing.decode()) if existing else []
+        if existing:
+            txn.commit()
+            return
+        data = txn.get(keys.train_history)
+        recs = json.loads(data.decode()) if data else []
+        added = False
+        for r in recs:
+            if r.get("model_path") and r.get("end_time"):
+                m = dict(r)
+                m["id"] = "{}-{}".format(uuid.uuid4().hex[:12], int(time.time() * 1000) % 100000)
+                m["train_id"] = r.get("id")
+                existing.append(m)
+                added = True
+        if added:
+            txn.put(keys.model_history, json.dumps(existing, ensure_ascii=False).encode())
+        txn.commit()
+
+    def delete_project_records(self, project_name):
+        """删除项目下所有训练记录与模型记录。"""
+        txn = self.mdb.begin(write=True)
+        for key in (keys.train_history, keys.model_history):
+            data = txn.get(key)
+            recs = json.loads(data.decode()) if data else []
+            new_recs = [r for r in recs if r.get("project") != project_name]
+            if len(new_recs) != len(recs):
+                txn.put(key, json.dumps(new_recs, ensure_ascii=False).encode())
+        txn.commit()
+
+    def _strip_dataset_from_record(self, record, ds_name):
+        """从记录中移除 ds_name,返回 (record, 是否仍被其他数据集引用)。"""
+        def _strip(field):
+            names = [x.strip() for x in str(record.get(field, "")).split(",") if x.strip()]
+            return [n for n in names if n != ds_name]
+
+        train = _strip("dataset")
+        val = _strip("val_dataset")
+        record["dataset"] = ", ".join(train)
+        record["val_dataset"] = ", ".join(val)
+        if train or val:
+            info = str(record.get("dataset_info", ""))
+            if info:
+                parts = info.split("/", 1)
+                record["dataset_info"] = "{}/{}".format(
+                    parts[0], record["dataset"]) if len(parts) == 2 else info
+        return record, bool(train or val)
+
+    def remove_dataset_from_records(self, project_name, ds_name):
+        """数据集删除时从训练/模型记录中移除该数据集;记录无任何引用则删除。"""
+        txn = self.mdb.begin(write=True)
+        for key in (keys.train_history, keys.model_history):
+            data = txn.get(key)
+            recs = json.loads(data.decode()) if data else []
+            new_recs = []
+            changed = False
+            for r in recs:
+                if r.get("project") != project_name:
+                    new_recs.append(r)
+                    continue
+                # 元素可能带空格("2, 4"),须 strip 后再比
+                train_names = [x.strip() for x in str(r.get("dataset", "")).split(",") if x.strip()]
+                val_names = [x.strip() for x in str(r.get("val_dataset", "")).split(",") if x.strip()]
+                if ds_name not in train_names and ds_name not in val_names:
+                    new_recs.append(r)
+                    continue
+                r, still_used = self._strip_dataset_from_record(r, ds_name)
+                changed = True
+                if still_used:
+                    new_recs.append(r)
+            if changed:
+                txn.put(key, json.dumps(new_recs, ensure_ascii=False).encode())
         txn.commit()
 
 
