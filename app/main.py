@@ -1432,6 +1432,7 @@ class App(QWidget, MainUI):
         ui.cls_fmt.toggled.connect(set_cls_mode)
 
         def do_import():
+            IMAGE_EXTS = (".jpg", ".jpeg", ".png", ".bmp", ".webp")
             cls_mode = ui.cls_fmt.isChecked()
             image_path = ui.image_path_txt.text().strip()
             label_path = "" if cls_mode else ui.label_path_txt.text().strip()
@@ -1455,7 +1456,7 @@ class App(QWidget, MainUI):
                 _total = 0
                 for _r, _, _fs in os.walk(image_path):
                     for _fn in _fs:
-                        if _fn.lower().endswith(self._ImportTask.IMAGE_EXTS):
+                        if _fn.lower().endswith(IMAGE_EXTS):
                             _total += 1
                 _labeled = _total
             else:
@@ -1991,8 +1992,8 @@ class App(QWidget, MainUI):
         return all_records
 
     def _expand_by_label(self, data):
-        """按 current_label 把图像列表按 box 展开为 (rec, box_idx) 列表。
-
+        """
+        按 current_label 把图像列表按 box 展开为 (rec, box_idx) 列表。
         仅供分页/渲染使用,保证:
           len(view_data) == 实际小图个数,分页粒度 == cell 粒度。
         未标注 / 全部 / 分类数据集原样返回(按图像计)。
