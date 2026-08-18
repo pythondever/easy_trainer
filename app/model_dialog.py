@@ -93,21 +93,37 @@ class ModelDialog(QDialog):
         self._page_size = max(10, t.viewport().height() // row_h)
 
     def _load_records(self):
+        """合并显示:已完成的优先从 model_history 取(完整字段),
+        未完成/训练中/无模型输出的用 train_history 补充(实时更新 metrics)。"""
+        train_recs = self.app.db.get_train_records()
+        model_recs = self.app.db.get_model_records()
+        seen_train_ids = set()
         recs = []
-        for r in self.app.db.get_model_records():
-            if self._project and r.get("project") != self._project:
+        for m in model_recs:
+            if not self._record_match(m):
                 continue
-            if self._dataset:
-                ds_list = [x.strip() for x in str(r.get("dataset", "")).split(",")]
-                val_list = [x.strip() for x in str(r.get("val_dataset", "")).split(",")]
-                if self._dataset not in ds_list and self._dataset not in val_list:
-                    continue
-            recs.append(r)
-        # 按开始时间倒序（最近的在最前；无时间的排最后）
+            recs.append(m)
+            seen_train_ids.add(m.get("train_id"))
+        for t in train_recs:
+            if t.get("id") in seen_train_ids:
+                continue
+            if not self._record_match(t):
+                continue
+            recs.append(t)
         recs.sort(key=lambda r: r.get("start_time", ""), reverse=True)
         self._records = recs
         self._page = 0
         self._render_page()
+
+    def _record_match(self, r):
+        if self._project and r.get("project") != self._project:
+            return False
+        if self._dataset:
+            ds_list = [x.strip() for x in str(r.get("dataset", "")).split(",")]
+            val_list = [x.strip() for x in str(r.get("val_dataset", "")).split(",")]
+            if self._dataset not in ds_list and self._dataset not in val_list:
+                return False
+        return True
 
     def _render_page(self):
         t = self.ui.tableWidget
