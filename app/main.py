@@ -10,6 +10,7 @@ sys.path.append(WORKSPACE_DIRECTORY)
 sys.path.append('../ui')
 import matplotlib.pyplot as plt
 import numpy as np
+import uuid
 from datetime import datetime
 from matplotlib import font_manager
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
