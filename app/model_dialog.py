@@ -81,7 +81,7 @@ class ModelDialog(QDialog):
         # 行高加大（默认 30px 装不下 26px 按钮+上下 padding）
         t.verticalHeader().setDefaultSectionSize(40)
         t.verticalHeader().setMinimumSectionSize(40)
-        for c in (8, 9, 10):
+        for c in (8, 9, 10, 11):
             t.setHorizontalHeaderItem(c, QTableWidgetItem(""))
 
     def _calc_page_size(self):
