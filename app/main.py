@@ -1055,7 +1055,8 @@ class App(QWidget, MainUI):
             elif act == act_del:
                 self._delete_dataset(kind[1], kind[2])
 
-    def _show_add_dataset(self, preset_name="", preset_type="", title="添加数据集"):
+    def _show_add_dataset(self, preset_name="", preset_type="", title="添加数据集",
+                          type_locked=False):
         """
         弹出数据集对话框(ui/add_dataset.py 设计器生成)。
         返回(name, dataset_type, ok)。
@@ -1071,6 +1072,10 @@ class App(QWidget, MainUI):
             idx = ui.comboBox.findText(preset_type)
             if idx >= 0:
                 ui.comboBox.setCurrentIndex(idx)
+        if type_locked:
+            # 已训练过/有模型记录:类型不可改,否则训练回填与测试过滤会失配
+            ui.comboBox.setEnabled(False)
+            ui.comboBox.setToolTip("该数据集已有训练/模型记录,类型不可修改")
         ui.done_btn.clicked.connect(dlg.accept)
         dlg.setFixedHeight(dlg.sizeHint().height())
         dlg.exec()
@@ -1094,8 +1099,11 @@ class App(QWidget, MainUI):
             if ds["dataset_name"] == old_name:
                 dtype = ds.get("dataset_type", "")
                 break
+        # 已训练过/有模型记录的数据集锁定类型,只能改名称
+        type_locked = self.db.dataset_in_records(project_name, old_name)
         name, new_type, ok = self._show_add_dataset(
-            preset_name=old_name, preset_type=dtype, title="修改数据集")
+            preset_name=old_name, preset_type=dtype, title="修改数据集",
+            type_locked=type_locked)
         if not ok or not name or (name == old_name and new_type == dtype):
             return
         if not self.db.rename_dataset(project_name, old_name, name, new_type):

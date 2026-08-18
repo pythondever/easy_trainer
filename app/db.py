@@ -33,14 +33,34 @@ class DataBase:
 
     def rename_project(self, old_name, new_name):
         project_list = self.get_projects()
-        if len(project_list) == 0:
-            return
-        for idx, project_name in enumerate(project_list):
-            if project_name == old_name:
-                project_list[idx] = new_name
-        key = keys.project_list
+        if project_list:
+            for idx, project_name in enumerate(project_list):
+                if project_name == old_name:
+                    project_list[idx] = new_name
+            key = keys.project_list
+            txn = self.mdb.begin(write=True)
+            txn.put(key, json.dumps(project_list).encode())
+            txn.commit()
+        # 同步训练/模型记录中的项目名,保证训练界面回填仍能匹配
+        self._rename_records_project(old_name, new_name)
+
+    def _rename_records_project(self, old_name, new_name):
+        """训练/模型记录中项目名替换(含 dataset_info 的项目部分)。"""
         txn = self.mdb.begin(write=True)
-        txn.put(key, json.dumps(project_list).encode())
+        for key in (keys.train_history, keys.model_history):
+            data = txn.get(key)
+            recs = json.loads(data.decode()) if data else []
+            changed = False
+            for r in recs:
+                if r.get("project") != old_name:
+                    continue
+                r["project"] = new_name
+                info = str(r.get("dataset_info", ""))
+                if info.startswith(old_name + "/"):
+                    r["dataset_info"] = new_name + info[len(old_name):]
+                changed = True
+            if changed:
+                txn.put(key, json.dumps(recs, ensure_ascii=False).encode())
         txn.commit()
 
     def delete_project(self, name):
@@ -192,7 +212,39 @@ class DataBase:
         if dataset_type is not None:
             target['dataset_type'] = dataset_type
         self.update_project_info(info_list)
+        # 同步训练/模型记录中的数据集名(训练集/验证集/dataset_info),
+        # 保证训练界面按数据集回填仍能匹配
+        self._rename_records_dataset(project_name, old_name, new_name)
         return True
+
+    def _rename_records_dataset(self, project_name, old_name, new_name):
+        """训练/模型记录中该数据集名替换(训练集/验证集/dataset_info)。"""
+        txn = self.mdb.begin(write=True)
+        for key in (keys.train_history, keys.model_history):
+            data = txn.get(key)
+            recs = json.loads(data.decode()) if data else []
+            changed = False
+            for r in recs:
+                if r.get("project") != project_name:
+                    continue
+                replaced = False
+                for field in ("dataset", "val_dataset"):
+                    names = [x.strip() for x in str(r.get(field, "")).split(",") if x.strip()]
+                    new_names = [new_name if n == old_name else n for n in names]
+                    if new_names != names:
+                        r[field] = ", ".join(new_names)
+                        replaced = True
+                if replaced:
+                    info = str(r.get("dataset_info", ""))
+                    if "/" in info:
+                        proj, ds_part = info.split("/", 1)
+                        ds_list = [x.strip() for x in ds_part.split(",") if x.strip()]
+                        new_ds = ", ".join(new_name if n == old_name else n for n in ds_list)
+                        r["dataset_info"] = "{}/{}".format(proj, new_ds)
+                    changed = True
+            if changed:
+                txn.put(key, json.dumps(recs, ensure_ascii=False).encode())
+        txn.commit()
 
     def delete_dataset(self, project_name, dataset_name):
         """删除项目下的一个数据集记录。"""
@@ -519,6 +571,24 @@ class DataBase:
             if len(new_recs) != len(recs):
                 txn.put(key, json.dumps(new_recs, ensure_ascii=False).encode())
         txn.commit()
+
+    def dataset_in_records(self, project_name, dataset_name):
+        """该数据集是否被训练记录引用(训练集或验证集任一出现)。
+
+        model_history 是 train_history 的子集(训练完成时浅拷贝),无需重复检查。
+        """
+        key = keys.train_history
+        txn = self.mdb.begin(write=False)
+        data = txn.get(key)
+        recs = json.loads(data.decode()) if data else []
+        for r in recs:
+            if r.get("project") != project_name:
+                continue
+            for field in ("dataset", "val_dataset"):
+                names = [x.strip() for x in str(r.get(field, "")).split(",") if x.strip()]
+                if dataset_name in names:
+                    return True
+        return False
 
     def _strip_dataset_from_record(self, record, ds_name):
         """从记录中移除 ds_name,返回 (record, 是否仍被其他数据集引用)。"""
