@@ -20,7 +20,7 @@ TRAIN_RUNNER = os.path.join(WORKSPACE, "app", "train", "train_runner.py")
 CLASSIFY_TRAIN_RUNNER = os.path.join(WORKSPACE, "app", "train",
                                      "classify_train_runner.py")
 
-CSV_POLL_INTERVAL = 120   # 定时检查 metrics.csv 修改时间的间隔
+CSV_POLL_INTERVAL = 5   # 定时检查 metrics.csv 修改时间的间隔(秒)
 
 
 def _is_float(s):

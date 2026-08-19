@@ -1748,8 +1748,11 @@ class App(QWidget, MainUI):
             axes.set_yticks([])
         else:
             label_colors = self.db.get_dataset_labels(project, dataset)
-            labels = list(label_counts.keys())
-            values = list(label_counts.values())
+            # 按标签数量降序(教程:自动按数量降序)
+            items = sorted(label_counts.items(), key=lambda kv: kv[1],
+                           reverse=True)
+            labels = [k for k, _ in items]
+            values = [v for _, v in items]
             colors = [label_colors.get(name, "#5B8CFF") for name in labels]
             # 柱宽(数据单位)≈ n/15.5:使柱宽像素 = 图宽/20;多标签时收紧防重叠
             bar_width = max(0.05, min(0.15, num_bars / 15.5))

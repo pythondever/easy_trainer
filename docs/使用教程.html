@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>EasyTrainer 使用教程</title>
+<style>
+  body { font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+         max-width: 920px; margin: 24px auto; padding: 0 16px;
+         color: #2b2f3b; background: #fff; line-height: 1.65; }
+  h1 { font-size: 28px; color: #1c1e25; border-bottom: 3px solid #4f7dff;
+       padding-bottom: 10px; margin-bottom: 24px; }
+  h2 { font-size: 22px; color: #1c1e25; margin-top: 36px;
+       border-left: 5px solid #4f7dff; padding-left: 12px; }
+  h3 { font-size: 17px; color: #353a48; margin-top: 24px; }
+  p, li { font-size: 15px; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  .note { background: #f3f6ff; border-left: 4px solid #4f7dff;
+          padding: 10px 14px; margin: 14px 0; border-radius: 4px; font-size: 14px; }
+  .warn { background: #fff3f3; border-left: 4px solid #d64545;
+          padding: 10px 14px; margin: 14px 0; border-radius: 4px; font-size: 14px; }
+  code { background: #23262f; color: #e8eaf0; padding: 1px 6px;
+         border-radius: 3px; font-family: Consolas, monospace; font-size: 13px; }
+  figure { margin: 18px 0; text-align: center; }
+  figcaption { color: #5c6270; font-size: 13px; margin-top: 6px; }
+  img { max-width: 100%; height: auto; border: 1px solid #dde1ea;
+        border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+  .toc { background: #f9fafc; border: 1px solid #dde1ea; border-radius: 6px;
+         padding: 14px 22px; margin-bottom: 28px; }
+  .toc h2 { font-size: 16px; border: none; padding: 0; margin: 0 0 8px; color: #4f7dff; }
+  .toc ol { margin: 0; }
+  .toc li { font-size: 14px; margin-bottom: 4px; }
+  .toc a { color: #2b2f3b; text-decoration: none; }
+  .toc a:hover { color: #4f7dff; }
+</style>
+</head>
+<body>
+
+<h1>EasyTrainer 使用教程</h1>
+
+<div class="toc">
+  <h2>目录</h2>
+  <ol>
+    <li><a href="#intro">软件概览</a></li>
+    <li><a href="#project">项目管理（添加 / 删除 / 导入）</a></li>
+    <li><a href="#label">标签管理</a></li>
+    <li><a href="#annotate">图像标注</a></li>
+    <li><a href="#train">训练</a></li>
+    <li><a href="#model">模型管理</a></li>
+    <li><a href="#test">测试 / 评估</a></li>
+    <li><a href="#log">日志</a></li>
+  </ol>
+</div>
+
+<h2 id="intro">1. 软件概览</h2>
+
+<p><strong>EasyTrainer</strong> 是一款基于 RF-DETR（检测/分割）与 torchvision ResNet（分类）的桌面训练工具。
+主界面采用三栏布局：</p>
+
+<ul>
+  <li><strong>左侧项目树</strong>：项目与数据集层级展示</li>
+  <li><strong>中间图像区</strong>：缩略图分页浏览、当前图像标注展示</li>
+  <li><strong>顶部工具栏</strong>：常用操作按钮（缩略图切换、编辑、删除、导入、导出、属性、训练、模型、日志）</li>
+</ul>
+
+<figure>
+  <img src="images/主页.png" alt="EasyTrainer 主页">
+  <figcaption>EasyTrainer 主界面</figcaption>
+</figure>
+
+<h2 id="project">2. 项目管理</h2>
+
+<h3>2.1 添加项目</h3>
+
+<p>点击左侧 <code>+ 添加项目</code> 按钮，弹出输入框，输入项目名称后确定。
+项目是数据集的容器，所有数据集必须归属于某个项目。</p>
+
+<figure>
+  <img src="images/添加项目.png" alt="添加项目">
+  <figcaption>输入项目名称</figcaption>
+</figure>
+
+<h3>2.2 添加 / 修改 / 删除数据集</h3>
+
+<p>右键左侧项目节点（或项目下任意位置）弹出操作菜单，可以：</p>
+<ul>
+  <li><strong>添加数据集</strong>：在项目下新建一个数据集</li>
+  <li><strong>修改名称</strong>：重命名数据集</li>
+  <li><strong>删除数据集</strong>：连同数据集标注、训练记录一并清除</li>
+</ul>
+
+<figure>
+  <img src="images/添加_修改_删除_数据集.png" alt="数据集操作菜单">
+  <figcaption>数据集右键菜单</figcaption>
+</figure>
+
+<h3>2.3 导入数据</h3>
+
+<p>选中数据集后，点击顶部 <strong>导入</strong> 按钮，弹出"导入数据"对话框：</p>
+<ul>
+  <li><strong>图像路径</strong>：选择图片所在文件夹</li>
+  <li><strong>标签路径</strong>：选择标注文件所在文件夹</li>
+  <li><strong>标签格式</strong>：YOLO txt / Labelme json / 按文件夹分类导入</li>
+</ul>
+
+<div class="note">
+  <strong>分类数据集</strong>选择"按文件夹分类导入"：每个子文件夹名作为一个类别，<strong>无需标注文件</strong>。
+</div>
+
+<figure>
+  <img src="images/导入数据.png" alt="导入数据">
+  <figcaption>导入数据对话框</figcaption>
+</figure>
+
+<h3>2.4 数据集属性</h3>
+
+<p>选中数据集后点击顶部 <strong>属性</strong> 按钮，查看：</p>
+<ul>
+  <li>图像路径 / 标签路径</li>
+  <li><strong>标签分布柱状图</strong>：每个类别的已标注图像数</li>
+</ul>
+
+<figure>
+  <img src="images/数据集属性_标签分布.png" alt="数据集属性与标签分布">
+  <figcaption>数据集属性与标签分布</figcaption>
+</figure>
+
+<h2 id="label">3. 标签管理</h2>
+
+<h3>3.1 添加或导入标签</h3>
+
+<p>在标注界面右侧标签列表上方点击 <strong>添加标签</strong>，可以：</p>
+<ul>
+  <li>从已有数据集导入标签（点击"导入"选择数据集路径）</li>
+  <li>从预设色板选色，或点击"自定义"挑颜色</li>
+</ul>
+
+<figure>
+  <img src="images/添加或导入标签.png" alt="添加标签">
+  <figcaption>添加或导入标签</figcaption>
+</figure>
+
+<h3>3.2 批量修改类别</h3>
+
+<p>选中数据集后，在<strong>图像区缩略图上右键</strong>，选择"批量修改类别"，可把某标签批量改名为另一个：</p>
+
+<figure>
+  <img src="images/标签批量修改.png" alt="批量修改类别">
+  <figcaption>类别批量修改弹窗</figcaption>
+</figure>
+
+<h3>3.3 修改单个类别</h3>
+
+<p>标注界面右侧标签列表，每个标签 chip 上右键可重命名 / 改颜色 / 删除。</p>
+
+<figure>
+  <img src="images/修改类别.png" alt="修改类别">
+  <figcaption>标签右键菜单（标注界面）</figcaption>
+</figure>
+
+<h2 id="annotate">4. 图像标注</h2>
+
+<h3>4.1 进入标注界面</h3>
+
+<p>在左侧树选中具体数据集后，右键缩略图选择"标注"，或直接双击缩略图，进入标注界面。</p>
+
+<h3>4.2 标注工具</h3>
+
+<p>标注界面顶部工具栏提供三种标注方式：</p>
+
+<ul>
+  <li><strong>矩形</strong>：拖拽鼠标画矩形框</li>
+  <li><strong>多边形</strong>：依次点击点出多边形顶点，双击或回车结束</li>
+  <li><strong>格式刷</strong>：点击已有标注，可把它的类别快速应用到其他位置</li>
+</ul>
+
+<p>右侧<strong>标签列表</strong>选择类别，颜色随机；勾选"显示标注"可隐藏所有框以看原图。</p>
+
+<figure>
+  <img src="images/图像标注_矩形_多边形_格式刷.png" alt="图像标注">
+  <figcaption>矩形 / 多边形 / 格式刷三种标注工具</figcaption>
+</figure>
+
+<h3>4.3 按标注类别分类筛选</h3>
+
+<p>顶部工具栏的<strong>类别筛选</strong>下拉框，选择某类别后图像区只显示含该类别的图。</p>
+
+<figure>
+  <img src="images/按标注类别_分类筛选.png" alt="按类别筛选">
+  <figcaption>按类别筛选缩略图</figcaption>
+</figure>
+
+<h2 id="train">5. 训练</h2>
+
+<h3>5.1 训练参数配置</h3>
+
+<p>点击首页或模型界面的<strong>训练</strong>按钮，弹出训练参数配置：</p>
+
+<ul>
+  <li><strong>任务类型</strong>：检测 / 分割 / 分类（按数据集格式自动联动）</li>
+  <li><strong>训练集 / 验证集</strong>：多选数据集，可跨项目组合</li>
+  <li><strong>网络</strong>：nano / small / medium / large</li>
+  <li><strong>设备</strong>：cuda:0（自动列出可用 GPU）</li>
+  <li><strong>优化器</strong>：按任务推荐（检测/分割=adamw、分类=sgd）</li>
+  <li><strong>图像尺寸</strong>：检测 640 / 分割 636 / 分类 224（按任务自动）</li>
+  <li><strong>早停</strong>：连续 N 个 epoch 精度无提升则停（0=禁用）</li>
+  <li><strong>批次 / 梯度累积 / 轮次 / 线程数 / 学习率</strong></li>
+  <li><strong>输出路径</strong>：点"选择路径"挑选目录，鼠标悬停看完整路径</li>
+</ul>
+
+<figure>
+  <img src="images/训练参数设置.png" alt="训练参数配置">
+  <figcaption>训练参数配置对话框</figcaption>
+</figure>
+
+<h3>5.2 训练进度监控</h3>
+
+<p>点击"开始训练"后回到首页，顶部出现进度条与控制条：</p>
+
+<ul>
+  <li><strong>任务名 + 进度</strong>：如 "coco128 训练中 5/100"</li>
+  <li><strong>当前 map</strong>：验证集最新精度</li>
+  <li><strong>停止训练</strong>：随时终止（模型会保存已完成的部分）</li>
+  <li><strong>剩余时间</strong>：按已用时长外推估算</li>
+  <li><strong>显存用量</strong>：实时显示 GPU 显存</li>
+</ul>
+
+<figure>
+  <img src="images/训练进度_指标_剩余时间_显存用量.png" alt="训练进度">
+  <figcaption>训练进度条与状态栏</figcaption>
+</figure>
+
+<h3>5.3 训练指标查看</h3>
+
+<p>训练结束后，在模型列表点击对应行的<strong>指标</strong>按钮，弹出训练曲线窗口：</p>
+
+<ul>
+  <li>上半图：<strong>val loss</strong> 曲线</li>
+  <li>下半图：<strong>mAP@50-95 / mAP@50 / AR / F1 / 准确率 / 召回率</strong> 等多条曲线</li>
+  <li>下拉筛选"全部指标"或某具体类别，查看 per-class 曲线</li>
+</ul>
+
+<figure>
+  <img src="images/训练指标查看.png" alt="训练指标">
+  <figcaption>训练指标曲线（val loss + 各类 mAP）</figcaption>
+</figure>
+
+<h2 id="model">6. 模型管理</h2>
+
+<p>点击首页/顶部 <strong>模型</strong> 按钮，打开模型管理窗口，显示所有已完成训练：</p>
+
+<ul>
+  <li><strong>开始/完成时间</strong>、<strong>耗时</strong>、<strong>模型大小</strong>（nano/small/...）</li>
+  <li><strong>模型类型</strong>（检测/分割/分类）、<strong>模型精度</strong></li>
+  <li><strong>图像尺寸</strong>、<strong>模型路径</strong>、<strong>数据集信息</strong>（训练集/验证集）</li>
+  <li>行尾按钮：<strong>导出 / 指标 / 删除 / 测试 / 训练</strong></li>
+</ul>
+
+<figure>
+  <img src="images/模型训练记录.png" alt="模型训练记录">
+  <figcaption>模型管理列表</figcaption>
+</figure>
+
+<div class="note">
+  <strong>"训练"按钮</strong>：点它会用该条记录的参数（任务类型/数据集/图像尺寸/学习率/优化器等）打开训练窗口，等于基于此记录再来一次。
+</div>
+
+<h2 id="test">7. 测试 / 评估</h2>
+
+<h3>7.1 测试参数设置</h3>
+
+<p>点击模型行的 <strong>测试</strong> 按钮，弹出测试参数对话框：</p>
+
+<ul>
+  <li><strong>数据</strong>：跨项目所有数据集可选</li>
+  <li><strong>设备</strong>：默认 cuda:0</li>
+  <li><strong>模型</strong>：自动锁定该行模型</li>
+  <li><strong>置信度 / IoU 阈值</strong>（检测/分割）、<strong>输出标签文件</strong>（推理模式勾上会写出预测 json）</li>
+</ul>
+
+<figure>
+  <img src="images/测试参数设置.png" alt="测试参数">
+  <figcaption>测试参数配置</figcaption>
+</figure>
+
+<h3>7.2 测试结果分析</h3>
+
+<p>测试完成后弹出"测试结果分析"窗口：</p>
+
+<ul>
+  <li>顶部：<strong>测试张数 / 正确检出(检出率) / 漏检 / 误检 / 准确率</strong>（用"正确检出/漏检/误检"代替 TP/FN/FP）</li>
+  <li>中部：<strong>按类别表格</strong>——每类标注数 / 正确检出 / 漏检 / 误检 / 检出率 / 准确率</li>
+  <li>底部：<strong>一句直白结论</strong>（"漏检偏多/误检偏多"+ 拖累最大的类别）</li>
+</ul>
+
+<figure>
+  <img src="images/模型评估结果.png" alt="模型评估结果">
+  <figcaption>测试结果分析对话框</figcaption>
+</figure>
+
+<h2 id="log">8. 日志</h2>
+
+<p>点击首页顶部 <strong>日志</strong> 按钮，打开日志窗口，实时显示：</p>
+<ul>
+  <li>软件启动/退出</li>
+  <li>项目/数据集创建/重命名/删除/移动</li>
+  <li>数据集导入/导出</li>
+  <li>标签创建/重命名/删除</li>
+  <li>训练开始 / 训练中（[train] 前缀转发子进程）/ 指标更新 / 模型保存 / 手动停止</li>
+  <li>测试启动 / 测试中（[test] 前缀）/ 完成 / 失败</li>
+</ul>
+
+<figure>
+  <img src="images/日志.png" alt="日志窗口">
+  <figcaption>日志窗口</figcaption>
+</figure>
+
+<hr style="margin-top:48px; border:none; border-top:1px solid #dde1ea;">
+
+</body>
+</html>
