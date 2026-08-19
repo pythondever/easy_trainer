@@ -79,7 +79,7 @@ class TestDialog(QDialog):
             w.setFixedWidth(244)
             w.setFixedHeight(30)
         for layout_name in ("data_row", "device_row", "model_row",
-                            "confidence_row", "iou_row", "output_row"):
+                            "confidence_row", "iou_row"):
             lay = getattr(self.ui, layout_name, None)
             if lay is None:
                 continue
@@ -87,6 +87,15 @@ class TestDialog(QDialog):
                               for i in range(lay.count()))
             if not has_stretch:
                 lay.insertStretch(1, 1)
+        # 输出标签文件行:label 和 checkbox 紧挨(无 stretch spacer 时 widget 会平分剩余空间)
+        out_lay = getattr(self.ui, "output_row", None)
+        if out_lay is not None:
+            out_lay.setSpacing(8)
+            # label+checkbox 后加 stretch,剩余空白推到行尾,checkbox 紧贴 label
+            has_stretch = any(out_lay.itemAt(i) and out_lay.itemAt(i).spacerItem()
+                              for i in range(out_lay.count()))
+            if not has_stretch:
+                out_lay.addStretch(1)
         for name in ("test_data_combo", "test_device_combo", "model_combo"):
             combo = getattr(self.ui, name, None)
             if combo is None:
@@ -184,8 +193,10 @@ class TestDialog(QDialog):
         cls_mode = info.get("label_fmt", "") == "cls"
         self._cls_mode = cls_mode
         # 分类模式：隐藏 iou 阈值行 + 输出标签文件行（分类无框、无需输出标注）
+        # 置信度对分类无意义(argmax 不受阈值影响),也隐藏
         self._set_row_visible("iou_row", not cls_mode)
         self._set_row_visible("output_row", not cls_mode)
+        self._set_row_visible("confidence_row", not cls_mode)
         labeled = int(info.get("labeled") or 0)
         has_label = labeled > 0
         self.ui.iou_treshold_txt.setEnabled(has_label)
@@ -271,6 +282,10 @@ class TestDialog(QDialog):
         self.accept()
         _TrainStartDialog(parent=self.app, title="测试即将开始",
                           message="测试即将开始").exec()
+        # 倒计时结束/人工点确定 → 关闭模型列表窗口回首页
+        md = getattr(self.app, "_model_dialog", None)
+        if md is not None:
+            md.accept()
 
     def _on_log(self, line):
         write_log("[test] " + line)

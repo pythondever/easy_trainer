@@ -198,7 +198,11 @@ def main():
     if class_to_idx != {c: i for i, c in enumerate(train_ds.classes)}:
         train_ds = _ImageFolderSimple(train_root, train_tf, class_to_idx)
         val_ds = _ImageFolderSimple(val_root, val_tf, class_to_idx)
-    real_classes = max(len(classes), num_classes)
+    if not classes:
+        raise RuntimeError("未从数据集中解析到任何类别(子文件夹),无法训练图像分类")
+    # fc 维度必须与保存的 classes 一致(cfg num_classes 是 UI 兜底值,可能大于实际类别,
+    # 用 max 会导致 checkpoint 里 state_dict 与 classes 不匹配,测试加载报 size mismatch)
+    real_classes = len(classes)
     train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True,
                               num_workers=num_workers, drop_last=True)
     val_loader = DataLoader(val_ds, batch_size=batch_size, shuffle=False,

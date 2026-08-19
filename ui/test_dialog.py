@@ -108,14 +108,15 @@ class Ui_TestDialog(object):
 
         self.output_row = QHBoxLayout()
         self.output_row.setObjectName(u"output_row")
+        self.output_label_label = QLabel(TestDialog)
+        self.output_label_label.setObjectName(u"output_label_label")
+
+        self.output_row.addWidget(self.output_label_label)
+
         self.output_label_file_checkBox = QCheckBox(TestDialog)
         self.output_label_file_checkBox.setObjectName(u"output_label_file_checkBox")
 
         self.output_row.addWidget(self.output_label_file_checkBox)
-
-        self.output_spacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.output_row.addItem(self.output_spacer)
 
 
         self.verticalLayout.addLayout(self.output_row)
@@ -154,7 +155,7 @@ class Ui_TestDialog(object):
         self.model_label.setText(QCoreApplication.translate("TestDialog", u"\u6a21\u578b:", None))
         self.confidence_label.setText(QCoreApplication.translate("TestDialog", u"\u7f6e\u4fe1\u5ea6:", None))
         self.iou_treshold_label.setText(QCoreApplication.translate("TestDialog", u"iou\u9608\u503c:", None))
-        self.output_label_file_checkBox.setText(QCoreApplication.translate("TestDialog", u"\u8f93\u51fa\u6807\u7b7e\u6587\u4ef6", None))
+        self.output_label_label.setText(QCoreApplication.translate("TestDialog", u"\u8f93\u51fa\u6807\u7b7e\u6587\u4ef6", None))
         self.start_test_btn.setText(QCoreApplication.translate("TestDialog", u"\u5f00\u59cb\u6d4b\u8bd5", None))
     # retranslateUi
 

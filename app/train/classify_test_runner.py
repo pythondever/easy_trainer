@@ -59,7 +59,10 @@ def main():
     ckpt = torch.load(model_path, map_location="cpu")
     classes = list(ckpt.get("classes") or [])
     arch = ckpt.get("architecture", "resnet18")
-    model = _make_model(arch, max(len(classes), 1))
+    # 以 state_dict 的 fc 维度为准建模型(与 checkpoint 严格对齐,
+    # 兼容旧版本 ckpt 里 classes 列表与 fc 维度不一致的情况)
+    fc_out = int(ckpt["state_dict"]["fc.weight"].shape[0])
+    model = _make_model(arch, fc_out)
     model.load_state_dict(ckpt["state_dict"])
     model.to(device).eval()
     img_size = int(cfg.get("img_size", 224))
@@ -85,7 +88,13 @@ def main():
             x = tf(im).unsqueeze(0).to(device)
             with torch.no_grad():
                 out = model(x)
-            pred = classes[out.argmax(1).item()] if classes else "?"
+            pred = "?"
+            try:
+                idx = int(out.argmax(1).item())
+                if 0 <= idx < len(classes):
+                    pred = classes[idx]
+            except Exception:
+                pass
         except Exception:
             pred = "?"
         true_cls = os.path.basename(os.path.dirname(p)) or "(无类别)"

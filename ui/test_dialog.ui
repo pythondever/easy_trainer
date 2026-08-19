@@ -97,24 +97,14 @@
    <item>
     <layout class="QHBoxLayout" name="output_row">
      <item>
-      <widget class="QCheckBox" name="output_label_file_checkBox">
+      <widget class="QLabel" name="output_label_label">
        <property name="text">
         <string>输出标签文件</string>
        </property>
       </widget>
      </item>
      <item>
-      <spacer name="output_spacer">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
+      <widget class="QCheckBox" name="output_label_file_checkBox"/>
      </item>
     </layout>
    </item>

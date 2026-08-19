@@ -34,6 +34,8 @@ class ModelDialog(QDialog):
         self._records = []
         self._page = 0
         self._page_size = 15
+        # 注册到 app:测试倒计时结束后由 TestDialog 关闭本窗口回首页
+        self.app._model_dialog = self
         self._setup_table()
         self.ui.pre_page_btn.clicked.connect(self._prev_page)
         self.ui.next_page_btn.clicked.connect(self._next_page)

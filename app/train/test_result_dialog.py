@@ -4,6 +4,7 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QDialog, QTableWidgetItem
 
+from app.label_utils import label_sort_key
 from ui.test_result import Ui_TestResultDialog
 
 
@@ -61,7 +62,8 @@ class TestResultDialog(QDialog):
         u.result_table.setColumnCount(5)
         u.result_table.setHorizontalHeaderLabels(
             ["类别", "总图数", "正确", "错误", "精度"])
-        rows = sorted(per_class.items())
+        # 类别名按自然排序(纯数字按数值,非数字按字典序),与首页标签下拉一致
+        rows = sorted(per_class.items(), key=lambda kv: label_sort_key(str(kv[0])))
         u.result_table.setRowCount(len(rows))
         for i, (cls, d) in enumerate(rows):
             t = d.get("total", 0)
