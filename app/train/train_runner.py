@@ -149,6 +149,7 @@ def main():
         grad_accum_steps=cfg.get("grad_accum", 4),
         num_workers=cfg.get("num_workers", 8),
         lr=cfg["lr"],
+        optimizer=cfg.get("optimizer", "adamw"),
         device=device,
         resolution=resolution,
         use_ema=cfg.get("use_ema", True),

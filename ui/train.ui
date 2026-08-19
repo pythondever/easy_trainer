@@ -1,17 +1,17 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <ui version="4.0">
-  <class>DetectDialog</class>
-  <widget class="QDialog" name="DetectDialog">
+  <class>TrainDialog</class>
+  <widget class="QDialog" name="TrainDialog">
     <property name="geometry">
       <rect>
         <x>0</x>
         <y>0</y>
         <width>1014</width>
-        <height>661</height>
+        <height>700</height>
       </rect>
     </property>
     <property name="windowTitle">
-      <string>目标检测训练</string>
+      <string>训练</string>
     </property>
     <layout class="QGridLayout" name="gridLayout">
       <item row="0" column="0">
@@ -29,6 +29,49 @@
                   </item>
                   <item>
                     <spacer name="horizontalSpacer">
+                      <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                        <size>
+                          <width>40</width>
+                          <height>20</height>
+                        </size>
+                      </property>
+                    </spacer>
+                  </item>
+                </layout>
+              </item>
+              <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_task">
+                  <item>
+                    <widget class="QLabel" name="task_label">
+                      <property name="text">
+                        <string>任务类型</string>
+                      </property>
+                    </widget>
+                  </item>
+                  <item>
+                    <widget class="QComboBox" name="task_combo">
+                      <item>
+                        <property name="text">
+                          <string>检测</string>
+                        </property>
+                      </item>
+                      <item>
+                        <property name="text">
+                          <string>分割</string>
+                        </property>
+                      </item>
+                      <item>
+                        <property name="text">
+                          <string>分类</string>
+                        </property>
+                      </item>
+                    </widget>
+                  </item>
+                  <item>
+                    <spacer name="horizontalSpacer_task">
                       <property name="orientation">
                         <enum>Qt::Horizontal</enum>
                       </property>
@@ -137,6 +180,33 @@
                   </item>
                   <item>
                     <spacer name="horizontalSpacer_6">
+                      <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                        <size>
+                          <width>40</width>
+                          <height>20</height>
+                        </size>
+                      </property>
+                    </spacer>
+                  </item>
+                </layout>
+              </item>
+              <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_optimizer">
+                  <item>
+                    <widget class="QLabel" name="optimizer_label">
+                      <property name="text">
+                        <string>优化器</string>
+                      </property>
+                    </widget>
+                  </item>
+                  <item>
+                    <widget class="QComboBox" name="optimizer_comboBox" />
+                  </item>
+                  <item>
+                    <spacer name="horizontalSpacer_optimizer">
                       <property name="orientation">
                         <enum>Qt::Horizontal</enum>
                       </property>

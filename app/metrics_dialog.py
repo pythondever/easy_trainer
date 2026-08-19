@@ -59,6 +59,10 @@ class MetricsDialog(QDialog):
     def __init__(self, record, parent=None):
         super().__init__(parent)
         self.setWindowTitle("训练指标")
+        # 支持最小化/最大化(默认 dialog 只有关闭按钮)
+        self.setWindowFlags(
+            self.windowFlags() | Qt.WindowMinimizeButtonHint
+            | Qt.WindowMaximizeButtonHint)
         self.resize(760, 520)
         self._record = record
         metrics = record.get("metrics") or {}

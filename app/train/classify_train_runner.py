@@ -154,13 +154,15 @@ def main():
     num_classes = int(cfg.get("num_classes", 10))
     arch = cfg.get("architecture", "resnet18")
     num_workers = int(cfg.get("num_workers", 4))
+    optimizer_name = cfg.get("optimizer", "adamw")
+    early_stop = int(cfg.get("early_stop", 0))   # >0 启用(patience),<=0 禁用
     device = cfg.get("device", "cpu")
     if device.startswith("cuda") and torch.cuda.is_available():
         device = "cuda"
     else:
         device = "cpu"
-    print("[train] 分类训练: model={} classes={} device={} epochs={} batch={} lr={} img={}".format(
-        arch, num_classes, device, epochs, batch_size, lr, img_size), flush=True)
+    print("[train] 分类训练: model={} classes={} device={} epochs={} batch={} lr={} img={} optimizer={}".format(
+        arch, num_classes, device, epochs, batch_size, lr, img_size, optimizer_name), flush=True)
 
     # 1) 数据准备：按 split 复制到 out_root/{project}_cls/{train,val}/{类别}/
     cls_root = os.path.join(out_root, project + "_cls")
@@ -210,13 +212,21 @@ def main():
     model = _make_model(arch, real_classes)
     model.to(device)
     criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=1e-4)
+    if optimizer_name == "sgd":
+        optimizer = torch.optim.SGD(model.parameters(), lr=lr,
+                                    momentum=0.9, weight_decay=1e-4)
+    else:
+        optimizer = torch.optim.AdamW(model.parameters(), lr=lr,
+                                      weight_decay=1e-4)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.5)
 
     best_acc = 0.0
+    no_improve = 0
+    last_ep = 0
     series = {"accuracy": [], "train_loss": [], "val_loss": []}
     per_class = {}   # {类别名: {"total": n, "correct": c, "accuracy": [每epoch...]}}
     for ep in range(1, epochs + 1):
+        last_ep = ep
         # 训练
         model.train()
         run_loss = 0.0
@@ -275,9 +285,16 @@ def main():
             json.dump(metrics_payload, f, ensure_ascii=False)
         if acc > best_acc:
             best_acc = acc
+            no_improve = 0
             torch.save({"state_dict": model.state_dict(), "classes": classes,
                         "architecture": arch},
                        os.path.join(ts_dir, "checkpoint_best.pth"))
+        else:
+            no_improve += 1
+            if early_stop > 0 and no_improve >= early_stop:
+                print("[train] 早停触发: 连续 {} 个 epoch 精度无提升".format(early_stop),
+                      flush=True)
+                break
         scheduler.step()
 
     print("[train] 训练完成 best_acc={:.4f}".format(best_acc), flush=True)
@@ -289,7 +306,7 @@ def main():
         "model_path": os.path.join(ts_dir, "checkpoint_best.pth"),
         "num_classes": len(classes),
     }
-    metrics_payload = {"epochs": list(range(1, epochs + 1)),
+    metrics_payload = {"epochs": list(range(1, last_ep + 1)),
                        "series": series, "per_class": per_class}
     with open(os.path.join(ts_dir, "result.json"), "w", encoding="utf-8") as f:
         json.dump(result, f, ensure_ascii=False)

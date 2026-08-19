@@ -6,6 +6,19 @@ import uuid
 import keys
 
 
+def _rename_item(item, old_name, new_name):
+    """数据集项("项目/数据集"或纯名)中匹配 old_name 的数据集部分替换为新名。"""
+    if "/" in item:
+        proj, ds = item.rsplit("/", 1)
+        return "{}/{}".format(proj, new_name) if ds == old_name else item
+    return new_name if item == old_name else item
+
+
+def _ds_of(item):
+    """数据集项("项目/数据集"或纯名)取数据集名部分。"""
+    return item.rsplit("/", 1)[-1] if "/" in item else item
+
+
 class DataBase:
     def __init__(self, db_path, db_size=1024 * 1024 * 10):
         self.db_path = db_path
@@ -41,11 +54,20 @@ class DataBase:
             txn = self.mdb.begin(write=True)
             txn.put(key, json.dumps(project_list).encode())
             txn.commit()
+        # 同步 project_info 里的 project_name,否则重命名后数据集从树中消失
+        info_list = self.get_project_info()
+        changed = False
+        for info in info_list:
+            if info.get('project_name') == old_name:
+                info['project_name'] = new_name
+                changed = True
+        if changed:
+            self.update_project_info(info_list)
         # 同步训练/模型记录中的项目名,保证训练界面回填仍能匹配
         self._rename_records_project(old_name, new_name)
 
     def _rename_records_project(self, old_name, new_name):
-        """训练/模型记录中项目名替换(含 dataset_info 的项目部分)。"""
+        """训练/模型记录中项目名替换(含 dataset/val_dataset/dataset_info 的"项目/"前缀)。"""
         txn = self.mdb.begin(write=True)
         for key in (keys.train_history, keys.model_history):
             data = txn.get(key)
@@ -55,9 +77,18 @@ class DataBase:
                 if r.get("project") != old_name:
                     continue
                 r["project"] = new_name
-                info = str(r.get("dataset_info", ""))
-                if info.startswith(old_name + "/"):
-                    r["dataset_info"] = new_name + info[len(old_name):]
+                for field in ("dataset", "val_dataset", "dataset_info"):
+                    items = [x.strip() for x in str(r.get(field, "")).split(",") if x.strip()]
+                    new_items = []
+                    for it in items:
+                        if "/" in it:
+                            proj, ds = it.rsplit("/", 1)
+                            new_items.append("{}/{}".format(
+                                new_name if proj == old_name else proj, ds))
+                        else:
+                            new_items.append(it)
+                    if new_items != items:
+                        r[field] = ", ".join(new_items)
                 changed = True
             if changed:
                 txn.put(key, json.dumps(recs, ensure_ascii=False).encode())
@@ -218,7 +249,10 @@ class DataBase:
         return True
 
     def _rename_records_dataset(self, project_name, old_name, new_name):
-        """训练/模型记录中该数据集名替换(训练集/验证集/dataset_info)。"""
+        """训练/模型记录中该数据集名替换(训练集/验证集/dataset_info)。
+
+        dataset 字段为 "项目/数据集" 格式,匹配后半段数据集名。
+        """
         txn = self.mdb.begin(write=True)
         for key in (keys.train_history, keys.model_history):
             data = txn.get(key)
@@ -230,17 +264,16 @@ class DataBase:
                 replaced = False
                 for field in ("dataset", "val_dataset"):
                     names = [x.strip() for x in str(r.get(field, "")).split(",") if x.strip()]
-                    new_names = [new_name if n == old_name else n for n in names]
+                    new_names = [_rename_item(n, old_name, new_name) for n in names]
                     if new_names != names:
                         r[field] = ", ".join(new_names)
                         replaced = True
                 if replaced:
+                    # dataset_info 同样为 "项目/数据集" 列表,逐项替换
                     info = str(r.get("dataset_info", ""))
-                    if "/" in info:
-                        proj, ds_part = info.split("/", 1)
-                        ds_list = [x.strip() for x in ds_part.split(",") if x.strip()]
-                        new_ds = ", ".join(new_name if n == old_name else n for n in ds_list)
-                        r["dataset_info"] = "{}/{}".format(proj, new_ds)
+                    items = [x.strip() for x in info.split(",") if x.strip()]
+                    new_items = [_rename_item(n, old_name, new_name) for n in items]
+                    r["dataset_info"] = ", ".join(new_items)
                     changed = True
             if changed:
                 txn.put(key, json.dumps(recs, ensure_ascii=False).encode())
@@ -586,7 +619,7 @@ class DataBase:
                 continue
             for field in ("dataset", "val_dataset"):
                 names = [x.strip() for x in str(r.get(field, "")).split(",") if x.strip()]
-                if dataset_name in names:
+                if any(_ds_of(n) == dataset_name for n in names):
                     return True
         return False
 
@@ -594,7 +627,7 @@ class DataBase:
         """从记录中移除 ds_name,返回 (record, 是否仍被其他数据集引用)。"""
         def _strip(field):
             names = [x.strip() for x in str(record.get(field, "")).split(",") if x.strip()]
-            return [n for n in names if n != ds_name]
+            return [n for n in names if _ds_of(n) != ds_name]
 
         train = _strip("dataset")
         val = _strip("val_dataset")
@@ -603,9 +636,9 @@ class DataBase:
         if train or val:
             info = str(record.get("dataset_info", ""))
             if info:
-                parts = info.split("/", 1)
-                record["dataset_info"] = "{}/{}".format(
-                    parts[0], record["dataset"]) if len(parts) == 2 else info
+                items = [x.strip() for x in info.split(",") if x.strip()]
+                items = [n for n in items if _ds_of(n) != ds_name]
+                record["dataset_info"] = ", ".join(items)
         return record, bool(train or val)
 
     def remove_dataset_from_records(self, project_name, ds_name):
@@ -620,10 +653,10 @@ class DataBase:
                 if r.get("project") != project_name:
                     new_recs.append(r)
                     continue
-                # 元素可能带空格("2, 4"),须 strip 后再比
+                # 元素可能带空格("A/2, A/4"),须 strip 后再比
                 train_names = [x.strip() for x in str(r.get("dataset", "")).split(",") if x.strip()]
                 val_names = [x.strip() for x in str(r.get("val_dataset", "")).split(",") if x.strip()]
-                if ds_name not in train_names and ds_name not in val_names:
+                if not any(_ds_of(n) == ds_name for n in train_names + val_names):
                     new_recs.append(r)
                     continue
                 r, still_used = self._strip_dataset_from_record(r, ds_name)

@@ -21,7 +21,7 @@ from app.annotation.box_item import label_color
 from app.annotation_dialog import AnnotationDialog
 from app.log_dialog import LogDialog
 from app.model_dialog import ModelDialog
-from app.train.dialogs import ClassifyDialog, DetectDialog, SegmentDialog
+from app.train.dialogs import TrainDialog
 from app.train.train_worker import TrainWorker
 from paginator import Paginator
 from ui.app import Ui_AppUI as MainUI
@@ -963,8 +963,7 @@ class App(QWidget, MainUI):
                 ds_item = QTreeWidgetItem([""])
                 ds_item.setData(0, Qt.UserRole, ("dataset", name, ds["dataset_name"]))
                 proj_item.addChild(ds_item)
-                self._set_dataset_widget(ds_item, name, ds["dataset_name"],
-                                         ds.get("dataset_type", ""))
+                self._set_dataset_widget(ds_item, name, ds["dataset_name"])
             self.project_tree.addTopLevelItem(proj_item)
 
     def _tree_icon(self, name):
@@ -974,8 +973,7 @@ class App(QWidget, MainUI):
             return QIcon(path)
         return QIcon()
 
-    def _set_dataset_widget(self, ds_item, project_name, dataset_name,
-                            dataset_type=""):
+    def _set_dataset_widget(self, ds_item, project_name, dataset_name):
         """
         把数据集节点替换为整体行内容器: [图标 + 名称 + 拉伸 + 标注进度]，
         """
@@ -1008,8 +1006,7 @@ class App(QWidget, MainUI):
         binding = self.db.get_dataset_import(project_name, dataset_name)
         total = binding.get("total", 0)
         labeled = binding.get("labeled", 0)
-        suffix = "[{}]".format(dataset_type) if dataset_type else ""
-        progress_lbl.setText("{}/{}{}".format(labeled, total, suffix))
+        progress_lbl.setText("{}/{}".format(labeled, total))
         self.project_tree.setItemWidget(ds_item, 0, container)
         return container, progress_lbl
 
@@ -1055,11 +1052,10 @@ class App(QWidget, MainUI):
             elif act == act_del:
                 self._delete_dataset(kind[1], kind[2])
 
-    def _show_add_dataset(self, preset_name="", preset_type="", title="添加数据集",
-                          type_locked=False):
+    def _show_add_dataset(self, preset_name="", title="添加数据集"):
         """
         弹出数据集对话框(ui/add_dataset.py 设计器生成)。
-        返回(name, dataset_type, ok)。
+        数据集不再区分类型,隐藏类型下拉;返回(name, ok)。
         """
         dlg = QDialog(self)
         ui = Ui_AddDatasets()
@@ -1068,48 +1064,34 @@ class App(QWidget, MainUI):
         if preset_name:
             ui.lineEdit.setText(preset_name)
             ui.lineEdit.selectAll()
-        if preset_type:
-            idx = ui.comboBox.findText(preset_type)
-            if idx >= 0:
-                ui.comboBox.setCurrentIndex(idx)
-        if type_locked:
-            # 已训练过/有模型记录:类型不可改,否则训练回填与测试过滤会失配
-            ui.comboBox.setEnabled(False)
-            ui.comboBox.setToolTip("该数据集已有训练/模型记录,类型不可修改")
+        # 类型已废弃:隐藏类型下拉
+        combo = getattr(ui, "comboBox", None)
+        if combo is not None:
+            combo.setVisible(False)
         ui.done_btn.clicked.connect(dlg.accept)
         dlg.setFixedHeight(dlg.sizeHint().height())
         dlg.exec()
         name = ui.lineEdit.text().strip()
-        dtype = ui.comboBox.currentText().strip()
-        return name, dtype, dlg.result() == QDialog.Accepted
+        return name, dlg.result() == QDialog.Accepted
 
     def _add_dataset(self, project_name):
-        name, dtype, ok = self._show_add_dataset()
+        name, ok = self._show_add_dataset()
         if not ok or not name:
             return
-        if not self.db.add_dataset(project_name, name, dtype):
+        if not self.db.add_dataset(project_name, name):
             MessageBox.warning(self, "添加数据集", "该项目下已存在同名数据集！")
             return
-        self._log("创建数据集: {}/{} (类型={})".format(project_name, name, dtype))
+        self._log("创建数据集: {}/{}".format(project_name, name))
         self.refresh_project_list()
 
     def _rename_dataset(self, project_name, old_name):
-        dtype = ""
-        for ds in self.db.get_datasets(project_name):
-            if ds["dataset_name"] == old_name:
-                dtype = ds.get("dataset_type", "")
-                break
-        # 已训练过/有模型记录的数据集锁定类型,只能改名称
-        type_locked = self.db.dataset_in_records(project_name, old_name)
-        name, new_type, ok = self._show_add_dataset(
-            preset_name=old_name, preset_type=dtype, title="修改数据集",
-            type_locked=type_locked)
-        if not ok or not name or (name == old_name and new_type == dtype):
+        name, ok = self._show_add_dataset(preset_name=old_name, title="修改数据集")
+        if not ok or not name or name == old_name:
             return
-        if not self.db.rename_dataset(project_name, old_name, name, new_type):
+        if not self.db.rename_dataset(project_name, old_name, name):
             MessageBox.warning(self, "修改数据集", "该项目下已存在同名数据集！")
             return
-        self._log("重命名数据集: {} → {} (类型={})".format(project_name, old_name, name, new_type))
+        self._log("重命名数据集: {} → {}".format(project_name, old_name, name))
         self.refresh_project_list()
 
     def _delete_dataset(self, project_name, ds_name):
@@ -1458,13 +1440,6 @@ class App(QWidget, MainUI):
                 MessageBox.warning(dlg, "导入数据", "标签路径无效")
                 return
             dlg.accept()
-            # 数据集无类型时,按导入方式设定:分类导入 -> 图像分类; 否则目标检测
-            dtype = "图像分类" if cls_mode else "目标检测"
-            cur = next((d for d in self.db.get_datasets(project_name)
-                        if d["dataset_name"] == dataset_name), None)
-            if cur and not cur.get("dataset_type"):
-                self.db.rename_dataset(project_name, dataset_name,
-                                       dataset_name, dtype)
             if cls_mode:
                 _total = 0
                 for _r, _, _fs in os.walk(image_path):
@@ -1718,25 +1693,8 @@ class App(QWidget, MainUI):
         return []
 
     def _on_train_clicked(self):
-        if not self._current_dataset:
-            MessageBox.warning(self, "训练", "请先在左侧选中一个数据集")
-            return
-        project, dataset = self._current_dataset
-        dtype = ""
-        for ds in self.db.get_datasets(project):
-            if ds["dataset_name"] == dataset:
-                dtype = ds.get("dataset_type", "")
-                break
-        cls = {"图像分类": ClassifyDialog,
-               "目标检测": DetectDialog,
-               "图像分割": SegmentDialog}.get(dtype)
-        if cls is None:
-            MessageBox.warning(
-                self, "训练",
-                "数据集「{}」未设置类型(图像分类/目标检测/图像分割),\n"
-                "请右键数据集 → 修改 设置类型后重试.".format(dataset))
-            return
-        dlg = cls(self, project, dataset)
+        # 独立入口:无需先选中数据集,任务类型在训练界面选择
+        dlg = TrainDialog(self)
         dlg.exec()
 
     def _on_dataset_properties(self):
@@ -1904,13 +1862,7 @@ class App(QWidget, MainUI):
                 progress.deleteLater()
             if progress_lbl is not None:
                 progress_lbl.setVisible(True)
-                suffix = ""
-                for ds in self.db.get_datasets(project_name):
-                    if ds["dataset_name"] == dataset_name:
-                        t = ds.get("dataset_type", "")
-                        suffix = "[{}]".format(t) if t else ""
-                        break
-                progress_lbl.setText("{}/{}{}".format(labeled, total, suffix))
+                progress_lbl.setText("{}/{}".format(labeled, total))
             proj_cache = self.dataset_cache.setdefault(project_name, {})
             proj_cache[dataset_name] = self._build_dataset_index(result)
             # 检测/分割按框,分类按类别;持久化供属性页无缓存时展示
@@ -2352,19 +2304,10 @@ class App(QWidget, MainUI):
             if container is not None:
                 pl = container.findChild(QLabel, "datasetRowProgress")
                 if pl is not None:
-                    dtype = ""
-                    for d in self.db.get_datasets(project_name):
-                        if d["dataset_name"] == dataset_name:
-                            dtype = d.get("dataset_type", "")
-                            break
-                    suffix = "[{}]".format(dtype) if dtype else ""
-                    pl.setText("{}/{}{}".format(labeled, total, suffix))
+                    pl.setText("{}/{}".format(labeled, total))
 
     def _refresh_dataset_row_progress(self, project_name, dataset_name):
-        """
-        根据 db 当前 binding + dataset_type 刷新项目树该数据集节点的进度文本。
-        用于导入刚提交时立即同步统计（不依赖后台线程的 result）。
-        """
+        """根据 db 当前 binding 刷新项目树该数据集节点的进度文本。"""
         ds_item = self._find_dataset_item(project_name, dataset_name)
         if ds_item is None:
             return
@@ -2377,13 +2320,7 @@ class App(QWidget, MainUI):
         binding = self.db.get_dataset_import(project_name, dataset_name)
         total = binding.get("total", 0) or 0
         labeled = binding.get("labeled", 0) or 0
-        dtype = ""
-        for d in self.db.get_datasets(project_name):
-            if d["dataset_name"] == dataset_name:
-                dtype = d.get("dataset_type", "")
-                break
-        suffix = "[{}]".format(dtype) if dtype else ""
-        pl.setText("{}/{}{}".format(labeled, total, suffix))
+        pl.setText("{}/{}".format(labeled, total))
 
     @staticmethod
     def _has_label_file(image_path):
@@ -2467,11 +2404,8 @@ class App(QWidget, MainUI):
         dlg.activateWindow()
 
     def _on_model_clicked(self):
-        if not self._current_dataset:
-            MessageBox.warning(self, "模型", "请先在左侧选中一个数据集")
-            return
-        proj, ds = self._current_dataset
-        md = ModelDialog(app=self, project=proj, dataset=ds, parent=self)
+        # 独立入口:显示全部训练/模型记录(不做项目/数据集筛选)
+        md = ModelDialog(app=self, project="", dataset="", parent=self)
         md.exec()
         md.deleteLater()
 

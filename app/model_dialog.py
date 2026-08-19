@@ -15,6 +15,7 @@ from PySide6.QtCore import QTimer
 from app.message_box import MessageBox
 from app.metrics_dialog import MetricsDialog
 from app.test_dialog import TestDialog
+from app.train.dialogs import TrainDialog
 from ui.model import Ui_ModelDialog
 
 
@@ -72,8 +73,9 @@ class ModelDialog(QDialog):
         t.setSelectionMode(QAbstractItemView.SingleSelection)
         t.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         h = t.horizontalHeader()
-        # 列宽：列 6/7 给较大初始宽度（不使用 Stretch，避免 Qt cellWidget 重影 bug）
-        for i, w in enumerate([150, 150, 150, 90, 160, 80, 380, 300, 90, 80, 80]):
+        # 列宽：列 7/8 给较大初始宽度（不使用 Stretch，避免 Qt cellWidget 重影 bug）
+        for i, w in enumerate([150, 150, 150, 90, 90, 90, 90, 140, 380, 80,
+                               80, 80, 80, 80]):
             h.setSectionResizeMode(i, QHeaderView.Interactive)
             t.setColumnWidth(i, w)
         h.setMinimumSectionSize(60)
@@ -81,7 +83,8 @@ class ModelDialog(QDialog):
         # 行高加大（默认 30px 装不下 26px 按钮+上下 padding）
         t.verticalHeader().setDefaultSectionSize(40)
         t.verticalHeader().setMinimumSectionSize(40)
-        for c in (8, 9, 10, 11):
+        # 按钮列表头清空
+        for c in (9, 10, 11, 12, 13):
             t.setHorizontalHeaderItem(c, QTableWidgetItem(""))
 
     def _calc_page_size(self):
@@ -153,21 +156,23 @@ class ModelDialog(QDialog):
                     metric_val = str(acc)
             else:
                 metric_val = map50
+            # 模型类型:task 字段 detect/segment/classify,旧记录无字段显示 —
+            task_text = {"detect": "检测", "segment": "分割",
+                         "classify": "分类"}.get(r.get("task", ""), "—")
             vals = [r.get("start_time", ""), r.get("end_time", ""),
                     r.get("duration", ""), r.get("model_size", ""),
-                    metric_val, r.get("img_size", ""),
+                    task_text, metric_val, r.get("img_size", ""),
                     r.get("model_path", ""), r.get("dataset_info", "")]
             for j, v in enumerate(vals):
                 text = str(v)
-                if j == 6:
+                if j == 7:
                     # 只显示目录部分(不含文件名),tooltip 显示完整路径
                     text = os.path.dirname(str(v)) if v else ""
                     item = QTableWidgetItem(text)
                     item.setToolTip(str(v))
-                elif j == 7:
+                elif j == 8:
                     full = str(v)
-                    text = (full[:12] + "...") if len(full) > 12 else full
-                    item = QTableWidgetItem(text)
+                    item = QTableWidgetItem(full)
                     item.setToolTip(full)
                 else:
                     item = QTableWidgetItem(text)
@@ -178,23 +183,28 @@ class ModelDialog(QDialog):
             btn.setEnabled(bool(path))
             btn.setFixedSize(60, 26)
             btn.clicked.connect(lambda checked=False, p=path: self._export(p))
-            t.setCellWidget(i, 8, self._make_centered_cell(btn))
+            t.setCellWidget(i, 9, self._make_centered_cell(btn))
             mbtn = QPushButton("指标")
             mbtn.setFixedSize(60, 26)
             mbtn.clicked.connect(
                 lambda checked=False, rec=r: self._show_metrics(rec))
-            t.setCellWidget(i, 9, self._make_centered_cell(mbtn))
+            t.setCellWidget(i, 10, self._make_centered_cell(mbtn))
             dbtn = QPushButton("删除")
             dbtn.setFixedSize(60, 26)
             dbtn.clicked.connect(
                 lambda checked=False, rec=r: self._delete(rec))
-            t.setCellWidget(i, 10, self._make_centered_cell(dbtn))
+            t.setCellWidget(i, 11, self._make_centered_cell(dbtn))
             tbtn = QPushButton("测试")
             tbtn.setFixedSize(60, 26)
             tbtn.setEnabled(bool(r.get("model_path")))
             tbtn.clicked.connect(
                 lambda checked=False, rec=r: self._test(rec))
-            t.setCellWidget(i, 11, self._make_centered_cell(tbtn))
+            t.setCellWidget(i, 12, self._make_centered_cell(tbtn))
+            trbtn = QPushButton("训练")
+            trbtn.setFixedSize(60, 26)
+            trbtn.clicked.connect(
+                lambda checked=False, rec=r: self._retrain(rec))
+            t.setCellWidget(i, 13, self._make_centered_cell(trbtn))
         self.ui.page_label.setText("{}/{}".format(self._page + 1, pages))
         self.ui.pre_page_btn.setEnabled(self._page > 0)
         self.ui.next_page_btn.setEnabled(self._page < pages - 1)
@@ -245,6 +255,16 @@ class ModelDialog(QDialog):
         except Exception as e:
             trace = traceback.format_exc()
             print("[model_dialog] 删除失败: {}\n{}".format(e, trace), flush=True)
+
+    def _retrain(self, record):
+        """按该记录回填参数打开训练界面(任务类型/数据集/参数)。"""
+        try:
+            dlg = TrainDialog(self.app, preset_record=record)
+            dlg.exec()
+        except Exception as e:
+            trace = traceback.format_exc()
+            print("[model_dialog] 打开训练失败: {}\n{}".format(e, trace), flush=True)
+            MessageBox.warning(self, "打开训练失败", str(e))
 
     def _test(self, record):
         """点击测试 → 弹 TestDialog，默认选中当前行的模型。

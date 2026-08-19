@@ -108,19 +108,10 @@ class TestDialog(QDialog):
                 edit.setAlignment(Qt.AlignHCenter)
 
     # ---------- 填充 ----------
-    def _current_dataset_type(self):
-        for ds in self.app.db.get_datasets(self._project):
-            if ds["dataset_name"] == self._dataset:
-                return ds.get("dataset_type", "")
-        return ""
-
     def _fill_data_combo(self):
         combo = self.ui.test_data_combo
         combo.clear()
-        cur_type = self._current_dataset_type()
         for ds in self.app.db.get_datasets(self._project):
-            if cur_type and ds.get("dataset_type", "") != cur_type:
-                continue
             combo.addItem(ds["dataset_name"], (self._project, ds["dataset_name"]))
         for i in range(combo.count()):
             data = combo.itemData(i)
@@ -135,21 +126,10 @@ class TestDialog(QDialog):
             combo.addItem(d)
         combo.setCurrentIndex(0)
 
-    def _train_record_type(self, r):
-        first = next((x.strip()
-                      for x in str(r.get("dataset") or "").split(",") if x.strip()), "")
-        if not first:
-            return ""
-        for ds in self.app.db.get_datasets(self._project):
-            if ds["dataset_name"] == first:
-                return ds.get("dataset_type", "")
-        return ""
-
     def _fill_model_combo(self):
         """只显示文件名，默认选中传入 record 的模型。"""
         combo = self.ui.model_combo
         combo.clear()
-        cur_type = self._current_dataset_type()
         recs = []
         for r in self.app.db.get_model_records():
             path = r.get("model_path") or ""
@@ -158,8 +138,6 @@ class TestDialog(QDialog):
             if r.get("project") != self._project:
                 continue
             if not os.path.exists(path):
-                continue
-            if cur_type and self._train_record_type(r) != cur_type:
                 continue
             recs.append(r)
         recs.sort(key=lambda r: str(r.get("end_time", "")), reverse=True)
