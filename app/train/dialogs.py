@@ -117,9 +117,6 @@ class TrainDialog(QDialog):
         self._build()
 
     def closeEvent(self, event):
-        if getattr(self.app, "is_training", None) and self.app.is_training():
-            MessageBox.information(
-                self, "训练进行中","训练正在后台进行中,可在首页查看进度,并通过「停止训练」按钮停止.")
         super().closeEvent(event)
 
     # ---------- 初始化 ----------

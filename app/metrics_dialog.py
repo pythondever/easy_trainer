@@ -185,7 +185,7 @@ class MetricsDialog(QDialog):
             for spine in axes.spines.values():
                 spine.set_color("#3a3f4e")
             axes.grid(True, color="#2a2e38", linestyle="--", linewidth=0.5)
-            axes.legend(facecolor="#23262f", edgecolor="#3a3f4e",
+            axes.legend(loc="lower right", facecolor="#23262f", edgecolor="#3a3f4e",
                         labelcolor="#e8eaf0")
             if epochs:
                 all_vals = [v for vs in g.values() for v in vs]
