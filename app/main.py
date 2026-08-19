@@ -44,7 +44,7 @@ from PySide6.QtWidgets import QWidget, QApplication, QDialog, QMenu, QMessageBox
     QVBoxLayout, QHBoxLayout, QSizePolicy, QLabel, QTreeWidget, QTreeWidgetItem, \
     QFileDialog, QProgressBar, QGraphicsView, QGraphicsScene, QHeaderView, QAbstractItemView, \
     QComboBox, QPushButton, QTimeEdit, \
-    QGraphicsPixmapItem, QGraphicsItem
+    QGraphicsPixmapItem, QGraphicsItem, QButtonGroup
 
 try:
     from shiboken6 import isValid as _is_valid
@@ -1408,15 +1408,23 @@ class App(QWidget, MainUI):
 
         ui.choose_image_dir_btn.clicked.connect(lambda: choose_folder("图像"))
         ui.choose_label_dir_btn.clicked.connect(lambda: choose_folder("标签"))
+        # 路径选择按钮:padding=0 让图标占满,与文本框视觉对齐
+        for btn_name in ("choose_image_dir_btn", "choose_label_dir_btn"):
+            btn = getattr(ui, btn_name, None)
+            if btn is not None:
+                btn.setFixedHeight(40)
+                btn.setStyleSheet(
+                    "QPushButton{padding:0px;border:1px solid #353a48;border-radius:6px;}")
+                btn.setIconSize(QSize(28, 28))
         ui.yolo_fmt.toggled.connect(update_tips)
         ui.labelme_fmt.toggled.connect(update_tips)
 
         def set_cls_mode(on):
-            """切换「按子文件夹分类导入」:分类模式只需根目录,标签路径/格式不可用。"""
+            """
+            切换「按子文件夹分类导入」:分类模式只需根目录,标签路径不可用。
+            """
             ui.label_path_txt.setEnabled(not on)
             ui.choose_label_dir_btn.setEnabled(not on)
-            for rb in (ui.yolo_fmt, ui.labelme_fmt):
-                rb.setEnabled(not on)
             ui.image_path_txt.setPlaceholderText(
                 "分类根目录（子文件夹名=类别）" if on else "图像路径")
             if on:
@@ -1425,6 +1433,12 @@ class App(QWidget, MainUI):
             update_tips()
 
         ui.cls_fmt.toggled.connect(set_cls_mode)
+        fmt_group = QButtonGroup(dlg)
+        fmt_group.setExclusive(True)
+        fmt_group.addButton(ui.yolo_fmt)
+        fmt_group.addButton(ui.labelme_fmt)
+        fmt_group.addButton(ui.cls_fmt)
+        ui.cls_fmt.setAutoExclusive(False)
 
         def do_import():
             IMAGE_EXTS = (".jpg", ".jpeg", ".png", ".bmp", ".webp")
@@ -1491,6 +1505,17 @@ class App(QWidget, MainUI):
         ui.setupUi(dlg)
         ui.export_path_txt.setReadOnly(True)
         ui.exp_labelme_fmt.setChecked(True)    # 默认 labelme 格式
+        # 两个按钮:同一行(路径行末尾)、等高(40)、padding:0,宽度一致
+        for btn_name in ("select_path_btn", "do_export_btn"):
+            btn = getattr(ui, btn_name, None)
+            if btn is not None:
+                btn.setFixedHeight(40)
+                btn.setFixedWidth(60)
+                btn.setStyleSheet(
+                    "QPushButton{padding:0px;border:1px solid #353a48;"
+                    "border-radius:6px;}")
+                if btn_name == "select_path_btn":
+                    btn.setIconSize(QSize(28, 28))
         ui.select_path_btn.clicked.connect(
             lambda: self._pick_export_path(dlg, ui))
         ui.do_export_btn.clicked.connect(dlg.accept)

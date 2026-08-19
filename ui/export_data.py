@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'export_data.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.3
+## Created by: Qt User Interface Compiler version 6.11.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -23,17 +23,15 @@ class Ui_Dialog(object):
     def setupUi(self, Dialog):
         if not Dialog.objectName():
             Dialog.setObjectName(u"Dialog")
-        Dialog.resize(824, 496)
+        Dialog.resize(620, 180)
         self.gridLayout = QGridLayout(Dialog)
         self.gridLayout.setObjectName(u"gridLayout")
         self.verticalLayout = QVBoxLayout()
+        self.verticalLayout.setSpacing(4)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.horizontalLayout_2 = QHBoxLayout()
+        self.horizontalLayout_2.setSpacing(6)
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
-        self.horizontalSpacer_3 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_2.addItem(self.horizontalSpacer_3)
-
         self.export_path_txt = QLineEdit(Dialog)
         self.export_path_txt.setObjectName(u"export_path_txt")
         self.export_path_txt.setMinimumSize(QSize(300, 40))
@@ -42,46 +40,44 @@ class Ui_Dialog(object):
 
         self.select_path_btn = QPushButton(Dialog)
         self.select_path_btn.setObjectName(u"select_path_btn")
+        self.select_path_btn.setMinimumSize(QSize(60, 40))
         icon = QIcon()
-        icon.addFile(u"../resources/\u6587\u4ef6\u5939.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon.addFile(u"../resources/\u6253\u5f00.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.select_path_btn.setIcon(icon)
         self.select_path_btn.setIconSize(QSize(35, 35))
 
         self.horizontalLayout_2.addWidget(self.select_path_btn)
 
-        self.horizontalSpacer_4 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+        self.do_export_btn = QPushButton(Dialog)
+        self.do_export_btn.setObjectName(u"do_export_btn")
+        self.do_export_btn.setMinimumSize(QSize(60, 40))
 
-        self.horizontalLayout_2.addItem(self.horizontalSpacer_4)
+        self.horizontalLayout_2.addWidget(self.do_export_btn)
 
 
         self.verticalLayout.addLayout(self.horizontalLayout_2)
 
         self.horizontalLayout = QHBoxLayout()
+        self.horizontalLayout.setSpacing(8)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout.addItem(self.horizontalSpacer_2)
-
         self.exp_label = QLabel(Dialog)
         self.exp_label.setObjectName(u"exp_label")
+        self.exp_label.setMinimumSize(QSize(0, 40))
+        self.exp_label.setAlignment(Qt.AlignmentFlag.AlignVCenter)
 
         self.horizontalLayout.addWidget(self.exp_label)
 
         self.exp_labelme_fmt = QRadioButton(Dialog)
         self.exp_labelme_fmt.setObjectName(u"exp_labelme_fmt")
+        self.exp_labelme_fmt.setMinimumSize(QSize(0, 40))
 
         self.horizontalLayout.addWidget(self.exp_labelme_fmt)
 
         self.exp_yolo_fmt = QRadioButton(Dialog)
         self.exp_yolo_fmt.setObjectName(u"exp_yolo_fmt")
+        self.exp_yolo_fmt.setMinimumSize(QSize(0, 40))
 
         self.horizontalLayout.addWidget(self.exp_yolo_fmt)
-
-        self.do_export_btn = QPushButton(Dialog)
-        self.do_export_btn.setObjectName(u"do_export_btn")
-        self.do_export_btn.setMinimumSize(QSize(0, 40))
-
-        self.horizontalLayout.addWidget(self.do_export_btn)
 
         self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
@@ -100,12 +96,12 @@ class Ui_Dialog(object):
     # setupUi
 
     def retranslateUi(self, Dialog):
-        Dialog.setWindowTitle(QCoreApplication.translate("Dialog", u"Dialog", None))
+        Dialog.setWindowTitle(QCoreApplication.translate("Dialog", u"\u5bfc\u51fa", None))
         self.export_path_txt.setPlaceholderText(QCoreApplication.translate("Dialog", u"\u8bf7\u9009\u62e9\u5bfc\u51fa\u8def\u5f84", None))
         self.select_path_btn.setText("")
+        self.do_export_btn.setText(QCoreApplication.translate("Dialog", u"\u5bfc\u51fa", None))
         self.exp_label.setText(QCoreApplication.translate("Dialog", u"\u5bfc\u51fa\u683c\u5f0f", None))
         self.exp_labelme_fmt.setText(QCoreApplication.translate("Dialog", u"labelme \u683c\u5f0f", None))
         self.exp_yolo_fmt.setText(QCoreApplication.translate("Dialog", u"yolo \u683c\u5f0f", None))
-        self.do_export_btn.setText(QCoreApplication.translate("Dialog", u"\u5f00\u59cb\u5bfc\u51fa", None))
     # retranslateUi
 

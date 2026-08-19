@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'import_data.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.3
+## Created by: Qt User Interface Compiler version 6.11.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -24,7 +24,7 @@ class Ui_ImportData(object):
     def setupUi(self, ImportData):
         if not ImportData.objectName():
             ImportData.setObjectName(u"ImportData")
-        ImportData.resize(796, 437)
+        ImportData.resize(796, 260)
         self.gridLayout = QGridLayout(ImportData)
         self.gridLayout.setObjectName(u"gridLayout")
         self.verticalLayout = QVBoxLayout()
@@ -42,7 +42,7 @@ class Ui_ImportData(object):
         self.choose_image_dir_btn.setObjectName(u"choose_image_dir_btn")
         self.choose_image_dir_btn.setMinimumSize(QSize(60, 40))
         icon = QIcon()
-        icon.addFile(u"../resources/\u6253\u5f00.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon.addFile(u"../resources/\u6253\u5f00.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.choose_image_dir_btn.setIcon(icon)
         self.choose_image_dir_btn.setIconSize(QSize(45, 40))
 
@@ -138,7 +138,7 @@ class Ui_ImportData(object):
         self.done_import_btn.setObjectName(u"done_import_btn")
         self.done_import_btn.setMinimumSize(QSize(100, 50))
         icon1 = QIcon()
-        icon1.addFile(u"../resources/\u786e\u5b9a.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon1.addFile(u"../resources/\u786e\u5b9a.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.done_import_btn.setIcon(icon1)
         self.done_import_btn.setIconSize(QSize(40, 25))
 
