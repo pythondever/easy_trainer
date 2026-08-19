@@ -1729,7 +1729,6 @@ class App(QWidget, MainUI):
         project, dataset = self._current_dataset
         dlg = QDialog(self)
         dlg.setWindowTitle("数据集属性 - {} / {}".format(project, dataset))
-        # 支持最小化/最大化(默认 dialog 只有关闭按钮)
         dlg.setWindowFlags(
             dlg.windowFlags() | Qt.WindowMinimizeButtonHint | Qt.WindowMaximizeButtonHint)
         ui = DatasetPropertiesUI()
@@ -2431,7 +2430,6 @@ class App(QWidget, MainUI):
         dlg.activateWindow()
 
     def _on_model_clicked(self):
-        # 独立入口:显示全部训练/模型记录(不做项目/数据集筛选)
         md = ModelDialog(app=self, project="", dataset="", parent=self)
         md.exec()
         md.deleteLater()
@@ -2542,7 +2540,7 @@ class App(QWidget, MainUI):
             " font-size: 12px; font-weight: 600; }}"
             "QPushButton:hover {{ background-color: {}; }}").format(color, hover)
 
-    # ---------------- 全局训练管理(唯一训练实例 + 首页停止按钮)----------------
+    # ---------------- 训练管理(训练实例 + 首页停止按钮)----------------
     def is_training(self):
         return (self._train_worker is not None
                 and self._train_worker.isRunning())
@@ -2586,8 +2584,6 @@ class App(QWidget, MainUI):
             self.on_train_finished(rid, None)
 
     def _on_train_progress(self, epoch, total):
-        # 停止/结束后兜底：子进程被 kill 残留 stdout 的 EPOCH 行可能在
-        # _hide_train_task 之后才进事件队列；此时 worker 已为 None，忽略。
         if self._train_worker is None or self._training_record_id is None:
             return
         project = self._train_worker._config.get("project", "") if self._train_worker else ""
