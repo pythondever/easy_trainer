@@ -371,7 +371,6 @@ class Ui_TrainDialog(object):
         self.optimizer_label.setText(QCoreApplication.translate("TrainDialog", u"\u4f18\u5316\u5668", None))
         self.img_size_label.setText(QCoreApplication.translate("TrainDialog", u"\u56fe\u50cf\u5c3a\u5bf8", None))
         self.early_stop_label.setText(QCoreApplication.translate("TrainDialog", u"\u65e9\u505c", None))
-        self.early_stop_line_txt.setText(QCoreApplication.translate("TrainDialog", u"20", None))
         self.batch_label.setText(QCoreApplication.translate("TrainDialog", u"\u6279\u6b21", None))
         self.grad_accum_label.setText(QCoreApplication.translate("TrainDialog", u"\u68af\u5ea6\u7d2f\u79ef", None))
         self.epoch_label.setText(QCoreApplication.translate("TrainDialog", u"\u8f6e\u6b21", None))

@@ -423,8 +423,7 @@ class TrainDialog(QDialog):
         self._fill_optimizer()
         self.ui.task_combo.setCurrentIndex(0)  # 默认检测
         self.ui.task_combo.currentIndexChanged.connect(self._on_task_changed)
-        # 预设记录(模型界面训练按钮)时直接回填,否则按任务类型填默认值。
-        # 首页进入不回填历史记录:只按任务类型填充默认参数
+        # 预设记录(模型界面训练按钮)时完整回填;首页进入填任务推荐参数
         if self._preset_record is not None:
             self._restore_record(self._preset_record)
         else:
@@ -435,11 +434,8 @@ class TrainDialog(QDialog):
                 if default is not None and not edit.text():
                     edit.setText(str(default))
             self._apply_task_ui()
+        # 输出路径:默认留空(不填 runs 占位),只有模型界面回填才有值
         self._setup_img_size_tip()
-        workspace = os.path.dirname(os.path.dirname(
-            os.path.dirname(os.path.abspath(__file__))))
-        runs = os.path.join(workspace, "runs", self.project or "项目", self.dataset or "数据集")
-        self.ui.output_line_txt.setText(runs)
         # 有训练在进行时禁用开始训练
         if hasattr(self.app, "is_training") and self.app.is_training():
             btn = getattr(self.ui, "start_train", None)
@@ -477,10 +473,10 @@ class TrainDialog(QDialog):
         self._setup_img_size_tip()
 
     def _apply_task_ui(self):
-        """任务类型切换:默认值无条件切换、grad_accum 可用性、网络项。
+        """任务类型切换:按任务推荐填充参数、grad_accum 可用性、网络项。
 
-        切任务即应用该任务推荐默认(epochs/lr/img),记录回填时
-        _apply_record_params 会在其后覆盖为记录值,互不冲突。
+        首页进入是空表单,用户选择任务类型后由这里给出推荐值;
+        模型界面回填(preset_record)时 _apply_record_params 会在其后覆盖为记录值。
         """
         task = self._task()
         epochs, lr, img, _ = self.TASK_DEFAULTS.get(task, (100, 1e-4, 640, 4))
@@ -488,6 +484,15 @@ class TrainDialog(QDialog):
         self.ui.epochs_line_txt.setText(str(epochs))
         self.ui.lr_line_txt.setText(str(lr))
         self.ui.img_size_line_txt.setText(str(img))
+        # 通用参数推荐值(批次/线程数/早停)
+        if not self.ui.batch_size_line_txt.text().strip():
+            self.ui.batch_size_line_txt.setText("4")
+        if not self.ui.batch_size_line_txt_2.text().strip():
+            self.ui.batch_size_line_txt_2.setText("4")
+        if not self.ui.early_stop_line_txt.text().strip():
+            self.ui.early_stop_line_txt.setText("20")
+        if not self.ui.grad_accum_line_txt.text().strip():
+            self.ui.grad_accum_line_txt.setText("4")
         self._last_epochs_default = epochs
         self._last_lr_default = lr
         self._last_img_default = img
