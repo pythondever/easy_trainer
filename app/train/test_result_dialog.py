@@ -88,7 +88,8 @@ class TestResultDialog(QDialog):
 
     def _fill_table(self, per_class):
         u = self._ui
-        rows = sorted(per_class.items())
+        # 类别名自然排序(纯数字按数值,非数字按字典序),与首页标签下拉一致
+        rows = sorted(per_class.items(), key=lambda kv: label_sort_key(str(kv[0])))
         u.result_table.setRowCount(len(rows))
         for i, (cls, d) in enumerate(rows):
             gt = d.get("gt", 0)
