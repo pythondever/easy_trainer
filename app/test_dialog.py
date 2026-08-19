@@ -10,6 +10,7 @@ import os
 import tempfile
 
 from PySide6.QtCore import Qt, QEvent, QObject, QTimer
+from PySide6.QtGui import QStandardItem, QStandardItemModel
 from PySide6.QtWidgets import QDialog
 
 from app.log import write_log
@@ -109,13 +110,22 @@ class TestDialog(QDialog):
 
     # ---------- 填充 ----------
     def _fill_data_combo(self):
+        """跨项目所有数据集(文本"项目/数据集",项居中)。"""
         combo = self.ui.test_data_combo
-        combo.clear()
-        for ds in self.app.db.get_datasets(self._project):
-            combo.addItem(ds["dataset_name"], (self._project, ds["dataset_name"]))
-        for i in range(combo.count()):
-            data = combo.itemData(i)
-            if data and data[1] == self._dataset:
+        model = QStandardItemModel(combo)
+        for info in self.app.db.get_project_info():
+            proj = str(info.get("project_name", "") or "")
+            ds = str(info.get("dataset_name", "") or "")
+            if not proj or not ds:
+                continue
+            item = QStandardItem("{}/{}".format(proj, ds))
+            item.setData((proj, ds), Qt.UserRole)
+            item.setTextAlignment(Qt.AlignHCenter)
+            model.appendRow(item)
+        combo.setModel(model)
+        # 默认选中传入的 dataset(完整"项目/数据集"格式)
+        for i in range(model.rowCount()):
+            if model.item(i).text() == self._dataset:
                 combo.setCurrentIndex(i)
                 break
 
@@ -127,31 +137,14 @@ class TestDialog(QDialog):
         combo.setCurrentIndex(0)
 
     def _fill_model_combo(self):
-        """只显示文件名，默认选中传入 record 的模型。"""
+        """只显示当前行 record 的模型(从 record["model_path"] 取文件名),不查 db。"""
         combo = self.ui.model_combo
         combo.clear()
-        recs = []
-        for r in self.app.db.get_model_records():
-            path = r.get("model_path") or ""
-            if not path or not r.get("end_time"):
-                continue
-            if r.get("project") != self._project:
-                continue
-            if not os.path.exists(path):
-                continue
-            recs.append(r)
-        recs.sort(key=lambda r: str(r.get("end_time", "")), reverse=True)
-        default_idx = -1
-        default_path = self._record.get("model_path", "")
-        for r in recs:
-            label = os.path.basename(r.get("model_path") or "")
-            combo.addItem(label, r.get("model_path"))
-            if r.get("model_path") == default_path:
-                default_idx = combo.count() - 1
-        if default_idx >= 0:
-            combo.setCurrentIndex(default_idx)
-        elif combo.count() > 0:
-            combo.setCurrentIndex(0)
+        path = self._record.get("model_path", "") or ""
+        if not path or not os.path.exists(path):
+            return
+        combo.addItem(os.path.basename(path), path)
+        combo.setCurrentIndex(0)
         # 鼠标悬停可见完整路径
         for i in range(combo.count()):
             combo.setItemData(i, combo.itemData(i) or "", Qt.ToolTipRole)

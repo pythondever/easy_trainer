@@ -147,11 +147,11 @@ class ModelDialog(QDialog):
                     map50 = "{:.3f}".format(float(map50))
                 except (TypeError, ValueError):
                     pass
-            # 分类模型显示精度（准确率），检测/分割显示 mAP@0.5
+            # 分类/检测/分割统一 0~1,保留 3 位小数(accuracy 存的就是比例,无需 *100)
             acc = r.get("accuracy", "")
             if acc:
                 try:
-                    metric_val = "{:.1f}%".format(float(acc) * 100)
+                    metric_val = "{:.3f}".format(float(acc))
                 except (TypeError, ValueError):
                     metric_val = str(acc)
             else:
@@ -268,17 +268,28 @@ class ModelDialog(QDialog):
 
     def _test(self, record):
         """点击测试 → 弹 TestDialog，默认选中当前行的模型。
-        用户点「开始测试」后 TestDialog 自行 accept，这里再关闭模型管理窗口回首页。"""
-        try:
 
+        模型界面是独立入口(显示全部项目),传 record 自己的 project/dataset
+        才能让 TestDialog 正确填充数据/模型下拉。
+        """
+        try:
+            # dataset 字段格式 "项目/数据集, 项目/数据集",取第一项完整格式
+            # 让 TestDialog 数据下拉能精确匹配("voc2007/train" 而非模糊命中 "train")
+            first_pair = ""
+            ds_field = record.get("dataset", "") or ""
+            for tok in (x.strip() for x in ds_field.split(",") if x.strip()):
+                if "/" in tok:
+                    first_pair = tok
+                    break
             dlg = TestDialog(
                 self.app, record,
-                project=self._project, dataset=self._dataset,
+                project=record.get("project", "") or "",
+                dataset=first_pair,
                 parent=self.app,
             )
             self.app._test_dlg = dlg
             dlg.exec()
-            self.accept()
+            # 测试弹窗关闭后模型列表保持打开(不做 self.accept)
         except Exception as e:
             trace = traceback.format_exc()
             print("[model_dialog] 打开测试失败: {}\n{}".format(

@@ -663,6 +663,8 @@ class TrainDialog(QDialog):
         val_pairs = self._selected_val_datasets()
         ds_names = ", ".join("{}/{}".format(p, d) for p, d in ds_pairs)
         val_names = ", ".join("{}/{}".format(p, d) for p, d in val_pairs)
+        # dataset_info 包含训练集+验证集," / " 分隔两组;组内多个用逗号
+        dataset_info = (ds_names + " / " + val_names) if val_names else ds_names
         first_proj = ds_pairs[0][0] if ds_pairs else self.project
         record = {
             "id": str(uuid.uuid4()),
@@ -678,7 +680,7 @@ class TrainDialog(QDialog):
             "map50": "",
             "img_size": self._img_size(),
             "model_path": self._predict_model_path(),
-            "dataset_info": ds_names,
+            "dataset_info": dataset_info,
             "output_path": self.ui.output_line_txt.text().strip(),
             "epochs": self.param_int(self.ui.epochs_line_txt, 100)
                 if hasattr(self.ui, "epochs_line_txt") else "",
