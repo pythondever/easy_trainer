@@ -1679,8 +1679,7 @@ class App(QWidget, MainUI):
                 iw, ih = im.size
         except Exception:
             return
-        target = os.path.join(lbl_dir,
-                              stem + (".json" if fmt == "labelme" else ".txt"))
+        target = os.path.join(lbl_dir, stem + (".json" if fmt == "labelme" else ".txt"))
         if fmt == "labelme":
             data = _boxes_to_labelme_json(boxes, img_src, iw, ih)
             with open(target, "w", encoding="utf-8") as f:
