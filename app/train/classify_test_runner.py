@@ -59,8 +59,6 @@ def main():
     ckpt = torch.load(model_path, map_location="cpu")
     classes = list(ckpt.get("classes") or [])
     arch = ckpt.get("architecture", "resnet18")
-    # 以 state_dict 的 fc 维度为准建模型(与 checkpoint 严格对齐,
-    # 兼容旧版本 ckpt 里 classes 列表与 fc 维度不一致的情况)
     fc_out = int(ckpt["state_dict"]["fc.weight"].shape[0])
     model = _make_model(arch, fc_out)
     model.load_state_dict(ckpt["state_dict"])

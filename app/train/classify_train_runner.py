@@ -283,7 +283,7 @@ def main():
             metrics_payload, ensure_ascii=False)), flush=True)
         print("[train] epoch={} train_loss={:.4f} val_loss={:.4f} acc={:.4f}".format(
             ep, train_loss, val_loss, acc), flush=True)
-        # 每 epoch 落盘 metrics.json(TrainWorker 轮询读,双通道不依赖 stdout)
+        # 每 epoch 落盘 metrics.json(TrainWorker 轮询读)
         with open(os.path.join(ts_dir, "metrics.json"), "w",
                   encoding="utf-8") as f:
             json.dump(metrics_payload, f, ensure_ascii=False)
