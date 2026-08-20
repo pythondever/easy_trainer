@@ -15,7 +15,8 @@ from PySide6.QtCore import Qt, Signal, QPointF, QTimer, QSize
 from PySide6.QtGui import (QColor, QPixmap, QKeySequence, QShortcut, QPen,
                            QPainter, QImage, QIcon, QCursor, QLinearGradient,
                            QFont)
-from PySide6.QtWidgets import (QDialog, QWidget, QVBoxLayout, QHBoxLayout, QLabel,
+from PySide6.QtWidgets import (QDialog, QWidget, QApplication, QVBoxLayout,
+                               QHBoxLayout, QLabel,
                                QGridLayout, QLineEdit, QSpinBox, QPushButton, QFrame,
                                QSlider, QMenu, QGraphicsTextItem)
 
@@ -557,9 +558,15 @@ class AnnotationDialog(QDialog):
         u.next_page_btn.clicked.connect(lambda: self._switch(1))
         self.scene.box_drawn.connect(self._on_box_drawn)
         self.scene.fp_mode_changed.connect(self._on_fp_mode_changed)
+        self.scene.draw_cancel_requested.connect(self._cancel_draw_mode)
         self._labeled_refresh_timer = QTimer(self)
         self._labeled_refresh_timer.setSingleShot(True)
         self._labeled_refresh_timer.timeout.connect(self._refresh_labeled_list)
+        # 删除/修改后防抖自动保存(0.8s), 防止重载旧 json 导致已删标注复活
+        self._autosave_timer = QTimer(self)
+        self._autosave_timer.setSingleShot(True)
+        self._autosave_timer.setInterval(300)
+        self._autosave_timer.timeout.connect(self._save_current)
         self.scene.boxes_changed.connect(self._on_boxes_changed)
         self.scene.label_change_requested.connect(self._on_label_change_requested)
         self.scene.selection_changed.connect(self._sync_labeled_selection)
@@ -576,6 +583,7 @@ class AnnotationDialog(QDialog):
         """
         if not getattr(self, "_loading", False):
             self._dirty = True
+            self._autosave_timer.start()
         self._labeled_refresh_timer.start()
 
     def _setup_shortcuts(self):
@@ -586,9 +594,9 @@ class AnnotationDialog(QDialog):
         QShortcut(QKeySequence(Qt.Key_Escape), self, activated=self._cancel_draw_mode)
 
     def _apply_draw_mode_cursor(self):
-        """按当前画模式状态同步 view 光标(画模式十字 / 编辑模式恢复)。"""
+        """按当前画模式状态同步 view 光标(多边形画笔/矩形十字 / 编辑模式恢复)。"""
         if self.scene.draw_mode:
-            self.view.setCursor(Qt.CrossCursor)
+            self._apply_draw_cursor()
         else:
             self.view.unsetCursor()
 
@@ -685,6 +693,7 @@ class AnnotationDialog(QDialog):
 
     def closeEvent(self, event):
         self._save_current()
+        QApplication.restoreOverrideCursor()
         super().closeEvent(event)
 
     def _update_draw_buttons(self):
@@ -706,10 +715,19 @@ class AnnotationDialog(QDialog):
         if self.scene.fp_mode is not None:
             self.scene.set_format_painter(False)
         self.scene.set_draw_mode(True, shape)
-        self.view.setCursor(Qt.CrossCursor)
+        self._apply_draw_cursor()
         self._set_draw_button_states(True)
         if not self.label_colors:
             MessageBox.information(self, "添加标签", "请先添加标签(点击「添加标签」)")
+
+    def _apply_draw_cursor(self):
+        """多边形=画笔光标, 矩形=十字; override 保证不被 item 光标覆盖。"""
+        QApplication.restoreOverrideCursor()
+        if self.scene.draw_shape == "polygon":
+            cur = self._pen_cursor()
+        else:
+            cur = Qt.CrossCursor
+        QApplication.setOverrideCursor(cur)
 
     def _set_draw_button_states(self, drawing):
         style_off = ("QPushButton { background: #2a2e3a; color: #cfd6e4;"
@@ -720,8 +738,8 @@ class AnnotationDialog(QDialog):
         self.ui.poly_btn.setStyleSheet(style_on if (drawing and self.scene.draw_shape == "polygon") else style_off)
 
     def _on_box_drawn(self):
-        """画完一个框：保持画模式（需求：只有 ESC 才退出），维持十字光标与按钮高亮。"""
-        self.view.setCursor(Qt.CrossCursor)
+        """画完一个框：保持画模式（需求：只有 ESC 才退出），维持对应光标与按钮高亮。"""
+        self._apply_draw_cursor()
         self._set_draw_button_states(True)
 
     def _cancel_draw_mode(self):
@@ -730,6 +748,7 @@ class AnnotationDialog(QDialog):
             self.scene.set_format_painter(False)
         self.scene.set_draw_mode(False)
         self.scene._cancel_polygon()
+        QApplication.restoreOverrideCursor()
         self.view.unsetCursor()
         self._set_draw_button_states(False)
 
@@ -749,7 +768,7 @@ class AnnotationDialog(QDialog):
         if self.scene.draw_mode:
             self.scene.set_draw_mode(False)
         self.scene.set_format_painter(True)
-        self.view.setCursor(self._fp_circle_cursor())
+        QApplication.setOverrideCursor(self._pen_cursor())
         self._set_draw_button_states(False)
         self.ui.format_painter_btn.setStyleSheet(self._style_on())
 
@@ -760,13 +779,13 @@ class AnnotationDialog(QDialog):
 
     def _on_fp_mode_changed(self, mode):
         if mode == "trace":
-            self.view.setCursor(self._fp_circle_cursor())
+            QApplication.setOverrideCursor(self._pen_cursor())
             self.ui.format_painter_btn.setStyleSheet(self._style_on())
         elif mode == "paint":
-            self.view.setCursor(self._fp_brush_cursor())
+            QApplication.setOverrideCursor(self._fp_brush_cursor())
             self.ui.format_painter_btn.setStyleSheet(self._style_on())
         else:  # 退出
-            self.view.unsetCursor()
+            QApplication.restoreOverrideCursor()
             self._set_draw_button_states(False)
             self.ui.format_painter_btn.setStyleSheet(self._style_off())
 
@@ -777,6 +796,14 @@ class AnnotationDialog(QDialog):
     def _style_off(self):
         return ("QPushButton { background: #2a2e3a; color: #cfd6e4;"
                 " border: 1px solid #3a3f4d; border-radius: 6px; padding: 6px 14px; }")
+
+    @staticmethod
+    def _pen_cursor():
+        """画笔光标 28px, 热点=笔尖(3,25)。"""
+        pm = QPixmap(_resource_path("画笔.png"))
+        if not pm.isNull() and pm.width() > 28:
+            pm = pm.scaled(28, 28, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        return QCursor(pm, 3, 25) if not pm.isNull() else Qt.CrossCursor
 
     @staticmethod
     def _fp_circle_cursor():

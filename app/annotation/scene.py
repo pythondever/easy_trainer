@@ -25,11 +25,12 @@ def _simplify_track(pts, max_pts=32):
 
 class AnnotationScene(QGraphicsScene):
     boxes_changed = Signal()
-    selection_changed = Signal(object)
     box_drawn = Signal()
+    selection_changed = Signal(object)
     label_change_requested = Signal(object)
     fp_mode_changed = Signal(str)
     image_pixels_changed = Signal()
+    draw_cancel_requested = Signal()   # Esc 退出绘制模式
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -41,6 +42,7 @@ class AnnotationScene(QGraphicsScene):
         self._preview_item = None
         self._draw_start = None
         self._polygon_points = []
+        self._free_track = []   # 画笔轨迹(手绘多边形采样点)
         self._last_box = None
         self.label_colors = {}
         self.image_modified = False
@@ -76,7 +78,8 @@ class AnnotationScene(QGraphicsScene):
         flag = QGraphicsItem.GraphicsItemFlag.ItemIsSelectable
         for item in self.all_items():
             item.setFlag(flag, not draw)
-            item.setCursor(Qt.CrossCursor if draw else Qt.ArrowCursor)
+            # item 不指定光标(继承 view), 否则会覆盖 view 的画笔/十字光标
+            item.unsetCursor()
 
     # ---------------- 格式刷（轨迹描边 → 模板 → 刷子粘贴） ----------------
     def set_format_painter(self, on):
@@ -152,7 +155,7 @@ class AnnotationScene(QGraphicsScene):
         first, last = pts[0], pts[-1]
         if (last[0] - first[0]) ** 2 + (last[1] - first[1]) ** 2 > 225:  # 首尾 >15px 未闭环
             return
-        simplified = _simplify_track(pts)
+        simplified = AnnotationScene._simplify_track(pts)
         patch = self._extract_patch(simplified)
         if patch is None:
             return
@@ -351,7 +354,11 @@ class AnnotationScene(QGraphicsScene):
     def delete_selected(self):
         item = self.selected_item()
         if item is not None:
+            if self.draw_mode:
+                # 画模式下删框, 先取消轨迹, 防鼠标松开误生成新矩形
+                self._cancel_polygon()
             self.removeItem(item)
+            self._last_box = None
             self.boxes_changed.emit()
             return True
         return False
@@ -360,7 +367,12 @@ class AnnotationScene(QGraphicsScene):
         """删除指定 item（右键菜单直接传 item，不依赖选中态）。"""
         if item is None or item.scene() is not self:
             return False
+        if self.draw_mode:
+            # 画模式下删除, 先取消轨迹, 防鼠标松开误生成新多边形
+            self._cancel_polygon()
         self.removeItem(item)
+        if self._last_box is item:
+            self._last_box = None
         self.boxes_changed.emit()
         return True
 
@@ -380,8 +392,9 @@ class AnnotationScene(QGraphicsScene):
         self.selection_changed.emit(self.selected_item())
 
     def _cancel_polygon(self):
-        """取消未完成的多边形绘制。"""
+        """取消未完成的多边形(清轨迹+预览)。"""
         self._polygon_points = []
+        self._free_track = []
         if self._preview_item is not None:
             self.removeItem(self._preview_item)
             self._preview_item = None
@@ -423,43 +436,100 @@ class AnnotationScene(QGraphicsScene):
         self._preview_item.setZValue(20)
 
     def _polygon_press(self, pos):
-        if len(self._polygon_points) >= 3:
-            first = self._polygon_points[0]
-            if abs(pos.x() - first[0]) < 8 and abs(pos.y() - first[1]) < 8:
-                self._finish_polygon()
-                return
-        if self._polygon_points:
-            last = self._polygon_points[-1]
-            if abs(pos.x() - last[0]) < 8 and abs(pos.y() - last[1]) < 8:
-                self._finish_polygon()
-                return
-        self._polygon_points.append([pos.x(), pos.y()])
+        """画笔模式: 按下开始采集轨迹。"""
+        self._free_track = [[pos.x(), pos.y()]]
+        self._preview_item = QGraphicsPathItem()
+        self._preview_item.setPen(QPen(QColor("#5B8CFF"), 1.5))
+        self._preview_item.setBrush(QBrush(QColor(91, 140, 255, 40)))
+        self._preview_item.setZValue(20)
+        self.addItem(self._preview_item)
         self._update_polygon_preview()
 
+    def _sample_gap_sq(self, pos, last):
+        """屏幕 10px 换算 scene 间距(考虑缩放), 放大时保持恒定屏幕密度。"""
+        scale = 1.0
+        views = self.views()
+        if views:
+            t = views[0].transform()
+            scale = abs(t.m11()) or 1.0
+        gap = max(10.0 / scale, 2.0)
+        return (pos.x()-last[0])**2 + (pos.y()-last[1])**2 >= gap * gap
+
+    @staticmethod
+    def _rdp(points, epsilon):
+        """Douglas-Peucker 抽稀: 保形且顶点数合理。"""
+        if len(points) < 3:
+            return list(points)
+        p1, p2 = points[0], points[-1]
+        x1, y1 = p1; x2, y2 = p2
+        dx, dy = x2 - x1, y2 - y1
+        dmax, idx = 0.0, 0
+        for i in range(1, len(points) - 1):
+            px, py = points[i]
+            if abs(dx) < 1e-9 and abs(dy) < 1e-9:
+                d = ((px-x1)**2 + (py-y1)**2) ** 0.5
+            else:
+                d = abs(dy*px - dx*py + x2*y1 - y2*x1) / (dx*dx + dy*dy) ** 0.5
+            if d > dmax:
+                dmax, idx = d, i
+        if dmax > epsilon:
+            left = AnnotationScene._rdp(points[:idx+1], epsilon)
+            right = AnnotationScene._rdp(points[idx:], epsilon)
+            return left[:-1] + right
+        return [p1, p2]
+
+    @staticmethod
+    def _simplify_track(points, min_gap=5.0, max_angle=150.0):
+        """轨迹抽稀: 间隔采样 + RDP 保形, 返回多边形顶点。"""
+        pts = []
+        for p in points:
+            if pts and (p[0]-pts[-1][0])**2 + (p[1]-pts[-1][1])**2 < min_gap**2:
+                continue
+            pts.append(p)
+        if len(pts) < 3:
+            return pts
+        return AnnotationScene._rdp(pts, 0.8)
+
+    def _preview_pen_width(self):
+        """轨迹粗细自适应: 屏幕恒定 ~2.5px(scene 宽 = 2.5/scale)。"""
+        scale = 1.0
+        views = self.views()
+        if views:
+            t = views[0].transform()
+            scale = abs(t.m11()) or 1.0
+        return max(0.6, 2.5 / scale)
+
     def _finish_polygon(self):
-        pts = self._polygon_points
+        # 轨迹抽稀成多边形顶点(采样间隔+共线合并), 生成标注
+        pts = self._simplify_track(self._free_track or self._polygon_points)
         self._cancel_polygon()
+        if len(pts) < 3:
+            return
         item = self.add_polygon(pts, self.current_label)
         if item is not None:
+            # 画完后立即可选中(绘制模式下其余标注不可选)
+            item.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, True)
             item.setSelected(True)
             self.box_drawn.emit()
 
     def _update_polygon_preview(self):
+        # 绘制过程只做轨迹跟随(不抽稀), 抽稀延后到 _finish_polygon
+        pts = self._free_track
         if self._preview_item is None:
             self._preview_item = QGraphicsPathItem()
-            self._preview_item.setPen(QPen(QColor("#5B8CFF"), 1.5))
+            self._preview_item.setPen(QPen(QColor("#5B8CFF"),
+                                           self._preview_pen_width()))
             self._preview_item.setBrush(QBrush(QColor(91, 140, 255, 40)))
             self._preview_item.setZValue(20)
             self.addItem(self._preview_item)
-        pts = self._polygon_points
+        else:
+            self._preview_item.setPen(QPen(QColor("#5B8CFF"),
+                                           self._preview_pen_width()))
         path = QPainterPath()
         if pts:
             path.moveTo(pts[0][0], pts[0][1])
             for x, y in pts[1:]:
                 path.lineTo(x, y)
-            # 顶点小圆点标记
-            for x, y in pts:
-                path.addEllipse(QPointF(x, y), 3.0, 3.0)
         self._preview_item.setPath(path)
 
     def mouseMoveEvent(self, event):
@@ -467,7 +537,7 @@ class AnnotationScene(QGraphicsScene):
             pos = self._clamp_to_image(event.scenePos())
             if self.fp_mode == "trace" and self.fp_track:
                 last = self.fp_track[-1]
-                if (pos.x() - last[0]) ** 2 + (pos.y() - last[1]) ** 2 >= 64:
+                if self._sample_gap_sq(pos, last):
                     self.fp_track.append([pos.x(), pos.y()])
                     self._update_fp_track_preview()
                 event.accept()
@@ -479,23 +549,14 @@ class AnnotationScene(QGraphicsScene):
         if not self.draw_mode:
             super().mouseMoveEvent(event)
             return
-        if self.draw_shape == "polygon" and self._polygon_points:
+        if self.draw_shape == "polygon" and self._free_track:
             pos = self._clamp_to_image(event.scenePos())
-            pts = self._polygon_points + [[pos.x(), pos.y()]]
-            path = QPainterPath()
-            if pts:
-                path.moveTo(pts[0][0], pts[0][1])
-                for x, y in pts[1:]:
-                    path.lineTo(x, y)
-                for x, y in self._polygon_points:
-                    path.addEllipse(QPointF(x, y), 3.0, 3.0)
-            if self._preview_item is None:
-                self._preview_item = QGraphicsPathItem()
-                self._preview_item.setPen(QPen(QColor("#5B8CFF"), 1.5))
-                self._preview_item.setBrush(QBrush(QColor(91, 140, 255, 40)))
-                self._preview_item.setZValue(20)
-                self.addItem(self._preview_item)
-            self._preview_item.setPath(path)
+            # 轨迹采样抽稀: 按屏幕像素 10px 换算成 scene 间距(缩放后仍保持
+            # 恒定屏幕密度, 避免放大时点过密导致预览卡顿)
+            last = self._free_track[-1]
+            if self._sample_gap_sq(pos, last):
+                self._free_track.append([pos.x(), pos.y()])
+                self._update_polygon_preview()
             event.accept()
             return
         if self.draw_shape == "rect" and self._draw_start is not None and self._preview_item is not None:
@@ -509,6 +570,10 @@ class AnnotationScene(QGraphicsScene):
     def mouseReleaseEvent(self, event):
         if self.fp_mode == "trace" and event.button() == Qt.LeftButton:
             self._finish_fp_trace()
+            event.accept()
+            return
+        if self.draw_mode and self.draw_shape == "polygon" and self._free_track:
+            self._finish_polygon()
             event.accept()
             return
         if self.draw_mode and self.draw_shape == "rect" and self._draw_start is not None:
@@ -537,18 +602,19 @@ class AnnotationScene(QGraphicsScene):
         super().mouseDoubleClickEvent(event)
 
     def keyPressEvent(self, event):
-        """多边形模式：Esc 取消、Enter 闭合；格式刷模式：Esc 退出。"""
+        """绘制模式 Esc 退出; 多边形 Enter 闭合; 格式刷 Esc 退出。"""
         if self.fp_mode is not None and event.key() == Qt.Key_Escape:
             self.set_format_painter(False)
             event.accept()
             return
-        if self.draw_mode and self.draw_shape == "polygon" and self._polygon_points:
-            if event.key() == Qt.Key_Escape:
-                self._cancel_polygon()
-                event.accept()
-                return
+        if self.draw_mode and event.key() == Qt.Key_Escape:
+            self._cancel_polygon()
+            self.draw_cancel_requested.emit()
+            event.accept()
+            return
+        if self.draw_mode and self.draw_shape == "polygon" and self._free_track:
             if event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter:
-                if len(self._polygon_points) >= 3:
+                if len(self._free_track) >= 3:
                     self._finish_polygon()
                     event.accept()
                     return

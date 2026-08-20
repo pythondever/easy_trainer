@@ -80,11 +80,14 @@ class AnnotationBoxItem(QGraphicsRectItem):
         return path
 
     def _compute_handle_size(self):
-        """按矩形较短边计算手柄直径（圆形），范围 [2, 10]（场景坐标）。
-        直径 ≤ min(同边间距, 上下中点距离) = min(w/2, h) 的 1/3，避免相邻手柄粘连。"""
+        """手柄直径 [2,10], 除以 view 缩放屏幕恒定, 上限 20 防异常。"""
         r = self.rect()
         short = min(r.width(), r.height())
-        return max(2.0, min(10.0, short / 3.0))
+        s = max(2.0, min(10.0, short / 3.0))
+        scale = self._view_scale()
+        if scale > 1e-6:
+            s = max(1.2, min(s / scale, 20.0))
+        return s
 
     def _update_handles(self):
         """每个矩形固定 6 个圆形手柄：4 个角点 + 2 个长边中点。
@@ -166,21 +169,14 @@ class AnnotationBoxItem(QGraphicsRectItem):
         return views[0].transform().m11() or 1.0
 
     def _chip_rect_local(self):
-        """标签 chip 在局部坐标的近似区域（与 paint 绘制位置一致，用于点击检测）。
-
-        chip 起点 = 框左上角，绘制在框上方 22px；顶部越界时下移到框内 +4。
-        文字宽度估算：中文≈13px/字、ASCII≈7px/字（pixelSize 13 字体），
-        按 view 缩放换算回局部坐标。"""
+        """chip 点击区域, 锚定框右下角外侧(右对齐+底下方2px), 宽度按缩放换算。"""
         r = self.rect()
-        top = r.top() - 22
-        if top < 0:
-            top = r.top() + 4
         text = self.label[:12]
         w_screen = sum(13 if ord(c) > 127 else 7 for c in text) + 12
         w_screen = max(30, w_screen)
         scale = self._view_scale()
         w = w_screen / scale if scale > 1e-6 else w_screen
-        return QRectF(r.left(), top, w, 20)
+        return QRectF(r.right() - w, r.bottom() + 2, w, 20)
 
     def chip_scene_pos(self):
         """chip 中心点（场景坐标），用于菜单弹出定位。"""
@@ -306,7 +302,7 @@ class AnnotationBoxItem(QGraphicsRectItem):
         """
         r = self.rect()
         o = getattr(self, "_handle_size", self.HANDLE_SIZE)
-        return r.adjusted(-o, -o - 24, o, o)
+        return r.adjusted(-o, -o - 24, o, o + 24)
 
     def paint(self, painter, option, widget=None):
         painter.setRenderHint(QPainter.Antialiasing)
@@ -315,26 +311,22 @@ class AnnotationBoxItem(QGraphicsRectItem):
         painter.setPen(pen)
         painter.setBrush(self.brush())
         painter.drawRect(self.rect())
-        r = self.rect()
-        label_rect = QRectF(r.left(), r.top() - 22, max(30.0, r.width()), 20)
-        if label_rect.top() < 0:
-            label_rect.moveTop(r.top() + 4)
+        label_rect = self._chip_rect_local()
         self._draw_label(painter, label_rect)
         if self.isSelected():
             painter.setPen(QPen(QColor("#5B8CFF"), 1.0))
             painter.setBrush(QBrush(QColor("#ffffff")))
+            s = self._compute_handle_size()
+            self._handle_size = s
             for rect in self._handles.values():
-                painter.drawEllipse(rect)
+                c = rect.center()
+                painter.drawEllipse(QRectF(c.x() - s / 2, c.y() - s / 2, s, s))
 
     def _draw_label(self, painter, label_rect):
         color = self._color if self._color is not None else label_color(self.label)
         painter.save()
         transform = painter.transform()
-        scale = transform.m11()
-        if abs(scale) < 1e-6:
-            scale = 1.0
-        device_rect = QRectF(transform.map(QPointF(label_rect.left(), label_rect.top())),
-                             transform.map(QPointF(label_rect.right(), label_rect.bottom())))
+        scale = transform.m11() if abs(transform.m11()) > 1e-6 else 1.0
         painter.resetTransform()
         font = QFont("Microsoft YaHei UI")
         if not font.exactMatch():
@@ -342,11 +334,13 @@ class AnnotationBoxItem(QGraphicsRectItem):
         font.setStyleHint(QFont.SansSerif)
         font.setPixelSize(13)
         painter.setFont(font)
-        painter.setPen(QPen(QColor("#1c1e25"), 1.0))
-        painter.setBrush(QBrush(color))
         text = self.label[:12]
         w = max(30, painter.fontMetrics().horizontalAdvance(text) + 12)
-        chip = QRectF(device_rect.left(), device_rect.top(), w, 20)
+        h = 20
+        anchor = transform.map(QPointF(label_rect.left(), label_rect.top()))
+        chip = QRectF(anchor.x(), anchor.y(), w, h)
+        painter.setPen(QPen(QColor("#1c1e25"), 1.0))
+        painter.setBrush(QBrush(color))
         painter.drawRoundedRect(chip, 4, 4)
         luminance = 0.299 * color.red() + 0.587 * color.green() + 0.114 * color.blue()
         text_color = QColor("#1c1e25") if luminance > 160 else QColor("#ffffff")
@@ -410,10 +404,14 @@ class AnnotationPolygonItem(QGraphicsPolygonItem):
         return "polygon"
 
     def _compute_handle_size(self):
-        """按多边形包围盒面积设置手柄大小（圆形），范围 [2, 6]。"""
+        """手柄直径 [2,6], 除以 view 缩放屏幕恒定, 上限 20 防异常。"""
         r = self.polygon().boundingRect()
         area = max(1.0, r.width() * r.height())
-        return max(2.0, min(6.0, area ** 0.5 * 0.25))
+        s = max(2.0, min(6.0, area ** 0.5 * 0.25))
+        scale = self._view_scale()
+        if scale > 1e-6:
+            s = max(1.2, min(s / scale, 20.0))
+        return s
 
     def set_label(self, label, color=None):
         """修改类别。未显式传 color 时按新标签重新取色：
@@ -452,17 +450,18 @@ class AnnotationPolygonItem(QGraphicsPolygonItem):
         return views[0].transform().m11() or 1.0
 
     def _chip_rect_local(self):
-        """标签 chip 在局部坐标的近似区域（与 paint 绘制位置一致，按 view 缩放换算）。"""
+        """chip 点击区域, 锚定外接矩形中心, 尺寸按缩放换算。"""
         r = self.polygon().boundingRect()
-        top = r.top() - 22
-        if top < 0:
-            top = r.top() + 4
         text = self.label[:12]
         w_screen = sum(13 if ord(c) > 127 else 7 for c in text) + 12
         w_screen = max(30, w_screen)
         scale = self._view_scale()
-        w = w_screen / scale if scale > 1e-6 else w_screen
-        return QRectF(r.left(), top, w, 20)
+        if scale > 1e-6:
+            w, h = w_screen / scale, 20.0 / scale
+        else:
+            w, h = w_screen, 20.0
+        c = r.center()
+        return QRectF(c.x() - w / 2, c.y() - h / 2, w, h)
 
     def chip_scene_pos(self):
         c = self._chip_rect_local().center()
@@ -568,7 +567,7 @@ class AnnotationPolygonItem(QGraphicsPolygonItem):
     def boundingRect(self):
         r = self.polygon().boundingRect()
         o = getattr(self, "_handle_size", self.HANDLE_SIZE)
-        return r.adjusted(-o, -o - 24, o, o)
+        return r.adjusted(-o, -o - 24, o, o + 24)
 
     def paint(self, painter, option, widget=None):
         painter.setRenderHint(QPainter.Antialiasing)
@@ -578,29 +577,22 @@ class AnnotationPolygonItem(QGraphicsPolygonItem):
         painter.setBrush(self.brush())
         painter.drawPolygon(self.polygon())
 
-        r = self.polygon().boundingRect()
-        label_rect = QRectF(r.left(), r.top() - 22, max(30.0, r.width()), 20)
-        if label_rect.top() < 0:
-            label_rect.moveTop(r.top() + 4)
+        label_rect = self._chip_rect_local()
         self._draw_label(painter, label_rect)
 
         if self.isSelected():
             painter.setPen(QPen(QColor("#5B8CFF"), 1.0))
             painter.setBrush(QBrush(QColor("#ffffff")))
             for p in self.polygon():
-                self._handle_size = self._compute_handle_size()
-                painter.drawRect(QRectF(p.x() - self._handle_size / 2, p.y() - self._handle_size / 2,
-                                        self._handle_size, self._handle_size))
+                s = self._compute_handle_size()
+                self._handle_size = s
+                painter.drawEllipse(QRectF(p.x() - s / 2, p.y() - s / 2, s, s))
 
     def _draw_label(self, painter, label_rect):
         color = self._color if self._color is not None else label_color(self.label)
         painter.save()
         transform = painter.transform()
-        scale = transform.m11()
-        if abs(scale) < 1e-6:
-            scale = 1.0
-        device_rect = QRectF(transform.map(QPointF(label_rect.left(), label_rect.top())),
-                             transform.map(QPointF(label_rect.right(), label_rect.bottom())))
+        scale = transform.m11() if abs(transform.m11()) > 1e-6 else 1.0
         painter.resetTransform()
         font = QFont("Microsoft YaHei UI")
         if not font.exactMatch():
@@ -608,11 +600,13 @@ class AnnotationPolygonItem(QGraphicsPolygonItem):
         font.setStyleHint(QFont.SansSerif)
         font.setPixelSize(13)
         painter.setFont(font)
-        painter.setPen(QPen(QColor("#1c1e25"), 1.0))
-        painter.setBrush(QBrush(color))
         text = self.label[:12]
         w = max(30, painter.fontMetrics().horizontalAdvance(text) + 12)
-        chip = QRectF(device_rect.left(), device_rect.top(), w, 20)
+        h = 20
+        anchor = transform.map(QPointF(label_rect.left(), label_rect.top()))
+        chip = QRectF(anchor.x(), anchor.y(), w, h)
+        painter.setPen(QPen(QColor("#1c1e25"), 1.0))
+        painter.setBrush(QBrush(color))
         painter.drawRoundedRect(chip, 4, 4)
         luminance = 0.299 * color.red() + 0.587 * color.green() + 0.114 * color.blue()
         text_color = QColor("#1c1e25") if luminance > 160 else QColor("#ffffff")
