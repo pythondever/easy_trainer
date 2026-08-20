@@ -243,8 +243,7 @@ class ModelDialog(QDialog):
         try:
             if not MessageBox.question(
                     self, "删除模型记录",
-                    "确定删除该条模型记录？\n项目={}\n数据集={}\n开始时间={}\n"
-                    "（仅从模型列表移除,不影响训练参数回填,也不删除磁盘上的模型文件）".format(
+                    "确定删除该条模型记录？\n项目={}\n数据集={}\n开始时间={}\n".format(
                         record.get("project", ""), ds, st)):
                 return
             self.app.db.delete_model_record(record.get("id"))
@@ -293,7 +292,7 @@ class ModelDialog(QDialog):
     def _export(self, rec):
         """
         导出模型: 建时间戳文件夹, 模型命名 "项目_任务_图像尺寸_模型规模.pth",
-        附带 classes.txt / data.yaml 供使用者对照类别。
+        附带 classes.txt 供使用者对照类别。
         """
         model_path = rec.get("model_path", "") if isinstance(rec, dict) else rec
         if not model_path or not os.path.exists(model_path):
@@ -339,8 +338,6 @@ class ModelDialog(QDialog):
                 if os.path.exists(cand):
                     yaml_src = cand
                     break
-            # 无 classes.txt 时生成(格式统一 "id 类别名"):
-            # 分类 → checkpoint 里的 classes; 检测/分割 → data.yaml 的 names
             if "classes.txt" not in copied:
                 generated = False
                 if task_text == "分类":

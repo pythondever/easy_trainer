@@ -87,11 +87,9 @@ class TestDialog(QDialog):
                               for i in range(lay.count()))
             if not has_stretch:
                 lay.insertStretch(1, 1)
-        # 输出标签文件行:label 和 checkbox 紧挨(无 stretch spacer 时 widget 会平分剩余空间)
         out_lay = getattr(self.ui, "output_row", None)
         if out_lay is not None:
             out_lay.setSpacing(8)
-            # label+checkbox 后加 stretch,剩余空白推到行尾,checkbox 紧贴 label
             has_stretch = any(out_lay.itemAt(i) and out_lay.itemAt(i).spacerItem()
                               for i in range(out_lay.count()))
             if not has_stretch:
@@ -111,7 +109,6 @@ class TestDialog(QDialog):
             combo.installEventFilter(f)
             combo.lineEdit().installEventFilter(f)
             self._combo_filters.append(f)
-        # 文本框文字居中（与下拉框保持一致的视觉风格）
         for name in ("confidence_txt", "iou_treshold_txt"):
             edit = getattr(self.ui, name, None)
             if edit is not None:
@@ -132,7 +129,6 @@ class TestDialog(QDialog):
             item.setTextAlignment(Qt.AlignHCenter)
             model.appendRow(item)
         combo.setModel(model)
-        # 默认选中传入的 dataset(完整"项目/数据集"格式)
         for i in range(model.rowCount()):
             if model.item(i).text() == self._dataset:
                 combo.setCurrentIndex(i)
@@ -154,7 +150,6 @@ class TestDialog(QDialog):
             return
         combo.addItem(os.path.basename(path), path)
         combo.setCurrentIndex(0)
-        # 鼠标悬停可见完整路径
         for i in range(combo.count()):
             combo.setItemData(i, combo.itemData(i) or "", Qt.ToolTipRole)
         if combo.count():
@@ -192,8 +187,6 @@ class TestDialog(QDialog):
         info = self.app.db.get_dataset_import(self._project, self._dataset) or {}
         cls_mode = info.get("label_fmt", "") == "cls"
         self._cls_mode = cls_mode
-        # 分类模式：隐藏 iou 阈值行 + 输出标签文件行（分类无框、无需输出标注）
-        # 置信度对分类无意义(argmax 不受阈值影响),也隐藏
         self._set_row_visible("iou_row", not cls_mode)
         self._set_row_visible("output_row", not cls_mode)
         self._set_row_visible("confidence_row", not cls_mode)
@@ -219,7 +212,6 @@ class TestDialog(QDialog):
         proj, ds_name = ds
         cls_mode = getattr(self, "_cls_mode", False)
         if cls_mode:
-            # 分类模式：无置信度/IoU 概念，用默认值；不输出标注文件
             conf, iou, output_labels = 0.5, 0.5, False
         else:
             try:
@@ -282,7 +274,7 @@ class TestDialog(QDialog):
         self.accept()
         _TrainStartDialog(parent=self.app, title="测试即将开始",
                           message="测试即将开始").exec()
-        # 倒计时结束/人工点确定 → 关闭模型列表窗口回首页
+        # 倒计时结束/人工点确定, 关闭模型列表窗口回首页
         md = getattr(self.app, "_model_dialog", None)
         if md is not None:
             md.accept()

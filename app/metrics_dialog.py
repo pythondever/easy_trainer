@@ -103,7 +103,7 @@ class MetricsDialog(QDialog):
         row.addWidget(self._combo)
         # 无 per_class
         if not self._per_class and not self._labels:
-            self._hint = QLabel("（暂无标签数据，需完成首次 epoch 验证后才会出现）")
+            self._hint = QLabel("(暂无标签数据,需完成首次 epoch 验证后才会出现)")
             self._hint.setStyleSheet("color: #8a92a3; font-size: 12px;")
             row.addWidget(self._hint)
         self._body.addLayout(row)
