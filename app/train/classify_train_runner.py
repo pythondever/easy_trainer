@@ -303,12 +303,12 @@ def main():
 
     print("[train] 训练完成 best_acc={:.4f}".format(best_acc), flush=True)
 
-    # 模型目录生成 classes.txt: 第 i 行 = id i 的类别名(交付他人使用时对照)
+    # 模型目录生成 classes.txt: 每行 "id 类别名"(交付他人使用时显式对照)
     classes_path = os.path.join(ts_dir, "classes.txt")
     try:
         with open(classes_path, "w", encoding="utf-8") as f:
-            for lb in classes:
-                f.write("{}\n".format(lb))
+            for i, lb in enumerate(classes):
+                f.write("{} {}\n".format(i, lb))
         print("[train] 生成类别文件: {}".format(classes_path), flush=True)
     except Exception:
         pass

@@ -509,7 +509,6 @@ class TrainDialog(QDialog):
                 if v == task:
                     idx = self.ui.task_combo.findText(k)
                     if idx >= 0:
-                        # setCurrentIndex 触发 currentIndexChanged → 同步优化器/grad_accum
                         self.ui.task_combo.setCurrentIndex(idx)
                     break
         self._apply_task_ui()

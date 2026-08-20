@@ -162,12 +162,12 @@ def main():
     print("[train] 训练完成", flush=True)
 
     # 3) 结果汇总: best ckpt + metrics.csv 末行指标
-    # 在模型目录生成 classes.txt: 第 i 行 = id i 的类别名(交付他人使用时对照)
+    # 在模型目录生成 classes.txt: 每行 "id 类别名"(交付他人使用时显式对照)
     classes_path = os.path.join(ts_dir, "classes.txt")
     try:
         with open(classes_path, "w", encoding="utf-8") as f:
             for i, lb in enumerate(labels):
-                f.write("{}\n".format(lb))
+                f.write("{} {}\n".format(i, lb))
         print("[train] 生成类别文件: {}".format(classes_path), flush=True)
     except Exception:
         pass

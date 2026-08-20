@@ -76,17 +76,14 @@ class ModelDialog(QDialog):
         t.setSelectionMode(QAbstractItemView.SingleSelection)
         t.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         h = t.horizontalHeader()
-        # 列宽：列 7/8 给较大初始宽度（不使用 Stretch，避免 Qt cellWidget 重影 bug）
         for i, w in enumerate([150, 150, 150, 90, 90, 90, 90, 140, 380, 80,
                                80, 80, 80, 80]):
             h.setSectionResizeMode(i, QHeaderView.Interactive)
             t.setColumnWidth(i, w)
         h.setMinimumSectionSize(60)
         h.setStretchLastSection(False)
-        # 行高加大（默认 30px 装不下 26px 按钮+上下 padding）
         t.verticalHeader().setDefaultSectionSize(40)
         t.verticalHeader().setMinimumSectionSize(40)
-        # 按钮列表头清空
         for c in (9, 10, 11, 12, 13):
             t.setHorizontalHeaderItem(c, QTableWidgetItem(""))
 
@@ -99,8 +96,10 @@ class ModelDialog(QDialog):
         self._page_size = max(10, t.viewport().height() // row_h)
 
     def _load_records(self):
-        """合并显示:已完成的优先从 model_history 取(完整字段),
-        未完成/训练中/无模型输出的用 train_history 补充(实时更新 metrics)。"""
+        """
+        合并显示:已完成的优先从 model_history 取(完整字段),
+        未完成/训练中/无模型输出的用 train_history 补充(实时更新 metrics)。
+        """
         train_recs = self.app.db.get_train_records()
         model_recs = self.app.db.get_model_records()
         seen_train_ids = set()
@@ -139,18 +138,15 @@ class ModelDialog(QDialog):
         start = self._page * self._page_size
         page_recs = self._records[start:start + self._page_size]
         rows = self._page_size
-        # 清空上一轮残留（删除/翻页后旧行 cellWidget 不清会重复显示）
         t.clearContents()
         t.setRowCount(rows)
         for i, r in enumerate(page_recs):
             map50 = r.get("map50", "")
             if map50:
-                # 兼容历史记录：旧数据可能存了十几位尾数，统一保留 3 位小数
                 try:
                     map50 = "{:.3f}".format(float(map50))
                 except (TypeError, ValueError):
                     pass
-            # 分类/检测/分割统一 0~1,保留 3 位小数(accuracy 存的就是比例,无需 *100)
             acc = r.get("accuracy", "")
             if acc:
                 try:
@@ -159,7 +155,6 @@ class ModelDialog(QDialog):
                     metric_val = str(acc)
             else:
                 metric_val = map50
-            # 模型类型:task 字段 detect/segment/classify,旧记录无字段显示 —
             task_text = {"detect": "检测", "segment": "分割",
                          "classify": "分类"}.get(r.get("task", ""), "—")
             vals = [r.get("start_time", ""), r.get("end_time", ""),
@@ -169,7 +164,6 @@ class ModelDialog(QDialog):
             for j, v in enumerate(vals):
                 text = str(v)
                 if j == 7:
-                    # 只显示目录部分(不含文件名),tooltip 显示完整路径
                     text = os.path.dirname(str(v)) if v else ""
                     item = QTableWidgetItem(text)
                     item.setToolTip(str(v))
@@ -270,14 +264,12 @@ class ModelDialog(QDialog):
             MessageBox.warning(self, "打开训练失败", str(e))
 
     def _test(self, record):
-        """点击测试 → 弹 TestDialog，默认选中当前行的模型。
-
+        """
+        点击测试 → 弹 TestDialog，默认选中当前行的模型。
         模型界面是独立入口(显示全部项目),传 record 自己的 project/dataset
         才能让 TestDialog 正确填充数据/模型下拉。
         """
         try:
-            # dataset 字段格式 "项目/数据集, 项目/数据集",取第一项完整格式
-            # 让 TestDialog 数据下拉能精确匹配("voc2007/train" 而非模糊命中 "train")
             first_pair = ""
             ds_field = record.get("dataset", "") or ""
             for tok in (x.strip() for x in ds_field.split(",") if x.strip()):
@@ -292,7 +284,6 @@ class ModelDialog(QDialog):
             )
             self.app._test_dlg = dlg
             dlg.exec()
-            # 测试弹窗关闭后模型列表保持打开(不做 self.accept)
         except Exception as e:
             trace = traceback.format_exc()
             print("[model_dialog] 打开测试失败: {}\n{}".format(
@@ -300,12 +291,22 @@ class ModelDialog(QDialog):
             MessageBox.warning(self, "打开测试失败", str(e))
 
     def _export(self, rec):
-        """导出模型: 建时间戳文件夹, 模型命名"项目_任务_图像尺寸_模型规模.pth",
-        附带 classes.txt / data.yaml 供使用者对照类别。"""
+        """
+        导出模型: 建时间戳文件夹, 模型命名 "项目_任务_图像尺寸_模型规模.pth",
+        附带 classes.txt / data.yaml 供使用者对照类别。
+        """
         model_path = rec.get("model_path", "") if isinstance(rec, dict) else rec
         if not model_path or not os.path.exists(model_path):
-            MessageBox.warning(self, "导出模型", "模型文件不存在：\n{}".format(model_path))
-            return
+            model_dir = os.path.dirname(model_path) if model_path else ""
+            for cand in ("checkpoint_best.pth", "checkpoint_best_ema.pth",
+                         "checkpoint_best_regular.pth"):
+                p = os.path.join(model_dir, cand)
+                if os.path.exists(p):
+                    model_path = p
+                    break
+            if not model_path or not os.path.exists(model_path):
+                MessageBox.warning(self, "导出模型", "模型文件不存在：\n{}".format(model_path))
+                return
         d = QFileDialog.getExistingDirectory(self, "选择导出目录")
         if not d:
             return
@@ -325,21 +326,61 @@ class ModelDialog(QDialog):
                                          img_size, model_size) if p])
             dst_model = os.path.join(out_dir, base + ext)
             shutil.copy2(model_path, dst_model)
-            # 附带类别文件: classes.txt(优先) / data.yaml(兜底, 上一级目录也找),
-            # 供使用者对照 id → 类别名
             copied = []
             model_dir = os.path.dirname(model_path)
-            for fn in ("classes.txt", "data.yaml"):
-                src = os.path.join(model_dir, fn)
-                if not os.path.exists(src) and fn == "data.yaml":
-                    src = os.path.join(os.path.dirname(model_dir), fn)
-                if os.path.exists(src):
-                    shutil.copy2(src, os.path.join(out_dir, fn))
-                    copied.append(fn)
-            msg = "已导出到：\n{}\n\n模型: {}{}".format(
-                out_dir, dst_model,
-                "\n附带类别文件: " + ", ".join(copied) if copied
-                else "\n未发现类别文件(classes.txt/data.yaml)")
-            MessageBox.information(self, "导出模型", msg)
+            yaml_src = ""
+            # classes.txt: 目录已有则复制; data.yaml 只读不复制(解析 names 用)
+            src = os.path.join(model_dir, "classes.txt")
+            if os.path.exists(src):
+                shutil.copy2(src, os.path.join(out_dir, "classes.txt"))
+                copied.append("classes.txt")
+            for cand in (os.path.join(model_dir, "data.yaml"),
+                         os.path.join(os.path.dirname(model_dir), "data.yaml")):
+                if os.path.exists(cand):
+                    yaml_src = cand
+                    break
+            # 无 classes.txt 时生成(格式统一 "id 类别名"):
+            # 分类 → checkpoint 里的 classes; 检测/分割 → data.yaml 的 names
+            if "classes.txt" not in copied:
+                generated = False
+                if task_text == "分类":
+                    try:
+                        import torch
+                        ckpt = torch.load(model_path, map_location="cpu",
+                                          weights_only=False)
+                        classes = ckpt.get("classes") if isinstance(ckpt, dict) else None
+                        if classes:
+                            with open(os.path.join(out_dir, "classes.txt"),
+                                      "w", encoding="utf-8") as f:
+                                for i, lb in enumerate(classes):
+                                    f.write("{} {}\n".format(i, lb))
+                            generated = True
+                    except Exception:
+                        pass
+                elif yaml_src and os.path.exists(yaml_src):
+                    try:
+                        # 解析 data.yaml 的 names: {id: name}
+                        pairs = []
+                        with open(yaml_src, "r", encoding="utf-8") as f:
+                            for line in f:
+                                line = line.strip()
+                                if line.startswith("names:") or not line:
+                                    continue
+                                if ":" in line:
+                                    k, _, v = line.partition(":")
+                                    if k.strip().isdigit():
+                                        pairs.append(
+                                            (int(k.strip()), v.strip().strip('"')))
+                        if pairs:
+                            with open(os.path.join(out_dir, "classes.txt"),
+                                      "w", encoding="utf-8") as f:
+                                for _, name in sorted(pairs):
+                                    f.write("{} {}\n".format(_, name))
+                            generated = True
+                    except Exception:
+                        pass
+                if generated:
+                    copied.append("classes.txt(生成)")
+            MessageBox.information(self, "导出模型", "导出成功")
         except OSError as e:
             MessageBox.warning(self, "导出模型", "导出失败：{}".format(e))
