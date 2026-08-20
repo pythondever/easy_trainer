@@ -459,6 +459,25 @@ class DataBase:
                 return True
         return False
 
+    def get_dataset_label_ids(self, project_name, dataset_name):
+        """返回该数据集 class_id→标签名 映射 {str_id: 标签名}(YOLO txt 数字 id 的显示名)。"""
+        for info in self.get_project_info():
+            if (info.get('project_name') == project_name
+                    and info.get('dataset_name') == dataset_name):
+                return dict(info.get('label_ids') or {})
+        return {}
+
+    def save_dataset_label_ids(self, project_name, dataset_name, ids):
+        """整体保存 {str_id: 标签名}。"""
+        info_list = self.get_project_info()
+        for info in info_list:
+            if (info.get('project_name') == project_name
+                    and info.get('dataset_name') == dataset_name):
+                info['label_ids'] = dict(ids)
+                self.update_project_info(info_list)
+                return True
+        return False
+
     def add_dataset_label(self, project_name, dataset_name, label_name, color):
         """添加/更新单个标签及其颜色。"""
         labels = self.get_dataset_labels(project_name, dataset_name)

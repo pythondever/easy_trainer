@@ -229,11 +229,13 @@ def _load_labelme(json_path):
     return boxes
 
 
-def _load_import_label(image_path, label_path, fmt):
+def _load_import_label(image_path, label_path, fmt, label_ids=None):
     """
     从导入绑定的标签目录读取标签框（yolo txt / labelme json）。
     label_path 可为 str 或 list（多路径导入：依次查找同名标签文件）。
     与 _load_labelme 返回相同格式的 boxes 列表；无标签/目录无效返回 []。
+    label_ids: {txt 数字 id 字符串: 显示名} 映射（YOLO 专用），
+    有映射时优先用显示名，无映射退回数字本身。
     用于: 导入带标注的图像进入标注界面时显示导入的标注框
     （标注系统的 labelme json 保存在图像同路径，而导入标签在 label_path 目录）。
     """
@@ -269,7 +271,10 @@ def _load_import_label(image_path, label_path, fmt):
                         vals = [float(x) for x in parts]
                     except ValueError:
                         continue
-                    label = normalize_label(parts[0].strip())
+                    raw = parts[0].strip()
+                    label = (label_ids.get(raw) if label_ids and raw in label_ids
+                             else raw)
+                    label = normalize_label(label)
                     if len(vals) == 5:
                         # 检测格式:cls cx cy w h
                         _, cx, cy, w, h = vals
@@ -495,6 +500,9 @@ class AnnotationDialog(QDialog):
         self.dataset = dataset
         self.label_path = label_path
         self.label_fmt = label_fmt
+        # YOLO txt 数字 id → 显示名映射(db 持久化,跨重启生效)
+        self.label_ids = (db.get_dataset_label_ids(project, dataset)
+                          if db else {})
         self.cls_mode = cls_mode
         self._cls_changes = []
         self._deleted_labels = []   # 本次会话删除的标签（供主界面清理缓存）
@@ -615,7 +623,8 @@ class AnnotationDialog(QDialog):
         else:
             boxes = _load_labelme(base + ".json")
             if not boxes:
-                boxes = _load_import_label(image_path, self.label_path, self.label_fmt)
+                boxes = _load_import_label(image_path, self.label_path, self.label_fmt,
+                                   self.label_ids)
         self._loading = True
         try:
             self.scene.load_boxes(boxes)

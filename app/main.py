@@ -167,7 +167,8 @@ class _ImportTask(QThread):
 
     IMAGE_EXTS = (".jpg", ".jpeg", ".png", ".bmp", ".webp")
 
-    def __init__(self, image_path, label_path="", fmt="", parent=None, excluded=None):
+    def __init__(self, image_path, label_path="", fmt="", parent=None,
+                 excluded=None, label_ids=None):
         super().__init__(parent)
         self.image_paths = [image_path] if isinstance(image_path, (str,)) else list(image_path or [])
         self.label_paths = [label_path] if isinstance(label_path, (str,)) else list(label_path or [])
@@ -176,6 +177,10 @@ class _ImportTask(QThread):
         self.fmt = fmt  # '' 无标签 / '.txt' / '.json'
         self.excluded = set(excluded or [])
         self._cancel = False
+        # YOLO txt 数字 id → 显示名映射(db 持久化,重命名跨重启生效);
+        # 导入过程中收集扫描到的 id→最终名,完成后由 on_finished 存回 db
+        self._id_names = dict(label_ids or {})
+        self._seen_ids = {}
 
     @staticmethod
     def _norm(path):
@@ -306,6 +311,10 @@ class _ImportTask(QThread):
                         bw = int((max(xs) - min(xs)) * iw)
                         bh = int((max(ys) - min(ys)) * ih)
                     lbl = normalize_label(parts[0].strip())
+                    # 映射数字 id → 显示名(无映射时退回数字本身)
+                    if parts[0].strip() in self._id_names:
+                        lbl = normalize_label(self._id_names[parts[0].strip()])
+                    self._seen_ids[parts[0].strip()] = lbl
                     boxes.append((max(0, x), max(0, y), max(1, bw), max(1, bh), lbl))
                     labels.append(lbl)
         else:
@@ -755,6 +764,14 @@ class App(QWidget, MainUI):
         if color is not None and new_name not in labels:
             labels[new_name] = color
         self.db.save_dataset_labels(project_name, dataset_name, labels)
+        # 同步 class_id 映射:值==旧名的项改新名(YOLO 数字 id 的显示名)
+        ids = self.db.get_dataset_label_ids(project_name, dataset_name)
+        if ids:
+            changed = {k: (new_name if v == old_name else v)
+                       for k, v in ids.items()}
+            if changed != ids:
+                self.db.save_dataset_label_ids(
+                    project_name, dataset_name, changed)
         self._log("重命名标签: {} → {} ({}/{})".format(
             old_name, new_name, project_name, dataset_name))
         self.current_label = new_name
@@ -815,6 +832,13 @@ class App(QWidget, MainUI):
             self._rebuild_index_labels(project_name, dataset_name)
         self._delete_label_in_files(project_name, dataset_name, label_name)
         self.db.remove_dataset_label(project_name, dataset_name, label_name)
+        # 同步移除 class_id 映射中指向该标签的项
+        ids = self.db.get_dataset_label_ids(project_name, dataset_name)
+        if ids:
+            cleaned = {k: v for k, v in ids.items() if v != label_name}
+            if cleaned != ids:
+                self.db.save_dataset_label_ids(
+                    project_name, dataset_name, cleaned)
         self._log("删除标签: {} ({}/{})".format(
             label_name, project_name, dataset_name))
         if self.current_label == label_name:
@@ -1231,6 +1255,14 @@ class App(QWidget, MainUI):
         # ---- 4. db：源清空(导入绑定 + 标签)----
         self.db.clear_dataset_import(src_proj, src_ds)
         self.db.save_dataset_labels(src_proj, src_ds, {})
+        # class_id 映射合并进目标(目标优先),源清空
+        src_ids = self.db.get_dataset_label_ids(src_proj, src_ds)
+        dst_ids = self.db.get_dataset_label_ids(dst_proj, dst_ds)
+        if src_ids or dst_ids:
+            merged = dict(src_ids)
+            merged.update(dst_ids)   # 目标优先
+            self.db.save_dataset_label_ids(dst_proj, dst_ds, merged)
+            self.db.save_dataset_label_ids(src_proj, src_ds, {})
 
         # ---- 5. 已删除图像记录迁移 ----
         self.db.move_deleted_images(src_proj, src_ds, dst_proj, dst_ds)
@@ -1327,7 +1359,7 @@ class App(QWidget, MainUI):
         for rb in (ui.yolo_fmt, ui.labelme_fmt):
             rb.setMinimumWidth(_fm.horizontalAdvance(rb.text()) + 28)  # indicator+spacing
         ui.tips_lbl.setText("请选择图像文件夹")
-        ui.progress_bar.setVisible(False)
+        # progress_bar 已从 .ui 移除(导入进度走首页进度条)
         ui.done_import_btn.setEnabled(False)
         ui.image_path_txt.setEnabled(False)
         ui.label_path_txt.setEnabled(False)
@@ -1851,7 +1883,10 @@ class App(QWidget, MainUI):
                 h = container.layout()
                 h.addWidget(progress)
                 h.setAlignment(progress, Qt.AlignVCenter)
-        task = _ImportTask(image_path, label_path, fmt, parent=self, excluded=excluded)
+        task = _ImportTask(image_path, label_path, fmt, parent=self,
+                           excluded=excluded,
+                           label_ids=self.db.get_dataset_label_ids(
+                               project_name, dataset_name))
         self._loading_tasks[key] = task
 
         def on_progress(v):
@@ -1861,6 +1896,14 @@ class App(QWidget, MainUI):
         def on_finished(result):
             cls_mode = fmt == "cls"
             total = len(result)
+            # YOLO txt: 把扫描到的 id→显示名映射持久化,重命名跨重启生效
+            if fmt == ".txt" and getattr(task, "_seen_ids", None):
+                seen = task._seen_ids
+                merged = dict(self.db.get_dataset_label_ids(
+                    project_name, dataset_name))
+                merged.update(seen)   # 以本次扫描为准
+                self.db.save_dataset_label_ids(
+                    project_name, dataset_name, merged)
             # 分类模式:每张图都有类别,视为全部已标注
             labeled = total if cls_mode else sum(
                 1 for r in result if r.get("boxes"))

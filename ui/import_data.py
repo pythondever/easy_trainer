@@ -16,9 +16,8 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QDialog, QGridLayout, QHBoxLayout,
-    QLabel, QLineEdit, QProgressBar, QPushButton,
-    QRadioButton, QSizePolicy, QSpacerItem, QVBoxLayout,
-    QWidget)
+    QLabel, QLineEdit, QPushButton, QRadioButton,
+    QSizePolicy, QSpacerItem, QVBoxLayout, QWidget)
 
 class Ui_ImportData(object):
     def setupUi(self, ImportData):
@@ -113,12 +112,6 @@ class Ui_ImportData(object):
         self.tips_lbl.setFont(font)
 
         self.horizontalLayout_4.addWidget(self.tips_lbl)
-
-        self.progress_bar = QProgressBar(ImportData)
-        self.progress_bar.setObjectName(u"progress_bar")
-        self.progress_bar.setValue(24)
-
-        self.horizontalLayout_4.addWidget(self.progress_bar)
 
         self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
