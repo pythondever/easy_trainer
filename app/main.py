@@ -177,8 +177,6 @@ class _ImportTask(QThread):
         self.fmt = fmt  # '' 无标签 / '.txt' / '.json'
         self.excluded = set(excluded or [])
         self._cancel = False
-        # YOLO txt 数字 id → 显示名映射(db 持久化,重命名跨重启生效);
-        # 导入过程中收集扫描到的 id→最终名,完成后由 on_finished 存回 db
         self._id_names = dict(label_ids or {})
         self._seen_ids = {}
 
@@ -311,7 +309,7 @@ class _ImportTask(QThread):
                         bw = int((max(xs) - min(xs)) * iw)
                         bh = int((max(ys) - min(ys)) * ih)
                     lbl = normalize_label(parts[0].strip())
-                    # 映射数字 id → 显示名(无映射时退回数字本身)
+                    # 映射数字 id
                     if parts[0].strip() in self._id_names:
                         lbl = normalize_label(self._id_names[parts[0].strip()])
                     self._seen_ids[parts[0].strip()] = lbl
@@ -371,10 +369,12 @@ def _make_uniform_thumb(pil_img, size=(200, 200), bg=(19, 21, 26), fill=False):
 
 
 class _MergeLabelsTask(QThread):
-    """后台合并/删除标注类别:
+    """
+    后台合并/删除标注类别:
     合并: 把标签目录所有 txt 行首 ∈ old_ids 的行改成 new_id。
     删除(remove=True): 整行删除行首 ∈ old_ids 的行。
-    使训练也按合并/删除后的类别进行。"""
+    使训练也按合并/删除后的类别进行。
+    """
 
     progress_updated = Signal(int)
     finished_signal = Signal(int)      # 实际修改的文件数
@@ -807,8 +807,8 @@ class App(QWidget, MainUI):
         self._apply_rename_label(proj, ds, old, new_name)
 
     def _apply_rename_label(self, project_name, dataset_name, old_name, new_name):
-        """重命名标签: 内存索引 / 本地 json / db 同步改, 支持合并（新名已存在）。
-
+        """
+        重命名标签: 内存索引 / 本地 json / db 同步改, 支持合并（新名已存在）。
         合并模式(新名已存在)除了 UI 显示层合并, 还做文件层合并:
         后台线程把标签目录所有 txt 行首 == 旧 id 的行改成新 id,
         使训练也按合并后的类别进行(带项目树进度条)。
@@ -832,7 +832,7 @@ class App(QWidget, MainUI):
             self._rebuild_index_labels(project_name, dataset_name)
         self._rename_label_in_files(project_name, dataset_name, old_name, new_name)
         labels = self.db.get_dataset_labels(project_name, dataset_name)
-        merge_mode = new_name in labels   # 新名已存在 → 合并类别
+        merge_mode = new_name in labels   # 新名已存在合并类别
         color = labels.pop(old_name, None)
         if color is not None and new_name not in labels:
             labels[new_name] = color
@@ -947,7 +947,7 @@ class App(QWidget, MainUI):
                     label_counts[lbl] = label_counts.get(lbl, 0) + 1
         self.db.save_dataset_label_counts(project_name, dataset_name,
                                           label_counts)
-        # 清理 db labels dict 中 cache 里不再出现的死标签, 防止下拉残留导致筛选异常
+        # 清理 db labels dict 中 cache
         self._sync_db_labels_from_cache(project_name, dataset_name)
         counts_str = ", ".join(
             "{}: {}个".format(k, v) for k, v in
@@ -971,8 +971,10 @@ class App(QWidget, MainUI):
         self.show_dataset_images(project_name, dataset_name)
 
     def _sync_db_labels_from_cache(self, project_name, dataset_name):
-        """合并/删除/重命名后清理 db labels dict: 移除 cache 里不再出现的 key,
-        新出现的 key 保持缺失(保留旧颜色), 防止下拉残留死标签导致筛选显示异常。"""
+        """
+        合并/删除/重命名后清理 db labels dict: 移除 cache 里不再出现的 key,
+        新出现的 key 保持缺失(保留旧颜色), 防止下拉残留死标签导致筛选显示异常。
+        """
         index = self.dataset_cache.get(project_name, {}).get(dataset_name) or {}
         used = set()
         for rec in index.get("all", []):
@@ -1246,7 +1248,7 @@ class App(QWidget, MainUI):
             self._init_project_tree()
         self.project_tree.clear()
         project_icon = self._tree_icon("项目.png")
-        dataset_icon = self._tree_icon("图像.png")
+        # dataset_icon = self._tree_icon("图像.png")
         proj_font = QFont()
         proj_font.setBold(True)
         proj_font.setPointSize(12)
@@ -1713,7 +1715,6 @@ class App(QWidget, MainUI):
 
         ui.choose_image_dir_btn.clicked.connect(lambda: choose_folder("图像"))
         ui.choose_label_dir_btn.clicked.connect(lambda: choose_folder("标签"))
-        # 路径选择按钮:padding=0 让图标占满,与文本框视觉对齐
         for btn_name in ("choose_image_dir_btn", "choose_label_dir_btn"):
             btn = getattr(ui, btn_name, None)
             if btn is not None:
@@ -1810,7 +1811,6 @@ class App(QWidget, MainUI):
         ui.setupUi(dlg)
         ui.export_path_txt.setReadOnly(True)
         ui.exp_labelme_fmt.setChecked(True)    # 默认 labelme 格式
-        # 两个按钮:同一行(路径行末尾)、等高(40)、padding:0,宽度一致
         for btn_name in ("select_path_btn", "do_export_btn"):
             btn = getattr(ui, btn_name, None)
             if btn is not None:
@@ -2022,7 +2022,6 @@ class App(QWidget, MainUI):
         return []
 
     def _on_train_clicked(self):
-        # 独立入口:无需先选中数据集,任务类型在训练界面选择
         dlg = TrainDialog(self)
         dlg.exec()
 
@@ -2305,7 +2304,7 @@ class App(QWidget, MainUI):
             return [r for r in all_records if not r.get("labels")]
         if cur in data.get("labels", {}):
             return data["labels"][cur]
-        return []   # 死标签(已合并/删除): 无匹配图
+        return []
 
     def _expand_by_label(self, data):
         """按标签把图像列表按 box 展开为 (rec, box_idx);未标注/全部/分类原样返回。"""
