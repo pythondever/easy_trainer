@@ -2076,7 +2076,7 @@ class App(QWidget, MainUI):
             axes.set_yticks([])
         else:
             label_colors = self.db.get_dataset_labels(project, dataset)
-            # 按标签数量降序(教程:自动按数量降序)
+            # 按标签数量降序
             items = sorted(label_counts.items(), key=lambda kv: kv[1],
                            reverse=True)
             labels = [k for k, _ in items]
