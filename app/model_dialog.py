@@ -247,6 +247,13 @@ class ModelDialog(QDialog):
                         record.get("project", ""), ds, st)):
                 return
             self.app.db.delete_model_record(record.get("id"))
+            # 模型列表同时展示训练记录: 联动删除对应训练记录(train_id)
+            tid = record.get("train_id")
+            if tid:
+                self.app.db.delete_train_record(tid)
+            else:
+                # train_history 来源记录(无 train_id 字段), 直接删训练记录
+                self.app.db.delete_train_record(record.get("id"))
             QTimer.singleShot(0, self._load_records)
         except Exception as e:
             trace = traceback.format_exc()
