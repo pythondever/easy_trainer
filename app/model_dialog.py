@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import shutil
+from datetime import datetime
 from math import ceil
 
 from PySide6.QtCore import Qt
@@ -184,7 +185,7 @@ class ModelDialog(QDialog):
             path = r.get("model_path", "")
             btn.setEnabled(bool(path))
             btn.setFixedSize(60, 26)
-            btn.clicked.connect(lambda checked=False, p=path: self._export(p))
+            btn.clicked.connect(lambda checked=False, rec=r: self._export(rec))
             t.setCellWidget(i, 9, self._make_centered_cell(btn))
             mbtn = QPushButton("指标")
             mbtn.setFixedSize(60, 26)
@@ -298,16 +299,47 @@ class ModelDialog(QDialog):
                 e, trace), flush=True)
             MessageBox.warning(self, "打开测试失败", str(e))
 
-    def _export(self, model_path):
+    def _export(self, rec):
+        """导出模型: 建时间戳文件夹, 模型命名"项目_任务_图像尺寸_模型规模.pth",
+        附带 classes.txt / data.yaml 供使用者对照类别。"""
+        model_path = rec.get("model_path", "") if isinstance(rec, dict) else rec
         if not model_path or not os.path.exists(model_path):
             MessageBox.warning(self, "导出模型", "模型文件不存在：\n{}".format(model_path))
             return
         d = QFileDialog.getExistingDirectory(self, "选择导出目录")
         if not d:
             return
+        if not isinstance(rec, dict):
+            rec = {}
+        task_text = {"detect": "检测", "segment": "分割",
+                     "classify": "分类"}.get(rec.get("task", ""), "模型")
+        project = str(rec.get("project", "") or "项目")
+        img_size = str(rec.get("img_size", "") or "")
+        model_size = str(rec.get("model_size", "") or "")
+        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
         try:
-            dst = os.path.join(d, os.path.basename(model_path))
-            shutil.copy2(model_path, dst)
-            MessageBox.information(self, "导出模型", "已导出到：\n{}".format(dst))
+            out_dir = os.path.join(d, "{}_{}".format(project, ts))
+            os.makedirs(out_dir, exist_ok=True)
+            ext = os.path.splitext(os.path.basename(model_path))[1] or ".pth"
+            base = "_".join([p for p in (project, task_text,
+                                         img_size, model_size) if p])
+            dst_model = os.path.join(out_dir, base + ext)
+            shutil.copy2(model_path, dst_model)
+            # 附带类别文件: classes.txt(优先) / data.yaml(兜底, 上一级目录也找),
+            # 供使用者对照 id → 类别名
+            copied = []
+            model_dir = os.path.dirname(model_path)
+            for fn in ("classes.txt", "data.yaml"):
+                src = os.path.join(model_dir, fn)
+                if not os.path.exists(src) and fn == "data.yaml":
+                    src = os.path.join(os.path.dirname(model_dir), fn)
+                if os.path.exists(src):
+                    shutil.copy2(src, os.path.join(out_dir, fn))
+                    copied.append(fn)
+            msg = "已导出到：\n{}\n\n模型: {}{}".format(
+                out_dir, dst_model,
+                "\n附带类别文件: " + ", ".join(copied) if copied
+                else "\n未发现类别文件(classes.txt/data.yaml)")
+            MessageBox.information(self, "导出模型", msg)
         except OSError as e:
             MessageBox.warning(self, "导出模型", "导出失败：{}".format(e))
