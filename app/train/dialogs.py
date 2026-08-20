@@ -132,6 +132,12 @@ class TrainDialog(QDialog):
         self.ui.gridLayout.setRowStretch(1, 0)
         self.ui.horizontalLayout_17.setContentsMargins(30, 0, 30, 0)
         self.ui.horizontalLayout_17.setSpacing(20)
+        # 输出路径按钮:padding=0 + fixedHeight(30),与文本框严格等高
+        if hasattr(self.ui, "select_output_path_btn"):
+            self.ui.select_output_path_btn.setFixedHeight(30)
+            self.ui.select_output_path_btn.setStyleSheet(
+                "QPushButton{padding:0px;border:1px solid #353a48;"
+                "border-radius:6px;}")
         if hasattr(self.ui, "bottomActions"):
             self.ui.bottomActions.setContentsMargins(0, 8, 0, 8)
         for vl in (getattr(self.ui, "verticalLayout", None),

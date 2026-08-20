@@ -482,6 +482,12 @@
                   </item>
                   <item>
                     <widget class="QPushButton" name="select_output_path_btn">
+                      <property name="minimumSize">
+                        <size>
+                          <width>60</width>
+                          <height>30</height>
+                        </size>
+                      </property>
                       <property name="text">
                         <string>选择路径</string>
                       </property>

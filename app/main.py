@@ -370,6 +370,62 @@ def _make_uniform_thumb(pil_img, size=(200, 200), bg=(19, 21, 26), fill=False):
     return canvas
 
 
+class _MergeLabelsTask(QThread):
+    """后台合并/删除标注类别:
+    合并: 把标签目录所有 txt 行首 ∈ old_ids 的行改成 new_id。
+    删除(remove=True): 整行删除行首 ∈ old_ids 的行。
+    使训练也按合并/删除后的类别进行。"""
+
+    progress_updated = Signal(int)
+    finished_signal = Signal(int)      # 实际修改的文件数
+
+    def __init__(self, label_paths, old_ids, new_id, parent=None, remove=False):
+        super().__init__(parent)
+        self.label_paths = [p for p in (label_paths or []) if p]
+        self.old_ids = set(old_ids or [])
+        self.new_id = str(new_id)
+        self.remove = remove
+        self._cancel = False
+
+    def run(self):
+        changed_files = 0
+        files = []
+        for lp in self.label_paths:
+            if not lp or not os.path.isdir(lp):
+                continue
+            for fn in sorted(os.listdir(lp)):
+                if fn.lower().endswith(".txt"):
+                    files.append(os.path.join(lp, fn))
+        total = max(1, len(files))
+        for i, path in enumerate(files):
+            if self._cancel:
+                break
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    lines = f.read().splitlines()
+                out = []
+                changed = False
+                for line in lines:
+                    parts = line.split()
+                    if parts and parts[0] in self.old_ids:
+                        if self.remove:
+                            changed = True
+                            continue          # 整行删除
+                        parts[0] = self.new_id
+                        out.append(" ".join(parts))
+                        changed = True
+                    else:
+                        out.append(line)
+                if changed:
+                    with open(path, "w", encoding="utf-8") as f:
+                        f.write("\n".join(out) + "\n")
+                    changed_files += 1
+            except Exception:
+                continue
+            self.progress_updated.emit(int((i + 1) * 100 / total))
+        self.finished_signal.emit(changed_files)
+
+
 class SelectablePixmapItem(QGraphicsPixmapItem):
     """首页图像列表项:点击高亮边框、可选中(单选/Ctrl多选/Ctrl+A全选)。"""
 
@@ -737,10 +793,26 @@ class App(QWidget, MainUI):
         if new_name == old:
             return
         proj, ds = self._current_dataset
+        # 合并模式(新名已存在)会改写源标签文件,不可逆,需明确确认
+        exists = self.db.get_dataset_labels(proj, ds)
+        if new_name in exists:
+            if not MessageBox.question(
+                    self, "合并标签",
+                    "标签「{}」已存在。\n"
+                    "确定把「{}」的所有标注合并到「{}」吗？\n"
+                    "此操作会改写数据集源标签文件，且不可恢复。".format(
+                        new_name, old, new_name),
+                    default_yes=False):
+                return
         self._apply_rename_label(proj, ds, old, new_name)
 
     def _apply_rename_label(self, project_name, dataset_name, old_name, new_name):
-        """重命名标签: 内存索引 / 本地 json / db 同步改, 支持合并（新名已存在）。"""
+        """重命名标签: 内存索引 / 本地 json / db 同步改, 支持合并（新名已存在）。
+
+        合并模式(新名已存在)除了 UI 显示层合并, 还做文件层合并:
+        后台线程把标签目录所有 txt 行首 == 旧 id 的行改成新 id,
+        使训练也按合并后的类别进行(带项目树进度条)。
+        """
         index = self.dataset_cache.get(project_name, {}).get(dataset_name)
         if index:
             for rec in index.get("all", []):
@@ -760,6 +832,7 @@ class App(QWidget, MainUI):
             self._rebuild_index_labels(project_name, dataset_name)
         self._rename_label_in_files(project_name, dataset_name, old_name, new_name)
         labels = self.db.get_dataset_labels(project_name, dataset_name)
+        merge_mode = new_name in labels   # 新名已存在 → 合并类别
         color = labels.pop(old_name, None)
         if color is not None and new_name not in labels:
             labels[new_name] = color
@@ -772,11 +845,145 @@ class App(QWidget, MainUI):
             if changed != ids:
                 self.db.save_dataset_label_ids(
                     project_name, dataset_name, changed)
+        if merge_mode:
+            self.current_label = new_name
+            self._log("合并标签: {} → {} ({}/{}) | 启动后台文件合并, 完成后输出统计".format(
+                old_name, new_name, project_name, dataset_name))
+            self._merge_label_files(project_name, dataset_name,
+                                    old_name, new_name)
+            return   # 文件合并是异步的,完成后回调里刷新
+        self.current_label = new_name
         self._log("重命名标签: {} → {} ({}/{})".format(
             old_name, new_name, project_name, dataset_name))
-        self.current_label = new_name
         self._refresh_label_filter(project_name, dataset_name)
         self.show_dataset_images(project_name, dataset_name)
+
+    def _merge_label_files(self, project_name, dataset_name, old_name, new_name):
+        """合并模式的文件层: 后台改 txt(行首旧 id → 新 id), 项目树行内进度条。"""
+        binding = self.db.get_dataset_import(project_name, dataset_name) or {}
+        label_fmt = binding.get("label_fmt", "") or ""
+        label_paths = binding.get("label_paths") or (
+            [binding.get("label_path")]
+            if binding.get("label_path") else [])
+        ids = self.db.get_dataset_label_ids(project_name, dataset_name)
+        old_ids = [k for k, v in ids.items() if v == old_name]
+        new_ids = [k for k, v in ids.items() if v == new_name]
+        if label_fmt != ".txt" or not old_ids or not new_ids:
+            # 非 txt 或映射不足: 仅显示层合并(标注界面读 json 名已改),直接刷新
+            self._after_merge_refresh(project_name, dataset_name,
+                                      old_name, new_name, 0)
+            return
+        task = _MergeLabelsTask(label_paths, old_ids, new_ids[0], parent=self)
+        ds_item = self._find_dataset_item(project_name, dataset_name)
+        progress = None
+        progress_lbl = None
+        if ds_item is not None:
+            container = self.project_tree.itemWidget(ds_item, 0)
+            if container is not None:
+                progress_lbl = container.findChild(QLabel, "datasetRowProgress")
+                if progress_lbl is not None:
+                    progress_lbl.setVisible(False)
+                progress = QProgressBar(container)
+                progress.setRange(0, 100)
+                progress.setValue(0)
+                progress.setFixedSize(140, 14)
+                progress.setTextVisible(True)
+                progress.setStyleSheet(
+                    "QProgressBar { background-color: rgba(91,140,255,0.25);"
+                    " border: none; border-radius: 3px;"
+                    " color: #ffffff; font-size: 10px; }"
+                    " QProgressBar::chunk { background-color: #5b8cff;"
+                    " border-radius: 3px; }")
+                container.layout().addWidget(progress)
+                container.layout().setAlignment(progress, Qt.AlignVCenter)
+
+        def on_progress(v):
+            if progress is not None:
+                progress.setValue(v)
+
+        def on_done(changed):
+            if progress is not None:
+                progress.deleteLater()
+            if progress_lbl is not None:
+                progress_lbl.setVisible(True)
+                # 实时重算已标注/总数(cache boxes 已是合并后,与缩略图一致)
+                index = self.dataset_cache.get(
+                    project_name, {}).get(dataset_name) or {}
+                total = len(index.get("all", []))
+                labeled = sum(1 for r in index.get("all", [])
+                              if r.get("boxes"))
+                progress_lbl.setText("{}/{}".format(labeled, total))
+            self._after_merge_refresh(project_name, dataset_name,
+                                      old_name, new_name, changed)
+
+        task.progress_updated.connect(on_progress)
+        task.finished_signal.connect(on_done)
+        task.start()
+        self._merge_tasks = getattr(self, "_merge_tasks", None)
+        if self._merge_tasks is None:
+            self._merge_tasks = set()
+        self._merge_tasks.add(task)
+
+    def _after_merge_refresh(self, project_name, dataset_name,
+                             old_name, new_name, changed, op="merge"):
+        """合并/删除完成: 清理 id 映射旧项 + 重算统计 + 刷新缓存/筛选/分页。"""
+        # 文件合并后旧 id 已不存在, 从映射移除
+        ids = self.db.get_dataset_label_ids(project_name, dataset_name)
+        old_ids = {k for k, v in ids.items() if v == old_name}
+        if old_ids:
+            self.db.save_dataset_label_ids(
+                project_name, dataset_name,
+                {k: v for k, v in ids.items() if k not in old_ids})
+        # 统计重算(cache boxes 已是新名)
+        index = self.dataset_cache.get(project_name, {}).get(dataset_name)
+        label_counts = {}
+        for rec in (index or {}).get("all", []):
+            for b in (rec.get("boxes") or []):
+                lbl = b[-1]
+                label_counts[lbl] = label_counts.get(lbl, 0) + 1
+        if not label_counts:
+            for rec in (index or {}).get("all", []):
+                for lbl in (rec.get("labels") or []):
+                    label_counts[lbl] = label_counts.get(lbl, 0) + 1
+        self.db.save_dataset_label_counts(project_name, dataset_name,
+                                          label_counts)
+        # 清理 db labels dict 中 cache 里不再出现的死标签, 防止下拉残留导致筛选异常
+        self._sync_db_labels_from_cache(project_name, dataset_name)
+        counts_str = ", ".join(
+            "{}: {}个".format(k, v) for k, v in
+            sorted(label_counts.items(), key=lambda kv: label_sort_key(kv[0])))
+        if op == "delete":
+            self._log("删除标签完成: {} | 修改 {} 个标签文件 | "
+                      "删除后标签统计({}类): {}".format(
+                          old_name, changed, len(label_counts),
+                          counts_str or "(无)"))
+        elif changed:
+            self._log("合并标签: {} → {} | 修改 {} 个标签文件 | "
+                      "合并后标签统计({}类): {}".format(
+                          old_name, new_name, changed,
+                          len(label_counts), counts_str or "(无)"))
+        else:
+            self._log("合并标签: {} → {} | 无标签文件被修改 | "
+                      "合并后标签统计({}类): {}".format(
+                          old_name, new_name,
+                          len(label_counts), counts_str or "(无)"))
+        self._refresh_label_filter(project_name, dataset_name)
+        self.show_dataset_images(project_name, dataset_name)
+
+    def _sync_db_labels_from_cache(self, project_name, dataset_name):
+        """合并/删除/重命名后清理 db labels dict: 移除 cache 里不再出现的 key,
+        新出现的 key 保持缺失(保留旧颜色), 防止下拉残留死标签导致筛选显示异常。"""
+        index = self.dataset_cache.get(project_name, {}).get(dataset_name) or {}
+        used = set()
+        for rec in index.get("all", []):
+            for b in (rec.get("boxes") or []):
+                used.add(b[-1])
+        current = self.db.get_dataset_labels(project_name, dataset_name)
+        if not current:
+            return
+        cleaned = {k: v for k, v in current.items() if k in used}
+        if cleaned != current:
+            self.db.save_dataset_labels(project_name, dataset_name, cleaned)
 
     def _rename_label_in_files(self, project_name, dataset_name, old_name, new_name):
         """本地 labelme json：把 shape.label == old_name 改成 new_name。"""
@@ -820,7 +1027,7 @@ class App(QWidget, MainUI):
         self._apply_delete_label(proj, ds, old)
 
     def _apply_delete_label(self, project_name, dataset_name, label_name):
-        """删除标签: 内存索引 / 本地 json / db 同步移除。"""
+        """删除标签: 内存索引 / 本地 json / db / YOLO txt 同步移除。"""
         index = self.dataset_cache.get(project_name, {}).get(dataset_name)
         if index:
             for rec in index.get("all", []):
@@ -834,20 +1041,86 @@ class App(QWidget, MainUI):
         self.db.remove_dataset_label(project_name, dataset_name, label_name)
         # 同步移除 class_id 映射中指向该标签的项
         ids = self.db.get_dataset_label_ids(project_name, dataset_name)
-        if ids:
-            cleaned = {k: v for k, v in ids.items() if v != label_name}
-            if cleaned != ids:
-                self.db.save_dataset_label_ids(
-                    project_name, dataset_name, cleaned)
-        self._log("删除标签: {} ({}/{})".format(
-            label_name, project_name, dataset_name))
+        old_ids = [k for k, v in ids.items() if v == label_name]
+        if old_ids:
+            self.db.save_dataset_label_ids(
+                project_name, dataset_name,
+                {k: v for k, v in ids.items() if k not in set(old_ids)})
         if self.current_label == label_name:
             self.current_label = "__unlabeled__"
-            self._reset_image_area()
-            self._refresh_label_filter(project_name, dataset_name)
-        else:
-            self._refresh_label_filter(project_name, dataset_name)
-            self.show_dataset_images(project_name, dataset_name)
+        self._log("删除标签: {} ({}/{})".format(
+            label_name, project_name, dataset_name))
+        # YOLO txt 文件层删除: 后台删行首==旧 id 的行(否则重新导入标签复活)
+        binding = self.db.get_dataset_import(project_name, dataset_name) or {}
+        label_fmt = binding.get("label_fmt", "") or ""
+        label_paths = binding.get("label_paths") or (
+            [binding.get("label_path")]
+            if binding.get("label_path") else [])
+        if label_fmt == ".txt" and old_ids and label_paths:
+            self._remove_label_files(project_name, dataset_name,
+                                     label_name, old_ids)
+            return   # 文件删除是异步的,完成后回调里刷新
+        self._after_merge_refresh(project_name, dataset_name,
+                                  label_name, "", 0, op="delete")
+
+    def _remove_label_files(self, project_name, dataset_name,
+                            label_name, old_ids):
+        """删除模式的 YOLO txt 文件层: 后台删行(项目树行内进度条)。"""
+        binding = self.db.get_dataset_import(project_name, dataset_name) or {}
+        label_paths = binding.get("label_paths") or (
+            [binding.get("label_path")]
+            if binding.get("label_path") else [])
+        task = _MergeLabelsTask(label_paths, old_ids, "", parent=self,
+                                remove=True)
+        ds_item = self._find_dataset_item(project_name, dataset_name)
+        progress = None
+        progress_lbl = None
+        if ds_item is not None:
+            container = self.project_tree.itemWidget(ds_item, 0)
+            if container is not None:
+                progress_lbl = container.findChild(QLabel, "datasetRowProgress")
+                if progress_lbl is not None:
+                    progress_lbl.setVisible(False)
+                progress = QProgressBar(container)
+                progress.setRange(0, 100)
+                progress.setValue(0)
+                progress.setFixedSize(140, 14)
+                progress.setTextVisible(True)
+                progress.setStyleSheet(
+                    "QProgressBar { background-color: rgba(91,140,255,0.25);"
+                    " border: none; border-radius: 3px;"
+                    " color: #ffffff; font-size: 10px; }"
+                    " QProgressBar::chunk { background-color: #5b8cff;"
+                    " border-radius: 3px; }")
+                container.layout().addWidget(progress)
+                container.layout().setAlignment(progress, Qt.AlignVCenter)
+
+        def on_progress(v):
+            if progress is not None:
+                progress.setValue(v)
+
+        def on_done(changed):
+            if progress is not None:
+                progress.deleteLater()
+            if progress_lbl is not None:
+                progress_lbl.setVisible(True)
+                # 实时重算已标注/总数(cache boxes 已过滤被删的,与缩略图一致)
+                index = self.dataset_cache.get(
+                    project_name, {}).get(dataset_name) or {}
+                total = len(index.get("all", []))
+                labeled = sum(1 for r in index.get("all", [])
+                              if r.get("boxes"))
+                progress_lbl.setText("{}/{}".format(labeled, total))
+            self._after_merge_refresh(project_name, dataset_name,
+                                      label_name, "", changed, op="delete")
+
+        task.progress_updated.connect(on_progress)
+        task.finished_signal.connect(on_done)
+        task.start()
+        self._merge_tasks = getattr(self, "_merge_tasks", None)
+        if self._merge_tasks is None:
+            self._merge_tasks = set()
+        self._merge_tasks.add(task)
 
     def _delete_label_in_files(self, project_name, dataset_name, label_name):
         """
@@ -2026,11 +2299,13 @@ class App(QWidget, MainUI):
         """
         cur = self.current_label
         all_records = data.get("all", [])
+        if not cur:
+            return all_records
         if cur == "__unlabeled__":
             return [r for r in all_records if not r.get("labels")]
-        if cur and cur in data.get("labels", {}):
+        if cur in data.get("labels", {}):
             return data["labels"][cur]
-        return all_records
+        return []   # 死标签(已合并/删除): 无匹配图
 
     def _expand_by_label(self, data):
         """按标签把图像列表按 box 展开为 (rec, box_idx);未标注/全部/分类原样返回。"""

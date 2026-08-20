@@ -316,6 +316,7 @@ class Ui_TrainDialog(object):
 
         self.select_output_path_btn = QPushButton(TrainDialog)
         self.select_output_path_btn.setObjectName(u"select_output_path_btn")
+        self.select_output_path_btn.setMinimumSize(QSize(60, 30))
 
         self.horizontalLayout_8.addWidget(self.select_output_path_btn)
 
