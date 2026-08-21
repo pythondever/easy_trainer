@@ -54,7 +54,6 @@ class DataBase:
             txn = self.mdb.begin(write=True)
             txn.put(key, json.dumps(project_list).encode())
             txn.commit()
-        # 同步 project_info 里的 project_name,否则重命名后数据集从树中消失
         info_list = self.get_project_info()
         changed = False
         for info in info_list:
@@ -63,7 +62,6 @@ class DataBase:
                 changed = True
         if changed:
             self.update_project_info(info_list)
-        # 同步训练/模型记录中的项目名,保证训练界面回填仍能匹配
         self._rename_records_project(old_name, new_name)
 
     def _rename_records_project(self, old_name, new_name):
@@ -243,14 +241,12 @@ class DataBase:
         if dataset_type is not None:
             target['dataset_type'] = dataset_type
         self.update_project_info(info_list)
-        # 同步训练/模型记录中的数据集名(训练集/验证集/dataset_info),
-        # 保证训练界面按数据集回填仍能匹配
         self._rename_records_dataset(project_name, old_name, new_name)
         return True
 
     def _rename_records_dataset(self, project_name, old_name, new_name):
-        """训练/模型记录中该数据集名替换(训练集/验证集/dataset_info)。
-
+        """
+        训练/模型记录中该数据集名替换(训练集/验证集/dataset_info)。
         dataset 字段为 "项目/数据集" 格式,匹配后半段数据集名。
         """
         txn = self.mdb.begin(write=True)
@@ -269,7 +265,6 @@ class DataBase:
                         r[field] = ", ".join(new_names)
                         replaced = True
                 if replaced:
-                    # dataset_info 同样为 "项目/数据集" 列表,逐项替换
                     info = str(r.get("dataset_info", ""))
                     items = [x.strip() for x in info.split(",") if x.strip()]
                     new_items = [_rename_item(n, old_name, new_name) for n in items]
