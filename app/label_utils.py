@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 import json
+import os
+
+from app.image_utils import pil_open
 
 
 def normalize_label(name):
@@ -35,6 +38,43 @@ def load_json_boxes(json_path):
     except Exception:
         return []
     return boxes
+
+
+def load_yolo_boxes(txt_path, img_path):
+    """读 yolo txt boxes(归一化坐标转像素,标签归一化)。"""
+    boxes = []
+    try:
+        with pil_open(img_path) as im:
+            iw, ih = im.size
+    except Exception:
+        return []
+    try:
+        with open(txt_path, "r", encoding="utf-8") as f:
+            for line in f:
+                parts = line.split()
+                if len(parts) < 5:
+                    continue
+                try:
+                    cx, cy, w, h = map(float, parts[1:5])
+                except ValueError:
+                    continue
+                label = normalize_label(parts[0].strip())
+                boxes.append((max(0, int((cx - w / 2) * iw)), max(0, int((cy - h / 2) * ih)),
+                              max(1, int(w * iw)), max(1, int(h * ih)), label))
+    except Exception:
+        return []
+    return boxes
+
+
+def boxes_to_labelme_json(boxes, img_path, iw, ih):
+    """boxes(像素 + label) -> labelme json dict。"""
+    shapes = []
+    for x, y, w, h, label in boxes:
+        shapes.append({"label": label, "points": [[x, y], [x + w, y + h]],
+                       "group_id": None, "shape_type": "rectangle", "flags": {}})
+    return {"version": "5.0.1", "flags": {}, "shapes": shapes,
+            "imagePath": os.path.basename(img_path),
+            "imageWidth": iw, "imageHeight": ih}
 
 
 def boxes_to_yolo_text(boxes, iw, ih, label_to_id):

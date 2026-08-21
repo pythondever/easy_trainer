@@ -321,21 +321,25 @@ class TrainDialog(QDialog):
         return combo
 
     def _fill_dataset_multi(self, combo, checked_names):
-        """跨项目列出所有数据集(文本"项目/数据集",data=(项目,数据集)),checked_names 内默认勾选。"""
+        """
+        跨项目列出所有数据集(文本"项目/数据集",data=(项目,数据集)),checked_names 内默认勾选。
+        数据源与首页项目树一致:先 get_projects() 拿项目名,再 get_datasets(name)
+        拿该项目下数据集——不会列出已删除项目残留的孤儿数据集记录。
+        """
         model = combo.model()
         model.clear()
-        for info in self.app.db.get_project_info():
-            proj = str(info.get("project_name", "") or "")
-            ds = str(info.get("dataset_name", "") or "")
-            if not proj or not ds:
-                continue
-            text = "{}/{}".format(proj, ds)
-            item = QStandardItem(text)
-            item.setData((proj, ds), Qt.UserRole)
-            item.setFlags(Qt.ItemIsEnabled | Qt.ItemIsUserCheckable)
-            item.setCheckState(
-                Qt.Checked if text in checked_names else Qt.Unchecked)
-            model.appendRow(item)
+        for proj in self.app.db.get_projects():
+            for ds_info in self.app.db.get_datasets(proj):
+                ds = str(ds_info.get("dataset_name", "") or "")
+                if not ds:
+                    continue
+                text = "{}/{}".format(proj, ds)
+                item = QStandardItem(text)
+                item.setData((proj, ds), Qt.UserRole)
+                item.setFlags(Qt.ItemIsEnabled | Qt.ItemIsUserCheckable)
+                item.setCheckState(
+                    Qt.Checked if text in checked_names else Qt.Unchecked)
+                model.appendRow(item)
         self._update_multi_label(combo)
 
     def _selected_checked(self, combo):

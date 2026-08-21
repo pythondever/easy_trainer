@@ -12,11 +12,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import uuid
 from datetime import datetime
-from matplotlib import font_manager
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 from PySide6.QtGui import QFontMetrics
-from PIL.ImageQt import ImageQt
 from app.annotation.box_item import label_color
 from app.annotation_dialog import AnnotationDialog
 from app.log_dialog import LogDialog
@@ -32,9 +30,15 @@ from ui.dataset_properties import Ui_Dialog as DatasetPropertiesUI
 from ui.edit_label import Ui_Dialog as EditLabelUI
 from ui.export_data import Ui_Dialog as ExportDataUI
 from app.label_utils import (normalize_label, label_sort_key,
-                             load_json_boxes, boxes_to_yolo_text)
+                             load_json_boxes, boxes_to_yolo_text,
+                             load_yolo_boxes, boxes_to_labelme_json)
 from app.message_box import MessageBox, ProgressDialog
 from app.log import write_log
+from app.utils import fmt_duration, setup_matplotlib_chinese, load_style_sheet
+from app.image_utils import pil_open, pil_to_qimage, make_uniform_thumb
+from app.scene_items import SelectablePixmapItem
+from app.import_task import ImportTask
+from app.merge_task import MergeLabelsTask
 
 
 from db import DataBase
@@ -57,391 +61,6 @@ except ImportError:
     PILImage = None
 
 
-_CJK_FONT_CANDIDATES = [
-    "Microsoft YaHei UI", "Microsoft YaHei", "微软雅黑",   # Windows
-    "SimHei", "黑体", "SimSun", "宋体",                      # Windows
-    "PingFang SC", "Hiragino Sans GB", "STHeiti",            # macOS
-    "Noto Sans CJK SC", "Noto Sans SC", "WenQuanYi Micro Hei",  # Linux
-    "Source Han Sans CN", "Source Han Sans SC",
-    "AR PL UMing CN", "AR PL UKai CN",
-]
-
-
-def _fmt_duration(secs):
-    """可读时长(不足1分钟显示秒;长训练显示天/时/分)。"""
-    if secs < 60:
-        return "{}秒".format(secs)
-    d, rem = divmod(secs, 86400)
-    h, rem = divmod(rem, 3600)
-    m, s = divmod(rem, 60)
-    parts = []
-    if d:
-        parts.append("{}天".format(d))
-    if h:
-        parts.append("{}小时".format(h))
-    if m or not parts:
-        parts.append("{}分".format(m))
-    if s and not d and not h:
-        parts.append("{}秒".format(s))
-    return "".join(parts)
-
-
-def setup_matplotlib_chinese():
-    try:
-        available = {f.name for f in font_manager.fontManager.ttflist}
-    except Exception:
-        available = set()
-    chosen = next((f for f in _CJK_FONT_CANDIDATES if f in available), None)
-    if chosen is None:
-        for f in font_manager.fontManager.ttflist:
-            n = f.name.lower()
-            if any(kw in n for kw in ("cjk", "chinese", "yahei", "simhei",
-                                       "pingfang", "heiti", "songti", "han")):
-                chosen = f.name
-                break
-    if chosen is None:
-        chosen = "DejaVu Sans"
-    plt.rcParams["font.sans-serif"] = [chosen, "DejaVu Sans"]
-    plt.rcParams["font.family"] = "sans-serif"
-    plt.rcParams["axes.unicode_minus"] = False
-
-
-def load_style_sheet():
-    """加载 resources/style.qss"""
-    here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    qss_path = os.path.join(here, "style", "style.qss")
-    try:
-        with open(qss_path, "r", encoding="utf-8") as f:
-            return f.read()
-    except OSError:
-        return ""
-
-
-def _load_yolo_boxes(txt_path, img_path):
-    """读 yolo txt boxes(归一化坐标转像素,标签归一化)。"""
-    boxes = []
-    try:
-        with PILImage.open(img_path) as im:
-            iw, ih = im.size
-    except Exception:
-        return []
-    try:
-        with open(txt_path, "r", encoding="utf-8") as f:
-            for line in f:
-                parts = line.split()
-                if len(parts) < 5:
-                    continue
-                try:
-                    cx, cy, w, h = map(float, parts[1:5])
-                except ValueError:
-                    continue
-                label = normalize_label(parts[0].strip())
-                boxes.append((max(0, int((cx - w / 2) * iw)), max(0, int((cy - h / 2) * ih)),
-                              max(1, int(w * iw)), max(1, int(h * ih)), label))
-    except Exception:
-        return []
-    return boxes
-
-
-def _boxes_to_labelme_json(boxes, img_path, iw, ih):
-    """boxes(像素 + label) -> labelme json dict。"""
-    shapes = []
-    for x, y, w, h, label in boxes:
-        shapes.append({"label": label, "points": [[x, y], [x + w, y + h]],
-                       "group_id": None, "shape_type": "rectangle", "flags": {}})
-    return {"version": "5.0.1", "flags": {}, "shapes": shapes,
-            "imagePath": os.path.basename(img_path),
-            "imageWidth": iw, "imageHeight": ih}
-
-
-class _ImportTask(QThread):
-    """
-    后台导入线程: 扫描图像目录,可选读取标签(yolo txt / labelme json),
-    生成整图缩略图(默认大图模式);ROI 裁剪小图在筛选时懒生成(见 _get_rois)。
-    结果以 list 通过 finished_signal 返回:
-    [{"image_path", "label_path", "boxes": [(x,y,w,h,label)]或None, "labels": [...],
-      "thumb": QImage或None, "rois": {label: [QImage]}}]
-    """
-    progress_updated = Signal(int)
-    finished_signal = Signal(list)
-
-    IMAGE_EXTS = (".jpg", ".jpeg", ".png", ".bmp", ".webp")
-
-    def __init__(self, image_path, label_path="", fmt="", parent=None,
-                 excluded=None, label_ids=None):
-        super().__init__(parent)
-        self.image_paths = [image_path] if isinstance(image_path, (str,)) else list(image_path or [])
-        self.label_paths = [label_path] if isinstance(label_path, (str,)) else list(label_path or [])
-        self.image_paths = [p for p in self.image_paths if p]
-        self.label_paths = [p for p in self.label_paths if p]
-        self.fmt = fmt  # '' 无标签 / '.txt' / '.json'
-        self.excluded = set(excluded or [])
-        self._cancel = False
-        self._id_names = dict(label_ids or {})
-        self._seen_ids = {}
-
-    @staticmethod
-    def _norm(path):
-        return os.path.normcase(os.path.normpath(path))
-
-    def run(self):
-        cls_mode = self.fmt == "cls"   # 按子文件夹分类导入: 子文件夹名=类别
-        images = []
-        for base_dir in self.image_paths:
-            if self._cancel:
-                break
-            if not base_dir or not os.path.isdir(base_dir):
-                continue
-            for root, _, files in os.walk(base_dir):
-                if self._cancel:
-                    break
-                for fn in sorted(files):
-                    if fn.lower().endswith(self.IMAGE_EXTS):
-                        p = os.path.join(root, fn)
-                        if self._norm(p) in self.excluded:
-                            continue
-                        if cls_mode:
-                            # 类别 = 根目录下第一级子文件夹名; 图像直接在根目录则用根目录名
-                            rel = os.path.relpath(root, base_dir)
-                            cls = (rel.split(os.sep)[0]
-                                   if rel and rel != "."
-                                   else os.path.basename(base_dir))
-                            images.append((p, cls))
-                        else:
-                            images.append((p, None))
-        total = len(images)
-        result = []
-        for i, (img_path, cls) in enumerate(images):
-            if self._cancel:
-                break
-            try:
-                if cls_mode:
-                    result.append({
-                        "image_path": img_path,
-                        "label_path": "",
-                        "cls": cls,
-                        "labels": [cls] if cls else [],
-                        "boxes": None,
-                        "thumb": None,
-                        "rois": {},
-                    })
-                else:
-                    boxes, labels = self._read_boxes(img_path)
-                    thumb = None
-                    result.append({
-                        "image_path": img_path,
-                        "label_path": self._label_of(img_path),
-                        "boxes": boxes if boxes else None,   # [(x, y, w, h, label)] 或 None
-                        "labels": labels,
-                        "thumb": thumb,
-                        "rois": {},
-                    })
-            except Exception:
-                pass  #
-            if total > 0:
-                self.progress_updated.emit(int((i + 1) / total * 100))
-        self.finished_signal.emit(result)
-
-    def _label_of(self, img_path):
-        """在多个标签目录中找同名的标签文件(txt/json)，返回存在的第一个; 无则空。"""
-        if not self.label_paths or not self.fmt:
-            return ""
-        base = os.path.splitext(os.path.basename(img_path))[0]
-        ext = ".txt" if self.fmt == ".txt" else ".json"
-        for lp in self.label_paths:
-            if not lp or not os.path.isdir(lp):
-                continue
-            candidate = os.path.join(lp, base + ext)
-            if os.path.exists(candidate):
-                return candidate
-        return ""
-
-    def _read_boxes(self, img_path):
-        """
-        读取标签，返回 (boxes, labels):
-        boxes = 像素坐标 [(x, y, w, h, label)]; labels = 对应类别列表
-        无标签返回(None, [])。
-        优先读图像同路径 labelme json，与标注界面 _load_current
-        一致；没有才回退 label_paths 的导入标签(txt/json)。否则重启后首页
-        缩略图会显示标注界面修改前的旧标签。
-        """
-        same_path_json = os.path.splitext(img_path)[0] + ".json"
-        if os.path.exists(same_path_json):
-            label_file = same_path_json
-            fmt = ".json"
-        elif self.label_paths and self.fmt:
-            label_file = self._label_of(img_path)
-            fmt = self.fmt
-        else:
-            return None, []
-        if not os.path.exists(label_file):
-            return None, []
-        try:
-            with PIL_ImageOpen(img_path) as im:
-                iw, ih = im.size
-        except Exception:
-            return None, []
-        boxes = []
-        labels = []
-        if fmt == ".txt":
-            with open(label_file, "r", encoding="utf-8") as f:
-                for line in f:
-                    parts = line.split()
-                    if len(parts) < 5:
-                        continue
-                    try:
-                        vals = [float(x) for x in parts[1:]]
-                    except ValueError:
-                        continue
-                    if len(vals) == 4:
-                        cx, cy, w, h = vals
-                        x = int((cx - w / 2) * iw)
-                        y = int((cy - h / 2) * ih)
-                        bw = int(w * iw)
-                        bh = int(h * ih)
-                    else:
-                        xs = vals[0::2]
-                        ys = vals[1::2]
-                        if not xs or not ys:
-                            continue
-                        x = int(min(xs) * iw)
-                        y = int(min(ys) * ih)
-                        bw = int((max(xs) - min(xs)) * iw)
-                        bh = int((max(ys) - min(ys)) * ih)
-                    lbl = normalize_label(parts[0].strip())
-                    # 映射数字 id
-                    if parts[0].strip() in self._id_names:
-                        lbl = normalize_label(self._id_names[parts[0].strip()])
-                    self._seen_ids[parts[0].strip()] = lbl
-                    boxes.append((max(0, x), max(0, y), max(1, bw), max(1, bh), lbl))
-                    labels.append(lbl)
-        else:
-            with open(label_file, "r", encoding="utf-8") as f:
-                data = json.load(f)
-            for shape in data.get("shapes", []):
-                pts = shape.get("points", [])
-                if len(pts) < 2:
-                    continue
-                xs = [p[0] for p in pts]
-                ys = [p[1] for p in pts]
-                x, y = int(min(xs)), int(min(ys))
-                w, h = int(max(xs) - min(xs)), int(max(ys) - min(ys))
-                lbl = normalize_label(shape.get("label", "unknown"))
-                boxes.append((max(0, x), max(0, y), max(1, w), max(1, h), lbl))
-                labels.append(lbl)
-        return boxes, labels
-
-
-def PIL_ImageOpen(path):
-    return PILImage.open(path)
-
-
-def _pil_to_qimage(pil_img):
-    """PIL RGB -> QImage(ARGB32,主线程转 QPixmap 使用)。"""
-    try:
-        qimg = ImageQt(pil_img).copy()
-        return qimg
-    except Exception:
-        data = pil_img.tobytes("raw", "RGB")
-        qimg = QImage(data, pil_img.width, pil_img.height, pil_img.width * 3, QImage.Format_RGB888)
-        return qimg.copy()
-
-
-def _make_uniform_thumb(pil_img, size=(200, 200), bg=(19, 21, 26), fill=False):
-    """
-    统一规格缩略图到 size×size。
-    fill=False(默认): 等比缩放 + 居中 + 深色背景填充(首页 #13151a),
-        用于整图缩略(保持原图比例，不变形).
-    fill=True:不等比 resize 到 size×size（保证 QImage 严格统一规格）,
-        用于 ROI 裁剪——无论原标注框大小或长宽比,
-        渲染到 cell 都是严格 200×200 占满,绝对统一规格.
-    """
-    if fill:
-        return pil_img.resize(size, PILImage.LANCZOS)
-    thumb = pil_img.copy()
-    thumb.thumbnail(size)
-    canvas = PILImage.new("RGB", size, bg)
-    off_x = (size[0] - thumb.width) // 2
-    off_y = (size[1] - thumb.height) // 2
-    if off_x >= 0 and off_y >= 0:
-        canvas.paste(thumb, (off_x, off_y))
-    return canvas
-
-
-class _MergeLabelsTask(QThread):
-    """
-    后台合并/删除标注类别:
-    合并: 把标签目录所有 txt 行首 ∈ old_ids 的行改成 new_id。
-    删除(remove=True): 整行删除行首 ∈ old_ids 的行。
-    使训练也按合并/删除后的类别进行。
-    """
-
-    progress_updated = Signal(int)
-    finished_signal = Signal(int)      # 实际修改的文件数
-
-    def __init__(self, label_paths, old_ids, new_id, parent=None, remove=False):
-        super().__init__(parent)
-        self.label_paths = [p for p in (label_paths or []) if p]
-        self.old_ids = set(old_ids or [])
-        self.new_id = str(new_id)
-        self.remove = remove
-        self._cancel = False
-
-    def run(self):
-        changed_files = 0
-        files = []
-        for lp in self.label_paths:
-            if not lp or not os.path.isdir(lp):
-                continue
-            for fn in sorted(os.listdir(lp)):
-                if fn.lower().endswith(".txt"):
-                    files.append(os.path.join(lp, fn))
-        total = max(1, len(files))
-        for i, path in enumerate(files):
-            if self._cancel:
-                break
-            try:
-                with open(path, "r", encoding="utf-8") as f:
-                    lines = f.read().splitlines()
-                out = []
-                changed = False
-                for line in lines:
-                    parts = line.split()
-                    if parts and parts[0] in self.old_ids:
-                        if self.remove:
-                            changed = True
-                            continue          # 整行删除
-                        parts[0] = self.new_id
-                        out.append(" ".join(parts))
-                        changed = True
-                    else:
-                        out.append(line)
-                if changed:
-                    with open(path, "w", encoding="utf-8") as f:
-                        f.write("\n".join(out) + "\n")
-                    changed_files += 1
-            except Exception:
-                continue
-            self.progress_updated.emit(int((i + 1) * 100 / total))
-        self.finished_signal.emit(changed_files)
-
-
-class SelectablePixmapItem(QGraphicsPixmapItem):
-    """首页图像列表项:点击高亮边框、可选中(单选/Ctrl多选/Ctrl+A全选)。"""
-
-    def __init__(self, pixmap, image_path):
-        super().__init__(pixmap)
-        self.image_path = image_path
-        self.setData(0, image_path)
-        self.setFlag(QGraphicsItem.ItemIsSelectable, True)
-        self._sel_pen = QPen(QColor("#5B8CFF"), 3)
-
-    def paint(self, painter, option, widget=None):
-        super().paint(painter, option, widget)
-        if self.isSelected():
-            painter.setPen(self._sel_pen)
-            painter.setBrush(Qt.NoBrush)
-            painter.drawRect(self.boundingRect().adjusted(2, 2, -2, -2))
 
 
 class App(QWidget, MainUI):
@@ -873,7 +492,7 @@ class App(QWidget, MainUI):
             self._after_merge_refresh(project_name, dataset_name,
                                       old_name, new_name, 0)
             return
-        task = _MergeLabelsTask(label_paths, old_ids, new_ids[0], parent=self)
+        task = MergeLabelsTask(label_paths, old_ids, new_ids[0], parent=self)
         ds_item = self._find_dataset_item(project_name, dataset_name)
         progress = None
         progress_lbl = None
@@ -1072,7 +691,7 @@ class App(QWidget, MainUI):
         label_paths = binding.get("label_paths") or (
             [binding.get("label_path")]
             if binding.get("label_path") else [])
-        task = _MergeLabelsTask(label_paths, old_ids, "", parent=self,
+        task = MergeLabelsTask(label_paths, old_ids, "", parent=self,
                                 remove=True)
         ds_item = self._find_dataset_item(project_name, dataset_name)
         progress = None
@@ -1986,7 +1605,7 @@ class App(QWidget, MainUI):
             return
         target = os.path.join(lbl_dir, stem + (".json" if fmt == "labelme" else ".txt"))
         if fmt == "labelme":
-            data = _boxes_to_labelme_json(boxes, img_src, iw, ih)
+            data = boxes_to_labelme_json(boxes, img_src, iw, ih)
             with open(target, "w", encoding="utf-8") as f:
                 json.dump(data, f, ensure_ascii=False, indent=2)
         else:
@@ -2018,7 +1637,7 @@ class App(QWidget, MainUI):
                 continue
             if ext == ".json":
                 return load_json_boxes(cand)
-            return _load_yolo_boxes(cand, img_src)
+            return load_yolo_boxes(cand, img_src)
         return []
 
     def _on_train_clicked(self):
@@ -2155,7 +1774,7 @@ class App(QWidget, MainUI):
                 h = container.layout()
                 h.addWidget(progress)
                 h.setAlignment(progress, Qt.AlignVCenter)
-        task = _ImportTask(image_path, label_path, fmt, parent=self,
+        task = ImportTask(image_path, label_path, fmt, parent=self,
                            excluded=excluded,
                            label_ids=self.db.get_dataset_label_ids(
                                project_name, dataset_name))
@@ -2472,7 +2091,7 @@ class App(QWidget, MainUI):
                 im = PILImage.open(img_path)
                 im.draft("RGB", (200, 200))
                 im = im.convert("RGB")
-                qimg = _pil_to_qimage(_make_uniform_thumb(im))
+                qimg = pil_to_qimage(make_uniform_thumb(im))
             except Exception:
                 qimg = None
         rec["thumb"] = qimg
@@ -2493,7 +2112,7 @@ class App(QWidget, MainUI):
                     if len(box) >= 5 and box[4] == label:
                         x, y, w, h = box[0], box[1], box[2], box[3]
                         crop = im.crop((x, y, x + w, y + h))
-                        qimg = _pil_to_qimage(_make_uniform_thumb(crop, fill=True))
+                        qimg = pil_to_qimage(make_uniform_thumb(crop, fill=True))
                         if qimg is not None:
                             result.append(qimg)
             except Exception:
@@ -2516,7 +2135,7 @@ class App(QWidget, MainUI):
                     im = PILImage.open(img_path).convert("RGB")
                     x, y, w, h = box[0], box[1], box[2], box[3]
                     crop = im.crop((x, y, x + w, y + h))
-                    qimg = _pil_to_qimage(_make_uniform_thumb(crop, fill=True))
+                    qimg = pil_to_qimage(make_uniform_thumb(crop, fill=True))
                 except Exception:
                     qimg = None
         cache[box_idx] = qimg
@@ -2985,7 +2604,7 @@ class App(QWidget, MainUI):
                     t0 = datetime.strptime(r.get("start_time", ""), "%Y-%m-%d %H:%M:%S")
                     t1 = datetime.strptime(r["end_time"], "%Y-%m-%d %H:%M:%S")
                     secs = int((t1 - t0).total_seconds())
-                    r["duration"] = _fmt_duration(int((t1 - t0).total_seconds()))
+                    r["duration"] = fmt_duration(int((t1 - t0).total_seconds()))
                 except Exception:
                     pass
                 if result:
