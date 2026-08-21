@@ -77,19 +77,18 @@ class MiscMixin(object):
         ui.label_path_line_txt.setText("; ".join(label_paths) or "(未设置)")
         ui.image_path_line_txt.setReadOnly(True)
         ui.label_path_line_txt.setReadOnly(True)
-        cache = self.dataset_cache.get(project, {}).get(dataset, {})
-        counts = {}
-        for rec in cache.get("all", []):
-            for b in (rec.get("boxes") or []):
-                lbl = b[-1]
-                counts[lbl] = counts.get(lbl, 0) + 1
+        counts = self.db.get_dataset_label_counts(project, dataset)
         if not counts:
-            labels_index = cache.get("labels") or {}
-            counts = {label: len(recs) for label, recs in labels_index.items()}
-        if counts:
-            self.db.save_dataset_label_counts(project, dataset, counts)
-        else:
-            counts = self.db.get_dataset_label_counts(project, dataset)
+            cache = self.dataset_cache.get(project, {}).get(dataset, {})
+            for rec in cache.get("all", []):
+                for b in (rec.get("boxes") or []):
+                    lbl = b[-1]
+                    counts[lbl] = counts.get(lbl, 0) + 1
+            if not counts:
+                labels_index = cache.get("labels") or {}
+                counts = {label: len(recs) for label, recs in labels_index.items()}
+            if counts:
+                self.db.save_dataset_label_counts(project, dataset, counts)
         self._render_label_stats(ui.label_stats_view, project, dataset, counts)
         dlg.exec()
 
