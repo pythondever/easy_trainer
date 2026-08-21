@@ -52,7 +52,7 @@ def _upgrade_graphics_view(view):
     view.setRenderHints(QPainter.Antialiasing | QPainter.SmoothPixmapTransform)
     view.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)
     view.setResizeAnchor(QGraphicsView.AnchorViewCenter)
-    view.setViewportUpdateMode(QGraphicsView.SmartViewportUpdate)
+    view.setViewportUpdateMode(QGraphicsView.FullViewportUpdate)
     view.setDragMode(QGraphicsView.NoDrag)
     view.setMouseTracking(True)
     view.setFrameShape(QGraphicsView.NoFrame)
@@ -565,7 +565,7 @@ class AnnotationDialog(QDialog):
         # 删除/修改后防抖自动保存(0.8s), 防止重载旧 json 导致已删标注复活
         self._autosave_timer = QTimer(self)
         self._autosave_timer.setSingleShot(True)
-        self._autosave_timer.setInterval(300)
+        self._autosave_timer.setInterval(150)
         self._autosave_timer.timeout.connect(self._save_current)
         self.scene.boxes_changed.connect(self._on_boxes_changed)
         self.scene.label_change_requested.connect(self._on_label_change_requested)

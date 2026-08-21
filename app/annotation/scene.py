@@ -81,7 +81,7 @@ class AnnotationScene(QGraphicsScene):
             # item 不指定光标(继承 view), 否则会覆盖 view 的画笔/十字光标
             item.unsetCursor()
 
-    # ---------------- 格式刷（轨迹描边 → 模板 → 刷子粘贴） ----------------
+    # ---------------- 格式刷(轨迹描边, 模板, 刷子粘贴)----------------
     def set_format_painter(self, on):
         if on and self.fp_mode is None:
             self.fp_mode = "trace"
@@ -118,7 +118,7 @@ class AnnotationScene(QGraphicsScene):
         self.fp_preview_item.setPath(path)
 
     def _extract_patch(self, pts):
-        """从当前图像抠取多边形区域像素：包围盒裁剪 + 多边形 mask（外部透明）。"""
+        """从当前图像抠取多边形区域像素:包围盒裁剪 + 多边形 mask(外部透明)。"""
         pix = self.image_item.pixmap()
         if pix is None:
             return None
@@ -290,6 +290,10 @@ class AnnotationScene(QGraphicsScene):
         return color
 
     def add_box(self, x1, y1, x2, y2, label):
+        import sys
+        print("[dbg] ADD box label=", label, "rect=", (x1, y1, x2, y2),
+              "draw_mode=", self.draw_mode, "fp=", self.fp_mode,
+              file=sys.stderr, flush=True)
         rect = QRectF(x1, y1, x2 - x1, y2 - y1)
         if rect.width() < 2 or rect.height() < 2:
             return None
@@ -303,6 +307,10 @@ class AnnotationScene(QGraphicsScene):
 
     def add_polygon(self, points, label):
         """添加多边形标注。points: [[x, y], ...]（像素坐标），至少 3 个顶点。"""
+        import sys
+        print("[dbg] ADD poly label=", label, "npts=", len(points),
+              "draw_mode=", self.draw_mode, "fp=", self.fp_mode,
+              file=sys.stderr, flush=True)
         if len(points) < 3:
             return None
         color = self._resolve_color(label)
@@ -324,6 +332,10 @@ class AnnotationScene(QGraphicsScene):
         return result
 
     def load_boxes(self, boxes):
+        import sys
+        print("[dbg] LOAD boxes=", len(boxes),
+              "labels=", [b.get("label") for b in boxes],
+              file=sys.stderr, flush=True)
         self.clear_boxes()
         for box in boxes:
             if box.get("shape_type") == "polygon":
@@ -351,14 +363,43 @@ class AnnotationScene(QGraphicsScene):
             item.set_label(label)
             self.boxes_changed.emit()
 
+    def _force_full_redraw(self):
+        """删除 item 后强制所有 view 全量重绘, 避免视图缓存残留。"""
+        self.update()
+        for v in self.views():
+            v.resetCachedContent()
+            v.viewport().update()
+
+    def _dispose_item(self, item):
+        """彻底释放 item: 隐藏 + 取消缓存, 防视图缓存残留。"""
+        try:
+            item.hide()
+            item.setCacheMode(QGraphicsItem.NoCache)
+            item.setEnabled(False)
+        except Exception:
+            pass
+        self.removeItem(item)
+
     def delete_selected(self):
         item = self.selected_item()
         if item is not None:
-            if self.draw_mode:
-                # 画模式下删框, 先取消轨迹, 防鼠标松开误生成新矩形
-                self._cancel_polygon()
-            self.removeItem(item)
+            import sys
+            print("[dbg] DELETE before=", len(self.all_items()),
+                  "labels=", [i.label for i in self.all_items()],
+                  "del=", item.label,
+                  "del_pos=", item.pos().x(), item.pos().y(),
+                  "del_type=", type(item).__name__,
+                  "selected=", [i.label for i in self.selectedItems()],
+                  "draw_mode=", self.draw_mode, "fp=", self.fp_mode,
+                  file=sys.stderr, flush=True)
+            self._cancel_polygon()
+            self._clear_fp_items()
+            self._dispose_item(item)
             self._last_box = None
+            print("[dbg] DELETE after=", len(self.all_items()),
+                  "labels=", [i.label for i in self.all_items()],
+                  file=sys.stderr, flush=True)
+            self._force_full_redraw()
             self.boxes_changed.emit()
             return True
         return False
@@ -367,12 +408,12 @@ class AnnotationScene(QGraphicsScene):
         """删除指定 item（右键菜单直接传 item，不依赖选中态）。"""
         if item is None or item.scene() is not self:
             return False
-        if self.draw_mode:
-            # 画模式下删除, 先取消轨迹, 防鼠标松开误生成新多边形
-            self._cancel_polygon()
-        self.removeItem(item)
+        self._cancel_polygon()
+        self._clear_fp_items()
+        self._dispose_item(item)
         if self._last_box is item:
             self._last_box = None
+        self._force_full_redraw()
         self.boxes_changed.emit()
         return True
 
@@ -500,7 +541,7 @@ class AnnotationScene(QGraphicsScene):
         return max(0.6, 2.5 / scale)
 
     def _finish_polygon(self):
-        # 轨迹抽稀成多边形顶点(采样间隔+共线合并), 生成标注
+        # 轨迹抽稀成多边形顶点(采样间隔+共线合并),生成标注
         pts = self._simplify_track(self._free_track or self._polygon_points)
         self._cancel_polygon()
         if len(pts) < 3:
@@ -513,7 +554,7 @@ class AnnotationScene(QGraphicsScene):
             self.box_drawn.emit()
 
     def _update_polygon_preview(self):
-        # 绘制过程只做轨迹跟随(不抽稀), 抽稀延后到 _finish_polygon
+        # 绘制过程只做轨迹跟随(不抽稀),抽稀延后到_finish_polygon
         pts = self._free_track
         if self._preview_item is None:
             self._preview_item = QGraphicsPathItem()
@@ -551,8 +592,7 @@ class AnnotationScene(QGraphicsScene):
             return
         if self.draw_shape == "polygon" and self._free_track:
             pos = self._clamp_to_image(event.scenePos())
-            # 轨迹采样抽稀: 按屏幕像素 10px 换算成 scene 间距(缩放后仍保持
-            # 恒定屏幕密度, 避免放大时点过密导致预览卡顿)
+            # 轨迹采样抽稀
             last = self._free_track[-1]
             if self._sample_gap_sq(pos, last):
                 self._free_track.append([pos.x(), pos.y()])
