@@ -8,9 +8,7 @@ import os
 import json
 import re
 import shutil
-
 from PIL import Image
-
 from PySide6.QtCore import Qt, Signal, QPointF, QTimer, QSize
 from PySide6.QtGui import (QColor, QPixmap, QKeySequence, QShortcut, QPen,
                            QPainter, QImage, QIcon, QCursor, QLinearGradient,
@@ -30,7 +28,6 @@ from app.annotation.box_item import (AnnotationBoxItem, AnnotationPolygonItem,
 from app.label_utils import normalize_label, label_sort_key
 from app.message_box import MessageBox
 from app.log import write_log
-
 # import types
 from PySide6.QtWidgets import QGraphicsView
 
@@ -290,7 +287,6 @@ def _load_import_label(image_path, label_path, fmt, label_ids=None):
                         boxes.append({"label": label, "points": pts,
                                       "shape_type": "polygon"})
                     else:
-                        # 列数异常:降级用 bbox
                         x_coords = [vals[1 + 2 * i] for i in range(len(vals) // 2)]
                         y_coords = [vals[2 + 2 * i] for i in range(len(vals) // 2)]
                         boxes.append({"label": label, "x1": min(x_coords) * iw,
@@ -342,8 +338,8 @@ def save_labelme(image_path, shapes, version="5.0.1"):
 
 
 class AddLabelDialog(QDialog):
-    """添加标签弹窗:名称输入 + 10 个默认色按钮 + 自定义颜色 + 同项目标签导入。
-
+    """
+    添加标签弹窗:名称输入 + 10 个默认色按钮 + 自定义颜色 + 同项目标签导入。
     通过 load_project_label_combo 选择同项目其他数据集，点击 load_label_btn
     导入该数据集已有标签（逗号分隔填入输入框），确定后批量入库并沿用源颜色。
     """
@@ -357,9 +353,9 @@ class AddLabelDialog(QDialog):
         self._db = db
         self._project = project
         self._dataset = dataset
-        self._source_colors = {}   # 导入的数据集标签 → 颜色（用于确定时还原颜色）
+        self._source_colors = {}   # 导入的数据集标签颜色(用于确定时还原颜色)
         self._selected_color = ""
-        self._imported_mode = False   # 本次弹窗是否走"导入"路径（导入后输入框只读）
+        self._imported_mode = False   # 本次弹窗是否走"导入"路径(导入后输入框只读)
         self._setup()
         if preset_name:
             self.ui.input_label_name_txt.setText(preset_name)
@@ -417,8 +413,8 @@ class AddLabelDialog(QDialog):
             combo.setEnabled(False)
 
     def _load_labels_from_project(self):
-        """把所选数据集的标签以逗号分隔填入输入框，并记住其颜色。
-
+        """
+        把所选数据集的标签以逗号分隔填入输入框，并记住其颜色。
         导入后输入框置为只读（导入的标签以源数据集为准，不允许手动改动），
         数据仅在用户点「确定」后才写入当前数据集。
         """
@@ -437,7 +433,7 @@ class AddLabelDialog(QDialog):
         self.ui.input_label_name_txt.setText(", ".join(names))
         self.ui.input_label_name_txt.setReadOnly(True)
         self._imported_mode = True
-        # 导入模式下颜色由源数据集决定，禁用颜色按钮避免无效点击
+        # 导入模式下颜色由源数据集决定,禁用颜色按钮避免无效点击
         for btn in self._color_btns:
             btn.setEnabled(False)
         self.ui.custom_color.setEnabled(False)
@@ -471,8 +467,8 @@ class AddLabelDialog(QDialog):
             self._select_color(color.name())
 
     def result_data(self):
-        """返回 [(name, color), ...]。多个标签以逗号分隔。
-
+        """
+        返回 [(name, color), ...]。多个标签以逗号分隔。
         颜色优先取导入数据集的源颜色（_source_colors），
         否则用当前选中颜色，再否则按 label_color 哈希确定性分配。
         """
@@ -501,7 +497,7 @@ class AnnotationDialog(QDialog):
         self.dataset = dataset
         self.label_path = label_path
         self.label_fmt = label_fmt
-        # YOLO txt 数字 id → 显示名映射(db 持久化,跨重启生效)
+        # YOLO txt 数字 id, 显示名映射(db 持久化,跨重启生效)
         self.label_ids = (db.get_dataset_label_ids(project, dataset)
                           if db else {})
         self.cls_mode = cls_mode
@@ -629,10 +625,12 @@ class AnnotationDialog(QDialog):
                         pix.height() / 2 - r.height() / 2)
             item.setZValue(10)
         else:
-            boxes = _load_labelme(base + ".json")
-            if not boxes:
-                boxes = _load_import_label(image_path, self.label_path, self.label_fmt,
-                                   self.label_ids)
+            json_path = base + ".json"
+            if os.path.exists(json_path):
+                boxes = _load_labelme(json_path)
+            else:
+                boxes = _load_import_label(image_path, self.label_path,
+                                           self.label_fmt, self.label_ids)
         self._loading = True
         try:
             self.scene.load_boxes(boxes)
@@ -752,7 +750,7 @@ class AnnotationDialog(QDialog):
         self.view.unsetCursor()
         self._set_draw_button_states(False)
 
-    # ---------------- 格式刷(轨迹描边 -> 模板 -> 刷子粘贴) ----------------
+    # ---------------- 格式刷(轨迹描边,模板,刷子粘贴) ----------------
     def _toggle_show_boxes(self, checked):
         """"显示标注"开关：关闭时隐藏图像上的标注框，右侧列表信息保留。"""
         for item in self.scene.all_items():
@@ -807,7 +805,7 @@ class AnnotationDialog(QDialog):
 
     @staticmethod
     def _fp_circle_cursor():
-        """轨迹绘制光标:直径 20px 的蓝色圆圈(屏幕像素，热点居中)。"""
+        """轨迹绘制光标:直径 20px 的蓝色圆圈(屏幕像素,热点居中)。"""
         pm = QPixmap(20, 20)
         pm.fill(Qt.transparent)
         p = QPainter(pm)
@@ -868,7 +866,7 @@ class AnnotationDialog(QDialog):
         chosen = menu.exec(pos)
         if chosen is not None and chosen.text() != item.label:
             if self.cls_mode:
-                # 分类数据集:点击中央类别名 -> 修改类别(移动文件)
+                # 分类数据集:点击中央类别名;修改类别(移动文件)
                 self._change_cls(chosen.text())
             else:
                 self.scene.set_item_label(item, chosen.text())
@@ -964,16 +962,15 @@ class AnnotationDialog(QDialog):
             self._delete_label_from_list(name)
 
     def _delete_label_from_list(self, name):
-        """删除标签并同步清理其标注：db / 本地 labelme json / 当前场景。
-
+        """
+        删除标签并同步清理其标注：db / 本地 labelme json / 当前场景。
         删除前统计该标签在场景和所有可见图像 json 中的标注数；
         有标注时提示影响范围，确认后才执行（删除不可恢复）。
-
-        性能：文件多时弹进度框；先用文本快速检查跳过不含该标签的文件
-        （省去 json.load 解析），只有命中的文件才解析+过滤+写回。
+        性能：文件多时弹进度框;先用文本快速检查跳过不含该标签的文件
+        (省去 json.load 解析),只有命中的文件才解析+过滤+写回。
         """
         needle = normalize_label(name)
-        # 统计并清理所有可见图像 json 中该标签的 shapes（含当前图像）
+        # 统计并清理所有可见图像json中该标签的shapes(含当前图像)
         removed = 0
         progress = None
         if len(self.image_list) > 50:
@@ -993,7 +990,7 @@ class AnnotationDialog(QDialog):
                     with open(jp, "r", encoding="utf-8") as f:
                         text = f.read()
                     if needle not in text:
-                        continue   # 快速跳过：文本不含该标签，无需解析
+                        continue
                     data = json.loads(text)
                     before = len(data.get("shapes", []))
                     data["shapes"] = [s for s in data.get("shapes", [])
@@ -1007,7 +1004,7 @@ class AnnotationDialog(QDialog):
         finally:
             if progress is not None:
                 progress.close()
-        # 当前场景中该标签的标注项（json 已清理，场景内仍需删除）
+        # 当前场景中该标签的标注项(json 已清理,场景内仍需删除)
         scene_items = [it for it in self.scene.all_items()
                        if getattr(it, "label", None) == name]
         total = removed + len(scene_items)
@@ -1057,7 +1054,7 @@ class AnnotationDialog(QDialog):
         if not items:
             MessageBox.warning(self, "添加标签", "标签名称不能为空")
             return
-        # 导入路径：重复标签跳过（不覆盖已有颜色/标注）；手动输入仍按原逻辑
+        # 导入路径：重复标签跳过(不覆盖已有颜色/标注);手动输入仍按原逻辑
         existing = set(self.label_colors)
         imported = getattr(dlg, "_imported_mode", False)
         added = []
@@ -1210,7 +1207,7 @@ class AnnotationDialog(QDialog):
         if not (0 <= self.index < len(self.image_list)):
             return
         image_path = self.image_list[self.index]
-        # 格式刷改过图像像素 -> 覆盖写回磁盘(QPixmap.save 按扩展名决定格式)
+        # 格式刷改过图像像素覆盖写回磁盘(QPixmap.save 按扩展名决定格式)
         if getattr(self.scene, "image_modified", False):
             try:
                 self.scene.image_item.pixmap().save(image_path)
@@ -1235,16 +1232,12 @@ class AnnotationDialog(QDialog):
         if shapes:
             save_labelme(image_path, shapes)
         else:
-            if os.path.exists(json_path):
-                try:
-                    os.remove(json_path)
-                except OSError:
-                    pass
+            save_labelme(image_path, [])
         self._dirty = False
 
 
 class _HueSatPicker(QWidget):
-    """HSV 取色面板：x=色相(0-359°)、y=饱和度(1→0)，明度由外部滑块控制。"""
+    """HSV 取色面板"""
 
     def __init__(self, value=255, on_change=None):
         super().__init__()
@@ -1304,7 +1297,7 @@ class _HueSatPicker(QWidget):
 
 
 class SwitchButton(QWidget):
-    """iOS/Android 风格开关：圆角轨道 + 白色圆形滑块，点击左右滑动。"""
+    """自定义开关按钮"""
 
     toggled = Signal(bool)
 
@@ -1340,7 +1333,6 @@ class SwitchButton(QWidget):
         p.setBrush(track)
         p.drawRoundedRect(0, 0, 36, 20, 10, 10)
         p.setBrush(QColor("#ffffff"))
-        # 滑块 16px 直径, 轨道宽 36 - 留 2px 边 -> 滑动 18px
         cx = 18 if self._checked else 2
         p.drawEllipse(cx, 2, 16, 16)
 

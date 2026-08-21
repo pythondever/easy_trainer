@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """标注场景：负责画框/画多边形、删除、与列表同步。"""
+import sys
 from PySide6.QtCore import QRectF, QPointF, Qt, Signal
 from PySide6.QtGui import (QPen, QColor, QBrush, QPolygonF, QPainterPath,
                            QPixmap, QPainter, QImage)
@@ -78,7 +79,6 @@ class AnnotationScene(QGraphicsScene):
         flag = QGraphicsItem.GraphicsItemFlag.ItemIsSelectable
         for item in self.all_items():
             item.setFlag(flag, not draw)
-            # item 不指定光标(继承 view), 否则会覆盖 view 的画笔/十字光标
             item.unsetCursor()
 
     # ---------------- 格式刷(轨迹描边, 模板, 刷子粘贴)----------------
@@ -202,8 +202,10 @@ class AnnotationScene(QGraphicsScene):
                 QPolygonF([QPointF(*p) for p in pts]))
 
     def _paste_template(self, pos):
-        """把模板（抠图 patch + 多边形）粘贴到 pos 为中心的位置，边界夹紧。
-        记录粘贴前区域像素 + 标注 item 到撤销栈（Ctrl+Z 可撤销）。"""
+        """
+        把模板（抠图 patch + 多边形）粘贴到 pos 为中心的位置，边界夹紧。
+        记录粘贴前区域像素 + 标注 item 到撤销栈（Ctrl+Z 可撤销）。
+        """
         t = self.fp_template
         if not t:
             return
@@ -290,7 +292,6 @@ class AnnotationScene(QGraphicsScene):
         return color
 
     def add_box(self, x1, y1, x2, y2, label):
-        import sys
         print("[dbg] ADD box label=", label, "rect=", (x1, y1, x2, y2),
               "draw_mode=", self.draw_mode, "fp=", self.fp_mode,
               file=sys.stderr, flush=True)
@@ -332,7 +333,6 @@ class AnnotationScene(QGraphicsScene):
         return result
 
     def load_boxes(self, boxes):
-        import sys
         print("[dbg] LOAD boxes=", len(boxes),
               "labels=", [b.get("label") for b in boxes],
               file=sys.stderr, flush=True)
@@ -383,7 +383,6 @@ class AnnotationScene(QGraphicsScene):
     def delete_selected(self):
         item = self.selected_item()
         if item is not None:
-            import sys
             print("[dbg] DELETE before=", len(self.all_items()),
                   "labels=", [i.label for i in self.all_items()],
                   "del=", item.label,
@@ -476,12 +475,21 @@ class AnnotationScene(QGraphicsScene):
         )
         self._preview_item.setZValue(20)
 
+    def _polygon_trace_color(self):
+        """绘制轨迹颜色 = 当前标注标签颜色（跟随用户所选标签）。"""
+        return QColor(self._resolve_color(self.current_label))
+
     def _polygon_press(self, pos):
         """画笔模式: 按下开始采集轨迹。"""
         self._free_track = [[pos.x(), pos.y()]]
+        c = self._polygon_trace_color()
         self._preview_item = QGraphicsPathItem()
-        self._preview_item.setPen(QPen(QColor("#5B8CFF"), 1.5))
-        self._preview_item.setBrush(QBrush(QColor(91, 140, 255, 40)))
+        pen_c = QColor(c)
+        pen_c.setAlpha(230)
+        self._preview_item.setPen(QPen(pen_c, 1.5))
+        brush_c = QColor(c)
+        brush_c.setAlpha(40)
+        self._preview_item.setBrush(QBrush(brush_c))
         self._preview_item.setZValue(20)
         self.addItem(self._preview_item)
         self._update_polygon_preview()
@@ -556,16 +564,19 @@ class AnnotationScene(QGraphicsScene):
     def _update_polygon_preview(self):
         # 绘制过程只做轨迹跟随(不抽稀),抽稀延后到_finish_polygon
         pts = self._free_track
+        c = self._polygon_trace_color()
+        pen_c = QColor(c)
+        pen_c.setAlpha(230)
         if self._preview_item is None:
             self._preview_item = QGraphicsPathItem()
-            self._preview_item.setPen(QPen(QColor("#5B8CFF"),
-                                           self._preview_pen_width()))
-            self._preview_item.setBrush(QBrush(QColor(91, 140, 255, 40)))
+            self._preview_item.setPen(QPen(pen_c, self._preview_pen_width()))
+            brush_c = QColor(c)
+            brush_c.setAlpha(40)
+            self._preview_item.setBrush(QBrush(brush_c))
             self._preview_item.setZValue(20)
             self.addItem(self._preview_item)
         else:
-            self._preview_item.setPen(QPen(QColor("#5B8CFF"),
-                                           self._preview_pen_width()))
+            self._preview_item.setPen(QPen(pen_c, self._preview_pen_width()))
         path = QPainterPath()
         if pts:
             path.moveTo(pts[0][0], pts[0][1])
