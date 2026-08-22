@@ -199,6 +199,8 @@ class ProjectMixin(object):
                 self._delete_project(kind[1])
         elif kind[0] == "dataset":
             act_load = menu.addAction("载入")
+            act_import = menu.addAction("导入")
+            act_export = menu.addAction("导出")
             act_move = menu.addAction("移动")
             act_rename = menu.addAction("修改")
             act_del = menu.addAction("删除")
@@ -207,6 +209,11 @@ class ProjectMixin(object):
                 return
             if act == act_load:
                 self._load_dataset_view(kind[1], kind[2])
+            elif act == act_import:
+                self._import_dataset(kind[1], kind[2])
+            elif act == act_export:
+                self.project_tree.setCurrentItem(item)
+                self._on_export_clicked()
             elif act == act_move:
                 self._on_dataset_move(kind[1], kind[2])
             elif act == act_rename:

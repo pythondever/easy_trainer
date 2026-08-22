@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'dataset_properties.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.3
+## Created by: Qt User Interface Compiler version 6.11.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -15,9 +15,10 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QDialog, QGraphicsView, QGridLayout,
-    QHBoxLayout, QLabel, QLineEdit, QSizePolicy,
-    QSpacerItem, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QComboBox, QDialog, QGraphicsView,
+    QGridLayout, QHBoxLayout, QLabel, QLineEdit,
+    QPushButton, QSizePolicy, QSpacerItem, QVBoxLayout,
+    QWidget)
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
@@ -28,6 +29,33 @@ class Ui_Dialog(object):
         self.gridLayout.setObjectName(u"gridLayout")
         self.verticalLayout = QVBoxLayout()
         self.verticalLayout.setObjectName(u"verticalLayout")
+        self.horizontalLayout_5 = QHBoxLayout()
+        self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
+        self.horizontalLayout_5.setContentsMargins(-1, 0, -1, 0)
+        self.select_dataset_label = QLabel(Dialog)
+        self.select_dataset_label.setObjectName(u"select_dataset_label")
+
+        self.horizontalLayout_5.addWidget(self.select_dataset_label)
+
+        self.dataset_comboBox = QComboBox(Dialog)
+        self.dataset_comboBox.setObjectName(u"dataset_comboBox")
+        self.dataset_comboBox.setMinimumSize(QSize(200, 40))
+
+        self.horizontalLayout_5.addWidget(self.dataset_comboBox)
+
+        self.select_dataset_btn = QPushButton(Dialog)
+        self.select_dataset_btn.setObjectName(u"select_dataset_btn")
+        self.select_dataset_btn.setMinimumSize(QSize(0, 40))
+
+        self.horizontalLayout_5.addWidget(self.select_dataset_btn)
+
+        self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_5.addItem(self.horizontalSpacer_2)
+
+
+        self.verticalLayout.addLayout(self.horizontalLayout_5)
+
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.image_path = QLabel(Dialog)
@@ -95,6 +123,8 @@ class Ui_Dialog(object):
 
     def retranslateUi(self, Dialog):
         Dialog.setWindowTitle(QCoreApplication.translate("Dialog", u"\u6570\u636e\u96c6\u5c5e\u6027", None))
+        self.select_dataset_label.setText(QCoreApplication.translate("Dialog", u"\u9009\u62e9\u6570\u636e\u96c6", None))
+        self.select_dataset_btn.setText(QCoreApplication.translate("Dialog", u"\u786e\u5b9a", None))
         self.image_path.setText(QCoreApplication.translate("Dialog", u"\u56fe\u50cf\u8def\u5f84:", None))
         self.label_path.setText(QCoreApplication.translate("Dialog", u"\u6807\u7b7e\u8def\u5f84:", None))
         self.label.setText(QCoreApplication.translate("Dialog", u"\u6807\u7b7e\u5206\u5e03:", None))

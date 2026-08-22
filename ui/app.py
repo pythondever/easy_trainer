@@ -24,7 +24,7 @@ class Ui_AppUI(object):
     def setupUi(self, AppUI):
         if not AppUI.objectName():
             AppUI.setObjectName(u"AppUI")
-        AppUI.resize(1269, 780)
+        AppUI.resize(1507, 780)
         self.rootLayout = QVBoxLayout(AppUI)
         self.rootLayout.setSpacing(0)
         self.rootLayout.setObjectName(u"rootLayout")
@@ -187,16 +187,6 @@ class Ui_AppUI(object):
 
         self.datasetHeaderLayout.addWidget(self.delete_label_btn)
 
-        self.import_dataset_btn = QPushButton(self.datasetHeader)
-        self.import_dataset_btn.setObjectName(u"import_dataset_btn")
-
-        self.datasetHeaderLayout.addWidget(self.import_dataset_btn)
-
-        self.export_dataset_btn = QPushButton(self.datasetHeader)
-        self.export_dataset_btn.setObjectName(u"export_dataset_btn")
-
-        self.datasetHeaderLayout.addWidget(self.export_dataset_btn)
-
         self.dataset_properties_btn = QPushButton(self.datasetHeader)
         self.dataset_properties_btn.setObjectName(u"dataset_properties_btn")
 
@@ -294,9 +284,7 @@ class Ui_AppUI(object):
         self.gpu_memory_use_btn.setText(QCoreApplication.translate("AppUI", u"20%", None))
         self.rename_label_btn.setText(QCoreApplication.translate("AppUI", u"\u7f16\u8f91", None))
         self.delete_label_btn.setText(QCoreApplication.translate("AppUI", u"\u5220\u9664", None))
-        self.import_dataset_btn.setText(QCoreApplication.translate("AppUI", u"\u5bfc\u5165", None))
-        self.export_dataset_btn.setText(QCoreApplication.translate("AppUI", u"\u5bfc\u51fa", None))
-        self.dataset_properties_btn.setText(QCoreApplication.translate("AppUI", u"\u5c5e\u6027", None))
+        self.dataset_properties_btn.setText(QCoreApplication.translate("AppUI", u"\u7edf\u8ba1", None))
         self.train_btn.setText(QCoreApplication.translate("AppUI", u"\u8bad\u7ec3", None))
         self.model_btn.setText(QCoreApplication.translate("AppUI", u"\u6a21\u578b", None))
         self.log_btn.setText(QCoreApplication.translate("AppUI", u"\u65e5\u5fd7", None))

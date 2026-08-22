@@ -141,6 +141,7 @@ class DatasetViewMixin(object):
         self._refresh_dataset_labels(proj, ds)
         self._refresh_label_filter(proj, ds)
         self._refresh_annotation_progress(proj, ds)
+        self._calc_label_counts(proj, ds)
         if self.current_label:
             self.show_dataset_images(proj, ds)
 

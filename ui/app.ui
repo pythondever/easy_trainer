@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1269</width>
+    <width>1507</width>
     <height>780</height>
    </rect>
   </property>
@@ -373,23 +373,9 @@
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="import_dataset_btn">
-               <property name="text">
-                <string>导入</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="export_dataset_btn">
-               <property name="text">
-                <string>导出</string>
-               </property>
-              </widget>
-             </item>
-             <item>
               <widget class="QPushButton" name="dataset_properties_btn">
                <property name="text">
-                <string>属性</string>
+                <string>统计</string>
                </property>
               </widget>
              </item>
