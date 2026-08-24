@@ -87,6 +87,10 @@ class MiscMixin(object):
         le.setStyleSheet(
             "QLineEdit { background: transparent; border: none; padding: 0; }")
         f = _ClickToPopupFilter(combo)
+        # 保持引用防 GC(否则事件过滤器失效, 点击 lineEdit 不再展开)
+        if not hasattr(self, "_stats_combo_filters"):
+            self._stats_combo_filters = []
+        self._stats_combo_filters.append(f)
         combo.installEventFilter(f)
         le.installEventFilter(f)
         combo.model().itemChanged.connect(

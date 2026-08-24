@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'dataset_properties.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.11.1
+## Created by: Qt User Interface Compiler version 6.6.3
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -123,7 +123,7 @@ class Ui_Dialog(object):
 
     def retranslateUi(self, Dialog):
         Dialog.setWindowTitle(QCoreApplication.translate("Dialog", u"\u6570\u636e\u96c6\u5c5e\u6027", None))
-        self.select_dataset_label.setText(QCoreApplication.translate("Dialog", u"\u9009\u62e9\u6570\u636e\u96c6", None))
+        self.select_dataset_label.setText(QCoreApplication.translate("Dialog", u"\u9009\u62e9\u6570\u636e:", None))
         self.select_dataset_btn.setText(QCoreApplication.translate("Dialog", u"\u786e\u5b9a", None))
         self.image_path.setText(QCoreApplication.translate("Dialog", u"\u56fe\u50cf\u8def\u5f84:", None))
         self.label_path.setText(QCoreApplication.translate("Dialog", u"\u6807\u7b7e\u8def\u5f84:", None))

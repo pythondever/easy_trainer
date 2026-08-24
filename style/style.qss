@@ -324,13 +324,13 @@ QTabBar::tab:hover:!selected {
 QMenu {
     background-color: #20232b;
     border: 1px solid #3a3f4e;
-    border-radius: 8px;
+    border-radius: 0;
     padding: 6px;
 }
 
 QMenu::item {
     padding: 7px 24px 7px 12px;
-    border-radius: 5px;
+    border-radius: 0;
 }
 
 QMenu::item:selected {
@@ -613,12 +613,12 @@ QTreeWidget#projectTree::branch:!has-children:selected {
     background-color: #1d2028;
     color: #e8eaf0;
     border: 1px solid #3a3f4d;
-    border-radius: 6px;
+    border-radius: 0;
     padding: 4px;
 }
 #AnnotationDialog QMenu::item {
     padding: 6px 24px 6px 8px;
-    border-radius: 4px;
+    border-radius: 0;
 }
 #AnnotationDialog QMenu::item:selected { background-color: #2c3a5e; }
 #AnnotationDialog QMenu::item:disabled { color: #555b68; }

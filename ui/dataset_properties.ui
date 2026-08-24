@@ -27,7 +27,7 @@
        <item>
         <widget class="QLabel" name="select_dataset_label">
          <property name="text">
-          <string>选择数据集</string>
+          <string>选择数据:</string>
          </property>
         </widget>
        </item>
