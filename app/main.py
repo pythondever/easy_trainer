@@ -11,7 +11,7 @@ from app.utils import setup_matplotlib_chinese, load_style_sheet
 from db import DataBase
 from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtCore import Qt, QTimer, QEvent
-from PySide6.QtWidgets import QWidget, QApplication, QTimeEdit, QFrame
+from PySide6.QtWidgets import QWidget, QApplication, QTimeEdit, QFrame, QHBoxLayout
 
 
 try:
@@ -112,6 +112,7 @@ class App(QWidget, MainUI, LabelMixin, ProjectMixin, ImportExportMixin,
         # 主操作(训练)蓝填充 / 危险操作(删除)红色
         self.train_btn.setProperty("class", "primary")
         self.delete_label_btn.setProperty("class", "danger")
+        self._tighten_gpu_pair()
 
         def vline():
             line = QFrame(self)
@@ -125,6 +126,29 @@ class App(QWidget, MainUI, LabelMixin, ProjectMixin, ImportExportMixin,
         lay.insertWidget(13, vline())   # 统计 | 训练
         lay.insertWidget(12, vline())   # 标签区 | 统计
         lay.insertWidget(9, vline())    # 进度区 | 标签区
+
+    def _tighten_gpu_pair(self):
+        """把「显存」label 和显存 chip 按钮包成紧凑子布局(内部 2px), 避免 8px 间距显远。"""
+        lay = self.datasetHeaderLayout
+        lbl = self.gpu_memory_label
+        btn = self.gpu_memory_use_btn
+        idx_lbl = idx_btn = -1
+        for i in range(lay.count()):
+            w = lay.itemAt(i).widget()
+            if w is lbl:
+                idx_lbl = i
+            elif w is btn:
+                idx_btn = i
+        if idx_lbl < 0 or idx_btn < 0 or idx_btn != idx_lbl + 1:
+            return
+        lay.takeAt(idx_btn)
+        lay.takeAt(idx_lbl)
+        sub = QHBoxLayout()
+        sub.setSpacing(2)
+        sub.setContentsMargins(0, 0, 0, 0)
+        sub.addWidget(lbl)
+        sub.addWidget(btn)
+        lay.insertLayout(idx_lbl, sub)
 
     def register_event(self):
         self.add_project_btn.clicked.connect(lambda: self.add_project())
