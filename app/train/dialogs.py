@@ -11,7 +11,7 @@ from PySide6.QtCore import Qt, QTimer, QEvent, QObject
 from PySide6.QtGui import QIntValidator, QDoubleValidator
 from PySide6.QtWidgets import (QDialog, QLabel, QFileDialog, QSizePolicy,
                                QComboBox, QHBoxLayout, QPushButton,
-                               QVBoxLayout)
+                               QVBoxLayout, QWidget, QFrame)
 from PySide6.QtGui import QStandardItem
 
 from app.message_box import MessageBox
@@ -124,7 +124,7 @@ class TrainDialog(QDialog):
         self.ui = Ui_TrainDialog()
         self.ui.setupUi(self)
         self.setWindowTitle("训练")
-        self.setMinimumHeight(520)
+        self.setMinimumHeight(550)
         self.ui.gridLayout.setContentsMargins(0, 0, 0, 0)
         self.ui.gridLayout.setHorizontalSpacing(9)
         self.ui.gridLayout.setVerticalSpacing(0)
@@ -139,7 +139,7 @@ class TrainDialog(QDialog):
                 "QPushButton{padding:0px;border:1px solid #353a48;"
                 "border-radius:6px;}")
         if hasattr(self.ui, "bottomActions"):
-            self.ui.bottomActions.setContentsMargins(0, 8, 0, 8)
+            self.ui.bottomActions.setContentsMargins(0, 12, 0, 28)
         for vl in (getattr(self.ui, "verticalLayout", None),
                    getattr(self.ui, "verticalLayout_2", None)):
             if vl is not None:
@@ -149,9 +149,11 @@ class TrainDialog(QDialog):
         self._define_fields()
         self._fill_defaults()
         self._setup_validators()
+        self._remove_title_row()
         self._fix_heights()
+        self._add_group_titles()
         self._connect()
-        self.resize(550, 560)
+        self.resize(560, 640)
         self._center_start_button()
 
     def _task(self):
@@ -207,17 +209,66 @@ class TrainDialog(QDialog):
             if combo is not None:
                 combo.setFixedHeight(30)
                 combo.setFixedWidth(244)
-        for btn_name in ("start_train",
-                         "select_output_path_btn"):
-            btn = getattr(self.ui, btn_name, None)
-            if btn is not None:
-                btn.setFixedHeight(30)
+        sel_btn = getattr(self.ui, "select_output_path_btn", None)
+        if sel_btn is not None:
+            sel_btn.setFixedHeight(30)
+        start_btn = getattr(self.ui, "start_train", None)
+        if start_btn is not None:
+            start_btn.setFixedHeight(40)
         # 开始训练:蓝底主按钮(样式在 style.qss #start_train)
         for lab_name in ("train_cfg_label",):
             lab = getattr(self.ui, lab_name, None)
             if lab is not None:
                 lab.setFixedHeight(22)
         self._push_spacers_to_left()
+
+    def _remove_title_row(self):
+        """删除顶部"训练参数配置"标题行(该行布局 + label), 并解除引用避免后续误访问。"""
+        vl = getattr(self.ui, "verticalLayout", None)
+        hl = getattr(self.ui, "horizontalLayout", None)
+        if vl is None or hl is None:
+            return
+        for i in range(vl.count()):
+            it = vl.itemAt(i)
+            if it is not None and it.layout() is hl:
+                vl.takeAt(i)
+                break
+        lbl = getattr(self.ui, "train_cfg_label", None)
+        if lbl is not None:
+            lbl.hide()
+            lbl.deleteLater()
+        # 解除引用: 后续 _fix_heights/_push_spacers_to_left 遍历时跳过
+        setattr(self.ui, "train_cfg_label", None)
+        setattr(self.ui, "horizontalLayout", None)
+        hl.deleteLater()
+
+    def _add_group_titles(self):
+        """训练参数分组: 模型与数据 / 训练超参 / 输出(蓝色小标题 + 细分隔线)。"""
+        vl = getattr(self.ui, "verticalLayout", None)
+        if vl is None:
+            return
+        # 从后往前插入避免 index 偏移: 输出路径(13) / 优化器(5) / 任务类型(0)
+        self._insert_group_title(vl, 13, "输出")
+        self._insert_group_title(vl, 5, "训练超参")
+        self._insert_group_title(vl, 0, "模型与数据")
+
+    def _insert_group_title(self, vl, index, text):
+        """向 verticalLayout 指定 index 插入分组标题(蓝字 + 横线)。"""
+        w = QWidget(self)
+        h = QHBoxLayout(w)
+        h.setContentsMargins(2, 6, 0, 0)
+        h.setSpacing(10)
+        lbl = QLabel(text, w)
+        lbl.setStyleSheet(
+            "color: #5b8cff; font-size: 12px; font-weight: 600;")
+        line = QFrame(w)
+        line.setFrameShape(QFrame.HLine)
+        line.setStyleSheet(
+            "background-color: #2a2d37; border: none;"
+            " max-height: 1px; margin-top: 2px;")
+        h.addWidget(lbl)
+        h.addWidget(line, 1)
+        vl.insertWidget(index, w)
 
     def _push_spacers_to_left(self):
         """每行重排为 [label, spacer, 控件]：label 贴左、控件贴右。

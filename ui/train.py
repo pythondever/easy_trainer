@@ -30,20 +30,6 @@ class Ui_TrainDialog(object):
         self.horizontalLayout_17.setObjectName(u"horizontalLayout_17")
         self.verticalLayout = QVBoxLayout()
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.horizontalLayout = QHBoxLayout()
-        self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.train_cfg_label = QLabel(TrainDialog)
-        self.train_cfg_label.setObjectName(u"train_cfg_label")
-
-        self.horizontalLayout.addWidget(self.train_cfg_label)
-
-        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout.addItem(self.horizontalSpacer)
-
-
-        self.verticalLayout.addLayout(self.horizontalLayout)
-
         self.horizontalLayout_task = QHBoxLayout()
         self.horizontalLayout_task.setObjectName(u"horizontalLayout_task")
         self.task_label = QLabel(TrainDialog)
@@ -359,7 +345,6 @@ class Ui_TrainDialog(object):
 
     def retranslateUi(self, TrainDialog):
         TrainDialog.setWindowTitle(QCoreApplication.translate("TrainDialog", u"\u8bad\u7ec3", None))
-        self.train_cfg_label.setText(QCoreApplication.translate("TrainDialog", u"\u8bad\u7ec3\u53c2\u6570\u914d\u7f6e", None))
         self.task_label.setText(QCoreApplication.translate("TrainDialog", u"\u4efb\u52a1\u7c7b\u578b", None))
         self.task_combo.setItemText(0, QCoreApplication.translate("TrainDialog", u"\u68c0\u6d4b", None))
         self.task_combo.setItemText(1, QCoreApplication.translate("TrainDialog", u"\u5206\u5272", None))
