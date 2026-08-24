@@ -68,11 +68,6 @@ class App(QWidget, MainUI, LabelMixin, ProjectMixin, ImportExportMixin,
         self.train_progress.hide()
         self.task_name_label.hide()
         self.stop_train_btn.hide()
-        self.stop_train_btn.setStyleSheet(
-            "QPushButton { background-color: #d64545; color: white;"
-            " border: none; border-radius: 6px; padding: 4px 12px;"
-            " font-size: 13px; }"
-            "QPushButton:hover { background-color: #e05555; }")
         # 进度条文本: `30% | 0.556`
         self._latest_map50 = None
         self._apply_progress_format()

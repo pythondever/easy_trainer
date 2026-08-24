@@ -491,16 +491,11 @@ class DatasetViewMixin(object):
                 if progress_lbl is not None:
                     progress_lbl.setVisible(False)
                 progress = QProgressBar(container)
+                progress.setObjectName("miniProgressBar")
                 progress.setRange(0, 100)
                 progress.setValue(0)
                 progress.setFixedSize(140, 14)
                 progress.setTextVisible(True)
-                progress.setStyleSheet(
-                    "QProgressBar { background-color: rgba(91,140,255,0.25);"
-                    " border: none; border-radius: 3px;"
-                    " color: #ffffff; font-size: 10px; }"
-                    " QProgressBar::chunk { background-color: #5b8cff;"
-                    " border-radius: 3px; }")
                 h = container.layout()
                 h.addWidget(progress)
                 h.setAlignment(progress, Qt.AlignVCenter)

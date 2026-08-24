@@ -141,7 +141,6 @@ class ProjectMixin(object):
         """
         container = QWidget(self)
         container.setObjectName("datasetRowContainer")
-        container.setStyleSheet("background: transparent;")
         # 事件穿透到 QTreeWidget, 让 ::item:hover / :selected 整行高亮生效
         container.setAttribute(Qt.WA_TransparentForMouseEvents, True)
         container.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
@@ -158,7 +157,6 @@ class ProjectMixin(object):
             '<img src="{0}" width="14" height="14" '
             'style="vertical-align: middle;"/>&nbsp;{1}'.format(
                 icon_path_uri, dataset_name))
-        name_lbl.setStyleSheet("color: #ffffff; background: transparent;")
         h.addWidget(name_lbl)
         h.addStretch(1)
         progress_lbl = QLabel(container)

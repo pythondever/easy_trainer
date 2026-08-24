@@ -845,3 +845,131 @@ QFrame#headerSeparator {
     padding: 4px;
     outline: none;
 }
+
+/* ---------------- 数据集行内迷你进度条（导入/标签合并时显示） ---------------- */
+QProgressBar#miniProgressBar {
+    background-color: rgba(91,140,255,0.25);
+    border: none;
+    border-radius: 3px;
+    color: #ffffff;
+    font-size: 10px;
+}
+QProgressBar#miniProgressBar::chunk {
+    background-color: #5b8cff;
+    border-radius: 3px;
+}
+
+/* ---------------- 多选下拉框只读 lineEdit（统计/训练界面） ---------------- */
+QLineEdit#multiComboLineEdit {
+    background: transparent;
+    border: none;
+    padding: 0;
+}
+
+/* ---------------- 训练对话框开始按钮(主操作) ---------------- */
+QPushButton#start_train {
+    background-color: #4f7dff;
+    border: 1px solid #4f7dff;
+    border-radius: 6px;
+    color: #ffffff;
+    font-weight: bold;
+    padding: 4px 26px;
+}
+QPushButton#start_train:hover {
+    background-color: #638cff;
+    border-color: #638cff;
+}
+QPushButton#start_train:pressed {
+    background-color: #3f6ceb;
+}
+QPushButton#start_train:disabled {
+    background-color: #2c3a5e;
+    border-color: #2c3a5e;
+    color: #7d879c;
+}
+
+/* ---------------- 停止训练按钮(红色) ---------------- */
+QPushButton#stop_train_btn {
+    background-color: #d64545;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 12px;
+    font-size: 13px;
+}
+QPushButton#stop_train_btn:hover {
+    background-color: #e05555;
+}
+
+/* ---------------- 项目树数据集行 ---------------- */
+QWidget#datasetRowContainer {
+    background: transparent;
+}
+QLabel#datasetRowName {
+    color: #ffffff;
+    background: transparent;
+}
+
+/* ---------------- 标注对话框标签列表 ---------------- */
+QLabel#show_boxes_label {
+    color: #cfd6e4;
+    font-size: 13px;
+}
+QFrame#labelRow {
+    background: #232834;
+    border-radius: 6px;
+}
+QLabel#labelRowName {
+    color: #e8eaf0;
+    background: transparent;
+    font-weight: 600;
+}
+QLabel#labelRowKind {
+    color: #8a92a3;
+    background: transparent;
+}
+QLabel#labelRowInfo {
+    color: #8a92a3;
+    background: transparent;
+    font-size: 11px;
+}
+
+/* ---------------- message_box 自绘弹窗 ---------------- */
+QFrame#msgFrame {
+    background-color: #1c1f27;
+    border: 1px solid #353a48;
+    border-radius: 12px;
+}
+QLabel#msgTitle {
+    color: #e8eaf0;
+    font-size: 14px;
+    font-weight: 600;
+}
+QPushButton#msgClose {
+    background-color: transparent; color: #8a93a6; border: none;
+    border-radius: 6px; font-size: 15px; padding: 2px 8px;
+}
+QPushButton#msgClose:hover { background-color: #3a3f4c; color: #e8eaf0; }
+QPushButton#msgBtn {
+    background-color: #2a2e38; color: #e8eaf0; border: none;
+    border-radius: 6px; padding: 6px 18px; font-size: 13px;
+}
+QPushButton#msgBtn:hover { background-color: #343a48; }
+QPushButton#msgBtn:pressed { background-color: #3d4556; }
+QPushButton#msgBtnPrimary {
+    background-color: #5b8cff; color: #ffffff; border: none;
+    border-radius: 6px; padding: 6px 18px; font-size: 13px; font-weight: 600;
+}
+QPushButton#msgBtnPrimary:hover { background-color: #6b9bff; }
+QPushButton#msgBtnPrimary:pressed { background-color: #4a7be8; }
+QLabel#msgText {
+    color: #cfd6e4; font-size: 13px; background: transparent;
+}
+
+/* ---------------- ProgressDialog ---------------- */
+QLabel#progressText { color: #e8eaf0; font-size: 13px; }
+QProgressBar#progressBar {
+    background: #2a2e38; border: none; border-radius: 4px;
+    height: 10px; color: transparent;
+}
+QProgressBar#progressBar::chunk { background: #5b8cff; border-radius: 4px; }

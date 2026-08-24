@@ -82,10 +82,9 @@ class MiscMixin(object):
         combo.setEditable(True)
         combo.setFocusPolicy(Qt.StrongFocus)
         le = combo.lineEdit()
+        le.setObjectName("multiComboLineEdit")
         le.setReadOnly(True)
         le.setAlignment(Qt.AlignHCenter)
-        le.setStyleSheet(
-            "QLineEdit { background: transparent; border: none; padding: 0; }")
         f = _ClickToPopupFilter(combo)
         # 保持引用防 GC(否则事件过滤器失效, 点击 lineEdit 不再展开)
         if not hasattr(self, "_stats_combo_filters"):
@@ -265,11 +264,15 @@ class MiscMixin(object):
         if not index:
             return
         total = len(index["all"])
-        labeled = 0
-        for rec in index["all"]:
-            if rec.get("boxes") or self._has_label_file(rec.get("image_path", "")):
-                labeled += 1
+        # 分类数据集: 每张图都有类别(cls/labels), 视为全部已标注
         binding = self.db.get_dataset_import(project_name, dataset_name)
+        if binding.get("label_fmt") == "cls":
+            labeled = total
+        else:
+            labeled = 0
+            for rec in index["all"]:
+                if rec.get("boxes") or self._has_label_file(rec.get("image_path", "")):
+                    labeled += 1
         self.db.update_dataset_import(
             project_name, dataset_name,
             binding.get("image_path", ""), binding.get("label_path", ""),

@@ -12,6 +12,11 @@ from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel,
                                QComboBox)
 
 
+def _muted_style(size=13):
+    """辅助说明文字: 中性灰 + 指定字号。"""
+    return "color: #8a92a3; font-size: {}px;".format(size)
+
+
 def _setup_matplotlib_chinese():
     """设置中文字体（与 app.main 同逻辑，避免循环导入）。"""
     try:
@@ -88,7 +93,7 @@ class MetricsDialog(QDialog):
         row = QHBoxLayout()
         row.addStretch(1)
         lbl = QLabel("标签筛选")
-        lbl.setStyleSheet("color: #8a92a3; font-size: 13px;")
+        lbl.setStyleSheet(_muted_style())
         row.addWidget(lbl)
         self._combo = QComboBox()
         self._combo.addItem("全部指标")
@@ -104,7 +109,7 @@ class MetricsDialog(QDialog):
         # 无 per_class
         if not self._per_class and not self._labels:
             self._hint = QLabel("(暂无标签数据,需完成首次 epoch 验证后才会出现)")
-            self._hint.setStyleSheet("color: #8a92a3; font-size: 12px;")
+            self._hint.setStyleSheet(_muted_style(12))
             row.addWidget(self._hint)
         self._body.addLayout(row)
 
@@ -113,10 +118,9 @@ class MetricsDialog(QDialog):
         combo.setEditable(True)
         combo.setFocusPolicy(Qt.StrongFocus)
         le = combo.lineEdit()
+        le.setObjectName("multiComboLineEdit")
         le.setReadOnly(True)
         le.setAlignment(Qt.AlignHCenter)
-        le.setStyleSheet(
-            "QLineEdit { background: transparent; border: none; padding: 0; }")
         f = _ClickToPopupFilter(combo)
         combo.installEventFilter(f)
         combo.lineEdit().installEventFilter(f)
@@ -144,7 +148,7 @@ class MetricsDialog(QDialog):
                   if isinstance(v, list) and v}
         if not epochs or not series:
             tip = QLabel("暂无该标签的指标数据（训练完成后可查看）")
-            tip.setStyleSheet("color: #8a92a3; font-size: 13px;")
+            tip.setStyleSheet(_muted_style())
             tip.setAlignment(Qt.AlignCenter)
             self._chart = tip
             self._body.addWidget(tip)

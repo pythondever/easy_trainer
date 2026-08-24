@@ -8,30 +8,6 @@ from PySide6.QtWidgets import (QApplication, QDialog, QFrame, QVBoxLayout,
 from PySide6.QtWidgets import QGraphicsDropShadowEffect
 
 
-_BTN_QSS = """
-QPushButton {
-    background-color: #2a2e38; color: #e8eaf0; border: none;
-    border-radius: 6px; padding: 6px 18px; font-size: 13px;
-}
-QPushButton:hover { background-color: #343a48; }
-QPushButton:pressed { background-color: #3d4556; }
-"""
-_DEFAULT_BTN_QSS = """
-QPushButton {
-    background-color: #5b8cff; color: #ffffff; border: none;
-    border-radius: 6px; padding: 6px 18px; font-size: 13px; font-weight: 600;
-}
-QPushButton:hover { background-color: #6b9bff; }
-QPushButton:pressed { background-color: #4a7be8; }
-"""
-_CLOSE_BTN_QSS = """
-QPushButton {
-    background-color: transparent; color: #8a93a6; border: none;
-    border-radius: 6px; font-size: 15px; padding: 2px 8px;
-}
-QPushButton:hover { background-color: #3a3f4c; color: #e8eaf0; }
-"""
-
 # 图标: (符号, 颜色)
 _ICONS = {
     "warning": ("⚠", "#f5b84b"),
@@ -56,9 +32,6 @@ class _FramelessBox(QDialog):
         outer.setContentsMargins(0, 0, 0, 0)
         self._frame = QFrame(self)
         self._frame.setObjectName("msgFrame")
-        self._frame.setStyleSheet(
-            "#msgFrame { background-color: #1c1f27; border: 1px solid #353a48;"
-            " border-radius: 12px; }")
         outer.addWidget(self._frame)
 
         # 阴影
@@ -76,13 +49,12 @@ class _FramelessBox(QDialog):
         # ---- 标题栏: 标题 + 关闭按钮 ----
         title_row = QHBoxLayout()
         self._title_lbl = QLabel(title)
-        self._title_lbl.setStyleSheet(
-            "color: #e8eaf0; font-size: 14px; font-weight: 600;")
+        self._title_lbl.setObjectName("msgTitle")
         title_row.addWidget(self._title_lbl)
         title_row.addStretch(1)
         close_btn = QPushButton("✕")
+        close_btn.setObjectName("msgClose")
         close_btn.setFixedSize(28, 24)
-        close_btn.setStyleSheet(_CLOSE_BTN_QSS)
         close_btn.clicked.connect(self.reject)
         title_row.addWidget(close_btn, 0, Qt.AlignTop)
         layout.addLayout(title_row)
@@ -99,8 +71,7 @@ class _FramelessBox(QDialog):
         self._icon_lbl.setAlignment(Qt.AlignCenter)
         body.addWidget(self._icon_lbl, 0, Qt.AlignVCenter)
         self._text_lbl = QLabel("")
-        self._text_lbl.setStyleSheet(
-            "color: #cfd6e4; font-size: 13px; background: transparent;")
+        self._text_lbl.setObjectName("msgText")
         self._text_lbl.setWordWrap(True)
         self._text_lbl.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
         body.addWidget(self._text_lbl, 1)
@@ -139,10 +110,7 @@ class _FramelessBox(QDialog):
     # ---- 按钮 ----
     def _add_button(self, text, role, default=False):
         btn = QPushButton(text)
-        if role == "primary":
-            btn.setStyleSheet(_DEFAULT_BTN_QSS)
-        else:
-            btn.setStyleSheet(_BTN_QSS)
+        btn.setObjectName("msgBtnPrimary" if role == "primary" else "msgBtn")
         btn.setCursor(Qt.PointingHandCursor)
         btn.clicked.connect(lambda: setattr(self, "_clicked", btn))
         btn.clicked.connect(self.accept)
@@ -231,24 +199,21 @@ class ProgressDialog(QDialog):
         layout.setSpacing(14)
 
         self._text_lbl = QLabel(text)
-        self._text_lbl.setStyleSheet("color: #e8eaf0; font-size: 13px;")
+        self._text_lbl.setObjectName("progressText")
         self._text_lbl.setWordWrap(True)
         layout.addWidget(self._text_lbl)
 
         self._bar = QProgressBar()
+        self._bar.setObjectName("progressBar")
         self._bar.setRange(0, maximum)
         self._bar.setValue(0)
-        self._bar.setStyleSheet(
-            "QProgressBar { background: #2a2e38; border: none; border-radius: 4px;"
-            " height: 10px; color: transparent; }"
-            " QProgressBar::chunk { background: #5b8cff; border-radius: 4px; }")
         layout.addWidget(self._bar)
 
         if cancellable:
             row = QHBoxLayout()
             row.addStretch(1)
             self._cancel_btn = QPushButton("取消")
-            self._cancel_btn.setStyleSheet(_BTN_QSS)
+            self._cancel_btn.setObjectName("msgBtn")
             self._cancel_btn.clicked.connect(self._on_cancel)
             row.addWidget(self._cancel_btn)
             layout.addLayout(row)
@@ -259,7 +224,7 @@ class ProgressDialog(QDialog):
         self.show()
         self.raise_()
         self.activateWindow()
-        self.setStyleSheet("QDialog { background-color: #1c1f27; }")
+
 
     def set_progress(self, value, text=None):
         self._bar.setValue(value)

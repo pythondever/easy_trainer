@@ -101,10 +101,9 @@ class TestDialog(QDialog):
             combo.setEditable(True)
             combo.setFocusPolicy(Qt.StrongFocus)
             le = combo.lineEdit()
+            le.setObjectName("multiComboLineEdit")
             le.setReadOnly(True)
             le.setAlignment(Qt.AlignHCenter)
-            le.setStyleSheet(
-                "QLineEdit { background: transparent; border: none; padding: 0; }")
             f = _ClickToPopupFilter(combo)
             combo.installEventFilter(f)
             combo.lineEdit().installEventFilter(f)

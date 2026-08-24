@@ -212,18 +212,7 @@ class TrainDialog(QDialog):
             btn = getattr(self.ui, btn_name, None)
             if btn is not None:
                 btn.setFixedHeight(30)
-        # 开始训练:蓝底主按钮(与 style.qss primary #4f7dff 一致)
-        st_btn = getattr(self.ui, "start_train", None)
-        if st_btn is not None:
-            st_btn.setStyleSheet(
-                "QPushButton { background-color: #4f7dff;"
-                " border: 1px solid #4f7dff; border-radius: 6px;"
-                " color: #ffffff; font-weight: bold; padding: 4px 26px; }"
-                "QPushButton:hover { background-color: #638cff;"
-                " border-color: #638cff; }"
-                "QPushButton:pressed { background-color: #3f6ceb; }"
-                "QPushButton:disabled { background-color: #2c3a5e;"
-                " border-color: #2c3a5e; color: #7d879c; }")
+        # 开始训练:蓝底主按钮(样式在 style.qss #start_train)
         for lab_name in ("train_cfg_label",):
             lab = getattr(self.ui, lab_name, None)
             if lab is not None:
@@ -296,10 +285,9 @@ class TrainDialog(QDialog):
         combo.setEditable(True)
         combo.setFocusPolicy(Qt.StrongFocus)
         le = combo.lineEdit()
+        le.setObjectName("multiComboLineEdit")
         le.setReadOnly(True)
         le.setAlignment(Qt.AlignHCenter)
-        le.setStyleSheet(
-            "QLineEdit { background: transparent; border: none; padding: 0; }")
         f = _ClickToPopupFilter(combo)
         combo.installEventFilter(f)
         le.installEventFilter(f)
