@@ -11,7 +11,7 @@ from app.utils import setup_matplotlib_chinese, load_style_sheet
 from db import DataBase
 from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtCore import Qt, QTimer, QEvent
-from PySide6.QtWidgets import QWidget, QApplication, QTimeEdit
+from PySide6.QtWidgets import QWidget, QApplication, QTimeEdit, QFrame
 
 
 try:
@@ -110,6 +110,26 @@ class App(QWidget, MainUI, LabelMixin, ProjectMixin, ImportExportMixin,
         self._init_image_view()
         self._init_label_filter()
         self._current_dataset = None
+        self._setup_header_groups()
+
+    def _setup_header_groups(self):
+        """首页顶部工具栏分组: 标签区/统计区/训练区 用竖线分隔, 主次操作视觉区分。"""
+        # 主操作(训练)蓝填充 / 危险操作(删除)红色
+        self.train_btn.setProperty("class", "primary")
+        self.delete_label_btn.setProperty("class", "danger")
+
+        def vline():
+            line = QFrame(self)
+            line.setObjectName("headerSeparator")
+            line.setFrameShape(QFrame.VLine)
+            line.setFrameShadow(QFrame.Plain)
+            return line
+
+        lay = self.datasetHeaderLayout
+        # 插入位置(按创建顺序): 9=标签筛选 12=统计 13=训练
+        lay.insertWidget(13, vline())   # 统计 | 训练
+        lay.insertWidget(12, vline())   # 标签区 | 统计
+        lay.insertWidget(9, vline())    # 进度区 | 标签区
 
     def register_event(self):
         self.add_project_btn.clicked.connect(lambda: self.add_project())

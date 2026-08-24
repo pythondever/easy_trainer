@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import sys
 import os
-import subprocess
 import time
 
 CURRENT_DIRECTORY = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -25,6 +24,11 @@ try:
     import PIL.Image as PILImage
 except ImportError:
     PILImage = None
+
+try:
+    import pynvml
+except ImportError:
+    pynvml = None
 
 
 class TrainMixin(object):
@@ -261,17 +265,17 @@ class TrainMixin(object):
         self.time_count_edit.setTime(QTime(h, m, s))
 
     def _refresh_gpu_memory(self):
-        """2s定时:查询显存使用率,>55% 显示红色"""
+        """2s定时:查询显存使用率,>55% 显示红色。用 pynvml 避免每 2s 拉起子进程。"""
         usage = None
-        try:
-            out = subprocess.run(
-                ["nvidia-smi", "--query-gpu=memory.used,memory.total",
-                 "--format=csv,noheader,nounits"],
-                capture_output=True, text=True, timeout=3)
-            used, total = [x.strip() for x in out.stdout.strip().split(",")]
-            usage = int(used) * 100.0 / int(total) if int(total) else 0.0
-        except Exception:
-            pass
+        if pynvml is not None:
+            try:
+                pynvml.nvmlInit()
+                handle = pynvml.nvmlDeviceGetHandleByIndex(0)
+                mem = pynvml.nvmlDeviceGetMemoryInfo(handle)
+                if mem.total > 0:
+                    usage = mem.used * 100.0 / mem.total
+            except Exception:
+                pass
         if usage is None:
             self.gpu_memory_use_btn.setText("N/A")
             self.gpu_memory_use_btn.setStyleSheet(self._gpu_btn_style(False))
@@ -282,11 +286,11 @@ class TrainMixin(object):
 
     @staticmethod
     def _gpu_btn_style(high):
-        """显存按钮配色:超 55% 深红发黑"""
-        color = "#7a1515" if high else "#2e9e5b"
-        hover = "#8f1c1c" if high else "#37b06a"
+        """显存 chip 配色:超 55% 深红发黑,否则深绿(胶囊形)。"""
+        color = "#8a2424" if high else "#1f6b45"
+        hover = "#a03131" if high else "#278a5a"
         return (
             "QPushButton {{ background-color: {}; color: white;"
-            " border: none; border-radius: 6px; padding: 4px 12px;"
-            " font-size: 12px; font-weight: 600; }}"
+            " border: none; border-radius: 12px; padding: 4px 14px;"
+            " font-size: 12px; font-weight: 500; }}"
             "QPushButton:hover {{ background-color: {}; }}").format(color, hover)

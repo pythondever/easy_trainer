@@ -10,7 +10,7 @@ from ui.enter_name import Ui_Dialog as EnterNameUI
 from ui.add_dataset import Ui_AddDatasets
 from app.label_utils import label_sort_key
 from app.message_box import MessageBox
-from PySide6.QtGui import QIcon, QFont
+from PySide6.QtGui import QIcon, QFont, QPixmap, QColor
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtWidgets import QWidget, QDialog, QMenu, \
     QVBoxLayout, QHBoxLayout, QSizePolicy, QLabel, QTreeWidget, QTreeWidgetItem, \
@@ -142,6 +142,8 @@ class ProjectMixin(object):
         container = QWidget(self)
         container.setObjectName("datasetRowContainer")
         container.setStyleSheet("background: transparent;")
+        # 事件穿透到 QTreeWidget, 让 ::item:hover / :selected 整行高亮生效
+        container.setAttribute(Qt.WA_TransparentForMouseEvents, True)
         container.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         h = QHBoxLayout(container)
         h.setContentsMargins(6, 0, 8, 0)
@@ -161,16 +163,28 @@ class ProjectMixin(object):
         h.addStretch(1)
         progress_lbl = QLabel(container)
         progress_lbl.setObjectName("datasetRowProgress")
-        progress_lbl.setStyleSheet(
-            "color: #b8c0d0; background: transparent;"
-            " padding-right: 4px; font-size: 12px;")
         h.addWidget(progress_lbl)
         binding = self.db.get_dataset_import(project_name, dataset_name)
         total = binding.get("total", 0)
         labeled = binding.get("labeled", 0)
+        self._style_progress_chip(progress_lbl, labeled, total)
         progress_lbl.setText("{}/{}".format(labeled, total))
         self.project_tree.setItemWidget(ds_item, 0, container)
         return container, progress_lbl
+
+    @staticmethod
+    def _style_progress_chip(lbl, labeled, total):
+        """标注进度 chip: 全部标完绿色, 未完成主题蓝, 无数据中性。"""
+        if total > 0 and labeled >= total:
+            chip = ("background-color: #1f6b45; color: #d9f2e3;"
+                    " border-radius: 8px; padding: 2px 10px; font-size: 11px;")
+        elif total > 0:
+            chip = ("background-color: #2c3a5e; color: #c3d0f0;"
+                    " border-radius: 8px; padding: 2px 10px; font-size: 11px;")
+        else:
+            chip = ("color: #6c7385; background: transparent;"
+                    " padding-right: 4px; font-size: 12px;")
+        lbl.setStyleSheet(chip)
 
     def _on_project_tree_menu(self, pos):
         """

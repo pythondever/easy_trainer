@@ -3,6 +3,8 @@ lmdb>=1.4
 Pillow>=9.0
 matplotlib>=3.5
 numpy>=1.21
+# GPU 显存查询：nvidia-ml-py 提供 pynvml 模块（替代已弃用的 pynvml 包）
+nvidia-ml-py>=11.5.0
 # 训练/推理(RF-DETR)rfdetr 要求 Python 3.10+
 # 需要用 Python 3.10+ 的新环境安装运行训练功能
 # torch>=2.0

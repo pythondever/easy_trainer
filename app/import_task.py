@@ -66,6 +66,7 @@ class ImportTask(QThread):
                             images.append((p, None))
         total = len(images)
         result = []
+        last_pct = -1
         for i, (img_path, cls) in enumerate(images):
             if self._cancel:
                 break
@@ -94,7 +95,10 @@ class ImportTask(QThread):
             except Exception:
                 pass
             if total > 0:
-                self.progress_updated.emit(int((i + 1) / total * 100))
+                pct = int((i + 1) / total * 100)
+                if pct != last_pct:
+                    last_pct = pct
+                    self.progress_updated.emit(pct)
         self.finished_signal.emit(result)
 
     def _label_of(self, img_path):

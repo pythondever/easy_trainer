@@ -487,10 +487,10 @@ QTreeWidget#projectTree {
     background: transparent;
     border: none;
     outline: none;
+    show-decoration-selected: true;
 }
 QTreeWidget#projectTree::item {
     height: 32px;
-    border-radius: 6px;
     padding-left: 6px;
     color: #e8eaf0;
 }
@@ -501,8 +501,15 @@ QTreeWidget#projectTree::item:selected {
     background-color: #2c3a5e;
     color: #ffffff;
 }
+/* 分支/缩进区跟随选中/hover 颜色(补 show-decoration-selected 在 setItemWidget 下不生效) */
 QTreeWidget#projectTree::branch {
     background: transparent;
+}
+QTreeWidget#projectTree::branch:hover {
+    background-color: #262a35;
+}
+QTreeWidget#projectTree::branch:selected {
+    background-color: #2c3a5e;
 }
 
 /* ---------------- 数据集对话框（ui/add_dataset） ---------------- */
@@ -802,3 +809,39 @@ QDialog#MoveTargetDialog QPushButton {
     border-radius: 6px; padding: 6px 18px; font-size: 13px;
 }
 QDialog#MoveTargetDialog QPushButton:hover { background-color: #343a48; }
+
+/* ---------------- 首页顶部工具栏分组 ---------------- */
+QFrame#headerSeparator {
+    background: transparent;
+    border: none;
+    border-right: 1px solid #2c303c;
+    margin: 6px 4px;
+    width: 1px;
+}
+
+/* 标签筛选下拉: 胶囊化, 与按钮总高一致(32px) */
+#label_comboBox {
+    background-color: #23262f;
+    border: 1px solid #353a48;
+    border-radius: 14px;
+    min-height: 32px;
+    padding: 0 14px;
+    color: #e8eaf0;
+    font-size: 13px;
+}
+#label_comboBox:hover {
+    border-color: #4a5164;
+}
+#label_comboBox::drop-down {
+    border: none;
+    width: 20px;
+}
+#label_comboBox QAbstractItemView {
+    background-color: #23262f;
+    border: 1px solid #353a48;
+    border-radius: 8px;
+    selection-background-color: #2c3a5e;
+    selection-color: #ffffff;
+    padding: 4px;
+    outline: none;
+}

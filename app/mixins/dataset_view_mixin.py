@@ -424,13 +424,16 @@ class DatasetViewMixin(object):
                 pix = QPixmap.fromImage(qimg)
                 if pix.isNull():
                     continue
-                item = SelectablePixmapItem(pix, rec.get("image_path", ""))
+                item = SelectablePixmapItem(pix, rec.get("image_path", ""),
+                                            labels=rec.get("labels") or [])
                 scene.addItem(item)
                 row = pos // cols
                 col = pos % cols
                 x = col * (cell_w + pad) + pad
                 y = row * (cell_h + pad) + pad
-                item.setPos(x + (cell_w - pix.width()) // 2, y + (cell_h - pix.height()) // 2)
+                card_w = pix.width() + 2 * 4
+                card_h = pix.height() + 2 * 4 + 22
+                item.setPos(x + (cell_w - card_w) // 2, y + (cell_h - card_h) // 2)
                 item.setToolTip(rec.get("image_path", ""))
                 item.setData(0, rec.get("image_path", ""))  # 双击定位用
                 pos += 1

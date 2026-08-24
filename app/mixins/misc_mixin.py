@@ -276,6 +276,7 @@ class MiscMixin(object):
             if container is not None:
                 pl = container.findChild(QLabel, "datasetRowProgress")
                 if pl is not None:
+                    self._style_progress_chip(pl, labeled, total)
                     pl.setText("{}/{}".format(labeled, total))
 
     def _refresh_dataset_row_progress(self, project_name, dataset_name):
@@ -292,6 +293,7 @@ class MiscMixin(object):
         binding = self.db.get_dataset_import(project_name, dataset_name)
         total = binding.get("total", 0) or 0
         labeled = binding.get("labeled", 0) or 0
+        self._style_progress_chip(pl, labeled, total)
         pl.setText("{}/{}".format(labeled, total))
 
     @staticmethod
