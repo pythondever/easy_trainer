@@ -302,12 +302,14 @@ class DataBase:
         txn.commit()
 
     def update_dataset_import(self, project_name, dataset_name, image_path, label_path='',
-                              label_fmt='', labeled=None, total=None):
+                              label_fmt='', labeled=None, total=None, append=False):
         """
         保存（或更新）某数据集的导入路径绑定；labeled/total 为标注/总数统计。
         支持多次导入：image_paths / label_paths 为历史路径列表（去重保留），
         单值字段 image_path/label_path 保持最新（向后兼容）。
         参数兼容 str 或 list（多路径合并导入）
+        append=False（默认）: labeled/total 直接覆盖（适合全量重算）
+        append=True: labeled/total 累加到原值（适合追加新图, 不覆盖已有统计）
         """
         img_list = ([image_path] if isinstance(image_path, str) else list(image_path or []))
         lbl_list = ([label_path] if isinstance(label_path, str) else list(label_path or []))
@@ -349,9 +351,9 @@ class DataBase:
                 lbl_paths.append(p)
         target['label_paths'] = lbl_paths
         if labeled is not None:
-            target['labeled'] = labeled
+            target['labeled'] = ((target.get('labeled') or 0) + labeled) if append else labeled
         if total is not None:
-            target['total'] = total
+            target['total'] = ((target.get('total') or 0) + total) if append else total
         self.update_project_info(info_list)
         return True
 

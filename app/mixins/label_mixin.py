@@ -42,6 +42,7 @@ class LabelMixin(object):
     def _on_label_filter_changed(self, idx):
         """标签下拉框变更:重新渲染场景(按标签筛选)。"""
         self.current_label = self.label_filter_combo.itemData(idx) or "__unlabeled__"
+        self.current_page = 0   # 切换筛选后从第一页开始
         cur_ds = getattr(self, "_current_dataset", None)
         if cur_ds:
             proj, ds = cur_ds

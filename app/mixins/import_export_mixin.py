@@ -234,12 +234,27 @@ class ImportExportMixin(object):
                 _scanned = self._scan_import_info(image_path, label_path, fmt)
                 _total = _scanned[0] if _scanned else 0
                 _labeled = _scanned[1] if _scanned else 0
+            # 合并历史路径 + 本次新路径(去重保序), 保证多次导入不同文件夹都能累计
+            binding = self.db.get_dataset_import(project_name, dataset_name)
+            old_imgs = binding.get("image_paths") or (
+                [binding.get("image_path")] if binding.get("image_path") else [])
+            merged_imgs = list(dict.fromkeys(old_imgs + [image_path]))
+            old_lbls = binding.get("label_paths") or (
+                [binding.get("label_path")] if binding.get("label_path") else [])
+            if label_path:
+                merged_lbls = list(dict.fromkeys(old_lbls + [label_path]))
+            else:
+                merged_lbls = old_lbls
+            # 追加新图: 累加 labeled/total, 不覆盖已有统计(避免 0/46 覆盖原 600/746)
             self.db.update_dataset_import(project_name, dataset_name,
-                                          image_path, label_path, fmt,
-                                          labeled=_labeled, total=_total)
+                                          merged_imgs, merged_lbls, fmt,
+                                          labeled=_labeled, total=_total,
+                                          append=True)
             self._refresh_dataset_row_progress(project_name, dataset_name)
+            # ImportTask 扫全部合并路径(全集): on_finished 用全集结果覆盖写 db,
+            # 保证 labeled/total/label_counts/首页缓存都是完整数据集而非最后一次目录
             self._start_import_thread(project_name, dataset_name,
-                                      image_path, label_path, fmt,
+                                      merged_imgs, merged_lbls, fmt,
                                       update_stats=True)
 
         ui.done_import_btn.clicked.connect(do_import)

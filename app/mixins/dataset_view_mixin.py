@@ -144,6 +144,39 @@ class DatasetViewMixin(object):
         self._calc_label_counts(proj, ds)
         if self.current_label:
             self.show_dataset_images(proj, ds)
+        # 标注产生 json 后: 扫描 image_paths 找含 json 的目录, 加到 db label_paths
+        self._sync_label_paths_from_json(proj, ds)
+
+    def _sync_label_paths_from_json(self, project_name, dataset_name):
+        """
+        标注后扫描: 哪些 image_path 目录含 labelme json, 把这些目录追加到 db label_paths。
+        仅 labelme 模式(.json)有效; yolo/cls 模式不扫描。
+        """
+        binding = self.db.get_dataset_import(project_name, dataset_name)
+        if not binding or binding.get("label_fmt", "") != ".json":
+            return
+        img_paths = binding.get("image_paths") or (
+            [binding.get("image_path")] if binding.get("image_path") else [])
+        old_lbls = binding.get("label_paths") or (
+            [binding.get("label_path")] if binding.get("label_path") else [])
+        new_lbls = list(old_lbls)
+        added = False
+        for ip in img_paths:
+            if not ip or not os.path.isdir(ip) or ip in new_lbls:
+                continue
+            try:
+                has_json = any(fn.lower().endswith('.json')
+                                for fn in os.listdir(ip))
+            except OSError:
+                continue
+            if has_json:
+                new_lbls.append(ip)
+                added = True
+        if added:
+            self.db.update_dataset_import(project_name, dataset_name,
+                                          img_paths, new_lbls,
+                                          binding.get("label_fmt", ""),
+                                          labeled=None, total=None)
 
     def _load_dataset_view(self, project, dataset):
         """
@@ -152,6 +185,7 @@ class DatasetViewMixin(object):
         """
         self._current_dataset = (project, dataset)
         self.current_label = "__unlabeled__"
+        self.current_page = 0
         proj_cache = self.dataset_cache.setdefault(project, {})
         proj_cache.pop(dataset, None)
         self._refresh_label_filter(project, dataset)
@@ -200,7 +234,8 @@ class DatasetViewMixin(object):
         proj_cache = self.dataset_cache.get(project_name, {})
         data = proj_cache.get(dataset_name)
         if data:
-            self.current_page = 0
+            # 不重置 current_page: _render_scene 的 clamp 会保持当前页
+            # (标注界面关闭后回来仍停在原页, 不跳回第一页)
             self._render_scene(self._view_data_by_label(data))
             return
         binding = self.db.get_dataset_import(project_name, dataset_name)
@@ -469,7 +504,8 @@ class DatasetViewMixin(object):
 
     def _start_import_thread(self, project_name, dataset_name,
                              image_path, label_path="", fmt="",
-                             update_stats=False, excluded=None):
+                             update_stats=False, excluded=None,
+                             write_db=True):
         """
         启动后台导入线程
         """
@@ -521,8 +557,12 @@ class DatasetViewMixin(object):
                 self.db.save_dataset_label_ids(
                     project_name, dataset_name, merged)
             # 分类模式:每张图都有类别,视为全部已标注
+            # 检测/分割: 有 boxes 或 图像同目录存在 labelme json 都算已标注
+            # (与 _refresh_annotation_progress 的并集判定一致, 避免覆盖写时少计)
             labeled = total if cls_mode else sum(
-                1 for r in result if r.get("boxes"))
+                1 for r in result
+                if r.get("boxes") or self._has_label_file(
+                    r.get("image_path", "")))
             if update_stats:
                 new_label_path = label_path
                 new_fmt = fmt
@@ -535,10 +575,12 @@ class DatasetViewMixin(object):
                     if not old_label:
                         new_label_path = image_path
                         new_fmt = ".json"
-                self.db.update_dataset_import(project_name, dataset_name,
-                                              image_path, new_label_path,
-                                              new_fmt,
-                                              labeled=labeled, total=total)
+                # write_db=False 时跳过 db 写入(do_import 已预写), 只更新内存/UI
+                if write_db:
+                    self.db.update_dataset_import(project_name, dataset_name,
+                                                  image_path, new_label_path,
+                                                  new_fmt,
+                                                  labeled=labeled, total=total)
             else:
                 binding = self.db.get_dataset_import(project_name, dataset_name)
                 labeled = binding.get("labeled", labeled)
