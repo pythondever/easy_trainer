@@ -468,10 +468,16 @@ class AnnotationScene(QGraphicsScene):
 
     def _rect_press(self, pos):
         self._draw_start = pos
+        # 矩形预览颜色 = 当前标注标签颜色(与多边形一致, 跟随用户所选标签)
+        c = QColor(self._resolve_color(self.current_label))
+        pen_c = QColor(c)
+        pen_c.setAlpha(230)
+        brush_c = QColor(c)
+        brush_c.setAlpha(40)
         self._preview_item = self.addRect(
             QRectF(pos, pos),
-            QPen(QColor("#5B8CFF"), 1.5),
-            QBrush(QColor(91, 140, 255, 40)),
+            QPen(pen_c, 1.5),
+            QBrush(brush_c),
         )
         self._preview_item.setZValue(20)
 

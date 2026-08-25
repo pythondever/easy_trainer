@@ -9,10 +9,11 @@ import json
 import re
 import shutil
 from PIL import Image
-from PySide6.QtCore import Qt, Signal, QPointF, QTimer, QSize
+from PySide6.QtCore import (Qt, Signal, QPointF, QTimer, QSize, QThread,
+                            QMutex, QMutexLocker)
 from PySide6.QtGui import (QColor, QPixmap, QKeySequence, QShortcut, QPen,
                            QPainter, QImage, QIcon, QCursor, QLinearGradient,
-                           QFont)
+                           QFont, QImageReader)
 from PySide6.QtWidgets import (QDialog, QWidget, QApplication, QVBoxLayout,
                                QHBoxLayout, QLabel,
                                QGridLayout, QLineEdit, QSpinBox, QPushButton, QFrame,
@@ -485,6 +486,46 @@ class AddLabelDialog(QDialog):
         return items
 
 
+class _PrefetchWorker(QThread):
+    """
+    后台解码图像到 QImage(主线程再转 QPixmap 入缓存), 避免 D 切换时同步解码大图卡顿。
+    请求队列 + 停止标志; 解码保持全尺寸
+    """
+    decoded = Signal(int, QImage)
+
+    def __init__(self, image_list, parent=None):
+        super().__init__(parent)
+        self.image_list = list(image_list)
+        self._mutex = QMutex()
+        self._pending = []
+        self._stop = False
+
+    def request(self, idx):
+        with QMutexLocker(self._mutex):
+            if idx not in self._pending and 0 <= idx < len(self.image_list):
+                self._pending.append(idx)
+
+    def stop(self):
+        with QMutexLocker(self._mutex):
+            self._stop = True
+
+    def run(self):
+        while True:
+            with QMutexLocker(self._mutex):
+                if self._stop:
+                    return
+                idx = self._pending.pop(0) if self._pending else None
+            if idx is None:
+                QThread.msleep(30)
+                continue
+            path = self.image_list[idx]
+            reader = QImageReader(path)
+            reader.setAutoTransform(True)
+            qimg = reader.read()
+            if qimg is not None and not qimg.isNull():
+                self.decoded.emit(idx, qimg)
+
+
 class AnnotationDialog(QDialog):
     """标注主对话框：加载图像 + 已有标注，支持矩形/多边形绘制、标签管理、A/D 切换保存。"""
 
@@ -505,6 +546,13 @@ class AnnotationDialog(QDialog):
         self._deleted_labels = []   # 本次会话删除的标签（供主界面清理缓存）
         self.image_list = list(image_list) if image_list else []
         self.index = current_index
+        # 全尺寸 QPixmap LRU 缓存 + 后台预加载(相邻图), 缓解大图 D 切换卡顿
+        self._pix_cache = {}
+        self._pix_cache_max = 16
+        self._closing = False
+        self._prefetch_worker = _PrefetchWorker(self.image_list, self)
+        self._prefetch_worker.decoded.connect(self._on_prefetch_decoded)
+        self._prefetch_worker.start()
         self.view = None
         self.scene = None
         self._label_buttons = {}
@@ -590,20 +638,65 @@ class AnnotationDialog(QDialog):
 
     def _apply_draw_mode_cursor(self):
         """按当前画模式状态同步 view 光标(多边形画笔/矩形十字 / 编辑模式恢复)。"""
+        # 先清空全局 override 光标栈残留, 再按状态 push, 保证不泄漏(否则 ESC 退不出)
+        self._clear_override_cursor()
         if self.scene.draw_mode:
             self._apply_draw_cursor()
         else:
             self.view.unsetCursor()
+
+    def _clear_override_cursor(self):
+        """
+        清空全局 override 光标栈(画模式/格式刷期间可能多次 push 未配对)。
+        栈空时 restoreOverrideCursor 是无副作用的 no-op, 循环调用安全。
+        """
+        for _ in range(8):
+            QApplication.restoreOverrideCursor()
+
+    def _load_pixmap(self, image_path):
+        """全尺寸加载图像(缓存命中直接返回; 未命中 QImageReader 解码后入 LRU)。"""
+        pix = self._pix_cache.get(self.index)
+        if pix is None:
+            reader = QImageReader(image_path)
+            reader.setAutoTransform(True)
+            qimg = reader.read()
+            if qimg is None or qimg.isNull():
+                return None
+            pix = QPixmap.fromImage(qimg)
+            self._pix_cache[self.index] = pix
+            self._trim_pix_cache()
+        return pix
+
+    def _trim_pix_cache(self):
+        """LRU 淘汰: 超出上限时移除最久未用的(有序 dict 首项)。"""
+        while len(self._pix_cache) > self._pix_cache_max:
+            self._pix_cache.pop(next(iter(self._pix_cache)))
+
+    def _on_prefetch_decoded(self, idx, qimg):
+        """后台解码完成: 转 QPixmap 入缓存; 当前张已显示则跳过(避免重复 set_image)。"""
+        if getattr(self, "_closing", False):
+            return
+        if qimg.isNull():
+            return
+        if idx in self._pix_cache:
+            return
+        self._pix_cache[idx] = QPixmap.fromImage(qimg)
+        self._trim_pix_cache()
 
     def _load_current(self):
         if not (0 <= self.index < len(self.image_list)):
             return
         self._apply_draw_mode_cursor()
         image_path = self.image_list[self.index]
-        pix = QPixmap(image_path)
-        if pix.isNull():
+        pix = self._load_pixmap(image_path)
+        if pix is None or pix.isNull():
             return
         self.scene.set_image(pix)
+        # 预解码相邻图(后台线程), 连续 A/D 翻页时命中缓存不卡
+        for nxt in (self.index + 1, self.index - 1):
+            if (0 <= nxt < len(self.image_list)
+                    and nxt not in self._pix_cache):
+                self._prefetch_worker.request(nxt)
         base, _ = os.path.splitext(image_path)
         if self.cls_mode:
             # 图像分类：只读看图,无框可标注;类别 = 父文件夹名
@@ -690,6 +783,11 @@ class AnnotationDialog(QDialog):
 
     def closeEvent(self, event):
         self._save_current()
+        # 停止后台预解码线程(避免解码线程在对话框销毁后继续发信号)
+        self._closing = True
+        if getattr(self, "_prefetch_worker", None) is not None:
+            self._prefetch_worker.stop()
+            self._prefetch_worker.wait(2000)
         QApplication.restoreOverrideCursor()
         super().closeEvent(event)
 
@@ -743,7 +841,8 @@ class AnnotationDialog(QDialog):
             self.scene.set_format_painter(False)
         self.scene.set_draw_mode(False)
         self.scene._cancel_polygon()
-        QApplication.restoreOverrideCursor()
+        # 清空全局 override 光标栈(消除多次 push 未配对的残留, 光标彻底恢复默认)
+        self._clear_override_cursor()
         self.view.unsetCursor()
         self._set_draw_button_states(False)
 
