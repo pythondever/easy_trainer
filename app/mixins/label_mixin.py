@@ -6,7 +6,7 @@ import json
 CURRENT_DIRECTORY = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WORKSPACE_DIRECTORY = os.path.dirname(CURRENT_DIRECTORY)
 sys.path.append(WORKSPACE_DIRECTORY)
-sys.path.append('../ui')
+sys.path.append(os.path.join(WORKSPACE_DIRECTORY, 'ui'))
 from ui.edit_label import Ui_Dialog as EditLabelUI
 from app.core.label_utils import (normalize_label, label_sort_key)
 from app.widgets.message_box import MessageBox, ProgressDialog

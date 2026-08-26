@@ -27,7 +27,7 @@ from app.annotation.scene import AnnotationScene
 from app.annotation.box_item import (AnnotationBoxItem, AnnotationPolygonItem,
                                      LABEL_COLORS, label_color)
 from app.core.label_utils import normalize_label, label_sort_key
-from app.core.utils import project_root
+from app.core.utils import project_root, ui_font_family
 from app.widgets.message_box import MessageBox
 from app.core.log import write_log
 # import types
@@ -192,7 +192,7 @@ class _ClsLabelItem(QGraphicsTextItem):
         super().__init__(text)
         self.label = text
         self.setDefaultTextColor(QColor(color) if color else QColor("white"))
-        self.setFont(QFont("Microsoft YaHei", font_size, QFont.Bold))
+        self.setFont(QFont(ui_font_family(), font_size, QFont.Bold))
         self.setCursor(Qt.PointingHandCursor)
 
     def mousePressEvent(self, event):

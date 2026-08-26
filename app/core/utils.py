@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-"""通用工具函数：时长格式化、matplotlib 中文字体、样式表加载。"""
+"""通用工具函数：时长格式化、matplotlib 中文字体、样式表加载、跨平台字体。"""
 import os
+import sys
 
 import matplotlib.pyplot as plt
 from matplotlib import font_manager
@@ -33,6 +34,16 @@ def fmt_duration(secs):
     if s and not d and not h:
         parts.append("{}秒".format(s))
     return "".join(parts)
+
+
+def ui_font_family():
+    """界面推荐中文字体(跨平台): Windows 用雅黑, Linux/macOS 用 Noto Sans CJK。
+    返回字体名; 该字体缺失时 Qt 会自动 fallback 到系统默认。"""
+    if sys.platform == "win32":
+        return "Microsoft YaHei"
+    if sys.platform == "darwin":
+        return "PingFang SC"
+    return "Noto Sans CJK SC"
 
 
 def setup_matplotlib_chinese():

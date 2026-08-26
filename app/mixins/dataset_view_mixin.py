@@ -5,7 +5,7 @@ import json
 CURRENT_DIRECTORY = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WORKSPACE_DIRECTORY = os.path.dirname(CURRENT_DIRECTORY)
 sys.path.append(WORKSPACE_DIRECTORY)
-sys.path.append('../ui')
+sys.path.append(os.path.join(WORKSPACE_DIRECTORY, 'ui'))
 from app.annotation.box_item import label_color
 from app.annotation.annotation_dialog import AnnotationDialog
 from app.widgets.paginator import Paginator

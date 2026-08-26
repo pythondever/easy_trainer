@@ -3,7 +3,7 @@
    ============================================================ */
 
 * {
-    font-family: "Microsoft YaHei UI", "Microsoft YaHei", "Segoe UI", sans-serif;
+    font-family: "Microsoft YaHei UI", "Microsoft YaHei", "Noto Sans CJK SC", "Segoe UI", sans-serif;
     font-size: 13px;
     color: #e8eaf0;
     outline: none;
@@ -559,7 +559,7 @@ QTreeWidget#projectTree::branch:!has-children:selected {
 #AnnotationDialog QWidget {
     background-color: #13151a;
     color: #e8eaf0;
-    font-family: "Microsoft YaHei";
+    font-family: "Microsoft YaHei", "Noto Sans CJK SC";
     font-size: 13px;
 }
 #AnnotationDialog QLabel {

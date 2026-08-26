@@ -4,7 +4,7 @@ import os
 CURRENT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 WORKSPACE_DIRECTORY = os.path.dirname(CURRENT_DIRECTORY)
 sys.path.append(WORKSPACE_DIRECTORY)
-sys.path.append('../ui')
+sys.path.append(os.path.join(WORKSPACE_DIRECTORY, 'ui'))
 from app.widgets.log_dialog import LogDialog
 from ui.app import Ui_AppUI as MainUI
 from app.core.utils import setup_matplotlib_chinese, load_style_sheet

@@ -5,7 +5,7 @@ import os
 CURRENT_DIRECTORY = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WORKSPACE_DIRECTORY = os.path.dirname(CURRENT_DIRECTORY)
 sys.path.append(WORKSPACE_DIRECTORY)
-sys.path.append('../ui')
+sys.path.append(os.path.join(WORKSPACE_DIRECTORY, 'ui'))
 from ui.enter_name import Ui_Dialog as EnterNameUI
 from ui.add_dataset import Ui_AddDatasets
 from app.core.label_utils import label_sort_key

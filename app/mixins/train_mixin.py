@@ -6,7 +6,7 @@ import time
 CURRENT_DIRECTORY = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WORKSPACE_DIRECTORY = os.path.dirname(CURRENT_DIRECTORY)
 sys.path.append(WORKSPACE_DIRECTORY)
-sys.path.append('../ui')
+sys.path.append(os.path.join(WORKSPACE_DIRECTORY, 'ui'))
 import uuid
 from datetime import datetime
 from app.train.train_worker import TrainWorker

@@ -6,6 +6,8 @@ import hashlib
 
 from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsPolygonItem, QGraphicsItem
 
+from app.core.utils import ui_font_family
+
 # 深色背景下鲜艳的标签配色
 LABEL_COLORS = [
     "#5B8CFF", "#3DDC97", "#F5B942", "#F0646E", "#C08BFF",
@@ -338,9 +340,9 @@ class AnnotationBoxItem(QGraphicsRectItem):
         painter.save()
         transform = painter.transform()
         painter.resetTransform()
-        font = QFont("Microsoft YaHei UI")
+        font = QFont(ui_font_family())
         if not font.exactMatch():
-            font.setFamily("Microsoft YaHei UI, Microsoft YaHei, sans-serif")
+            font.setFamily("Noto Sans CJK SC, Microsoft YaHei, sans-serif")
         font.setStyleHint(QFont.SansSerif)
         font.setPixelSize(13)
         painter.setFont(font)
@@ -615,9 +617,9 @@ class AnnotationPolygonItem(QGraphicsPolygonItem):
         transform = painter.transform()
         scale = transform.m11() if abs(transform.m11()) > 1e-6 else 1.0
         painter.resetTransform()
-        font = QFont("Microsoft YaHei UI")
+        font = QFont(ui_font_family())
         if not font.exactMatch():
-            font.setFamily("Microsoft YaHei UI, Microsoft YaHei, sans-serif")
+            font.setFamily("Noto Sans CJK SC, Microsoft YaHei, sans-serif")
         font.setStyleHint(QFont.SansSerif)
         font.setPixelSize(13)
         painter.setFont(font)

@@ -6,7 +6,7 @@ import shutil
 CURRENT_DIRECTORY = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WORKSPACE_DIRECTORY = os.path.dirname(CURRENT_DIRECTORY)
 sys.path.append(WORKSPACE_DIRECTORY)
-sys.path.append('../ui')
+sys.path.append(os.path.join(WORKSPACE_DIRECTORY, 'ui'))
 from PySide6.QtGui import QFontMetrics
 from ui.import_data import Ui_ImportData
 from ui.export_data import Ui_Dialog as ExportDataUI
