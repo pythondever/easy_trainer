@@ -169,14 +169,16 @@ class AnnotationBoxItem(QGraphicsRectItem):
         return views[0].transform().m11() or 1.0
 
     def _chip_rect_local(self):
-        """chip 点击区域, 锚定框右下角外侧(右对齐+底下方2px), 宽度按缩放换算。"""
+        """chip 点击区域, 锚定框右下角外侧(右对齐+底下方2px), 全部偏移/尺寸按缩放换算回局部坐标。
+        与 _draw_label 的屏幕锚定保持一致, 否则放大视图时 chip 会离框越来越远。"""
         r = self.rect()
         text = self.label[:12]
         w_screen = sum(13 if ord(c) > 127 else 7 for c in text) + 12
         w_screen = max(30, w_screen)
         scale = self._view_scale()
-        w = w_screen / scale if scale > 1e-6 else w_screen
-        return QRectF(r.right() - w, r.bottom() + 2, w, 20)
+        s = scale if scale > 1e-6 else 1.0
+        w = w_screen / s
+        return QRectF(r.right() - w, r.bottom() + 2.0 / s, w, 20.0 / s)
 
     def chip_scene_pos(self):
         """chip 中心点（场景坐标），用于菜单弹出定位。"""
@@ -326,7 +328,6 @@ class AnnotationBoxItem(QGraphicsRectItem):
         color = self._color if self._color is not None else label_color(self.label)
         painter.save()
         transform = painter.transform()
-        scale = transform.m11() if abs(transform.m11()) > 1e-6 else 1.0
         painter.resetTransform()
         font = QFont("Microsoft YaHei UI")
         if not font.exactMatch():
@@ -337,7 +338,11 @@ class AnnotationBoxItem(QGraphicsRectItem):
         text = self.label[:12]
         w = max(30, painter.fontMetrics().horizontalAdvance(text) + 12)
         h = 20
-        anchor = transform.map(QPointF(label_rect.left(), label_rect.top()))
+        # 锚定矩形右下角的屏幕坐标 + 固定屏幕偏移(右对齐向左 w, 向下 2px)
+        # 不能 map label_rect 的局部 top(bottom+2): 那会是 2*scale 屏幕偏移, 放大越远
+        r = self.rect()
+        br = transform.map(QPointF(r.right(), r.bottom()))
+        anchor = QPointF(br.x() - w, br.y() + 2)
         chip = QRectF(anchor.x(), anchor.y(), w, h)
         painter.setPen(QPen(QColor("#1c1e25"), 1.0))
         painter.setBrush(QBrush(color))
