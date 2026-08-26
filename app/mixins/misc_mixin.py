@@ -271,7 +271,9 @@ class MiscMixin(object):
         else:
             labeled = 0
             for rec in index["all"]:
-                if rec.get("boxes") or self._has_label_file(rec.get("image_path", "")):
+                # 有 boxes、或有标签文件(label_path) 都算已标注, 与 ImportTask on_finished 一致
+                if (rec.get("boxes") or rec.get("label_path")
+                        or self._has_label_file(rec.get("image_path", ""))):
                     labeled += 1
         self.db.update_dataset_import(
             project_name, dataset_name,

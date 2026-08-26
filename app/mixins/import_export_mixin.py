@@ -245,14 +245,16 @@ class ImportExportMixin(object):
                 merged_lbls = list(dict.fromkeys(old_lbls + [label_path]))
             else:
                 merged_lbls = old_lbls
-            # 追加新图: 累加 labeled/total, 不覆盖已有统计(避免 0/46 覆盖原 600/746)
-            self.db.update_dataset_import(project_name, dataset_name,
-                                          merged_imgs, merged_lbls, fmt,
-                                          labeled=_labeled, total=_total,
-                                          append=True)
+            if image_path not in old_imgs:
+                self.db.update_dataset_import(project_name, dataset_name,
+                                              merged_imgs, merged_lbls, fmt,
+                                              labeled=_labeled, total=_total,
+                                              append=True)
+            else:
+                self.db.update_dataset_import(project_name, dataset_name,
+                                              merged_imgs, merged_lbls, fmt,
+                                              labeled=None, total=None)
             self._refresh_dataset_row_progress(project_name, dataset_name)
-            # ImportTask 扫全部合并路径(全集): on_finished 用全集结果覆盖写 db,
-            # 保证 labeled/total/label_counts/首页缓存都是完整数据集而非最后一次目录
             self._start_import_thread(project_name, dataset_name,
                                       merged_imgs, merged_lbls, fmt,
                                       update_stats=True)

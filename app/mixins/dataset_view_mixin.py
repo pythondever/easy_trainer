@@ -557,12 +557,12 @@ class DatasetViewMixin(object):
                 self.db.save_dataset_label_ids(
                     project_name, dataset_name, merged)
             # 分类模式:每张图都有类别,视为全部已标注
-            # 检测/分割: 有 boxes 或 图像同目录存在 labelme json 都算已标注
-            # (与 _refresh_annotation_progress 的并集判定一致, 避免覆盖写时少计)
+            # 检测/分割: 有 boxes、或有标签文件(label_path, 含空内容 txt 也算)
+            # 与 _scan_import_info / _refresh_annotation_progress 判定一致, 避免导入绿/载入蓝跳变
             labeled = total if cls_mode else sum(
                 1 for r in result
-                if r.get("boxes") or self._has_label_file(
-                    r.get("image_path", "")))
+                if r.get("boxes") or r.get("label_path")
+                or self._has_label_file(r.get("image_path", "")))
             if update_stats:
                 new_label_path = label_path
                 new_fmt = fmt
