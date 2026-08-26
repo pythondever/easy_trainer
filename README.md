@@ -137,20 +137,38 @@ python app/main.py
 easy_trainer/
 ├── app/                    # 主程序
 │   ├── main.py             # 主窗口：项目/数据集管理、标注渲染、训练/测试入口
-│   ├── db.py               # LMDB 数据访问层（YOLO label_ids、重命名合并等）
-│   ├── annotation_dialog.py# 标注弹窗（画框/多边形/格式刷/分类改类）
-│   ├── model_dialog.py     # 模型管理（历史记录、精度、测试、导出）
-│   ├── test_dialog.py      # 测试参数弹窗
-│   ├── metrics_dialog.py   # 训练指标折线图
-│   ├── train/              # 训练与测试执行
-│   │   ├── train_worker.py # 训练子进程线程（进度/指标/结果信号转发）
-│   │   ├── train_runner.py # 检测/分割训练脚本（RF-DETR）
-│   │   ├── classify_train_runner.py  # 分类训练脚本（ResNet + 每类精度）
-│   │   ├── test_worker.py  # 测试子进程线程
-│   │   ├── test_runner.py  # 检测/分割测试脚本
-│   │   ├── classify_test_runner.py   # 分类测试脚本
-│   │   └── dialogs.py      # 训练/测试弹窗
-│   └── annotation/         # 标注画布场景（scene / view / box_item）
+│   ├── core/               # 数据访问层与通用工具
+│   │   ├── db.py           # LMDB 数据访问层（YOLO label_ids、重命名合并等）
+│   │   ├── utils.py        # 通用工具（matplotlib 中文字体、QSS 加载、项目根定位）
+│   │   ├── image_utils.py  # 图像加载/缩略图/格式转换
+│   │   ├── label_utils.py  # 标签归一化/排序/颜色
+│   │   ├── log.py          # 滚动日志（按天归档）
+│   │   └── keys.py         # LMDB 键名常量
+│   ├── tasks/              # 后台任务（导入/合并）
+│   │   ├── import_task.py  # 数据集扫描导入（检测/分割/分类）
+│   │   └── merge_task.py   # 标签合并
+│   ├── annotation/         # 标注画布场景 + 标注弹窗
+│   │   ├── scene.py        # 标注场景（矩形/多边形/格式刷）
+│   │   ├── view.py         # 画布视图（缩放/平移）
+│   │   ├── box_item.py     # 标注图形项（矩形框 + 标签 chip）
+│   │   ├── annotation_dialog.py  # 标注弹窗（画框/多边形/格式刷/分类改类）
+│   │   └── scene_items.py  # 场景辅助图形项
+│   ├── widgets/            # 通用 UI 组件
+│   │   ├── message_box.py  # 统一消息框/进度对话框
+│   │   ├── paginator.py    # 分页控件
+│   │   ├── log_dialog.py   # 日志查看弹窗
+│   │   ├── model_dialog.py # 模型管理（历史记录、精度、测试、导出）
+│   │   ├── test_dialog.py  # 测试参数弹窗
+│   │   └── metrics_dialog.py   # 训练指标折线图
+│   ├── mixins/             # 主窗口功能扩展（项目/数据集/标注/训练/导入导出）
+│   └── train/              # 训练与测试执行
+│       ├── train_worker.py # 训练子进程线程（进度/指标/结果信号转发）
+│       ├── train_runner.py # 检测/分割训练脚本（RF-DETR）
+│       ├── classify_train_runner.py  # 分类训练脚本（ResNet + 每类精度）
+│       ├── test_worker.py  # 测试子进程线程
+│       ├── test_runner.py  # 检测/分割测试脚本
+│       ├── classify_test_runner.py   # 分类测试脚本
+│       └── dialogs.py      # 训练/测试弹窗
 ├── ui/                     # PySide6 UI 类（.py 由 .ui 编译生成）
 ├── docs/                   # 设计文档 + README 截图
 ├── resources/              # 图标等资源
