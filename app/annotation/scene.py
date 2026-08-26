@@ -453,7 +453,8 @@ class AnnotationScene(QGraphicsScene):
             for it in self.items(event.scenePos()):
                 if isinstance(it, (AnnotationBoxItem, AnnotationPolygonItem)):
                     local = it.mapFromScene(event.scenePos())
-                    if it._chip_rect_local().adjusted(-3, -3, 3, 3).contains(local):
+                    p = it._chip_hit_pad()
+                    if it._chip_rect_local().adjusted(-p, -p, p, p).contains(local):
                         self.label_change_requested.emit(it)
                         event.accept()
                         return

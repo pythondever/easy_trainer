@@ -185,12 +185,20 @@ class AnnotationBoxItem(QGraphicsRectItem):
         c = self._chip_rect_local().center()
         return QPointF(self.pos().x() + c.x(), self.pos().y() + c.y())
 
+    def _chip_hit_pad(self, base=3.0):
+        """chip 命中扩展: 屏幕恒定像素换算回局部坐标。
+        若不除 scale, 放大视图后命中区膨胀成 base*scale 屏幕像素,
+        菜单关闭后点击外部易误中 chip 导致菜单反复弹出(一直展开)。"""
+        s = self._view_scale()
+        return base / s if s > 1e-6 else base
+
     def hoverMoveEvent(self, event):
         scene = self.scene()
         if scene is not None and getattr(scene, "draw_mode", False):
             super().hoverMoveEvent(event)
             return
-        if self._chip_rect_local().adjusted(-3, -3, 3, 3).contains(event.pos()):
+        p = self._chip_hit_pad()
+        if self._chip_rect_local().adjusted(-p, -p, p, p).contains(event.pos()):
             self.setCursor(Qt.PointingHandCursor)
             super().hoverMoveEvent(event)
             return
@@ -210,7 +218,8 @@ class AnnotationBoxItem(QGraphicsRectItem):
         if event.button() == Qt.LeftButton:
             self._press_geom = (self.pos(), self.rect())
             scene = self.scene()
-            if scene is not None and self._chip_rect_local().adjusted(-2, -2, 2, 2).contains(event.pos()):
+            p = self._chip_hit_pad(2.0)
+            if scene is not None and self._chip_rect_local().adjusted(-p, -p, p, p).contains(event.pos()):
                 scene.label_change_requested.emit(self)
                 event.accept()
                 return
@@ -483,12 +492,18 @@ class AnnotationPolygonItem(QGraphicsPolygonItem):
                 path.addEllipse(hrect.adjusted(-3, -3, 3, 3))
         return path
 
+    def _chip_hit_pad(self, base=3.0):
+        """chip 命中扩展: 屏幕恒定像素换算回局部(与矩形一致, 防放大视图命中区膨胀)。"""
+        s = self._view_scale()
+        return base / s if s > 1e-6 else base
+
     def hoverMoveEvent(self, event):
         scene = self.scene()
         if scene is not None and getattr(scene, "draw_mode", False):
             super().hoverMoveEvent(event)
             return
-        if self._chip_rect_local().adjusted(-3, -3, 3, 3).contains(event.pos()):
+        p = self._chip_hit_pad()
+        if self._chip_rect_local().adjusted(-p, -p, p, p).contains(event.pos()):
             self.setCursor(Qt.PointingHandCursor)
         else:
             self.setCursor(Qt.ArrowCursor)
@@ -498,7 +513,8 @@ class AnnotationPolygonItem(QGraphicsPolygonItem):
         if event.button() == Qt.LeftButton:
             self._press_geom = (self.pos(), self.polygon())
             scene = self.scene()
-            if scene is not None and self._chip_rect_local().adjusted(-2, -2, 2, 2).contains(event.pos()):
+            p = self._chip_hit_pad(2.0)
+            if scene is not None and self._chip_rect_local().adjusted(-p, -p, p, p).contains(event.pos()):
                 scene.label_change_requested.emit(self)
                 event.accept()
                 return
