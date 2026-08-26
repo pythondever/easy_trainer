@@ -5,10 +5,10 @@ CURRENT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 WORKSPACE_DIRECTORY = os.path.dirname(CURRENT_DIRECTORY)
 sys.path.append(WORKSPACE_DIRECTORY)
 sys.path.append('../ui')
-from app.log_dialog import LogDialog
+from app.widgets.log_dialog import LogDialog
 from ui.app import Ui_AppUI as MainUI
-from app.utils import setup_matplotlib_chinese, load_style_sheet
-from db import DataBase
+from app.core.utils import setup_matplotlib_chinese, load_style_sheet
+from app.core.db import DataBase
 from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtCore import Qt, QTimer, QEvent
 from PySide6.QtWidgets import QWidget, QApplication, QTimeEdit, QFrame, QHBoxLayout

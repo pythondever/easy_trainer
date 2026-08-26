@@ -8,8 +8,8 @@ sys.path.append(WORKSPACE_DIRECTORY)
 sys.path.append('../ui')
 from ui.enter_name import Ui_Dialog as EnterNameUI
 from ui.add_dataset import Ui_AddDatasets
-from app.label_utils import label_sort_key
-from app.message_box import MessageBox
+from app.core.label_utils import label_sort_key
+from app.widgets.message_box import MessageBox
 from PySide6.QtGui import QIcon, QFont, QPixmap, QColor
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtWidgets import QWidget, QDialog, QMenu, \

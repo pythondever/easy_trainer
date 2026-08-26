@@ -7,12 +7,12 @@ WORKSPACE_DIRECTORY = os.path.dirname(CURRENT_DIRECTORY)
 sys.path.append(WORKSPACE_DIRECTORY)
 sys.path.append('../ui')
 from app.annotation.box_item import label_color
-from app.annotation_dialog import AnnotationDialog
-from paginator import Paginator
-from app.label_utils import (normalize_label, label_sort_key)
-from app.image_utils import pil_to_qimage, make_uniform_thumb
-from app.scene_items import SelectablePixmapItem
-from app.import_task import ImportTask
+from app.annotation.annotation_dialog import AnnotationDialog
+from app.widgets.paginator import Paginator
+from app.core.label_utils import (normalize_label, label_sort_key)
+from app.core.image_utils import pil_to_qimage, make_uniform_thumb
+from app.annotation.scene_items import SelectablePixmapItem
+from app.tasks.import_task import ImportTask
 from PySide6.QtGui import QPixmap, QPainter, QColor
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QMenu, QLabel, QProgressBar, QGraphicsView, QGraphicsScene

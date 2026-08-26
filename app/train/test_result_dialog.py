@@ -4,7 +4,7 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QDialog, QTableWidgetItem
 
-from app.label_utils import label_sort_key
+from app.core.label_utils import label_sort_key
 from ui.test_result import Ui_TestResultDialog
 
 

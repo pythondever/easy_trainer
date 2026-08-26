@@ -10,10 +10,10 @@ sys.path.append('../ui')
 from PySide6.QtGui import QFontMetrics
 from ui.import_data import Ui_ImportData
 from ui.export_data import Ui_Dialog as ExportDataUI
-from app.label_utils import (label_sort_key,
+from app.core.label_utils import (label_sort_key,
                              load_json_boxes, boxes_to_yolo_text,
                              load_yolo_boxes, boxes_to_labelme_json)
-from app.message_box import MessageBox, ProgressDialog
+from app.widgets.message_box import MessageBox, ProgressDialog
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtWidgets import QDialog, QFileDialog, QButtonGroup
 

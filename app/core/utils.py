@@ -55,9 +55,23 @@ def setup_matplotlib_chinese():
     plt.rcParams["axes.unicode_minus"] = False
 
 
+def project_root():
+    """项目根目录: 向上搜索含 style/ 或 resources/ 的目录。
+    不依赖固定层级(__file__ 深度), 目录整理后仍能正确定位。"""
+    d = os.path.dirname(os.path.abspath(__file__))
+    while True:
+        if (os.path.isdir(os.path.join(d, "style"))
+                or os.path.isdir(os.path.join(d, "resources"))):
+            return d
+        parent = os.path.dirname(d)
+        if parent == d:
+            return d
+        d = parent
+
+
 def load_style_sheet():
     """加载 resources/style.qss"""
-    here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    here = project_root()
     qss_path = os.path.join(here, "style", "style.qss")
     try:
         with open(qss_path, "r", encoding="utf-8") as f:

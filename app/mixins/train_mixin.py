@@ -10,9 +10,9 @@ sys.path.append('../ui')
 import uuid
 from datetime import datetime
 from app.train.train_worker import TrainWorker
-from app.message_box import MessageBox
-from app.log import write_log
-from app.utils import fmt_duration
+from app.widgets.message_box import MessageBox
+from app.core.log import write_log
+from app.core.utils import fmt_duration
 from PySide6.QtCore import QTimer, QTime
 
 try:

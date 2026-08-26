@@ -8,12 +8,12 @@ sys.path.append('../ui')
 import numpy as np
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
-from app.log_dialog import LogDialog
-from app.model_dialog import ModelDialog
+from app.widgets.log_dialog import LogDialog
+from app.widgets.model_dialog import ModelDialog
 from app.train.dialogs import TrainDialog, _ClickToPopupFilter
 from ui.dataset_properties import Ui_Dialog as DatasetPropertiesUI
-from app.message_box import MessageBox
-from app.log import write_log
+from app.widgets.message_box import MessageBox
+from app.core.log import write_log
 from PySide6.QtGui import QPixmap, QImage, QStandardItem
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QDialog, QMessageBox, QLabel, QGraphicsScene

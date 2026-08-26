@@ -5,8 +5,8 @@ import json
 
 from PySide6.QtCore import QThread, Signal
 
-from app.image_utils import pil_open
-from app.label_utils import normalize_label
+from app.core.image_utils import pil_open
+from app.core.label_utils import normalize_label
 
 
 class ImportTask(QThread):

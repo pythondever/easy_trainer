@@ -13,9 +13,9 @@ import traceback
 
 from PySide6.QtCore import QTimer
 
-from app.message_box import MessageBox
-from app.metrics_dialog import MetricsDialog
-from app.test_dialog import TestDialog
+from app.widgets.message_box import MessageBox
+from app.widgets.metrics_dialog import MetricsDialog
+from app.widgets.test_dialog import TestDialog
 from app.train.dialogs import TrainDialog
 from ui.model import Ui_ModelDialog
 

@@ -2,7 +2,7 @@
 from PySide6.QtGui import QTextCursor
 from PySide6.QtWidgets import QDialog
 
-from app.log import LOG_FILE, MAX_LINES, register_log_dialog
+from app.core.log import LOG_FILE, MAX_LINES, register_log_dialog
 from ui.log import Ui_LogDialog
 
 

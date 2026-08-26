@@ -13,8 +13,8 @@ from PySide6.QtCore import Qt, QEvent, QObject, QTimer
 from PySide6.QtGui import QStandardItem, QStandardItemModel
 from PySide6.QtWidgets import QDialog
 
-from app.log import write_log
-from app.message_box import MessageBox
+from app.core.log import write_log
+from app.widgets.message_box import MessageBox
 from app.train.dialogs import _TrainStartDialog
 from app.train.test_result_dialog import TestResultDialog
 from app.train.test_worker import TestWorker

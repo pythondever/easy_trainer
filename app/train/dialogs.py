@@ -14,8 +14,8 @@ from PySide6.QtWidgets import (QDialog, QLabel, QFileDialog, QSizePolicy,
                                QVBoxLayout, QWidget, QFrame)
 from PySide6.QtGui import QStandardItem
 
-from app.message_box import MessageBox
-from app.log import write_log
+from app.widgets.message_box import MessageBox
+from app.core.log import write_log
 from app.train.data_prep import timestamp_dir
 from ui.train import Ui_TrainDialog
 

@@ -5,7 +5,9 @@ import os
 from datetime import datetime
 from logging.handlers import TimedRotatingFileHandler
 
-WORKSPACE_DIRECTORY = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+from app.core.utils import project_root
+
+WORKSPACE_DIRECTORY = project_root()
 LOG_FILE = os.path.join(WORKSPACE_DIRECTORY, "logs", "app.log")
 
 MAX_LINES = 1000   # 日志界面最多保留行数(超过删除最老)

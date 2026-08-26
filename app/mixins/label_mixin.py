@@ -8,9 +8,9 @@ WORKSPACE_DIRECTORY = os.path.dirname(CURRENT_DIRECTORY)
 sys.path.append(WORKSPACE_DIRECTORY)
 sys.path.append('../ui')
 from ui.edit_label import Ui_Dialog as EditLabelUI
-from app.label_utils import (normalize_label, label_sort_key)
-from app.message_box import MessageBox, ProgressDialog
-from app.merge_task import MergeLabelsTask
+from app.core.label_utils import (normalize_label, label_sort_key)
+from app.widgets.message_box import MessageBox, ProgressDialog
+from app.tasks.merge_task import MergeLabelsTask
 from PySide6.QtGui import QIcon, QPixmap, QColor
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QDialog, QLabel, QProgressBar, QComboBox

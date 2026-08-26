@@ -2,7 +2,7 @@
 import json
 import os
 
-from app.image_utils import pil_open
+from app.core.image_utils import pil_open
 
 
 def normalize_label(name):

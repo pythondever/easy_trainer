@@ -3,7 +3,7 @@ import json
 import os
 import time
 import uuid
-import keys
+from . import keys
 
 
 def _rename_item(item, old_name, new_name):

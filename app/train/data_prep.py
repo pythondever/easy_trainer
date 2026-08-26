@@ -15,7 +15,7 @@ from datetime import datetime
 
 from PIL import Image
 
-from app.label_utils import (normalize_label, load_json_boxes,
+from app.core.label_utils import (normalize_label, load_json_boxes,
                              boxes_to_yolo_text)
 
 
