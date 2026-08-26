@@ -18,7 +18,7 @@ def _muted_style(size=13):
 
 
 def _setup_matplotlib_chinese():
-    """设置中文字体（与 app.main 同逻辑，避免循环导入）。"""
+    """设置中文字体（与 app.easy_trainer 同逻辑，避免循环导入）。"""
     try:
         available = {f.name for f in font_manager.fontManager.ttflist}
     except Exception:

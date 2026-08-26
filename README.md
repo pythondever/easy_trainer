@@ -128,7 +128,7 @@ pip install -r requirements.txt
 pip install torch torchvision "rfdetr>=1.9.2"
 
 # 3. 启动
-python app/main.py
+python app/easy_trainer.py
 ```
 
 ## 📂 目录结构
@@ -136,7 +136,7 @@ python app/main.py
 ```
 easy_trainer/
 ├── app/                    # 主程序
-│   ├── main.py             # 主窗口：项目/数据集管理、标注渲染、训练/测试入口
+│   ├── easy_trainer.py     # 主窗口入口：项目/数据集管理、标注渲染、训练/测试入口
 │   ├── core/               # 数据访问层与通用工具
 │   │   ├── db.py           # LMDB 数据访问层（YOLO label_ids、重命名合并等）
 │   │   ├── utils.py        # 通用工具（matplotlib 中文字体、QSS 加载、项目根定位）
