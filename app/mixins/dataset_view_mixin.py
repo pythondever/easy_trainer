@@ -626,6 +626,8 @@ class DatasetViewMixin(object):
                 self._refresh_label_filter(project_name, dataset_name)
             if getattr(self, "_current_dataset", None) == (project_name, dataset_name):
                 self.show_dataset_images(project_name, dataset_name)
+            # ImportTask 完成后刷新树行 chip 颜色/文本(do_import 预写阶段颜色陈旧, 此时才准确)
+            self._refresh_dataset_row_progress(project_name, dataset_name)
             if self._loading_tasks.get(key) is task:
                 del self._loading_tasks[key]
 
