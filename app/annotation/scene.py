@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 """标注场景：负责画框/画多边形、删除、与列表同步。"""
+import math
+import random
 import sys
 from PySide6.QtCore import QRectF, QPointF, Qt, Signal
 from PySide6.QtGui import (QPen, QColor, QBrush, QPolygonF, QPainterPath,
@@ -224,33 +226,86 @@ class AnnotationScene(QGraphicsScene):
                             "label": getattr(item, "label", self.current_label)}
         return True
 
+    @staticmethod
+    def _rotate_points(pts, center, angle):
+        """多边形点绕 center 旋转 angle 度。Qt 屏幕坐标 y 向下:
+        正角度=视觉顺时针, 负角度=视觉逆时针(与 QPainter.rotate 方向一致)。"""
+        rad = math.radians(angle)
+        c, s = math.cos(rad), math.sin(rad)
+        cx, cy = center.x(), center.y()
+        out = []
+        for x, y in pts:
+            dx, dy = x - cx, y - cy
+            out.append([cx + dx * c - dy * s, cy + dx * s + dy * c])
+        return out
+
+    def _clamp_points_in_image(self, pts):
+        """把多边形整体平移回图像内(保持形状, 不旋转): 保证完全在图内。"""
+        img = self.image_rect
+        if img is None:
+            return pts
+        xs = [p[0] for p in pts]
+        ys = [p[1] for p in pts]
+        dx = dy = 0.0
+        if min(xs) < img.left():
+            dx = img.left() - min(xs)
+        if max(xs) > img.right():
+            dx = img.right() - max(xs)
+        if min(ys) < img.top():
+            dy = img.top() - min(ys)
+        if max(ys) > img.bottom():
+            dy = img.bottom() - max(ys)
+        if dx or dy:
+            return [[x + dx, y + dy] for x, y in pts]
+        return pts
+
     def _paste_template(self, pos):
         """
-        把模板（抠图 patch + 多边形）粘贴到 pos 为中心的位置，边界夹紧。
+        把模板（抠图 patch + 多边形）粘贴到 pos 为中心, 随机旋转 0~180°(正负)。
+        旋转后整体夹紧回图像内(保证多边形完全在图内, 像素越界部分由 QPainter clip)。
         记录粘贴前区域像素 + 标注 item 到撤销栈（Ctrl+Z 可撤销）。
         """
         t = self.fp_template
         if not t:
             return
-        pts = self._shift_template(pos)
-        xs = [p[0] for p in pts]
-        ys = [p[1] for p in pts]
-        ox, oy = int(min(xs)), int(min(ys))
+        angle = random.uniform(-180, 180)
+        # 1. 平移到以 pos 为中心(已有基础夹紧)
+        shifted = self._shift_template(pos)
+        # 2. 绕 pos 随机旋转(正=顺时针, 负=逆时针)
+        rotated = self._rotate_points(shifted, pos, angle)
+        # 3. 旋转后整体夹紧回图像内(保持形状, 避免出界)
+        rotated = self._clamp_points_in_image(rotated)
+        xs = [p[0] for p in rotated]
+        ys = [p[1] for p in rotated]
+        center = QPointF((min(xs) + max(xs)) / 2.0, (min(ys) + max(ys)) / 2.0)
         pw, ph = t["patch"].width(), t["patch"].height()
+        # 旋转后 patch 完整占地区域(以 center 为中心, 半径为对角线/2)
+        radius = math.sqrt(pw * pw + ph * ph) / 2.0
         pix = self.image_item.pixmap()
         if pix is not None and t.get("patch") is not None:
-            before = pix.toImage().copy(ox, oy, pw, ph)
             img = pix.toImage()
+            ox = max(0, int(center.x() - radius))
+            oy = max(0, int(center.y() - radius))
+            bw = min(int(2 * radius) + 1, img.width() - ox)
+            bh = min(int(2 * radius) + 1, img.height() - oy)
+            before = img.copy(ox, oy, max(0, bw), max(0, bh))
+            if before.isNull():
+                before = None
             p = QPainter(img)
-            p.drawImage(ox, oy, t["patch"])
+            p.translate(center.x(), center.y())
+            p.rotate(angle)
+            p.drawImage(-pw / 2.0, -ph / 2.0, t["patch"])
             p.end()
             self.image_item.setPixmap(QPixmap.fromImage(img))
             self.image_modified = True
             self.image_pixels_changed.emit()
+        else:
+            before = None
+            ox = oy = 0
         if self.fp_ghost_item is not None:
             self.removeItem(self.fp_ghost_item)
             self.fp_ghost_item = None
-        item = self.add_polygon(pts, t.get("label") or self.current_label)
+        item = self.add_polygon(rotated, t.get("label") or self.current_label)
         if item is not None:
             item.setSelected(True)
             self._fp_undo_stack.append(
