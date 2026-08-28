@@ -5,6 +5,13 @@ import time
 import uuid
 from . import keys
 
+# LMDB map_size 上限。注意 Windows 上这是真实预分配(非稀疏文件):
+# 设为 N 则 data.mdb 立即占用约 N 磁盘空间, 与实际数据量无关, 故不宜盲目取大。
+# 128MB 约可容纳数百条完整训练记录(train_history 含每 epoch metrics 序列,
+# 单条约数十 KB), 远大于旧值 10MB——旧值在训练记录累积后会 MapFullError 硬崩。
+# 已存在的库用更大的 map_size 重新 open 是安全的, 已有数据不受影响。
+DEFAULT_MAP_SIZE = 128 * 1024 * 1024
+
 
 def _rename_item(item, old_name, new_name):
     """数据集项("项目/数据集"或纯名)中匹配 old_name 的数据集部分替换为新名。"""
@@ -20,7 +27,7 @@ def _ds_of(item):
 
 
 class DataBase:
-    def __init__(self, db_path, db_size=1024 * 1024 * 10):
+    def __init__(self, db_path, db_size=DEFAULT_MAP_SIZE):
         self.db_path = db_path
         self.db_size = db_size
         self.mdb = None

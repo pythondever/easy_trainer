@@ -60,14 +60,15 @@ class App(QWidget, MainUI, LabelMixin, ProjectMixin, ImportExportMixin,
                 w.wait(3000)
             except Exception:
                 pass
-        # 停止 ROI 后台解码 worker(首页按类筛选)
-        roi_worker = getattr(self, "_roi_worker", None)
-        if roi_worker is not None:
-            try:
-                roi_worker.stop()
-                roi_worker.wait(2000)
-            except Exception:
-                pass
+        # 停止 ROI/缩略图后台解码 worker(首页网格渲染)
+        for w in [getattr(self, "_roi_worker", None),
+                  getattr(self, "_thumb_worker", None)]:
+            if w is not None:
+                try:
+                    w.stop()
+                    w.wait(2000)
+                except Exception:
+                    pass
         super().closeEvent(event)
 
     def init_widget(self):

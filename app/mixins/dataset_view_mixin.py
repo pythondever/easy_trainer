@@ -13,7 +13,7 @@ from app.core.label_utils import (normalize_label, label_sort_key)
 from app.core.image_utils import pil_to_qimage, make_uniform_thumb
 from app.annotation.scene_items import SelectablePixmapItem
 from app.tasks.import_task import ImportTask
-from PySide6.QtGui import QPixmap, QPainter, QColor
+from PySide6.QtGui import QPixmap, QPainter, QColor, QImage
 from PySide6.QtCore import Qt, Signal, QThread, QMutex, QMutexLocker, QTimer
 from PySide6.QtWidgets import QMenu, QLabel, QProgressBar, QGraphicsView, QGraphicsScene
 
@@ -62,6 +62,68 @@ class _RoiDecodeWorker(QThread):
                 except Exception:
                     results.append((path, label, box_idx, None))
             self.batch_done.emit(results)
+
+
+class _ThumbDecodeWorker(QThread):
+    """整图缩略图后台解码: 首页/全部/未标注筛选不阻塞 UI。"""
+
+    batch_done = Signal(object)
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._jobs = []
+        self._mutex = QMutex()
+        self._stop = False
+
+    def submit(self, paths):
+        with QMutexLocker(self._mutex):
+            self._jobs.extend(paths)
+
+    def stop(self):
+        with QMutexLocker(self._mutex):
+            self._stop = True
+
+    def run(self):
+        while True:
+            with QMutexLocker(self._mutex):
+                if self._stop:
+                    return
+                jobs = self._jobs
+                self._jobs = []
+            if not jobs:
+                QThread.msleep(30)
+                continue
+            results = []
+            for path in jobs:
+                qimg = None
+                try:
+                    im = PILImage.open(path)
+                    im.draft("RGB", (200, 200))
+                    im = im.convert("RGB")
+                    qimg = pil_to_qimage(make_uniform_thumb(im))
+                except Exception:
+                    pass
+                results.append((path, qimg))
+            self.batch_done.emit(results)
+
+
+# QImage 图像缓存(整图缩略图/ROI)总量上限: 超过后按 LRU 淘汰非当前页缓存,
+# 淘汰后置 None 渲染时懒重建, 避免 2 万+ 张规模下翻页内存持续增长。
+_THUMB_CACHE_MAX = 2000   # 整图缩略图缓存张数上限(~160KB/张)
+_ROI_CACHE_MAX = 2000     # ROI 缓存张数上限(按 rec 粒度计数)
+
+
+_THUMB_PLACEHOLDER = None
+
+
+def _thumb_placeholder():
+    """统一的缩略图占位(灰块), 后台解码完成前先垫底。"""
+    global _THUMB_PLACEHOLDER
+    if _THUMB_PLACEHOLDER is None:
+        _THUMB_PLACEHOLDER = QImage(200, 200, QImage.Format_RGB32)
+        _THUMB_PLACEHOLDER.fill(QColor(56, 58, 66))
+    return _THUMB_PLACEHOLDER
+
 
 try:
     from shiboken6 import isValid as _is_valid
@@ -434,25 +496,56 @@ class DatasetViewMixin(object):
             self.labelStatsLabel.setVisible(False)
 
     def _get_thumb(self, rec):
-        """
-        懒生成整图缩略图并缓存到 rec["thumb"]（渲染当前页时调用）。
-        载入不再全量生成缩略图(大数据集全量解码很慢)，改为渲染到某页时才现场解码该页图像
-        翻页/切回/再次筛选命中缓存不重复解码:解码失败也缓存 None。
-        """
-        if rec.get("thumb") is not None:
-            return rec["thumb"]
-        qimg = None
+        """整图缩略图: 命中缓存直接返回, 未命中提交后台解码并先返回占位图。"""
+        thumb = rec.get("thumb")
+        if thumb is not None:
+            rec["_thumb_t"] = self._img_clock_now()
+            return thumb
         img_path = rec.get("image_path", "")
-        if img_path and PILImage is not None:
-            try:
-                im = PILImage.open(img_path)
-                im.draft("RGB", (200, 200))
-                im = im.convert("RGB")
-                qimg = pil_to_qimage(make_uniform_thumb(im))
-            except Exception:
-                qimg = None
-        rec["thumb"] = qimg
-        return qimg
+        if img_path:
+            if img_path not in getattr(self, "_thumb_pending", set()):
+                self._ensure_thumb_worker()
+                self._thumb_pending.add(img_path)
+                self._thumb_worker.submit([img_path])
+        return _thumb_placeholder()
+
+    def _ensure_thumb_worker(self):
+        """懒创建缩略图后台解码 worker(首页/翻页不卡顿)。"""
+        if getattr(self, "_thumb_worker", None) is None:
+            self._thumb_worker = _ThumbDecodeWorker(self)
+            self._thumb_worker.batch_done.connect(self._on_thumb_batch_done)
+            self._thumb_worker.start()
+            self._thumb_pending = set()
+            self._thumb_refresh_timer = QTimer(self)
+            self._thumb_refresh_timer.setSingleShot(True)
+            self._thumb_refresh_timer.timeout.connect(
+                lambda: self._roi_redraw())
+        return self._thumb_worker
+
+    def _on_thumb_batch_done(self, results):
+        """缩略图解码完成: 回写 rec 缓存, 有变化则防抖重渲当前页。"""
+        if getattr(self, "_closing", False):
+            return
+        cur_ds = getattr(self, "_current_dataset", None)
+        if not cur_ds:
+            return
+        proj, ds = cur_ds
+        index = self.dataset_cache.get(proj, {}).get(ds)
+        if not index:
+            return
+        changed = False
+        for path, qimg in results:
+            if path in getattr(self, "_thumb_pending", set()):
+                self._thumb_pending.discard(path)
+            for rec in index.get("all", []):
+                if rec.get("image_path") == path and rec.get("thumb") is None:
+                    rec["thumb"] = qimg if qimg is not None else _thumb_placeholder()
+                    rec["_thumb_t"] = self._img_clock_now()
+                    changed = True
+                    break
+        if changed and self._current_dataset == cur_ds:
+            self._thumb_refresh_timer.start()
+        self._evict_img_cache()
 
     def _get_rois(self, rec, label):
         """懒生成某标签的 ROI 裁剪小图并缓存到 rec["rois"][label]。"""
@@ -481,6 +574,7 @@ class DatasetViewMixin(object):
         """取第 box_idx 个匹配 box 的 ROI 缩略图并缓存(区别于 _get_rois 只裁一个,省内存)。"""
         cache = rec.setdefault("rois_by_idx", {}).setdefault(label, {})
         if box_idx in cache:
+            rec["_roi_t"] = self._img_clock_now()
             return cache[box_idx]
         qimg = None
         boxes = rec.get("boxes") or []
@@ -512,11 +606,14 @@ class DatasetViewMixin(object):
         return self._roi_worker
 
     def _roi_for_render(self, rec, label, box_idx):
-        """按类筛选渲染取 ROI: 缓存命中直接返回; 未命中返回缩略图占位
-        (快)并登记后台解码, 完成后自动重渲当前页。"""
+        """按类筛选渲染取 ROI: 缓存命中直接返回; 未命中直接返回灰块占位
+        (不显示/不触发整图缩略图, 避免"灰块→整图闪现→ROI"三段式),
+        后台解码完成后自动重渲当前页。"""
         cache = rec.setdefault("rois_by_idx", {}).setdefault(label, {})
         if box_idx in cache:
-            return cache[box_idx]
+            rec["_roi_t"] = self._img_clock_now()
+            # 解码失败缓存为 None: 回退灰块占位, 不显示空白 cell
+            return cache[box_idx] if cache[box_idx] is not None else _thumb_placeholder()
         boxes = rec.get("boxes") or []
         if 0 <= box_idx < len(boxes) and len(boxes[box_idx]) >= 5:
             key = (rec.get("image_path", ""), label, box_idx)
@@ -525,8 +622,7 @@ class DatasetViewMixin(object):
                 self._roi_pending.add(key)
                 self._roi_worker.submit(
                     [(key[0], label, box_idx, boxes[box_idx])])
-        # 占位: 整图缩略图(已有缓存则秒出)
-        return self._get_thumb(rec)
+        return _thumb_placeholder()
 
     def _on_roi_batch_done(self, results):
         """后台 ROI 解码完成: 回写 rec 缓存(成功/失败都缓存, 防重复请求),
@@ -550,16 +646,59 @@ class DatasetViewMixin(object):
                     cache = rec.setdefault("rois_by_idx", {}).setdefault(label, {})
                     if box_idx not in cache:
                         cache[box_idx] = qimg
+                        rec["_roi_t"] = self._img_clock_now()
                         changed = True
                     break
         if changed and self._current_dataset == cur_ds:
             self._roi_refresh_timer.start()
+        self._evict_img_cache()
 
     def _roi_redraw(self):
         """防抖重渲当前页(ROI 后台解码完成)。"""
         cur_ds = getattr(self, "_current_dataset", None)
         if cur_ds:
             self.show_dataset_images(cur_ds[0], cur_ds[1])
+
+    def _img_clock_now(self):
+        """单调递增访问时钟(无 time 精度问题)。"""
+        c = getattr(self, "_img_clock", 0) + 1
+        self._img_clock = c
+        return c
+
+    def _evict_img_cache(self):
+        """
+        QImage 图像缓存 LRU 淘汰: thumb/ROI 超过各自上限时,
+        释放最久未访问且不在当前页的缓存(置 None / 清空 rois_by_idx)。
+        淘汰后渲染时懒重建(与 label_mixin 主动失效 rec["thumb"]=None 同机制),
+        保证大图集翻页/按类筛选下内存有界、不持续增长。
+        只动 QImage 缓存, 不碰 rec 元数据与 labels 索引, 分页/统计/标注不受影响。
+        """
+        cur = getattr(self, "_current_dataset", None)
+        if not cur:
+            return
+        index = self.dataset_cache.get(cur[0], {}).get(cur[1])
+        if not index:
+            return
+        t_max = getattr(self, "_thumb_cache_max", _THUMB_CACHE_MAX)
+        r_max = getattr(self, "_roi_cache_max", _ROI_CACHE_MAX)
+        protected = getattr(self, "_current_page_paths", None) or set()
+        thumbs = []
+        rois = []
+        for rec in index.get("all", []):
+            if rec.get("image_path", "") in protected:
+                continue
+            th = rec.get("thumb")
+            # 占位图是模块级共享单例, 不占独立内存, 跳过保留(防失败图重复解码)
+            if th is not None and th is not _thumb_placeholder():
+                thumbs.append((rec.get("_thumb_t", 0), rec))
+            if rec.get("rois_by_idx"):
+                rois.append((rec.get("_roi_t", 0), rec))
+        thumbs.sort(reverse=True)
+        rois.sort(reverse=True)
+        for _, rec in thumbs[t_max:]:
+            rec["thumb"] = None
+        for _, rec in rois[r_max:]:
+            rec["rois_by_idx"] = {}
 
     def _render_scene(self, data):
         """
@@ -574,6 +713,12 @@ class DatasetViewMixin(object):
         total_pages = max(1, (len(view_data) + page_size - 1) // page_size)
         self.current_page = max(0, min(getattr(self, "current_page", 0), total_pages - 1))
         page_data = list(Paginator(view_data, page_size)[self.current_page])
+        # 当前页 path 集合: LRU 淘汰时保护正在看的页, 翻回不闪灰块
+        self._current_page_paths = set()
+        for entry in page_data:
+            rec = entry[0] if isinstance(entry, tuple) else entry
+            if rec.get("image_path"):
+                self._current_page_paths.add(rec.get("image_path", ""))
         cell_w, cell_h = 230, 230
         pad = 10
         cols = max(1, int((self.graphics_view.viewport().width() - pad) // cell_w))
@@ -614,6 +759,7 @@ class DatasetViewMixin(object):
                 item.setData(0, rec.get("image_path", ""))  # 双击定位用
                 pos += 1
         scene.setSceneRect(scene.itemsBoundingRect().adjusted(-10, -10, 20, 20))
+        self._evict_img_cache()
         if cur_label and cur_label != "__unlabeled__":
             self.pageInfoLabel.setText("第 {}/{} 页 · 共 {} 个".format(
                 self.current_page + 1, total_pages, len(view_data)))
