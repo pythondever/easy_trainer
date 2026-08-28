@@ -55,27 +55,11 @@ class Ui_annotationDialog(object):
 
         self.horizontalLayout.addWidget(self.format_painter_btn)
 
-        self.rotate_labeled_btn = QPushButton(annotationDialog)
-        self.rotate_labeled_btn.setObjectName(u"rotate_labeled_btn")
-        icon3 = QIcon()
-        icon3.addFile(u"../resources/\u65cb\u8f6c.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.rotate_labeled_btn.setIcon(icon3)
-
-        self.horizontalLayout.addWidget(self.rotate_labeled_btn)
-
-        self.revert_labeled_btn = QPushButton(annotationDialog)
-        self.revert_labeled_btn.setObjectName(u"revert_labeled_btn")
-        icon4 = QIcon()
-        icon4.addFile(u"../resources/\u64a4\u9500.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.revert_labeled_btn.setIcon(icon4)
-
-        self.horizontalLayout.addWidget(self.revert_labeled_btn)
-
         self.delete_image_btn = QPushButton(annotationDialog)
         self.delete_image_btn.setObjectName(u"delete_image_btn")
-        icon5 = QIcon()
-        icon5.addFile(u"../resources/\u5220\u9664.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.delete_image_btn.setIcon(icon5)
+        icon3 = QIcon()
+        icon3.addFile(u"../resources/\u5220\u9664.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.delete_image_btn.setIcon(icon3)
 
         self.horizontalLayout.addWidget(self.delete_image_btn)
 
@@ -218,8 +202,6 @@ class Ui_annotationDialog(object):
         self.draw_rect_btn.setText(QCoreApplication.translate("annotationDialog", u"\u77e9\u5f62", None))
         self.poly_btn.setText(QCoreApplication.translate("annotationDialog", u"\u591a\u8fb9\u5f62", None))
         self.format_painter_btn.setText(QCoreApplication.translate("annotationDialog", u"\u683c\u5f0f\u5237", None))
-        self.rotate_labeled_btn.setText(QCoreApplication.translate("annotationDialog", u"\u6807\u6ce8\u65cb\u8f6c", None))
-        self.revert_labeled_btn.setText(QCoreApplication.translate("annotationDialog", u"\u64a4\u9500\u6807\u6ce8", None))
         self.delete_image_btn.setText(QCoreApplication.translate("annotationDialog", u"\u5220\u9664\u56fe\u50cf", None))
         self.label_list.setText(QCoreApplication.translate("annotationDialog", u"\u6807\u7b7e\u5217\u8868", None))
         self.add_label.setText(QCoreApplication.translate("annotationDialog", u"\u6dfb\u52a0", None))

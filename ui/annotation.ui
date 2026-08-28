@@ -52,28 +52,6 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="rotate_labeled_btn">
-         <property name="text">
-          <string>标注旋转</string>
-         </property>
-         <property name="icon">
-          <iconset>
-           <normaloff>../resources/旋转.png</normaloff>../resources/旋转.png</iconset>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="revert_labeled_btn">
-         <property name="text">
-          <string>撤销标注</string>
-         </property>
-         <property name="icon">
-          <iconset>
-           <normaloff>../resources/撤销.png</normaloff>../resources/撤销.png</iconset>
-         </property>
-        </widget>
-       </item>
-       <item>
         <widget class="QPushButton" name="delete_image_btn">
          <property name="text">
           <string>删除图像</string>
