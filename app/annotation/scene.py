@@ -58,6 +58,7 @@ class AnnotationScene(QGraphicsScene):
         self.fp_ghost_item = None
         self._fp_undo_stack = []
         self._paste_pos = None   # 复制/粘贴: 左键点击空白处记录的粘贴锚点
+        self.angle_range = (-180, 180)   # 粘贴随机旋转角度范围(由标注界面输入框设置)
 
     def set_image(self, pixmap):
         self.clear()
@@ -268,7 +269,8 @@ class AnnotationScene(QGraphicsScene):
         t = self.fp_template
         if not t:
             return
-        angle = random.uniform(-180, 180)
+        lo, hi = getattr(self, "angle_range", (-180, 180))
+        angle = random.uniform(lo, hi)
         # 1. 平移到以 pos 为中心(已有基础夹紧)
         shifted = self._shift_template(pos)
         # 2. 绕 pos 随机旋转(正=顺时针, 负=逆时针)

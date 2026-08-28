@@ -41,17 +41,6 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="format_painter_btn">
-         <property name="text">
-          <string>格式刷</string>
-         </property>
-         <property name="icon">
-          <iconset>
-           <normaloff>../resources/刷子.png</normaloff>../resources/刷子.png</iconset>
-         </property>
-        </widget>
-       </item>
-       <item>
         <widget class="QPushButton" name="delete_image_btn">
          <property name="text">
           <string>删除图像</string>
@@ -61,6 +50,26 @@
            <normaloff>../resources/删除.png</normaloff>../resources/删除.png</iconset>
          </property>
         </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="angle_range_label">
+         <property name="text">
+          <string>角度:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="min_ange_lineEdit"/>
+       </item>
+       <item>
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>-</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="max_ange_lineEdit"/>
        </item>
        <item>
         <spacer name="horizontalSpacer_3">

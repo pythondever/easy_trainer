@@ -13,7 +13,7 @@ from PySide6.QtCore import (Qt, Signal, QPointF, QTimer, QSize, QThread,
                             QMutex, QMutexLocker)
 from PySide6.QtGui import (QColor, QPixmap, QKeySequence, QShortcut, QPen,
                            QPainter, QImage, QIcon, QCursor, QLinearGradient,
-                           QFont, QImageReader)
+                           QFont, QImageReader, QIntValidator)
 from PySide6.QtWidgets import (QDialog, QWidget, QApplication, QVBoxLayout,
                                QHBoxLayout, QLabel, QMessageBox,
                                QGridLayout, QLineEdit, QSpinBox, QPushButton, QFrame,
@@ -162,12 +162,26 @@ def _upgrade_graphics_view(view):
             # mapToScene 已是场景坐标, 缩放只改视图变换不改变场景坐标)
             menu = QMenu(_v)
             act_paste = menu.addAction("粘贴")
-            act_paste.triggered.connect(lambda: scene._paste_template(scene_pos))
+            act_paste.triggered.connect(lambda: _do_paste(scene, scene_pos))
             menu.exec(ev.globalPos())
             ev.accept()
             return
         QGraphicsView.contextMenuEvent(_v, ev)
     view.contextMenuEvent = _ctx_menu
+
+    def _do_paste(_scene, _pos):
+        """粘贴前读取角度范围输入框(容错: 空/非整数用默认 ±180), 再执行粘贴。"""
+        dialog = view.window()   # 顶层窗口 = AnnotationDialog
+        try:
+            lo = int(dialog.ui.min_ange_lineEdit.text())
+        except (ValueError, TypeError):
+            lo = -180
+        try:
+            hi = int(dialog.ui.max_ange_lineEdit.text())
+        except (ValueError, TypeError):
+            hi = 180
+        _scene.angle_range = (lo, hi)
+        _scene._paste_template(_pos)
 
     def _zoom_level(_v=view):
         return _v.transform().m11()
@@ -603,8 +617,15 @@ class AnnotationDialog(QDialog):
         u.lineEdit.hide()
         u.draw_rect_btn.clicked.connect(lambda: self._start_draw("rect"))
         u.poly_btn.clicked.connect(lambda: self._start_draw("polygon"))
-        # 格式刷改为"复制/粘贴"右键交互: 隐藏格式刷按钮, 不再作为入口
-        u.format_painter_btn.hide()
+        # 角度范围输入框: 粘贴时随机旋转的角度范围(默认 -180 ~ 180, 居中, 仅整数)
+        for edit, default in ((u.min_ange_lineEdit, -180), (u.max_ange_lineEdit, 180)):
+            edit.setText(str(default))
+            edit.setAlignment(Qt.AlignCenter)
+            edit.setMaxLength(100)
+            edit.setValidator(QIntValidator(-3600, 3600, self))
+            edit.setFixedSize(50, u.draw_rect_btn.height())
+        u.angle_range_label.setText("角度范围")
+        u.label.setText("~")
         u.switchButton = SwitchButton(self)
         u.switchButton.setObjectName("switchButton")
         u.switchButton.setChecked(True)
@@ -620,7 +641,6 @@ class AnnotationDialog(QDialog):
         u.next_page_btn.clicked.connect(lambda: self._switch(1))
         u.delete_image_btn.clicked.connect(self._delete_current_image)
         self.scene.box_drawn.connect(self._on_box_drawn)
-        self.scene.fp_mode_changed.connect(self._on_fp_mode_changed)
         self.scene.draw_cancel_requested.connect(self._cancel_draw_mode)
         self._labeled_refresh_timer = QTimer(self)
         self._labeled_refresh_timer.setSingleShot(True)
@@ -635,7 +655,7 @@ class AnnotationDialog(QDialog):
         self.scene.selection_changed.connect(self._sync_labeled_selection)
         # 图像分类数据集:只读看图,禁用一切标注/绘制控件
         if self.cls_mode:
-            for w in (u.draw_rect_btn, u.poly_btn, u.format_painter_btn,
+            for w in (u.draw_rect_btn, u.poly_btn,
                       u.add_label):
                 w.setEnabled(False)
 
@@ -859,14 +879,12 @@ class AnnotationDialog(QDialog):
         """无标签或未选中标签时禁用矩形/多边形/格式刷按钮。"""
         if self.cls_mode:
             # 图像分类只读,始终禁用绘制
-            for w in (self.ui.draw_rect_btn, self.ui.poly_btn,
-                      self.ui.format_painter_btn):
+            for w in (self.ui.draw_rect_btn, self.ui.poly_btn):
                 w.setEnabled(False)
             return
         can_draw = bool(self.label_colors) and self.scene.current_label in self.label_colors
         self.ui.draw_rect_btn.setEnabled(can_draw)
         self.ui.poly_btn.setEnabled(can_draw)
-        self.ui.format_painter_btn.setEnabled(can_draw)
         if not can_draw:
             self._set_draw_button_states(False)
 
@@ -910,42 +928,16 @@ class AnnotationDialog(QDialog):
         self.view.unsetCursor()
         self._set_draw_button_states(False)
 
-    # ---------------- 格式刷(轨迹描边,模板,刷子粘贴) ----------------
+    # ---------------- 复制/粘贴(格式刷改造: 右键复制多边形 + 随机旋转粘贴) ----------------
     def _toggle_show_boxes(self, checked):
         """"显示标注"开关：关闭时隐藏图像上的标注框，右侧列表信息保留。"""
         for item in self.scene.all_items():
             item.setVisible(checked)
 
-    def _toggle_format_painter(self):
-        if self.scene.fp_mode is not None:
-            self.scene.set_format_painter(False)
-            return
-        if not self.label_colors or self.scene.current_label not in self.label_colors:
-            MessageBox.information(self, "格式刷", "请先选择一个标签")
-            return
-        if self.scene.draw_mode:
-            self.scene.set_draw_mode(False)
-        self.scene.set_format_painter(True)
-        QApplication.setOverrideCursor(self._pen_cursor())
-        self._set_draw_button_states(False)
-        self.ui.format_painter_btn.setStyleSheet(self._style_on())
-
     def _undo_fp_paste(self):
         """Ctrl+Z：撤销最后一次格式刷粘贴（恢复图像像素 + 删标注）。"""
         if self.scene.undo_last_paste():
             self._refresh_labeled_list()
-
-    def _on_fp_mode_changed(self, mode):
-        if mode == "trace":
-            QApplication.setOverrideCursor(self._pen_cursor())
-            self.ui.format_painter_btn.setStyleSheet(self._style_on())
-        elif mode == "paint":
-            QApplication.setOverrideCursor(self._fp_brush_cursor())
-            self.ui.format_painter_btn.setStyleSheet(self._style_on())
-        else:  # 退出
-            QApplication.restoreOverrideCursor()
-            self._set_draw_button_states(False)
-            self.ui.format_painter_btn.setStyleSheet(self._style_off())
 
     def _style_on(self):
         return ("QPushButton { background: #2c3a5e; color: #ffffff;"

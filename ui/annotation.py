@@ -47,21 +47,33 @@ class Ui_annotationDialog(object):
 
         self.horizontalLayout.addWidget(self.poly_btn)
 
-        self.format_painter_btn = QPushButton(annotationDialog)
-        self.format_painter_btn.setObjectName(u"format_painter_btn")
-        icon2 = QIcon()
-        icon2.addFile(u"../resources/\u5237\u5b50.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.format_painter_btn.setIcon(icon2)
-
-        self.horizontalLayout.addWidget(self.format_painter_btn)
-
         self.delete_image_btn = QPushButton(annotationDialog)
         self.delete_image_btn.setObjectName(u"delete_image_btn")
-        icon3 = QIcon()
-        icon3.addFile(u"../resources/\u5220\u9664.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.delete_image_btn.setIcon(icon3)
+        icon2 = QIcon()
+        icon2.addFile(u"../resources/\u5220\u9664.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.delete_image_btn.setIcon(icon2)
 
         self.horizontalLayout.addWidget(self.delete_image_btn)
+
+        self.angle_range_label = QLabel(annotationDialog)
+        self.angle_range_label.setObjectName(u"angle_range_label")
+
+        self.horizontalLayout.addWidget(self.angle_range_label)
+
+        self.min_ange_lineEdit = QLineEdit(annotationDialog)
+        self.min_ange_lineEdit.setObjectName(u"min_ange_lineEdit")
+
+        self.horizontalLayout.addWidget(self.min_ange_lineEdit)
+
+        self.label = QLabel(annotationDialog)
+        self.label.setObjectName(u"label")
+
+        self.horizontalLayout.addWidget(self.label)
+
+        self.max_ange_lineEdit = QLineEdit(annotationDialog)
+        self.max_ange_lineEdit.setObjectName(u"max_ange_lineEdit")
+
+        self.horizontalLayout.addWidget(self.max_ange_lineEdit)
 
         self.horizontalSpacer_3 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
@@ -201,8 +213,9 @@ class Ui_annotationDialog(object):
         annotationDialog.setWindowTitle(QCoreApplication.translate("annotationDialog", u"Dialog", None))
         self.draw_rect_btn.setText(QCoreApplication.translate("annotationDialog", u"\u77e9\u5f62", None))
         self.poly_btn.setText(QCoreApplication.translate("annotationDialog", u"\u591a\u8fb9\u5f62", None))
-        self.format_painter_btn.setText(QCoreApplication.translate("annotationDialog", u"\u683c\u5f0f\u5237", None))
         self.delete_image_btn.setText(QCoreApplication.translate("annotationDialog", u"\u5220\u9664\u56fe\u50cf", None))
+        self.angle_range_label.setText(QCoreApplication.translate("annotationDialog", u"\u89d2\u5ea6:", None))
+        self.label.setText(QCoreApplication.translate("annotationDialog", u"-", None))
         self.label_list.setText(QCoreApplication.translate("annotationDialog", u"\u6807\u7b7e\u5217\u8868", None))
         self.add_label.setText(QCoreApplication.translate("annotationDialog", u"\u6dfb\u52a0", None))
         self.labeled_list.setText(QCoreApplication.translate("annotationDialog", u"\u6807\u6ce8\u4fe1\u606f", None))
