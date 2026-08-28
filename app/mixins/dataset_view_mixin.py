@@ -15,7 +15,7 @@ from app.annotation.scene_items import SelectablePixmapItem
 from app.tasks.import_task import ImportTask
 from PySide6.QtGui import QPixmap, QPainter, QColor
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QMenu, QLabel, QProgressBar, QGraphicsView, QGraphicsScene
+from PySide6.QtWidgets import QLabel, QProgressBar, QGraphicsView, QGraphicsScene
 
 try:
     from shiboken6 import isValid as _is_valid
@@ -58,45 +58,6 @@ class DatasetViewMixin(object):
             _o(ev)
 
         self.graphics_view.mousePressEvent = _gv_press
-        orig_key = self.graphics_view.keyPressEvent
-
-        def _gv_key(ev, _o=orig_key, _self=self):
-            if _self.current_label:
-                _o(ev)
-                return
-            if ev.key() == Qt.Key_A and (ev.modifiers() & Qt.ControlModifier):
-                scene = _self.graphics_view.scene()
-                for it in scene.items():
-                    if isinstance(it, SelectablePixmapItem):
-                        it.setSelected(True)
-                ev.accept()
-                return
-            if ev.key() == Qt.Key_Escape:
-                _self.graphics_view.scene().clearSelection()
-                ev.accept()
-                return
-            _o(ev)
-
-        self.graphics_view.keyPressEvent = _gv_key
-        orig_ctx = self.graphics_view.contextMenuEvent
-
-        def _gv_ctx_menu(ev, _o=orig_ctx):
-            hit = self.graphics_view.itemAt(ev.pos())
-            if isinstance(hit, SelectablePixmapItem) and not self.current_label:
-                if not hit.isSelected():
-                    self.graphics_view.scene().clearSelection()
-                    hit.setSelected(True)
-                selected = [i for i in self.graphics_view.scene().selectedItems()
-                            if isinstance(i, SelectablePixmapItem)]
-                menu = QMenu(self)
-                act = menu.addAction("删除所选图像（{} 张）".format(len(selected)))
-                act.triggered.connect(lambda: self._delete_selected_images(selected))
-                menu.exec(ev.globalPos())
-                ev.accept()
-                return
-            _o(ev)
-
-        self.graphics_view.contextMenuEvent = _gv_ctx_menu
 
     def _on_graphics_double_click(self, pos):
         """双击图像显示区:定位到点击的图像记录,进入标注."""

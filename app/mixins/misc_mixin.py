@@ -12,11 +12,10 @@ from app.widgets.log_dialog import LogDialog
 from app.widgets.model_dialog import ModelDialog
 from app.train.dialogs import TrainDialog, _ClickToPopupFilter
 from ui.dataset_properties import Ui_Dialog as DatasetPropertiesUI
-from app.widgets.message_box import MessageBox
 from app.core.log import write_log
 from PySide6.QtGui import QPixmap, QImage, QStandardItem
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QDialog, QMessageBox, QLabel, QGraphicsScene
+from PySide6.QtWidgets import QDialog, QLabel, QGraphicsScene
 
 try:
     from shiboken6 import isValid as _is_valid
@@ -390,27 +389,3 @@ class MiscMixin(object):
         if fmt == "cls":
             return []
         return [".json", ".txt"]   # 未知/空格式: 两种都尝试
-
-    def _delete_selected_images(self, items):
-        """
-        删除所选图像(首页多选场景): 弹窗选"删除本地文件"或"仅标记不加载",
-        然后调 _delete_images_core 执行实际删除。
-        """
-        cur_ds = getattr(self, "_current_dataset", None)
-        if not cur_ds or not items:
-            return
-        proj, ds = cur_ds
-        paths = [it.image_path for it in items if it.image_path]
-        if not paths:
-            return
-        clicked = MessageBox.choose(
-            self, "删除图像", "是否删除所选 {} 张图像？".format(len(paths)),
-            [("删除本地文件", QMessageBox.YesRole),
-             ("仅标记不加载", QMessageBox.NoRole),
-             ("取消", QMessageBox.RejectRole)],
-            informative="删除本地文件：图像文件将从磁盘删除，不可恢复\n"
-                        "仅标记不加载：保留文件，但下次加载数据集时自动跳过")
-        if clicked is None or clicked == "取消":
-            return
-        delete_local = (clicked == "删除本地文件")
-        self._delete_images_core(proj, ds, paths, delete_local)
