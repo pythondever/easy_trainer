@@ -24,6 +24,10 @@ class DataBase:
         self.db_path = db_path
         self.db_size = db_size
         self.mdb = None
+        # 进程内缓存: project_info_list 读多写少, 标注/标签/视图多处高频
+        # get_project_info() 全量 json.loads, 缓存后仅首次反序列化;
+        # 所有写方法(update/add/delete_project_info)写后置 None 失效。
+        self._project_info_cache = None
         self.create_db()
 
     def create_db(self):
@@ -128,8 +132,11 @@ class DataBase:
             info_list.append(info)
         txn.put(key, json.dumps(info_list).encode())
         txn.commit()
+        self._project_info_cache = None
 
     def get_project_info(self):
+        if self._project_info_cache is not None:
+            return self._project_info_cache
         key = keys.project_info_list
         txn = self.mdb.begin(write=False)
         info_list = txn.get(key)
@@ -137,6 +144,7 @@ class DataBase:
             info_list = []
         else:
             info_list = json.loads(info_list.decode())
+        self._project_info_cache = info_list
         return info_list
 
     def update_project_info(self, info):
@@ -144,6 +152,7 @@ class DataBase:
         txn = self.mdb.begin(write=True)
         txn.put(key, json.dumps(info).encode())
         txn.commit()
+        self._project_info_cache = None
 
     def delete_project_info(self, name):
         project_list = self.get_project_info()
@@ -156,6 +165,7 @@ class DataBase:
         txn = self.mdb.begin(write=True)
         txn.put(key, json.dumps(keep_info).encode())
         txn.commit()
+        self._project_info_cache = None
 
     def _get_deleted_maps(self):
         key = keys.deleted_images

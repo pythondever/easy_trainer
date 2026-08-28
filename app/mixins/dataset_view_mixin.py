@@ -14,8 +14,54 @@ from app.core.image_utils import pil_to_qimage, make_uniform_thumb
 from app.annotation.scene_items import SelectablePixmapItem
 from app.tasks.import_task import ImportTask
 from PySide6.QtGui import QPixmap, QPainter, QColor
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal, QThread, QMutex, QMutexLocker, QTimer
 from PySide6.QtWidgets import QMenu, QLabel, QProgressBar, QGraphicsView, QGraphicsScene
+
+
+class _RoiDecodeWorker(QThread):
+    """
+    按类筛选的 ROI 后台解码: 避免首页 UI 线程同步 PIL 全尺寸解码卡顿。
+    提交 (image_path, label, box_idx, box) 任务, 后台逐张解码+crop,
+    整批完成后 emit (path, label, box_idx, qimg) 列表到主线程。
+    """
+
+    batch_done = Signal(object)
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._jobs = []
+        self._mutex = QMutex()
+        self._stop = False
+
+    def submit(self, jobs):
+        with QMutexLocker(self._mutex):
+            self._jobs.extend(jobs)
+
+    def stop(self):
+        with QMutexLocker(self._mutex):
+            self._stop = True
+
+    def run(self):
+        while True:
+            with QMutexLocker(self._mutex):
+                if self._stop:
+                    return
+                jobs = self._jobs
+                self._jobs = []
+            if not jobs:
+                QThread.msleep(30)
+                continue
+            results = []
+            for path, label, box_idx, box in jobs:
+                try:
+                    im = PILImage.open(path).convert("RGB")
+                    x, y, w, h = box[0], box[1], box[2], box[3]
+                    crop = im.crop((x, y, x + w, y + h))
+                    qimg = pil_to_qimage(make_uniform_thumb(crop, fill=True))
+                    results.append((path, label, box_idx, qimg))
+                except Exception:
+                    results.append((path, label, box_idx, None))
+            self.batch_done.emit(results)
 
 try:
     from shiboken6 import isValid as _is_valid
@@ -452,9 +498,74 @@ class DatasetViewMixin(object):
         cache[box_idx] = qimg
         return qimg
 
+    def _ensure_roi_worker(self):
+        """懒创建 ROI 后台解码 worker(首页按类筛选首屏不卡顿)。"""
+        if getattr(self, "_roi_worker", None) is None:
+            self._roi_worker = _RoiDecodeWorker(self)
+            self._roi_worker.batch_done.connect(self._on_roi_batch_done)
+            self._roi_worker.start()
+            self._roi_pending = set()
+            self._roi_refresh_timer = QTimer(self)
+            self._roi_refresh_timer.setSingleShot(True)
+            self._roi_refresh_timer.timeout.connect(
+                lambda: self._roi_redraw())
+        return self._roi_worker
+
+    def _roi_for_render(self, rec, label, box_idx):
+        """按类筛选渲染取 ROI: 缓存命中直接返回; 未命中返回缩略图占位
+        (快)并登记后台解码, 完成后自动重渲当前页。"""
+        cache = rec.setdefault("rois_by_idx", {}).setdefault(label, {})
+        if box_idx in cache:
+            return cache[box_idx]
+        boxes = rec.get("boxes") or []
+        if 0 <= box_idx < len(boxes) and len(boxes[box_idx]) >= 5:
+            key = (rec.get("image_path", ""), label, box_idx)
+            if key not in getattr(self, "_roi_pending", set()):
+                self._ensure_roi_worker()
+                self._roi_pending.add(key)
+                self._roi_worker.submit(
+                    [(key[0], label, box_idx, boxes[box_idx])])
+        # 占位: 整图缩略图(已有缓存则秒出)
+        return self._get_thumb(rec)
+
+    def _on_roi_batch_done(self, results):
+        """后台 ROI 解码完成: 回写 rec 缓存(成功/失败都缓存, 防重复请求),
+        有变化则防抖重渲当前页。"""
+        if getattr(self, "_closing", False):
+            return
+        cur_ds = getattr(self, "_current_dataset", None)
+        if not cur_ds:
+            return
+        proj, ds = cur_ds
+        index = self.dataset_cache.get(proj, {}).get(ds)
+        if not index:
+            return
+        changed = False
+        for path, label, box_idx, qimg in results:
+            key = (path, label, box_idx)
+            if key in getattr(self, "_roi_pending", set()):
+                self._roi_pending.discard(key)
+            for rec in index.get("all", []):
+                if rec.get("image_path") == path:
+                    cache = rec.setdefault("rois_by_idx", {}).setdefault(label, {})
+                    if box_idx not in cache:
+                        cache[box_idx] = qimg
+                        changed = True
+                    break
+        if changed and self._current_dataset == cur_ds:
+            self._roi_refresh_timer.start()
+
+    def _roi_redraw(self):
+        """防抖重渲当前页(ROI 后台解码完成)。"""
+        cur_ds = getattr(self, "_current_dataset", None)
+        if cur_ds:
+            self.show_dataset_images(cur_ds[0], cur_ds[1])
+
     def _render_scene(self, data):
-        """渲染当前页图像网格。按具体标签筛选时每个 cell 一个 ROI(box 计数),
-        未标注/全部按整图缩略(图像计数)。"""
+        """
+        渲染当前页图像网格。按具体标签筛选时每个 cell 一个 ROI(box 计数),
+        未标注/全部按整图缩略(图像计数)。
+        """
         scene = self.graphics_view.scene()
         scene.clear()
         page_size = getattr(self, "page_size", 50)
@@ -477,7 +588,8 @@ class DatasetViewMixin(object):
             if (cur_label and cur_label != "__unlabeled__"
                     and not rec.get("cls")):
                 if single_box:
-                    qimg = self._get_roi_at(rec, cur_label, box_idx)
+                    # ROI 未缓存时用缩略图占位 + 后台解码(不阻塞 UI), 完成后自动重渲
+                    qimg = self._roi_for_render(rec, cur_label, box_idx)
                 else:
                     qimg = self._get_thumb(rec)
                 qimgs = [qimg] if qimg is not None else []

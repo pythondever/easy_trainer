@@ -343,13 +343,19 @@ def _load_import_label(image_path, label_path, fmt, label_ids=None):
     return boxes
 
 
-def save_labelme(image_path, shapes, version="5.0.1"):
-    """保存 labelme json 到图像同路径（*.json）。"""
-    try:
-        img = QImage(image_path)
-        w, h = img.width(), img.height()
-    except Exception:
-        w = h = 0
+def save_labelme(image_path, shapes, width=None, height=None, version="5.0.1"):
+    """
+    保存 labelme json 到图像同路径（*.json）。
+    width/height 可传入已解码的宽高, 避免每次保存重复整图解码(QImage(image_path))。
+    """
+    if width is not None and height is not None:
+        w, h = int(width), int(height)
+    else:
+        try:
+            img = QImage(image_path)
+            w, h = img.width(), img.height()
+        except Exception:
+            w = h = 0
     base, _ = os.path.splitext(image_path)
     json_path = base + ".json"
     payload = {
@@ -580,6 +586,9 @@ class AnnotationDialog(QDialog):
         # 全尺寸 QPixmap LRU 缓存 + 后台预加载(相邻图), 缓解大图 D 切换卡顿
         self._pix_cache = {}
         self._pix_cache_max = 16
+        # 图像 format 缓存(path→QImage.Format), 避免 _load_current 显示通道数时
+        # pix.toImage() 整图拷贝(只为拿 format)
+        self._pix_fmt_cache = {}
         self._closing = False
         self._prefetch_worker = _PrefetchWorker(self.image_list, self)
         self._prefetch_worker.decoded.connect(self._on_prefetch_decoded)
@@ -706,16 +715,19 @@ class AnnotationDialog(QDialog):
                 return None
             pix = QPixmap.fromImage(qimg)
             self._pix_cache[image_path] = pix
+            self._pix_fmt_cache[image_path] = qimg.format()
             self._trim_pix_cache()
         return pix
 
     def _trim_pix_cache(self):
-        """LRU 淘汰: 超出上限时移除最久未用的(有序 dict 首项)。"""
+        """LRU 淘汰: 超出上限时移除最久未用的(有序 dict 首项), 同步清理 format 缓存。"""
         while len(self._pix_cache) > self._pix_cache_max:
-            self._pix_cache.pop(next(iter(self._pix_cache)))
+            k = next(iter(self._pix_cache))
+            self._pix_cache.pop(k)
+            self._pix_fmt_cache.pop(k, None)
 
     def _on_prefetch_decoded(self, path, qimg):
-        """后台解码完成: 转 QPixmap 入缓存(按 image_path 作 key)。"""
+        """后台解码完成: 转 QPixmap 入缓存(按 image_path 作 key), 同步记录 format。"""
         if getattr(self, "_closing", False):
             return
         if qimg.isNull():
@@ -723,6 +735,7 @@ class AnnotationDialog(QDialog):
         if path in self._pix_cache:
             return
         self._pix_cache[path] = QPixmap.fromImage(qimg)
+        self._pix_fmt_cache[path] = qimg.format()
         self._trim_pix_cache()
 
     def _load_current(self):
@@ -777,6 +790,7 @@ class AnnotationDialog(QDialog):
                 item.setVisible(False)
         self._ensure_label_colors(boxes)
         QTimer.singleShot(0, self.view.fit_window)
+        # 通道数从解码时缓存的 format 拿(避免 pix.toImage() 整图拷贝只为 format)
         channels = {
             QImage.Format_Grayscale8: 1,
             QImage.Format_Grayscale16: 1,
@@ -784,7 +798,7 @@ class AnnotationDialog(QDialog):
             QImage.Format_RGB32: 3,
             QImage.Format_ARGB32: 4,
             QImage.Format_RGBA8888: 4,
-        }.get(pix.toImage().format(), 3)
+        }.get(self._pix_fmt_cache.get(image_path, QImage.Format_RGB32), 3)
         self.ui.image_info_label.setText(
             "{} × {} × {}    ({}/{}){}".format(
                 pix.width(), pix.height(), channels,
@@ -832,6 +846,7 @@ class AnnotationDialog(QDialog):
         # 同步 dialog 内部 image_list + 清理已删图的像素缓存
         self.image_list.pop(self.index)
         self._pix_cache.pop(cur_path, None)
+        self._pix_fmt_cache.pop(cur_path, None)
         if not self.image_list:
             self.index = 0
             # 全删了: 清空场景, 提示空
@@ -1226,19 +1241,19 @@ class AnnotationDialog(QDialog):
         self._update_draw_buttons()
 
     def _refresh_labeled_list(self):
-        """右侧"当前图像标注"列表：每行与场景框双向联动，显示宽×高/顶点数 + 面积 px²。"""
+        """
+        右侧"当前图像标注"列表：每行与场景框双向联动，显示宽×高/顶点数 + 面积 px²。
+        行复用优化: 已有行只更新内容(不 deleteLater 重建), 仅数量变化时增删,
+        避免框多时每次操作(拖动/缩放触发 boxes_changed)重建数百控件。
+        """
         container = self.ui.scrollAreaWidgetContents_2
         layout = container.layout() if container.layout() else QVBoxLayout(container)
-        while layout.count():
-            it = layout.takeAt(0)
-            w = it.widget()
-            if w is not None:
-                w.deleteLater()
         layout.setContentsMargins(4, 4, 4, 4)
         layout.setSpacing(4)
-        self._labeled_rows = {}
-        self._labeled_rev = {}
-        # 先按面积降序排序:最大在上,最小在下
+        for i in range(layout.count() - 1, -1, -1):
+            it = layout.itemAt(i)
+            if it is not None and it.spacerItem():
+                layout.takeAt(i)
         items_with_area = []
         for item in self.scene.all_items():
             if isinstance(item, AnnotationBoxItem):
@@ -1248,56 +1263,86 @@ class AnnotationDialog(QDialog):
                 area = self._polygon_area(item.points())
             items_with_area.append((area, item))
         items_with_area.sort(key=lambda kv: kv[0], reverse=True)
+        rows_data = []
         for area, item in items_with_area:
             if isinstance(item, AnnotationBoxItem):
                 x1, y1, x2, y2 = item.boxes()
                 kind = "矩形"
-                w_ = x2 - x1
-                h_ = y2 - y1
-                size_text = "{} × {}".format(int(round(w_)), int(round(h_)))
-                area_text = "{:,} px²".format(int(round(w_ * h_)))
+                size_text = "{} × {}".format(int(round(x2 - x1)),
+                                             int(round(y2 - y1)))
+                area_text = "{:,} px²".format(int(round((x2 - x1) * (y2 - y1))))
             else:  # AnnotationPolygonItem
                 pts = item.points()
                 kind = "多边形"
                 size_text = "{} 个顶点".format(len(pts))
-                area = self._polygon_area(pts)
                 area_text = "{:,} px²".format(int(round(area))) if area else "—"
             color = self._resolve_item_color(item)
-            row = QFrame(container)
-            row.setFrameShape(QFrame.NoFrame)
-            row.setObjectName("labelRow")
-            row.setCursor(Qt.PointingHandCursor)
-            vl = QVBoxLayout(row)
-            vl.setContentsMargins(8, 6, 8, 6)
-            vl.setSpacing(2)
-            # 第一行: 圆点 + 标签名 + 类型
-            top = QHBoxLayout()
-            top.setSpacing(8)
-            dot = QLabel(row)
-            dot.setFixedSize(12, 12)
-            dot.setPixmap(self._label_icon(color).pixmap(12, 12))
-            dot.setAttribute(Qt.WA_TransparentForMouseEvents, True)
-            top.addWidget(dot)
-            name_lbl = QLabel(item.label, row)
-            name_lbl.setObjectName("labelRowName")
-            name_lbl.setAttribute(Qt.WA_TransparentForMouseEvents, True)
-            top.addWidget(name_lbl)
-            kind_lbl = QLabel("({})".format(kind), row)
-            kind_lbl.setObjectName("labelRowKind")
-            kind_lbl.setAttribute(Qt.WA_TransparentForMouseEvents, True)
-            top.addWidget(kind_lbl)
-            top.addStretch(1)
-            vl.addLayout(top)
-            info_lbl = QLabel("{} · {}".format(size_text, area_text), row)
-            info_lbl.setObjectName("labelRowInfo")
-            info_lbl.setAttribute(Qt.WA_TransparentForMouseEvents, True)
-            vl.addWidget(info_lbl)
-            layout.addWidget(row)
-            self._labeled_rows[item] = row
-            self._labeled_rev[row] = item
-            row.mousePressEvent = self._make_labeled_row_click(item, row)
+            rows_data.append((item, kind, size_text, area_text, color))
+        old_rows = list(getattr(self, "_labeled_rows", {}).values())
+        new_map = {}
+        for i, (item, kind, size_text, area_text, color) in enumerate(rows_data):
+            if i < len(old_rows):
+                row = old_rows[i]
+                self._update_labeled_row(row, item, kind, size_text, area_text, color)
+            else:
+                row = self._create_labeled_row(item, kind, size_text, area_text, color)
+            # 按新排序重排位置
+            layout.removeWidget(row)
+            layout.insertWidget(i, row)
+            new_map[item] = row
+        # 多余旧行删除
+        for row in old_rows[len(rows_data):]:
+            layout.removeWidget(row)
+            row.deleteLater()
+        self._labeled_rows = new_map
+        self._labeled_rev = {row: item for item, row in new_map.items()}
         layout.addStretch(1)
         self._sync_labeled_selection()
+
+    def _create_labeled_row(self, item, kind, size_text, area_text, color):
+        """新建一行标注列表项; 子控件引用挂到 row._payload 供复用更新。"""
+        container = self.ui.scrollAreaWidgetContents_2
+        row = QFrame(container)
+        row.setFrameShape(QFrame.NoFrame)
+        row.setObjectName("labelRow")
+        row.setCursor(Qt.PointingHandCursor)
+        vl = QVBoxLayout(row)
+        vl.setContentsMargins(8, 6, 8, 6)
+        vl.setSpacing(2)
+        top = QHBoxLayout()
+        top.setSpacing(8)
+        dot = QLabel(row)
+        dot.setFixedSize(12, 12)
+        dot.setPixmap(self._label_icon(color).pixmap(12, 12))
+        dot.setAttribute(Qt.WA_TransparentForMouseEvents, True)
+        top.addWidget(dot)
+        name_lbl = QLabel(item.label, row)
+        name_lbl.setObjectName("labelRowName")
+        name_lbl.setAttribute(Qt.WA_TransparentForMouseEvents, True)
+        top.addWidget(name_lbl)
+        kind_lbl = QLabel("({})".format(kind), row)
+        kind_lbl.setObjectName("labelRowKind")
+        kind_lbl.setAttribute(Qt.WA_TransparentForMouseEvents, True)
+        top.addWidget(kind_lbl)
+        top.addStretch(1)
+        vl.addLayout(top)
+        info_lbl = QLabel("{} · {}".format(size_text, area_text), row)
+        info_lbl.setObjectName("labelRowInfo")
+        info_lbl.setAttribute(Qt.WA_TransparentForMouseEvents, True)
+        vl.addWidget(info_lbl)
+        row._payload = {"dot": dot, "name": name_lbl,
+                        "kind": kind_lbl, "info": info_lbl}
+        row.mousePressEvent = self._make_labeled_row_click(item, row)
+        return row
+
+    def _update_labeled_row(self, row, item, kind, size_text, area_text, color):
+        """行复用: 只更新内容 + 重绑点击闭包(当前行可能对应别的 item)。"""
+        p = row._payload
+        p["dot"].setPixmap(self._label_icon(color).pixmap(12, 12))
+        p["name"].setText(item.label)
+        p["kind"].setText("({})".format(kind))
+        p["info"].setText("{} · {}".format(size_text, area_text))
+        row.mousePressEvent = self._make_labeled_row_click(item, row)
 
     def _resolve_item_color(self, item):
         """取 item 当前显示色"""
@@ -1381,10 +1426,13 @@ class AnnotationDialog(QDialog):
                     "points": [[x1, y1], [x2, y2]],
                     "group_id": None, "shape_type": "rectangle", "flags": {},
                 })
+        cur_pix = self.scene.image_item.pixmap()
+        img_w = cur_pix.width() if cur_pix is not None else None
+        img_h = cur_pix.height() if cur_pix is not None else None
         if shapes:
-            save_labelme(image_path, shapes)
+            save_labelme(image_path, shapes, width=img_w, height=img_h)
         else:
-            save_labelme(image_path, [])
+            save_labelme(image_path, [], width=img_w, height=img_h)
         self._dirty = False
 
 

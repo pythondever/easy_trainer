@@ -2,6 +2,7 @@
 """标注图形项：矩形框 + 多边形，均支持选中、拖动、标签 chip 渲染。"""
 from PySide6.QtCore import QPointF, QRectF, Qt
 from PySide6.QtGui import QBrush, QColor, QPen, QFont, QPainter, QPolygonF, QPainterPath
+import functools
 import hashlib
 
 from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsPolygonItem, QGraphicsItem
@@ -16,11 +17,13 @@ LABEL_COLORS = [
 ]
 
 
+@functools.lru_cache(maxsize=None)
 def label_color(label):
-    """标签固定颜色（确定性哈希，md5 → 调色板索引）。
-
-    同一标签名在任何进程/会话中颜色都一致（Python 内置 hash() 受
-    PYTHONHASHSEED 随机化影响，跨进程会变，不能用于颜色分配）。"""
+    """
+    标签固定颜色（确定性哈希，md5 → 调色板索引）。
+    同一标签名在任何进程/会话中颜色都一致
+    lru_cache: 标注重绘热路径(paint)高频调用, 避免每次重复 md5 计算
+    """
     try:
         digest = hashlib.md5(str(label).encode("utf-8")).hexdigest()
         idx = int(digest[:8], 16) % len(LABEL_COLORS)
