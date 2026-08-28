@@ -113,8 +113,10 @@ class LabelMixin(object):
                 index["labels"].setdefault(lbl, []).append(rec)
 
     def _on_rename_label(self):
-        """首页「编辑」按钮: 重命名当前筛选下拉选中的标签。
-        弹 ui/edit_label.py 对话框(类别 + 批量修改为 + 确定)。"""
+        """
+        首页「编辑」按钮: 重命名当前筛选下拉选中的标签。
+        弹 ui/edit_label.py 对话框(类别 + 批量修改为 + 确定)。
+        """
         if not self._current_dataset:
             MessageBox.warning(self, "重命名", "请先在左侧选中一个数据集")
             return
