@@ -82,7 +82,12 @@ class ImportTask(QThread):
                         "rois": {},
                     })
                 else:
-                    boxes, labels = self._read_boxes(img_path)
+                    # 标注解析失败(损坏/空 json 等)不能丢弃整张图:
+                    # 保留 rec(boxes=None → 归为未标注), 保证 total 计数正确
+                    try:
+                        boxes, labels = self._read_boxes(img_path)
+                    except Exception:
+                        boxes, labels = None, []
                     thumb = None
                     result.append({
                         "image_path": img_path,

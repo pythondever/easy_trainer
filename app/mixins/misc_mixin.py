@@ -12,10 +12,11 @@ from app.widgets.log_dialog import LogDialog
 from app.widgets.model_dialog import ModelDialog
 from app.train.dialogs import TrainDialog, _ClickToPopupFilter
 from ui.dataset_properties import Ui_Dialog as DatasetPropertiesUI
+from app.widgets.message_box import MessageBox
 from app.core.log import write_log
 from PySide6.QtGui import QPixmap, QImage, QStandardItem
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QDialog, QLabel, QGraphicsScene
+from PySide6.QtWidgets import QDialog, QMessageBox, QLabel, QGraphicsScene
 
 try:
     from shiboken6 import isValid as _is_valid
@@ -270,9 +271,7 @@ class MiscMixin(object):
         else:
             labeled = 0
             for rec in index["all"]:
-                # 有 boxes、或有标签文件(label_path) 都算已标注, 与 ImportTask on_finished 一致
-                if (rec.get("boxes") or rec.get("label_path")
-                        or self._has_label_file(rec.get("image_path", ""))):
+                if rec.get("boxes"):
                     labeled += 1
         self.db.update_dataset_import(
             project_name, dataset_name,
@@ -374,10 +373,10 @@ class MiscMixin(object):
         self._write_log(log_msg or "删除图像: {} 张 | 方式={} | 本地删除文件={} | 项目={}, 数据集={}".format(
             len(paths), "删除本地文件" if delete_local else "仅标记不加载",
             delete_local_count, project, dataset))
-        # 刷新显示区(总数/分页同步更新) + 标注进度(写 db total/labeled + 标签过滤列表)
         self.show_dataset_images(project, dataset)
         self._refresh_annotation_progress(project, dataset)
         self._refresh_label_filter(project, dataset)
+        self._refresh_dataset_row_progress(project, dataset)
 
     @staticmethod
     def _label_exts_for_fmt(fmt):
@@ -389,3 +388,32 @@ class MiscMixin(object):
         if fmt == "cls":
             return []
         return [".json", ".txt"]   # 未知/空格式: 两种都尝试
+
+    def _delete_selected_images(self, items):
+        """
+        首页缩略图多选删除(仅"未标注"筛选下可入口):
+        items 是当前页选中的缩略图项, 提取 paths 后走 _delete_paths_with_confirm。
+        """
+        cur_ds = getattr(self, "_current_dataset", None)
+        if not cur_ds or not items:
+            return
+        paths = [it.image_path for it in items if it.image_path]
+        self._delete_paths_with_confirm(paths)
+
+    def _delete_paths_with_confirm(self, paths):
+        """
+        删除路径列表(首页多选/跨页全选共用):
+        弹窗仅确认"从系统删除,不可恢复", 确认后真删(不走"仅标记")。
+        """
+        cur_ds = getattr(self, "_current_dataset", None)
+        if not cur_ds or not paths:
+            return
+        proj, ds = cur_ds
+        clicked = MessageBox.choose(
+            self, "删除图像", "将从系统删除所选 {} 张图像？\n\n（图像与同名标注文件不可恢复）".format(len(paths)),
+            [("删除", QMessageBox.YesRole),
+             ("取消", QMessageBox.RejectRole)],
+            informative="图像与同名标注文件将从磁盘删除，不可恢复")
+        if clicked is None or clicked != "删除":
+            return
+        self._delete_images_core(proj, ds, paths, delete_local=True)

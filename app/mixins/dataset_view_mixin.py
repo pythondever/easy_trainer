@@ -15,7 +15,7 @@ from app.annotation.scene_items import SelectablePixmapItem
 from app.tasks.import_task import ImportTask
 from PySide6.QtGui import QPixmap, QPainter, QColor
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QLabel, QProgressBar, QGraphicsView, QGraphicsScene
+from PySide6.QtWidgets import QMenu, QLabel, QProgressBar, QGraphicsView, QGraphicsScene
 
 try:
     from shiboken6 import isValid as _is_valid
@@ -53,11 +53,78 @@ class DatasetViewMixin(object):
         self.graphics_view.setFocusPolicy(Qt.StrongFocus)
         orig_press = self.graphics_view.mousePressEvent
 
-        def _gv_press(ev, _o=orig_press):
-            self.graphics_view.setFocus()
+        def _gv_press(ev, _o=orig_press, _self=self):
+            _self.graphics_view.setFocus()
+            if ev.button() == Qt.LeftButton:
+                # 左键点击缩略图 = 手动选择, 退出跨页全选模式
+                if isinstance(_self.graphics_view.itemAt(ev.pos()), SelectablePixmapItem):
+                    _self._select_all_mode = False
+            elif ev.button() == Qt.RightButton:
+                hit = _self.graphics_view.itemAt(ev.pos())
+                if (isinstance(hit, SelectablePixmapItem)
+                        and _self.current_label == "__unlabeled__"):
+                    if not hit.isSelected():
+                        _self.graphics_view.scene().clearSelection()
+                        hit.setSelected(True)
+                        # 改变了选择(单选某图), 退出跨页全选模式
+                        _self._select_all_mode = False
+                    ev.accept()
+                    return
             _o(ev)
 
         self.graphics_view.mousePressEvent = _gv_press
+        orig_key = self.graphics_view.keyPressEvent
+
+        def _gv_key(ev, _o=orig_key, _self=self):
+            if _self.current_label != "__unlabeled__":
+                _o(ev)
+                return
+            if ev.key() == Qt.Key_A and (ev.modifiers() & Qt.ControlModifier):
+                scene = _self.graphics_view.scene()
+                for it in scene.items():
+                    if isinstance(it, SelectablePixmapItem):
+                        it.setSelected(True)
+                _self._select_all_mode = True
+                ev.accept()
+                return
+            if ev.key() == Qt.Key_Escape:
+                _self.graphics_view.scene().clearSelection()
+                _self._select_all_mode = False
+                ev.accept()
+                return
+            _o(ev)
+
+        self.graphics_view.keyPressEvent = _gv_key
+        orig_ctx = self.graphics_view.contextMenuEvent
+
+        def _gv_ctx_menu(ev, _o=orig_ctx, _self=self):
+            hit = _self.graphics_view.itemAt(ev.pos())
+            if (isinstance(hit, SelectablePixmapItem)
+                    and _self.current_label == "__unlabeled__"):
+                if not hit.isSelected():
+                    _self.graphics_view.scene().clearSelection()
+                    hit.setSelected(True)
+                selected = [i for i in _self.graphics_view.scene().selectedItems()
+                            if isinstance(i, SelectablePixmapItem)]
+                menu = QMenu(_self)
+                if getattr(_self, "_select_all_mode", False):
+                    cur_ds = _self._current_dataset
+                    index = (_self.dataset_cache.get(cur_ds[0], {}).get(cur_ds[1], {})
+                             if cur_ds else {})
+                    unlabeled = _self._view_data_by_label(index)
+                    all_paths = [r.get("image_path", "") for r in unlabeled if r.get("image_path")]
+                    act = menu.addAction("删除全部未标注图像（{} 张）".format(len(all_paths)))
+                    act.triggered.connect(
+                        lambda: _self._delete_paths_with_confirm(all_paths))
+                else:
+                    act = menu.addAction("删除所选图像（{} 张）".format(len(selected)))
+                    act.triggered.connect(lambda: _self._delete_selected_images(selected))
+                menu.exec(ev.globalPos())
+                ev.accept()
+                return
+            _o(ev)
+
+        self.graphics_view.contextMenuEvent = _gv_ctx_menu
 
     def _on_graphics_double_click(self, pos):
         """双击图像显示区:定位到点击的图像记录,进入标注."""
@@ -162,7 +229,9 @@ class DatasetViewMixin(object):
         if not cur:
             return all_records
         if cur == "__unlabeled__":
-            return [r for r in all_records if not r.get("labels")]
+            if any(r.get("cls") for r in all_records):
+                return []
+            return [r for r in all_records if not r.get("boxes")]
         if cur in data.get("labels", {}):
             return data["labels"][cur]
         return []
@@ -192,11 +261,10 @@ class DatasetViewMixin(object):
         update_stats=True 时重扫完成会把 labeled/total 写回 db(右键「载入」场景,
         推理/标注新写的标签 json 重扫后同步统计)。
         """
+        self._select_all_mode = False
         proj_cache = self.dataset_cache.get(project_name, {})
         data = proj_cache.get(dataset_name)
         if data:
-            # 不重置 current_page: _render_scene 的 clamp 会保持当前页
-            # (标注界面关闭后回来仍停在原页, 不跳回第一页)
             self._render_scene(self._view_data_by_label(data))
             return
         binding = self.db.get_dataset_import(project_name, dataset_name)
@@ -517,13 +585,8 @@ class DatasetViewMixin(object):
                 merged.update(seen)  # 以本次扫描为准
                 self.db.save_dataset_label_ids(
                     project_name, dataset_name, merged)
-            # 分类模式:每张图都有类别,视为全部已标注
-            # 检测/分割: 有 boxes、或有标签文件(label_path, 含空内容 txt 也算)
-            # 与 _scan_import_info / _refresh_annotation_progress 判定一致, 避免导入绿/载入蓝跳变
             labeled = total if cls_mode else sum(
-                1 for r in result
-                if r.get("boxes") or r.get("label_path")
-                or self._has_label_file(r.get("image_path", "")))
+                1 for r in result if r.get("boxes"))
             if update_stats:
                 new_label_path = label_path
                 new_fmt = fmt

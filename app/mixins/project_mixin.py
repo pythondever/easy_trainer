@@ -394,14 +394,13 @@ class ProjectMixin(object):
         lbl_paths = dst_lbl + [p for p in src_lbl if p not in dst_lbl]
         total_new = len(dst_recs)
         labeled_new = sum(
-            1 for r in dst_recs
-            if r.get("boxes") or self._has_label_file(r.get("image_path", "")))
+            1 for r in dst_recs if r.get("boxes"))
         self.db.update_dataset_import(
             dst_proj, dst_ds, img_paths, lbl_paths,
             dst_binding.get("label_fmt", ""),
             labeled=labeled_new, total=total_new)
 
-        # ---- 3. db：目标标签合并(颜色冲突保留目标)----
+        # ---- 3. db：目标标签合并----
         dst_labels = self.db.get_dataset_labels(dst_proj, dst_ds)
         for lbl, color in self.db.get_dataset_labels(src_proj, src_ds).items():
             if lbl not in dst_labels:
