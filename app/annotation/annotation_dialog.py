@@ -15,7 +15,7 @@ from PySide6.QtGui import (QColor, QPixmap, QKeySequence, QShortcut, QPen,
                            QPainter, QImage, QIcon, QCursor, QLinearGradient,
                            QFont, QImageReader)
 from PySide6.QtWidgets import (QDialog, QWidget, QApplication, QVBoxLayout,
-                               QHBoxLayout, QLabel,
+                               QHBoxLayout, QLabel, QMessageBox,
                                QGridLayout, QLineEdit, QSpinBox, QPushButton, QFrame,
                                QSlider, QMenu, QGraphicsTextItem)
 
@@ -492,7 +492,7 @@ class _PrefetchWorker(QThread):
     后台解码图像到 QImage(主线程再转 QPixmap 入缓存), 避免 D 切换时同步解码大图卡顿。
     请求队列 + 停止标志; 解码保持全尺寸
     """
-    decoded = Signal(int, QImage)
+    decoded = Signal(str, QImage)   # (image_path, qimg) — 用路径作缓存 key, 避免删除/切页后 index 错位
 
     def __init__(self, image_list, parent=None):
         super().__init__(parent)
@@ -524,7 +524,7 @@ class _PrefetchWorker(QThread):
             reader.setAutoTransform(True)
             qimg = reader.read()
             if qimg is not None and not qimg.isNull():
-                self.decoded.emit(idx, qimg)
+                self.decoded.emit(path, qimg)
 
 
 class AnnotationDialog(QDialog):
@@ -532,6 +532,9 @@ class AnnotationDialog(QDialog):
 
     def __init__(self, image_list, current_index, db, project, dataset, parent=None,
                  label_path="", label_fmt="", cls_mode=False):
+        # parent 通常是主窗口 App(多继承 mixin), 删除图像等操作需要调回主窗口
+        # _delete_images_core / show_dataset_images / _refresh_label_filter 等方法
+        self._main = parent
         super().__init__(parent)
         self.setObjectName("AnnotationDialog")
         self.db = db
@@ -594,12 +597,14 @@ class AnnotationDialog(QDialog):
         u.switchButton.toggled.connect(self._toggle_show_boxes)
         u.show_boxes_label = QLabel("显示标注", self)
         u.show_boxes_label.setObjectName("show_boxes_label")
-        idx = u.horizontalLayout.indexOf(u.format_painter_btn)
+        # "显示标注"开关放在"删除图像"按钮后面(原来是格式刷后, 视觉更紧凑)
+        idx = u.horizontalLayout.indexOf(u.delete_image_btn)
         u.horizontalLayout.insertWidget(idx + 1, u.switchButton)
         u.horizontalLayout.insertWidget(idx + 2, u.show_boxes_label)
         u.add_label.clicked.connect(self._add_label_clicked)
         u.pre_page_btn.clicked.connect(lambda: self._switch(-1))
         u.next_page_btn.clicked.connect(lambda: self._switch(1))
+        u.delete_image_btn.clicked.connect(self._delete_current_image)
         self.scene.box_drawn.connect(self._on_box_drawn)
         self.scene.fp_mode_changed.connect(self._on_fp_mode_changed)
         self.scene.draw_cancel_requested.connect(self._cancel_draw_mode)
@@ -655,8 +660,10 @@ class AnnotationDialog(QDialog):
             QApplication.restoreOverrideCursor()
 
     def _load_pixmap(self, image_path):
-        """全尺寸加载图像(缓存命中直接返回; 未命中 QImageReader 解码后入 LRU)。"""
-        pix = self._pix_cache.get(self.index)
+        """全尺寸加载图像(缓存命中直接返回; 未命中 QImageReader 解码后入 LRU)。
+        缓存 key 用 image_path(不用 self.index)——删除图像后列表前移, index 会指向别的图,
+        若按 index 缓存会把"已删图/错位图"显示出来。"""
+        pix = self._pix_cache.get(image_path)
         if pix is None:
             reader = QImageReader(image_path)
             reader.setAutoTransform(True)
@@ -664,7 +671,7 @@ class AnnotationDialog(QDialog):
             if qimg is None or qimg.isNull():
                 return None
             pix = QPixmap.fromImage(qimg)
-            self._pix_cache[self.index] = pix
+            self._pix_cache[image_path] = pix
             self._trim_pix_cache()
         return pix
 
@@ -673,15 +680,15 @@ class AnnotationDialog(QDialog):
         while len(self._pix_cache) > self._pix_cache_max:
             self._pix_cache.pop(next(iter(self._pix_cache)))
 
-    def _on_prefetch_decoded(self, idx, qimg):
-        """后台解码完成: 转 QPixmap 入缓存; 当前张已显示则跳过(避免重复 set_image)。"""
+    def _on_prefetch_decoded(self, path, qimg):
+        """后台解码完成: 转 QPixmap 入缓存(按 image_path 作 key)。"""
         if getattr(self, "_closing", False):
             return
         if qimg.isNull():
             return
-        if idx in self._pix_cache:
+        if path in self._pix_cache:
             return
-        self._pix_cache[idx] = QPixmap.fromImage(qimg)
+        self._pix_cache[path] = QPixmap.fromImage(qimg)
         self._trim_pix_cache()
 
     def _load_current(self):
@@ -696,7 +703,7 @@ class AnnotationDialog(QDialog):
         # 预解码相邻图(后台线程), 连续 A/D 翻页时命中缓存不卡
         for nxt in (self.index + 1, self.index - 1):
             if (0 <= nxt < len(self.image_list)
-                    and nxt not in self._pix_cache):
+                    and self.image_list[nxt] not in self._pix_cache):
                 self._prefetch_worker.request(nxt)
         base, _ = os.path.splitext(image_path)
         if self.cls_mode:
@@ -760,6 +767,48 @@ class AnnotationDialog(QDialog):
         if not (0 <= new_index < len(self.image_list)):
             return
         self.index = new_index
+        self._load_current()
+
+    def _delete_current_image(self):
+        """标注界面单张删除: 弹窗确认 -> 调 _delete_images_core 删文件+更新缓存/db
+        -> 自动切到下一张(列表前移即指向原 next; 删最后一张则回退一张; 删光则清空场景)"""
+        if not (0 <= self.index < len(self.image_list)):
+            return
+        cur_path = self.image_list[self.index]
+        # 先保存当前未提交的标注(避免画了框没保存就被删, 导致标注明文丢失)
+        self._save_current()
+        # 标注界面删除 = 真删除(直接从磁盘删图像+同名标注文件), 不提供"仅标记"选项
+        clicked = MessageBox.choose(
+            self, "删除图像", "是否删除当前图像？\n\n{}".format(os.path.basename(cur_path)),
+            [("删除本地文件", QMessageBox.YesRole),
+             ("取消", QMessageBox.RejectRole)],
+            informative="图像与同名标注文件将从磁盘删除，不可恢复")
+        if clicked is None or clicked == "取消":
+            return
+        # 调主窗口的 _delete_images_core 删文件+更新缓存/db(首页缩略图/分页/label_counts/标签过滤 同步刷新)
+        main = getattr(self, "_main", None)
+        if main is None or not hasattr(main, "_delete_images_core"):
+            MessageBox.warning(self, "删除图像", "无法访问主窗口, 删除失败")
+            return
+        main._delete_images_core(self.project, self.dataset, [cur_path], True,
+                                 log_msg="标注界面删除图像: {} | 方式={} | 项目={}, 数据集={}".format(
+                                     os.path.basename(cur_path),
+                                     "删除本地文件",
+                                     self.project, self.dataset))
+        # 同步 dialog 内部 image_list + 清理已删图的像素缓存
+        self.image_list.pop(self.index)
+        self._pix_cache.pop(cur_path, None)
+        if not self.image_list:
+            self.index = 0
+            # 全删了: 清空场景, 提示空
+            self.scene.set_image(QPixmap())
+            self._refresh_labeled_list()
+            self.ui.image_info_label.setText("(无图像)")
+            return
+        # 删的是最后一张 -> 回退到前一张; 否则列表前移, self.index 仍指向原 next
+        if self.index >= len(self.image_list):
+            self.index = len(self.image_list) - 1
+        self._dirty = False
         self._load_current()
 
     def _ensure_label_colors(self, boxes):

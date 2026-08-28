@@ -21,7 +21,7 @@
        <item>
         <widget class="QPushButton" name="draw_rect_btn">
          <property name="text">
-          <string/>
+          <string>矩形</string>
          </property>
          <property name="icon">
           <iconset>
@@ -32,7 +32,7 @@
        <item>
         <widget class="QPushButton" name="poly_btn">
          <property name="text">
-          <string/>
+          <string>多边形</string>
          </property>
          <property name="icon">
           <iconset>
@@ -48,6 +48,39 @@
          <property name="icon">
           <iconset>
            <normaloff>../resources/刷子.png</normaloff>../resources/刷子.png</iconset>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="rotate_labeled_btn">
+         <property name="text">
+          <string>标注旋转</string>
+         </property>
+         <property name="icon">
+          <iconset>
+           <normaloff>../resources/旋转.png</normaloff>../resources/旋转.png</iconset>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="revert_labeled_btn">
+         <property name="text">
+          <string>撤销标注</string>
+         </property>
+         <property name="icon">
+          <iconset>
+           <normaloff>../resources/撤销.png</normaloff>../resources/撤销.png</iconset>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="delete_image_btn">
+         <property name="text">
+          <string>删除图像</string>
+         </property>
+         <property name="icon">
+          <iconset>
+           <normaloff>../resources/删除.png</normaloff>../resources/删除.png</iconset>
          </property>
         </widget>
        </item>

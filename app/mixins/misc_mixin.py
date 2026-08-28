@@ -311,10 +311,90 @@ class MiscMixin(object):
         base, _ = os.path.splitext(image_path)
         return os.path.exists(base + ".json")
 
+    def _delete_images_core(self, project, dataset, paths, delete_local, log_msg=None):
+        """
+        删除图像核心逻辑(被首页多选删除 + 标注界面单张删除共用):
+        - delete_local=True: 删磁盘文件(图像 + 同名 .json/.txt 标注)
+        - delete_local=False: 仅 db 记录 add_deleted_image(下次加载跳过)
+        - 同步更新: 缓存 index、label_counts、db total/labeled, 刷新显示与进度
+        """
+        norm = lambda p: os.path.normcase(os.path.normpath(p))
+        norm_set = {norm(p) for p in paths}
+        binding = self.db.get_dataset_import(project, dataset) or {}
+        label_fmt = binding.get("label_fmt", "")
+        delete_local_count = 0
+        for p in paths:
+            if delete_local:
+                try:
+                    if os.path.exists(p):
+                        os.remove(p)
+                        delete_local_count += 1
+                except OSError:
+                    pass
+                for ext in self._label_exts_for_fmt(label_fmt):
+                    fp = os.path.splitext(p)[0] + ext
+                    try:
+                        if os.path.exists(fp):
+                            os.remove(fp)
+                            delete_local_count += 1
+                    except OSError:
+                        pass
+            else:
+                self.db.add_deleted_image(project, dataset, p)
+        index = self.dataset_cache.get(project, {}).get(dataset)
+        if index:
+            keep = []
+            removed_recs = []
+            for r in index["all"]:
+                if norm(r.get("image_path", "")) in norm_set:
+                    removed_recs.append(r)
+                else:
+                    keep.append(r)
+            index["all"] = keep
+            for lbl in list(index["labels"]):
+                index["labels"][lbl] = [r for r in index["labels"][lbl]
+                                        if norm(r.get("image_path", "")) not in norm_set]
+                if not index["labels"][lbl]:
+                    del index["labels"][lbl]
+            # label_counts: 按被删图的 boxes/labels 减(关键: 之前删除后 label_counts 不会减, 导致统计界面虚高)
+            if removed_recs:
+                lc = dict(self.db.get_dataset_label_counts(project, dataset))
+                for r in removed_recs:
+                    boxes = r.get("boxes") or []
+                    labels = r.get("labels") or []
+                    if boxes:
+                        for b in boxes:
+                            lbl = b[-1] if isinstance(b, (list, tuple)) else None
+                            if lbl and lbl in lc:
+                                lc[lbl] = max(0, lc[lbl] - 1)
+                    elif labels:
+                        for lbl in labels:
+                            if lbl in lc:
+                                lc[lbl] = max(0, lc[lbl] - 1)
+                self.db.save_dataset_label_counts(project, dataset, lc)
+        self._write_log(log_msg or "删除图像: {} 张 | 方式={} | 本地删除文件={} | 项目={}, 数据集={}".format(
+            len(paths), "删除本地文件" if delete_local else "仅标记不加载",
+            delete_local_count, project, dataset))
+        # 刷新显示区(总数/分页同步更新) + 标注进度(写 db total/labeled + 标签过滤列表)
+        self.show_dataset_images(project, dataset)
+        self._refresh_annotation_progress(project, dataset)
+        self._refresh_label_filter(project, dataset)
+
+    @staticmethod
+    def _label_exts_for_fmt(fmt):
+        """数据集标注格式对应的文件扩展名列表(用于删除同名标注)。"""
+        if fmt == ".txt":
+            return [".txt"]
+        if fmt == ".json":
+            return [".json"]
+        if fmt == "cls":
+            return []
+        return [".json", ".txt"]   # 未知/空格式: 两种都尝试
+
     def _delete_selected_images(self, items):
         """
-        删除所选图像：可选删除本地文件 / 仅标记不加载(db 记录,下次加载跳过)。
-        同时从内存缓存移除并刷新显示区与总数。
+        删除所选图像(首页多选场景): 弹窗选"删除本地文件"或"仅标记不加载",
+        然后调 _delete_images_core 执行实际删除。
         """
         cur_ds = getattr(self, "_current_dataset", None)
         if not cur_ds or not items:
@@ -333,36 +413,4 @@ class MiscMixin(object):
         if clicked is None or clicked == "取消":
             return
         delete_local = (clicked == "删除本地文件")
-        norm = lambda p: os.path.normcase(os.path.normpath(p))
-        norm_set = {norm(p) for p in paths}
-        deleted_local = 0
-        for p in paths:
-            if delete_local:
-                for fp in (p, os.path.splitext(p)[0] + ".json"):
-                    try:
-                        if os.path.exists(fp):
-                            os.remove(fp)
-                            deleted_local += 1
-                    except OSError:
-                        pass
-            else:
-                self.db.add_deleted_image(proj, ds, p)
-        # 从内存缓存移除图像及其标注
-        index = self.dataset_cache.get(proj, {}).get(ds)
-        if index:
-            index["all"] = [r for r in index["all"]
-                            if norm(r.get("image_path", "")) not in norm_set]
-            for lbl in list(index["labels"]):
-                index["labels"][lbl] = [r for r in index["labels"][lbl]
-                                        if norm(r.get("image_path", "")) not in norm_set]
-                if not index["labels"][lbl]:
-                    del index["labels"][lbl]
-
-        # 日志
-        self._write_log("删除图像: {} 张 | 方式={} | 本地删除文件={} | 项目={}, 数据集={}".format(
-            len(paths), "删除本地文件" if delete_local else "仅标记不加载",
-            deleted_local, proj, ds))
-
-        # 刷新显示区(总数/分页同步更新) + 标注进度
-        self.show_dataset_images(proj, ds)
-        self._refresh_annotation_progress(proj, ds)
+        self._delete_images_core(proj, ds, paths, delete_local)
