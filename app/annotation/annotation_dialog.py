@@ -146,10 +146,23 @@ def _upgrade_graphics_view(view):
 
     def _ctx_menu(ev, _v=view):
         scene_pos = _v.mapToScene(ev.pos())
-        hit = _v.scene().itemAt(scene_pos, _v.transform())
-        if isinstance(hit, (AnnotationBoxItem, AnnotationPolygonItem)):
+        scene = _v.scene()
+        hit = scene.itemAt(scene_pos, _v.transform())
+        # 仅多边形标注支持"复制"(矩形不出现该菜单); 删除标注用 Delete 键
+        if isinstance(hit, AnnotationPolygonItem):
             menu = QMenu(_v)
-            menu.addAction("删除该标注", lambda: _v.scene().delete_item(hit))
+            act_copy = menu.addAction("复制")
+            act_copy.triggered.connect(lambda: scene.copy_template_from_item(hit))
+            menu.exec(ev.globalPos())
+            ev.accept()
+            return
+        # 空白处: 已有模板(复制过)可粘贴; 粘贴锚点=之前左键点击的空白位置
+        if getattr(scene, "fp_template", None):
+            # 粘贴位置 = 当前右键场景坐标(跟随鼠标, 不受滚动/缩放影响;
+            # mapToScene 已是场景坐标, 缩放只改视图变换不改变场景坐标)
+            menu = QMenu(_v)
+            act_paste = menu.addAction("粘贴")
+            act_paste.triggered.connect(lambda: scene._paste_template(scene_pos))
             menu.exec(ev.globalPos())
             ev.accept()
             return
@@ -590,7 +603,8 @@ class AnnotationDialog(QDialog):
         u.lineEdit.hide()
         u.draw_rect_btn.clicked.connect(lambda: self._start_draw("rect"))
         u.poly_btn.clicked.connect(lambda: self._start_draw("polygon"))
-        u.format_painter_btn.clicked.connect(self._toggle_format_painter)
+        # 格式刷改为"复制/粘贴"右键交互: 隐藏格式刷按钮, 不再作为入口
+        u.format_painter_btn.hide()
         u.switchButton = SwitchButton(self)
         u.switchButton.setObjectName("switchButton")
         u.switchButton.setChecked(True)

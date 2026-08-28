@@ -55,6 +55,7 @@ class AnnotationScene(QGraphicsScene):
         self.fp_preview_item = None
         self.fp_ghost_item = None
         self._fp_undo_stack = []
+        self._paste_pos = None   # 复制/粘贴: 左键点击空白处记录的粘贴锚点
 
     def set_image(self, pixmap):
         self.clear()
@@ -201,6 +202,28 @@ class AnnotationScene(QGraphicsScene):
             self.fp_ghost_item.setPolygon(
                 QPolygonF([QPointF(*p) for p in pts]))
 
+    def copy_template_from_item(self, item):
+        """
+        把选中的标注项复制为格式刷模板(区域像素 + 多边形 + 标签)。
+        只支持多边形; 成功返回 True。跨图保留(A/D 切换后仍可粘贴)。
+        """
+        if isinstance(item, AnnotationPolygonItem):
+            pts = [[p.x(), p.y()] for p in item.mapToScene(item.polygon())]
+        elif isinstance(item, AnnotationBoxItem):
+            r = item.mapToScene(item.rect()).boundingRect()
+            pts = [[r.left(), r.top()], [r.right(), r.top()],
+                   [r.right(), r.bottom()], [r.left(), r.bottom()]]
+        else:
+            return False
+        pts = [[round(float(x), 2), round(float(y), 2)] for x, y in pts]
+        patch = self._extract_patch(pts)
+        if patch is None:
+            return False
+        self.fp_template = {"points": pts, "patch": patch,
+                            "w": patch.width(), "h": patch.height(),
+                            "label": getattr(item, "label", self.current_label)}
+        return True
+
     def _paste_template(self, pos):
         """
         把模板（抠图 patch + 多边形）粘贴到 pos 为中心的位置，边界夹紧。
@@ -227,7 +250,7 @@ class AnnotationScene(QGraphicsScene):
         if self.fp_ghost_item is not None:
             self.removeItem(self.fp_ghost_item)
             self.fp_ghost_item = None
-        item = self.add_polygon(pts, self.current_label)
+        item = self.add_polygon(pts, t.get("label") or self.current_label)
         if item is not None:
             item.setSelected(True)
             self._fp_undo_stack.append(
@@ -465,6 +488,16 @@ class AnnotationScene(QGraphicsScene):
                 self._rect_press(pos)
             event.accept()
             return
+        # 普通浏览模式: 左键点击空白处(未命中标注)记录为格式刷粘贴锚点
+        if (event.button() == Qt.LeftButton and self.fp_mode is None
+                and not self.draw_mode and self.image_rect is not None):
+            hit = None
+            for it in self.items(event.scenePos()):
+                if isinstance(it, (AnnotationBoxItem, AnnotationPolygonItem)):
+                    hit = it
+                    break
+            if hit is None:
+                self._paste_pos = event.scenePos()
         super().mousePressEvent(event)
 
     def _rect_press(self, pos):
