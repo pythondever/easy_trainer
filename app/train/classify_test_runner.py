@@ -43,6 +43,38 @@ def _make_model(arch, num_classes):
     return model
 
 
+class _ImageListDS(torch.utils.data.Dataset):
+    """
+    测试图像列表数据集。
+    解码失败的样本返回 (index, None), 由 _collate 过滤掉——保证单张坏图
+    不会中断整批推理(语义等价于原来 try/except 后 pred="?")。
+    """
+
+    def __init__(self, paths, tf):
+        self.paths = paths
+        self.tf = tf
+
+    def __len__(self):
+        return len(self.paths)
+
+    def __getitem__(self, i):
+        try:
+            with Image.open(self.paths[i]) as im:
+                return i, self.tf(im.convert("RGB"))
+        except Exception:
+            return i, None
+
+
+def _collate(batch):
+    """过滤解码失败样本; 全部失败时返回 (None, None)。"""
+    keep = [(i, x) for i, x in batch if x is not None]
+    if not keep:
+        return None, None
+    idxs = torch.tensor([i for i, _ in keep], dtype=torch.long)
+    xs = torch.stack([x for _, x in keep])
+    return idxs, xs
+
+
 def main():
     cfg_path = sys.argv[1]
     with open(cfg_path, "r", encoding="utf-8") as f:
@@ -80,21 +112,31 @@ def main():
     total = 0
     correct = 0
     per_class = {}
-    for i, p in enumerate(images):
-        try:
-            im = Image.open(p).convert("RGB")
-            x = tf(im).unsqueeze(0).to(device)
-            with torch.no_grad():
-                out = model(x)
-            pred = "?"
-            try:
-                idx = int(out.argmax(1).item())
-                if 0 <= idx < len(classes):
-                    pred = classes[idx]
-            except Exception:
-                pass
-        except Exception:
-            pred = "?"
+    from torch.utils.data import DataLoader
+    batch_size = max(1, int(cfg.get("batch_size", 32) or 32))
+    num_workers = max(0, min(int(cfg.get("num_workers", 4) or 0),
+                             (os.cpu_count() or 1)))
+    loader = DataLoader(_ImageListDS(images, tf), batch_size=batch_size,
+                        shuffle=False, num_workers=num_workers,
+                        collate_fn=_collate,
+                        pin_memory=getattr(device, "type", str(device)) == "cuda")
+
+    preds = ["?"] * len(images)     # 解码失败的保持 "?", 与原逻辑一致
+    done = 0
+    for idxs, xs in loader:
+        if xs is None:
+            continue
+        with torch.no_grad():
+            out = model(xs.to(device))
+        top = out.argmax(1).tolist()
+        for j, i in enumerate(idxs.tolist()):
+            k = int(top[j])
+            if 0 <= k < len(classes):
+                preds[i] = classes[k]
+        done += len(idxs)
+        print("[test] 进度 {}/{}".format(done, len(images)), flush=True)
+
+    for p, pred in zip(images, preds):
         true_cls = os.path.basename(os.path.dirname(p)) or "(无类别)"
         pc = per_class.setdefault(true_cls, {"total": 0, "correct": 0, "error": 0})
         pc["total"] += 1
@@ -104,8 +146,6 @@ def main():
         else:
             pc["error"] += 1
         total += 1
-        if (i + 1) % 10 == 0 or i + 1 == len(images):
-            print("[test] 进度 {}/{}".format(i + 1, len(images)), flush=True)
     acc = correct / total if total else 0.0
     result = {
         "ok": True, "total": total, "accuracy": round(acc, 4),

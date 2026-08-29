@@ -2,7 +2,6 @@
 """标注场景：负责画框/画多边形、删除、与列表同步。"""
 import math
 import random
-import sys
 from PySide6.QtCore import QRectF, QPointF, Qt, Signal
 from PySide6.QtGui import (QPen, QColor, QBrush, QPolygonF, QPainterPath,
                            QPixmap, QPainter, QImage)
@@ -281,24 +280,22 @@ class AnnotationScene(QGraphicsScene):
         ys = [p[1] for p in rotated]
         center = QPointF((min(xs) + max(xs)) / 2.0, (min(ys) + max(ys)) / 2.0)
         pw, ph = t["patch"].width(), t["patch"].height()
-        # 旋转后 patch 完整占地区域(以 center 为中心, 半径为对角线/2)
         radius = math.sqrt(pw * pw + ph * ph) / 2.0
         pix = self.image_item.pixmap()
         if pix is not None and t.get("patch") is not None:
-            img = pix.toImage()
             ox = max(0, int(center.x() - radius))
             oy = max(0, int(center.y() - radius))
-            bw = min(int(2 * radius) + 1, img.width() - ox)
-            bh = min(int(2 * radius) + 1, img.height() - oy)
-            before = img.copy(ox, oy, max(0, bw), max(0, bh))
+            bw = min(int(2 * radius) + 1, pix.width() - ox)
+            bh = min(int(2 * radius) + 1, pix.height() - oy)
+            before = pix.copy(ox, oy, max(0, bw), max(0, bh))
             if before.isNull():
                 before = None
-            p = QPainter(img)
+            p = QPainter(pix)
             p.translate(center.x(), center.y())
             p.rotate(angle)
             p.drawImage(-pw / 2.0, -ph / 2.0, t["patch"])
             p.end()
-            self.image_item.setPixmap(QPixmap.fromImage(img))
+            self.image_item.setPixmap(pix)
             self.image_modified = True
             self.image_pixels_changed.emit()
         else:
@@ -321,11 +318,10 @@ class AnnotationScene(QGraphicsScene):
         before = rec.get("before")
         pix = self.image_item.pixmap()
         if before is not None and not before.isNull() and pix is not None:
-            img = pix.toImage()
-            p = QPainter(img)
-            p.drawImage(rec["ox"], rec["oy"], before)
+            p = QPainter(pix)
+            p.drawPixmap(rec["ox"], rec["oy"], before)
             p.end()
-            self.image_item.setPixmap(QPixmap.fromImage(img))
+            self.image_item.setPixmap(pix)
         item = rec.get("item")
         if item is not None and item.scene() is self:
             self.removeItem(item)
@@ -372,9 +368,6 @@ class AnnotationScene(QGraphicsScene):
         return color
 
     def add_box(self, x1, y1, x2, y2, label):
-        print("[dbg] ADD box label=", label, "rect=", (x1, y1, x2, y2),
-              "draw_mode=", self.draw_mode, "fp=", self.fp_mode,
-              file=sys.stderr, flush=True)
         rect = QRectF(x1, y1, x2 - x1, y2 - y1)
         if rect.width() < 2 or rect.height() < 2:
             return None
@@ -388,10 +381,6 @@ class AnnotationScene(QGraphicsScene):
 
     def add_polygon(self, points, label):
         """添加多边形标注。points: [[x, y], ...]（像素坐标），至少 3 个顶点。"""
-        import sys
-        print("[dbg] ADD poly label=", label, "npts=", len(points),
-              "draw_mode=", self.draw_mode, "fp=", self.fp_mode,
-              file=sys.stderr, flush=True)
         if len(points) < 3:
             return None
         color = self._resolve_color(label)
@@ -413,9 +402,6 @@ class AnnotationScene(QGraphicsScene):
         return result
 
     def load_boxes(self, boxes):
-        print("[dbg] LOAD boxes=", len(boxes),
-              "labels=", [b.get("label") for b in boxes],
-              file=sys.stderr, flush=True)
         self.clear_boxes()
         for box in boxes:
             if box.get("shape_type") == "polygon":
@@ -443,9 +429,14 @@ class AnnotationScene(QGraphicsScene):
             item.set_label(label)
             self.boxes_changed.emit()
 
-    def _force_full_redraw(self):
-        """删除 item 后强制所有 view 全量重绘, 避免视图缓存残留。"""
-        self.update()
+    def _force_full_redraw(self, rect=None):
+        """
+        删除 item 后重绘受影响区域, 避免视图缓存残留。
+        """
+        if rect is not None and not rect.isEmpty():
+            self.update(rect)
+        else:
+            self.update()
         for v in self.views():
             v.resetCachedContent()
             v.viewport().update()
@@ -463,22 +454,12 @@ class AnnotationScene(QGraphicsScene):
     def delete_selected(self):
         item = self.selected_item()
         if item is not None:
-            print("[dbg] DELETE before=", len(self.all_items()),
-                  "labels=", [i.label for i in self.all_items()],
-                  "del=", item.label,
-                  "del_pos=", item.pos().x(), item.pos().y(),
-                  "del_type=", type(item).__name__,
-                  "selected=", [i.label for i in self.selectedItems()],
-                  "draw_mode=", self.draw_mode, "fp=", self.fp_mode,
-                  file=sys.stderr, flush=True)
             self._cancel_polygon()
             self._clear_fp_items()
+            gone = item.sceneBoundingRect()
             self._dispose_item(item)
             self._last_box = None
-            print("[dbg] DELETE after=", len(self.all_items()),
-                  "labels=", [i.label for i in self.all_items()],
-                  file=sys.stderr, flush=True)
-            self._force_full_redraw()
+            self._force_full_redraw(gone)
             self.boxes_changed.emit()
             return True
         return False
@@ -489,10 +470,11 @@ class AnnotationScene(QGraphicsScene):
             return False
         self._cancel_polygon()
         self._clear_fp_items()
+        gone = item.sceneBoundingRect()
         self._dispose_item(item)
         if self._last_box is item:
             self._last_box = None
-        self._force_full_redraw()
+        self._force_full_redraw(gone)
         self.boxes_changed.emit()
         return True
 

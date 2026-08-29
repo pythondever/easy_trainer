@@ -13,8 +13,9 @@ from app.core.label_utils import (normalize_label, label_sort_key)
 from app.core.image_utils import pil_to_qimage, make_uniform_thumb
 from app.annotation.scene_items import SelectablePixmapItem
 from app.tasks.import_task import ImportTask
-from PySide6.QtGui import QPixmap, QPainter, QColor, QImage
-from PySide6.QtCore import Qt, Signal, QThread, QMutex, QMutexLocker, QTimer
+from PySide6.QtGui import QPixmap, QPainter, QColor, QImage, QImageReader
+from PySide6.QtCore import (Qt, Signal, QThread, QMutex, QMutexLocker, QTimer,
+                            QRect, QSize)
 from PySide6.QtWidgets import QMenu, QLabel, QProgressBar, QGraphicsView, QGraphicsScene
 
 
@@ -53,14 +54,8 @@ class _RoiDecodeWorker(QThread):
                 continue
             results = []
             for path, label, box_idx, box in jobs:
-                try:
-                    im = PILImage.open(path).convert("RGB")
-                    x, y, w, h = box[0], box[1], box[2], box[3]
-                    crop = im.crop((x, y, x + w, y + h))
-                    qimg = pil_to_qimage(make_uniform_thumb(crop, fill=True))
-                    results.append((path, label, box_idx, qimg))
-                except Exception:
-                    results.append((path, label, box_idx, None))
+                # _decode_roi 只解码标注框所在区域, 不必全图解码
+                results.append((path, label, box_idx, _decode_roi(path, box)))
             self.batch_done.emit(results)
 
 
@@ -134,6 +129,49 @@ try:
     import PIL.Image as PILImage
 except ImportError:
     PILImage = None
+
+
+def _decode_roi(path, box, size=200):
+    """
+    只解码标注框区域的像素
+    """
+    if not box or len(box) < 4:
+        return None
+    try:
+        x, y, w, h = (int(box[0]), int(box[1]), int(box[2]), int(box[3]))
+    except (TypeError, ValueError):
+        return None
+    if w <= 0 or h <= 0:
+        return None
+    x0, y0, w0, h0 = max(0, x), max(0, y), w, h
+    try:
+        reader = QImageReader(path)
+        reader.setAutoTransform(True)
+        full = reader.size()
+        if full.isValid():
+            x0 = max(0, min(x0, full.width() - 1))
+            y0 = max(0, min(y0, full.height() - 1))
+            w0 = max(1, min(w0, full.width() - x0))
+            h0 = max(1, min(h0, full.height() - y0))
+            # clipRect = 原图坐标的 ROI(先裁), scaledSize = 再缩放到目标尺寸。
+            # 注意必须是 setClipRect 而非 setScaledClipRect: 后者的坐标系是
+            # "缩放之后"的, 与原图标注框坐标对不上(会裁错区域)。
+            reader.setClipRect(QRect(x0, y0, w0, h0))
+            reader.setScaledSize(QSize(size, size))
+            qimg = reader.read()
+            if qimg is not None and not qimg.isNull():
+                return qimg
+    except Exception:
+        pass
+    # 回退: 格式不支持区域解码时走 PIL 全解码 + crop
+    if PILImage is None:
+        return None
+    try:
+        im = PILImage.open(path).convert("RGB")
+        crop = im.crop((x0, y0, x0 + w0, y0 + h0))
+        return pil_to_qimage(make_uniform_thumb(crop, fill=True))
+    except Exception:
+        return None
 
 
 class DatasetViewMixin(object):
@@ -276,11 +314,9 @@ class DatasetViewMixin(object):
             self._apply_deleted_labels(proj, ds, deleted)
         self._refresh_dataset_labels(proj, ds)
         self._refresh_label_filter(proj, ds)
-        self._refresh_annotation_progress(proj, ds)
-        self._calc_label_counts(proj, ds)
+        self._refresh_dataset_stats(proj, ds)
         if self.current_label:
             self.show_dataset_images(proj, ds)
-        # 标注产生 json 后: 扫描 image_paths 找含 json 的目录, 加到 db label_paths
         self._sync_label_paths_from_json(proj, ds)
 
     def _sync_label_paths_from_json(self, project_name, dataset_name):
@@ -518,6 +554,7 @@ class DatasetViewMixin(object):
             self._thumb_pending = set()
             self._thumb_refresh_timer = QTimer(self)
             self._thumb_refresh_timer.setSingleShot(True)
+            self._thumb_refresh_timer.setInterval(120)
             self._thumb_refresh_timer.timeout.connect(
                 lambda: self._roi_redraw())
         return self._thumb_worker
@@ -533,64 +570,19 @@ class DatasetViewMixin(object):
         index = self.dataset_cache.get(proj, {}).get(ds)
         if not index:
             return
+        by_path = {r.get("image_path"): r for r in index.get("all", [])}
         changed = False
         for path, qimg in results:
             if path in getattr(self, "_thumb_pending", set()):
                 self._thumb_pending.discard(path)
-            for rec in index.get("all", []):
-                if rec.get("image_path") == path and rec.get("thumb") is None:
-                    rec["thumb"] = qimg if qimg is not None else _thumb_placeholder()
-                    rec["_thumb_t"] = self._img_clock_now()
-                    changed = True
-                    break
+            rec = by_path.get(path)
+            if rec is not None and rec.get("thumb") is None:
+                rec["thumb"] = qimg if qimg is not None else _thumb_placeholder()
+                rec["_thumb_t"] = self._img_clock_now()
+                changed = True
         if changed and self._current_dataset == cur_ds:
             self._thumb_refresh_timer.start()
         self._evict_img_cache()
-
-    def _get_rois(self, rec, label):
-        """懒生成某标签的 ROI 裁剪小图并缓存到 rec["rois"][label]。"""
-        rois = rec.setdefault("rois", {})
-        if label in rois:
-            return rois[label]
-        result = []
-        boxes = rec.get("boxes") or []
-        img_path = rec.get("image_path", "")
-        if boxes and img_path and PILImage is not None:
-            try:
-                im = PILImage.open(img_path).convert("RGB")
-                for box in boxes:
-                    if len(box) >= 5 and box[4] == label:
-                        x, y, w, h = box[0], box[1], box[2], box[3]
-                        crop = im.crop((x, y, x + w, y + h))
-                        qimg = pil_to_qimage(make_uniform_thumb(crop, fill=True))
-                        if qimg is not None:
-                            result.append(qimg)
-            except Exception:
-                pass
-        rois[label] = result
-        return result
-
-    def _get_roi_at(self, rec, label, box_idx):
-        """取第 box_idx 个匹配 box 的 ROI 缩略图并缓存(区别于 _get_rois 只裁一个,省内存)。"""
-        cache = rec.setdefault("rois_by_idx", {}).setdefault(label, {})
-        if box_idx in cache:
-            rec["_roi_t"] = self._img_clock_now()
-            return cache[box_idx]
-        qimg = None
-        boxes = rec.get("boxes") or []
-        img_path = rec.get("image_path", "")
-        if 0 <= box_idx < len(boxes) and img_path and PILImage is not None:
-            box = boxes[box_idx]
-            if len(box) >= 5 and box[4] == label:
-                try:
-                    im = PILImage.open(img_path).convert("RGB")
-                    x, y, w, h = box[0], box[1], box[2], box[3]
-                    crop = im.crop((x, y, x + w, y + h))
-                    qimg = pil_to_qimage(make_uniform_thumb(crop, fill=True))
-                except Exception:
-                    qimg = None
-        cache[box_idx] = qimg
-        return qimg
 
     def _ensure_roi_worker(self):
         """懒创建 ROI 后台解码 worker(首页按类筛选首屏不卡顿)。"""
@@ -601,6 +593,7 @@ class DatasetViewMixin(object):
             self._roi_pending = set()
             self._roi_refresh_timer = QTimer(self)
             self._roi_refresh_timer.setSingleShot(True)
+            self._roi_refresh_timer.setInterval(120)
             self._roi_refresh_timer.timeout.connect(
                 lambda: self._roi_redraw())
         return self._roi_worker
@@ -636,19 +629,19 @@ class DatasetViewMixin(object):
         index = self.dataset_cache.get(proj, {}).get(ds)
         if not index:
             return
+        by_path = {r.get("image_path"): r for r in index.get("all", [])}
         changed = False
         for path, label, box_idx, qimg in results:
             key = (path, label, box_idx)
             if key in getattr(self, "_roi_pending", set()):
                 self._roi_pending.discard(key)
-            for rec in index.get("all", []):
-                if rec.get("image_path") == path:
-                    cache = rec.setdefault("rois_by_idx", {}).setdefault(label, {})
-                    if box_idx not in cache:
-                        cache[box_idx] = qimg
-                        rec["_roi_t"] = self._img_clock_now()
-                        changed = True
-                    break
+            rec = by_path.get(path)
+            if rec is not None:
+                cache = rec.setdefault("rois_by_idx", {}).setdefault(label, {})
+                if box_idx not in cache:
+                    cache[box_idx] = qimg
+                    rec["_roi_t"] = self._img_clock_now()
+                    changed = True
         if changed and self._current_dataset == cur_ds:
             self._roi_refresh_timer.start()
         self._evict_img_cache()

@@ -98,13 +98,14 @@ class TestWorker(QThread):
 
         def _consume(new_lines):
             nonlocal result_emitted
+            buf = []
             for line in new_lines:
                 line = _ansi_re.sub("", line.rstrip("\r\n"))
                 if not line:
                     continue
                 last_lines.append(line)
                 _bytes_read[0] += 1
-                self.log.emit(line)
+                buf.append(line)
                 m = _progress_re.search(line)
                 if m:
                     self.progress.emit(int(m.group(1)), int(m.group(2)))
@@ -115,6 +116,8 @@ class TestWorker(QThread):
                         res = {}
                     self.finished_ok.emit(res)
                     result_emitted = True
+            if buf:
+                self.log.emit("\n".join(buf))
 
         _trace("进入轮询循环")
         try:

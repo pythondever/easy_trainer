@@ -240,6 +240,53 @@ class MiscMixin(object):
         if view.sceneRect().isEmpty():
             view.setSceneRect(scene.itemsBoundingRect())
 
+    def _refresh_dataset_stats(self, project_name, dataset_name):
+        """
+        一次遍历同时刷新「已标注/总数」进度与「每类框数」统计。
+        """
+        cache = self.dataset_cache.get(project_name, {}).get(dataset_name, {})
+        recs = cache.get("all") or []
+        if not recs and not cache.get("labels"):
+            return
+        total = len(recs)
+        binding = self.db.get_dataset_import(project_name, dataset_name)
+        counts = {}
+        labeled = 0
+        for rec in recs:
+            boxes = rec.get("boxes") or []
+            if boxes:
+                labeled += 1
+            for b in boxes:
+                lbl = b[-1]
+                counts[lbl] = counts.get(lbl, 0) + 1
+        if not counts:
+            # 无框(分类数据集): 用 labels 索引计数
+            counts = {label: len(rs) for label, rs in
+                      (cache.get("labels") or {}).items()}
+        # 分类数据集: 每张图都有类别, 视为全部已标注
+        if binding.get("label_fmt") == "cls":
+            labeled = total
+        if counts:
+            self.db.save_dataset_label_counts(project_name, dataset_name, counts)
+        self.db.update_dataset_import(
+            project_name, dataset_name,
+            binding.get("image_path", ""), binding.get("label_path", ""),
+            binding.get("label_fmt", ""), labeled=labeled, total=total)
+        self._update_dataset_row_progress(project_name, dataset_name, labeled, total)
+
+    def _update_dataset_row_progress(self, project_name, dataset_name, labeled, total):
+        """刷新项目树该数据集节点的进度文本。"""
+        ds_item = self._find_dataset_item(project_name, dataset_name)
+        if ds_item is None:
+            return
+        container = self.project_tree.itemWidget(ds_item, 0)
+        if container is None:
+            return
+        pl = container.findChild(QLabel, "datasetRowProgress")
+        if pl is not None:
+            self._style_progress_chip(pl, labeled, total)
+            pl.setText("{}/{}".format(labeled, total))
+
     def _calc_label_counts(self, project, dataset):
         """统计数据集各标签数量：内存缓存有(已载入)用实时数据并回写 db；未载入用 db 旧值。"""
         cache = self.dataset_cache.get(project, {}).get(dataset, {})
@@ -277,14 +324,7 @@ class MiscMixin(object):
             project_name, dataset_name,
             binding.get("image_path", ""), binding.get("label_path", ""),
             binding.get("label_fmt", ""), labeled=labeled, total=total)
-        ds_item = self._find_dataset_item(project_name, dataset_name)
-        if ds_item is not None:
-            container = self.project_tree.itemWidget(ds_item, 0)
-            if container is not None:
-                pl = container.findChild(QLabel, "datasetRowProgress")
-                if pl is not None:
-                    self._style_progress_chip(pl, labeled, total)
-                    pl.setText("{}/{}".format(labeled, total))
+        self._update_dataset_row_progress(project_name, dataset_name, labeled, total)
 
     def _refresh_dataset_row_progress(self, project_name, dataset_name):
         """根据 db 当前 binding 刷新项目树该数据集节点的进度文本。"""
@@ -322,23 +362,24 @@ class MiscMixin(object):
         label_fmt = binding.get("label_fmt", "")
         delete_local_count = 0
         for p in paths:
-            if delete_local:
+            if not delete_local:
+                continue        # 仅标记模式: 统一走下面的批量接口
+            try:
+                if os.path.exists(p):
+                    os.remove(p)
+                    delete_local_count += 1
+            except OSError:
+                pass
+            for ext in self._label_exts_for_fmt(label_fmt):
+                fp = os.path.splitext(p)[0] + ext
                 try:
-                    if os.path.exists(p):
-                        os.remove(p)
+                    if os.path.exists(fp):
+                        os.remove(fp)
                         delete_local_count += 1
                 except OSError:
                     pass
-                for ext in self._label_exts_for_fmt(label_fmt):
-                    fp = os.path.splitext(p)[0] + ext
-                    try:
-                        if os.path.exists(fp):
-                            os.remove(fp)
-                            delete_local_count += 1
-                    except OSError:
-                        pass
-            else:
-                self.db.add_deleted_image(project, dataset, p)
+        if not delete_local and paths:
+            self.db.add_deleted_images(project, dataset, paths)
         index = self.dataset_cache.get(project, {}).get(dataset)
         if index:
             keep = []

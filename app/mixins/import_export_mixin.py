@@ -185,8 +185,16 @@ class ImportExportMixin(object):
                 btn.setStyleSheet(
                     "QPushButton{padding:0px;border:1px solid #353a48;border-radius:6px;}")
                 btn.setIconSize(QSize(28, 28))
-        ui.yolo_fmt.toggled.connect(update_tips)
-        ui.labelme_fmt.toggled.connect(update_tips)
+
+        def _on_fmt_toggled(on):
+            """
+            互斥单选按钮: 被取消选中的那个同样会 emit toggled(False)。
+            """
+            if on:
+                update_tips()
+
+        ui.yolo_fmt.toggled.connect(_on_fmt_toggled)
+        ui.labelme_fmt.toggled.connect(_on_fmt_toggled)
 
         def set_cls_mode(on):
             """
@@ -199,7 +207,8 @@ class ImportExportMixin(object):
             if on:
                 ui.label_path_txt.clear()
             ui.done_import_btn.setEnabled(bool(ui.image_path_txt.text().strip()))
-            update_tips()
+            if on:
+                update_tips()
 
         ui.cls_fmt.toggled.connect(set_cls_mode)
         fmt_group = QButtonGroup(dlg)

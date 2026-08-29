@@ -21,6 +21,7 @@ CLASSIFY_TRAIN_RUNNER = os.path.join(WORKSPACE, "app", "train",
                                      "classify_train_runner.py")
 
 CSV_POLL_INTERVAL = 5   # 定时检查 metrics.csv 修改时间的间隔(秒)
+LOG_FLUSH_SECS = 0.1
 
 
 def _is_float(s):
@@ -117,6 +118,8 @@ class TrainWorker(QThread):
         区分 overall（检测 7 列/分割 9 列，末尾 2 列为 segm mAP）与 per-class（6 列）；
         与 CSV 通道共用 series/per_class 并按 epoch 去重，防双通道双写。
         """
+        if "Val (Epoch " not in line and "│" not in line:
+            return
         m = re.search(r"Val \(Epoch (\d+)/", line)
         if m:
             pending["epoch"] = int(m.group(1))
@@ -199,14 +202,17 @@ class TrainWorker(QThread):
         csv_path = os.path.join(self._config["timestamp_dir"], "metrics.csv")
         last_mtime = 0.0
         last_poll = 0.0
+        csv_rows_read = 0        # 已消费的 CSV 行数, 供增量读跳过
 
         def _read_new_epochs():
-            """读 CSV 中含 val 指标的新行(按 epoch 去重)。"""
-            nonlocal last_mtime
+            """
+            读 CSV 中新增的含 val 指标行(按 epoch 去重)。只解析上次之后新增的行
+            """
+            nonlocal last_mtime, csv_rows_read
             if not os.path.exists(csv_path):
                 return []
             mtime = os.path.getmtime(csv_path)
-            if mtime <= last_mtime:
+            if mtime <= last_mtime and csv_rows_read:
                 return []
             last_mtime = mtime
             try:
@@ -214,8 +220,12 @@ class TrainWorker(QThread):
                     rows = list(csv.DictReader(f))
             except Exception:
                 return []
+            if len(rows) <= csv_rows_read:
+                return []
+            new_rows = rows[csv_rows_read:]
+            csv_rows_read = len(rows)
             by_epoch = {}
-            for r in rows:
+            for r in new_rows:
                 has_box = r.get("val/mAP_50", "") not in (None, "")
                 has_mask = r.get("val/segm_mAP_50", "") not in (None, "")
                 if not (has_box or has_mask):
@@ -271,6 +281,20 @@ class TrainWorker(QThread):
                 self.progress.emit(ep_list[-1], self._config.get("epochs", 0))
             self.metrics.emit(m)
 
+        log_buf = []
+        log_last_flush = 0.0
+
+        def _flush_log(force=False):
+            """把攒下的日志行合并成一条发出(force=True 时立即冲刷)。"""
+            nonlocal log_buf, log_last_flush
+            if not log_buf:
+                return
+            if not force and (time.time() - log_last_flush) < LOG_FLUSH_SECS:
+                return
+            self.log.emit("\n".join(log_buf))
+            log_buf = []
+            log_last_flush = time.time()
+
         while not self._stop_flag:
             try:
                 line = out_q.get(timeout=0.5)
@@ -279,7 +303,7 @@ class TrainWorker(QThread):
             if line:
                 line = _ansi_re.sub("", line)
                 last_lines.append(line.rstrip())
-                self.log.emit(line.rstrip())
+                log_buf.append(line.rstrip())
                 if "[train] EPOCH " in line:
                     m = re.search(r"EPOCH (\d+)/(\d+)", line)
                     if m:
@@ -299,10 +323,12 @@ class TrainWorker(QThread):
                         res = {}
                     self.finished_ok.emit(res)
                     result_emitted = True
+            _flush_log()
             _poll_csv()
             _poll_cls()
             if self._proc.poll() is not None and out_q.empty():
                 break
+        _flush_log(force=True)
         last_poll = 0.0
         _poll_csv()
         rc = self._proc.poll()

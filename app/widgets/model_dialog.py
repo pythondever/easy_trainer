@@ -35,6 +35,10 @@ class ModelDialog(QDialog):
         self._records = []
         self._page = 0
         self._page_size = 15
+        self._resize_timer = QTimer(self)
+        self._resize_timer.setSingleShot(True)
+        self._resize_timer.setInterval(150)
+        self._resize_timer.timeout.connect(self._render_page)
         # 注册到 app:测试倒计时结束后由 TestDialog 关闭本窗口回首页
         self.app._model_dialog = self
         self._setup_table()
@@ -52,7 +56,7 @@ class ModelDialog(QDialog):
         old = self._page_size
         self._calc_page_size()
         if self._page_size != old:
-            self._render_page()
+            self._resize_timer.start()
 
     def done(self, result):
         """关闭前清理 cellWidget：避免 PySide6 对话框 GC 时按钮 lambda 循环引用导致 0xC0000005。"""

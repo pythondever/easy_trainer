@@ -32,6 +32,8 @@ except ImportError:
 
 
 class TrainMixin(object):
+    _nvml_state = None
+
     def is_training(self):
         return (self._train_worker is not None
                 and self._train_worker.isRunning())
@@ -268,21 +270,26 @@ class TrainMixin(object):
         """2s定时:查询显存使用率,>55% 显示红色。用 pynvml 避免每 2s 拉起子进程。"""
         usage = None
         if pynvml is not None:
-            try:
-                pynvml.nvmlInit()
-                handle = pynvml.nvmlDeviceGetHandleByIndex(0)
-                mem = pynvml.nvmlDeviceGetMemoryInfo(handle)
-                if mem.total > 0:
-                    usage = mem.used * 100.0 / mem.total
-            except Exception:
-                pass
-        if usage is None:
-            self.gpu_memory_use_btn.setText("N/A")
-            self.gpu_memory_use_btn.setStyleSheet(self._gpu_btn_style(False))
-            return
-        self.gpu_memory_use_btn.setText("{:.0f}%".format(usage))
-        self.gpu_memory_use_btn.setStyleSheet(
-            self._gpu_btn_style(usage > 55))
+            if TrainMixin._nvml_state is None:
+                try:
+                    pynvml.nvmlInit()
+                    TrainMixin._nvml_state = True
+                except Exception:
+                    TrainMixin._nvml_state = False
+            if TrainMixin._nvml_state:
+                try:
+                    handle = pynvml.nvmlDeviceGetHandleByIndex(0)
+                    mem = pynvml.nvmlDeviceGetMemoryInfo(handle)
+                    if mem.total > 0:
+                        usage = mem.used * 100.0 / mem.total
+                except Exception:
+                    pass
+        self.gpu_memory_use_btn.setText(
+            "N/A" if usage is None else "{:.0f}%".format(usage))
+        high = usage is not None and usage > 55
+        if high != getattr(self, "_gpu_high", None):
+            self._gpu_high = high
+            self.gpu_memory_use_btn.setStyleSheet(self._gpu_btn_style(high))
 
     @staticmethod
     def _gpu_btn_style(high):

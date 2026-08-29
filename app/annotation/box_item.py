@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 """标注图形项：矩形框 + 多边形，均支持选中、拖动、标签 chip 渲染。"""
 from PySide6.QtCore import QPointF, QRectF, Qt
-from PySide6.QtGui import QBrush, QColor, QPen, QFont, QPainter, QPolygonF, QPainterPath
+from PySide6.QtGui import (QBrush, QColor, QPen, QFont, QFontMetrics, QPainter,
+                           QPolygonF, QPainterPath)
 import functools
 import hashlib
 
@@ -32,6 +33,44 @@ def label_color(label):
     return QColor(LABEL_COLORS[idx])
 
 
+_CHIP_FONT = None
+_CHIP_FONT_METRICS = None
+_CHIP_MIN_W = 30
+
+
+def _chip_font():
+    """chip 文字字体(含 CJK fallback), 全进程共享一份。"""
+    global _CHIP_FONT
+    if _CHIP_FONT is None:
+        font = QFont(ui_font_family())
+        if not font.exactMatch():
+            font.setFamily("Noto Sans CJK SC, Microsoft YaHei, sans-serif")
+        font.setStyleHint(QFont.SansSerif)
+        font.setPixelSize(13)
+        _CHIP_FONT = font
+    return _CHIP_FONT
+
+
+def _chip_font_metrics():
+    """chip 文字度量, 用于算 chip 宽度; 随字体一并缓存。"""
+    global _CHIP_FONT_METRICS
+    if _CHIP_FONT_METRICS is None:
+        _CHIP_FONT_METRICS = QFontMetrics(_chip_font())
+    return _CHIP_FONT_METRICS
+
+
+@functools.lru_cache(maxsize=512)
+def _chip_text_width(text):
+    """chip 精确宽度(按字体度量)。同一标签名在成百上千个标注上重复出现。"""
+    return max(_CHIP_MIN_W, _chip_font_metrics().horizontalAdvance(text) + 12)
+
+
+@functools.lru_cache(maxsize=512)
+def _chip_screen_width(text):
+    """chip 屏幕宽度估算(CJK 13px / ASCII 7px), 用于点击区换算。"""
+    return max(_CHIP_MIN_W, sum(13 if ord(c) > 127 else 7 for c in text) + 12)
+
+
 class AnnotationBoxItem(QGraphicsRectItem):
     """场景坐标下的标注框（rect 即像素坐标）。"""
 
@@ -52,8 +91,8 @@ class AnnotationBoxItem(QGraphicsRectItem):
         self._handle_selected = None
         self._press_pos = None
         self._press_rect = None
-        # 自定义颜色（None 则用 label_color 哈希色）
         self._color = color
+        self._chip_cache = None
 
         pen_color = color if color is not None else label_color(label)
         self.setPen(QPen(pen_color, 2.0))
@@ -174,16 +213,22 @@ class AnnotationBoxItem(QGraphicsRectItem):
         return views[0].transform().m11() or 1.0
 
     def _chip_rect_local(self):
-        """chip 点击区域, 锚定框右下角外侧(右对齐+底下方2px), 全部偏移/尺寸按缩放换算回局部坐标。
-        与 _draw_label 的屏幕锚定保持一致, 否则放大视图时 chip 会离框越来越远。"""
+        """
+        chip 点击区域, 锚定框右下角外侧(右对齐+底下方2px), 全部偏移/尺寸按缩放换算回局部坐标。
+        与 _draw_label 的屏幕锚定保持一致, 否则放大视图时 chip 会离框越来越远。
+        """
         r = self.rect()
         text = self.label[:12]
-        w_screen = sum(13 if ord(c) > 127 else 7 for c in text) + 12
-        w_screen = max(30, w_screen)
         scale = self._view_scale()
+        key = (text, r.right(), r.bottom())
+        cached = self._chip_cache
+        if cached is not None and cached[0] == key and cached[1] == scale:
+            return cached[2]
         s = scale if scale > 1e-6 else 1.0
-        w = w_screen / s
-        return QRectF(r.right() - w, r.bottom() + 2.0 / s, w, 20.0 / s)
+        w = _chip_screen_width(text) / s
+        rect = QRectF(r.right() - w, r.bottom() + 2.0 / s, w, 20.0 / s)
+        self._chip_cache = (key, scale, rect)
+        return rect
 
     def chip_scene_pos(self):
         """chip 中心点（场景坐标），用于菜单弹出定位。"""
@@ -343,17 +388,10 @@ class AnnotationBoxItem(QGraphicsRectItem):
         painter.save()
         transform = painter.transform()
         painter.resetTransform()
-        font = QFont(ui_font_family())
-        if not font.exactMatch():
-            font.setFamily("Noto Sans CJK SC, Microsoft YaHei, sans-serif")
-        font.setStyleHint(QFont.SansSerif)
-        font.setPixelSize(13)
-        painter.setFont(font)
+        painter.setFont(_chip_font())
         text = self.label[:12]
-        w = max(30, painter.fontMetrics().horizontalAdvance(text) + 12)
+        w = _chip_text_width(text)
         h = 20
-        # 锚定矩形右下角的屏幕坐标 + 固定屏幕偏移(右对齐向左 w, 向下 2px)
-        # 不能 map label_rect 的局部 top(bottom+2): 那会是 2*scale 屏幕偏移, 放大越远
         r = self.rect()
         br = transform.map(QPointF(r.right(), r.bottom()))
         anchor = QPointF(br.x() - w, br.y() + 2)
@@ -397,6 +435,8 @@ class AnnotationPolygonItem(QGraphicsPolygonItem):
         self._handle_size = 8.0
         self._vertex_idx = None
         self._press_geom = None
+        # chip 区域记忆化缓存(见 _chip_rect_local)
+        self._chip_cache = None
         self._update_handles()
 
     def _update_handles(self):
@@ -469,18 +509,23 @@ class AnnotationPolygonItem(QGraphicsPolygonItem):
         return views[0].transform().m11() or 1.0
 
     def _chip_rect_local(self):
-        """chip 点击区域, 锚定外接矩形中心, 尺寸按缩放换算。"""
+        """chip 点击区域, 锚定外接矩形中心, 尺寸按缩放换算(记忆化, 同矩形版)。"""
         r = self.polygon().boundingRect()
         text = self.label[:12]
-        w_screen = sum(13 if ord(c) > 127 else 7 for c in text) + 12
-        w_screen = max(30, w_screen)
         scale = self._view_scale()
+        key = (text, r.left(), r.top(), r.width(), r.height())
+        cached = self._chip_cache
+        if cached is not None and cached[0] == key and cached[1] == scale:
+            return cached[2]
+        w_screen = _chip_screen_width(text)
         if scale > 1e-6:
             w, h = w_screen / scale, 20.0 / scale
         else:
             w, h = w_screen, 20.0
         c = r.center()
-        return QRectF(c.x() - w / 2, c.y() - h / 2, w, h)
+        rect = QRectF(c.x() - w / 2, c.y() - h / 2, w, h)
+        self._chip_cache = (key, scale, rect)
+        return rect
 
     def chip_scene_pos(self):
         c = self._chip_rect_local().center()
@@ -609,9 +654,9 @@ class AnnotationPolygonItem(QGraphicsPolygonItem):
         if self.isSelected():
             painter.setPen(QPen(QColor("#5B8CFF"), 1.0))
             painter.setBrush(QBrush(QColor("#ffffff")))
+            s = self._compute_handle_size()
+            self._handle_size = s
             for p in self.polygon():
-                s = self._compute_handle_size()
-                self._handle_size = s
                 painter.drawEllipse(QRectF(p.x() - s / 2, p.y() - s / 2, s, s))
 
     def _draw_label(self, painter, label_rect):
@@ -620,14 +665,9 @@ class AnnotationPolygonItem(QGraphicsPolygonItem):
         transform = painter.transform()
         scale = transform.m11() if abs(transform.m11()) > 1e-6 else 1.0
         painter.resetTransform()
-        font = QFont(ui_font_family())
-        if not font.exactMatch():
-            font.setFamily("Noto Sans CJK SC, Microsoft YaHei, sans-serif")
-        font.setStyleHint(QFont.SansSerif)
-        font.setPixelSize(13)
-        painter.setFont(font)
+        painter.setFont(_chip_font())
         text = self.label[:12]
-        w = max(30, painter.fontMetrics().horizontalAdvance(text) + 12)
+        w = _chip_text_width(text)
         h = 20
         anchor = transform.map(QPointF(label_rect.left(), label_rect.top()))
         chip = QRectF(anchor.x(), anchor.y(), w, h)

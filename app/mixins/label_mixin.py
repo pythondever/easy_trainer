@@ -165,6 +165,7 @@ class LabelMixin(object):
         index = self.dataset_cache.get(project_name, {}).get(dataset_name)
         if index:
             for rec in index.get("all", []):
+                changed = False
                 labels = rec.get("labels") or []
                 if old_name in labels:
                     seen = []
@@ -173,11 +174,15 @@ class LabelMixin(object):
                         if nl not in seen:
                             seen.append(nl)
                     rec["labels"] = seen
+                    changed = True
                 boxes = rec.get("boxes")
-                if boxes:
+                if boxes and any(b[-1] == old_name for b in boxes):
                     rec["boxes"] = [tuple(b[:-1]) + (new_name,)
                                     if b[-1] == old_name else b for b in boxes]
-                rec["rois"] = {}
+                    changed = True
+                if changed:
+                    rec["rois"] = {}
+                    rec["rois_by_idx"] = {}
             self._rebuild_index_labels(project_name, dataset_name)
         self._rename_label_in_files(project_name, dataset_name, old_name, new_name)
         labels = self.db.get_dataset_labels(project_name, dataset_name)
@@ -332,29 +337,45 @@ class LabelMixin(object):
             self.db.save_dataset_labels(project_name, dataset_name, cleaned)
 
     def _rename_label_in_files(self, project_name, dataset_name, old_name, new_name):
-        """本地 labelme json：把 shape.label == old_name 改成 new_name。"""
+        """
+        本地 labelme json：把 shape.label == old_name 改成 new_name。
+        """
         index = self.dataset_cache.get(project_name, {}).get(dataset_name)
         if not index:
             return
-        for rec in index.get("all", []):
-            img_path = rec.get("image_path", "")
-            base, _ = os.path.splitext(img_path)
-            json_path = base + ".json"
-            if not os.path.exists(json_path):
-                continue
-            try:
-                with open(json_path, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                changed = False
-                for shape in data.get("shapes", []):
-                    if normalize_label(shape.get("label")) == old_name:
-                        shape["label"] = new_name
-                        changed = True
-                if changed:
-                    with open(json_path, "w", encoding="utf-8") as f:
-                        json.dump(data, f, ensure_ascii=False, indent=2)
-            except Exception:
-                continue
+        recs = index.get("all", [])
+        progress = None
+        if len(recs) > 50:
+            progress = ProgressDialog("重命名标签", "正在更新标注文件…", self,
+                                      maximum=len(recs), cancellable=False)
+        try:
+            for i, rec in enumerate(recs):
+                if progress is not None:
+                    progress.set_progress(i)
+                img_path = rec.get("image_path", "")
+                base, _ = os.path.splitext(img_path)
+                json_path = base + ".json"
+                if not os.path.exists(json_path):
+                    continue
+                try:
+                    with open(json_path, "r", encoding="utf-8") as f:
+                        text = f.read()
+                    if old_name not in text:
+                        continue      # 快速跳过: 该图不含此标签, 无需解析
+                    data = json.loads(text)
+                    changed = False
+                    for shape in data.get("shapes", []):
+                        if normalize_label(shape.get("label")) == old_name:
+                            shape["label"] = new_name
+                            changed = True
+                    if changed:
+                        with open(json_path, "w", encoding="utf-8") as f:
+                            json.dump(data, f, ensure_ascii=False, indent=2)
+                except Exception:
+                    continue
+        finally:
+            if progress is not None:
+                progress.close()
 
     def _on_delete_label(self):
         """首页「删除」按钮：删除当前筛选下拉选中的标签(含确认弹窗)。"""
@@ -377,11 +398,18 @@ class LabelMixin(object):
         index = self.dataset_cache.get(project_name, {}).get(dataset_name)
         if index:
             for rec in index.get("all", []):
+                changed = False
                 if label_name in (rec.get("labels") or []):
                     rec["labels"] = [l for l in rec["labels"] if l != label_name]
+                    changed = True
                 if rec.get("boxes"):
-                    rec["boxes"] = [b for b in rec["boxes"] if b[-1] != label_name]
-                rec["rois"] = {}
+                    new_boxes = [b for b in rec["boxes"] if b[-1] != label_name]
+                    if len(new_boxes) != len(rec["boxes"]):
+                        rec["boxes"] = new_boxes
+                        changed = True
+                if changed:
+                    rec["rois"] = {}
+                    rec["rois_by_idx"] = {}
             self._rebuild_index_labels(project_name, dataset_name)
         self._delete_label_in_files(project_name, dataset_name, label_name)
         self.db.remove_dataset_label(project_name, dataset_name, label_name)
@@ -465,10 +493,17 @@ class LabelMixin(object):
 
     def _delete_label_in_files(self, project_name, dataset_name, label_name):
         """
-        本地 labelme json: 删除 shape.label == label_name 的所有 shapes。
-        文件较多时弹进度框；先用文本快速检查跳过不含该标签的文件
-        （省去 json.load 解析），仅命中文件才解析+过滤+写回。
+        本地 labelme json: 删除 shape.label == label_name 的所有 shapes
         """
+        return self._delete_labels_in_files(project_name, dataset_name, [label_name])
+
+    def _delete_labels_in_files(self, project_name, dataset_name, label_names):
+        """
+        批量删除标签的文件层清理: 一次遍历同时过滤全部标签。
+        """
+        names = {n for n in (label_names or []) if n}
+        if not names:
+            return
         index = self.dataset_cache.get(project_name, {}).get(dataset_name)
         if not index:
             return
@@ -489,12 +524,12 @@ class LabelMixin(object):
                 try:
                     with open(json_path, "r", encoding="utf-8") as f:
                         text = f.read()
-                    if label_name not in text:
-                        continue  # 快速跳过：文本不含该标签，无需解析
+                    if not any(n in text for n in names):
+                        continue      # 快速跳过: 不含任一待删标签
                     data = json.loads(text)
                     before = len(data.get("shapes", []))
                     data["shapes"] = [s for s in data.get("shapes", [])
-                                      if normalize_label(s.get("label")) != label_name]
+                                      if normalize_label(s.get("label")) not in names]
                     if len(data["shapes"]) != before:
                         with open(json_path, "w", encoding="utf-8") as f:
                             json.dump(data, f, ensure_ascii=False, indent=2)
@@ -506,24 +541,30 @@ class LabelMixin(object):
 
     def _apply_deleted_labels(self, project_name, dataset_name, label_names):
         """
-        清理缓存中的 labels/boxes/rois、重建分组。
+        清理缓存中的 labels/boxes/派生缓存、重建分组。
         """
-        if not label_names:
+        names = {n for n in (label_names or []) if n}
+        if not names:
             return
-        for lb in label_names:
-            self._delete_label_in_files(project_name, dataset_name, lb)
+        self._delete_labels_in_files(project_name, dataset_name, names)
         index = self.dataset_cache.get(project_name, {}).get(dataset_name)
         if not index:
             return
         for rec in index.get("all", []):
+            changed = False
             rec_labels = rec.get("labels") or []
-            new_labels = [l for l in rec_labels if l not in label_names]
+            new_labels = [l for l in rec_labels if l not in names]
             if len(new_labels) != len(rec_labels):
                 rec["labels"] = new_labels
+                changed = True
             if rec.get("boxes"):
-                rec["boxes"] = [b for b in rec["boxes"]
-                                if b[-1] not in label_names]
-            rec["rois"] = {}
+                new_boxes = [b for b in rec["boxes"] if b[-1] not in names]
+                if len(new_boxes) != len(rec["boxes"]):
+                    rec["boxes"] = new_boxes
+                    changed = True
+            if changed:
+                rec["rois"] = {}
+                rec["rois_by_idx"] = {}
         self._rebuild_index_labels(project_name, dataset_name)
 
     def _apply_cls_changes(self, project_name, dataset_name, changes):
@@ -532,15 +573,17 @@ class LabelMixin(object):
         if not index:
             return
         recs = index.get("all", [])
+        by_path = {r.get("image_path"): r for r in recs}
         for old_p, new_p, new_cls in changes:
-            for rec in recs:
-                if rec.get("image_path") == old_p:
-                    rec["image_path"] = new_p
-                    rec["cls"] = new_cls
-                    rec["labels"] = [new_cls]
-                    rec["thumb"] = None  # 旧缩略图失效,渲染时懒重新生成
-                    rec["rois"] = {}
-                    break
+            rec = by_path.get(old_p)
+            if rec is None:
+                continue
+            rec["image_path"] = new_p
+            rec["cls"] = new_cls
+            rec["labels"] = [new_cls]
+            rec["thumb"] = None
+            rec["rois"] = {}
+            rec["rois_by_idx"] = {}
         index["labels"] = {}
         for rec in recs:
             for lbl in set(rec.get("labels") or []):

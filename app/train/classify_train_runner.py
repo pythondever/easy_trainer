@@ -200,13 +200,15 @@ def main():
         val_ds = _ImageFolderSimple(val_root, val_tf, class_to_idx)
     if not classes:
         raise RuntimeError("未从数据集中解析到任何类别(子文件夹),无法训练图像分类")
-    # fc 维度必须与保存的 classes 一致(cfg num_classes 是 UI 兜底值,可能大于实际类别,
-    # 用 max 会导致 checkpoint 里 state_dict 与 classes 不匹配,测试加载报 size mismatch)
     real_classes = len(classes)
+    _pin = getattr(device, "type", str(device)) == "cuda"
+    _persistent = num_workers > 0
     train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True,
-                              num_workers=num_workers, drop_last=True)
+                              num_workers=num_workers, drop_last=True,
+                              pin_memory=_pin, persistent_workers=_persistent)
     val_loader = DataLoader(val_ds, batch_size=batch_size, shuffle=False,
-                            num_workers=num_workers)
+                            num_workers=num_workers,
+                            pin_memory=_pin, persistent_workers=_persistent)
     print("[train] 数据集: train={} val={} 类别({})={}".format(
         len(train_ds), len(val_ds), len(classes),
         ", ".join(classes) if len(classes) <= 12 else "{}...".format(

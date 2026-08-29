@@ -51,7 +51,7 @@ def _upgrade_graphics_view(view):
     view.setRenderHints(QPainter.Antialiasing | QPainter.SmoothPixmapTransform)
     view.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)
     view.setResizeAnchor(QGraphicsView.AnchorViewCenter)
-    view.setViewportUpdateMode(QGraphicsView.FullViewportUpdate)
+    view.setViewportUpdateMode(QGraphicsView.SmartViewportUpdate)
     view.setDragMode(QGraphicsView.NoDrag)
     view.setMouseTracking(True)
     view.setFrameShape(QGraphicsView.NoFrame)
@@ -653,8 +653,8 @@ class AnnotationDialog(QDialog):
         self.scene.draw_cancel_requested.connect(self._cancel_draw_mode)
         self._labeled_refresh_timer = QTimer(self)
         self._labeled_refresh_timer.setSingleShot(True)
+        self._labeled_refresh_timer.setInterval(80)
         self._labeled_refresh_timer.timeout.connect(self._refresh_labeled_list)
-        # 删除/修改后防抖自动保存(0.8s), 防止重载旧 json 导致已删标注复活
         self._autosave_timer = QTimer(self)
         self._autosave_timer.setSingleShot(True)
         self._autosave_timer.setInterval(150)
@@ -867,18 +867,21 @@ class AnnotationDialog(QDialog):
         label_color() 入库，保证：同一标签在 A/D 翻页时颜色一致，
         且首页标签下拉框/下次启动都能看到
         """
-        changed = False
+        missing = {}
         for b in boxes:
             # 归一化：历史 json 里的 class_N → N,防止 class_ 标签重新入库
             lbl = normalize_label(b.get("label"))
             if lbl and lbl not in self.label_colors:
-                color = label_color(lbl).name()
-                self.db.add_dataset_label(self.project, self.dataset, lbl, color)
-                self.label_colors[lbl] = color
-                self.scene.label_colors[lbl] = QColor(color)
-                changed = True
-        if changed:
-            self._refresh_labels()
+                missing[lbl] = label_color(lbl).name()
+        if not missing:
+            return
+        merged = dict(self.db.get_dataset_labels(self.project, self.dataset))
+        merged.update(missing)
+        self.db.save_dataset_labels(self.project, self.dataset, merged)
+        for lbl, color in missing.items():
+            self.label_colors[lbl] = color
+            self.scene.label_colors[lbl] = QColor(color)
+        self._refresh_labels()
 
     def closeEvent(self, event):
         self._save_current()

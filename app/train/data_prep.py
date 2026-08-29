@@ -23,12 +23,25 @@ def timestamp_dir():
     return datetime.now().strftime("%Y-%m-%d_%H_%M_%S")
 
 
+_img_size_cache = {}
+
+
 def _img_size(path):
+    """
+    图像尺寸(带进程内缓存)。
+    labelme json → yolo txt 需要对每张图取尺寸, 而同一张图在「标签目录转换」
+    和「图像同路径 json 转换」两处都会被查询, 缓存可省掉重复的文件打开。
+    """
+    cached = _img_size_cache.get(path)
+    if cached is not None:
+        return cached
     try:
         with Image.open(path) as im:
-            return im.size
+            size = im.size
     except Exception:
-        return (0, 0)
+        size = (0, 0)
+    _img_size_cache[path] = size
+    return size
 
 
 def _copy_dataset_labels(src_label_path, fmt, dst_labels, label_to_id, img_dir):
@@ -78,6 +91,7 @@ def _copy_dataset_labels(src_label_path, fmt, dst_labels, label_to_id, img_dir):
 def _collect_labels(datasets, label_to_id):
     """扫描所有数据集标签收集完整类别集合（txt 直接读行，json 读 label）。"""
     labels = []
+    seen = set()          # 用集合去重
     for info in datasets:
         label_path = info.get("label_path")
         fmt = str(info.get("fmt", "txt")).lstrip(".")
@@ -86,7 +100,8 @@ def _collect_labels(datasets, label_to_id):
         for fn in sorted(os.listdir(label_path)):
             if fmt == "json" and fn.lower().endswith(".json"):
                 for b in load_json_boxes(os.path.join(label_path, fn)):
-                    if b[4] not in labels:
+                    if b[4] not in seen:
+                        seen.add(b[4])
                         labels.append(b[4])
             elif fmt == "txt" and fn.lower().endswith(".txt"):
                 try:
@@ -95,7 +110,8 @@ def _collect_labels(datasets, label_to_id):
                             p = line.split()
                             if len(p) >= 1:
                                 lb = normalize_label(p[0])
-                                if lb not in labels:
+                                if lb not in seen:
+                                    seen.add(lb)
                                     labels.append(lb)
                 except Exception:
                     continue
@@ -173,20 +189,37 @@ def clean_split(out_root):
                     os.remove(p)
 
 
-def _unique_dst(d, fn):
-    """目标已存在同名文件时加序号(多数据集合并防覆盖，图像/txt 名保持一致)。"""
-    dst = os.path.join(d, fn)
-    if not os.path.exists(dst):
-        return dst
+def _unique_dst(d, fn, used=None):
+    """
+    目标已存在同名文件时加序号(多数据集合并防覆盖，图像/txt 名保持一致)。
+    used 为该目录已占用的文件名集合(可选)。原实现每次都从 i=1 重新用
+    os.path.exists 逐个探测, 重名文件多时是 O(K²) 次系统调用; 传入 used
+    后改为集合判断, 同一目录内跨数据集连续累加。
+    """
+    if used is None:
+        dst = os.path.join(d, fn)
+        if not os.path.exists(dst):
+            return dst
+        base, ext = os.path.splitext(fn)
+        i = 1
+        while os.path.exists(os.path.join(d, "{}_{}{}".format(base, i, ext))):
+            i += 1
+        return os.path.join(d, "{}_{}{}".format(base, i, ext))
+    if fn not in used:
+        used.add(fn)
+        return os.path.join(d, fn)
     base, ext = os.path.splitext(fn)
     i = 1
-    while os.path.exists(os.path.join(d, "{}_{}{}".format(base, i, ext))):
+    while "{}_{}{}".format(base, i, ext) in used:
         i += 1
-    return os.path.join(d, "{}_{}{}".format(base, i, ext))
+    new = "{}_{}{}".format(base, i, ext)
+    used.add(new)
+    return os.path.join(d, new)
 
 
 def merge_split(out_root, datasets):
     """把勾选数据集副本合并进 <out_root>/train 或 val(同名自动加序号，不覆盖)。"""
+    used_names = {}          # (split, sub) → 该目录已占用的文件名集合
     for info in datasets:
         src = os.path.join(out_root, info.get("project", ""), info["dataset_name"])
         merged = 0
@@ -196,8 +229,12 @@ def merge_split(out_root, datasets):
             os.makedirs(d, exist_ok=True)
             if not os.path.isdir(s):
                 continue
+            key = (info["split"], sub)
+            if key not in used_names:
+                used_names[key] = set(os.listdir(d))
+            used = used_names[key]
             for fn in os.listdir(s):
-                shutil.copy2(os.path.join(s, fn), _unique_dst(d, fn))
+                shutil.copy2(os.path.join(s, fn), _unique_dst(d, fn, used))
                 merged += 1
         print("[train] 合并 {} 数据集 → {} ({} 个文件)".format(
             info["dataset_name"], info["split"], merged), flush=True)

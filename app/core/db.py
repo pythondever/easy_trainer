@@ -31,11 +31,14 @@ class DataBase:
         self.db_path = db_path
         self.db_size = db_size
         self.mdb = None
-        # 进程内缓存: project_info_list 读多写少, 标注/标签/视图多处高频
-        # get_project_info() 全量 json.loads, 缓存后仅首次反序列化;
-        # 所有写方法(update/add/delete_project_info)写后置 None 失效。
         self._project_info_cache = None
+        self._info_index = None
         self.create_db()
+
+    def _invalidate_info_cache(self):
+        """项目信息缓存与其索引一并失效(任何写操作后调用)。"""
+        self._project_info_cache = None
+        self._info_index = None
 
     def create_db(self):
         if not os.path.exists(self.db_path):
@@ -52,7 +55,7 @@ class DataBase:
         else:
             project_list = json.loads(project_list.decode())
             project_list.append(name)
-        txn.put(key, json.dumps(project_list).encode())
+        txn.put(key, json.dumps(project_list, ensure_ascii=False).encode())
         txn.commit()
 
     def rename_project(self, old_name, new_name):
@@ -63,7 +66,7 @@ class DataBase:
                     project_list[idx] = new_name
             key = keys.project_list
             txn = self.mdb.begin(write=True)
-            txn.put(key, json.dumps(project_list).encode())
+            txn.put(key, json.dumps(project_list, ensure_ascii=False).encode())
             txn.commit()
         info_list = self.get_project_info()
         changed = False
@@ -112,7 +115,7 @@ class DataBase:
                 project_list.remove(name)
         key = keys.project_list
         txn = self.mdb.begin(write=True)
-        txn.put(key, json.dumps(project_list).encode())
+        txn.put(key, json.dumps(project_list, ensure_ascii=False).encode())
         txn.commit()
 
     def get_projects(self):
@@ -137,9 +140,9 @@ class DataBase:
         else:
             info_list = json.loads(info_list.decode())
             info_list.append(info)
-        txn.put(key, json.dumps(info_list).encode())
+        txn.put(key, json.dumps(info_list, ensure_ascii=False).encode())
         txn.commit()
-        self._project_info_cache = None
+        self._invalidate_info_cache()
 
     def get_project_info(self):
         if self._project_info_cache is not None:
@@ -152,14 +155,27 @@ class DataBase:
         else:
             info_list = json.loads(info_list.decode())
         self._project_info_cache = info_list
+        self._info_index = {}
+        for info in info_list:
+            k = (info.get('project_name'), info.get('dataset_name'))
+            self._info_index.setdefault(k, info)
         return info_list
+
+    def _find_info(self, project_name, dataset_name):
+        """
+        按 (项目, 数据集) 取 info: O(1) 命中索引, 替代逐条线性扫描全表。
+        返回 info 本身(非副本); 调用方就地改字段后仍需 update_project_info 落盘。
+        """
+        if self._project_info_cache is None:
+            self.get_project_info()
+        return (self._info_index or {}).get((project_name, dataset_name))
 
     def update_project_info(self, info):
         key = keys.project_info_list
         txn = self.mdb.begin(write=True)
-        txn.put(key, json.dumps(info).encode())
+        txn.put(key, json.dumps(info, ensure_ascii=False).encode())
         txn.commit()
-        self._project_info_cache = None
+        self._invalidate_info_cache()
 
     def delete_project_info(self, name):
         project_list = self.get_project_info()
@@ -170,9 +186,9 @@ class DataBase:
                 keep_info.append(info)
         key = keys.project_info_list
         txn = self.mdb.begin(write=True)
-        txn.put(key, json.dumps(keep_info).encode())
+        txn.put(key, json.dumps(keep_info, ensure_ascii=False).encode())
         txn.commit()
-        self._project_info_cache = None
+        self._invalidate_info_cache()
 
     def _get_deleted_maps(self):
         key = keys.deleted_images
@@ -185,22 +201,42 @@ class DataBase:
         except Exception:
             return {}
 
-    def add_deleted_image(self, project_name, dataset_name, image_path):
-        """记录一张被删除/不加载的图像。"""
+    def add_deleted_images(self, project_name, dataset_name, image_paths):
+        """
+        批量记录被删除/不加载的图像(单次事务), 返回新增条数
+        """
+        paths = list(image_paths or [])
+        if not paths:
+            return 0
         key = keys.deleted_images
         txn = self.mdb.begin(write=True)
         maps = txn.get(key)
         if maps is None:
             maps = {}
         else:
-            maps = json.loads(maps.decode())
-        project_data = maps.setdefault(project_name, {})
-        path_set = project_data.setdefault(dataset_name, [])
-        norm = os.path.normcase(os.path.normpath(image_path))
-        if norm not in path_set:
-            path_set.append(norm)
-        txn.put(key, json.dumps(maps).encode())
+            try:
+                maps = json.loads(maps.decode())
+            except Exception:
+                maps = {}
+        existing = maps.setdefault(project_name, {}).setdefault(dataset_name, [])
+        seen = set(existing)
+        added = 0
+        for p in paths:
+            if not p:
+                continue
+            norm = os.path.normcase(os.path.normpath(p))
+            if norm not in seen:
+                seen.add(norm)
+                existing.append(norm)
+                added += 1
+        if added:
+            txn.put(key, json.dumps(maps, ensure_ascii=False).encode())
         txn.commit()
+        return added
+
+    def add_deleted_image(self, project_name, dataset_name, image_path):
+        """记录一张被删除/不加载的图像(单张, 内部走批量实现)。"""
+        return self.add_deleted_images(project_name, dataset_name, [image_path])
 
     def get_deleted_images(self, project_name, dataset_name):
         """返回该数据集的已删除/不加载图像路径集合（归一化）。"""
@@ -225,10 +261,8 @@ class DataBase:
         """在项目下新增一个数据集记录。返回 True 成功 / False 名称已存在。"""
         if not project_name or not dataset_name:
             return False
-        for info in self.get_project_info():
-            if (info.get('project_name') == project_name
-                    and info.get('dataset_name') == dataset_name):
-                return False  # 项目下数据集重名
+        if self._find_info(project_name, dataset_name) is not None:
+            return False  # 项目下数据集重名
         self.add_project_info({
             'project_name': project_name,
             'dataset_name': dataset_name,
@@ -315,7 +349,7 @@ class DataBase:
                 project_data.pop(dataset_name, None)
                 if not project_data:
                     maps.pop(project_name, None)
-                txn.put(key, json.dumps(maps).encode())
+                txn.put(key, json.dumps(maps, ensure_ascii=False).encode())
         txn.commit()
 
     def update_dataset_import(self, project_name, dataset_name, image_path, label_path='',
@@ -410,7 +444,7 @@ class DataBase:
         maps.get(src_project, {}).pop(src_dataset, None)
         if not maps.get(src_project, {}):
             maps.pop(src_project, None)
-        txn.put(key, json.dumps(maps).encode())
+        txn.put(key, json.dumps(maps, ensure_ascii=False).encode())
         txn.commit()
 
     def get_dataset_import(self, project_name, dataset_name):
@@ -419,78 +453,62 @@ class DataBase:
         {'image_path','label_path','label_fmt','labeled','total',
          'image_paths': [...], 'label_paths': [...]}
          """
-        for info in self.get_project_info():
-            if (info.get('project_name') == project_name
-                    and info.get('dataset_name') == dataset_name):
-                return {
-                    'image_path': info.get('image_path', ''),
-                    'label_path': info.get('label_path', ''),
-                    'label_fmt': info.get('label_fmt', ''),
-                    'labeled': info.get('labeled', 0),
-                    'total': info.get('total', 0),
-                    'image_paths': list(info.get('image_paths') or [])
-                                   or ([info.get('image_path', '')] if info.get('image_path') else []),
-                    'label_paths': list(info.get('label_paths') or [])
-                                   or ([info.get('label_path', '')] if info.get('label_path') else []),
-                }
-        return {}
+        info = self._find_info(project_name, dataset_name)
+        if info is None:
+            return {}
+        return {
+            'image_path': info.get('image_path', ''),
+            'label_path': info.get('label_path', ''),
+            'label_fmt': info.get('label_fmt', ''),
+            'labeled': info.get('labeled', 0),
+            'total': info.get('total', 0),
+            'image_paths': list(info.get('image_paths') or [])
+                           or ([info.get('image_path', '')] if info.get('image_path') else []),
+            'label_paths': list(info.get('label_paths') or [])
+                           or ([info.get('label_path', '')] if info.get('label_path') else []),
+        }
 
     def get_dataset_labels(self, project_name, dataset_name):
         """返回该数据集标签映射 {标签名: 颜色#hex}。"""
-        for info in self.get_project_info():
-            if (info.get('project_name') == project_name
-                    and info.get('dataset_name') == dataset_name):
-                return dict(info.get('labels') or {})
-        return {}
+        info = self._find_info(project_name, dataset_name)
+        return dict(info.get('labels') or {}) if info is not None else {}
 
     def save_dataset_label_counts(self, project_name, dataset_name, counts):
         """持久化数据集标签数量统计 {标签名: 数量},供属性页无缓存时展示。"""
-        info_list = self.get_project_info()
-        for info in info_list:
-            if (info.get('project_name') == project_name
-                    and info.get('dataset_name') == dataset_name):
-                info['label_counts'] = dict(counts)
-                self.update_project_info(info_list)
-                return True
-        return False
+        info = self._find_info(project_name, dataset_name)
+        if info is None:
+            return False
+        info['label_counts'] = dict(counts)
+        self.update_project_info(self.get_project_info())
+        return True
 
     def get_dataset_label_counts(self, project_name, dataset_name):
         """返回该数据集标签数量统计 {标签名: 数量},无则 {}。"""
-        for info in self.get_project_info():
-            if (info.get('project_name') == project_name
-                    and info.get('dataset_name') == dataset_name):
-                return dict(info.get('label_counts') or {})
-        return {}
+        info = self._find_info(project_name, dataset_name)
+        return dict(info.get('label_counts') or {}) if info is not None else {}
 
     def save_dataset_labels(self, project_name, dataset_name, labels):
         """整体保存该数据集标签映射 {标签名: 颜色#hex}。"""
-        info_list = self.get_project_info()
-        for info in info_list:
-            if (info.get('project_name') == project_name
-                    and info.get('dataset_name') == dataset_name):
-                info['labels'] = dict(labels)
-                self.update_project_info(info_list)
-                return True
-        return False
+        info = self._find_info(project_name, dataset_name)
+        if info is None:
+            return False
+        info['labels'] = dict(labels)
+        self.update_project_info(self.get_project_info())
+        return True
 
     def get_dataset_label_ids(self, project_name, dataset_name):
         """返回该数据集 class_id→标签名 映射 {str_id: 标签名}(YOLO txt 数字 id 的显示名)。"""
-        for info in self.get_project_info():
-            if (info.get('project_name') == project_name
-                    and info.get('dataset_name') == dataset_name):
-                return dict(info.get('label_ids') or {})
-        return {}
+        info = self._find_info(project_name, dataset_name)
+        return dict(info.get('label_ids') or {}) if info is not None else {}
 
     def save_dataset_label_ids(self, project_name, dataset_name, ids):
         """整体保存 {str_id: 标签名}。"""
-        info_list = self.get_project_info()
-        for info in info_list:
-            if (info.get('project_name') == project_name
-                    and info.get('dataset_name') == dataset_name):
-                info['label_ids'] = dict(ids)
-                self.update_project_info(info_list)
-                return True
-        return False
+        info = self._find_info(project_name, dataset_name)
+        if info is None:
+            return False
+        info['label_ids'] = dict(ids)
+        self.update_project_info(self.get_project_info())
+        return True
 
     def add_dataset_label(self, project_name, dataset_name, label_name, color):
         """添加/更新单个标签及其颜色。"""
@@ -514,7 +532,7 @@ class DataBase:
         recs = txn.get(key)
         recs = json.loads(recs.decode()) if recs else []
         recs.append(record)
-        txn.put(key, json.dumps(recs).encode())
+        txn.put(key, json.dumps(recs, ensure_ascii=False).encode())
         txn.commit()
 
     def get_train_records(self):
@@ -552,7 +570,7 @@ class DataBase:
                 break
         else:
             recs.append(record)
-        txn.put(key, json.dumps(recs).encode())
+        txn.put(key, json.dumps(recs, ensure_ascii=False).encode())
         txn.commit()
 
     # ---------- 模型记录(独立于训练记录存储) ----------
