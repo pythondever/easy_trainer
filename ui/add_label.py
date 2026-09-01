@@ -16,14 +16,14 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QComboBox, QDialog, QGridLayout,
-    QHBoxLayout, QLabel, QLineEdit, QPushButton,
-    QSizePolicy, QSpacerItem, QVBoxLayout, QWidget)
+    QHBoxLayout, QLineEdit, QPushButton, QSizePolicy,
+    QSpacerItem, QVBoxLayout, QWidget)
 
 class Ui_addLabelDialog(object):
     def setupUi(self, addLabelDialog):
         if not addLabelDialog.objectName():
             addLabelDialog.setObjectName(u"addLabelDialog")
-        addLabelDialog.resize(400, 300)
+        addLabelDialog.resize(478, 300)
         self.gridLayout = QGridLayout(addLabelDialog)
         self.gridLayout.setObjectName(u"gridLayout")
         self.verticalLayout_2 = QVBoxLayout()
@@ -127,16 +127,6 @@ class Ui_addLabelDialog(object):
 
         self.horizontalLayout_3 = QHBoxLayout()
         self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
-        self.select_color = QLabel(addLabelDialog)
-        self.select_color.setObjectName(u"select_color")
-
-        self.horizontalLayout_3.addWidget(self.select_color)
-
-        self.color10_btn_2 = QPushButton(addLabelDialog)
-        self.color10_btn_2.setObjectName(u"color10_btn_2")
-
-        self.horizontalLayout_3.addWidget(self.color10_btn_2)
-
         self.custom_color = QPushButton(addLabelDialog)
         self.custom_color.setObjectName(u"custom_color")
 
@@ -192,8 +182,6 @@ class Ui_addLabelDialog(object):
         self.color10_btn.setText("")
         self.color9_btn.setText("")
         self.color8_btn.setText("")
-        self.select_color.setText(QCoreApplication.translate("addLabelDialog", u"\u9009\u4e2d", None))
-        self.color10_btn_2.setText("")
         self.custom_color.setText(QCoreApplication.translate("addLabelDialog", u"\u81ea\u5b9a\u4e49\u989c\u8272", None))
         self.add_label_done_btn.setText(QCoreApplication.translate("addLabelDialog", u"\u786e\u5b9a", None))
     # retranslateUi

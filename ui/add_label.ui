@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
+    <width>478</width>
     <height>300</height>
    </rect>
   </property>
@@ -144,20 +144,6 @@
        </item>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_3">
-         <item>
-          <widget class="QLabel" name="select_color">
-           <property name="text">
-            <string>选中</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="color10_btn_2">
-           <property name="text">
-            <string/>
-           </property>
-          </widget>
-         </item>
          <item>
           <widget class="QPushButton" name="custom_color">
            <property name="text">

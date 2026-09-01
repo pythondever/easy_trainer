@@ -417,11 +417,6 @@ class AddLabelDialog(QDialog):
         # 确定按钮
         self.ui.add_label_done_btn.setText("确定")
         self.ui.add_label_done_btn.clicked.connect(self.accept)
-        self.ui.select_color.setText("选择")
-        self.ui.color10_btn_2.setFixedHeight(36)
-        self.ui.color10_btn_2.setStyleSheet(
-            "QPushButton {{ background-color: {0}; border: 2px solid #3a3f4d;"
-            " border-radius: 6px; }}".format(self._selected_color or "#5B8CFF"))
         self.ui.input_label_name_txt.setPlaceholderText(
             "标签名称，多个用逗号分隔")
         # 同项目标签导入
@@ -472,13 +467,9 @@ class AddLabelDialog(QDialog):
         for btn in self._color_btns:
             btn.setEnabled(False)
         self.ui.custom_color.setEnabled(False)
-        self.ui.color10_btn_2.setEnabled(False)
 
     def _select_color(self, color, btn=None):
         self._selected_color = color
-        self.ui.color10_btn_2.setStyleSheet(
-            "QPushButton {{ background-color: {0}; border: 2px solid #3a3f4d;"
-            " border-radius: 6px; }}".format(color))
         # 高亮选中按钮
         for i in range(1, 11):
             b = getattr(self.ui, "color{}_btn".format(i))
