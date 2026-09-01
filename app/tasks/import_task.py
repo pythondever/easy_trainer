@@ -35,6 +35,10 @@ class ImportTask(QThread):
         self._id_names = dict(label_ids or {})
         self._seen_ids = {}
 
+    def cancel(self):
+        """请求停止: 置取消标志, run 循环内检查后退出。"""
+        self._cancel = True
+
     @staticmethod
     def _norm(path):
         return os.path.normcase(os.path.normpath(path))

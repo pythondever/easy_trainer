@@ -53,14 +53,14 @@ class App(QWidget, MainUI, LabelMixin, ProjectMixin, ImportExportMixin,
         if self.is_training():
             self._log("软件退出前停止训练")
             self.stop_training(confirm=False)
-        # 停止还在运行的测试线程,避免 QThread destroyed while running 崩溃
+        # 停止还在运行的测试线程,避免 QThread 崩溃
         for w in list(getattr(self, "_test_workers", set())):
             try:
                 w.stop()
                 w.wait(3000)
             except Exception:
                 pass
-        # 停止 ROI/缩略图后台解码 worker(首页网格渲染)
+        # 停止 ROI/缩略图后台解码
         for w in [getattr(self, "_roi_worker", None),
                   getattr(self, "_thumb_worker", None)]:
             if w is not None:
@@ -69,6 +69,20 @@ class App(QWidget, MainUI, LabelMixin, ProjectMixin, ImportExportMixin,
                     w.wait(2000)
                 except Exception:
                     pass
+        # 停止后台导入线程避免 QThread 崩溃
+        for w in list(getattr(self, "_loading_tasks", {}).values()):
+            try:
+                w.cancel()
+                w.wait(3000)
+            except Exception:
+                pass
+        # 停止后台合并/删除标签线程
+        for w in list(getattr(self, "_merge_tasks", set())):
+            try:
+                w.cancel()
+                w.wait(3000)
+            except Exception:
+                pass
         super().closeEvent(event)
 
     def init_widget(self):
@@ -117,8 +131,7 @@ class App(QWidget, MainUI, LabelMixin, ProjectMixin, ImportExportMixin,
         self._setup_header_groups()
 
     def _setup_header_groups(self):
-        """首页顶部工具栏分组: 标签区/统计区/训练区 用竖线分隔, 主次操作视觉区分。"""
-        # 主操作(训练)蓝填充 / 危险操作(删除)红色
+        """首页顶部工具栏分组: 标签区/统计区/训练区 用竖线分隔"""
         self.train_btn.setProperty("class", "primary")
         self.delete_label_btn.setProperty("class", "danger")
         self._tighten_gpu_pair()
@@ -137,7 +150,6 @@ class App(QWidget, MainUI, LabelMixin, ProjectMixin, ImportExportMixin,
         lay.insertWidget(9, vline())    # 进度区 | 标签区
 
     def _tighten_gpu_pair(self):
-        """把「显存」label 和显存 chip 按钮包成紧凑子布局(内部 2px), 避免 8px 间距显远。"""
         lay = self.datasetHeaderLayout
         lbl = self.gpu_memory_label
         btn = self.gpu_memory_use_btn

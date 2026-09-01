@@ -251,6 +251,7 @@ class LabelMixin(object):
                 progress.setValue(v)
 
         def on_done(changed):
+            self._merge_tasks.discard(task)
             if progress is not None:
                 progress.deleteLater()
             if progress_lbl is not None:
@@ -469,6 +470,7 @@ class LabelMixin(object):
                 progress.setValue(v)
 
         def on_done(changed):
+            self._merge_tasks.discard(task)
             if progress is not None:
                 progress.deleteLater()
             if progress_lbl is not None:

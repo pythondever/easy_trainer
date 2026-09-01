@@ -304,28 +304,6 @@ class MiscMixin(object):
             return counts
         return self.db.get_dataset_label_counts(project, dataset)
 
-    def _refresh_annotation_progress(self, project_name, dataset_name):
-        """标注完成后重新统计该数据集已标注数量并写 db、刷新树节点。"""
-        proj_cache = self.dataset_cache.get(project_name, {})
-        index = proj_cache.get(dataset_name)
-        if not index:
-            return
-        total = len(index["all"])
-        # 分类数据集: 每张图都有类别(cls/labels), 视为全部已标注
-        binding = self.db.get_dataset_import(project_name, dataset_name)
-        if binding.get("label_fmt") == "cls":
-            labeled = total
-        else:
-            labeled = 0
-            for rec in index["all"]:
-                if rec.get("boxes"):
-                    labeled += 1
-        self.db.update_dataset_import(
-            project_name, dataset_name,
-            binding.get("image_path", ""), binding.get("label_path", ""),
-            binding.get("label_fmt", ""), labeled=labeled, total=total)
-        self._update_dataset_row_progress(project_name, dataset_name, labeled, total)
-
     def _refresh_dataset_row_progress(self, project_name, dataset_name):
         """根据 db 当前 binding 刷新项目树该数据集节点的进度文本。"""
         ds_item = self._find_dataset_item(project_name, dataset_name)
@@ -415,7 +393,7 @@ class MiscMixin(object):
             len(paths), "删除本地文件" if delete_local else "仅标记不加载",
             delete_local_count, project, dataset))
         self.show_dataset_images(project, dataset)
-        self._refresh_annotation_progress(project, dataset)
+        self._refresh_dataset_stats(project, dataset)
         self._refresh_label_filter(project, dataset)
         self._refresh_dataset_row_progress(project, dataset)
 

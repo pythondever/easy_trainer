@@ -24,6 +24,10 @@ class MergeLabelsTask(QThread):
         self.remove = remove
         self._cancel = False
 
+    def cancel(self):
+        """请求停止: 置取消标志, run 循环内检查后退出。"""
+        self._cancel = True
+
     def run(self):
         changed_files = 0
         files = []
