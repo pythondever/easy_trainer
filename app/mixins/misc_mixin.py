@@ -244,10 +244,10 @@ class MiscMixin(object):
         """
         一次遍历同时刷新「已标注/总数」进度与「每类框数」统计。
         """
-        cache = self.dataset_cache.get(project_name, {}).get(dataset_name, {})
-        recs = cache.get("all") or []
-        if not recs and not cache.get("labels"):
+        cache = self.dataset_cache.get(project_name, {}).get(dataset_name)
+        if not cache:
             return
+        recs = cache.get("all") or []
         total = len(recs)
         binding = self.db.get_dataset_import(project_name, dataset_name)
         counts = {}

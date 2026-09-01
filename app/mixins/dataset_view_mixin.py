@@ -143,19 +143,17 @@ def _decode_roi(path, box, size=200):
         return None
     if w <= 0 or h <= 0:
         return None
-    x0, y0, w0, h0 = max(0, x), max(0, y), w, h
+    x0, y0 = max(0, x), max(0, y)
+    w0, h0 = w, h
     try:
         reader = QImageReader(path)
         reader.setAutoTransform(True)
         full = reader.size()
         if full.isValid():
-            x0 = max(0, min(x0, full.width() - 1))
-            y0 = max(0, min(y0, full.height() - 1))
-            w0 = max(1, min(w0, full.width() - x0))
-            h0 = max(1, min(h0, full.height() - y0))
-            # clipRect = 原图坐标的 ROI(先裁), scaledSize = 再缩放到目标尺寸。
-            # 注意必须是 setClipRect 而非 setScaledClipRect: 后者的坐标系是
-            # "缩放之后"的, 与原图标注框坐标对不上(会裁错区域)。
+            w0 = min(x + w, full.width()) - x0
+            h0 = min(y + h, full.height()) - y0
+            if w0 <= 0 or h0 <= 0:
+                return None
             reader.setClipRect(QRect(x0, y0, w0, h0))
             reader.setScaledSize(QSize(size, size))
             qimg = reader.read()
@@ -163,7 +161,6 @@ def _decode_roi(path, box, size=200):
                 return qimg
     except Exception:
         pass
-    # 回退: 格式不支持区域解码时走 PIL 全解码 + crop
     if PILImage is None:
         return None
     try:

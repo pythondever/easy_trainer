@@ -3,7 +3,6 @@
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QPainter, QColor, QKeySequence, QShortcut
 from PySide6.QtWidgets import QGraphicsView, QMenu
-
 from app.annotation.box_item import AnnotationBoxItem, AnnotationPolygonItem
 from app.annotation.scene import AnnotationScene
 

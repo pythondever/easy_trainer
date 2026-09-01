@@ -3,6 +3,7 @@
 
 import collections
 import csv
+import io
 import json
 import os
 import queue
@@ -118,7 +119,10 @@ class TrainWorker(QThread):
         区分 overall（检测 7 列/分割 9 列，末尾 2 列为 segm mAP）与 per-class（6 列）；
         与 CSV 通道共用 series/per_class 并按 epoch 去重，防双通道双写。
         """
-        if "Val (Epoch " not in line and "│" not in line:
+        # 每行都跑正则太贵(训练日志上万行), 用子串扫描做短路门控。
+        # 四个分隔符都要判: 解析器支持 │┃┆| , 只判 │ 会漏掉其它表格风格。
+        if ("Val (Epoch " not in line
+                and not any(s in line for s in ("│", "┃", "┆", "|"))):
             return
         m = re.search(r"Val \(Epoch (\d+)/", line)
         if m:
@@ -214,10 +218,19 @@ class TrainWorker(QThread):
             mtime = os.path.getmtime(csv_path)
             if mtime <= last_mtime and csv_rows_read:
                 return []
-            last_mtime = mtime
             try:
                 with open(csv_path, "r", encoding="utf-8") as f:
-                    rows = list(csv.DictReader(f))
+                    text = f.read()
+            except Exception:
+                return []
+            # 末尾无换行 = 训练进程正在写最后一行(半行): 本次不消费。
+            # 此处绝不能更新 last_mtime: 部分文件系统 mtime 粒度粗(2s),
+            # 整行写完后 mtime 可能不变, 提前更新会让末 epoch 永远读不到。
+            if text and not text.endswith("\n"):
+                return []
+            last_mtime = mtime
+            try:
+                rows = list(csv.DictReader(io.StringIO(text)))
             except Exception:
                 return []
             if len(rows) <= csv_rows_read:

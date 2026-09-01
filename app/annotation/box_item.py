@@ -5,9 +5,7 @@ from PySide6.QtGui import (QBrush, QColor, QPen, QFont, QFontMetrics, QPainter,
                            QPolygonF, QPainterPath)
 import functools
 import hashlib
-
 from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsPolygonItem, QGraphicsItem
-
 from app.core.utils import ui_font_family
 
 # 深色背景下鲜艳的标签配色

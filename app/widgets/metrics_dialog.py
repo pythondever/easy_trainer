@@ -63,6 +63,9 @@ class MetricsDialog(QDialog):
 
     def __init__(self, record, parent=None):
         super().__init__(parent)
+        # 关闭即销毁: 临时对象 .exec() 无引用持有, 不加此属性会导致
+        # C++ 对象(含 Figure)随 parent 常驻泄漏
+        self.setAttribute(Qt.WA_DeleteOnClose)
         self.setWindowTitle("训练指标")
         # 支持最小化/最大化(默认 dialog 只有关闭按钮)
         self.setWindowFlags(
@@ -121,7 +124,9 @@ class MetricsDialog(QDialog):
         le.setObjectName("multiComboLineEdit")
         le.setReadOnly(True)
         le.setAlignment(Qt.AlignHCenter)
-        f = _ClickToPopupFilter(combo)
+        # parent=self: dialog 设了 WA_DeleteOnClose, 过滤器必须随之销毁,
+        # 否则延时弹出的 singleShot 会打到已删除的 combo 上。
+        f = _ClickToPopupFilter(combo, self)
         combo.installEventFilter(f)
         combo.lineEdit().installEventFilter(f)
         self._combo_filters.append(f)   # 保引用
@@ -179,8 +184,10 @@ class MetricsDialog(QDialog):
                                   color="#e8eaf0", fontsize=10,
                                   va="center")
                 else:
+                    # 点多时去掉逐点 marker(50类×300epoch=1.5万对象拖慢重绘), 仅画线
                     axes.plot(xe, ve, label=name, linewidth=1.5,
-                              marker="o", markersize=4)
+                              marker="o" if len(xe) <= 100 else None,
+                              markersize=4)
             axes.set_xlabel("epoch", color="#c3c9d6")
             group_label = "loss 值" if g is loss_items else "指标值 (mAP/P/R)"
             axes.set_ylabel(group_label, color="#c3c9d6")
@@ -198,6 +205,11 @@ class MetricsDialog(QDialog):
                     pad = max((hi - lo) * 0.15, max(0.001, hi * 0.15))
                     axes.set_ylim(lo - pad, hi + pad)
             if epochs:
-                axes.set_xticks(epochs)
+                # 刻度钉死全部 epoch 会在 300 点时建 300 个 Text 对象, 每次
+                # 重绘全量重建; 限制最多 10 档均匀刻度, 交互读值以线为准。
+                # 向上取整: 保证 step 均匀覆盖到最后一个 epoch, 否则
+                # 双重截断(::step 后再 [:10])会让 x 轴右半段没有刻度。
+                step = max(1, (len(epochs) + 9) // 10)
+                axes.set_xticks(epochs[::step])
         fig.tight_layout()
         return FigureCanvasQTAgg(fig)

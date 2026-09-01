@@ -2,9 +2,7 @@
 """后台导入线程：扫描图像目录，可选读取标签(yolo txt / labelme json)。"""
 import os
 import json
-
 from PySide6.QtCore import QThread, Signal
-
 from app.core.image_utils import pil_open
 from app.core.label_utils import normalize_label
 
@@ -44,6 +42,9 @@ class ImportTask(QThread):
         return os.path.normcase(os.path.normpath(path))
 
     def run(self):
+        # 预校验标签目录: 剔除无效目录, 避免 _label_of 每张图重复 os.path.isdir
+        self.label_paths = [lp for lp in self.label_paths
+                            if lp and os.path.isdir(lp)]
         cls_mode = self.fmt == "cls"   # 按子文件夹分类导入: 子文件夹名=类别
         images = []
         for base_dir in self.image_paths:
@@ -86,16 +87,15 @@ class ImportTask(QThread):
                         "rois": {},
                     })
                 else:
-                    # 标注解析失败(损坏/空 json 等)不能丢弃整张图:
-                    # 保留 rec(boxes=None → 归为未标注), 保证 total 计数正确
+                    label_path = self._label_of(img_path)
                     try:
-                        boxes, labels = self._read_boxes(img_path)
+                        boxes, labels = self._read_boxes(img_path, label_path)
                     except Exception:
                         boxes, labels = None, []
                     thumb = None
                     result.append({
                         "image_path": img_path,
-                        "label_path": self._label_of(img_path),
+                        "label_path": label_path,
                         "boxes": boxes if boxes else None,   # [(x, y, w, h, label)] 或 None
                         "labels": labels,
                         "thumb": thumb,
@@ -124,7 +124,7 @@ class ImportTask(QThread):
                 return candidate
         return ""
 
-    def _read_boxes(self, img_path):
+    def _read_boxes(self, img_path, label_path=""):
         """
         读取标签，返回 (boxes, labels):
         boxes = 像素坐标 [(x, y, w, h, label)]; labels = 对应类别列表
@@ -137,21 +137,21 @@ class ImportTask(QThread):
         if os.path.exists(same_path_json):
             label_file = same_path_json
             fmt = ".json"
-        elif self.label_paths and self.fmt:
-            label_file = self._label_of(img_path)
+        elif label_path:
+            label_file = label_path
             fmt = self.fmt
         else:
             return None, []
         if not os.path.exists(label_file):
             return None, []
-        try:
-            with pil_open(img_path) as im:
-                iw, ih = im.size
-        except Exception:
-            return None, []
         boxes = []
         labels = []
         if fmt == ".txt":
+            try:
+                with pil_open(img_path) as im:
+                    iw, ih = im.size
+            except Exception:
+                return None, []
             with open(label_file, "r", encoding="utf-8") as f:
                 for line in f:
                     parts = line.split()

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """后台合并/删除标注类别线程。"""
 import os
-
 from PySide6.QtCore import QThread, Signal
 
 

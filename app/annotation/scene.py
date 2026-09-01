@@ -7,7 +7,6 @@ from PySide6.QtGui import (QPen, QColor, QBrush, QPolygonF, QPainterPath,
                            QPixmap, QPainter, QImage)
 from PySide6.QtWidgets import (QGraphicsScene, QGraphicsPixmapItem, QGraphicsItem,
                                QGraphicsPathItem, QGraphicsPolygonItem)
-
 from app.annotation.box_item import AnnotationBoxItem, AnnotationPolygonItem, label_color
 
 
