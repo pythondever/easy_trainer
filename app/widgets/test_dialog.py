@@ -51,6 +51,7 @@ class TestDialog(QDialog):
         self.app = app
         self._project = project
         self._dataset = dataset
+        self._preset_dataset = dataset
         self._record = record or {}
         self._worker = None
         self._combo_filters = []
@@ -65,9 +66,8 @@ class TestDialog(QDialog):
         self.ui.title_label.setFixedHeight(20)
         self.ui.verticalLayout.setSpacing(5)
         self.resize(self.width(), self.sizeHint().height())
-        self.ui.test_data_combo.currentIndexChanged.connect(self._on_data_changed)
         self.ui.start_test_btn.clicked.connect(self._on_start)
-        self._on_data_changed(self.ui.test_data_combo.currentIndex())
+        self._on_data_changed()
 
     # ---------- 样式：点击任意位置展开 + 控件对齐 ----------
     def _init_style(self):
@@ -94,7 +94,7 @@ class TestDialog(QDialog):
                               for i in range(out_lay.count()))
             if not has_stretch:
                 out_lay.addStretch(1)
-        for name in ("test_data_combo", "test_device_combo", "model_combo"):
+        for name in ("test_device_combo", "model_combo"):
             combo = getattr(self.ui, name, None)
             if combo is None:
                 continue
@@ -114,24 +114,72 @@ class TestDialog(QDialog):
                 edit.setAlignment(Qt.AlignHCenter)
 
     # ---------- 填充 ----------
+    def _setup_multi_combo(self, combo):
+        """配置成多选下拉(可编辑+只读+居中+点任意位置展开),与统计/训练一致。"""
+        combo.setEditable(True)
+        combo.setFocusPolicy(Qt.StrongFocus)
+        le = combo.lineEdit()
+        le.setObjectName("multiComboLineEdit")
+        le.setReadOnly(True)
+        le.setAlignment(Qt.AlignHCenter)
+        f = _ClickToPopupFilter(combo)
+        combo.installEventFilter(f)
+        le.installEventFilter(f)
+        self._combo_filters.append(f)
+
     def _fill_data_combo(self):
-        """跨项目所有数据集(文本"项目/数据集",项居中)。"""
+        """
+        跨项目所有数据集(文本"项目/数据集",可多选),入口传入的默认勾选。
+        数据源与首页项目树/统计/训练一致:先 get_projects() 拿项目名,再
+        get_datasets(name) 拿该项目下数据集。直接遍历 get_project_info()
+        会把已删除项目残留的孤儿记录也列出来。
+        """
         combo = self.ui.test_data_combo
+        self._setup_multi_combo(combo)
+        checked = {self._preset_dataset} if self._preset_dataset else set()
         model = QStandardItemModel(combo)
-        for info in self.app.db.get_project_info():
-            proj = str(info.get("project_name", "") or "")
-            ds = str(info.get("dataset_name", "") or "")
-            if not proj or not ds:
-                continue
-            item = QStandardItem("{}/{}".format(proj, ds))
-            item.setData((proj, ds), Qt.UserRole)
-            item.setTextAlignment(Qt.AlignHCenter)
-            model.appendRow(item)
+        for proj in self.app.db.get_projects():
+            for ds_info in self.app.db.get_datasets(proj):
+                ds = str(ds_info.get("dataset_name", "") or "")
+                if not ds:
+                    continue
+                text = "{}/{}".format(proj, ds)
+                item = QStandardItem(text)
+                item.setData((proj, ds), Qt.UserRole)
+                item.setTextAlignment(Qt.AlignHCenter)
+                item.setFlags(Qt.ItemIsEnabled | Qt.ItemIsUserCheckable)
+                item.setCheckState(
+                    Qt.Checked if text in checked else Qt.Unchecked)
+                model.appendRow(item)
         combo.setModel(model)
+        # 连接必须晚于 setModel, 否则绑在旧 model 上收不到勾选变化
+        combo.model().itemChanged.connect(lambda *_: self._on_data_changed())
+        combo.activated.connect(lambda _i: self._on_data_changed())
+        self._update_data_label()
+
+    def _checked_datasets(self):
+        """勾选的数据集 [(项目, 数据集), ...]。"""
+        out = []
+        model = self.ui.test_data_combo.model()
+        if model is None:
+            return out
         for i in range(model.rowCount()):
-            if model.item(i).text() == self._dataset:
-                combo.setCurrentIndex(i)
-                break
+            item = model.item(i)
+            if item.checkState() == Qt.Checked:
+                data = item.data(Qt.UserRole)
+                if isinstance(data, tuple) and len(data) == 2:
+                    out.append(data)
+        return out
+
+    def _update_data_label(self):
+        """把勾选的数据集拼到编辑区(居中),未选时清空。"""
+        checked = self._checked_datasets()
+        texts = ["{}/{}".format(p, d) for p, d in checked]
+        combo = self.ui.test_data_combo
+        combo.setEditText(", ".join(texts))
+        combo.setToolTip("\n".join(texts) if texts else "")
+        if not texts:
+            combo.setCurrentIndex(-1)
 
     def _fill_device_combo(self):
         combo = self.ui.test_device_combo
@@ -161,10 +209,6 @@ class TestDialog(QDialog):
         self.ui.iou_treshold_txt.setText("0.5")
         self.ui.output_label_file_checkBox.setChecked(False)
 
-    def _current_dataset(self):
-        d = self.ui.test_data_combo.currentData()
-        return d
-
     # ---------- 联动 ----------
     def _set_row_visible(self, row_name, visible):
         """隐藏/显示某行布局内的所有控件（布局本身无 setVisible）。"""
@@ -177,11 +221,14 @@ class TestDialog(QDialog):
             if w is not None:
                 w.setVisible(visible)
 
-    def _on_data_changed(self, _idx):
-        d = self._current_dataset()
-        if not d:
+    def _on_data_changed(self):
+        """按首个勾选的数据集决定界面模式;未选任何数据集时纯展示、不联动。"""
+        self._update_data_label()
+        checked = self._checked_datasets()
+        if not checked:
+            self._project, self._dataset = "", ""
             return
-        self._project, self._dataset = d
+        self._project, self._dataset = checked[0]
         self._fill_model_combo()
         info = self.app.db.get_dataset_import(self._project, self._dataset) or {}
         cls_mode = info.get("label_fmt", "") == "cls"
@@ -205,10 +252,10 @@ class TestDialog(QDialog):
         if self._worker is not None and self._worker.isRunning():
             MessageBox.warning(self, "测试", "已有测试在进行中")
             return
-        ds = self._current_dataset()
-        if not ds:
+        checked = self._checked_datasets()
+        if not checked:
+            MessageBox.warning(self, "测试", "请至少选择一个数据集")
             return
-        proj, ds_name = ds
         cls_mode = getattr(self, "_cls_mode", False)
         if cls_mode:
             conf, iou, output_labels = 0.5, 0.5, False
@@ -224,34 +271,62 @@ class TestDialog(QDialog):
         if not model_path:
             MessageBox.warning(self, "测试", "请选择模型")
             return
-        binding = self.app.db.get_dataset_import(proj, ds_name) or {}
-        image_paths = binding.get("image_paths") or (
-            [binding.get("image_path")] if binding.get("image_path") else [])
-        label_paths = binding.get("label_paths") or (
-            [binding.get("label_path")] if binding.get("label_path") else [])
-        image_path = image_paths[0] if image_paths else ""
-        label_path = label_paths[0] if label_paths else ""
-        if not image_path:
-            MessageBox.warning(self, "测试", "当前数据集未导入图像")
-            return
-        has_label = int(binding.get("labeled") or 0) > 0
+        # 多个数据集一起测:图像目录逐个展开,标签目录与图像目录按索引配对
+        items = []
+        total = 0
+        base_cls = None
+        base_labeled = None
+        for proj, ds_name in checked:
+            binding = self.app.db.get_dataset_import(proj, ds_name) or {}
+            image_paths = binding.get("image_paths") or (
+                [binding.get("image_path")] if binding.get("image_path") else [])
+            if not image_paths:
+                MessageBox.warning(
+                    self, "测试", "数据集 {}/{} 未导入图像".format(proj, ds_name))
+                return
+            label_paths = binding.get("label_paths") or (
+                [binding.get("label_path")] if binding.get("label_path") else [])
+            this_cls = binding.get("label_fmt", "") == "cls"
+            this_labeled = int(binding.get("labeled") or 0) > 0
+            if base_cls is None:
+                base_cls, base_labeled = this_cls, this_labeled
+            elif this_cls != base_cls:
+                MessageBox.warning(
+                    self, "测试",
+                    "分类数据集与检测/分割数据集不能同时测试: {}/{}".format(proj, ds_name))
+                return
+            elif this_labeled != base_labeled:
+                MessageBox.warning(
+                    self, "测试",
+                    "已标注与未标注的数据集不能同时测试: {}/{}".format(proj, ds_name))
+                return
+            for i, image_path in enumerate(image_paths):
+                items.append({
+                    "project": proj, "dataset": ds_name,
+                    "image_path": image_path,
+                    "label_path": (label_paths[i] if i < len(label_paths)
+                                   else (label_paths[0] if label_paths else "")),
+                })
+            total += int(binding.get("total") or 0)
+        has_label = bool(base_labeled)
         device = self.ui.test_device_combo.currentText() or "cuda"
-        total = int(binding.get("total") or 0)
         # 配置写入临时文件,TestWorker 子进程读它
         fd, cfg_path = tempfile.mkstemp(suffix=".json")
         os.close(fd)
         cfg = {
-            "model_path": model_path, "image_path": image_path,
-            "label_path": label_path, "iou_threshold": iou,
-            "confidence": conf, "has_label": has_label, "device": device,
+            "model_path": model_path, "items": items,
+            "iou_threshold": iou, "confidence": conf,
+            "has_label": has_label, "device": device,
             "total": total, "output_labels": output_labels,
             "task": "classify" if cls_mode else "",
             "_cfg_path": cfg_path,
         }
         with open(cfg_path, "w", encoding="utf-8") as f:
             json.dump(cfg, f, ensure_ascii=False)
-        write_log("[test] 启动测试 worker: model={} images={} label={} device={} cfg={}".format(
-            model_path, image_path, label_path, device, cfg_path))
+        write_log(
+            "[test] 启动测试 worker: model={} 数据集={} 图像目录={} device={} cfg={}".format(
+                model_path, ["{}/{}".format(p, d) for p, d in checked],
+                [it["image_path"] for it in items], device, cfg_path))
         # 进度条交给首页
         if hasattr(self.app, "_show_train_task"):
             self.app._show_train_task("测试准备中...", 0)

@@ -102,12 +102,14 @@ def main():
         transforms.Normalize([0.485, 0.456, 0.406],
                              [0.229, 0.224, 0.225]),
     ])
-    # 收集图像(含子文件夹)
+    # 收集图像(含子文件夹);items 支持一次测多个数据集
+    items = cfg.get("items") or [{"image_path": image_path}]
     images = []
-    for root, _, files in os.walk(image_path or ""):
-        for fn in sorted(files):
-            if fn.lower().endswith(_IMG_EXTS):
-                images.append(os.path.join(root, fn))
+    for it in items:
+        for root, _, files in os.walk(it.get("image_path") or ""):
+            for fn in sorted(files):
+                if fn.lower().endswith(_IMG_EXTS):
+                    images.append(os.path.join(root, fn))
     print("[test] 测试图片 {} 张".format(len(images)), flush=True)
     total = 0
     correct = 0

@@ -40,6 +40,11 @@ try:
 except ImportError:
     RFDETR = None
 
+try:
+    from app.core.label_utils import load_json_boxes as _load_json_boxes
+except Exception:
+    _load_json_boxes = None   # import 失败时退回纯 YOLO 模式
+
 _IMG_EXTS = (".jpg", ".jpeg", ".png", ".bmp")
 
 
@@ -50,6 +55,24 @@ def _list_images(img_dir):
     names = [n for n in os.listdir(img_dir)
              if n.lower().endswith(_IMG_EXTS)]
     return [os.path.join(img_dir, n) for n in sorted(names)]
+
+
+def _collect_pairs(cfg):
+    """
+    展开成 [(图片路径, 标签目录), ...]，支持一次测多个数据集。
+    标签按文件名在"该图片所属数据集的"标签目录里找，不同数据集的同名图片
+    不会串，所以必须逐目录配对而不是共用一个 label_dir。
+    兼容旧 cfg：没有 items 时退回单条 image_path/label_path。
+    """
+    items = cfg.get("items") or [
+        {"image_path": cfg.get("image_path", ""),
+         "label_path": cfg.get("label_path", "")}]
+    pairs = []
+    for it in items:
+        label_dir = it.get("label_path") or ""
+        for img in _list_images(it.get("image_path") or ""):
+            pairs.append((img, label_dir))
+    return pairs
 
 
 def _read_yolo_label(txt_path, img_w, img_h):
@@ -88,6 +111,28 @@ def _read_yolo_label(txt_path, img_w, img_h):
                 y1, y2 = min(ys) * img_h, max(ys) * img_h
             boxes.append((p[0].strip(), [x1, y1, x2, y2]))
     return boxes
+
+
+def _read_label_label(label_dir, img_path):
+    """
+    按图片同名找标签：优先 .txt (YOLO)，其次 .json (labelme)。
+    返回 [(cls, 像素[x1,y1,x2,y2])]。两种格式都覆盖，避免「标注数=0 但
+    实际有 143 个 labelme json」的静默误导。
+    """
+    base = os.path.splitext(os.path.basename(img_path))[0]
+    with Image.open(img_path) as im:
+        iw, ih = im.size
+    txt = os.path.join(label_dir, base + ".txt")
+    if os.path.exists(txt):
+        return _read_yolo_label(txt, iw, ih)
+    js = os.path.join(label_dir, base + ".json")
+    if os.path.exists(js) and _load_json_boxes is not None:
+        out = []
+        for x, y, w, h, cn in _load_json_boxes(js):
+            out.append((str(cn), [float(x), float(y),
+                                  float(x + w), float(y + h)]))
+        return out
+    return []
 
 
 def _iou(a, b):
@@ -199,17 +244,17 @@ def main():
         except Exception:
             pass
 
-    imgs = _list_images(cfg["image_path"])
-    print("[test] 测试图片 {} 张".format(len(imgs)), flush=True)
+    pairs = _collect_pairs(cfg)
+    print("[test] 测试图片 {} 张".format(len(pairs)), flush=True)
     conf_th = float(cfg.get("confidence", 0.5))
     iou_th = float(cfg.get("iou_threshold", 0.5))
     has_label = bool(cfg.get("has_label"))
-    label_dir = cfg.get("label_path") or ""
 
     tp = fp = fn = 0
+    _miss = 0                 # 有标签目录却找不到 .txt/.json 的图片数
     per_class = {}           # {cls: {gt,tp,fp,fn,det}}
     output_labels = bool(cfg.get("output_labels"))
-    for i, img_path in enumerate(imgs):
+    for i, (img_path, label_dir) in enumerate(pairs):
         try:
             det = model.predict(img_path, threshold=conf_th)
             if isinstance(det, list):
@@ -249,23 +294,29 @@ def main():
         if has_label:
             with Image.open(img_path) as im:
                 iw, ih = im.size
-            txt = os.path.join(label_dir,
-                               os.path.splitext(os.path.basename(img_path))[0]
-                               + ".txt")
-            gts = _read_yolo_label(txt, iw, ih)
+            gts = _read_label_label(label_dir, img_path)
+            if not gts:
+                _miss += 1
             t, f_p, f_n = _match(preds, gts, iou_th, per_class)
             tp += t
             fp += f_p
             fn += f_n
-        if (i + 1) % 10 == 0 or i + 1 == len(imgs):
-            print("[test] 进度 {}/{}".format(i + 1, len(imgs)), flush=True)
+        if (i + 1) % 10 == 0 or i + 1 == len(pairs):
+            print("[test] 进度 {}/{}".format(i + 1, len(pairs)), flush=True)
 
-    result = {"ok": True, "total": len(imgs)}
+    result = {"ok": True, "total": len(pairs)}
     if has_label:
         p = tp / (tp + fp) if (tp + fp) else 0.0
         r = tp / (tp + fn) if (tp + fn) else 0.0
         result.update({"P": p, "R": r, "TP": tp, "FP": fp, "FN": fn,
-                       "per_class": per_class})
+                       "per_class": per_class, "gt_missing": _miss})
+        if _miss and _miss == len(pairs):
+            print("[test] WARN 标签目录存在但所有 {} 张图都没读到 GT,"
+                  "请确认标签是 .txt (YOLO) 或 .json (labelme)".format(
+                      len(pairs)), flush=True)
+        elif _miss:
+            print("[test] WARN {} 张图缺标签文件".format(_miss),
+                  flush=True)
         print("[test] P={:.4f} R={:.4f} TP={} FP={} FN={}".format(
             p, r, tp, fp, fn), flush=True)
     print("[test] RESULT " + json.dumps(result, ensure_ascii=False),
