@@ -9,6 +9,7 @@ sys.path.append(WORKSPACE_DIRECTORY)
 sys.path.append(os.path.join(WORKSPACE_DIRECTORY, 'ui'))
 from ui.edit_label import Ui_Dialog as EditLabelUI
 from app.core.label_utils import (normalize_label, label_sort_key)
+from app.annotation.box_item import label_color
 from app.widgets.message_box import MessageBox, ProgressDialog
 from app.tasks.merge_task import MergeLabelsTask
 from PySide6.QtGui import QIcon, QPixmap, QColor
@@ -48,10 +49,31 @@ class LabelMixin(object):
             proj, ds = cur_ds
             self.show_dataset_images(proj, ds)
 
+    def _sync_labels_to_db(self, project_name, dataset_name, labels=None):
+        """
+        把实际使用的标签合并回写 db.labels: 已有标签保留原颜色, 新标签用
+        label_color 确定性配色入库。无变化不写库。
+        手工标注产生的新标签只落在 cache.index["labels"], 不回写 db 会导致
+        切换数据集时下拉缺项、全标注数据集被误判为"未标注"而视图空白。
+        """
+        current = self.db.get_dataset_labels(project_name, dataset_name) or {}
+        merged = {}
+        for name, color in current.items():
+            merged[normalize_label(name)] = color
+        for name in (labels or {}):
+            key = normalize_label(name)
+            if key and key not in merged:
+                merged[key] = label_color(key).name()
+        if merged != current:
+            self.db.save_dataset_labels(project_name, dataset_name, merged)
+        return merged
+
     def _refresh_label_filter(self, project_name, dataset_name):
         """
-        切换数据集时刷新首页标签下拉框选项(从 db 读取该数据集标签)。
+        切换数据集时刷新首页标签下拉框选项。
         "未标注"固定排最后; 数据集全标注时默认选中第一个标签, 否则默认"未标注"。
+        db.labels 可能比 cache 滞后(用户标新图后没同步), 合并 cache 实际标签
+        补全下拉,避免下拉只剩"未标注"。
         """
         if not hasattr(self, "label_filter_combo"):
             return
@@ -62,6 +84,10 @@ class LabelMixin(object):
                       self.db.get_dataset_labels(project_name, dataset_name).items()}
             if labels != self.db.get_dataset_labels(project_name, dataset_name):
                 self.db.save_dataset_labels(project_name, dataset_name, labels)
+            # 兜底: db 写入失败时用 cache 实际标签补全下拉, 避免只剩"未标注"
+            cache = self.dataset_cache.get(project_name, {}).get(dataset_name) or {}
+            for lbl in (cache.get("labels") or {}).keys():
+                labels.setdefault(lbl, label_color(lbl).name())
             # 标签按排序放前面,"未标注"固定排最后
             for name, color in sorted(labels.items(),
                                       key=lambda kv: label_sort_key(kv[0])):
@@ -86,12 +112,20 @@ class LabelMixin(object):
             self.label_filter_combo.blockSignals(False)
 
     def _set_label_filter_default(self, project_name, dataset_name, labels):
-        """数据集全标注 → 默认选第一个标签; 否则默认"未标注"(在下拉最后)。"""
+        """
+        数据集全标注 → 默认选第一个标签; 否则默认"未标注"(在下拉最后)。
+        labels 来自 db; 再并上 cache 的 index["labels"] keys 兜底, 防止 db
+        写入失败时全标注数据集被误判为"未标注"而视图空白。
+        """
         binding = self.db.get_dataset_import(project_name, dataset_name)
         total = binding.get("total", 0) or 0
         labeled = binding.get("labeled", 0) or 0
-        if total > 0 and labeled >= total and labels:
-            first = sorted(labels.keys(), key=label_sort_key)[0]
+        cache = self.dataset_cache.get(project_name, {}).get(dataset_name) or {}
+        cache_labels = list((cache.get("labels") or {}).keys())
+        merged = set(labels) | set(cache_labels)
+        if total > 0 and labeled >= total and merged:
+            ordered = sorted(merged, key=label_sort_key)
+            first = ordered[0]
             self.current_label = first
             for i in range(self.label_filter_combo.count()):
                 if self.label_filter_combo.itemData(i) == first:
@@ -325,10 +359,16 @@ class LabelMixin(object):
         新出现的 key 保持缺失(保留旧颜色), 防止下拉残留死标签导致筛选显示异常。
         """
         index = self.dataset_cache.get(project_name, {}).get(dataset_name) or {}
+        all_recs = index.get("all", [])
+        if not all_recs:
+            return
         used = set()
-        for rec in index.get("all", []):
+        for rec in all_recs:
             for b in (rec.get("boxes") or []):
                 used.add(b[-1])
+            for lbl in (rec.get("labels") or []):
+                used.add(lbl)
+        used = {normalize_label(x) for x in used if x}
         current = self.db.get_dataset_labels(project_name, dataset_name)
         if not current:
             return

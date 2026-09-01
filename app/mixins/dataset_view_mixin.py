@@ -6,7 +6,6 @@ CURRENT_DIRECTORY = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WORKSPACE_DIRECTORY = os.path.dirname(CURRENT_DIRECTORY)
 sys.path.append(WORKSPACE_DIRECTORY)
 sys.path.append(os.path.join(WORKSPACE_DIRECTORY, 'ui'))
-from app.annotation.box_item import label_color
 from app.annotation.annotation_dialog import AnnotationDialog
 from app.widgets.paginator import Paginator
 from app.core.label_utils import (normalize_label, label_sort_key)
@@ -502,6 +501,8 @@ class DatasetViewMixin(object):
             for label in set(rec.get("labels") or []):
                 index["labels"].setdefault(label, []).append(rec)
         proj_cache[dataset_name] = index
+        self._sync_labels_to_db(project_name, dataset_name, index["labels"])
+        self._sync_db_labels_from_cache(project_name, dataset_name)
 
     def _clear_scene(self):
         scene = self.graphics_view.scene()
@@ -882,17 +883,6 @@ class DatasetViewMixin(object):
                 project_name, dataset_name, total, labeled,
                 len(label_counts), counts_str or "(无)"))
             self._refresh_dataset_labels(project_name, dataset_name)
-            index = proj_cache[dataset_name]
-            current_labels = self.db.get_dataset_labels(project_name, dataset_name)
-            cleaned = {normalize_label(k): v for k, v in current_labels.items()}
-            if cleaned != current_labels:
-                self.db.save_dataset_labels(project_name, dataset_name, cleaned)
-                current_labels = cleaned
-            for lbl in index.get("labels", {}):
-                if lbl not in current_labels:
-                    self.db.add_dataset_label(project_name, dataset_name,
-                                              lbl, label_color(lbl).name())
-                    current_labels[lbl] = label_color(lbl).name()
             if self._current_dataset == (project_name, dataset_name):
                 self._refresh_label_filter(project_name, dataset_name)
             if getattr(self, "_current_dataset", None) == (project_name, dataset_name):
@@ -921,7 +911,11 @@ class DatasetViewMixin(object):
         return None
 
     def _on_project_tree_clicked(self, item, column):
-        """点击：仅记录选中；已缓存的数据集切换显示，未缓存不触发加载。"""
+        """
+        点击：仅记录选中；已缓存的数据集切换显示，未缓存不触发加载。
+        不强制覆盖 current_label —— 由 _refresh_label_filter 根据新数据集的实际
+        labels 决定保留/回退,避免 100% 标注数据集被强制选"未标注"导致视图空白。
+        """
         kind = item.data(0, Qt.UserRole)
         if not kind:
             return
@@ -929,7 +923,6 @@ class DatasetViewMixin(object):
             project, dataset = kind[1], kind[2]
             self._current_dataset = (project, dataset)
             if self.dataset_cache.get(project, {}).get(dataset):
-                self.current_label = "__unlabeled__"
                 self._refresh_label_filter(project, dataset)
                 self.show_dataset_images(project, dataset)
             else:

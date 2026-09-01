@@ -632,7 +632,7 @@ class AnnotationDialog(QDialog):
             edit.setAlignment(Qt.AlignCenter)
             edit.setMaxLength(100)
             edit.setValidator(QIntValidator(-3600, 3600, self))
-            edit.setFixedSize(50, u.draw_rect_btn.height())
+            edit.setFixedSize(65, u.draw_rect_btn.height())
         u.angle_range_label.setText("角度范围")
         u.label.setText("~")
         u.switchButton = SwitchButton(self)

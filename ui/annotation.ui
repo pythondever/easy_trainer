@@ -59,7 +59,11 @@
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="min_ange_lineEdit"/>
+        <widget class="QLineEdit" name="min_ange_lineEdit">
+         <property name="minimumSize">
+          <size><width>65</width><height>0</height></size>
+         </property>
+        </widget>
        </item>
        <item>
         <widget class="QLabel" name="label">
@@ -69,7 +73,11 @@
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="max_ange_lineEdit"/>
+        <widget class="QLineEdit" name="max_ange_lineEdit">
+         <property name="minimumSize">
+          <size><width>65</width><height>0</height></size>
+         </property>
+        </widget>
        </item>
        <item>
         <spacer name="horizontalSpacer_3">

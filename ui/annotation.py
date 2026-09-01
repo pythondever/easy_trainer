@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'annotation.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.3
+## Created by: Qt User Interface Compiler version 6.11.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -34,7 +34,7 @@ class Ui_annotationDialog(object):
         self.draw_rect_btn = QPushButton(annotationDialog)
         self.draw_rect_btn.setObjectName(u"draw_rect_btn")
         icon = QIcon()
-        icon.addFile(u"../resources/\u77e9\u5f62.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon.addFile(u"../resources/\u77e9\u5f62.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.draw_rect_btn.setIcon(icon)
 
         self.horizontalLayout.addWidget(self.draw_rect_btn)
@@ -42,7 +42,7 @@ class Ui_annotationDialog(object):
         self.poly_btn = QPushButton(annotationDialog)
         self.poly_btn.setObjectName(u"poly_btn")
         icon1 = QIcon()
-        icon1.addFile(u"../resources/\u591a\u8fb9\u5f62.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon1.addFile(u"../resources/\u591a\u8fb9\u5f62.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.poly_btn.setIcon(icon1)
 
         self.horizontalLayout.addWidget(self.poly_btn)
@@ -50,7 +50,7 @@ class Ui_annotationDialog(object):
         self.delete_image_btn = QPushButton(annotationDialog)
         self.delete_image_btn.setObjectName(u"delete_image_btn")
         icon2 = QIcon()
-        icon2.addFile(u"../resources/\u5220\u9664.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon2.addFile(u"../resources/\u5220\u9664.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.delete_image_btn.setIcon(icon2)
 
         self.horizontalLayout.addWidget(self.delete_image_btn)
@@ -62,6 +62,7 @@ class Ui_annotationDialog(object):
 
         self.min_ange_lineEdit = QLineEdit(annotationDialog)
         self.min_ange_lineEdit.setObjectName(u"min_ange_lineEdit")
+        self.min_ange_lineEdit.setMinimumSize(QSize(65, 0))
 
         self.horizontalLayout.addWidget(self.min_ange_lineEdit)
 
@@ -72,6 +73,7 @@ class Ui_annotationDialog(object):
 
         self.max_ange_lineEdit = QLineEdit(annotationDialog)
         self.max_ange_lineEdit.setObjectName(u"max_ange_lineEdit")
+        self.max_ange_lineEdit.setMinimumSize(QSize(65, 0))
 
         self.horizontalLayout.addWidget(self.max_ange_lineEdit)
 
