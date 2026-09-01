@@ -941,7 +941,6 @@ class AnnotationDialog(QDialog):
             self.scene.set_format_painter(False)
         self.scene.set_draw_mode(False)
         self.scene._cancel_polygon()
-        # 清空全局 override 光标栈(消除多次 push 未配对的残留, 光标彻底恢复默认)
         self._clear_override_cursor()
         self.view.unsetCursor()
         self._set_draw_button_states(False)
@@ -951,6 +950,7 @@ class AnnotationDialog(QDialog):
         """"显示标注"开关：关闭时隐藏图像上的标注框，右侧列表信息保留。"""
         for item in self.scene.all_items():
             item.setVisible(checked)
+        self.scene.invalidate()
 
     def _undo_fp_paste(self):
         """Ctrl+Z：撤销最后一次格式刷粘贴（恢复图像像素 + 删标注）。"""

@@ -353,15 +353,13 @@ class AnnotationBoxItem(QGraphicsRectItem):
 
     # ---------------- 绘制 ---------------- 
     def boundingRect(self):
-        """重绘范围：必须包含框、上方的标签 chip、缩放手柄。
-
-        默认 QGraphicsRectItem 的 boundingRect 只有框本身，标签 chip 画在
-        框上方 22px 处（超出默认范围），导致移动/缩放时 chip 旧位置不重绘，
-        留下文字拖影。这里向上额外扩展 24px 并把手柄也算进去。
+        """
+        重绘范围 = 框 + 缩放手柄 + 标签 chip。
         """
         r = self.rect()
         o = getattr(self, "_handle_size", self.HANDLE_SIZE)
-        return r.adjusted(-o, -o - 24, o, o + 24)
+        base = r.adjusted(-o, -o - 24, o, o + 24)
+        return base.united(self._chip_rect_local().adjusted(-o, -o, o, o))
 
     def paint(self, painter, option, widget=None):
         painter.setRenderHint(QPainter.Antialiasing)
@@ -636,7 +634,8 @@ class AnnotationPolygonItem(QGraphicsPolygonItem):
     def boundingRect(self):
         r = self.polygon().boundingRect()
         o = getattr(self, "_handle_size", self.HANDLE_SIZE)
-        return r.adjusted(-o, -o - 24, o, o + 24)
+        base = r.adjusted(-o, -o - 24, o, o + 24)
+        return base.united(self._chip_rect_local().adjusted(-o, -o, o, o))
 
     def paint(self, painter, option, widget=None):
         painter.setRenderHint(QPainter.Antialiasing)
