@@ -441,7 +441,6 @@ class DatasetViewMixin(object):
             if rec.get("boxes"):
                 rec["boxes"] = [tuple(b[:-1]) + (normalize_label(b[-1]),)
                                 for b in rec["boxes"]]
-            rec["rois"] = {}
             index["all"].append(rec)
             for label in set(rec.get("labels") or []):
                 index["labels"].setdefault(label, []).append(rec)
@@ -482,14 +481,14 @@ class DatasetViewMixin(object):
                             boxes.append((max(0, x), max(0, y), max(1, w), max(1, h), lbl))
                     rec["labels"] = labels
                     rec["boxes"] = boxes if boxes else None
-                    rec["rois"] = {}
+                    rec["rois_by_idx"] = {}
                     rec["_has_annotation_json"] = True
                 except Exception:
                     pass
             elif rec.get("_has_annotation_json"):
                 rec["labels"] = []
                 rec["boxes"] = None
-                rec["rois"] = {}
+                rec["rois_by_idx"] = {}
                 rec["_has_annotation_json"] = False
 
         for rec in index.get("all", []):

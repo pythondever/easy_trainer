@@ -12,9 +12,7 @@
 import os
 import shutil
 from datetime import datetime
-
 from PIL import Image
-
 from app.core.label_utils import (normalize_label, load_json_boxes,
                              boxes_to_yolo_text)
 
@@ -24,6 +22,18 @@ def timestamp_dir():
 
 
 _img_size_cache = {}
+_IMAGE_EXTS = (".jpg", ".jpeg", ".png", ".bmp", ".webp", ".tif", ".tiff")
+
+
+def _img_size_of_stem(img_dir, stem):
+    """按文件名主干在多种扩展名中找图并取尺寸, 找不到返回 (0, 0)。"""
+    if not img_dir:
+        return 0, 0
+    for ext in _IMAGE_EXTS:
+        p = os.path.join(img_dir, stem + ext)
+        if os.path.exists(p):
+            return _img_size(p)
+    return 0, 0
 
 
 def _img_size(path):
@@ -56,13 +66,7 @@ def _copy_dataset_labels(src_label_path, fmt, dst_labels, label_to_id, img_dir):
                 continue
             for b in boxes:
                 labels_found.add(b[4])
-            iw, ih = 0, 0
-            if img_dir:
-                for ext in (".jpg", ".jpeg", ".png", ".bmp", ".webp"):
-                    p = os.path.join(img_dir, os.path.splitext(fn)[0] + ext)
-                    if os.path.exists(p):
-                        iw, ih = _img_size(p)
-                        break
+            iw, ih = _img_size_of_stem(img_dir, os.path.splitext(fn)[0])
             if iw and ih:
                 txt = boxes_to_yolo_text(boxes, iw, ih, label_to_id)
                 base = os.path.splitext(fn)[0] + ".txt"
@@ -165,8 +169,8 @@ def copy_datasets(out_root, project, datasets):
                     boxes = load_json_boxes(jp)
                     if not boxes:
                         continue
-                    iw, ih = _img_size(os.path.join(info["image_path"],
-                                                    os.path.splitext(fn)[0] + ".jpg"))
+                    iw, ih = _img_size_of_stem(info["image_path"],
+                                               os.path.splitext(fn)[0])
                     if iw and ih:
                         txt = boxes_to_yolo_text(boxes, iw, ih, label_to_id)
                         base = os.path.splitext(fn)[0] + ".txt"

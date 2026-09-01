@@ -174,7 +174,13 @@ class MetricsDialog(QDialog):
                                    facecolor="#1c1e25")
             for name, values in g.items():
                 n = min(len(epochs), len(values))
-                xe, ve = epochs[:n], values[:n]
+                # 缺值在 worker 侧补了 None 占位以保持与 epochs 对齐,
+                # 绘图前必须过滤, 否则 min/max 与 format 会拿到 None 崩溃。
+                pairs = [(e, v) for e, v in zip(epochs[:n], values[:n])
+                         if v is not None]
+                if not pairs:
+                    continue
+                xe, ve = zip(*pairs)
                 if len(xe) == 1:
                     axes.plot(xe, ve, "o", markersize=10,
                               label=name)
@@ -199,7 +205,8 @@ class MetricsDialog(QDialog):
             axes.legend(loc="lower right", facecolor="#23262f", edgecolor="#3a3f4e",
                         labelcolor="#e8eaf0")
             if epochs:
-                all_vals = [v for vs in g.values() for v in vs]
+                all_vals = [v for vs in g.values() for v in vs
+                            if v is not None]
                 if all_vals:
                     lo, hi = min(all_vals), max(all_vals)
                     pad = max((hi - lo) * 0.15, max(0.001, hi * 0.15))

@@ -4,12 +4,8 @@ import os
 import time
 import uuid
 from . import keys
+from .log import write_log
 
-# LMDB map_size 上限。注意 Windows 上这是真实预分配(非稀疏文件):
-# 设为 N 则 data.mdb 立即占用约 N 磁盘空间, 与实际数据量无关, 故不宜盲目取大。
-# 128MB 约可容纳数百条完整训练记录(train_history 含每 epoch metrics 序列,
-# 单条约数十 KB), 远大于旧值 10MB——旧值在训练记录累积后会 MapFullError 硬崩。
-# 已存在的库用更大的 map_size 重新 open 是安全的, 已有数据不受影响。
 DEFAULT_MAP_SIZE = 128 * 1024 * 1024
 
 
@@ -77,6 +73,7 @@ class DataBase:
         if changed:
             self.update_project_info(info_list)
         self._rename_records_project(old_name, new_name)
+        self._rename_deleted_project(old_name, new_name)
 
     def _rename_records_project(self, old_name, new_name):
         """训练/模型记录中项目名替换(含 dataset/val_dataset/dataset_info 的"项目/"前缀)。"""
@@ -216,8 +213,11 @@ class DataBase:
         else:
             try:
                 maps = json.loads(maps.decode())
-            except Exception:
-                maps = {}
+            except Exception as e:
+                txn.abort()
+                write_log("已删除图像记录解析失败，本次未写入以免覆盖丢失 "
+                          "({}): {}".format(key, e))
+                return 0
         existing = maps.setdefault(project_name, {}).setdefault(dataset_name, [])
         seen = set(existing)
         added = 0
@@ -293,6 +293,7 @@ class DataBase:
             target['dataset_type'] = dataset_type
         self.update_project_info(info_list)
         self._rename_records_dataset(project_name, old_name, new_name)
+        self._rename_deleted_dataset(project_name, old_name, new_name)
         return True
 
     def _rename_records_dataset(self, project_name, old_name, new_name):
@@ -424,6 +425,51 @@ class DataBase:
                 self.update_project_info(info_list)
                 return True
         return False
+
+    def _load_deleted_maps(self, txn):
+        """读 deleted_images 全表。损坏时返回 None（调用方须放弃写入并 abort）。"""
+        data = txn.get(keys.deleted_images)
+        if data is None:
+            return {}
+        try:
+            return json.loads(data.decode())
+        except Exception as e:
+            write_log("已删除图像记录解析失败，跳过迁移以免覆盖丢失 "
+                      "({}): {}".format(keys.deleted_images, e))
+            return None
+
+    def _rename_deleted_project(self, old_name, new_name):
+        """项目改名时迁移排除记录, 否则重命名后这些图会全部重新出现。"""
+        txn = self.mdb.begin(write=True)
+        maps = self._load_deleted_maps(txn)
+        if maps is None or old_name not in maps:
+            txn.abort()
+            return
+        dst = maps.setdefault(new_name, {})
+        for ds, paths in maps.pop(old_name).items():
+            cur = dst.setdefault(ds, [])
+            for p in paths:
+                if p not in cur:
+                    cur.append(p)
+        txn.put(keys.deleted_images,
+                json.dumps(maps, ensure_ascii=False).encode())
+        txn.commit()
+
+    def _rename_deleted_dataset(self, project_name, old_name, new_name):
+        """数据集改名时迁移排除记录, 否则重命名后这些图会全部重新出现。"""
+        txn = self.mdb.begin(write=True)
+        maps = self._load_deleted_maps(txn)
+        if maps is None or old_name not in maps.get(project_name, {}):
+            txn.abort()
+            return
+        proj = maps[project_name]
+        cur = proj.setdefault(new_name, [])
+        for p in proj.pop(old_name):
+            if p not in cur:
+                cur.append(p)
+        txn.put(keys.deleted_images,
+                json.dumps(maps, ensure_ascii=False).encode())
+        txn.commit()
 
     def move_deleted_images(self, src_project, src_dataset,
                             dst_project, dst_dataset):

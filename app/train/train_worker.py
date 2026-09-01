@@ -2,6 +2,7 @@
 """训练工作线程：以子进程方式运行 RF-DETR 训练，定时轮询指标并转发信号。"""
 
 import collections
+import copy
 import csv
 import io
 import json
@@ -12,6 +13,7 @@ import subprocess
 import sys
 import threading
 import time
+import traceback
 
 from PySide6.QtCore import QThread, Signal
 
@@ -73,6 +75,15 @@ class TrainWorker(QThread):
             except (TypeError, ValueError):
                 return None
 
+        n_ep = len(series["epochs"])
+
+        def _align(seq):
+            """
+            把序列补齐到上一轮长度
+            """
+            if len(seq) < n_ep - 1:
+                seq.extend([None] * (n_ep - 1 - len(seq)))
+
         for key, csv_key in (("mAP@50-95", "val/mAP_50_95"),
                              ("mAP@50", "val/mAP_50"),
                              ("precision", "val/precision"),
@@ -85,9 +96,13 @@ class TrainWorker(QThread):
                              ("mask_mAP@50-95", "val/segm_mAP_50_95"),
                              ("train_loss", "train/loss"),
                              ("val_loss", "val/loss")):
-            v = _f(row.get(csv_key))
-            if v is not None:
-                series.setdefault(key, []).append(v)
+            if csv_key not in row:
+                continue
+            seq = series.setdefault(key, [])
+            _align(seq)
+            seq.append(_f(row.get(csv_key)))
+
+        present = {}
         for k, v in row.items():
             # CSV 每类 5 列：val/{AP,AR,F1,Precision,Recall}/<类>
             for prefix, field in (("val/AP/", "AP50-95"), ("val/AR/", "AR"),
@@ -95,32 +110,37 @@ class TrainWorker(QThread):
                                   ("val/Precision/", "Precision"),
                                   ("val/Recall/", "Recall")):
                 if k.startswith(prefix) and v not in (None, ""):
-                    label = k[len(prefix):]
-                    pc = per_class.setdefault(
-                        label, {"AP50-95": [], "AR": [], "F1": [],
-                                "Precision": [], "Recall": []})
-                    if len(pc[field]) < len(series.get("epochs", [])):
-                        pc[field].append(_f(v))
+                    present[(k[len(prefix):], field)] = _f(v)
+        for label in set(per_class) | {lb for lb, _ in present}:
+            pc = per_class.setdefault(
+                label, {"AP50-95": [], "AR": [], "F1": [],
+                        "Precision": [], "Recall": []})
+            for field in pc:
+                seq = pc[field]
+                _align(seq)
+                seq.append(present.get((label, field)))
+
+        for seq in series.values():
+            if len(seq) < n_ep:
+                seq.append(None)
         return (epochs, series, per_class)
 
     @staticmethod
     def _build_payload(s, pc):
-        """构造 metrics payload（series + 可选 per_class）。"""
-        p = {"epochs": s.get("epochs", []),
-             "series": {k: v for k, v in s.items() if k != "epochs"}}
+        """
+        构造 metrics payload
+        """
+        p = {"epochs": copy.deepcopy(s.get("epochs", [])),
+             "series": {k: copy.deepcopy(v)
+                        for k, v in s.items() if k != "epochs"}}
         if pc:
-            p["per_class"] = pc
+            p["per_class"] = copy.deepcopy(pc)
         return p
 
     def _consume_stdout_line(self, line, pending, epochs, series, per_class):
         """
         从 rf-detr stdout 的 Val 表格兜底取指标（metrics.csv 不落盘时的保险）。
-        pending 状态机：Val (Epoch N/M) 标题行定 phase，随后 │ 分隔的数据行按列数
-        区分 overall（检测 7 列/分割 9 列，末尾 2 列为 segm mAP）与 per-class（6 列）；
-        与 CSV 通道共用 series/per_class 并按 epoch 去重，防双通道双写。
         """
-        # 每行都跑正则太贵(训练日志上万行), 用子串扫描做短路门控。
-        # 四个分隔符都要判: 解析器支持 │┃┆| , 只判 │ 会漏掉其它表格风格。
         if ("Val (Epoch " not in line
                 and not any(s in line for s in ("│", "┃", "┆", "|"))):
             return
@@ -223,9 +243,6 @@ class TrainWorker(QThread):
                     text = f.read()
             except Exception:
                 return []
-            # 末尾无换行 = 训练进程正在写最后一行(半行): 本次不消费。
-            # 此处绝不能更新 last_mtime: 部分文件系统 mtime 粒度粗(2s),
-            # 整行写完后 mtime 可能不变, 提前更新会让末 epoch 永远读不到。
             if text and not text.endswith("\n"):
                 return []
             last_mtime = mtime
@@ -308,51 +325,63 @@ class TrainWorker(QThread):
             log_buf = []
             log_last_flush = time.time()
 
+        poll_error = None
         while not self._stop_flag:
             try:
-                line = out_q.get(timeout=0.5)
-            except queue.Empty:
-                line = None
-            if line:
-                line = _ansi_re.sub("", line)
-                last_lines.append(line.rstrip())
-                log_buf.append(line.rstrip())
-                if "[train] EPOCH " in line:
-                    m = re.search(r"EPOCH (\d+)/(\d+)", line)
-                    if m:
-                        self.progress.emit(int(m.group(1)), int(m.group(2)))
-                if "[train] METRICS " in line:
-                    try:
-                        m = json.loads(line.split("METRICS ", 1)[1])
-                        self.metrics.emit(m)
-                    except Exception:
-                        pass
-                self._consume_stdout_line(line, pending, epochs, series,
-                                          per_class)
-                if "[train] RESULT" in line:
-                    try:
-                        res = json.loads(line.split("RESULT ", 1)[1])
-                    except Exception:
-                        res = {}
-                    self.finished_ok.emit(res)
-                    result_emitted = True
-            _flush_log()
-            _poll_csv()
-            _poll_cls()
-            if self._proc.poll() is not None and out_q.empty():
+                try:
+                    line = out_q.get(timeout=0.5)
+                except queue.Empty:
+                    line = None
+                if line:
+                    line = _ansi_re.sub("", line)
+                    last_lines.append(line.rstrip())
+                    log_buf.append(line.rstrip())
+                    if "[train] EPOCH " in line:
+                        m = re.search(r"EPOCH (\d+)/(\d+)", line)
+                        if m:
+                            self.progress.emit(int(m.group(1)),
+                                               int(m.group(2)))
+                    if "[train] METRICS " in line:
+                        try:
+                            m = json.loads(line.split("METRICS ", 1)[1])
+                            self.metrics.emit(m)
+                        except Exception:
+                            pass
+                    self._consume_stdout_line(line, pending, epochs, series,
+                                              per_class)
+                    if "[train] RESULT" in line:
+                        try:
+                            res = json.loads(line.split("RESULT ", 1)[1])
+                        except Exception:
+                            res = None
+                        if isinstance(res, dict):
+                            self.finished_ok.emit(res)
+                            result_emitted = True
+                _flush_log()
+                _poll_csv()
+                _poll_cls()
+                if self._proc.poll() is not None and out_q.empty():
+                    break
+            except Exception:
+                poll_error = traceback.format_exc()
                 break
         _flush_log(force=True)
         last_poll = 0.0
         _poll_csv()
         rc = self._proc.poll()
         result_path = os.path.join(self._config["timestamp_dir"], "result.json")
-        if rc == 0 and os.path.exists(result_path) and not result_emitted:
+        if poll_error:
+            self.failed.emit("训练监控异常，已终止。\n\n{}".format(poll_error))
+        elif rc == 0 and os.path.exists(result_path) and not result_emitted:
             try:
                 with open(result_path, "r", encoding="utf-8") as f:
                     res = json.load(f)
                 self.finished_ok.emit(res)
-            except Exception:
-                pass
+                result_emitted = True
+            except Exception as e:
+                self.failed.emit(
+                    "训练结果文件读取失败: {}\n\n{}".format(result_path, e))
+                result_emitted = True
         elif not self._stop_flag and rc != 0:
             detail = "训练进程异常退出 (code={})\n\n--- 子进程输出(尾部) ---\n{}".format(
                 rc, "\n".join(last_lines))

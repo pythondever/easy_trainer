@@ -181,7 +181,6 @@ class LabelMixin(object):
                                     if b[-1] == old_name else b for b in boxes]
                     changed = True
                 if changed:
-                    rec["rois"] = {}
                     rec["rois_by_idx"] = {}
             self._rebuild_index_labels(project_name, dataset_name)
         self._rename_label_in_files(project_name, dataset_name, old_name, new_name)
@@ -409,7 +408,6 @@ class LabelMixin(object):
                         rec["boxes"] = new_boxes
                         changed = True
                 if changed:
-                    rec["rois"] = {}
                     rec["rois_by_idx"] = {}
             self._rebuild_index_labels(project_name, dataset_name)
         self._delete_label_in_files(project_name, dataset_name, label_name)
@@ -565,7 +563,6 @@ class LabelMixin(object):
                     rec["boxes"] = new_boxes
                     changed = True
             if changed:
-                rec["rois"] = {}
                 rec["rois_by_idx"] = {}
         self._rebuild_index_labels(project_name, dataset_name)
 
@@ -584,7 +581,6 @@ class LabelMixin(object):
             rec["cls"] = new_cls
             rec["labels"] = [new_cls]
             rec["thumb"] = None
-            rec["rois"] = {}
             rec["rois_by_idx"] = {}
         index["labels"] = {}
         for rec in recs:

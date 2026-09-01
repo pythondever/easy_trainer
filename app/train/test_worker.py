@@ -113,9 +113,10 @@ class TestWorker(QThread):
                     try:
                         res = json.loads(line.split("RESULT ", 1)[1])
                     except Exception:
-                        res = {}
-                    self.finished_ok.emit(res)
-                    result_emitted = True
+                        res = None
+                    if isinstance(res, dict):
+                        self.finished_ok.emit(res)
+                        result_emitted = True
             if buf:
                 self.log.emit("\n".join(buf))
 
