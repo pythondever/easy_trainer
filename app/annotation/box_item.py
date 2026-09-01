@@ -8,11 +8,16 @@ import hashlib
 from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsPolygonItem, QGraphicsItem
 from app.core.utils import ui_font_family
 
-# 深色背景下鲜艳的标签配色
+# 深色背景下鲜艳的标签配色。
 LABEL_COLORS = [
     "#5B8CFF", "#3DDC97", "#F5B942", "#F0646E", "#C08BFF",
     "#4FC3F7", "#FF8A65", "#81C784", "#F06292", "#AED581",
     "#4DD0E1", "#FFD54F",
+    "#F9779A", "#F97E72", "#E68026", "#D98A26",
+    "#CC9226", "#B39F26", "#A3A626", "#72B436",
+    "#52B852", "#30C391", "#30C1A5", "#32C5DC",
+    "#43BFF9", "#69B9F9", "#80B4F9", "#A2A9F9",
+    "#B2A2F9", "#C49AF9", "#DA8DF9", "#DF7DDE",
 ]
 
 
@@ -29,6 +34,26 @@ def label_color(label):
     except Exception:
         idx = 0
     return QColor(LABEL_COLORS[idx])
+
+
+def assign_label_color(label, used):
+    """
+    批量分配用: 从 label_color 的哈希位开始线性探测, 取第一个未被占用的颜色。
+    used: 已分配的颜色集合(QColor.name() 小写 hex)。
+    纯哈希在标签数接近调色板容量时必然撞色(N=20 撞 4 对), 探测后只要
+    N <= len(LABEL_COLORS) 就能保证同批标签两两不同色。
+    调色板用尽时退化成 label_color(仍确定, 只是可能与别人同色)。
+    """
+    try:
+        digest = hashlib.md5(str(label).encode("utf-8")).hexdigest()
+        start = int(digest[:8], 16) % len(LABEL_COLORS)
+    except Exception:
+        start = 0
+    for k in range(len(LABEL_COLORS)):
+        name = QColor(LABEL_COLORS[(start + k) % len(LABEL_COLORS)]).name()
+        if name not in used:
+            return name
+    return QColor(LABEL_COLORS[start]).name()
 
 
 _CHIP_FONT = None

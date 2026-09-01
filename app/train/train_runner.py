@@ -32,6 +32,7 @@ from rfdetr import (RFDETRNano, RFDETRSmall, RFDETRMedium, RFDETRLarge,
 
 from app.train.data_prep import (copy_datasets, merge_split,
                                  write_data_yaml, clean_split)
+from app.core.utils import read_text_any
 
 
 def _make_model(architecture, task="detect"):
@@ -180,8 +181,9 @@ def main():
     csv_path = result["metrics_csv"]
     if os.path.exists(csv_path):
         try:
-            with open(csv_path, "r", encoding="utf-8") as f:
-                lines = [l for l in f.read().splitlines() if l.strip()]
+            # CSV 是 lightning 用系统 ANSI 码页写的, 中文类别名下必须降级解码
+            lines = [l for l in read_text_any(csv_path).splitlines()
+                     if l.strip()]
             if len(lines) > 1:
                 header = lines[0].split(",")
                 row = lines[-1].split(",")

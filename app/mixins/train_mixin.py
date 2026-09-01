@@ -85,12 +85,6 @@ class TrainMixin(object):
         self._update_eta(epoch, total)
 
     def _on_train_metrics(self, metrics):
-        try:
-            write_log("_on_train_metrics 收到: rid={} epochs={} per_class_keys={}".format(
-                (self._training_record_id or "")[:8], metrics.get("epochs"),
-                list(metrics.get("per_class", {}).keys())))
-        except Exception:
-            pass
         # 同步最新指标到进度条文本(分类->精度, 检测/分割→mAP@50)
         s = metrics.get("series", {})
         if s.get("accuracy"):

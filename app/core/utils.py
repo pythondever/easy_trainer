@@ -80,6 +80,21 @@ def project_root():
         d = parent
 
 
+_TRAIN_TEXT_ENCODINGS = ("utf-8-sig", "utf-8", "gbk")
+
+
+def read_text_any(path):
+    """读子进程产物文本, 按 utf-8 → gbk 降级, 避免编码不符时整条通道静默失效。"""
+    with open(path, "rb") as f:
+        raw = f.read()
+    for enc in _TRAIN_TEXT_ENCODINGS:
+        try:
+            return raw.decode(enc)
+        except UnicodeDecodeError:
+            continue
+    return raw.decode("gbk", errors="replace")
+
+
 def load_style_sheet():
     """加载 resources/style.qss"""
     here = project_root()

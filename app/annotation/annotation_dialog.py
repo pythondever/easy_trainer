@@ -25,7 +25,7 @@ from ui.add_label import Ui_addLabelDialog as AddLabelUI
 from app.annotation.scene import AnnotationScene
 # from app.annotation.view import AnnotationView
 from app.annotation.box_item import (AnnotationBoxItem, AnnotationPolygonItem,
-                                     LABEL_COLORS, label_color)
+                                     LABEL_COLORS, assign_label_color, label_color)
 from app.core.label_utils import normalize_label, label_sort_key
 from app.core.utils import project_root, ui_font_family
 from app.widgets.message_box import MessageBox
@@ -511,13 +511,20 @@ class AddLabelDialog(QDialog):
         if not text:
             return []
         names = [n.strip() for n in re.split(r"[,\uff0c]+", text) if n.strip()]
-        items = []
+        # 批量建标签时逐个哈希会撞色, 先登记已指定的颜色再对余下的做探测分配
+        colors = {}
+        used = set()
         for n in names:
             color = self._source_colors.get(n) or self._selected_color or ""
-            if not color:
-                color = label_color(n).name()
-            items.append((n, color))
-        return items
+            if color:
+                colors[n] = color
+                used.add(color)
+        for n in names:
+            if n not in colors:
+                color = assign_label_color(n, used)
+                colors[n] = color
+                used.add(color)
+        return [(n, colors[n]) for n in names]
 
 
 class _PrefetchWorker(QThread):
@@ -868,11 +875,14 @@ class AnnotationDialog(QDialog):
         且首页标签下拉框/下次启动都能看到
         """
         missing = {}
-        for b in boxes:
+        used = set(self.label_colors.values())
+        # sorted 保证同一批标签名无论出现顺序如何都分到同样的颜色
+        for lbl in sorted({normalize_label(b.get("label")) for b in boxes}):
             # 归一化：历史 json 里的 class_N → N,防止 class_ 标签重新入库
-            lbl = normalize_label(b.get("label"))
             if lbl and lbl not in self.label_colors:
-                missing[lbl] = label_color(lbl).name()
+                color = assign_label_color(lbl, used)
+                missing[lbl] = color
+                used.add(color)
         if not missing:
             return
         merged = dict(self.db.get_dataset_labels(self.project, self.dataset))

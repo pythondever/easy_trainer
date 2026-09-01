@@ -17,6 +17,8 @@ import traceback
 
 from PySide6.QtCore import QThread, Signal
 
+from app.core.utils import read_text_any
+
 WORKSPACE = os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__))))
 TRAIN_RUNNER = os.path.join(WORKSPACE, "app", "train", "train_runner.py")
@@ -26,6 +28,8 @@ CLASSIFY_TRAIN_RUNNER = os.path.join(WORKSPACE, "app", "train",
 CSV_POLL_INTERVAL = 5   # 定时检查 metrics.csv 修改时间的间隔(秒)
 LOG_FLUSH_SECS = 0.1
 
+_PC_FIELDS = ("AP50-95", "AR", "F1", "Precision", "Recall")
+
 
 def _is_float(s):
     try:
@@ -33,6 +37,9 @@ def _is_float(s):
         return True
     except (TypeError, ValueError):
         return False
+
+
+_PC_TABLE_END = re.compile(r"^\s*[\u2514\u2517\u255A\u2570][\s\u2500-\u257F]*$")
 
 
 class TrainWorker(QThread):
@@ -63,11 +70,20 @@ class TrainWorker(QThread):
             except Exception:
                 pass
 
-    def _accumulate(self, epochs, series, per_class, row):
-        """把 CSV 一行的 val 指标累积进 GUI 需要的 series 结构（row 为 csv.DictReader 行）。"""
-        ep = int(row.get("epoch", 0)) + 1   # CSV epoch 从 0 计，GUI 从 1 计
-        epochs.append(ep)
-        series.setdefault("epochs", []).append(ep)
+    @staticmethod
+    def _row_map(row):
+        """该行的主指标值(mAP@50, 分割任务无 box 时回退 segm); 无法解析记 0。"""
+        for key in ("val/mAP_50", "val/segm_mAP_50"):
+            try:
+                v = float(row.get(key))
+            except (TypeError, ValueError):
+                continue
+            if v > 0:
+                return v
+        return 0.0
+
+    def _write_row(self, series, per_class, idx, row):
+        """把一行的 val 指标写到各序列的 idx 位置(不足则补 None, 已存在则覆盖)。"""
 
         def _f(v):
             try:
@@ -75,14 +91,13 @@ class TrainWorker(QThread):
             except (TypeError, ValueError):
                 return None
 
-        n_ep = len(series["epochs"])
-
-        def _align(seq):
-            """
-            把序列补齐到上一轮长度
-            """
-            if len(seq) < n_ep - 1:
-                seq.extend([None] * (n_ep - 1 - len(seq)))
+        def _put(seq, value):
+            while len(seq) < idx:
+                seq.append(None)
+            if len(seq) == idx:
+                seq.append(value)
+            else:
+                seq[idx] = value
 
         for key, csv_key in (("mAP@50-95", "val/mAP_50_95"),
                              ("mAP@50", "val/mAP_50"),
@@ -98,9 +113,7 @@ class TrainWorker(QThread):
                              ("val_loss", "val/loss")):
             if csv_key not in row:
                 continue
-            seq = series.setdefault(key, [])
-            _align(seq)
-            seq.append(_f(row.get(csv_key)))
+            _put(series.setdefault(key, []), _f(row.get(csv_key)))
 
         present = {}
         for k, v in row.items():
@@ -116,13 +129,41 @@ class TrainWorker(QThread):
                 label, {"AP50-95": [], "AR": [], "F1": [],
                         "Precision": [], "Recall": []})
             for field in pc:
-                seq = pc[field]
-                _align(seq)
-                seq.append(present.get((label, field)))
+                _put(pc[field], present.get((label, field)))
 
+        n_ep = len(series["epochs"])
         for seq in series.values():
-            if len(seq) < n_ep:
+            while len(seq) < n_ep:
                 seq.append(None)
+
+    def _should_apply(self, series, ep, row):
+        """
+        该 epoch 是否需要写入: 尚未记录, 或已记录但值无效且本行有效。
+
+        stdout 通道会先收到训练前的预热表(全 0), 之后才是真实值(CSV 通道同样
+        会补到)。若一律"先到为准", 全 0 的预热表会永久占位, mAP 永远显示 0。
+        """
+        eps = series.get("epochs") or []
+        if ep not in eps:
+            return True
+        idx = eps.index(ep)
+        prev = series.get("mAP@50") or series.get("mask_mAP@50") or []
+        prev_v = prev[idx] if idx < len(prev) else None
+        return (prev_v or 0) <= 0 and self._row_map(row) > 0
+
+    def _accumulate(self, epochs, series, per_class, row):
+        """把一行的 val 指标累积进 GUI 需要的 series 结构。"""
+        ep = int(row.get("epoch", 0)) + 1   # CSV epoch 从 0 计，GUI 从 1 计
+        eps = series.setdefault("epochs", [])
+        if not self._should_apply(series, ep, row):
+            return (epochs, series, per_class)
+        if ep in eps:
+            idx = eps.index(ep)          # 覆盖无效的历史值
+        else:
+            epochs.append(ep)
+            eps.append(ep)
+            idx = len(eps) - 1
+        self._write_row(series, per_class, idx, row)
         return (epochs, series, per_class)
 
     @staticmethod
@@ -141,6 +182,11 @@ class TrainWorker(QThread):
         """
         从 rf-detr stdout 的 Val 表格兜底取指标（metrics.csv 不落盘时的保险）。
         """
+        line = line.rstrip("\r\n")
+        if pending.get("phase") == "perclass" and _PC_TABLE_END.match(line):
+            self.metrics.emit(self._build_payload(series, per_class))
+            pending["phase"] = None
+            return
         if ("Val (Epoch " not in line
                 and not any(s in line for s in ("│", "┃", "┆", "|"))):
             return
@@ -160,9 +206,6 @@ class TrainWorker(QThread):
         ep_gui = int(pending["epoch"])
         try:
             if pending["phase"] == "overall":
-                if ep_gui in (series.get("epochs") or []):
-                    pending["phase"] = None
-                    return
                 if len(toks) not in (7, 9) or not all(_is_float(t)
                                                       for t in toks):
                     return
@@ -181,18 +224,25 @@ class TrainWorker(QThread):
                 if len(toks) != 6 or not all(_is_float(t) for t in toks[1:]):
                     return
                 label = toks[0]
-                pc_row = per_class.setdefault(
-                    label, {"AP50-95": [], "AR": [], "F1": [],
-                            "Precision": [], "Recall": []})
                 n = len(series.get("epochs", []))
-                if len(pc_row["AP50-95"]) >= n:
-                    pending["phase"] = None
+                if not n:
                     return
-                pc_row["AP50-95"].append(float(toks[1]))
-                pc_row["AR"].append(float(toks[2]))
-                pc_row["F1"].append(float(toks[3]))
-                pc_row["Precision"].append(float(toks[4]))
-                pc_row["Recall"].append(float(toks[5]))
+                idx = n - 1
+                vals = [float(t) for t in toks[1:]]
+                pc_row = per_class.setdefault(
+                    label, {f: [] for f in _PC_FIELDS})
+                stored = sum(pc_row[f][idx] or 0 for f in _PC_FIELDS
+                             if idx < len(pc_row[f]))
+                if stored > 0:
+                    return
+                for field, v in zip(_PC_FIELDS, vals):
+                    seq = pc_row[field]
+                    while len(seq) < idx:
+                        seq.append(None)
+                    if len(seq) == idx:
+                        seq.append(v)
+                    else:
+                        seq[idx] = v
         except (ValueError, TypeError):
             pass
 
@@ -239,9 +289,8 @@ class TrainWorker(QThread):
             if mtime <= last_mtime and csv_rows_read:
                 return []
             try:
-                with open(csv_path, "r", encoding="utf-8") as f:
-                    text = f.read()
-            except Exception:
+                text = read_text_any(csv_path)
+            except OSError:
                 return []
             if text and not text.endswith("\n"):
                 return []
@@ -263,7 +312,7 @@ class TrainWorker(QThread):
                 ep = int(r.get("epoch", 0))
                 by_epoch[ep] = r
             return [by_epoch[ep] for ep in sorted(by_epoch)
-                    if (ep + 1) not in (series.get("epochs") or [])]
+                    if self._should_apply(series, ep + 1, by_epoch[ep])]
 
         def _poll_csv():
             """每 CSV_POLL_INTERVAL 秒检查一次 metrics.csv，变了就累积新 epoch 并 emit。"""

@@ -9,7 +9,7 @@ sys.path.append(WORKSPACE_DIRECTORY)
 sys.path.append(os.path.join(WORKSPACE_DIRECTORY, 'ui'))
 from ui.edit_label import Ui_Dialog as EditLabelUI
 from app.core.label_utils import (normalize_label, label_sort_key)
-from app.annotation.box_item import label_color
+from app.annotation.box_item import assign_label_color, label_color
 from app.widgets.message_box import MessageBox, ProgressDialog
 from app.tasks.merge_task import MergeLabelsTask
 from PySide6.QtGui import QIcon, QPixmap, QColor
@@ -60,10 +60,14 @@ class LabelMixin(object):
         merged = {}
         for name, color in current.items():
             merged[normalize_label(name)] = color
-        for name in (labels or {}):
+        used = set(merged.values())
+        # sorted 保证同一批标签名无论遍历顺序如何都分到同样的颜色
+        for name in sorted(labels or {}):
             key = normalize_label(name)
             if key and key not in merged:
-                merged[key] = label_color(key).name()
+                color = assign_label_color(key, used)
+                merged[key] = color
+                used.add(color)
         if merged != current:
             self.db.save_dataset_labels(project_name, dataset_name, merged)
         return merged
@@ -86,8 +90,12 @@ class LabelMixin(object):
                 self.db.save_dataset_labels(project_name, dataset_name, labels)
             # 兜底: db 写入失败时用 cache 实际标签补全下拉, 避免只剩"未标注"
             cache = self.dataset_cache.get(project_name, {}).get(dataset_name) or {}
-            for lbl in (cache.get("labels") or {}).keys():
-                labels.setdefault(lbl, label_color(lbl).name())
+            used = set(labels.values())
+            for lbl in sorted((cache.get("labels") or {}).keys()):
+                if lbl not in labels:
+                    color = assign_label_color(lbl, used)
+                    labels[lbl] = color
+                    used.add(color)
             # 标签按排序放前面,"未标注"固定排最后
             for name, color in sorted(labels.items(),
                                       key=lambda kv: label_sort_key(kv[0])):
