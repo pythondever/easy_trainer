@@ -7,7 +7,7 @@ sys.path.append(WORKSPACE_DIRECTORY)
 sys.path.append(os.path.join(WORKSPACE_DIRECTORY, 'ui'))
 import numpy as np
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
-from matplotlib.figure import Figure
+from app.charts import render_label_chart
 from app.widgets.log_dialog import LogDialog
 from app.widgets.model_dialog import ModelDialog
 from app.train.dialogs import TrainDialog, _ClickToPopupFilter
@@ -182,52 +182,14 @@ class MiscMixin(object):
 
     def _render_label_stats(self, view, project, dataset, label_counts,
                              label_colors=None):
-        """标签分布柱状图(宽度随标签数量扩展,超宽用滚动条)。"""
-        num_bars = max(1, len(label_counts))
-        fig_width = max(4.0, num_bars * 0.3)
-        fig_height = 6.0
-        fig = Figure(figsize=(fig_width, fig_height), dpi=100, facecolor="#1c1e25")
-        axes = fig.add_subplot(111, facecolor="#1c1e25")
+        """
+        标签分布柱状图
+        """
+        if label_colors is None:
+            label_colors = self.db.get_dataset_labels(project, dataset)
+        fig = render_label_chart(label_counts, label_colors=label_colors,
+                                 dark=True)
         scene = QGraphicsScene()
-        if not label_counts:
-            axes.text(0.5, 0.5, "暂无标注", ha="center", va="center",
-                      color="#8a92a3", transform=axes.transAxes, fontsize=14)
-            axes.set_xticks([])
-            axes.set_yticks([])
-        else:
-            if label_colors is None:
-                label_colors = self.db.get_dataset_labels(project, dataset)
-            # 按标签数量降序
-            items = sorted(label_counts.items(), key=lambda kv: kv[1],
-                           reverse=True)
-            labels = [k for k, _ in items]
-            values = [v for _, v in items]
-            colors = [label_colors.get(name, "#5B8CFF") for name in labels]
-            # 柱宽(数据单位)≈ n/15.5:使柱宽像素 = 图宽/20;多标签时收紧防重叠
-            bar_width = max(0.05, min(0.15, num_bars / 15.5))
-            x_positions = np.arange(num_bars)
-            bars = axes.bar(x_positions, values, color=colors, width=bar_width,
-                            edgecolor="none")
-            ymax = max(values) if values else 0
-            for bar, v in zip(bars, values):
-                axes.text(bar.get_x() + bar.get_width() / 2, bar.get_height(),
-                          str(v), ha="center", va="bottom",
-                          color="#e8eaf0", fontsize=10)
-            axes.set_xlabel("标签", color="#c3c9d6", fontsize=11, labelpad=8)
-            axes.set_ylabel("标签数量", color="#c3c9d6", fontsize=11, labelpad=8)
-            axes.tick_params(axis="x", colors="#c3c9d6", labelsize=10, rotation=0)
-            axes.tick_params(axis="y", colors="#c3c9d6", labelsize=10)
-            axes.set_ylim(0, ymax * 1.12 if ymax else 1)
-            for side in ("top", "right"):
-                axes.spines[side].set_visible(False)
-            for side in ("left", "bottom"):
-                axes.spines[side].set_color("#3a3f4e")
-            axes.yaxis.grid(True, color="#2a2e38", linestyle="--", linewidth=0.6, alpha=0.8)
-            axes.set_axisbelow(True)
-            axes.set_xticks(x_positions)
-            axes.set_xticklabels(labels)
-            axes.set_xlim(-0.5, num_bars - 0.5)
-            axes.set_ylim(0, ymax * 1.12 if ymax else 1)
         canvas = FigureCanvasQTAgg(fig)
         canvas.draw()
         width, height = fig.get_size_inches() * fig.get_dpi()

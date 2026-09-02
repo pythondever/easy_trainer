@@ -17,8 +17,8 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QAbstractItemView, QApplication, QDialog, QHBoxLayout,
     QHeaderView, QLabel, QPushButton, QSizePolicy,
-    QSpacerItem, QTableWidget, QTableWidgetItem, QVBoxLayout,
-    QWidget)
+    QSpacerItem, QSpinBox, QTableWidget, QTableWidgetItem,
+    QVBoxLayout, QWidget)
 
 class Ui_TestResultDialog(object):
     def setupUi(self, TestResultDialog):
@@ -145,9 +145,32 @@ class Ui_TestResultDialog(object):
 
         self.btn_row = QHBoxLayout()
         self.btn_row.setObjectName(u"btn_row")
+        self.sample_lbl = QLabel(TestResultDialog)
+        self.sample_lbl.setObjectName(u"sample_lbl")
+
+        self.btn_row.addWidget(self.sample_lbl)
+
+        self.sample_spin = QSpinBox(TestResultDialog)
+        self.sample_spin.setObjectName(u"sample_spin")
+        self.sample_spin.setMinimum(0)
+        self.sample_spin.setMaximum(999)
+        self.sample_spin.setValue(10)
+
+        self.btn_row.addWidget(self.sample_spin)
+
         self.btn_spacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.btn_row.addItem(self.btn_spacer)
+
+        self.export_pdf_btn = QPushButton(TestResultDialog)
+        self.export_pdf_btn.setObjectName(u"export_pdf_btn")
+
+        self.btn_row.addWidget(self.export_pdf_btn)
+
+        self.reveal_btn = QPushButton(TestResultDialog)
+        self.reveal_btn.setObjectName(u"reveal_btn")
+
+        self.btn_row.addWidget(self.reveal_btn)
 
         self.ok_btn = QPushButton(TestResultDialog)
         self.ok_btn.setObjectName(u"ok_btn")
@@ -192,6 +215,15 @@ class Ui_TestResultDialog(object):
         ___qtablewidgetitem6 = self.result_table.horizontalHeaderItem(6)
         ___qtablewidgetitem6.setText(QCoreApplication.translate("TestResultDialog", u"\u51c6\u786e\u7387", None))
         self.conclusion_label.setText("")
+        self.sample_lbl.setText(QCoreApplication.translate("TestResultDialog", u"\u6bcf\u7c7b\u62bd\u53d6", None))
+#if QT_CONFIG(tooltip)
+        self.sample_spin.setToolTip(QCoreApplication.translate("TestResultDialog", u"\u6bcf\u4e2a\u7c7b\u522b\u7684\u6bcf\u79cd\u9519\u8bef\uff08\u6f0f\u68c0 / \u8bef\u68c0\uff09\u6700\u591a\u5217\u51fa\u51e0\u5f20\u56fe\u3002\n"
+"\u62a5\u544a\u4f53\u79ef\u7ea6 120 KB \u4e00\u5f20\uff0c\u6837\u672c\u591a\u65f6\u8c03\u5c0f\u53ef\u4ee5\u663e\u8457\u51cf\u5c0f PDF\uff1b\u9009\u300c\u5168\u90e8\u300d\u5219\u6bcf\u5f20\u6709\u95ee\u9898\u7684\u56fe\u90fd\u5217\u3002", None))
+#endif // QT_CONFIG(tooltip)
+        self.sample_spin.setSuffix(QCoreApplication.translate("TestResultDialog", u" \u5f20", None))
+        self.sample_spin.setSpecialValueText(QCoreApplication.translate("TestResultDialog", u"\u5168\u90e8", None))
+        self.export_pdf_btn.setText(QCoreApplication.translate("TestResultDialog", u"\u5bfc\u51fa PDF \u62a5\u544a", None))
+        self.reveal_btn.setText(QCoreApplication.translate("TestResultDialog", u"\u6253\u5f00\u6240\u5728\u6587\u4ef6\u5939", None))
         self.ok_btn.setText(QCoreApplication.translate("TestResultDialog", u"\u786e\u5b9a", None))
     # retranslateUi
 

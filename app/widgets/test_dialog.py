@@ -8,6 +8,7 @@
 import json
 import os
 import tempfile
+import time
 
 from PySide6.QtCore import Qt, QEvent, QObject, QTimer
 from PySide6.QtGui import QStandardItem, QStandardItemModel
@@ -310,6 +311,11 @@ class TestDialog(QDialog):
             total += int(binding.get("total") or 0)
         has_label = bool(base_labeled)
         device = self.ui.test_device_combo.currentText() or "cuda"
+        report_dir = ""
+        if model_path:
+            report_dir = os.path.join(
+                os.path.dirname(os.path.abspath(model_path)),
+                "test_" + time.strftime("%Y%m%d_%H%M%S"))
         # 配置写入临时文件,TestWorker 子进程读它
         fd, cfg_path = tempfile.mkstemp(suffix=".json")
         os.close(fd)
@@ -319,6 +325,7 @@ class TestDialog(QDialog):
             "has_label": has_label, "device": device,
             "total": total, "output_labels": output_labels,
             "task": "classify" if cls_mode else "",
+            "report_dir": report_dir,
             "_cfg_path": cfg_path,
         }
         with open(cfg_path, "w", encoding="utf-8") as f:
@@ -353,6 +360,36 @@ class TestDialog(QDialog):
         if md is not None:
             md.accept()
 
+    def _fill_label_stats(self, res):
+        """
+        把该模型训练时勾选的数据集（训练集+验证集）标注分布塞进 res。
+        """
+        pairs = []
+        for field in ("dataset", "val_dataset"):
+            for tok in (x.strip()
+                        for x in str(self._record.get(field, "")).split(",")):
+                if "/" in tok:
+                    proj, _, name = tok.partition("/")
+                    proj, name = proj.strip(), name.strip()
+                    if proj and name:
+                        pairs.append((proj, name))
+        if not pairs:
+            for ds in res.get("datasets") or []:
+                proj, name = ds.get("project"), ds.get("dataset")
+                if proj and name:
+                    pairs.append((proj, name))
+        counts, colors = {}, {}
+        for proj, name in pairs:
+            for k, v in (self.app.db.get_dataset_label_counts(proj, name)
+                         or {}).items():
+                counts[k] = counts.get(k, 0) + v
+            if not colors:
+                colors = self.app.db.get_dataset_labels(proj, name)
+        if counts:
+            res["label_stats"] = counts
+        if colors:
+            res["label_colors"] = colors
+
     def _on_log(self, line):
         write_log("[test] " + line)
 
@@ -377,6 +414,7 @@ class TestDialog(QDialog):
             MessageBox.warning(self, "测试结果", "测试未正常完成")
             return
         if "P" in res or res.get("task") == "classify":
+            self._fill_label_stats(res)
             TestResultDialog(res, parent=self.app).exec()
         else:
             self.app._load_dataset_view(self._project, self._dataset)

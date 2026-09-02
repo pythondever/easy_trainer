@@ -1,8 +1,13 @@
 # -*- coding: utf-8 -*-
 """测试结果分析对话框：总览 + 按类别表格 + 结论提示（直白术语）。"""
 
-from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QDialog, QTableWidgetItem
+import os
+import traceback
+
+from PySide6.QtCore import QThread, Qt, QUrl, Signal
+from PySide6.QtGui import QDesktopServices
+from PySide6.QtWidgets import QApplication, QDialog, QMessageBox, \
+    QTableWidgetItem
 
 from app.core.label_utils import label_sort_key
 from ui.test_result import Ui_TestResultDialog
@@ -12,15 +17,103 @@ def _pct(v):
     return "{:.1f}%".format(v * 100)
 
 
-class TestResultDialog(QDialog):
-    """评估结果弹窗"""
+class _PdfExportWorker(QThread):
+    """原图可能 6500 万像素，重绘缩略图单张就要 1~3 秒，必须离开 UI 线程。"""
 
-    def __init__(self, res, parent=None):
+    done = Signal(str)
+    failed = Signal(str)
+
+    def __init__(self, res, per_class_limit=None, parent=None):
+        super().__init__(parent)
+        self._res = res
+        self._limit = per_class_limit
+
+    def run(self):
+        try:
+            from app.train.test_report import build_report
+            if self._limit is None:
+                self.done.emit(build_report(self._res) or "")
+            else:
+                self.done.emit(
+                    build_report(self._res, per_class_limit=self._limit) or "")
+        except Exception as exc:
+            self.failed.emit("{}\n\n{}".format(exc, traceback.format_exc()))
+
+
+class TestResultDialog(QDialog):
+    def __init__(self, res, per_class_limit=None, parent=None):
         super().__init__(parent)
         self._ui = Ui_TestResultDialog()
         self._ui.setupUi(self)
         self._ui.ok_btn.clicked.connect(self.accept)
+        self._ui.export_pdf_btn.clicked.connect(self._on_export)
+        self._ui.reveal_btn.clicked.connect(self._on_reveal)
+        self._res = res
+        self._worker = None
+        if per_class_limit is not None:
+            self._ui.sample_spin.setValue(per_class_limit)
         self._fill(res)
+        self._sync_export_btn()
+
+    # ---------------- 导出 PDF ----------------
+
+    def _sync_export_btn(self):
+        """没有逐图明细(纯推理无标签 / 无错误样本)时导出按钮不可用。"""
+        has_detail = bool(self._res.get("detail_path"))
+        self._ui.export_pdf_btn.setEnabled(has_detail)
+        self._ui.reveal_btn.setEnabled(bool(self._res.get("report_dir")))
+        self._ui.sample_spin.setEnabled(has_detail)
+        self._ui.sample_lbl.setEnabled(has_detail)
+        tip = ("把漏检/误检的图逐张画框导出成 PDF" if has_detail
+               else "本次测试没有逐图错误明细，无法导出")
+        self._ui.export_pdf_btn.setToolTip(tip)
+
+    def _on_export(self):
+        if self._worker is not None and self._worker.isRunning():
+            return
+        self._ui.export_pdf_btn.setEnabled(False)
+        self._ui.export_pdf_btn.setText("正在生成…")
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        self._worker = _PdfExportWorker(
+            self._res, self._ui.sample_spin.value(), self)
+        self._worker.done.connect(self._on_export_done)
+        self._worker.failed.connect(self._on_export_failed)
+        self._worker.start()
+
+    def _restore_btn(self):
+        QApplication.restoreOverrideCursor()
+        self._ui.export_pdf_btn.setText("导出 PDF 报告")
+        self._sync_export_btn()
+
+    def _on_export_done(self, path):
+        self._restore_btn()
+        if not path:
+            QMessageBox.information(
+                self, "无需导出",
+                "本次测试没有漏检也没有误检，每页 6 张的报告里没有内容可画。")
+            return
+        QMessageBox.information(self, "导出完成", "导出成功")
+
+    def _on_export_failed(self, msg):
+        self._restore_btn()
+        QMessageBox.warning(self, "导出失败", msg)
+
+    def _on_reveal(self):
+        folder = self._res.get("report_dir") or ""
+        if folder:
+            self._reveal(folder)
+
+    @staticmethod
+    def _reveal(path):
+        folder = path if os.path.isdir(path) else os.path.dirname(path)
+        QDesktopServices.openUrl(QUrl.fromLocalFile(folder))
+
+    def closeEvent(self, event):
+        # 线程还在跑时不能直接销毁，否则 Qt 会崩
+        if self._worker is not None and self._worker.isRunning():
+            self._worker.quit()
+            self._worker.wait(3000)
+        super().closeEvent(event)
 
     def _fill(self, res):
         u = self._ui
@@ -37,10 +130,10 @@ class TestResultDialog(QDialog):
         self._fill_table(per_class)
         u.conclusion_label.setText(
             self._conclusion(per_class, res.get("TP", 0),
-                             res.get("FP", 0), res.get("FN", 0)))
+                             res.get("FP", 0), res.get("FN", 0),
+                             res.get("conf_total")))
 
     def _fill_cls(self, res):
-        """分类评估：图像维度——总精度 + 每类正确/错误/精度(复用同一对话框控件)。"""
         u = self._ui
         total = res.get("total", 0)
         per_class = res.get("per_class") or {}
@@ -58,7 +151,6 @@ class TestResultDialog(QDialog):
         u.fn_value.setText(str(error))
         u.fp_lbl.hide()
         u.fp_value.hide()
-        # 表格改为图像维度 5 列
         u.result_table.setColumnCount(5)
         u.result_table.setHorizontalHeaderLabels(
             ["类别", "总图数", "正确", "错误", "精度"])
@@ -88,7 +180,6 @@ class TestResultDialog(QDialog):
 
     def _fill_table(self, per_class):
         u = self._ui
-        # 类别名自然排序(纯数字按数值,非数字按字典序),与首页标签下拉一致
         rows = sorted(per_class.items(), key=lambda kv: label_sort_key(str(kv[0])))
         u.result_table.setRowCount(len(rows))
         for i, (cls, d) in enumerate(rows):
@@ -109,20 +200,24 @@ class TestResultDialog(QDialog):
                 u.result_table.setItem(i, j, item)
         u.result_table.resizeColumnsToContents()
 
-    def _conclusion(self, per_class, tp, fp, fn):
-        """生成一句直白结论:漏检为主还是误检为主 + 拖累最大的类别。"""
+    def _conclusion(self, per_class, tp, fp, fn, conf=None):
         if tp == 0 and fp == 0 and fn == 0:
             return ""
         if fn >= fp and fn > 0:
             worst = max(((c, d.get("fn", 0)) for c, d in per_class.items()),
                         key=lambda x: x[1])
-            return ("整体漏检偏多（漏检 {} 个，多于误检 {} 个）。"
+            base = ("整体漏检偏多（漏检 {} 个，多于误检 {} 个）。"
                     "「{}」类漏检最多（{} 个），是检出率低的主要原因。"
                     .format(fn, fp, worst[0], worst[1]))
-        if fp > 0:
+        elif fp > 0:
             worst = max(((c, d.get("fp", 0)) for c, d in per_class.items()),
                         key=lambda x: x[1])
-            return ("整体误检偏多（误检 {} 个，多于漏检 {} 个）。"
+            base = ("整体误检偏多（误检 {} 个，多于漏检 {} 个）。"
                     "「{}」类误检最多（{} 个），是准确率低的主要原因。"
                     .format(fp, fn, worst[0], worst[1]))
-        return "模型表现良好：无漏检、无误检。"
+        else:
+            return "模型表现良好：无漏检、无误检。"
+        if conf:
+            base += ("另有 {} 处位置对但类别判错（报告里用紫框标出），"
+                     "属分类能力不足，需补易混淆类别的区分性样本。".format(conf))
+        return base
