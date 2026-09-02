@@ -5,9 +5,8 @@ CURRENT_DIRECTORY = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WORKSPACE_DIRECTORY = os.path.dirname(CURRENT_DIRECTORY)
 sys.path.append(WORKSPACE_DIRECTORY)
 sys.path.append(os.path.join(WORKSPACE_DIRECTORY, 'ui'))
-import numpy as np
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
-from app.charts import render_label_chart
+from app.widgets.charts import render_label_chart
 from app.widgets.log_dialog import LogDialog
 from app.widgets.model_dialog import ModelDialog
 from app.train.dialogs import TrainDialog, _ClickToPopupFilter
