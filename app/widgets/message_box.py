@@ -11,9 +11,9 @@ from PySide6.QtWidgets import QGraphicsDropShadowEffect
 # 图标: (符号, 颜色)
 _ICONS = {
     "warning": ("⚠", "#f5b84b"),
-    "information": ("ⓘ", "#5b8cff"),
+    "information": ("ⓘ", "#4f7dff"),
     "critical": ("✕", "#f2645a"),
-    "question": ("?", "#5b8cff"),
+    "question": ("?", "#4f7dff"),
 }
 
 
@@ -63,7 +63,7 @@ class _FramelessBox(QDialog):
         # ---- 内容区: 图标 + 文本 ----
         body = QHBoxLayout()
         body.setSpacing(16)
-        sym, color = _ICONS.get(icon_key, ("ⓘ", "#5b8cff"))
+        sym, color = _ICONS.get(icon_key, ("ⓘ", "#4f7dff"))
         self._icon_lbl = QLabel(sym)
         self._icon_lbl.setStyleSheet(
             "color: {}; font-size: 30px; font-weight: 700;".format(color))

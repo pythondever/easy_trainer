@@ -14,7 +14,7 @@ from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel,
 
 def _muted_style(size=13):
     """辅助说明文字: 中性灰 + 指定字号。"""
-    return "color: #8a92a3; font-size: {}px;".format(size)
+    return "color: #8b93a5; font-size: {}px;".format(size)
 
 
 def _setup_matplotlib_chinese():

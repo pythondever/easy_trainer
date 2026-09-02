@@ -108,7 +108,7 @@ class AnnotationScene(QGraphicsScene):
     def _update_fp_track_preview(self):
         if self.fp_preview_item is None:
             self.fp_preview_item = QGraphicsPathItem()
-            self.fp_preview_item.setPen(QPen(QColor("#5B8CFF"), 1.5))
+            self.fp_preview_item.setPen(QPen(QColor("#4f7dff"), 1.5))
             self.fp_preview_item.setBrush(Qt.NoBrush)
             self.fp_preview_item.setZValue(20)
             self.addItem(self.fp_preview_item)

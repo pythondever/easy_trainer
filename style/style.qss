@@ -1,5 +1,12 @@
 /* ============================================================
    现代深色主题
+   色阶：新增样式请先复用，不要自造相近色（历史上有过 #3a3f4e/#3a3f4d
+   只差 1 的两套边框色，肉眼无差别但会越积越多）
+     底色 #181a20  面板 #1c1e25  表头 #1f2129
+     控件 #23262f  次级控件 #2a2e38  分隔线 #2c303c
+     主色 #4f7dff (hover #638cff / pressed #3f6ceb)
+     正文 #e8eaf0  次要 #c3c9d6  弱化 #8b93a5
+   标注对话框是独立子主题（底色 #13151a），有意比全局更暗
    ============================================================ */
 
 * {
@@ -324,13 +331,13 @@ QTabBar::tab:hover:!selected {
 QMenu {
     background-color: #20232b;
     border: 1px solid #3a3f4e;
-    border-radius: 0;
+    border-radius: 6px;
     padding: 6px;
 }
 
 QMenu::item {
     padding: 7px 24px 7px 12px;
-    border-radius: 0;
+    border-radius: 4px;
 }
 
 QMenu::item:selected {
@@ -403,7 +410,7 @@ QTableWidget::item:selected, QTableView::item:selected {
 }
 
 QTableCornerButton::section {
-    background-color: #1a1c23;
+    background-color: #1f2129;
     border: none;
 }
 
@@ -476,10 +483,42 @@ QSlider::handle:horizontal {
     border-radius: 7px;
     background: #4f7dff;
 }
+QSlider::handle:horizontal:hover { background: #638cff; }
 
 QSlider::sub-page:horizontal {
     background: #4f7dff;
     border-radius: 3px;
+}
+
+/* ---------------- 键盘焦点 ---------------- */
+/* 顶部 * 关掉了 outline，Tab 必须补回。
+   按钮不能用 outline：Qt 把它画在 SE_PushButtonFocusRect 上，
+   那个矩形是内容区（文字一圈），看起来像文字被框住而不是按钮被选中；
+   改用 border-color，按钮本来就有 1px 边框，只换颜色不会让文字位移。
+   列表/表格/滑条的 focus rect 是整个控件，用 outline 没问题 */
+QCheckBox:focus, QRadioButton:focus,
+QTableWidget:focus, QTableView:focus,
+QListWidget:focus, QTreeWidget:focus,
+QSlider:focus {
+    outline: 2px solid #4f7dff;
+    outline-offset: 1px;
+}
+/* 点完按钮鼠标通常还在上面，hover 特异性更高会盖掉 :focus，必须并列写 */
+QPushButton:focus, QPushButton:hover:focus {
+    border-color: #4f7dff;
+}
+/* 工具栏按钮常态无边框，用背景提示焦点，避免加边框导致图标位移 */
+QToolButton:focus, QToolButton:hover:focus {
+    background-color: #2b2f3b;
+}
+/* Primary/Danger 背景本身接近主色，边框换成对比色才看得出 */
+QPushButton[class="primary"]:focus,
+QPushButton[class="primary"]:hover:focus {
+    border-color: #ffffff;
+}
+QPushButton[class="danger"]:focus,
+QPushButton[class="danger"]:hover:focus {
+    border-color: #ff9aa2;
 }
 
 /* ---------------- 项目树（项目 -> 数据集） ---------------- */
@@ -513,11 +552,11 @@ QTreeWidget#projectTree::branch:selected {
 }
 
 /* ---------------- 数据集对话框（ui/add_dataset） ---------------- */
-QDialog {
-    background-color: #1c1f27;
+QDialog#AddDatasets {
+    background-color: #1c1e25;
 }
 QPushButton#done_btn {
-    background-color: #5b8cff;
+    background-color: #4f7dff;
     color: #ffffff;
     border: none;
     border-radius: 6px;
@@ -525,10 +564,10 @@ QPushButton#done_btn {
     font-size: 13px;
 }
 QPushButton#done_btn:hover {
-    background-color: #7aa3ff;
+    background-color: #638cff;
 }
 QPushButton#done_btn:pressed {
-    background-color: #4a78e0;
+    background-color: #3f6ceb;
 }
 
 /* Branch 默认装饰：不显示图标；选中态背景与 item 选中色一致，保证选中背景是一条完整直线 */
@@ -568,7 +607,7 @@ QTreeWidget#projectTree::branch:!has-children:selected {
 }
 #AnnotationDialog QLineEdit {
     background-color: #1d2028;
-    border: 1px solid #3a3f4d;
+    border: 1px solid #3a3f4e;
     border-radius: 6px;
     padding: 6px 10px;
     color: #e8eaf0;
@@ -576,21 +615,26 @@ QTreeWidget#projectTree::branch:!has-children:selected {
 }
 #AnnotationDialog QPushButton {
     background-color: #2a2e3a;
-    border: 1px solid #3a3f4d;
+    border: 1px solid #3a3f4e;
     border-radius: 6px;
     padding: 6px 14px;
     color: #cfd6e4;
 }
 #AnnotationDialog QPushButton:hover {
     background-color: #333948;
-    border-color: #5b8cff;
+    border-color: #4f7dff;
 }
 #AnnotationDialog QPushButton:pressed {
     background-color: #242834;
 }
+#AnnotationDialog QPushButton[drawActive="true"] {
+    background-color: #2c3a5e;
+    color: #ffffff;
+    border: 1px solid #4f7dff;
+}
 #AnnotationDialog QScrollArea {
     background-color: #1d2028;
-    border: 1px solid #3a3f4d;
+    border: 1px solid #3a3f4e;
     border-radius: 6px;
 }
 #AnnotationDialog QScrollArea > QWidget > QWidget {
@@ -602,17 +646,17 @@ QTreeWidget#projectTree::branch:!has-children:selected {
     border: none;
 }
 #AnnotationDialog QScrollBar::handle:vertical {
-    background: #3a3f4d;
+    background: #3a3f4e;
     border-radius: 4px;
     min-height: 24px;
 }
-#AnnotationDialog QScrollBar::handle:vertical:hover { background: #5b8cff; }
+#AnnotationDialog QScrollBar::handle:vertical:hover { background: #4f7dff; }
 #AnnotationDialog QScrollBar::add-line:vertical,
 #AnnotationDialog QScrollBar::sub-line:vertical { height: 0; }
 #AnnotationDialog QMenu {
     background-color: #1d2028;
     color: #e8eaf0;
-    border: 1px solid #3a3f4d;
+    border: 1px solid #3a3f4e;
     border-radius: 0;
     padding: 4px;
 }
@@ -646,7 +690,7 @@ QDialog#SegmentDialog QLineEdit {
 QDialog#ClassifyDialog QLineEdit:focus,
 QDialog#DetectDialog QLineEdit:focus,
 QDialog#SegmentDialog QLineEdit:focus {
-    border: 1px solid #5b8cff;
+    border: 1px solid #4f7dff;
 }
 
 QDialog#ClassifyDialog QComboBox,
@@ -676,12 +720,12 @@ QDialog#DetectDialog QPushButton#start_train,
 QDialog#DetectDialog QPushButton#start_test,
 QDialog#SegmentDialog QPushButton#start_train,
 QDialog#SegmentDialog QPushButton#start_test {
-    background-color: #5b8cff; color: #ffffff; font-weight: 500;
+    background-color: #4f7dff; color: #ffffff; font-weight: 500;
     min-width: 110px; padding: 7px 22px;
 }
 
 QDialog#TestDialog QPushButton#start_test_btn {
-    background-color: #5b8cff; color: #ffffff; font-weight: 500;
+    background-color: #4f7dff; color: #ffffff; font-weight: 500;
     min-width: 110px; padding: 7px 22px;
 }
 
@@ -691,7 +735,7 @@ QDialog#DetectDialog QPushButton#start_train:hover,
 QDialog#DetectDialog QPushButton#start_test:hover,
 QDialog#SegmentDialog QPushButton#start_train:hover,
 QDialog#SegmentDialog QPushButton#start_test:hover {
-    background-color: #6c9aff;
+    background-color: #638cff;
 }
 
 QDialog#ClassifyDialog QPushButton#select_output_path_btn,
@@ -715,14 +759,19 @@ QDialog#SegmentDialog QScrollArea > QWidget > QWidget {
 QDialog#ClassifyDialog QFrame#line,
 QDialog#DetectDialog QFrame#line,
 QDialog#SegmentDialog QFrame#line {
-    color: #3a3f4d;
+    color: #3a3f4e;
 }
 
+/* 训练对话框分组标题(蓝字 + 横线) */
+QLabel#dialogSectionTitle { color: #4f7dff; font-size: 12px; font-weight: 600; }
+QFrame#dialogSectionLine { background-color: #2c303c; border: none; max-height: 1px; margin-top: 2px; }
+QLabel#dialogConfirmPrompt { font-size: 15px; }
+
 /* ---------------- 模型管理对话框 ---------------- */
-QDialog#ModelDialog { background-color: #1c1f27; }
+QDialog#ModelDialog { background-color: #1c1e25; }
 QDialog#ModelDialog QTableWidget {
     background-color: #181a20;
-    alternate-background-color: #1e2129;
+    alternate-background-color: #1c1e25;
     border: 1px solid #2c303c;
     border-radius: 8px;
     gridline-color: #2c303c;
@@ -762,7 +811,7 @@ QDialog#ModelDialog QScrollBar::add-line:vertical,
 QDialog#ModelDialog QScrollBar::sub-line:vertical { height: 0; }
 
 /* ---------------- 日志对话框 ---------------- */
-QDialog#LogDialog { background-color: #1c1f27; }
+QDialog#LogDialog { background-color: #1c1e25; }
 QDialog#LogDialog QTextEdit {
     background-color: #0e0f13;
     border: 1px solid #2c303c;
@@ -781,7 +830,7 @@ QDialog#LogDialog QPushButton#clr_log_btn {
 QDialog#LogDialog QPushButton#clr_log_btn:hover { background-color: #343a48; }
 
 /* ---------------- 消息框 ---------------- */
-QMessageBox { background-color: #1a1c22; }
+QMessageBox { background-color: #1c1e25; }
 QMessageBox QLabel {
     color: #e8eaf0; font-size: 13px; min-width: 280px;
     qproperty-alignment: AlignCenter;
@@ -792,12 +841,12 @@ QMessageBox QPushButton {
 }
 QMessageBox QPushButton:hover { background-color: #343a48; }
 QMessageBox QPushButton:default {
-    background-color: #5b8cff; color: #ffffff; font-weight: 600;
+    background-color: #4f7dff; color: #ffffff; font-weight: 600;
 }
-QMessageBox QPushButton:default:hover { background-color: #6b9bff; }
+QMessageBox QPushButton:default:hover { background-color: #638cff; }
 
 /* ---------------- 移动目标数据集对话框 ---------------- */
-QDialog#MoveTargetDialog { background-color: #1c1f27; }
+QDialog#MoveTargetDialog { background-color: #1c1e25; }
 QDialog#MoveTargetDialog QLabel { color: #e8eaf0; font-size: 13px; }
 QDialog#MoveTargetDialog QComboBox {
     background-color: #2a2e38; color: #e8eaf0; border: none;
@@ -855,7 +904,7 @@ QProgressBar#miniProgressBar {
     font-size: 10px;
 }
 QProgressBar#miniProgressBar::chunk {
-    background-color: #5b8cff;
+    background-color: #4f7dff;
     border-radius: 3px;
 }
 
@@ -916,7 +965,7 @@ QLabel#show_boxes_label {
     font-size: 13px;
 }
 QFrame#labelRow {
-    background: #232834;
+    background: #23262f;
     border-radius: 6px;
 }
 QLabel#labelRowName {
@@ -925,18 +974,18 @@ QLabel#labelRowName {
     font-weight: 600;
 }
 QLabel#labelRowKind {
-    color: #8a92a3;
+    color: #8b93a5;
     background: transparent;
 }
 QLabel#labelRowInfo {
-    color: #8a92a3;
+    color: #8b93a5;
     background: transparent;
     font-size: 11px;
 }
 
 /* ---------------- message_box 自绘弹窗 ---------------- */
 QFrame#msgFrame {
-    background-color: #1c1f27;
+    background-color: #1c1e25;
     border: 1px solid #353a48;
     border-radius: 12px;
 }
@@ -946,10 +995,10 @@ QLabel#msgTitle {
     font-weight: 600;
 }
 QPushButton#msgClose {
-    background-color: transparent; color: #8a93a6; border: none;
+    background-color: transparent; color: #8b93a5; border: none;
     border-radius: 6px; font-size: 15px; padding: 2px 8px;
 }
-QPushButton#msgClose:hover { background-color: #3a3f4c; color: #e8eaf0; }
+QPushButton#msgClose:hover { background-color: #3a3f4e; color: #e8eaf0; }
 QPushButton#msgBtn {
     background-color: #2a2e38; color: #e8eaf0; border: none;
     border-radius: 6px; padding: 6px 18px; font-size: 13px;
@@ -957,11 +1006,11 @@ QPushButton#msgBtn {
 QPushButton#msgBtn:hover { background-color: #343a48; }
 QPushButton#msgBtn:pressed { background-color: #3d4556; }
 QPushButton#msgBtnPrimary {
-    background-color: #5b8cff; color: #ffffff; border: none;
+    background-color: #4f7dff; color: #ffffff; border: none;
     border-radius: 6px; padding: 6px 18px; font-size: 13px; font-weight: 600;
 }
-QPushButton#msgBtnPrimary:hover { background-color: #6b9bff; }
-QPushButton#msgBtnPrimary:pressed { background-color: #4a7be8; }
+QPushButton#msgBtnPrimary:hover { background-color: #638cff; }
+QPushButton#msgBtnPrimary:pressed { background-color: #3f6ceb; }
 QLabel#msgText {
     color: #cfd6e4; font-size: 13px; background: transparent;
 }
@@ -972,4 +1021,4 @@ QProgressBar#progressBar {
     background: #2a2e38; border: none; border-radius: 4px;
     height: 10px; color: transparent;
 }
-QProgressBar#progressBar::chunk { background: #5b8cff; border-radius: 4px; }
+QProgressBar#progressBar::chunk { background: #4f7dff; border-radius: 4px; }

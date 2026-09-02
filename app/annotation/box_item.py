@@ -10,7 +10,7 @@ from app.core.utils import ui_font_family
 
 # 深色背景下鲜艳的标签配色。
 LABEL_COLORS = [
-    "#5B8CFF", "#3DDC97", "#F5B942", "#F0646E", "#C08BFF",
+    "#4f7dff", "#3DDC97", "#F5B942", "#F0646E", "#C08BFF",
     "#4FC3F7", "#FF8A65", "#81C784", "#F06292", "#AED581",
     "#4DD0E1", "#FFD54F",
     "#F9779A", "#F97E72", "#E68026", "#D98A26",
@@ -401,7 +401,7 @@ class AnnotationBoxItem(QGraphicsRectItem):
         label_rect = self._chip_rect_local()
         self._draw_label(painter, label_rect)
         if self.isSelected():
-            painter.setPen(QPen(QColor("#5B8CFF"), 1.0))
+            painter.setPen(QPen(QColor("#4f7dff"), 1.0))
             painter.setBrush(QBrush(QColor("#ffffff")))
             s = self._compute_handle_size()
             self._handle_size = s
@@ -681,7 +681,7 @@ class AnnotationPolygonItem(QGraphicsPolygonItem):
         self._draw_label(painter, label_rect)
 
         if self.isSelected():
-            painter.setPen(QPen(QColor("#5B8CFF"), 1.0))
+            painter.setPen(QPen(QColor("#4f7dff"), 1.0))
             painter.setBrush(QBrush(QColor("#ffffff")))
             s = self._compute_handle_size()
             self._handle_size = s

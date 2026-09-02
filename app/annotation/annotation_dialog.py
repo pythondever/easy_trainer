@@ -488,7 +488,7 @@ class AddLabelDialog(QDialog):
                     break
 
     def _pick_custom_color(self):
-        color = ColorPickerDialog.get_color(QColor(self._selected_color or "#5B8CFF"), self)
+        color = ColorPickerDialog.get_color(QColor(self._selected_color or "#4f7dff"), self)
         if color.isValid():
             self._select_color(color.name())
 
@@ -920,10 +920,14 @@ class AnnotationDialog(QDialog):
         QApplication.setOverrideCursor(cur)
 
     def _set_draw_button_states(self, drawing):
-        style_on = self._style_on()
-        style_off = self._style_off()
-        self.ui.draw_rect_btn.setStyleSheet(style_on if (drawing and self.scene.draw_shape == "rect") else style_off)
-        self.ui.poly_btn.setStyleSheet(style_on if (drawing and self.scene.draw_shape == "polygon") else style_off)
+        """激活态用 QSS 动态属性控制，对应 QSS 内 [drawActive="true"] 规则。"""
+        draw_shape = self.scene.draw_shape if drawing else None
+        for btn, name in ((self.ui.draw_rect_btn, "rect"),
+                          (self.ui.poly_btn, "polygon")):
+            active = draw_shape == name
+            btn.setProperty("drawActive", "true" if active else "false")
+            btn.style().unpolish(btn)
+            btn.style().polish(btn)
 
     def _on_box_drawn(self):
         """画完一个框：保持画模式（需求：只有 ESC 才退出），维持对应光标与按钮高亮。"""
@@ -952,13 +956,9 @@ class AnnotationDialog(QDialog):
         if self.scene.undo_last_paste():
             self._refresh_labeled_list()
 
-    def _style_on(self):
-        return ("QPushButton { background: #2c3a5e; color: #ffffff;"
-                " border: 1px solid #5b8cff; border-radius: 6px; padding: 6px 14px; }")
-
     def _style_off(self):
         return ("QPushButton { background: #2a2e3a; color: #cfd6e4;"
-                " border: 1px solid #3a3f4d; border-radius: 6px; padding: 6px 14px; }")
+                " border: 1px solid #3a3f4e; border-radius: 6px; padding: 6px 14px; }")
 
     @staticmethod
     def _pen_cursor():
@@ -975,7 +975,7 @@ class AnnotationDialog(QDialog):
         pm.fill(Qt.transparent)
         p = QPainter(pm)
         p.setRenderHint(QPainter.Antialiasing)
-        p.setPen(QPen(QColor("#5B8CFF"), 2))
+        p.setPen(QPen(QColor("#4f7dff"), 2))
         p.setBrush(Qt.NoBrush)
         p.drawEllipse(1, 1, 17, 17)
         p.end()
@@ -988,12 +988,12 @@ class AnnotationDialog(QDialog):
         pm.fill(Qt.transparent)
         p = QPainter(pm)
         p.setRenderHint(QPainter.Antialiasing)
-        p.setPen(QPen(QColor("#5B8CFF"), 1.5))
+        p.setPen(QPen(QColor("#4f7dff"), 1.5))
         p.setBrush(QColor(91, 140, 255, 90))
         p.drawEllipse(2, 3, 12, 10)          # 刷头
         p.drawLine(12, 12, 19, 19)           # 手柄
         p.setPen(Qt.NoPen)
-        p.setBrush(QColor("#5B8CFF"))
+        p.setBrush(QColor("#4f7dff"))
         p.drawRect(15, 17, 8, 6)             # 刷毛底座
         p.end()
         return QCursor(pm, 6, 6)
@@ -1098,7 +1098,7 @@ class AnnotationDialog(QDialog):
             color_btn.setFixedSize(18, 18)
             color_btn.setCursor(Qt.PointingHandCursor)
             color_btn.setStyleSheet(
-                "QPushButton {{ background-color: {0}; border: 1px solid #3a3f4d;"
+                "QPushButton {{ background-color: {0}; border: 1px solid #3a3f4e;"
                 " border-radius: 9px; padding: 0px; margin: 0px;"
                 " min-width: 0px; max-width: 18px; min-height: 0px; max-height: 18px; }}".format(color))
             color_btn.setToolTip(name)
@@ -1204,7 +1204,7 @@ class AnnotationDialog(QDialog):
         self.scene.current_label = name
         self._update_draw_buttons()
         for n, r in self._label_buttons.items():
-            bg = "#2a3f6b" if n == name else "#232834"
+            bg = "#2a3f6b" if n == name else "#23262f"
             r.setStyleSheet(
                 "QFrame {{ background: {0}; border-radius: 6px; }}".format(bg))
 
@@ -1372,7 +1372,7 @@ class AnnotationDialog(QDialog):
         """场景选中 → 同步右侧行高亮（与左侧标签列表同款 #2a3f6b）。"""
         sel = _sel if _sel is not None else self.scene.selected_item()
         for it, row in self._labeled_rows.items():
-            bg = "#2a3f6b" if it is sel else "#232834"
+            bg = "#2a3f6b" if it is sel else "#23262f"
             row.setStyleSheet(
                 "QFrame {{ background: {0}; border-radius: 6px; }}".format(bg))
 
@@ -1524,7 +1524,7 @@ class SwitchButton(QWidget):
     def paintEvent(self, event):
         p = QPainter(self)
         p.setRenderHint(QPainter.Antialiasing)
-        track = QColor("#5b8cff") if self._checked else QColor("#3a3f4d")
+        track = QColor("#4f7dff") if self._checked else QColor("#3a3f4e")
         p.setPen(Qt.NoPen)
         p.setBrush(track)
         p.drawRoundedRect(0, 0, 36, 20, 10, 10)
@@ -1542,10 +1542,10 @@ class ColorPickerDialog(QDialog):
         "#808080", "#C0C0C0", "#FF8800", "#8800FF",
     ]
 
-    def __init__(self, initial=QColor("#5B8CFF"), parent=None):
+    def __init__(self, initial=QColor("#4f7dff"), parent=None):
         super().__init__(parent)
         self.setWindowTitle("选择颜色")
-        self._color = QColor(initial) if initial.isValid() else QColor("#5B8CFF")
+        self._color = QColor(initial) if initial.isValid() else QColor("#4f7dff")
 
         layout = QVBoxLayout(self)
         layout.setSpacing(8)
@@ -1583,7 +1583,7 @@ class ColorPickerDialog(QDialog):
             btn = QPushButton()
             btn.setFixedSize(28, 28)
             btn.setCursor(Qt.PointingHandCursor)
-            btn.setStyleSheet("QPushButton { background: %s; border: 1px solid #555; border-radius: 3px; }" % c)
+            btn.setStyleSheet("QPushButton { background: %s; border: 1px solid #3a3f4e; border-radius: 3px; }" % c)
             btn.clicked.connect(lambda checked=False, _c=c: self._set_color(QColor(_c)))
             grid.addWidget(btn, i // 6, i % 6)
         layout.addLayout(grid)
@@ -1618,7 +1618,7 @@ class ColorPickerDialog(QDialog):
     def _update_widgets_from_color(self):
         c = self._color
         self._preview.setStyleSheet(
-            "QFrame { background: %s; border: 1px solid #555; border-radius: 4px; }" % c.name())
+            "QFrame { background: %s; border: 1px solid #3a3f4e; border-radius: 4px; }" % c.name())
         self._html_edit.blockSignals(True)
         self._html_edit.setText(c.name())
         self._html_edit.blockSignals(False)
@@ -1659,7 +1659,7 @@ class ColorPickerDialog(QDialog):
         return self._color
 
     @staticmethod
-    def get_color(initial=QColor("#5B8CFF"), parent=None):
+    def get_color(initial=QColor("#4f7dff"), parent=None):
         dlg = ColorPickerDialog(initial, parent)
         if dlg.exec() == QDialog.Accepted:
             return dlg.selected_color()

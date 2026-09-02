@@ -38,7 +38,7 @@ def render_label_chart(label_counts, label_colors=None, dark=True,
         axes = fig.add_subplot(111, facecolor="white")
     if not label_counts:
         axes.text(0.5, 0.5, "暂无标注", ha="center", va="center",
-                  color="#8a92a3", transform=axes.transAxes, fontsize=14)
+                  color="#8b93a5", transform=axes.transAxes, fontsize=14)
         axes.set_xticks([])
         axes.set_yticks([])
         return fig
@@ -47,7 +47,7 @@ def render_label_chart(label_counts, label_colors=None, dark=True,
     items = sorted(label_counts.items(), key=lambda kv: kv[1], reverse=True)
     labels = [str(k) for k, _ in items]
     values = [int(v) for _, v in items]
-    colors = [(label_colors or {}).get(name, "#5B8CFF") for name in labels]
+    colors = [(label_colors or {}).get(name, "#4f7dff") for name in labels]
     # 柱宽(数据单位)≈ n/15.5:使柱宽像素 = 图宽/20;多标签时收紧防重叠
     bar_width = max(0.05, min(0.15, num_bars / 15.5))
     x_positions = np.arange(num_bars)

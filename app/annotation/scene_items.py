@@ -20,7 +20,7 @@ class SelectablePixmapItem(QGraphicsPixmapItem):
         self.setShapeMode(QGraphicsPixmapItem.BoundingRectShape)
         self._hover = False
         self._labels = list(labels or [])
-        self._sel_color = QColor("#5B8CFF")
+        self._sel_color = QColor("#4f7dff")
 
     def set_labels(self, labels):
         self._labels = list(labels or [])

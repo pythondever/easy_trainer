@@ -36,7 +36,7 @@ class _TrainStartDialog(QDialog):
         self.setMinimumWidth(280)
         layout = QVBoxLayout(self)
         label = QLabel(message)
-        label.setStyleSheet("font-size: 15px;")
+        label.setObjectName("dialogConfirmPrompt")
         label.setAlignment(Qt.AlignCenter)
         layout.addWidget(label)
         self._btn = QPushButton("确认({})".format(seconds))
@@ -259,13 +259,10 @@ class TrainDialog(QDialog):
         h.setContentsMargins(2, 6, 0, 0)
         h.setSpacing(10)
         lbl = QLabel(text, w)
-        lbl.setStyleSheet(
-            "color: #5b8cff; font-size: 12px; font-weight: 600;")
+        lbl.setObjectName("dialogSectionTitle")
         line = QFrame(w)
         line.setFrameShape(QFrame.HLine)
-        line.setStyleSheet(
-            "background-color: #2a2d37; border: none;"
-            " max-height: 1px; margin-top: 2px;")
+        line.setObjectName("dialogSectionLine")
         h.addWidget(lbl)
         h.addWidget(line, 1)
         vl.insertWidget(index, w)
@@ -427,7 +424,6 @@ class TrainDialog(QDialog):
                 idx = i
                 break
         lab = QLabel("验证集")
-        lab.setStyleSheet("color: #e8eaf0; font-size: 13px;")
         combo = QComboBox(self)
         combo.setFixedSize(244, 30)
         row = QHBoxLayout()
