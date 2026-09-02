@@ -16,12 +16,9 @@ from PySide6.QtWidgets import QWidget, QApplication, QTimeEdit, QFrame, QHBoxLay
 
 try:
     from shiboken6 import isValid as _is_valid
-except ImportError:
-    _is_valid = lambda obj: obj is not None
-
-try:
     import PIL.Image as PILImage
 except ImportError:
+    _is_valid = lambda obj: obj is not None
     PILImage = None
 
 from app.mixins import (LabelMixin, ProjectMixin, ImportExportMixin,
