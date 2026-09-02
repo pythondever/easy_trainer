@@ -167,11 +167,6 @@ class Ui_TestResultDialog(object):
 
         self.btn_row.addWidget(self.export_pdf_btn)
 
-        self.reveal_btn = QPushButton(TestResultDialog)
-        self.reveal_btn.setObjectName(u"reveal_btn")
-
-        self.btn_row.addWidget(self.reveal_btn)
-
         self.ok_btn = QPushButton(TestResultDialog)
         self.ok_btn.setObjectName(u"ok_btn")
 
@@ -223,7 +218,6 @@ class Ui_TestResultDialog(object):
         self.sample_spin.setSuffix(QCoreApplication.translate("TestResultDialog", u" \u5f20", None))
         self.sample_spin.setSpecialValueText(QCoreApplication.translate("TestResultDialog", u"\u5168\u90e8", None))
         self.export_pdf_btn.setText(QCoreApplication.translate("TestResultDialog", u"\u5bfc\u51fa PDF \u62a5\u544a", None))
-        self.reveal_btn.setText(QCoreApplication.translate("TestResultDialog", u"\u6253\u5f00\u6240\u5728\u6587\u4ef6\u5939", None))
         self.ok_btn.setText(QCoreApplication.translate("TestResultDialog", u"\u786e\u5b9a", None))
     # retranslateUi
 

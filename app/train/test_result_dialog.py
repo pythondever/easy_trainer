@@ -1,20 +1,30 @@
 # -*- coding: utf-8 -*-
 """测试结果分析对话框：总览 + 按类别表格 + 结论提示（直白术语）。"""
 
+import datetime
 import os
+import re
 import traceback
 
-from PySide6.QtCore import QThread, Qt, QUrl, Signal
-from PySide6.QtGui import QDesktopServices
-from PySide6.QtWidgets import QApplication, QDialog, QMessageBox, \
+from PySide6.QtCore import QThread, Qt, Signal
+from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, \
     QTableWidgetItem
-
 from app.core.label_utils import label_sort_key
+from app.widgets.message_box import MessageBox
 from ui.test_result import Ui_TestResultDialog
 
 
 def _pct(v):
     return "{:.1f}%".format(v * 100)
+
+
+def _default_pdf_name(res):
+    """默认文件名：模型名_时间戳.pdf。模型名做 sanitize，避开路径分隔符与 Windows 非法字符。"""
+    model = (res.get("model") or "model")
+    model = model.split("/")[-1].split("\\")[-1]
+    model = re.sub(r'[\\/:*?"<>|\s]+', "_", model).strip("._") or "model"
+    ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    return "{}_{}.pdf".format(model, ts)
 
 
 class _PdfExportWorker(QThread):
@@ -23,19 +33,22 @@ class _PdfExportWorker(QThread):
     done = Signal(str)
     failed = Signal(str)
 
-    def __init__(self, res, per_class_limit=None, parent=None):
+    def __init__(self, res, per_class_limit=None, out_pdf=None, parent=None):
         super().__init__(parent)
         self._res = res
         self._limit = per_class_limit
+        self._out_pdf = out_pdf
 
     def run(self):
         try:
             from app.train.test_report import build_report
+            kwargs = {"out_pdf": self._out_pdf} if self._out_pdf else {}
             if self._limit is None:
-                self.done.emit(build_report(self._res) or "")
+                self.done.emit(build_report(self._res, **kwargs) or "")
             else:
                 self.done.emit(
-                    build_report(self._res, per_class_limit=self._limit) or "")
+                    build_report(self._res, per_class_limit=self._limit,
+                                 **kwargs) or "")
         except Exception as exc:
             self.failed.emit("{}\n\n{}".format(exc, traceback.format_exc()))
 
@@ -47,7 +60,6 @@ class TestResultDialog(QDialog):
         self._ui.setupUi(self)
         self._ui.ok_btn.clicked.connect(self.accept)
         self._ui.export_pdf_btn.clicked.connect(self._on_export)
-        self._ui.reveal_btn.clicked.connect(self._on_reveal)
         self._res = res
         self._worker = None
         if per_class_limit is not None:
@@ -61,7 +73,6 @@ class TestResultDialog(QDialog):
         """没有逐图明细(纯推理无标签 / 无错误样本)时导出按钮不可用。"""
         has_detail = bool(self._res.get("detail_path"))
         self._ui.export_pdf_btn.setEnabled(has_detail)
-        self._ui.reveal_btn.setEnabled(bool(self._res.get("report_dir")))
         self._ui.sample_spin.setEnabled(has_detail)
         self._ui.sample_lbl.setEnabled(has_detail)
         tip = ("把漏检/误检的图逐张画框导出成 PDF" if has_detail
@@ -71,11 +82,22 @@ class TestResultDialog(QDialog):
     def _on_export(self):
         if self._worker is not None and self._worker.isRunning():
             return
+        default_dir = self._res.get("report_dir") or os.path.dirname(
+            self._res.get("detail_path") or "") or os.getcwd()
+        if not os.path.isdir(default_dir):
+            default_dir = os.getcwd()
+        default_path = os.path.join(default_dir, _default_pdf_name(self._res))
+        path, _ = QFileDialog.getSaveFileName(
+            self, "保存 PDF 报告", default_path, "PDF 文件 (*.pdf)")
+        if not path:
+            return
+        if not path.lower().endswith(".pdf"):
+            path += ".pdf"
         self._ui.export_pdf_btn.setEnabled(False)
         self._ui.export_pdf_btn.setText("正在生成…")
         QApplication.setOverrideCursor(Qt.WaitCursor)
         self._worker = _PdfExportWorker(
-            self._res, self._ui.sample_spin.value(), self)
+            self._res, self._ui.sample_spin.value(), path, self)
         self._worker.done.connect(self._on_export_done)
         self._worker.failed.connect(self._on_export_failed)
         self._worker.start()
@@ -88,25 +110,16 @@ class TestResultDialog(QDialog):
     def _on_export_done(self, path):
         self._restore_btn()
         if not path:
-            QMessageBox.information(
+            MessageBox.information(
                 self, "无需导出",
-                "本次测试没有漏检也没有误检，每页 6 张的报告里没有内容可画。")
+                "本次测试没有漏检也没有误检，没有内容可写。")
             return
-        QMessageBox.information(self, "导出完成", "导出成功")
+        MessageBox.information(
+            self, "导出完成", "PDF 报告已保存到：\n{}".format(path))
 
     def _on_export_failed(self, msg):
         self._restore_btn()
-        QMessageBox.warning(self, "导出失败", msg)
-
-    def _on_reveal(self):
-        folder = self._res.get("report_dir") or ""
-        if folder:
-            self._reveal(folder)
-
-    @staticmethod
-    def _reveal(path):
-        folder = path if os.path.isdir(path) else os.path.dirname(path)
-        QDesktopServices.openUrl(QUrl.fromLocalFile(folder))
+        MessageBox.warning(self, "导出失败", msg)
 
     def closeEvent(self, event):
         # 线程还在跑时不能直接销毁，否则 Qt 会崩

@@ -269,13 +269,6 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="reveal_btn">
-       <property name="text">
-        <string>打开所在文件夹</string>
-       </property>
-      </widget>
-     </item>
-     <item>
       <widget class="QPushButton" name="ok_btn">
        <property name="text">
         <string>确定</string>
