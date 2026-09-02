@@ -816,14 +816,15 @@ class AnnotationDialog(QDialog):
         self._load_current()
 
     def _delete_current_image(self):
-        """标注界面单张删除: 弹窗确认 -> 调 _delete_images_core 删文件+更新缓存/db
-        -> 自动切到下一张(列表前移即指向原 next; 删最后一张则回退一张; 删光则清空场景)"""
+        """
+        标注界面单张删除: 弹窗确认 -> 调 _delete_images_core 删文件+更新缓存/db
+        -> 自动切到下一张(列表前移即指向原 next; 删最后一张则回退一张; 删光则清空场景)
+        """
         if not (0 <= self.index < len(self.image_list)):
             return
         cur_path = self.image_list[self.index]
         # 先保存当前未提交的标注(避免画了框没保存就被删, 导致标注明文丢失)
         self._save_current()
-        # 标注界面删除 = 真删除(直接从磁盘删图像+同名标注文件), 不提供"仅标记"选项
         clicked = MessageBox.choose(
             self, "删除图像", "是否删除当前图像？\n\n{}".format(os.path.basename(cur_path)),
             [("删除本地文件", QMessageBox.YesRole),
@@ -831,7 +832,6 @@ class AnnotationDialog(QDialog):
             informative="图像与同名标注文件将从磁盘删除，不可恢复")
         if clicked is None or clicked == "取消":
             return
-        # 调主窗口的 _delete_images_core 删文件+更新缓存/db(首页缩略图/分页/label_counts/标签过滤 同步刷新)
         main = getattr(self, "_main", None)
         if main is None or not hasattr(main, "_delete_images_core"):
             MessageBox.warning(self, "删除图像", "无法访问主窗口, 删除失败")
@@ -841,18 +841,15 @@ class AnnotationDialog(QDialog):
                                      os.path.basename(cur_path),
                                      "删除本地文件",
                                      self.project, self.dataset))
-        # 同步 dialog 内部 image_list + 清理已删图的像素缓存
         self.image_list.pop(self.index)
         self._pix_cache.pop(cur_path, None)
         self._pix_fmt_cache.pop(cur_path, None)
         if not self.image_list:
             self.index = 0
-            # 全删了: 清空场景, 提示空
             self.scene.set_image(QPixmap())
             self._refresh_labeled_list()
             self.ui.image_info_label.setText("(无图像)")
             return
-        # 删的是最后一张 -> 回退到前一张; 否则列表前移, self.index 仍指向原 next
         if self.index >= len(self.image_list):
             self.index = len(self.image_list) - 1
         self._dirty = False
@@ -867,9 +864,7 @@ class AnnotationDialog(QDialog):
         """
         missing = {}
         used = set(self.label_colors.values())
-        # sorted 保证同一批标签名无论出现顺序如何都分到同样的颜色
         for lbl in sorted({normalize_label(b.get("label")) for b in boxes}):
-            # 归一化：历史 json 里的 class_N → N,防止 class_ 标签重新入库
             if lbl and lbl not in self.label_colors:
                 color = assign_label_color(lbl, used)
                 missing[lbl] = color
@@ -886,7 +881,6 @@ class AnnotationDialog(QDialog):
 
     def closeEvent(self, event):
         self._save_current()
-        # 停止后台预解码线程(避免解码线程在对话框销毁后继续发信号)
         self._closing = True
         if getattr(self, "_prefetch_worker", None) is not None:
             self._prefetch_worker.stop()
@@ -1021,7 +1015,6 @@ class AnnotationDialog(QDialog):
         if not self.label_colors:
             return
         menu = QMenu(self)
-        # 与首页下拉框一致: 纯数字数值排序,其他按字符串
         for name, color in sorted(self.label_colors.items(),
                                   key=lambda kv: label_sort_key(kv[0])):
             act = menu.addAction(self._label_icon(color), name)
@@ -1037,7 +1030,6 @@ class AnnotationDialog(QDialog):
         chosen = menu.exec(pos)
         if chosen is not None and chosen.text() != item.label:
             if self.cls_mode:
-                # 分类数据集:点击中央类别名;修改类别(移动文件)
                 self._change_cls(chosen.text())
             else:
                 self.scene.set_item_label(item, chosen.text())

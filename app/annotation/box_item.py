@@ -132,12 +132,13 @@ class AnnotationBoxItem(QGraphicsRectItem):
 
     # ---------------- 几何 ---------------- 
     def shape(self):
-        """命中测试范围 = 框本体 + 标签 chip + 缩放手柄。
-
+        """
+        命中测试范围 = 框本体 + 标签 chip + 缩放手柄。
         QGraphicsRectItem.shape() 默认只有框本体矩形，而 chip 画在框上方
         22px（框外）、手柄一半在框外 → 场景命中测试（scene.items/itemAt）
         根本不会把点击事件派发给本 item。必须重载 shape 包含这些区域，
-        否则点击标签名改类别、点手柄外侧调整大小都"没反应"。"""
+        否则点击标签名改类别、点手柄外侧调整大小都"没反应"。
+        """
         path = QPainterPath()
         path.addRect(self.rect())
         path.addRect(self._chip_rect_local())
@@ -157,11 +158,13 @@ class AnnotationBoxItem(QGraphicsRectItem):
         return s
 
     def _update_handles(self):
-        """每个矩形固定 6 个圆形手柄：4 个角点 + 2 个长边中点。
+        """
+        每个矩形固定 6 个圆形手柄：4 个角点 + 2 个长边中点。
         按实际方向判断长边是哪一对：
         - w ≥ h：长边是 top/bottom 边（长 = w）→ 中点 H_TM/H_BM（分布在水平中线 cx 上）
         - h > w：长边是 left/right 边（长 = h）→ 中点 H_ML/H_MR（分布在垂直中线 cy 上）
-        中点放长边保证手柄间距足够大，避免粘连。"""
+        中点放长边保证手柄间距足够大，避免粘连。
+        """
         r = self.rect()
         s = self._compute_handle_size()
         self._handle_size = s
@@ -186,9 +189,11 @@ class AnnotationBoxItem(QGraphicsRectItem):
             })
 
     def set_label(self, label, color=None):
-        """修改类别。未显式传 color 时按新标签重新取色：
+        """
+        修改类别。未显式传 color 时按新标签重新取色：
         优先场景标签色映射（scene.label_colors，db 自定义色），
-        否则确定性哈希色——保证改类别后框和 chip 颜色跟随新标签。"""
+        否则确定性哈希色——保证改类别后框和 chip 颜色跟随新标签。
+        """
         self.label = label
         if color is None:
             scene = self.scene()
@@ -223,8 +228,8 @@ class AnnotationBoxItem(QGraphicsRectItem):
 
     # ---------------- 标签 chip 点击（修改类别） ----------------
     def _view_scale(self):
-        """当前 view 的缩放系数（无 view 时 1.0）。
-
+        """
+        当前 view 的缩放系数（无 view 时 1.0）。
         chip 绘制在屏幕坐标（恒定像素大小），点击检测在局部坐标，
         必须把屏幕宽度按 scale 换算回局部坐标，否则缩小视图时点不中。"""
         scene = self.scene()
@@ -494,9 +499,11 @@ class AnnotationPolygonItem(QGraphicsPolygonItem):
         return s
 
     def set_label(self, label, color=None):
-        """修改类别。未显式传 color 时按新标签重新取色：
+        """
+        修改类别。未显式传 color 时按新标签重新取色：
         优先场景标签色映射（scene.label_colors，db 自定义色），
-        否则确定性哈希色——保证改类别后框和 chip 颜色跟随新标签。"""
+        否则确定性哈希色——保证改类别后框和 chip 颜色跟随新标签。
+        """
         self.label = label
         if color is None:
             scene = self.scene()

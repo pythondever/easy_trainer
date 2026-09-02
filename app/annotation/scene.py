@@ -227,8 +227,10 @@ class AnnotationScene(QGraphicsScene):
 
     @staticmethod
     def _rotate_points(pts, center, angle):
-        """多边形点绕 center 旋转 angle 度。Qt 屏幕坐标 y 向下:
-        正角度=视觉顺时针, 负角度=视觉逆时针(与 QPainter.rotate 方向一致)。"""
+        """
+        多边形点绕 center 旋转 angle 度。Qt 屏幕坐标 y 向下:
+        正角度=视觉顺时针, 负角度=视觉逆时针(与 QPainter.rotate 方向一致)。
+        """
         rad = math.radians(angle)
         c, s = math.cos(rad), math.sin(rad)
         cx, cy = center.x(), center.y()
