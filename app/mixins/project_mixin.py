@@ -9,6 +9,7 @@ sys.path.append(os.path.join(WORKSPACE_DIRECTORY, 'ui'))
 from ui.enter_name import Ui_Dialog as EnterNameUI
 from ui.add_dataset import Ui_AddDatasets
 from app.core.label_utils import label_sort_key
+from app.widgets.dialog_buttons import apply_icon, add_ok_cancel
 from app.widgets.message_box import MessageBox
 from PySide6.QtGui import QIcon, QFont, QPixmap, QColor
 from PySide6.QtCore import Qt, QSize
@@ -38,6 +39,7 @@ class ProjectMixin(object):
             ui.project_name_txt.setText(preset)
             ui.project_name_txt.selectAll()
         ui.enter_name_lbl.setVisible(False)
+        apply_icon(ui.done_enter_name_btn, "确定")
         ui.done_enter_name_btn.clicked.connect(dlg.accept)
         dlg.exec()
         name = ui.project_name_txt.text().strip()
@@ -249,6 +251,7 @@ class ProjectMixin(object):
         combo = getattr(ui, "comboBox", None)
         if combo is not None:
             combo.setVisible(False)
+        apply_icon(ui.done_btn, "确定")
         ui.done_btn.clicked.connect(dlg.accept)
         dlg.setFixedHeight(dlg.sizeHint().height())
         dlg.exec()
@@ -347,12 +350,7 @@ class ProjectMixin(object):
         layout.addWidget(combo)
         btns = QHBoxLayout()
         btns.addStretch(1)
-        ok_btn = QPushButton("确定", dlg)
-        ok_btn.clicked.connect(dlg.accept)
-        cancel_btn = QPushButton("取消", dlg)
-        cancel_btn.clicked.connect(dlg.reject)
-        btns.addWidget(ok_btn)
-        btns.addWidget(cancel_btn)
+        add_ok_cancel(btns, dlg.accept, dlg.reject)
         layout.addLayout(btns)
         if dlg.exec() != QDialog.Accepted:
             return None

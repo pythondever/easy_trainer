@@ -10,6 +10,7 @@ sys.path.append(os.path.join(WORKSPACE_DIRECTORY, 'ui'))
 from ui.edit_label import Ui_Dialog as EditLabelUI
 from app.core.label_utils import (normalize_label, label_sort_key)
 from app.annotation.box_item import assign_label_color, label_color
+from app.widgets.dialog_buttons import apply_icon
 from app.widgets.message_box import MessageBox, ProgressDialog
 from app.tasks.merge_task import MergeLabelsTask
 from PySide6.QtGui import QIcon, QPixmap, QColor
@@ -173,6 +174,7 @@ class LabelMixin(object):
         ui.label_btn.setText(old)
         ui.new_label_edit.setText(old)
         ui.new_label_edit.selectAll()
+        apply_icon(ui.done_btn, "确定")
         ui.done_btn.clicked.connect(dlg.accept)
         dlg.exec()
         new_name = ui.new_label_edit.text().strip()

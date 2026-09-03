@@ -7,7 +7,7 @@
         <x>0</x>
         <y>0</y>
         <width>740</width>
-        <height>560</height>
+        <height>600</height>
       </rect>
     </property>
     <property name="windowTitle">
@@ -15,217 +15,561 @@
     </property>
     <layout class="QVBoxLayout" name="mainLayout">
       <property name="spacing">
-        <number>12</number>
+        <number>10</number>
       </property>
       <property name="leftMargin">
-        <number>28</number>
+        <number>24</number>
       </property>
       <property name="topMargin">
         <number>20</number>
       </property>
       <property name="rightMargin">
-        <number>28</number>
+        <number>24</number>
       </property>
       <property name="bottomMargin">
-        <number>20</number>
+        <number>18</number>
       </property>
       <item>
-        <layout class="QHBoxLayout" name="rowBasic" stretch="1,1">
+        <layout class="QHBoxLayout" name="title_row">
           <property name="spacing">
-            <number>28</number>
+            <number>10</number>
           </property>
           <item>
-            <layout class="QFormLayout" name="formBasic">
-              <property name="horizontalSpacing">
-                <number>12</number>
+            <widget class="QLabel" name="title_label">
+              <property name="text">
+                <string>训练</string>
               </property>
-              <property name="verticalSpacing">
-                <number>12</number>
+              <property name="class" stdset="0">
+                <string>dialogTitle</string>
               </property>
-              <item row="0" column="0">
-                <widget class="QLabel" name="task_label">
-                  <property name="text">
-                    <string>任务类型</string>
-                  </property>
-                </widget>
-              </item>
-              <item row="0" column="1">
-                <widget class="QComboBox" name="task_combo">
-                  <item>
-                    <property name="text">
-                      <string>检测</string>
-                    </property>
-                  </item>
-                  <item>
-                    <property name="text">
-                      <string>分割</string>
-                    </property>
-                  </item>
-                  <item>
-                    <property name="text">
-                      <string>分类</string>
-                    </property>
-                  </item>
-                </widget>
-              </item>
-              <item row="1" column="0">
-                <widget class="QLabel" name="dataset_label">
-                  <property name="text">
-                    <string>训练集</string>
-                  </property>
-                </widget>
-              </item>
-              <item row="1" column="1">
-                <widget class="QComboBox" name="dataset_combo" />
-              </item>
-            </layout>
+            </widget>
           </item>
           <item>
-            <layout class="QFormLayout" name="formModel">
-              <property name="horizontalSpacing">
-                <number>12</number>
+            <widget class="QLabel" name="task_badge">
+              <property name="text">
+                <string>检测</string>
               </property>
-              <property name="verticalSpacing">
-                <number>12</number>
+              <property name="class" stdset="0">
+                <string>taskBadge</string>
               </property>
-              <item row="0" column="0">
-                <widget class="QLabel" name="network_label">
-                  <property name="text">
-                    <string>网络</string>
-                  </property>
-                </widget>
-              </item>
-              <item row="0" column="1">
-                <widget class="QComboBox" name="network_combo" />
-              </item>
-              <item row="1" column="0">
-                <widget class="QLabel" name="device_label">
-                  <property name="text">
-                    <string>设备</string>
-                  </property>
-                </widget>
-              </item>
-              <item row="1" column="1">
-                <widget class="QComboBox" name="device_combo" />
-              </item>
-            </layout>
+            </widget>
+          </item>
+          <item>
+            <spacer name="title_spacer">
+              <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+                <size>
+                  <width>40</width>
+                  <height>20</height>
+                </size>
+              </property>
+            </spacer>
           </item>
         </layout>
       </item>
       <item>
-        <layout class="QHBoxLayout" name="rowHyper" stretch="1,1">
-          <property name="spacing">
-            <number>28</number>
-          </property>
-          <item>
-            <layout class="QFormLayout" name="formHyper1">
-              <property name="horizontalSpacing">
-                <number>12</number>
-              </property>
-              <property name="verticalSpacing">
-                <number>12</number>
-              </property>
-              <item row="0" column="0">
-                <widget class="QLabel" name="optimizer_label">
-                  <property name="text">
-                    <string>优化器</string>
-                  </property>
-                </widget>
-              </item>
-              <item row="0" column="1">
-                <widget class="QComboBox" name="optimizer_comboBox" />
-              </item>
-              <item row="1" column="0">
-                <widget class="QLabel" name="img_size_label">
-                  <property name="text">
-                    <string>图像尺寸</string>
-                  </property>
-                </widget>
-              </item>
-              <item row="1" column="1">
-                <widget class="QLineEdit" name="img_size_line_txt" />
-              </item>
-              <item row="2" column="0">
-                <widget class="QLabel" name="early_stop_label">
-                  <property name="text">
-                    <string>早停</string>
-                  </property>
-                </widget>
-              </item>
-              <item row="2" column="1">
-                <widget class="QLineEdit" name="early_stop_line_txt" />
-              </item>
-              <item row="3" column="0">
-                <widget class="QLabel" name="batch_label">
-                  <property name="text">
-                    <string>批次</string>
-                  </property>
-                </widget>
-              </item>
-              <item row="3" column="1">
-                <widget class="QLineEdit" name="batch_size_line_txt" />
-              </item>
-            </layout>
-          </item>
-          <item>
-            <layout class="QFormLayout" name="formHyper2">
-              <property name="horizontalSpacing">
-                <number>12</number>
-              </property>
-              <property name="verticalSpacing">
-                <number>12</number>
-              </property>
-              <item row="0" column="0">
-                <widget class="QLabel" name="grad_accum_label">
-                  <property name="text">
-                    <string>梯度累积</string>
-                  </property>
-                </widget>
-              </item>
-              <item row="0" column="1">
-                <widget class="QLineEdit" name="grad_accum_line_txt" />
-              </item>
-              <item row="1" column="0">
-                <widget class="QLabel" name="epoch_label">
-                  <property name="text">
-                    <string>轮次</string>
-                  </property>
-                </widget>
-              </item>
-              <item row="1" column="1">
-                <widget class="QLineEdit" name="epochs_line_txt" />
-              </item>
-              <item row="2" column="0">
-                <widget class="QLabel" name="loader_num_label">
-                  <property name="text">
-                    <string>线程数</string>
-                  </property>
-                </widget>
-              </item>
-              <item row="2" column="1">
-                <widget class="QLineEdit" name="batch_size_line_txt_2" />
-              </item>
-              <item row="3" column="0">
-                <widget class="QLabel" name="lr_label">
-                  <property name="text">
-                    <string>学习率</string>
-                  </property>
-                </widget>
-              </item>
-              <item row="3" column="1">
-                <widget class="QLineEdit" name="lr_line_txt" />
-              </item>
-            </layout>
-          </item>
-        </layout>
+        <widget class="QWidget" name="section_data_wrap" native="true">
+          <layout class="QHBoxLayout" name="section_data_layout">
+            <property name="spacing">
+              <number>10</number>
+            </property>
+            <property name="leftMargin">
+              <number>0</number>
+            </property>
+            <property name="topMargin">
+              <number>0</number>
+            </property>
+            <property name="rightMargin">
+              <number>0</number>
+            </property>
+            <property name="bottomMargin">
+              <number>0</number>
+            </property>
+            <item>
+              <widget class="QLabel" name="group_data_title">
+                <property name="text">
+                  <string>模型与数据</string>
+                </property>
+                <property name="class" stdset="0">
+                  <string>dialogSectionTitle</string>
+                </property>
+              </widget>
+            </item>
+            <item>
+              <widget class="QFrame" name="group_data_line">
+                <property name="frameShape">
+                  <enum>QFrame::HLine</enum>
+                </property>
+                <property name="frameShadow">
+                  <enum>QFrame::Sunken</enum>
+                </property>
+                <property name="class" stdset="0">
+                  <string>dialogSectionLine</string>
+                </property>
+              </widget>
+            </item>
+          </layout>
+        </widget>
       </item>
       <item>
-        <layout class="QFormLayout" name="formOut">
+        <layout class="QGridLayout" name="grid_data">
           <property name="horizontalSpacing">
             <number>12</number>
           </property>
           <property name="verticalSpacing">
             <number>12</number>
+          </property>
+          <item row="0" column="0">
+            <widget class="QLabel" name="task_label">
+              <property name="text">
+                <string>任务类型</string>
+              </property>
+              <property name="alignment">
+                <set>Qt::AlignLeft|Qt::AlignVCenter</set>
+              </property>
+            </widget>
+          </item>
+          <item row="0" column="1">
+            <widget class="QComboBox" name="task_combo">
+              <item>
+                <property name="text">
+                  <string>检测</string>
+                </property>
+              </item>
+              <item>
+                <property name="text">
+                  <string>分割</string>
+                </property>
+              </item>
+              <item>
+                <property name="text">
+                  <string>分类</string>
+                </property>
+              </item>
+            </widget>
+          </item>
+          <item row="0" column="2">
+            <widget class="QLabel" name="network_label">
+              <property name="text">
+                <string>网络</string>
+              </property>
+              <property name="alignment">
+                <set>Qt::AlignLeft|Qt::AlignVCenter</set>
+              </property>
+            </widget>
+          </item>
+          <item row="0" column="3">
+            <widget class="QComboBox" name="network_combo" />
+          </item>
+          <item row="1" column="0">
+            <widget class="QLabel" name="dataset_label">
+              <property name="text">
+                <string>训练集</string>
+              </property>
+              <property name="alignment">
+                <set>Qt::AlignLeft|Qt::AlignVCenter</set>
+              </property>
+            </widget>
+          </item>
+          <item row="1" column="1">
+            <widget class="QComboBox" name="dataset_combo" />
+          </item>
+          <item row="1" column="2">
+            <widget class="QLabel" name="val_label">
+              <property name="text">
+                <string>验证集</string>
+              </property>
+              <property name="alignment">
+                <set>Qt::AlignLeft|Qt::AlignVCenter</set>
+              </property>
+            </widget>
+          </item>
+          <item row="1" column="3">
+            <widget class="QComboBox" name="val_combo" />
+          </item>
+          <item row="2" column="0">
+            <widget class="QLabel" name="device_label">
+              <property name="text">
+                <string>设备</string>
+              </property>
+              <property name="alignment">
+                <set>Qt::AlignLeft|Qt::AlignVCenter</set>
+              </property>
+            </widget>
+          </item>
+          <item row="2" column="1" colspan="3">
+            <widget class="QComboBox" name="device_combo" />
+          </item>
+        </layout>
+      </item>
+      <item>
+        <widget class="QWidget" name="section_hyper_wrap" native="true">
+          <layout class="QHBoxLayout" name="section_hyper_layout">
+            <property name="spacing">
+              <number>10</number>
+            </property>
+            <property name="leftMargin">
+              <number>0</number>
+            </property>
+            <property name="topMargin">
+              <number>0</number>
+            </property>
+            <property name="rightMargin">
+              <number>0</number>
+            </property>
+            <property name="bottomMargin">
+              <number>0</number>
+            </property>
+            <item>
+              <widget class="QLabel" name="group_hyper_title">
+                <property name="text">
+                  <string>训练超参</string>
+                </property>
+                <property name="class" stdset="0">
+                  <string>dialogSectionTitle</string>
+                </property>
+              </widget>
+            </item>
+            <item>
+              <widget class="QFrame" name="group_hyper_line">
+                <property name="frameShape">
+                  <enum>QFrame::HLine</enum>
+                </property>
+                <property name="frameShadow">
+                  <enum>QFrame::Sunken</enum>
+                </property>
+                <property name="class" stdset="0">
+                  <string>dialogSectionLine</string>
+                </property>
+              </widget>
+            </item>
+          </layout>
+        </widget>
+      </item>
+      <item>
+        <layout class="QGridLayout" name="grid_hyper">
+          <property name="horizontalSpacing">
+            <number>12</number>
+          </property>
+          <property name="verticalSpacing">
+            <number>12</number>
+          </property>
+          <item row="0" column="0">
+            <widget class="QLabel" name="epoch_label">
+              <property name="text">
+                <string>轮次</string>
+              </property>
+              <property name="alignment">
+                <set>Qt::AlignLeft|Qt::AlignVCenter</set>
+              </property>
+            </widget>
+          </item>
+          <item row="0" column="1">
+            <widget class="QLineEdit" name="epochs_line_txt" />
+          </item>
+          <item row="0" column="2">
+            <widget class="QLabel" name="optimizer_label">
+              <property name="text">
+                <string>优化器</string>
+              </property>
+              <property name="alignment">
+                <set>Qt::AlignLeft|Qt::AlignVCenter</set>
+              </property>
+            </widget>
+          </item>
+          <item row="0" column="3">
+            <widget class="QComboBox" name="optimizer_comboBox" />
+          </item>
+          <item row="1" column="0">
+            <widget class="QLabel" name="early_stop_label">
+              <property name="text">
+                <string>早停</string>
+              </property>
+              <property name="alignment">
+                <set>Qt::AlignLeft|Qt::AlignVCenter</set>
+              </property>
+            </widget>
+          </item>
+          <item row="1" column="1">
+            <widget class="QWidget" name="early_wrap" native="true">
+              <layout class="QVBoxLayout" name="early_wrap_layout">
+                <property name="spacing">
+                  <number>4</number>
+                </property>
+                <property name="leftMargin">
+                  <number>0</number>
+                </property>
+                <property name="topMargin">
+                  <number>0</number>
+                </property>
+                <property name="rightMargin">
+                  <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                  <number>0</number>
+                </property>
+                <item>
+                  <widget class="QLineEdit" name="early_stop_line_txt" />
+                </item>
+                <item>
+                  <widget class="QLabel" name="early_note">
+                    <property name="sizePolicy">
+                      <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                      </sizepolicy>
+                    </property>
+                    <property name="text">
+                      <string>连续无提升则提前结束，0 为关闭</string>
+                    </property>
+                    <property name="class" stdset="0">
+                      <string>fieldNote</string>
+                    </property>
+                    <property name="wordWrap">
+                      <bool>true</bool>
+                    </property>
+                  </widget>
+                </item>
+              </layout>
+            </widget>
+          </item>
+          <item row="1" column="2">
+            <widget class="QLabel" name="lr_label">
+              <property name="text">
+                <string>学习率</string>
+              </property>
+              <property name="alignment">
+                <set>Qt::AlignLeft|Qt::AlignVCenter</set>
+              </property>
+            </widget>
+          </item>
+          <item row="1" column="3">
+            <widget class="QWidget" name="lr_wrap" native="true">
+              <layout class="QVBoxLayout" name="lr_wrap_layout">
+                <property name="spacing">
+                  <number>4</number>
+                </property>
+                <property name="leftMargin">
+                  <number>0</number>
+                </property>
+                <property name="topMargin">
+                  <number>0</number>
+                </property>
+                <property name="rightMargin">
+                  <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                  <number>0</number>
+                </property>
+                <item>
+                  <widget class="QLineEdit" name="lr_line_txt" />
+                </item>
+                <item>
+                  <widget class="QLabel" name="lr_note">
+                    <property name="sizePolicy">
+                      <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                      </sizepolicy>
+                    </property>
+                    <property name="text">
+                      <string>初始学习率，训练中自动衰减</string>
+                    </property>
+                    <property name="class" stdset="0">
+                      <string>fieldNote</string>
+                    </property>
+                    <property name="wordWrap">
+                      <bool>true</bool>
+                    </property>
+                  </widget>
+                </item>
+              </layout>
+            </widget>
+          </item>
+          <item row="2" column="0">
+            <widget class="QLabel" name="batch_label">
+              <property name="text">
+                <string>批次</string>
+              </property>
+              <property name="alignment">
+                <set>Qt::AlignLeft|Qt::AlignVCenter</set>
+              </property>
+            </widget>
+          </item>
+          <item row="2" column="1">
+            <widget class="QLineEdit" name="batch_size_line_txt" />
+          </item>
+          <item row="2" column="2">
+            <widget class="QLabel" name="img_size_label">
+              <property name="text">
+                <string>图像尺寸</string>
+              </property>
+              <property name="alignment">
+                <set>Qt::AlignLeft|Qt::AlignVCenter</set>
+              </property>
+            </widget>
+          </item>
+          <item row="2" column="3">
+            <widget class="QWidget" name="img_wrap" native="true">
+              <layout class="QHBoxLayout" name="img_wrap_layout">
+                <property name="spacing">
+                  <number>8</number>
+                </property>
+                <property name="leftMargin">
+                  <number>0</number>
+                </property>
+                <property name="topMargin">
+                  <number>0</number>
+                </property>
+                <property name="rightMargin">
+                  <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                  <number>0</number>
+                </property>
+                <item>
+                  <widget class="QLineEdit" name="img_size_line_txt" />
+                </item>
+                <item>
+                  <widget class="QLabel" name="img_note">
+                    <property name="text">
+                      <string>32 的倍数</string>
+                    </property>
+                    <property name="class" stdset="0">
+                      <string>fieldNote</string>
+                    </property>
+                    <property name="alignment">
+                      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                    </property>
+                  </widget>
+                </item>
+              </layout>
+            </widget>
+          </item>
+          <item row="3" column="0">
+            <widget class="QLabel" name="grad_accum_label">
+              <property name="text">
+                <string>梯度累积</string>
+              </property>
+              <property name="alignment">
+                <set>Qt::AlignLeft|Qt::AlignVCenter</set>
+              </property>
+            </widget>
+          </item>
+          <item row="3" column="1">
+            <widget class="QWidget" name="grad_wrap" native="true">
+              <layout class="QVBoxLayout" name="grad_wrap_layout">
+                <property name="spacing">
+                  <number>4</number>
+                </property>
+                <property name="leftMargin">
+                  <number>0</number>
+                </property>
+                <property name="topMargin">
+                  <number>0</number>
+                </property>
+                <property name="rightMargin">
+                  <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                  <number>0</number>
+                </property>
+                <item>
+                  <widget class="QLineEdit" name="grad_accum_line_txt" />
+                </item>
+                <item>
+                  <widget class="QLabel" name="grad_note">
+                    <property name="sizePolicy">
+                      <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                      </sizepolicy>
+                    </property>
+                    <property name="text">
+                      <string>显存不足时调大，等效批次 × N</string>
+                    </property>
+                    <property name="class" stdset="0">
+                      <string>fieldNote</string>
+                    </property>
+                    <property name="wordWrap">
+                      <bool>true</bool>
+                    </property>
+                  </widget>
+                </item>
+              </layout>
+            </widget>
+          </item>
+          <item row="3" column="2">
+            <widget class="QLabel" name="loader_num_label">
+              <property name="text">
+                <string>线程数</string>
+              </property>
+              <property name="alignment">
+                <set>Qt::AlignLeft|Qt::AlignVCenter</set>
+              </property>
+            </widget>
+          </item>
+          <item row="3" column="3">
+            <widget class="QLineEdit" name="batch_size_line_txt_2" />
+          </item>
+        </layout>
+      </item>
+      <item>
+        <widget class="QWidget" name="section_out_wrap" native="true">
+          <layout class="QHBoxLayout" name="section_out_layout">
+            <property name="spacing">
+              <number>10</number>
+            </property>
+            <property name="leftMargin">
+              <number>0</number>
+            </property>
+            <property name="topMargin">
+              <number>0</number>
+            </property>
+            <property name="rightMargin">
+              <number>0</number>
+            </property>
+            <property name="bottomMargin">
+              <number>0</number>
+            </property>
+            <item>
+              <widget class="QLabel" name="group_out_title">
+                <property name="text">
+                  <string>输出</string>
+                </property>
+                <property name="class" stdset="0">
+                  <string>dialogSectionTitle</string>
+                </property>
+              </widget>
+            </item>
+            <item>
+              <widget class="QFrame" name="group_out_line">
+                <property name="frameShape">
+                  <enum>QFrame::HLine</enum>
+                </property>
+                <property name="frameShadow">
+                  <enum>QFrame::Sunken</enum>
+                </property>
+                <property name="class" stdset="0">
+                  <string>dialogSectionLine</string>
+                </property>
+              </widget>
+            </item>
+          </layout>
+        </widget>
+      </item>
+      <item>
+        <layout class="QFormLayout" name="form_out">
+          <property name="horizontalSpacing">
+            <number>12</number>
+          </property>
+          <property name="verticalSpacing">
+            <number>12</number>
+          </property>
+          <property name="labelAlignment">
+            <set>Qt::AlignRight|Qt::AlignVCenter</set>
           </property>
           <item row="0" column="0">
             <widget class="QLabel" name="output_label">
@@ -235,7 +579,7 @@
             </widget>
           </item>
           <item row="0" column="1">
-            <layout class="QHBoxLayout" name="outRow">
+            <layout class="QHBoxLayout" name="out_row">
               <property name="spacing">
                 <number>8</number>
               </property>
@@ -243,6 +587,9 @@
                 <widget class="QLineEdit" name="output_line_txt">
                   <property name="text">
                     <string />
+                  </property>
+                  <property name="placeholderText">
+                    <string>留空则自动按时间生成目录</string>
                   </property>
                 </widget>
               </item>
@@ -264,9 +611,88 @@
         </layout>
       </item>
       <item>
-        <layout class="QHBoxLayout" name="bottomActions">
+        <spacer name="bottom_spacer_top">
+          <property name="orientation">
+            <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+            <size>
+              <width>20</width>
+              <height>12</height>
+            </size>
+          </property>
+        </spacer>
+      </item>
+      <item>
+        <widget class="QFrame" name="summary_bar">
+          <property name="frameShape">
+            <enum>QFrame::NoFrame</enum>
+          </property>
+          <layout class="QHBoxLayout" name="summary_bar_layout">
+            <property name="spacing">
+              <number>8</number>
+            </property>
+            <property name="leftMargin">
+              <number>12</number>
+            </property>
+            <property name="topMargin">
+              <number>10</number>
+            </property>
+            <property name="rightMargin">
+              <number>12</number>
+            </property>
+            <property name="bottomMargin">
+              <number>10</number>
+            </property>
+            <item>
+              <widget class="QLabel" name="summary_icon">
+                <property name="text">
+                  <string>i</string>
+                </property>
+                <property name="class" stdset="0">
+                  <string>summaryIcon</string>
+                </property>
+              </widget>
+            </item>
+            <item>
+              <widget class="QLabel" name="summary_text">
+                <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                  </sizepolicy>
+                </property>
+                <property name="text">
+                  <string>请选择训练集与验证集</string>
+                </property>
+                <property name="class" stdset="0">
+                  <string>summaryText</string>
+                </property>
+                <property name="alignment">
+                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                </property>
+              </widget>
+            </item>
+          </layout>
+        </widget>
+      </item>
+      <item>
+        <widget class="QFrame" name="button_line">
+          <property name="frameShape">
+            <enum>QFrame::HLine</enum>
+          </property>
+          <property name="frameShadow">
+            <enum>QFrame::Sunken</enum>
+          </property>
+        </widget>
+      </item>
+      <item>
+        <layout class="QHBoxLayout" name="bottom_row">
+          <property name="spacing">
+            <number>10</number>
+          </property>
           <item>
-            <spacer name="bottomSpacerLeft">
+            <spacer name="bottom_spacer_left">
               <property name="orientation">
                 <enum>Qt::Horizontal</enum>
               </property>
@@ -277,32 +703,26 @@
                 </size>
               </property>
             </spacer>
+          </item>
+          <item>
+            <widget class="QPushButton" name="cancel_btn">
+              <property name="text">
+                <string>取消</string>
+              </property>
+            </widget>
           </item>
           <item>
             <widget class="QPushButton" name="start_train">
               <property name="minimumSize">
                 <size>
                   <width>120</width>
-                  <height>40</height>
+                  <height>38</height>
                 </size>
               </property>
               <property name="text">
                 <string>开始训练</string>
               </property>
             </widget>
-          </item>
-          <item>
-            <spacer name="bottomSpacerRight">
-              <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-                <size>
-                  <width>40</width>
-                  <height>20</height>
-                </size>
-              </property>
-            </spacer>
           </item>
         </layout>
       </item>

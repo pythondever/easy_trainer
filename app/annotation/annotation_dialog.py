@@ -28,6 +28,7 @@ from app.annotation.box_item import (AnnotationBoxItem, AnnotationPolygonItem,
                                      LABEL_COLORS, assign_label_color, label_color)
 from app.core.label_utils import normalize_label, label_sort_key
 from app.core.utils import project_root, ui_font_family
+from app.widgets.dialog_buttons import apply_icon, add_ok_cancel
 from app.widgets.message_box import MessageBox
 from app.core.log import write_log
 # import types
@@ -415,7 +416,7 @@ class AddLabelDialog(QDialog):
             self.ui.custom_color.setIconSize(QSize(20, 20))
         self.ui.custom_color.clicked.connect(self._pick_custom_color)
         # 确定按钮
-        self.ui.add_label_done_btn.setText("确定")
+        apply_icon(self.ui.add_label_done_btn, "确定")
         self.ui.add_label_done_btn.clicked.connect(self.accept)
         self.ui.input_label_name_txt.setPlaceholderText(
             "标签名称，多个用逗号分隔")
@@ -1604,13 +1605,7 @@ class ColorPickerDialog(QDialog):
 
         btns = QHBoxLayout()
         btns.addStretch(1)
-        cancel = QPushButton("取消")
-        cancel.clicked.connect(self.reject)
-        ok = QPushButton("确定")
-        ok.setDefault(True)
-        ok.clicked.connect(self.accept)
-        btns.addWidget(cancel)
-        btns.addWidget(ok)
+        add_ok_cancel(btns, self.accept, self.reject)
         layout.addLayout(btns)
 
         self._update_widgets_from_color()

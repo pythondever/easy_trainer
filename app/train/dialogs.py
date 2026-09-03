@@ -10,10 +10,10 @@ from datetime import datetime
 from PySide6.QtCore import Qt, QTimer, QEvent, QObject
 from PySide6.QtGui import QIntValidator, QDoubleValidator
 from PySide6.QtWidgets import (QDialog, QLabel, QFileDialog, QComboBox,
-                               QHBoxLayout, QPushButton, QVBoxLayout, QWidget,
-                               QFrame, QFormLayout)
+                               QPushButton, QVBoxLayout)
 from PySide6.QtGui import QStandardItem
 
+from app.widgets.dialog_buttons import apply_icon
 from app.widgets.message_box import MessageBox
 from app.core.log import write_log
 from app.train.data_prep import timestamp_dir
@@ -78,10 +78,20 @@ class _ClickToPopupFilter(QObject):
 
 
 def _available_devices():
+    """[(显示名, 设备串)]：列表显示 GPU 型号，实际下发的是 cuda:0 这类设备串。"""
     if torch is None or not torch.cuda.is_available():
-        return ["CPU"]
-    return ["cuda:{}".format(i)
-            for i in range(torch.cuda.device_count())] + ["CPU"]
+        return [("CPU", "CPU")]
+    out = []
+    for i in range(torch.cuda.device_count()):
+        try:
+            name = torch.cuda.get_device_name(i)
+            total = torch.cuda.get_device_properties(i).total_memory
+            text = "{} ({:.0f} GB)".format(name, total / 1024 ** 3)
+        except Exception:
+            text = "GPU {}".format(i)
+        out.append((text, "cuda:{}".format(i)))
+    out.append(("CPU", "CPU"))
+    return out
 
 
 class TrainDialog(QDialog):
@@ -99,6 +109,9 @@ class TrainDialog(QDialog):
         "segment": "图像分割推荐尺寸：636（必须为 12 的倍数，如 636/648/660）",
         "classify": "图像分类推荐尺寸：224（小图用 224，较大图可到 256）",
     }
+    # 输入框右侧的倍数约束，写不下整句 tooltip 就靠这几个字
+    IMG_NOTE = {"detect": "32 的倍数", "segment": "12 的倍数",
+                "classify": "建议 224"}
 
     def __init__(self, app, project="", dataset="", preset_record=None):
         """project/dataset 可为空(独立入口);preset_record 传入时按记录回填(模型界面训练按钮)。"""
@@ -124,14 +137,12 @@ class TrainDialog(QDialog):
         self.ui = Ui_TrainDialog()
         self.ui.setupUi(self)
         self.setWindowTitle("训练")
-        self.ui.bottomActions.setContentsMargins(0, 16, 0, 0)
         self._define_fields()
-        self._fill_defaults()
         self._setup_validators()
+        self._fill_defaults()
         self._fix_heights()
-        self._add_group_titles()
         self._connect()
-        self.resize(740, 560)
+        self.resize(740, max(560, self.sizeHint().height()))
 
     def _task(self):
         """当前任务类型文本:detect/segment/classify。"""
@@ -141,7 +152,7 @@ class TrainDialog(QDialog):
         return self.ui.task_combo.currentText()
 
     def _fix_heights(self):
-        """统一控件高度（宽度交给 QFormLayout 拉伸），数值输入框文字居中。"""
+        """统一控件高度（宽度交给网格拉伸），数值输入框文字居中。"""
         for edit, _n, _d, _r in self._int_fields + self._float_fields:
             try:
                 edit.setFixedHeight(30)
@@ -163,49 +174,34 @@ class TrainDialog(QDialog):
             combo = getattr(self.ui, combo_name, None)
             if combo is not None:
                 combo.setFixedHeight(30)
-        self._align_form_labels()
+        # 下拉的 sizeHint 按最长条目算，GPU 全名会把整列撑宽，改成按固定字符数估宽
+        for name in ("dataset_combo", "val_combo", "device_combo"):
+            combo = getattr(self.ui, name, None)
+            if combo is not None:
+                combo.setSizeAdjustPolicy(
+                    QComboBox.SizeAdjustPolicy
+                    .AdjustToMinimumContentsLengthWithIcon)
+                combo.setMinimumContentsLength(12)
+        self._align_grid_labels()
 
-    def _align_form_labels(self):
-        """两列表单的标签列同宽，否则左右两列的输入框左边界对不齐。"""
-        labels = []
-        for name in ("formBasic", "formModel", "formHyper1", "formHyper2", "formOut"):
-            form = getattr(self.ui, name, None)
-            if form is None:
+    def _align_grid_labels(self):
+        """网格的左右两组标签列各自同宽，否则两侧输入框左边界对不齐。"""
+        for grid_name in ("grid_data", "grid_hyper"):
+            grid = getattr(self.ui, grid_name, None)
+            if grid is None:
                 continue
-            for row in range(form.rowCount()):
-                item = form.itemAt(row, QFormLayout.LabelRole)
-                if item is not None and item.widget() is not None:
-                    labels.append(item.widget())
-        if not labels:
-            return
-        width = max(lab.sizeHint().width() for lab in labels)
-        for lab in labels:
-            lab.setMinimumWidth(width)
-
-    def _add_group_titles(self):
-        """训练参数分组: 模型与数据 / 训练超参 / 输出(蓝色小标题 + 细分隔线)。"""
-        vl = getattr(self.ui, "mainLayout", None)
-        if vl is None:
-            return
-        # mainLayout 初始为 [rowBasic, rowHyper, formOut, bottomActions],从后往前插避免错位
-        self._insert_group_title(vl, 2, "输出")
-        self._insert_group_title(vl, 1, "训练超参")
-        self._insert_group_title(vl, 0, "模型与数据")
-
-    def _insert_group_title(self, vl, index, text):
-        """向 mainLayout 指定 index 插入分组标题(蓝字 + 横线)。"""
-        w = QWidget(self)
-        h = QHBoxLayout(w)
-        h.setContentsMargins(2, 6, 0, 0)
-        h.setSpacing(10)
-        lbl = QLabel(text, w)
-        lbl.setObjectName("dialogSectionTitle")
-        line = QFrame(w)
-        line.setFrameShape(QFrame.HLine)
-        line.setObjectName("dialogSectionLine")
-        h.addWidget(lbl)
-        h.addWidget(line, 1)
-        vl.insertWidget(index, w)
+            for col in (0, 2):
+                labels = []
+                for row in range(grid.rowCount()):
+                    item = grid.itemAtPosition(row, col)
+                    w = item.widget() if item is not None else None
+                    if isinstance(w, QLabel):
+                        labels.append(w)
+                if not labels:
+                    continue
+                width = max(lbl.sizeHint().width() for lbl in labels)
+                for lbl in labels:
+                    lbl.setMinimumWidth(width)
 
     def _define_fields(self):
         self._int_fields = [
@@ -223,6 +219,8 @@ class TrainDialog(QDialog):
     def _connect(self):
         self.ui.start_train.clicked.connect(self._on_start_train)
         self.ui.select_output_path_btn.clicked.connect(self._select_output_dir)
+        apply_icon(self.ui.cancel_btn, "取消")
+        self.ui.cancel_btn.clicked.connect(self.reject)
 
     # ---------- 填充 ----------
     def _style_combo(self, combo):
@@ -302,6 +300,32 @@ class TrainDialog(QDialog):
         combo.setToolTip("\n".join(texts) if texts else "")
         if not texts:
             combo.setCurrentIndex(-1)
+        self._update_summary()
+
+    def _update_summary(self):
+        """底部概要条：勾了几个训练集/验证集、总共多少张图、能不能直接开训。"""
+        train = self._selected_datasets()
+        val = self._selected_val_datasets()
+        if not train:
+            self.ui.summary_text.setText("请选择训练集与验证集")
+            return
+        total = 0
+        labeled = 0
+        for proj, name in train + val:
+            info = self.app.db.get_dataset_import(proj, name) or {}
+            total += int(info.get("total") or 0)
+            if int(info.get("labeled") or 0) > 0:
+                labeled += 1
+        picked = len(train) + len(val)
+        text = "训练集 {} 个 · 验证集 {} 个 · 共 {} 张图".format(
+            len(train), len(val), total)
+        if not val:
+            tail = "未选择验证集"
+        elif labeled == picked:
+            tail = "已标注，可直接训练"
+        else:
+            tail = "有 {} 个数据集尚未标注".format(picked - labeled)
+        self.ui.summary_text.setText("{} · {}".format(text, tail))
 
     def _selected_datasets(self):
         """训练集（勾选的数据集）。"""
@@ -311,29 +335,14 @@ class TrainDialog(QDialog):
         """验证集（勾选的数据集）。"""
         return self._selected_checked(self.ui.val_combo)
 
-    def _add_val_row(self):
-        """验证集紧随训练集插入(数据集数量不固定，行在运行时才加)。"""
-        if getattr(self.ui, "val_combo", None) is not None:
-            return
-        lab = QLabel("验证集")
-        combo = QComboBox(self)
-        combo.setFixedHeight(30)
-        self.ui.formBasic.insertRow(2, lab, combo)
-        self.ui.val_label = lab
-        self.ui.val_combo = combo
-
     def _fill_defaults(self):
-        self._add_val_row()
         self._style_all_combos()
         self._setup_multi_combo(self.ui.dataset_combo)
         self._setup_multi_combo(self.ui.val_combo, "请选择验证集")
         self._fill_dataset_multi(self.ui.dataset_combo, [])
         self._fill_dataset_multi(self.ui.val_combo, [])
         self.ui.dataset_label.setText("训练集")
-        devs = _available_devices()
-        self.ui.device_combo.addItems(devs)
-        self.ui.device_combo.setCurrentIndex(0)
-        self._center_combo_items(self.ui.device_combo)
+        self._fill_device_combo()
         self._center_combo_items(self.ui.task_combo)
         self._fill_network_combo()
         self._fill_optimizer()
@@ -351,13 +360,46 @@ class TrainDialog(QDialog):
                     edit.setText(str(default))
             self._apply_task_ui()
         # 输出路径:默认留空(不填 runs 占位),只有模型界面回填才有值
+        self.ui.task_badge.setText(self._task_text())
         self._setup_img_size_tip()
+        self._update_summary()
         # 有训练在进行时禁用开始训练
         if hasattr(self.app, "is_training") and self.app.is_training():
             btn = getattr(self.ui, "start_train", None)
             if btn is not None:
                 btn.setEnabled(False)
                 btn.setToolTip("已有训练在进行中，请先停止")
+
+    def _set_device(self, value):
+        """设备下拉显示的是 GPU 型号，回填得按 itemData 里的 cuda:0 找；
+        历史记录存的是小写 cpu，下拉数据是大写 CPU，按忽略大小写兜底。"""
+        if not value:
+            return
+        combo = self.ui.device_combo
+        idx = combo.findData(str(value))
+        if idx < 0:
+            for i in range(combo.count()):
+                data = combo.itemData(i)
+                if data and str(data).lower() == str(value).lower():
+                    idx = i
+                    break
+        if idx >= 0:
+            combo.setCurrentIndex(idx)
+
+    def _device(self):
+        data = self.ui.device_combo.currentData()
+        if data:
+            return str(data)
+        return self.ui.device_combo.currentText() or "cpu"
+
+    def _fill_device_combo(self):
+        combo = self.ui.device_combo
+        combo.clear()
+        for text, value in _available_devices():
+            combo.addItem(text, value)
+            combo.setItemData(combo.count() - 1, text, Qt.ToolTipRole)
+        combo.setCurrentIndex(0)
+        self._center_combo_items(combo)
 
     def _fill_optimizer(self):
         """优化器下拉:检测/分割(detr 推荐 adamw) vs 分类(resnet 推荐 sgd)。"""
@@ -384,6 +426,7 @@ class TrainDialog(QDialog):
                 it.setTextAlignment(Qt.AlignHCenter)
 
     def _on_task_changed(self):
+        self.ui.task_badge.setText(self._task_text())
         self._fill_optimizer()
         self._apply_task_ui()
         self._setup_img_size_tip()
@@ -479,7 +522,7 @@ class TrainDialog(QDialog):
                 if idx >= 0:
                     combo.setCurrentIndex(idx)
         _set_combo("network_combo", rec.get("model_size"))
-        _set_combo("device_combo", rec.get("device"))
+        self._set_device(rec.get("device"))
         _set_combo("optimizer_comboBox", rec.get("optimizer"))
         out = rec.get("output_path")
         if out and hasattr(self.ui, "output_line_txt"):
@@ -494,9 +537,8 @@ class TrainDialog(QDialog):
             combo.setCurrentIndex(0)
 
     def _setup_img_size_tip(self):
-        tip = self.TASK_TIPS.get(self._task(), "")
-        if tip:
-            self.ui.img_size_line_txt.setToolTip(tip)
+        self.ui.img_size_line_txt.setToolTip(self.TASK_TIPS.get(self._task(), ""))
+        self.ui.img_note.setText(self.IMG_NOTE.get(self._task(), ""))
 
     # ---------- 校验 ----------
     def _setup_validators(self):
@@ -616,8 +658,7 @@ class TrainDialog(QDialog):
                 if hasattr(self.ui, "optimizer_comboBox") else "",
             "metrics": {},   # 训练中实时更新：{"epochs": [...], "series": {名称: [...]}}
             "labels": self._collect_dataset_labels(ds_pairs),
-            "device": self.ui.device_combo.currentText()
-                if hasattr(self.ui, "device_combo") else "",
+            "device": self._device(),
         }
         self.app.db.add_train_record(record)
         return record
@@ -686,7 +727,7 @@ class TrainDialog(QDialog):
             "project": datasets[0]["project"],
             "timestamp_dir": ts_dir,
             "architecture": architecture,
-            "device": self.ui.device_combo.currentText() or "cpu",
+            "device": self._device(),
             "epochs": self.param_int(self.ui.epochs_line_txt, 100),
             "batch_size": self.param_int(self.ui.batch_size_line_txt, 8),
             "num_workers": self.param_int(self.ui.batch_size_line_txt_2, 8),

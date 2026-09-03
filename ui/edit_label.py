@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'edit_label.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.3
+## Created by: Qt User Interface Compiler version 6.11.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -53,7 +53,9 @@ class Ui_Dialog(object):
 
         self.done_btn = QPushButton(Dialog)
         self.done_btn.setObjectName(u"done_btn")
-        self.done_btn.setMinimumSize(QSize(0, 40))
+        icon = QIcon()
+        icon.addFile(u"../resources/\u786e\u5b9a.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.done_btn.setIcon(icon)
 
         self.horizontalLayout.addWidget(self.done_btn)
 
@@ -71,6 +73,6 @@ class Ui_Dialog(object):
         self.label.setText(QCoreApplication.translate("Dialog", u"\u7c7b\u522b", None))
         self.label_btn.setText("")
         self.label_2.setText(QCoreApplication.translate("Dialog", u"\u6279\u91cf\u4fee\u6539\u4e3a", None))
-        self.done_btn.setText(QCoreApplication.translate("Dialog", u"\u786e\u5b9a", None))
+        self.done_btn.setText("")
     # retranslateUi
 

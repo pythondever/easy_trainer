@@ -10,26 +10,33 @@ import os
 import tempfile
 import time
 
-from PySide6.QtCore import Qt, QEvent, QObject, QTimer
-from PySide6.QtGui import QStandardItem, QStandardItemModel
+from PySide6.QtCore import QLocale, Qt, QEvent, QObject, QTimer
+from PySide6.QtGui import (QDoubleValidator, QStandardItem,
+                           QStandardItemModel, QValidator)
 from PySide6.QtWidgets import QDialog, QFormLayout, QComboBox
 
 from app.core.log import write_log
+from app.widgets.dialog_buttons import apply_icon
 from app.widgets.message_box import MessageBox
-from app.train.dialogs import _TrainStartDialog
+from app.train.dialogs import _TrainStartDialog, _available_devices
 from app.train.test_result_dialog import TestResultDialog
 from app.train.test_worker import TestWorker
 from ui.test_dialog import Ui_TestDialog
 
 
-def _available_devices():
-    try:
-        import torch
-    except ImportError:
-        torch = None
-    if torch is None or not torch.cuda.is_available():
-        return ["CPU"]
-    return ["cuda:{}".format(i) for i in range(torch.cuda.device_count())] + ["CPU"]
+class _RatioValidator(QDoubleValidator):
+    """0~1 校验。QDoubleValidator 会把超出上限的 "1.5" 判成中间态放行，
+    这里补一刀：数值已经超 1 的中间态直接拒绝。"""
+
+    def validate(self, text, pos):
+        state, text, pos = super().validate(text, pos)
+        if state == QValidator.State.Intermediate:
+            try:
+                if float(text) > 1.0:
+                    state = QValidator.State.Invalid
+            except ValueError:
+                pass
+        return state, text, pos
 
 
 class _ClickToPopupFilter(QObject):
@@ -56,53 +63,76 @@ class TestDialog(QDialog):
         self._record = record or {}
         self._worker = None
         self._combo_filters = []
+        self._model_path = str(self._record.get("model_path", "") or "")
         self._init_style()
+        self._fill_model_card()
         self._fill_data_combo()
         self._fill_device_combo()
-        self._fill_model_combo()
         self._fill_defaults()
-        self.resize(max(self.sizeHint().width(), 460), self.sizeHint().height())
+        self.resize(max(self.sizeHint().width(), 520), self.sizeHint().height())
         self.ui.start_test_btn.clicked.connect(self._on_start)
+        self.ui.cancel_btn.clicked.connect(self.reject)
         self._on_data_changed()
 
     # ---------- 样式：点击任意位置展开 + 控件对齐 ----------
     def _init_style(self):
-        for name in ("test_data_combo", "test_device_combo", "model_combo",
+        for name in ("test_data_combo", "test_device_combo",
                      "confidence_txt", "iou_treshold_txt"):
             w = getattr(self.ui, name, None)
             if w is not None:
                 w.setFixedHeight(30)
-        # 模型路径过长时中间用省略号,鼠标悬停看完整路径
-        model_combo = getattr(self.ui, "model_combo", None)
-        if model_combo is not None:
-            model_combo.setSizeAdjustPolicy(
-                QComboBox.AdjustToMinimumContentsLengthWithIcon)
-            model_combo.setMinimumContentsLength(20)
-            le = model_combo.lineEdit()
-            if le is not None:
-                le.setStyleSheet(
-                    "QLineEdit{color:#e8eaf0;background:transparent;"
-                    "border:none;qproperty-alignment:AlignHCenter;}"
-                )
-        self._align_form_labels()
-        for name in ("test_device_combo", "model_combo"):
+        # 下拉的 sizeHint 按最长条目算，GPU 全名会把弹窗撑到 680+；
+        # 改成按固定字符数估宽，实际列宽交给 minimumSize 决定
+        for name in ("test_data_combo", "test_device_combo"):
             combo = getattr(self.ui, name, None)
-            if combo is None:
-                continue
-            combo.setEditable(True)
-            combo.setFocusPolicy(Qt.StrongFocus)
-            le = combo.lineEdit()
-            le.setObjectName("multiComboLineEdit")
-            le.setReadOnly(True)
-            le.setAlignment(Qt.AlignHCenter)
-            f = _ClickToPopupFilter(combo)
-            combo.installEventFilter(f)
-            combo.lineEdit().installEventFilter(f)
-            self._combo_filters.append(f)
+            if combo is not None:
+                combo.setSizeAdjustPolicy(
+                    QComboBox.SizeAdjustPolicy
+                    .AdjustToMinimumContentsLengthWithIcon)
+                combo.setMinimumContentsLength(12)
+        apply_icon(self.ui.cancel_btn, "取消")
+        # 提示文字排在勾选框右侧，得显式要剩余空间：
+        # 关掉 wordWrap 后 sizeHint 才是整句宽度，否则会塌成最长单词的宽度
+        self.ui.out_wrap_layout.setStretch(1, 1)
+        self.ui.out_note.setMinimumWidth(0)
+        self.ui.out_note.setToolTip(self.ui.out_note.text())
+        self._align_form_labels()
+        combo = self.ui.test_device_combo
+        combo.setEditable(True)
+        combo.setFocusPolicy(Qt.StrongFocus)
+        le = combo.lineEdit()
+        le.setObjectName("multiComboLineEdit")
+        le.setReadOnly(True)
+        le.setAlignment(Qt.AlignHCenter)
+        f = _ClickToPopupFilter(combo)
+        combo.installEventFilter(f)
+        le.installEventFilter(f)
+        self._combo_filters.append(f)
         for name in ("confidence_txt", "iou_treshold_txt"):
             edit = getattr(self.ui, name, None)
             if edit is not None:
                 edit.setAlignment(Qt.AlignHCenter)
+                self._limit_ratio(edit)
+
+    def _limit_ratio(self, edit):
+        """标签上的「（0~1）」已去掉，范围约束全靠这里。
+        校验器只管逐字符输入，残留脏值在 editingFinished 里收拾。"""
+        v = _RatioValidator(0.0, 1.0, 3, edit)
+        v.setNotation(QDoubleValidator.Notation.StandardNotation)
+        v.setLocale(QLocale(QLocale.Language.C))
+        edit.setValidator(v)
+        edit.editingFinished.connect(self._clamp_ratios)
+
+    def _clamp_ratios(self):
+        for name in ("confidence_txt", "iou_treshold_txt"):
+            edit = getattr(self.ui, name, None)
+            if edit is None or not edit.isEnabled():
+                continue
+            try:
+                value = float(edit.text().strip())
+            except ValueError:
+                value = 0.5
+            edit.setText("{:g}".format(min(1.0, max(0.0, value))))
 
     def _align_form_labels(self):
         """两个表单的 label 列同宽,字段列左边界对齐。"""
@@ -192,25 +222,44 @@ class TestDialog(QDialog):
     def _fill_device_combo(self):
         combo = self.ui.test_device_combo
         combo.clear()
-        for d in _available_devices():
-            combo.addItem(d)
+        for text, value in _available_devices():
+            combo.addItem(text, value)
+            combo.setItemData(combo.count() - 1, text, Qt.ToolTipRole)
         combo.setCurrentIndex(0)
 
-    def _fill_model_combo(self):
-        """只显示当前行 record 的模型(从 record["model_path"] 取文件名),不查 db。"""
-        combo = self.ui.model_combo
-        combo.clear()
-        path = self._record.get("model_path", "") or ""
-        if not path or not os.path.exists(path):
+    def _fill_model_card(self):
+        """取代原来的模型下拉：一次只填一个模型，点开没得选，信息直接摆出来更清楚。"""
+        u = self.ui
+        rec = self._record
+        task = {"detect": "检测", "segment": "分割",
+                "classify": "分类"}.get(rec.get("task", ""), "—")
+        u.task_badge.setText(task)
+        path = self._model_path
+        if not path:
+            u.model_name.setText("未指定模型")
+            u.model_meta.setText("请在模型列表中重新选择一行")
             return
-        combo.addItem(os.path.basename(path), path)
-        combo.setCurrentIndex(0)
-        for i in range(combo.count()):
-            combo.setItemData(i, combo.itemData(i) or "", Qt.ToolTipRole)
-        if combo.count():
-            combo.setToolTip(combo.currentData() or "")
-            combo.currentIndexChanged.connect(
-                lambda _i: combo.setToolTip(combo.currentData() or ""))
+        u.model_name.setText(os.path.basename(path))
+        u.model_name.setToolTip(path)
+        meta = []
+        metric = rec.get("map50") or rec.get("accuracy") or ""
+        if metric:
+            try:
+                label = "准确率" if rec.get("task") == "classify" else "mAP50"
+                meta.append("{} {:.3f}".format(label, float(metric)))
+            except (TypeError, ValueError):
+                pass
+        if rec.get("img_size"):
+            meta.append("输入 {}".format(rec["img_size"]))
+        if rec.get("model_size"):
+            meta.append("规模 {}".format(rec["model_size"]))
+        if rec.get("start_time"):
+            meta.append("训练 {}".format(str(rec["start_time"])[:16]))
+        u.model_meta.setText(" · ".join(meta) if meta
+                             else "该记录未保存训练指标")
+        if not os.path.exists(path):
+            u.model_meta.setText((u.model_meta.text() + " · 文件已不存在")
+                                 .lstrip(" ·"))
 
     def _fill_defaults(self):
         self.ui.confidence_txt.setText("0.5")
@@ -227,22 +276,53 @@ class TestDialog(QDialog):
             item = form.itemAt(row, role)
             if item is not None and item.widget() is not None:
                 item.widget().setVisible(visible)
+        # QFormLayout 不监听子控件隐藏，sizeHint 缓存不失效会把高度留成空白
+        form.invalidate()
+        lay = self.layout()
+        if lay is not None:
+            lay.invalidate()
+
+    def _update_summary(self, checked):
+        if not checked:
+            self.ui.summary_text.setText("请先勾选要测试的数据集")
+            return
+        total = 0
+        labeled_ds = 0
+        cls_ds = 0
+        for proj, ds_name in checked:
+            info = self.app.db.get_dataset_import(proj, ds_name) or {}
+            total += int(info.get("total") or 0)
+            if int(info.get("labeled") or 0) > 0:
+                labeled_ds += 1
+            if info.get("label_fmt", "") == "cls":
+                cls_ds += 1
+        head = "{} 个数据集 · {} 张图".format(len(checked), total)
+        if cls_ds == len(checked):
+            tail = "分类数据集，统计每张图的判断正确率"
+        elif labeled_ds == len(checked):
+            tail = "已标注，评估模式：统计检出率 / 漏检 / 误检"
+        elif labeled_ds == 0:
+            tail = "未标注，推理模式：只输出预测标签"
+        else:
+            tail = "部分已标注，已标注与未标注的数据集不能一起测"
+        self.ui.summary_text.setText("{} · {}".format(head, tail))
 
     def _on_data_changed(self):
         """按首个勾选的数据集决定界面模式;未选任何数据集时纯展示、不联动。"""
         self._update_data_label()
         checked = self._checked_datasets()
+        self._update_summary(checked)
         if not checked:
             self._project, self._dataset = "", ""
             return
         self._project, self._dataset = checked[0]
-        self._fill_model_combo()
         info = self.app.db.get_dataset_import(self._project, self._dataset) or {}
         cls_mode = info.get("label_fmt", "") == "cls"
         self._cls_mode = cls_mode
-        # 分类模式只保留 数据/设备/模型 三个下拉，隐藏置信度/IoU/输出标注文件
+        # 分类模式只保留 数据/设备 两个下拉，隐藏整个「测试参数」分组
         for row in (0, 1, 2):
             self._set_form_row_visible("form_param", row, not cls_mode)
+        self.ui.group_param_title.setVisible(not cls_mode)
         labeled = int(info.get("labeled") or 0)
         has_label = labeled > 0
         self.ui.iou_treshold_txt.setEnabled(has_label)
@@ -274,9 +354,9 @@ class TestDialog(QDialog):
                 MessageBox.warning(self, "测试", "置信度/iou阈值必须是数字")
                 return
             output_labels = bool(self.ui.output_label_file_checkBox.isChecked())
-        model_path = self.ui.model_combo.currentData()
-        if not model_path:
-            MessageBox.warning(self, "测试", "请选择模型")
+        model_path = self._model_path
+        if not model_path or not os.path.exists(model_path):
+            MessageBox.warning(self, "测试", "模型文件不存在，请重新选择")
             return
         # 多个数据集一起测:图像目录逐个展开,标签目录与图像目录按索引配对
         items = []
@@ -316,7 +396,7 @@ class TestDialog(QDialog):
                 })
             total += int(binding.get("total") or 0)
         has_label = bool(base_labeled)
-        device = self.ui.test_device_combo.currentText() or "cuda"
+        device = self.ui.test_device_combo.currentData() or "cuda"
         report_dir = ""
         if model_path:
             report_dir = os.path.join(

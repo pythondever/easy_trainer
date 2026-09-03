@@ -7,6 +7,8 @@ from PySide6.QtWidgets import (QApplication, QDialog, QFrame, QVBoxLayout,
                                QHBoxLayout, QLabel, QPushButton, QProgressBar)
 from PySide6.QtWidgets import QGraphicsDropShadowEffect
 
+from app.widgets.dialog_buttons import apply_icon
+
 
 # 图标: (符号, 颜色)
 _ICONS = {
@@ -110,7 +112,11 @@ class _FramelessBox(QDialog):
     # ---- 按钮 ----
     def _add_button(self, text, role, default=False):
         btn = QPushButton(text)
-        btn.setObjectName("msgBtnPrimary" if role == "primary" else "msgBtn")
+        btn.setObjectName("msgBtn")
+        btn.setProperty("originText", text)
+        if role == "primary":
+            btn.setProperty("class", "primary")
+        apply_icon(btn, text)
         btn.setCursor(Qt.PointingHandCursor)
         btn.clicked.connect(lambda: setattr(self, "_clicked", btn))
         btn.clicked.connect(self.accept)
@@ -157,13 +163,13 @@ class MessageBox:
 
     @staticmethod
     def question(parent, title, text, default_yes=True):
-        """返回 True=是 / False=否。"""
+        """返回 True=是 / False=否；Esc 或 ✕ 关闭等同「否」，不按默认键算。"""
         box, btns = MessageBox._show(
             "question", title, text, parent,
             [("是", "primary", default_yes), ("否", "normal", not default_yes)])
         clicked = getattr(box, "_clicked", None)
         if clicked is None:                # Esc / ✕关闭
-            return default_yes
+            return False
         return clicked is btns[0]
 
     @staticmethod
@@ -179,7 +185,7 @@ class MessageBox:
             return None
         for b in btns:
             if clicked is b:
-                return b.text()
+                return b.property("originText") or b.text()
         return None
 
 
@@ -214,6 +220,7 @@ class ProgressDialog(QDialog):
             row.addStretch(1)
             self._cancel_btn = QPushButton("取消")
             self._cancel_btn.setObjectName("msgBtn")
+            apply_icon(self._cancel_btn, "取消")
             self._cancel_btn.clicked.connect(self._on_cancel)
             row.addWidget(self._cancel_btn)
             layout.addLayout(row)

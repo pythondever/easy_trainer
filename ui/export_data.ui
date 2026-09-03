@@ -62,14 +62,12 @@
        </item>
        <item>
         <widget class="QPushButton" name="do_export_btn">
-         <property name="minimumSize">
-          <size>
-           <width>60</width>
-           <height>40</height>
-          </size>
-         </property>
          <property name="text">
-          <string>导出</string>
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset>
+           <normaloff>../resources/确定.png</normaloff>../resources/确定.png</iconset>
          </property>
         </widget>
        </item>

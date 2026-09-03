@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version='1.0' encoding='utf-8'?>
 <ui version="4.0">
  <class>TestResultDialog</class>
  <widget class="QDialog" name="TestResultDialog">
@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>760</width>
-    <height>520</height>
+    <height>600</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -30,354 +30,588 @@
     <number>16</number>
    </property>
    <item>
-    <layout class="QHBoxLayout" name="metricRow1" stretch="1,1,1">
-     <property name="spacing">
-      <number>10</number>
-     </property>
-     <item>
-      <widget class="QFrame" name="card_total">
-       <property name="frameShape">
-        <enum>QFrame::NoFrame</enum>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>74</height>
-        </size>
-       </property>
-       <layout class="QVBoxLayout" name="card_total_layout">
+    <widget class="QWidget" name="section_img" native="true">
+     <layout class="QVBoxLayout" name="section_img_layout">
+      <property name="spacing">
+       <number>6</number>
+      </property>
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <layout class="QHBoxLayout" name="dim_img_row">
         <property name="spacing">
-         <number>4</number>
-        </property>
-        <property name="leftMargin">
-         <number>16</number>
-        </property>
-        <property name="topMargin">
-         <number>12</number>
-        </property>
-        <property name="rightMargin">
-         <number>16</number>
-        </property>
-        <property name="bottomMargin">
-         <number>12</number>
+         <number>8</number>
         </property>
         <item>
-         <widget class="QLabel" name="total_value">
+         <widget class="QLabel" name="dim_img_tag">
           <property name="text">
-           <string>0</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
+           <string>图像维度</string>
           </property>
           <property name="class" stdset="0">
-           <string>cardValue</string>
+           <string>dimTag</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QLabel" name="total_lbl">
+         <widget class="QLabel" name="dim_img_note">
           <property name="text">
-           <string>测试张数</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
+           <string>按「张」统计</string>
           </property>
           <property name="class" stdset="0">
-           <string>cardLabel</string>
+           <string>dimNote</string>
           </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="dim_img_spacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="metricRowImg" stretch="1,1,1,1">
+        <property name="spacing">
+         <number>10</number>
+        </property>
+        <item>
+         <widget class="QFrame" name="card_img_total">
+          <property name="frameShape">
+           <enum>QFrame::NoFrame</enum>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>92</height>
+           </size>
+          </property>
+          <layout class="QVBoxLayout" name="card_img_total_layout">
+           <item><spacer name="img_total_top_spacer"><property name="orientation"><enum>Qt::Vertical</enum></property><property name="sizeHint" stdset="0"><size><width>20</width><height>8</height></size></property></spacer></item><property name="spacing">
+            <number>4</number>
+           </property>
+           <property name="leftMargin">
+            <number>12</number>
+           </property>
+           <property name="topMargin">
+            <number>12</number>
+           </property>
+           <property name="rightMargin">
+            <number>12</number>
+           </property>
+           <property name="bottomMargin">
+            <number>12</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="img_total_value">
+             <property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
+              <string>0</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+             <property name="class" stdset="0">
+              <string>cardValue</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="img_total_lbl">
+             <property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
+              <string>测试张数</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+             <property name="class" stdset="0">
+              <string>cardLabel</string>
+             </property>
+            </widget>
+           </item>
+          <item><widget class="QLabel" name="img_total_rate"><property name="text"><string /></property><property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="class" stdset="0"><string>cardRate</string></property></widget></item><item><spacer name="img_total_bottom_spacer"><property name="orientation"><enum>Qt::Vertical</enum></property><property name="sizeHint" stdset="0"><size><width>20</width><height>8</height></size></property></spacer></item></layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QFrame" name="card_img_ok">
+          <property name="frameShape">
+           <enum>QFrame::NoFrame</enum>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>92</height>
+           </size>
+          </property>
+          <layout class="QVBoxLayout" name="card_img_ok_layout">
+           <item><spacer name="img_ok_top_spacer"><property name="orientation"><enum>Qt::Vertical</enum></property><property name="sizeHint" stdset="0"><size><width>20</width><height>8</height></size></property></spacer></item><property name="spacing">
+            <number>4</number>
+           </property>
+           <property name="leftMargin">
+            <number>12</number>
+           </property>
+           <property name="topMargin">
+            <number>12</number>
+           </property>
+           <property name="rightMargin">
+            <number>12</number>
+           </property>
+           <property name="bottomMargin">
+            <number>12</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="img_ok_value">
+             <property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
+              <string>0</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+             <property name="class" stdset="0">
+              <string>cardValue</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="img_ok_lbl">
+             <property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
+              <string>全对图像</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+             <property name="class" stdset="0">
+              <string>cardLabel</string>
+             </property>
+            </widget>
+           </item>
+          <item><widget class="QLabel" name="img_ok_rate"><property name="text"><string /></property><property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="class" stdset="0"><string>cardRate</string></property></widget></item><item><spacer name="img_ok_bottom_spacer"><property name="orientation"><enum>Qt::Vertical</enum></property><property name="sizeHint" stdset="0"><size><width>20</width><height>8</height></size></property></spacer></item></layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QFrame" name="card_img_fn">
+          <property name="frameShape">
+           <enum>QFrame::NoFrame</enum>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>92</height>
+           </size>
+          </property>
+          <layout class="QVBoxLayout" name="card_img_fn_layout">
+           <item><spacer name="img_fn_top_spacer"><property name="orientation"><enum>Qt::Vertical</enum></property><property name="sizeHint" stdset="0"><size><width>20</width><height>8</height></size></property></spacer></item><property name="spacing">
+            <number>4</number>
+           </property>
+           <property name="leftMargin">
+            <number>12</number>
+           </property>
+           <property name="topMargin">
+            <number>12</number>
+           </property>
+           <property name="rightMargin">
+            <number>12</number>
+           </property>
+           <property name="bottomMargin">
+            <number>12</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="img_fn_value">
+             <property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
+              <string>0</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+             <property name="class" stdset="0">
+              <string>cardValue</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="img_fn_lbl">
+             <property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
+              <string>有漏检图像</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+             <property name="class" stdset="0">
+              <string>cardLabel</string>
+             </property>
+            </widget>
+           </item>
+          <item><widget class="QLabel" name="img_fn_rate"><property name="text"><string /></property><property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="class" stdset="0"><string>cardRate</string></property></widget></item><item><spacer name="img_fn_bottom_spacer"><property name="orientation"><enum>Qt::Vertical</enum></property><property name="sizeHint" stdset="0"><size><width>20</width><height>8</height></size></property></spacer></item></layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QFrame" name="card_img_fp">
+          <property name="frameShape">
+           <enum>QFrame::NoFrame</enum>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>92</height>
+           </size>
+          </property>
+          <layout class="QVBoxLayout" name="card_img_fp_layout">
+           <item><spacer name="img_fp_top_spacer"><property name="orientation"><enum>Qt::Vertical</enum></property><property name="sizeHint" stdset="0"><size><width>20</width><height>8</height></size></property></spacer></item><property name="spacing">
+            <number>4</number>
+           </property>
+           <property name="leftMargin">
+            <number>12</number>
+           </property>
+           <property name="topMargin">
+            <number>12</number>
+           </property>
+           <property name="rightMargin">
+            <number>12</number>
+           </property>
+           <property name="bottomMargin">
+            <number>12</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="img_fp_value">
+             <property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
+              <string>0</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+             <property name="class" stdset="0">
+              <string>cardValue</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="img_fp_lbl">
+             <property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
+              <string>有误检图像</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+             <property name="class" stdset="0">
+              <string>cardLabel</string>
+             </property>
+            </widget>
+           </item>
+          <item><widget class="QLabel" name="img_fp_rate"><property name="text"><string /></property><property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="class" stdset="0"><string>cardRate</string></property></widget></item><item><spacer name="img_fp_bottom_spacer"><property name="orientation"><enum>Qt::Vertical</enum></property><property name="sizeHint" stdset="0"><size><width>20</width><height>8</height></size></property></spacer></item></layout>
          </widget>
         </item>
        </layout>
-      </widget>
-     </item>
-     <item>
-      <widget class="QFrame" name="card_recall">
-       <property name="frameShape">
-        <enum>QFrame::NoFrame</enum>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>74</height>
-        </size>
-       </property>
-       <layout class="QVBoxLayout" name="card_recall_layout">
-        <property name="spacing">
-         <number>4</number>
-        </property>
-        <property name="leftMargin">
-         <number>16</number>
-        </property>
-        <property name="topMargin">
-         <number>12</number>
-        </property>
-        <property name="rightMargin">
-         <number>16</number>
-        </property>
-        <property name="bottomMargin">
-         <number>12</number>
-        </property>
-        <item>
-         <widget class="QLabel" name="recall_value">
-          <property name="text">
-           <string>0%</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-          <property name="class" stdset="0">
-           <string>cardValue</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="recall_lbl">
-          <property name="text">
-           <string>检出率</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-          <property name="class" stdset="0">
-           <string>cardLabel</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-     </item>
-     <item>
-      <widget class="QFrame" name="card_precision">
-       <property name="frameShape">
-        <enum>QFrame::NoFrame</enum>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>74</height>
-        </size>
-       </property>
-       <layout class="QVBoxLayout" name="card_precision_layout">
-        <property name="spacing">
-         <number>4</number>
-        </property>
-        <property name="leftMargin">
-         <number>16</number>
-        </property>
-        <property name="topMargin">
-         <number>12</number>
-        </property>
-        <property name="rightMargin">
-         <number>16</number>
-        </property>
-        <property name="bottomMargin">
-         <number>12</number>
-        </property>
-        <item>
-         <widget class="QLabel" name="precision_value">
-          <property name="text">
-           <string>0%</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-          <property name="class" stdset="0">
-           <string>cardValue</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="precision_lbl">
-          <property name="text">
-           <string>准确率</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-          <property name="class" stdset="0">
-           <string>cardLabel</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-     </item>
-    </layout>
+      </item>
+     </layout>
+    </widget>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="metricRow2" stretch="1,1,1">
-     <property name="spacing">
-      <number>10</number>
-     </property>
-     <item>
-      <widget class="QFrame" name="card_tp">
-       <property name="frameShape">
-        <enum>QFrame::NoFrame</enum>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>74</height>
-        </size>
-       </property>
-       <layout class="QVBoxLayout" name="card_tp_layout">
+    <widget class="QWidget" name="section_lbl" native="true">
+     <layout class="QVBoxLayout" name="section_lbl_layout">
+      <property name="spacing">
+       <number>6</number>
+      </property>
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <layout class="QHBoxLayout" name="dim_lbl_row">
         <property name="spacing">
-         <number>4</number>
-        </property>
-        <property name="leftMargin">
-         <number>16</number>
-        </property>
-        <property name="topMargin">
-         <number>12</number>
-        </property>
-        <property name="rightMargin">
-         <number>16</number>
-        </property>
-        <property name="bottomMargin">
-         <number>12</number>
+         <number>8</number>
         </property>
         <item>
-         <widget class="QLabel" name="tp_value">
+         <widget class="QLabel" name="dim_lbl_tag">
           <property name="text">
-           <string>0</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
+           <string>标签维度</string>
           </property>
           <property name="class" stdset="0">
-           <string>cardValue</string>
+           <string>dimTag</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QLabel" name="tp_lbl">
+         <widget class="QLabel" name="dim_lbl_note">
           <property name="text">
-           <string>正确检出</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
+           <string>按「标注框」统计</string>
           </property>
           <property name="class" stdset="0">
-           <string>cardLabel</string>
+           <string>dimNote</string>
           </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="dim_lbl_spacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="metricRowLbl" stretch="1,1,1,1">
+        <property name="spacing">
+         <number>10</number>
+        </property>
+        <item>
+         <widget class="QFrame" name="card_tp">
+          <property name="frameShape">
+           <enum>QFrame::NoFrame</enum>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>92</height>
+           </size>
+          </property>
+          <layout class="QVBoxLayout" name="card_tp_layout">
+           <item><spacer name="tp_top_spacer"><property name="orientation"><enum>Qt::Vertical</enum></property><property name="sizeHint" stdset="0"><size><width>20</width><height>8</height></size></property></spacer></item><property name="spacing">
+            <number>4</number>
+           </property>
+           <property name="leftMargin">
+            <number>12</number>
+           </property>
+           <property name="topMargin">
+            <number>12</number>
+           </property>
+           <property name="rightMargin">
+            <number>12</number>
+           </property>
+           <property name="bottomMargin">
+            <number>12</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="tp_value">
+             <property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
+              <string>0</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+             <property name="class" stdset="0">
+              <string>cardValue</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="tp_lbl">
+             <property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
+              <string>正确检出</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+             <property name="class" stdset="0">
+              <string>cardLabel</string>
+             </property>
+            </widget>
+           </item>
+          <item><widget class="QLabel" name="tp_rate"><property name="text"><string /></property><property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="class" stdset="0"><string>cardRate</string></property></widget></item><item><spacer name="tp_bottom_spacer"><property name="orientation"><enum>Qt::Vertical</enum></property><property name="sizeHint" stdset="0"><size><width>20</width><height>8</height></size></property></spacer></item></layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QFrame" name="card_fn">
+          <property name="frameShape">
+           <enum>QFrame::NoFrame</enum>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>92</height>
+           </size>
+          </property>
+          <layout class="QVBoxLayout" name="card_fn_layout">
+           <item><spacer name="fn_top_spacer"><property name="orientation"><enum>Qt::Vertical</enum></property><property name="sizeHint" stdset="0"><size><width>20</width><height>8</height></size></property></spacer></item><property name="spacing">
+            <number>4</number>
+           </property>
+           <property name="leftMargin">
+            <number>12</number>
+           </property>
+           <property name="topMargin">
+            <number>12</number>
+           </property>
+           <property name="rightMargin">
+            <number>12</number>
+           </property>
+           <property name="bottomMargin">
+            <number>12</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="fn_value">
+             <property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
+              <string>0</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+             <property name="class" stdset="0">
+              <string>cardValue</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="fn_lbl">
+             <property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
+              <string>漏检</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+             <property name="class" stdset="0">
+              <string>cardLabel</string>
+             </property>
+            </widget>
+           </item>
+          <item><widget class="QLabel" name="fn_rate"><property name="text"><string /></property><property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="class" stdset="0"><string>cardRate</string></property></widget></item><item><spacer name="fn_bottom_spacer"><property name="orientation"><enum>Qt::Vertical</enum></property><property name="sizeHint" stdset="0"><size><width>20</width><height>8</height></size></property></spacer></item></layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QFrame" name="card_fp">
+          <property name="frameShape">
+           <enum>QFrame::NoFrame</enum>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>92</height>
+           </size>
+          </property>
+          <layout class="QVBoxLayout" name="card_fp_layout">
+           <item><spacer name="fp_top_spacer"><property name="orientation"><enum>Qt::Vertical</enum></property><property name="sizeHint" stdset="0"><size><width>20</width><height>8</height></size></property></spacer></item><property name="spacing">
+            <number>4</number>
+           </property>
+           <property name="leftMargin">
+            <number>12</number>
+           </property>
+           <property name="topMargin">
+            <number>12</number>
+           </property>
+           <property name="rightMargin">
+            <number>12</number>
+           </property>
+           <property name="bottomMargin">
+            <number>12</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="fp_value">
+             <property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
+              <string>0</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+             <property name="class" stdset="0">
+              <string>cardValue</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="fp_lbl">
+             <property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
+              <string>误检</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+             <property name="class" stdset="0">
+              <string>cardLabel</string>
+             </property>
+            </widget>
+           </item>
+          <item><widget class="QLabel" name="fp_rate"><property name="text"><string /></property><property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="class" stdset="0"><string>cardRate</string></property></widget></item><item><spacer name="fp_bottom_spacer"><property name="orientation"><enum>Qt::Vertical</enum></property><property name="sizeHint" stdset="0"><size><width>20</width><height>8</height></size></property></spacer></item></layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QFrame" name="card_precision">
+          <property name="frameShape">
+           <enum>QFrame::NoFrame</enum>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>92</height>
+           </size>
+          </property>
+          <layout class="QVBoxLayout" name="card_precision_layout">
+           <item><spacer name="precision_top_spacer"><property name="orientation"><enum>Qt::Vertical</enum></property><property name="sizeHint" stdset="0"><size><width>20</width><height>8</height></size></property></spacer></item><property name="spacing">
+            <number>4</number>
+           </property>
+           <property name="leftMargin">
+            <number>12</number>
+           </property>
+           <property name="topMargin">
+            <number>12</number>
+           </property>
+           <property name="rightMargin">
+            <number>12</number>
+           </property>
+           <property name="bottomMargin">
+            <number>12</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="precision_value">
+             <property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
+              <string>0%</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+             <property name="class" stdset="0">
+              <string>cardValue</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="precision_lbl">
+             <property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
+              <string>准确率</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+             <property name="class" stdset="0">
+              <string>cardLabel</string>
+             </property>
+            </widget>
+           </item>
+          <item><widget class="QLabel" name="precision_rate"><property name="text"><string /></property><property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="class" stdset="0"><string>cardRate</string></property></widget></item><item><spacer name="precision_bottom_spacer"><property name="orientation"><enum>Qt::Vertical</enum></property><property name="sizeHint" stdset="0"><size><width>20</width><height>8</height></size></property></spacer></item></layout>
          </widget>
         </item>
        </layout>
-      </widget>
-     </item>
-     <item>
-      <widget class="QFrame" name="card_fn">
-       <property name="frameShape">
-        <enum>QFrame::NoFrame</enum>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>74</height>
-        </size>
-       </property>
-       <layout class="QVBoxLayout" name="card_fn_layout">
-        <property name="spacing">
-         <number>4</number>
-        </property>
-        <property name="leftMargin">
-         <number>16</number>
-        </property>
-        <property name="topMargin">
-         <number>12</number>
-        </property>
-        <property name="rightMargin">
-         <number>16</number>
-        </property>
-        <property name="bottomMargin">
-         <number>12</number>
-        </property>
-        <item>
-         <widget class="QLabel" name="fn_value">
-          <property name="text">
-           <string>0</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-          <property name="class" stdset="0">
-           <string>cardValue</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="fn_lbl">
-          <property name="text">
-           <string>漏检</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-          <property name="class" stdset="0">
-           <string>cardLabel</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-     </item>
-     <item>
-      <widget class="QFrame" name="card_fp">
-       <property name="frameShape">
-        <enum>QFrame::NoFrame</enum>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>74</height>
-        </size>
-       </property>
-       <layout class="QVBoxLayout" name="card_fp_layout">
-        <property name="spacing">
-         <number>4</number>
-        </property>
-        <property name="leftMargin">
-         <number>16</number>
-        </property>
-        <property name="topMargin">
-         <number>12</number>
-        </property>
-        <property name="rightMargin">
-         <number>16</number>
-        </property>
-        <property name="bottomMargin">
-         <number>12</number>
-        </property>
-        <item>
-         <widget class="QLabel" name="fp_value">
-          <property name="text">
-           <string>0</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-          <property name="class" stdset="0">
-           <string>cardValue</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="fp_lbl">
-          <property name="text">
-           <string>误检</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-          <property name="class" stdset="0">
-           <string>cardLabel</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-     </item>
-    </layout>
+      </item>
+     </layout>
+    </widget>
    </item>
    <item>
     <widget class="QTableWidget" name="result_table">
@@ -430,7 +664,7 @@
    <item>
     <widget class="QLabel" name="conclusion_label">
      <property name="text">
-      <string/>
+      <string />
      </property>
      <property name="wordWrap">
       <bool>true</bool>
@@ -500,6 +734,6 @@
    </item>
   </layout>
  </widget>
-  <resources/>
-  <connections/>
+  <resources />
+  <connections />
 </ui>

@@ -11,11 +11,39 @@ from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, \
     QTableWidgetItem
 from app.core.label_utils import label_sort_key
 from app.widgets.message_box import MessageBox
+from app.widgets.dialog_buttons import apply_icon
 from ui.test_result import Ui_TestResultDialog
 
 
 def _pct(v):
     return "{:.1f}%".format(v * 100)
+
+
+def _ratio(a, b):
+    return a / b if b else 0.0
+
+
+def _rate_color(v, lower_better=False):
+    """阈值与模型评估表格保持一致。"""
+    score = 1.0 - v if lower_better else v
+    if score >= 0.85:
+        return "#7be39a"
+    return "#e8eaf0" if score >= 0.6 else "#ffb46b"
+
+
+def _rate_span(v, lower_better=False):
+    return '<span style="color:{}">{}</span>'.format(
+        _rate_color(v, lower_better), _pct(v))
+
+
+def _card(u, name, text, rate=None, rate_prefix="", lower_better=False):
+    getattr(u, name + "_lbl").setText(text)
+    rate_lbl = getattr(u, name + "_rate")
+    if rate is None:
+        rate_lbl.setText("")
+    else:
+        rate_lbl.setText("{}{}".format(rate_prefix,
+                                       _rate_span(rate, lower_better)))
 
 
 def _default_pdf_name(res):
@@ -58,6 +86,7 @@ class TestResultDialog(QDialog):
         super().__init__(parent)
         self._ui = Ui_TestResultDialog()
         self._ui.setupUi(self)
+        apply_icon(self._ui.ok_btn, "确定")
         self._ui.ok_btn.clicked.connect(self.accept)
         self._ui.export_pdf_btn.clicked.connect(self._on_export)
         self._res = res
@@ -133,13 +162,39 @@ class TestResultDialog(QDialog):
         if res.get("task") == "classify":
             self._fill_cls(res)
             return
-        u.total_value.setText(str(res.get("total", 0)))
-        u.recall_value.setText(_pct(res.get("R", 0.0)))
-        u.precision_value.setText(_pct(res.get("P", 0.0)))
-        u.tp_value.setText(str(res.get("TP", 0)))
-        u.fn_value.setText(str(res.get("FN", 0)))
-        u.fp_value.setText(str(res.get("FP", 0)))
+        total = res.get("total", 0) or 0
+        tp = res.get("TP", 0)
+        fn = res.get("FN", 0)
+        fp = res.get("FP", 0)
+        p = res.get("P", 0.0)
+        img_gt = res.get("img_gt", 0)
+        img_ok = res.get("img_ok", 0)
+        img_miss = res.get("img_miss", 0)
+        img_fp = res.get("img_fp", 0)
+        # 无标注图不进检出/未检出的分母，数量对不上时把分母标出来
+        note = "按「张」统计 · 检出 1 个即算检出"
+        if img_gt != total:
+            note += " · 有标注 {} 张".format(img_gt)
+        u.dim_img_note.setText(note)
+        u.img_total_value.setText(str(total))
+        u.img_ok_value.setText(str(img_ok))
+        _card(u, "img_ok", "检出图像", _ratio(img_ok, img_gt), "检出率 ")
+        u.img_fn_value.setText(str(img_miss))
+        _card(u, "img_fn", "未检出图像",
+              _ratio(img_miss, img_gt), "未检出率 ", lower_better=True)
+        u.img_fp_value.setText(str(img_fp))
+        _card(u, "img_fp", "有误检图像",
+              _ratio(img_fp, total), "误检率 ", lower_better=True)
+
         per_class = res.get("per_class") or {}
+        gt_total = sum(d.get("gt", 0) for d in per_class.values())
+        u.dim_lbl_note.setText("按「标注框」统计 · 标注总数 {}".format(gt_total))
+        u.tp_value.setText(str(tp))
+        _card(u, "tp", "正确检出", _ratio(tp, tp + fn), "检出率 ")
+        u.fn_value.setText(str(fn))
+        u.fp_value.setText(str(fp))
+        u.precision_value.setText(_pct(p))
+        u.precision_value.setStyleSheet("color:{}".format(_rate_color(p)))
         self._fill_table(per_class)
         u.conclusion_label.setText(
             self._conclusion(per_class, res.get("TP", 0),
@@ -153,16 +208,21 @@ class TestResultDialog(QDialog):
         correct = sum(d.get("correct", 0) for d in per_class.values())
         error = sum(d.get("error", 0) for d in per_class.values())
         acc = res.get("accuracy", 0.0)
-        u.total_value.setText(str(total))
-        u.recall_lbl.setText("精度:")
-        u.recall_value.setText(_pct(acc))
-        u.precision_lbl.setText("正确数:")
-        u.precision_value.setText(str(correct))
-        u.tp_lbl.setText("正确分类:")
-        u.tp_value.setText(str(correct))
-        u.fn_lbl.setText("错误分类:")
-        u.fn_value.setText(str(error))
-        u.card_fp.setVisible(False)
+        # 分类一张图只判一个类别，没有「标注框」这一层，只保留图像维度
+        u.section_lbl.setVisible(False)
+        u.dim_img_note.setText("按「张」统计 · 每张图判一个类别")
+        u.img_total_value.setText(str(total))
+        u.img_total_lbl.setText("测试张数")
+        u.img_total_rate.setText("")
+        u.img_ok_value.setText(str(correct))
+        _card(u, "img_ok", "判断正确", _ratio(correct, total))
+        u.img_fn_value.setText(str(error))
+        _card(u, "img_fn", "判断错误",
+              _ratio(error, total), lower_better=True)
+        u.img_fp_value.setText(_pct(acc))
+        u.img_fp_lbl.setText("精度")
+        u.img_fp_rate.setText("")
+        u.img_fp_value.setStyleSheet("color:{}".format(_rate_color(acc)))
         u.result_table.setColumnCount(5)
         u.result_table.setHorizontalHeaderLabels(
             ["类别", "总图数", "正确", "错误", "精度"])

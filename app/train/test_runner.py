@@ -464,6 +464,8 @@ def main():
     tp = fp = fn = 0
     _miss = 0                 # 有标签目录却找不到 .txt/.json 的图片数
     conf_total = conf_imgs = 0   # 位置对但类别判错: 总处数 / 涉及图片数
+    # 图像维度: 有标注图 / 检出图 / 未检出图 / 有误检图
+    img_gt = img_ok = img_miss = img_fp = 0
     per_class = {}           # {cls: {gt,tp,fp,fn,det}}
     use_cls = None
     output_labels = bool(cfg.get("output_labels"))
@@ -529,6 +531,15 @@ def main():
             tp += t
             fp += f_p
             fn += f_n
+            # 图级口径: 一张图只要检出 1 个就算「已检出」，不要求把标注全检出
+            if gts:
+                img_gt += 1
+                if t:
+                    img_ok += 1
+                else:
+                    img_miss += 1
+            if f_p:
+                img_fp += 1
             if missing and spurious:
                 n_conf = len(pair_confusions(
                     [_detail_item(c, b, p) for c, b, p in missing],
@@ -554,7 +565,10 @@ def main():
         r = tp / (tp + fn) if (tp + fn) else 0.0
         result.update({"P": p, "R": r, "TP": tp, "FP": fp, "FN": fn,
                        "per_class": per_class, "gt_missing": _miss,
-                       "conf_total": conf_total, "conf_imgs": conf_imgs})
+                       "conf_total": conf_total, "conf_imgs": conf_imgs,
+                       "img_gt": img_gt,
+                       "img_ok": img_ok, "img_miss": img_miss,
+                       "img_fp": img_fp})
         if _miss and _miss == len(pairs):
             print("[test] WARN 标签目录存在但所有 {} 张图都没读到 GT,"
                   "请确认标签是 .txt (YOLO) 或 .json (labelme)".format(

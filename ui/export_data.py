@@ -50,7 +50,9 @@ class Ui_Dialog(object):
 
         self.do_export_btn = QPushButton(Dialog)
         self.do_export_btn.setObjectName(u"do_export_btn")
-        self.do_export_btn.setMinimumSize(QSize(60, 40))
+        icon1 = QIcon()
+        icon1.addFile(u"../resources/\u786e\u5b9a.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.do_export_btn.setIcon(icon1)
 
         self.horizontalLayout_2.addWidget(self.do_export_btn)
 
@@ -99,7 +101,7 @@ class Ui_Dialog(object):
         Dialog.setWindowTitle(QCoreApplication.translate("Dialog", u"\u5bfc\u51fa", None))
         self.export_path_txt.setPlaceholderText(QCoreApplication.translate("Dialog", u"\u8bf7\u9009\u62e9\u5bfc\u51fa\u8def\u5f84", None))
         self.select_path_btn.setText("")
-        self.do_export_btn.setText(QCoreApplication.translate("Dialog", u"\u5bfc\u51fa", None))
+        self.do_export_btn.setText("")
         self.exp_label.setText(QCoreApplication.translate("Dialog", u"\u5bfc\u51fa\u683c\u5f0f", None))
         self.exp_labelme_fmt.setText(QCoreApplication.translate("Dialog", u"labelme \u683c\u5f0f", None))
         self.exp_yolo_fmt.setText(QCoreApplication.translate("Dialog", u"yolo \u683c\u5f0f", None))

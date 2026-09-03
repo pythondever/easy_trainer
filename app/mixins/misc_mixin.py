@@ -12,6 +12,7 @@ from app.widgets.model_dialog import ModelDialog
 from app.train.dialogs import TrainDialog, _ClickToPopupFilter
 from ui.dataset_properties import Ui_Dialog as DatasetPropertiesUI
 from app.widgets.message_box import MessageBox
+from app.widgets.dialog_buttons import apply_icon
 from app.core.log import write_log
 from PySide6.QtGui import QPixmap, QImage, QStandardItem
 from PySide6.QtCore import Qt
@@ -67,6 +68,7 @@ class MiscMixin(object):
         ui.setupUi(dlg)
         ui.image_path_line_txt.setReadOnly(True)
         ui.label_path_line_txt.setReadOnly(True)
+        apply_icon(ui.select_dataset_btn, "确定", "应用所选数据集")
         # 多选下拉:默认勾选当前选中的数据集(如有)
         self._setup_stats_multi_combo(ui.dataset_comboBox)
         cur = getattr(self, "_current_dataset", None)

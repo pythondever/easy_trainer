@@ -13,6 +13,8 @@ from ui.export_data import Ui_Dialog as ExportDataUI
 from app.core.label_utils import (label_sort_key,
                              load_json_boxes, boxes_to_yolo_text,
                              load_yolo_boxes, boxes_to_labelme_json)
+from app.widgets.dialog_buttons import (apply_icon, ICON_SIZE, BTN_WIDTH,
+                                        BTN_HEIGHT)
 from app.widgets.message_box import MessageBox, ProgressDialog
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtWidgets import QDialog, QFileDialog, QButtonGroup
@@ -268,6 +270,7 @@ class ImportExportMixin(object):
                                       merged_imgs, merged_lbls, fmt,
                                       update_stats=True)
 
+        apply_icon(ui.done_import_btn, "确定")
         ui.done_import_btn.clicked.connect(do_import)
         dlg.exec()
 
@@ -300,16 +303,13 @@ class ImportExportMixin(object):
         ui.setupUi(dlg)
         ui.export_path_txt.setReadOnly(True)
         ui.exp_labelme_fmt.setChecked(True)  # 默认 labelme 格式
-        for btn_name in ("select_path_btn", "do_export_btn"):
-            btn = getattr(ui, btn_name, None)
-            if btn is not None:
-                btn.setFixedHeight(40)
-                btn.setFixedWidth(60)
-                btn.setStyleSheet(
-                    "QPushButton{padding:0px;border:1px solid #353a48;"
-                    "border-radius:6px;}")
-                if btn_name == "select_path_btn":
-                    btn.setIconSize(QSize(28, 28))
+        for btn in (ui.select_path_btn, ui.do_export_btn):
+            btn.setFixedSize(BTN_WIDTH, BTN_HEIGHT)
+            btn.setIconSize(QSize(ICON_SIZE, ICON_SIZE))
+            btn.setStyleSheet(
+                "QPushButton{padding:0px;border:1px solid #353a48;"
+                "border-radius:6px;}")
+        apply_icon(ui.do_export_btn, "导出")
         ui.select_path_btn.clicked.connect(
             lambda: self._pick_export_path(dlg, ui))
         ui.do_export_btn.clicked.connect(dlg.accept)

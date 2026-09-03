@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version='1.0' encoding='utf-8'?>
 <ui version="4.0">
  <class>TestDialog</class>
  <widget class="QDialog" name="TestDialog">
@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>460</width>
-    <height>420</height>
+    <width>520</width>
+    <height>560</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,8 +15,8 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>460</width>
-    <height>420</height>
+    <width>500</width>
+    <height>0</height>
    </size>
   </property>
   <layout class="QVBoxLayout" name="mainLayout">
@@ -33,24 +33,94 @@
     <number>24</number>
    </property>
    <property name="bottomMargin">
-    <number>20</number>
+    <number>18</number>
    </property>
    <item>
     <widget class="QLabel" name="title_label">
      <property name="text">
-      <string>测试参数配置</string>
+      <string>模型测试</string>
      </property>
-     <property name="objectName" stdset="0">
+     <property name="class" stdset="0">
       <string>dialogTitle</string>
      </property>
     </widget>
    </item>
    <item>
+    <widget class="QFrame" name="model_card">
+     <property name="frameShape">
+      <enum>QFrame::NoFrame</enum>
+     </property>
+     <layout class="QVBoxLayout" name="model_card_layout">
+      <property name="spacing">
+       <number>5</number>
+      </property>
+      <property name="leftMargin">
+       <number>14</number>
+      </property>
+      <property name="topMargin">
+       <number>12</number>
+      </property>
+      <property name="rightMargin">
+       <number>14</number>
+      </property>
+      <property name="bottomMargin">
+       <number>12</number>
+      </property>
+      <item>
+       <layout class="QHBoxLayout" name="model_card_top">
+        <property name="spacing">
+         <number>8</number>
+        </property>
+        <item>
+         <widget class="QLabel" name="task_badge">
+          <property name="text">
+           <string>检测</string>
+          </property>
+          <property name="class" stdset="0">
+           <string>taskBadge</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="model_name">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>best.pth</string>
+          </property>
+          <property name="class" stdset="0">
+           <string>modelName</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QLabel" name="model_meta">
+        <property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
+         <string>mAP50 0.912 · 输入 640 · 规模 n · 训练 2026-09-01 14:22</string>
+        </property>
+        <property name="class" stdset="0">
+         <string>modelMeta</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
     <widget class="QLabel" name="group_source_title">
      <property name="text">
-      <string>数据与模型</string>
+      <string>数据与设备</string>
      </property>
-     <property name="objectName" stdset="0">
+     <property name="class" stdset="0">
       <string>dialogSectionTitle</string>
      </property>
     </widget>
@@ -75,9 +145,15 @@
      </item>
      <item row="0" column="1">
       <widget class="QComboBox" name="test_data_combo">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="minimumSize">
         <size>
-         <width>280</width>
+         <width>300</width>
          <height>0</height>
         </size>
        </property>
@@ -92,26 +168,15 @@
      </item>
      <item row="1" column="1">
       <widget class="QComboBox" name="test_device_combo">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="minimumSize">
         <size>
-         <width>280</width>
-         <height>0</height>
-        </size>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="0">
-      <widget class="QLabel" name="model_label">
-       <property name="text">
-        <string>模型</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1">
-      <widget class="QComboBox" name="model_combo">
-       <property name="minimumSize">
-        <size>
-         <width>280</width>
+         <width>300</width>
          <height>0</height>
         </size>
        </property>
@@ -120,11 +185,11 @@
     </layout>
    </item>
    <item>
-    <widget class="QLabel" name="group_param_label">
+    <widget class="QLabel" name="group_param_title">
      <property name="text">
       <string>测试参数</string>
      </property>
-     <property name="objectName" stdset="0">
+     <property name="class" stdset="0">
       <string>dialogSectionTitle</string>
      </property>
     </widget>
@@ -135,7 +200,7 @@
       <number>14</number>
      </property>
      <property name="verticalSpacing">
-      <number>12</number>
+      <number>10</number>
      </property>
      <property name="labelAlignment">
       <set>Qt::AlignRight|Qt::AlignVCenter</set>
@@ -143,35 +208,115 @@
      <item row="0" column="0">
       <widget class="QLabel" name="confidence_label">
        <property name="text">
-        <string>置信度（0~1）</string>
+        <string>置信度</string>
        </property>
       </widget>
      </item>
      <item row="0" column="1">
-      <widget class="QLineEdit" name="confidence_txt">
-       <property name="minimumSize">
-        <size>
-         <width>280</width>
-         <height>0</height>
-        </size>
-       </property>
+      <widget class="QWidget" name="conf_wrap" native="true">
+       <layout class="QVBoxLayout" name="conf_wrap_layout">
+        <property name="spacing">
+         <number>4</number>
+        </property>
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QLineEdit" name="confidence_txt">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>300</width>
+            <height>0</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="conf_note">
+          <property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
+           <string>低于该分数的预测直接丢弃</string>
+          </property>
+          <property name="class" stdset="0">
+           <string>fieldNote</string>
+          </property>
+          <property name="wordWrap">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </widget>
      </item>
      <item row="1" column="0">
       <widget class="QLabel" name="iou_treshold_label">
        <property name="text">
-        <string>IoU 阈值（0~1）</string>
+        <string>IoU 阈值</string>
        </property>
       </widget>
      </item>
      <item row="1" column="1">
-      <widget class="QLineEdit" name="iou_treshold_txt">
-       <property name="minimumSize">
-        <size>
-         <width>280</width>
-         <height>0</height>
-        </size>
-       </property>
+      <widget class="QWidget" name="iou_wrap" native="true">
+       <layout class="QVBoxLayout" name="iou_wrap_layout">
+        <property name="spacing">
+         <number>4</number>
+        </property>
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QLineEdit" name="iou_treshold_txt">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>300</width>
+            <height>0</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="iou_note">
+          <property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
+           <string>与标注框重合度达标才算正确检出</string>
+          </property>
+          <property name="class" stdset="0">
+           <string>fieldNote</string>
+          </property>
+          <property name="wordWrap">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </widget>
      </item>
      <item row="2" column="0">
@@ -182,7 +327,45 @@
       </widget>
      </item>
      <item row="2" column="1">
-      <widget class="QCheckBox" name="output_label_file_checkBox"/>
+      <widget class="QWidget" name="out_wrap" native="true">
+       <layout class="QHBoxLayout" name="out_wrap_layout">
+        <property name="spacing">
+         <number>10</number>
+        </property>
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QCheckBox" name="output_label_file_checkBox">
+          <property name="text">
+           <string />
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="out_note">
+          <property name="sizePolicy"><sizepolicy hsizetype="Expanding" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
+           <string>把预测框写成 labelme json，便于人工复核</string>
+          </property>
+          <property name="class" stdset="0">
+           <string>fieldNote</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
      </item>
     </layout>
    </item>
@@ -200,7 +383,67 @@
     </spacer>
    </item>
    <item>
+    <widget class="QFrame" name="summary_bar">
+     <property name="frameShape">
+      <enum>QFrame::NoFrame</enum>
+     </property>
+     <layout class="QHBoxLayout" name="summary_bar_layout">
+      <property name="spacing">
+       <number>8</number>
+      </property>
+      <property name="leftMargin">
+       <number>12</number>
+      </property>
+      <property name="topMargin">
+       <number>10</number>
+      </property>
+      <property name="rightMargin">
+       <number>12</number>
+      </property>
+      <property name="bottomMargin">
+       <number>10</number>
+      </property>
+      <item>
+       <widget class="QLabel" name="summary_icon">
+        <property name="text">
+         <string>i</string>
+        </property>
+        <property name="class" stdset="0">
+         <string>summaryIcon</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="summary_text">
+        <property name="sizePolicy"><sizepolicy hsizetype="Expanding" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
+         <string>请选择数据集</string>
+        </property>
+        <property name="class" stdset="0">
+         <string>summaryText</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+       <property name="alignment"><set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set></property></widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QFrame" name="button_line">
+     <property name="frameShape">
+      <enum>QFrame::HLine</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Sunken</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
     <layout class="QHBoxLayout" name="bottom_row">
+     <property name="spacing">
+      <number>10</number>
+     </property>
      <item>
       <spacer name="bottom_spacer_left">
        <property name="orientation">
@@ -215,6 +458,13 @@
       </spacer>
      </item>
      <item>
+      <widget class="QPushButton" name="cancel_btn">
+       <property name="text">
+        <string>取消</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="start_test_btn">
        <property name="text">
         <string>开始测试</string>
@@ -226,19 +476,6 @@
         </size>
        </property>
       </widget>
-     </item>
-     <item>
-      <spacer name="bottom_spacer_right">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
      </item>
     </layout>
    </item>
