@@ -12,7 +12,7 @@ import time
 
 from PySide6.QtCore import Qt, QEvent, QObject, QTimer
 from PySide6.QtGui import QStandardItem, QStandardItemModel
-from PySide6.QtWidgets import QDialog
+from PySide6.QtWidgets import QDialog, QFormLayout, QComboBox
 
 from app.core.log import write_log
 from app.widgets.message_box import MessageBox
@@ -61,12 +61,7 @@ class TestDialog(QDialog):
         self._fill_device_combo()
         self._fill_model_combo()
         self._fill_defaults()
-        self.ui.verticalLayout.setContentsMargins(0, 0, 0, 0)
-        self.ui.verticalLayout.setSpacing(0)
-        self.ui.title_label.setAlignment(Qt.AlignTop)
-        self.ui.title_label.setFixedHeight(20)
-        self.ui.verticalLayout.setSpacing(5)
-        self.resize(self.width(), self.sizeHint().height())
+        self.resize(max(self.sizeHint().width(), 460), self.sizeHint().height())
         self.ui.start_test_btn.clicked.connect(self._on_start)
         self._on_data_changed()
 
@@ -75,26 +70,21 @@ class TestDialog(QDialog):
         for name in ("test_data_combo", "test_device_combo", "model_combo",
                      "confidence_txt", "iou_treshold_txt"):
             w = getattr(self.ui, name, None)
-            if w is None:
-                continue
-            w.setFixedWidth(244)
-            w.setFixedHeight(30)
-        for layout_name in ("data_row", "device_row", "model_row",
-                            "confidence_row", "iou_row"):
-            lay = getattr(self.ui, layout_name, None)
-            if lay is None:
-                continue
-            has_stretch = any(lay.itemAt(i) and lay.itemAt(i).spacerItem()
-                              for i in range(lay.count()))
-            if not has_stretch:
-                lay.insertStretch(1, 1)
-        out_lay = getattr(self.ui, "output_row", None)
-        if out_lay is not None:
-            out_lay.setSpacing(8)
-            has_stretch = any(out_lay.itemAt(i) and out_lay.itemAt(i).spacerItem()
-                              for i in range(out_lay.count()))
-            if not has_stretch:
-                out_lay.addStretch(1)
+            if w is not None:
+                w.setFixedHeight(30)
+        # 模型路径过长时中间用省略号,鼠标悬停看完整路径
+        model_combo = getattr(self.ui, "model_combo", None)
+        if model_combo is not None:
+            model_combo.setSizeAdjustPolicy(
+                QComboBox.AdjustToMinimumContentsLengthWithIcon)
+            model_combo.setMinimumContentsLength(20)
+            le = model_combo.lineEdit()
+            if le is not None:
+                le.setStyleSheet(
+                    "QLineEdit{color:#e8eaf0;background:transparent;"
+                    "border:none;qproperty-alignment:AlignHCenter;}"
+                )
+        self._align_form_labels()
         for name in ("test_device_combo", "model_combo"):
             combo = getattr(self.ui, name, None)
             if combo is None:
@@ -113,6 +103,23 @@ class TestDialog(QDialog):
             edit = getattr(self.ui, name, None)
             if edit is not None:
                 edit.setAlignment(Qt.AlignHCenter)
+
+    def _align_form_labels(self):
+        """两个表单的 label 列同宽,字段列左边界对齐。"""
+        labels = []
+        for name in ("form_source", "form_param"):
+            form = getattr(self.ui, name, None)
+            if form is None:
+                continue
+            for row in range(form.rowCount()):
+                item = form.itemAt(row, QFormLayout.LabelRole)
+                if item is not None and item.widget() is not None:
+                    labels.append(item.widget())
+        if not labels:
+            return
+        width = max(lab.sizeHint().width() for lab in labels)
+        for lab in labels:
+            lab.setMinimumWidth(width)
 
     # ---------- 填充 ----------
     def _setup_multi_combo(self, combo):
@@ -211,16 +218,15 @@ class TestDialog(QDialog):
         self.ui.output_label_file_checkBox.setChecked(False)
 
     # ---------- 联动 ----------
-    def _set_row_visible(self, row_name, visible):
-        """隐藏/显示某行布局内的所有控件（布局本身无 setVisible）。"""
-        lay = getattr(self.ui, row_name, None)
-        if lay is None:
+    def _set_form_row_visible(self, form_name, row, visible):
+        """隐藏/显示指定 QFormLayout 的某一行（label + field 一起）。"""
+        form = getattr(self.ui, form_name, None)
+        if form is None:
             return
-        for i in range(lay.count()):
-            it = lay.itemAt(i)
-            w = it.widget()
-            if w is not None:
-                w.setVisible(visible)
+        for role in (QFormLayout.LabelRole, QFormLayout.FieldRole):
+            item = form.itemAt(row, role)
+            if item is not None and item.widget() is not None:
+                item.widget().setVisible(visible)
 
     def _on_data_changed(self):
         """按首个勾选的数据集决定界面模式;未选任何数据集时纯展示、不联动。"""
@@ -234,9 +240,9 @@ class TestDialog(QDialog):
         info = self.app.db.get_dataset_import(self._project, self._dataset) or {}
         cls_mode = info.get("label_fmt", "") == "cls"
         self._cls_mode = cls_mode
-        self._set_row_visible("iou_row", not cls_mode)
-        self._set_row_visible("output_row", not cls_mode)
-        self._set_row_visible("confidence_row", not cls_mode)
+        # 分类模式只保留 数据/设备/模型 三个下拉，隐藏置信度/IoU/输出标注文件
+        for row in (0, 1, 2):
+            self._set_form_row_visible("form_param", row, not cls_mode)
         labeled = int(info.get("labeled") or 0)
         has_label = labeled > 0
         self.ui.iou_treshold_txt.setEnabled(has_label)

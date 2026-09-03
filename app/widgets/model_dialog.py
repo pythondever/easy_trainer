@@ -5,6 +5,7 @@ from datetime import datetime
 from math import ceil
 
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QColor
 from PySide6.QtWidgets import (QDialog, QTableWidgetItem, QPushButton,
                                QFileDialog, QAbstractItemView, QHeaderView,
                                QSizePolicy, QHBoxLayout, QWidget)
@@ -80,13 +81,30 @@ class ModelDialog(QDialog):
         t.setSelectionMode(QAbstractItemView.SingleSelection)
         t.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         h = t.horizontalHeader()
-        for i, w in enumerate([150, 150, 150, 90, 90, 90, 90, 140, 380, 80,
-                               80, 80, 80, 80]):
-            h.setSectionResizeMode(i, QHeaderView.Interactive)
-            t.setColumnWidth(i, w)
+        # 列宽策略: 时间/类型/尺寸走 ResizeToContents, 数据集信息 Stretch 吃剩余, 其余 Interactive 给默认宽
+        widths = {
+            0: (QHeaderView.ResizeToContents, 150),  # 开始训练时间
+            1: (QHeaderView.ResizeToContents, 150),  # 完成训练时间
+            2: (QHeaderView.ResizeToContents, 80),   # 耗时
+            3: (QHeaderView.ResizeToContents, 90),   # 模型大小
+            4: (QHeaderView.ResizeToContents, 70),   # 模型类型
+            5: (QHeaderView.Interactive, 90),        # 模型精度
+            6: (QHeaderView.ResizeToContents, 80),   # 图像尺寸
+            7: (QHeaderView.Interactive, 220),       # 模型路径
+            8: (QHeaderView.Stretch, 0),             # 数据集信息
+            9: (QHeaderView.Fixed, 80),  # 导出
+            10: (QHeaderView.Fixed, 80), # 指标
+            11: (QHeaderView.Fixed, 80), # 删除
+            12: (QHeaderView.Fixed, 80), # 测试
+            13: (QHeaderView.Fixed, 80), # 训练
+        }
+        for i, (mode, w) in widths.items():
+            h.setSectionResizeMode(i, mode)
+            if w:
+                t.setColumnWidth(i, w)
         h.setMinimumSectionSize(60)
         h.setStretchLastSection(False)
-        t.verticalHeader().setDefaultSectionSize(40)
+        t.verticalHeader().setDefaultSectionSize(44)
         t.verticalHeader().setMinimumSectionSize(40)
         for c in (9, 10, 11, 12, 13):
             t.setHorizontalHeaderItem(c, QTableWidgetItem(""))
@@ -146,19 +164,18 @@ class ModelDialog(QDialog):
         t.setRowCount(rows)
         for i, r in enumerate(page_recs):
             map50 = r.get("map50", "")
+            metric_val = ""
             if map50:
                 try:
-                    map50 = "{:.3f}".format(float(map50))
+                    metric_val = "{:.3f}".format(float(map50))
                 except (TypeError, ValueError):
-                    pass
+                    metric_val = str(map50)
             acc = r.get("accuracy", "")
             if acc:
                 try:
                     metric_val = "{:.3f}".format(float(acc))
                 except (TypeError, ValueError):
                     metric_val = str(acc)
-            else:
-                metric_val = map50
             task_text = {"detect": "检测", "segment": "分割",
                          "classify": "分类"}.get(r.get("task", ""), "—")
             vals = [r.get("start_time", ""), r.get("end_time", ""),
@@ -178,31 +195,64 @@ class ModelDialog(QDialog):
                 else:
                     item = QTableWidgetItem(text)
                 item.setTextAlignment(Qt.AlignCenter)
+                # 模型精度: ≥0.85 绿, 0.6~0.85 蓝白, <0.6 橙;无法解析保持默认
+                if j == 5 and metric_val:
+                    try:
+                        v_num = float(metric_val)
+                        if v_num >= 0.85:
+                            item.setForeground(QColor("#7be39a"))
+                        elif v_num >= 0.6:
+                            item.setForeground(QColor("#e8eaf0"))
+                        else:
+                            item.setForeground(QColor("#ffb46b"))
+                        item.setToolTip("高 ≥0.85 绿 / 中 0.6~0.85 白 / 低 <0.6 橙")
+                    except (TypeError, ValueError):
+                        pass
                 t.setItem(i, j, item)
             btn = QPushButton("导出")
             path = r.get("model_path", "")
             btn.setEnabled(bool(path))
-            btn.setFixedSize(60, 26)
+            btn.setMinimumSize(68, 28)
+            btn.setMaximumWidth(76)
+            btn.setStyleSheet(
+                "QPushButton{font-size:12px;padding:2px 6px;}"
+            )
             btn.clicked.connect(lambda checked=False, rec=r: self._export(rec))
             t.setCellWidget(i, 9, self._make_centered_cell(btn))
             mbtn = QPushButton("指标")
-            mbtn.setFixedSize(60, 26)
+            mbtn.setMinimumSize(68, 28)
+            mbtn.setMaximumWidth(76)
+            mbtn.setStyleSheet(
+                "QPushButton{font-size:12px;padding:2px 6px;}"
+            )
             mbtn.clicked.connect(
                 lambda checked=False, rec=r: self._show_metrics(rec))
             t.setCellWidget(i, 10, self._make_centered_cell(mbtn))
             dbtn = QPushButton("删除")
-            dbtn.setFixedSize(60, 26)
+            dbtn.setMinimumSize(68, 28)
+            dbtn.setMaximumWidth(76)
+            dbtn.setStyleSheet(
+                "QPushButton{font-size:12px;padding:2px 6px;}"
+            )
             dbtn.clicked.connect(
                 lambda checked=False, rec=r: self._delete(rec))
             t.setCellWidget(i, 11, self._make_centered_cell(dbtn))
             tbtn = QPushButton("测试")
-            tbtn.setFixedSize(60, 26)
+            tbtn.setMinimumSize(68, 28)
+            tbtn.setMaximumWidth(76)
+            tbtn.setStyleSheet(
+                "QPushButton{font-size:12px;padding:2px 6px;}"
+            )
             tbtn.setEnabled(bool(r.get("model_path")))
             tbtn.clicked.connect(
                 lambda checked=False, rec=r: self._test(rec))
             t.setCellWidget(i, 12, self._make_centered_cell(tbtn))
             trbtn = QPushButton("训练")
-            trbtn.setFixedSize(60, 26)
+            trbtn.setMinimumSize(68, 28)
+            trbtn.setMaximumWidth(76)
+            trbtn.setStyleSheet(
+                "QPushButton{font-size:12px;padding:2px 6px;}"
+            )
             trbtn.clicked.connect(
                 lambda checked=False, rec=r: self._retrain(rec))
             t.setCellWidget(i, 13, self._make_centered_cell(trbtn))

@@ -320,9 +320,19 @@ def _open_detail(cfg):
     try:
         os.makedirs(out_dir, exist_ok=True)
         path = os.path.join(out_dir, "details.jsonl")
-        # 往同一目录重跑时先清空：写入是逐图追加的，留着旧数据明细会翻倍
+        # 往同一目录重跑时先清空：写入是逐图追加的，留着旧数据明细会翻倍。
+        # 删失败(例如被 hook 拦截到回收站)时降级 truncate，
+        # truncate 也失败才放弃，否则 append 模式会把新旧数据拼在一起
         if os.path.exists(path):
-            os.remove(path)
+            try:
+                os.remove(path)
+            except OSError:
+                try:
+                    with open(path, "w", encoding="utf-8"):
+                        pass
+                except OSError as exc:
+                    print("[test] 明细初始化失败: {}".format(exc), flush=True)
+                    return None
         return path
     except OSError as exc:
         print("[test] 明细目录创建失败: {}".format(exc), flush=True)

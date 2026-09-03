@@ -162,8 +162,7 @@ class TestResultDialog(QDialog):
         u.tp_value.setText(str(correct))
         u.fn_lbl.setText("错误分类:")
         u.fn_value.setText(str(error))
-        u.fp_lbl.hide()
-        u.fp_value.hide()
+        u.card_fp.setVisible(False)
         u.result_table.setColumnCount(5)
         u.result_table.setHorizontalHeaderLabels(
             ["类别", "总图数", "正确", "错误", "精度"])

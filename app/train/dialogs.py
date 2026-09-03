@@ -9,9 +9,9 @@ from datetime import datetime
 
 from PySide6.QtCore import Qt, QTimer, QEvent, QObject
 from PySide6.QtGui import QIntValidator, QDoubleValidator
-from PySide6.QtWidgets import (QDialog, QLabel, QFileDialog, QSizePolicy,
-                               QComboBox, QHBoxLayout, QPushButton,
-                               QVBoxLayout, QWidget, QFrame)
+from PySide6.QtWidgets import (QDialog, QLabel, QFileDialog, QComboBox,
+                               QHBoxLayout, QPushButton, QVBoxLayout, QWidget,
+                               QFrame, QFormLayout)
 from PySide6.QtGui import QStandardItem
 
 from app.widgets.message_box import MessageBox
@@ -124,37 +124,14 @@ class TrainDialog(QDialog):
         self.ui = Ui_TrainDialog()
         self.ui.setupUi(self)
         self.setWindowTitle("训练")
-        self.setMinimumHeight(550)
-        self.ui.gridLayout.setContentsMargins(0, 0, 0, 0)
-        self.ui.gridLayout.setHorizontalSpacing(9)
-        self.ui.gridLayout.setVerticalSpacing(0)
-        self.ui.gridLayout.setRowStretch(0, 0)
-        self.ui.gridLayout.setRowStretch(1, 0)
-        self.ui.horizontalLayout_17.setContentsMargins(30, 0, 30, 0)
-        self.ui.horizontalLayout_17.setSpacing(20)
-        # 输出路径按钮:padding=0 + fixedHeight(30),与文本框严格等高
-        if hasattr(self.ui, "select_output_path_btn"):
-            self.ui.select_output_path_btn.setFixedHeight(30)
-            self.ui.select_output_path_btn.setStyleSheet(
-                "QPushButton{padding:0px;border:1px solid #353a48;"
-                "border-radius:6px;}")
-        if hasattr(self.ui, "bottomActions"):
-            self.ui.bottomActions.setContentsMargins(0, 12, 0, 28)
-        for vl in (getattr(self.ui, "verticalLayout", None),
-                   getattr(self.ui, "verticalLayout_2", None)):
-            if vl is not None:
-                vl.setSpacing(4)
-                vl.setContentsMargins(0, 0, 0, 0)
-                vl.setAlignment(Qt.AlignTop)
+        self.ui.bottomActions.setContentsMargins(0, 16, 0, 0)
         self._define_fields()
         self._fill_defaults()
         self._setup_validators()
-        self._remove_title_row()
         self._fix_heights()
         self._add_group_titles()
         self._connect()
-        self.resize(560, 640)
-        self._center_start_button()
+        self.resize(740, 560)
 
     def _task(self):
         """当前任务类型文本:detect/segment/classify。"""
@@ -163,39 +140,17 @@ class TrainDialog(QDialog):
     def _task_text(self):
         return self.ui.task_combo.currentText()
 
-    def _center_start_button(self):
-        """
-        「开始训练」按钮水平居中
-        """
-        ba = getattr(self.ui, "bottomActions", None)
-        if ba is None:
-            return
-        btn = None
-        while ba.count():
-            it = ba.takeAt(0)
-            w = it.widget()
-            if w is not None:
-                w.hide()
-                if btn is None:
-                    btn = w
-        if btn is not None:
-            btn.show()
-            ba.addStretch(1)
-            ba.addWidget(btn)
-            ba.addStretch(1)
-
     def _fix_heights(self):
-        """统一控件尺寸——QSS + 各行控件右对齐 + 文本输入框文字居中"""
+        """统一控件高度（宽度交给 QFormLayout 拉伸），数值输入框文字居中。"""
         for edit, _n, _d, _r in self._int_fields + self._float_fields:
             try:
                 edit.setFixedHeight(30)
-                edit.setFixedWidth(244)
-                edit.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
                 edit.setAlignment(Qt.AlignHCenter)
             except Exception:
                 pass
         out_edit = getattr(self.ui, "output_line_txt", None)
         if out_edit is not None:
+            out_edit.setFixedHeight(30)
             out_edit.setAlignment(Qt.AlignHCenter)
             # 只读:路径只能通过"选择路径"按钮填入;悬停显示完整路径
             out_edit.setReadOnly(True)
@@ -208,52 +163,37 @@ class TrainDialog(QDialog):
             combo = getattr(self.ui, combo_name, None)
             if combo is not None:
                 combo.setFixedHeight(30)
-                combo.setFixedWidth(244)
-        sel_btn = getattr(self.ui, "select_output_path_btn", None)
-        if sel_btn is not None:
-            sel_btn.setFixedHeight(30)
-        start_btn = getattr(self.ui, "start_train", None)
-        if start_btn is not None:
-            start_btn.setFixedHeight(40)
-        # 开始训练:蓝底主按钮(样式在 style.qss #start_train)
-        for lab_name in ("train_cfg_label",):
-            lab = getattr(self.ui, lab_name, None)
-            if lab is not None:
-                lab.setFixedHeight(22)
-        self._push_spacers_to_left()
+        self._align_form_labels()
 
-    def _remove_title_row(self):
-        """删除顶部"训练参数配置"标题行(该行布局 + label), 并解除引用避免后续误访问。"""
-        vl = getattr(self.ui, "verticalLayout", None)
-        hl = getattr(self.ui, "horizontalLayout", None)
-        if vl is None or hl is None:
+    def _align_form_labels(self):
+        """两列表单的标签列同宽，否则左右两列的输入框左边界对不齐。"""
+        labels = []
+        for name in ("formBasic", "formModel", "formHyper1", "formHyper2", "formOut"):
+            form = getattr(self.ui, name, None)
+            if form is None:
+                continue
+            for row in range(form.rowCount()):
+                item = form.itemAt(row, QFormLayout.LabelRole)
+                if item is not None and item.widget() is not None:
+                    labels.append(item.widget())
+        if not labels:
             return
-        for i in range(vl.count()):
-            it = vl.itemAt(i)
-            if it is not None and it.layout() is hl:
-                vl.takeAt(i)
-                break
-        lbl = getattr(self.ui, "train_cfg_label", None)
-        if lbl is not None:
-            lbl.hide()
-            lbl.deleteLater()
-        # 解除引用: 后续 _fix_heights/_push_spacers_to_left 遍历时跳过
-        setattr(self.ui, "train_cfg_label", None)
-        setattr(self.ui, "horizontalLayout", None)
-        hl.deleteLater()
+        width = max(lab.sizeHint().width() for lab in labels)
+        for lab in labels:
+            lab.setMinimumWidth(width)
 
     def _add_group_titles(self):
         """训练参数分组: 模型与数据 / 训练超参 / 输出(蓝色小标题 + 细分隔线)。"""
-        vl = getattr(self.ui, "verticalLayout", None)
+        vl = getattr(self.ui, "mainLayout", None)
         if vl is None:
             return
-        # 从后往前插入避免 index 偏移: 输出路径(13) / 优化器(5) / 任务类型(0)
-        self._insert_group_title(vl, 13, "输出")
-        self._insert_group_title(vl, 5, "训练超参")
+        # mainLayout 初始为 [rowBasic, rowHyper, formOut, bottomActions],从后往前插避免错位
+        self._insert_group_title(vl, 2, "输出")
+        self._insert_group_title(vl, 1, "训练超参")
         self._insert_group_title(vl, 0, "模型与数据")
 
     def _insert_group_title(self, vl, index, text):
-        """向 verticalLayout 指定 index 插入分组标题(蓝字 + 横线)。"""
+        """向 mainLayout 指定 index 插入分组标题(蓝字 + 横线)。"""
         w = QWidget(self)
         h = QHBoxLayout(w)
         h.setContentsMargins(2, 6, 0, 0)
@@ -266,47 +206,6 @@ class TrainDialog(QDialog):
         h.addWidget(lbl)
         h.addWidget(line, 1)
         vl.insertWidget(index, w)
-
-    def _push_spacers_to_left(self):
-        """每行重排为 [label, spacer, 控件]：label 贴左、控件贴右。
-
-        自动遍历 ui 上所有 horizontalLayout* 命名的 QHBoxLayout,避免漏新加的布局。
-        """
-        for name in dir(self.ui):
-            if not name.startswith("horizontalLayout"):
-                continue
-            hl = getattr(self.ui, name, None)
-            if hl is None or not hasattr(hl, "count"):
-                continue
-            if name == "horizontalLayout_15":
-                continue
-            sp_idx = -1
-            for i in range(hl.count()):
-                it = hl.itemAt(i)
-                if it is None:
-                    continue
-                sp = it.spacerItem()
-                if sp and sp.sizePolicy().horizontalPolicy() == QSizePolicy.Expanding:
-                    sp_idx = i
-                    break
-            if sp_idx < 0:
-                continue
-            label_idx = -1
-            for i in range(hl.count()):
-                it = hl.itemAt(i)
-                if it and it.widget() and isinstance(it.widget(), QLabel):
-                    label_idx = i
-                    break
-            target_after_label = label_idx + 1 if label_idx >= 0 else 0
-            if sp_idx == target_after_label:
-                continue
-            sp_item = hl.takeAt(sp_idx)
-            if sp_item is None:
-                continue
-            cur_label_idx = target_after_label
-            if sp_idx < cur_label_idx:
-                cur_label_idx = label_idx
-            hl.insertItem(cur_label_idx, sp_item)
 
     def _define_fields(self):
         self._int_fields = [
@@ -413,40 +312,15 @@ class TrainDialog(QDialog):
         return self._selected_checked(self.ui.val_combo)
 
     def _add_val_row(self):
+        """验证集紧随训练集插入(数据集数量不固定，行在运行时才加)。"""
         if getattr(self.ui, "val_combo", None) is not None:
             return
-        vl = self.ui.verticalLayout
-        idx = -1
-        for i in range(vl.count()):
-            it = vl.itemAt(i)
-            if it.layout() and self._layout_has_widget(it.layout(),
-                                                       self.ui.dataset_combo):
-                idx = i
-                break
         lab = QLabel("验证集")
         combo = QComboBox(self)
-        combo.setFixedSize(244, 30)
-        row = QHBoxLayout()
-        row.setSpacing(4)
-        row.addWidget(lab)
-        row.addStretch(1)
-        row.addWidget(combo)
-        if idx >= 0:
-            vl.insertLayout(idx + 1, row)
-        else:
-            vl.addLayout(row)
+        combo.setFixedHeight(30)
+        self.ui.formBasic.insertRow(2, lab, combo)
         self.ui.val_label = lab
         self.ui.val_combo = combo
-
-    @staticmethod
-    def _layout_has_widget(layout, widget):
-        for i in range(layout.count()):
-            it = layout.itemAt(i)
-            if it.widget() is widget:
-                return True
-            if it.layout() and TrainDialog._layout_has_widget(it.layout(), widget):
-                return True
-        return False
 
     def _fill_defaults(self):
         self._add_val_row()

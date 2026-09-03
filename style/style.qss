@@ -495,13 +495,22 @@ QSlider::sub-page:horizontal {
    按钮不能用 outline：Qt 把它画在 SE_PushButtonFocusRect 上，
    那个矩形是内容区（文字一圈），看起来像文字被框住而不是按钮被选中；
    改用 border-color，按钮本来就有 1px 边框，只换颜色不会让文字位移。
-   列表/表格/滑条的 focus rect 是整个控件，用 outline 没问题 */
+   列表/滑条用 outline：focus rect 覆盖整个控件。
+   表格不用 outline：Qt 会把 focus rect 画在 current cell 周围，
+   看起来像单元格外多一圈蓝框；用 selection 颜色变化已足够表达焦点。 */
 QCheckBox:focus, QRadioButton:focus,
-QTableWidget:focus, QTableView:focus,
 QListWidget:focus, QTreeWidget:focus,
 QSlider:focus {
     outline: 2px solid #4f7dff;
     outline-offset: 1px;
+}
+QTableWidget:focus, QTableView:focus {
+    outline: none;
+    selection-background-color: #2c3a5e;
+}
+QTableWidget::item:focus, QTableView::item:focus {
+    border: none;
+    outline: none;
 }
 /* 点完按钮鼠标通常还在上面，hover 特异性更高会盖掉 :focus，必须并列写 */
 QPushButton:focus, QPushButton:hover:focus {
@@ -667,99 +676,47 @@ QTreeWidget#projectTree::branch:!has-children:selected {
 #AnnotationDialog QMenu::item:selected { background-color: #2c3a5e; }
 #AnnotationDialog QMenu::item:disabled { color: #555b68; }
 
-/* ================ 训练对话框（classify/detect/segment） ================ */
-QDialog#ClassifyDialog, QDialog#DetectDialog, QDialog#SegmentDialog {
-    background-color: #1c1e25;
+/* ================ 训练对话框 ================ */
+QDialog#TrainDialog { background-color: #1c1e25; }
+
+/* 面板内控件比对话框底亮一档(#1c1e25 → #2a2e38)，聚焦只换边框色不改变盒子尺寸 */
+QDialog#TrainDialog QLineEdit,
+QDialog#TrainDialog QComboBox {
+    background-color: #2a2e38;
+    border: 1px solid transparent;
+}
+QDialog#TrainDialog QLineEdit:hover,
+QDialog#TrainDialog QComboBox:hover { border-color: #454b5e; }
+QDialog#TrainDialog QLineEdit:focus,
+QDialog#TrainDialog QComboBox:focus { border-color: #4f7dff; }
+QDialog#TrainDialog QComboBox QAbstractItemView {
+    background-color: #23262f;
+    border-color: #3a3f4e;
+}
+QDialog#TrainDialog QPushButton#select_output_path_btn { min-width: 90px; }
+QDialog#TrainDialog QPushButton#start_train {
+    min-width: 110px;
+    padding: 7px 22px;
 }
 
-QDialog#ClassifyDialog QLabel,
-QDialog#DetectDialog QLabel,
-QDialog#SegmentDialog QLabel {
-    color: #e8eaf0; font-size: 13px; background: transparent;
-    padding: 0; margin: 0;
+/* ---------------- 测试参数对话框 ---------------- */
+QDialog#TestDialog { background-color: #1c1e25; }
+QDialog#TestDialog QLabel { color: #c3c9d6; }
+QDialog#TestDialog QLabel#title_label {
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: bold;
 }
-
-QDialog#ClassifyDialog QLineEdit,
-QDialog#DetectDialog QLineEdit,
-QDialog#SegmentDialog QLineEdit {
-    background-color: #2a2e38; color: #e8eaf0; border: none;
-    border-radius: 6px; padding: 7px 10px; font-size: 13px;
-    qproperty-alignment: AlignHCenter;
+QDialog#TestDialog QComboBox,
+QDialog#TestDialog QLineEdit {
+    background-color: #2a2e38;
+    border: 1px solid transparent;
 }
-
-QDialog#ClassifyDialog QLineEdit:focus,
-QDialog#DetectDialog QLineEdit:focus,
-QDialog#SegmentDialog QLineEdit:focus {
-    border: 1px solid #4f7dff;
-}
-
-QDialog#ClassifyDialog QComboBox,
-QDialog#DetectDialog QComboBox,
-QDialog#SegmentDialog QComboBox {
-    background-color: #2a2e38; color: #e8eaf0; border: none;
-    border-radius: 6px; padding: 7px 10px; font-size: 13px;
-    /* Qt6 QComboBox 无 alignment 属性，移除避免警告（文本居中由代码处理） */
-}
-
-QDialog#ClassifyDialog QPushButton,
-QDialog#DetectDialog QPushButton,
-QDialog#SegmentDialog QPushButton {
-    background-color: #2a2e38; color: #e8eaf0; border: none;
-    border-radius: 6px; padding: 7px 18px; font-size: 13px;
-}
-
-QDialog#ClassifyDialog QPushButton:hover,
-QDialog#DetectDialog QPushButton:hover,
-QDialog#SegmentDialog QPushButton:hover {
-    background-color: #343a48;
-}
-
-QDialog#ClassifyDialog QPushButton#start_train,
-QDialog#ClassifyDialog QPushButton#start_test,
-QDialog#DetectDialog QPushButton#start_train,
-QDialog#DetectDialog QPushButton#start_test,
-QDialog#SegmentDialog QPushButton#start_train,
-QDialog#SegmentDialog QPushButton#start_test {
-    background-color: #4f7dff; color: #ffffff; font-weight: 500;
-    min-width: 110px; padding: 7px 22px;
-}
-
+QDialog#TestDialog QComboBox:focus,
+QDialog#TestDialog QLineEdit:focus { border-color: #4f7dff; }
 QDialog#TestDialog QPushButton#start_test_btn {
     background-color: #4f7dff; color: #ffffff; font-weight: 500;
     min-width: 110px; padding: 7px 22px;
-}
-
-QDialog#ClassifyDialog QPushButton#start_train:hover,
-QDialog#ClassifyDialog QPushButton#start_test:hover,
-QDialog#DetectDialog QPushButton#start_train:hover,
-QDialog#DetectDialog QPushButton#start_test:hover,
-QDialog#SegmentDialog QPushButton#start_train:hover,
-QDialog#SegmentDialog QPushButton#start_test:hover {
-    background-color: #638cff;
-}
-
-QDialog#ClassifyDialog QPushButton#select_output_path_btn,
-QDialog#DetectDialog QPushButton#select_output_path_btn,
-QDialog#SegmentDialog QPushButton#select_output_path_btn {
-    min-width: 90px;
-}
-
-QDialog#ClassifyDialog QScrollArea,
-QDialog#DetectDialog QScrollArea,
-QDialog#SegmentDialog QScrollArea {
-    background: transparent; border: none;
-}
-
-QDialog#ClassifyDialog QScrollArea > QWidget > QWidget,
-QDialog#DetectDialog QScrollArea > QWidget > QWidget,
-QDialog#SegmentDialog QScrollArea > QWidget > QWidget {
-    background: transparent;
-}
-
-QDialog#ClassifyDialog QFrame#line,
-QDialog#DetectDialog QFrame#line,
-QDialog#SegmentDialog QFrame#line {
-    color: #3a3f4e;
 }
 
 /* 训练对话框分组标题(蓝字 + 横线) */
@@ -771,7 +728,7 @@ QLabel#dialogConfirmPrompt { font-size: 15px; }
 QDialog#ModelDialog { background-color: #1c1e25; }
 QDialog#ModelDialog QTableWidget {
     background-color: #181a20;
-    alternate-background-color: #1c1e25;
+    alternate-background-color: #1f222a;
     border: 1px solid #2c303c;
     border-radius: 8px;
     gridline-color: #2c303c;
@@ -779,6 +736,9 @@ QDialog#ModelDialog QTableWidget {
     font-size: 12px;
 }
 QDialog#ModelDialog QTableWidget::item { padding: 4px 6px; }
+QDialog#ModelDialog QTableWidget::item:hover {
+    background-color: #232838;
+}
 QDialog#ModelDialog QTableWidget::item:selected {
     background-color: #2c3a5e;
     color: #ffffff;
@@ -809,6 +769,50 @@ QDialog#ModelDialog QScrollBar::handle:vertical {
 }
 QDialog#ModelDialog QScrollBar::add-line:vertical,
 QDialog#ModelDialog QScrollBar::sub-line:vertical { height: 0; }
+
+/* ---------------- 测试结果对话框 ---------------- */
+QDialog#TestResultDialog { background-color: #181a20; }
+QFrame#card_total, QFrame#card_recall, QFrame#card_precision,
+QFrame#card_tp, QFrame#card_fn, QFrame#card_fp {
+    background-color: #1c1e25;
+    border: 1px solid #2c303c;
+    border-radius: 8px;
+}
+QDialog#TestResultDialog QLabel[class~="cardValue"] {
+    color: #ffffff;
+    font-size: 22px;
+    font-weight: 600;
+}
+QDialog#TestResultDialog QLabel[class~="cardLabel"] {
+    color: #8b93a5;
+    font-size: 12px;
+}
+QDialog#TestResultDialog QLabel#conclusion_label {
+    color: #c3c9d6;
+    font-size: 13px;
+    background-color: #1c1e25;
+    border: 1px solid #2c303c;
+    border-radius: 8px;
+    padding: 12px 14px;
+}
+QDialog#TestResultDialog QTableWidget {
+    background-color: #181a20;
+    alternate-background-color: #1f222a;
+    border: 1px solid #2c303c;
+    border-radius: 8px;
+    gridline-color: #2c303c;
+    color: #e8eaf0;
+    font-size: 12px;
+}
+QDialog#TestResultDialog QHeaderView::section {
+    background-color: #23262f;
+    color: #c3c9d6;
+    border: none;
+    border-right: 1px solid #2c303c;
+    border-bottom: 1px solid #2c303c;
+    padding: 6px 8px;
+    font-size: 12px;
+}
 
 /* ---------------- 日志对话框 ---------------- */
 QDialog#LogDialog { background-color: #1c1e25; }
