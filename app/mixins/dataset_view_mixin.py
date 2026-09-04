@@ -796,7 +796,6 @@ class DatasetViewMixin(object):
         ds_item = self._find_dataset_item(project_name, dataset_name)
         progress = None
         progress_lbl = None
-        # container = None
         if ds_item is not None:
             container = self.project_tree.itemWidget(ds_item, 0)
             if container is not None:

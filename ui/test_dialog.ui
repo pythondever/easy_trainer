@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>520</width>
+    <width>680</width>
     <height>560</height>
    </rect>
   </property>
@@ -15,7 +15,7 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>500</width>
+    <width>620</width>
     <height>0</height>
    </size>
   </property>
@@ -116,14 +116,40 @@
     </widget>
    </item>
    <item>
-    <widget class="QLabel" name="group_source_title">
-     <property name="text">
-      <string>数据与设备</string>
+    <layout class="QHBoxLayout" name="group_source_row">
+     <property name="spacing">
+      <number>10</number>
      </property>
-     <property name="class" stdset="0">
-      <string>dialogSectionTitle</string>
-     </property>
-    </widget>
+     <item>
+      <widget class="QLabel" name="group_source_title">
+       <property name="text">
+        <string>数据与设备</string>
+       </property>
+       <property name="class" stdset="0">
+        <string>dialogSectionTitle</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QFrame" name="group_source_line">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="frameShape">
+        <enum>QFrame::HLine</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Sunken</enum>
+       </property>
+       <property name="class" stdset="0">
+        <string>dialogSectionLine</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item>
     <layout class="QFormLayout" name="form_source">
@@ -134,7 +160,7 @@
       <number>12</number>
      </property>
      <property name="labelAlignment">
-      <set>Qt::AlignRight|Qt::AlignVCenter</set>
+      <set>Qt::AlignLeft|Qt::AlignVCenter</set>
      </property>
      <item row="0" column="0">
       <widget class="QLabel" name="test_data_label">
@@ -185,14 +211,40 @@
     </layout>
    </item>
    <item>
-    <widget class="QLabel" name="group_param_title">
-     <property name="text">
-      <string>测试参数</string>
+    <layout class="QHBoxLayout" name="group_param_row">
+     <property name="spacing">
+      <number>10</number>
      </property>
-     <property name="class" stdset="0">
-      <string>dialogSectionTitle</string>
-     </property>
-    </widget>
+     <item>
+      <widget class="QLabel" name="group_param_title">
+       <property name="text">
+        <string>测试参数</string>
+       </property>
+       <property name="class" stdset="0">
+        <string>dialogSectionTitle</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QFrame" name="group_param_line">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="frameShape">
+        <enum>QFrame::HLine</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Sunken</enum>
+       </property>
+       <property name="class" stdset="0">
+        <string>dialogSectionLine</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item>
     <layout class="QFormLayout" name="form_param">
@@ -203,7 +255,7 @@
       <number>10</number>
      </property>
      <property name="labelAlignment">
-      <set>Qt::AlignRight|Qt::AlignVCenter</set>
+      <set>Qt::AlignLeft|Qt::AlignVCenter</set>
      </property>
      <item row="0" column="0">
       <widget class="QLabel" name="confidence_label">
@@ -214,7 +266,7 @@
      </item>
      <item row="0" column="1">
       <widget class="QWidget" name="conf_wrap" native="true">
-       <layout class="QVBoxLayout" name="conf_wrap_layout">
+       <layout class="QHBoxLayout" name="conf_wrap_layout">
         <property name="spacing">
          <number>4</number>
         </property>
@@ -232,30 +284,30 @@
         </property>
         <item>
          <widget class="QLineEdit" name="confidence_txt">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
           <property name="minimumSize">
            <size>
-            <width>300</width>
+            <width>180</width>
             <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>180</width>
+            <height>16777215</height>
            </size>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QLabel" name="conf_note">
-          <property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
+          <property name="sizePolicy"><sizepolicy hsizetype="Expanding" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
            <string>低于该分数的预测直接丢弃</string>
           </property>
           <property name="class" stdset="0">
            <string>fieldNote</string>
           </property>
-          <property name="wordWrap">
-           <bool>true</bool>
+          <property name="alignment">
+           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
           </property>
          </widget>
         </item>
@@ -271,7 +323,7 @@
      </item>
      <item row="1" column="1">
       <widget class="QWidget" name="iou_wrap" native="true">
-       <layout class="QVBoxLayout" name="iou_wrap_layout">
+       <layout class="QHBoxLayout" name="iou_wrap_layout">
         <property name="spacing">
          <number>4</number>
         </property>
@@ -289,30 +341,30 @@
         </property>
         <item>
          <widget class="QLineEdit" name="iou_treshold_txt">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
           <property name="minimumSize">
            <size>
-            <width>300</width>
+            <width>180</width>
             <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>180</width>
+            <height>16777215</height>
            </size>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QLabel" name="iou_note">
-          <property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
+          <property name="sizePolicy"><sizepolicy hsizetype="Expanding" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
            <string>与标注框重合度达标才算正确检出</string>
           </property>
           <property name="class" stdset="0">
            <string>fieldNote</string>
           </property>
-          <property name="wordWrap">
-           <bool>true</bool>
+          <property name="alignment">
+           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
           </property>
          </widget>
         </item>

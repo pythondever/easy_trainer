@@ -5,7 +5,6 @@ class Paginator:
 
     def __getitem__(self, index):
         return Page(self.items, self.page_size, index)
-        # return self.items[index * self.page_size: index * self.page_size + self.page_size]
 
     def __iter__(self):
         return Pages(self.items, self.page_size)

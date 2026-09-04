@@ -62,6 +62,11 @@ class Ui_TrainDialog(object):
 
         self.group_data_line = QFrame(self.section_data_wrap)
         self.group_data_line.setObjectName(u"group_data_line")
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.group_data_line.sizePolicy().hasHeightForWidth())
+        self.group_data_line.setSizePolicy(sizePolicy)
         self.group_data_line.setFrameShape(QFrame.HLine)
         self.group_data_line.setFrameShadow(QFrame.Sunken)
 
@@ -148,6 +153,8 @@ class Ui_TrainDialog(object):
 
         self.group_hyper_line = QFrame(self.section_hyper_wrap)
         self.group_hyper_line.setObjectName(u"group_hyper_line")
+        sizePolicy.setHeightForWidth(self.group_hyper_line.sizePolicy().hasHeightForWidth())
+        self.group_hyper_line.setSizePolicy(sizePolicy)
         self.group_hyper_line.setFrameShape(QFrame.HLine)
         self.group_hyper_line.setFrameShadow(QFrame.Sunken)
 
@@ -201,11 +208,11 @@ class Ui_TrainDialog(object):
 
         self.early_note = QLabel(self.early_wrap)
         self.early_note.setObjectName(u"early_note")
-        sizePolicy = QSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.early_note.sizePolicy().hasHeightForWidth())
-        self.early_note.setSizePolicy(sizePolicy)
+        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(0)
+        sizePolicy1.setHeightForWidth(self.early_note.sizePolicy().hasHeightForWidth())
+        self.early_note.setSizePolicy(sizePolicy1)
         self.early_note.setWordWrap(True)
 
         self.early_wrap_layout.addWidget(self.early_note)
@@ -232,8 +239,8 @@ class Ui_TrainDialog(object):
 
         self.lr_note = QLabel(self.lr_wrap)
         self.lr_note.setObjectName(u"lr_note")
-        sizePolicy.setHeightForWidth(self.lr_note.sizePolicy().hasHeightForWidth())
-        self.lr_note.setSizePolicy(sizePolicy)
+        sizePolicy1.setHeightForWidth(self.lr_note.sizePolicy().hasHeightForWidth())
+        self.lr_note.setSizePolicy(sizePolicy1)
         self.lr_note.setWordWrap(True)
 
         self.lr_wrap_layout.addWidget(self.lr_note)
@@ -297,8 +304,8 @@ class Ui_TrainDialog(object):
 
         self.grad_note = QLabel(self.grad_wrap)
         self.grad_note.setObjectName(u"grad_note")
-        sizePolicy.setHeightForWidth(self.grad_note.sizePolicy().hasHeightForWidth())
-        self.grad_note.setSizePolicy(sizePolicy)
+        sizePolicy1.setHeightForWidth(self.grad_note.sizePolicy().hasHeightForWidth())
+        self.grad_note.setSizePolicy(sizePolicy1)
         self.grad_note.setWordWrap(True)
 
         self.grad_wrap_layout.addWidget(self.grad_note)
@@ -333,6 +340,8 @@ class Ui_TrainDialog(object):
 
         self.group_out_line = QFrame(self.section_out_wrap)
         self.group_out_line.setObjectName(u"group_out_line")
+        sizePolicy.setHeightForWidth(self.group_out_line.sizePolicy().hasHeightForWidth())
+        self.group_out_line.setSizePolicy(sizePolicy)
         self.group_out_line.setFrameShape(QFrame.HLine)
         self.group_out_line.setFrameShadow(QFrame.Sunken)
 
@@ -389,11 +398,11 @@ class Ui_TrainDialog(object):
 
         self.summary_text = QLabel(self.summary_bar)
         self.summary_text.setObjectName(u"summary_text")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-        sizePolicy1.setHorizontalStretch(0)
-        sizePolicy1.setVerticalStretch(0)
-        sizePolicy1.setHeightForWidth(self.summary_text.sizePolicy().hasHeightForWidth())
-        self.summary_text.setSizePolicy(sizePolicy1)
+        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        sizePolicy2.setHorizontalStretch(0)
+        sizePolicy2.setVerticalStretch(0)
+        sizePolicy2.setHeightForWidth(self.summary_text.sizePolicy().hasHeightForWidth())
+        self.summary_text.setSizePolicy(sizePolicy2)
         self.summary_text.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignVCenter)
 
         self.summary_bar_layout.addWidget(self.summary_text)

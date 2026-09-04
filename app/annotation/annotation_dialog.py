@@ -23,7 +23,6 @@ from ui.annotation import Ui_annotationDialog as AnnotationUI
 from ui.add_label import Ui_addLabelDialog as AddLabelUI
 
 from app.annotation.scene import AnnotationScene
-# from app.annotation.view import AnnotationView
 from app.annotation.box_item import (AnnotationBoxItem, AnnotationPolygonItem,
                                      LABEL_COLORS, assign_label_color, label_color)
 from app.core.label_utils import normalize_label, label_sort_key
@@ -31,7 +30,6 @@ from app.core.utils import project_root, ui_font_family
 from app.widgets.dialog_buttons import apply_icon, add_ok_cancel
 from app.widgets.message_box import MessageBox
 from app.core.log import write_log
-# import types
 from PySide6.QtWidgets import QGraphicsView
 
 
@@ -407,20 +405,17 @@ class AddLabelDialog(QDialog):
                 "QPushButton {{ background-color: {0}; border: 2px solid transparent;"
                 " border-radius: 6px; }}".format(color))
             btn.clicked.connect(lambda _=False, c=color, b=btn: self._select_color(c, b))
-        # 自定义颜色按钮
         self.ui.custom_color.setText("自定义")
         self.ui.custom_color.setFixedHeight(BTN_H)
         icon_path = _resource_path("颜色选择器.png")
         if icon_path:
             self.ui.custom_color.setIcon(QIcon(icon_path))
             self.ui.custom_color.setIconSize(QSize(20, 20))
-        self.ui.custom_color.clicked.connect(self._pick_custom_color)
-        # 确定按钮
+            self.ui.custom_color.clicked.connect(self._pick_custom_color)
         apply_icon(self.ui.add_label_done_btn, "确定")
         self.ui.add_label_done_btn.clicked.connect(self.accept)
         self.ui.input_label_name_txt.setPlaceholderText(
             "标签名称，多个用逗号分隔")
-        # 同项目标签导入
         self._fill_project_label_combo()
         self.ui.load_label_btn.setText("导入")
         self.ui.load_label_btn.clicked.connect(self._load_labels_from_project)
@@ -1342,7 +1337,6 @@ class AnnotationDialog(QDialog):
         row.mousePressEvent = self._make_labeled_row_click(item, row)
 
     def _resolve_item_color(self, item):
-        """取 item 当前显示色"""
         if item._color is not None:
             try:
                 return item._color.name()
@@ -1361,7 +1355,6 @@ class AnnotationDialog(QDialog):
         return _on_click
 
     def _focus_on_item(self, item):
-        """视图滚到 item 可见区域"""
         if isinstance(item, AnnotationBoxItem):
             scene_rect = item.rect().translated(item.pos()).adjusted(-20, -20, 20, 20)
         else:
@@ -1438,7 +1431,7 @@ class _HueSatPicker(QWidget):
 
     def __init__(self, value=255, on_change=None):
         super().__init__()
-        self.setFixedSize(200, 150)
+        self.setFixedSize(280, 180)
         self.setCursor(Qt.CrossCursor)
         self._value = value
         self._on_change = on_change
@@ -1549,16 +1542,17 @@ class ColorPickerDialog(QDialog):
         self._color = QColor(initial) if initial.isValid() else QColor("#4f7dff")
 
         layout = QVBoxLayout(self)
-        layout.setSpacing(8)
+        layout.setSpacing(10)
+        layout.setContentsMargins(18, 16, 18, 14)
 
         top = QHBoxLayout()
         self._preview = QFrame()
-        self._preview.setFixedSize(60, 40)
+        self._preview.setFixedSize(80, 48)
         top.addWidget(self._preview)
         html_box = QVBoxLayout()
         html_box.addWidget(QLabel("十六进制:"))
         self._html_edit = QLineEdit()
-        self._html_edit.setMaximumWidth(120)
+        self._html_edit.setMaximumWidth(160)
         self._html_edit.textChanged.connect(self._on_html_changed)
         html_box.addWidget(self._html_edit)
         top.addLayout(html_box)
@@ -1571,7 +1565,7 @@ class ColorPickerDialog(QDialog):
         self._value_slider = QSlider(Qt.Vertical)
         self._value_slider.setRange(0, 255)
         self._value_slider.setValue(self._color.value())
-        self._value_slider.setFixedHeight(150)
+        self._value_slider.setFixedHeight(180)
         self._value_slider.valueChanged.connect(self._on_value_changed)
         picker_row.addWidget(self._value_slider)
         picker_row.addStretch(1)
@@ -1579,10 +1573,10 @@ class ColorPickerDialog(QDialog):
 
         layout.addWidget(QLabel("基本颜色:"))
         grid = QGridLayout()
-        grid.setSpacing(4)
+        grid.setSpacing(6)
         for i, c in enumerate(self.BASIC_COLORS):
             btn = QPushButton()
-            btn.setFixedSize(28, 28)
+            btn.setFixedSize(32, 32)
             btn.setCursor(Qt.PointingHandCursor)
             btn.setStyleSheet("QPushButton { background: %s; border: 1px solid #3a3f4e; border-radius: 3px; }" % c)
             btn.clicked.connect(lambda checked=False, _c=c: self._set_color(QColor(_c)))
@@ -1596,7 +1590,7 @@ class ColorPickerDialog(QDialog):
         self._b_edit = QSpinBox()
         for s, lab in [(self._r_edit, "R:"), (self._g_edit, "G:"), (self._b_edit, "B:")]:
             s.setRange(0, 255)
-            s.setFixedWidth(70)
+            s.setFixedWidth(90)
             s.valueChanged.connect(self._on_rgb_changed)
             rgb.addWidget(QLabel(lab))
             rgb.addWidget(s)

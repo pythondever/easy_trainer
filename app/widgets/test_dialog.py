@@ -18,7 +18,7 @@ from PySide6.QtWidgets import QDialog, QFormLayout, QComboBox
 from app.core.log import write_log
 from app.widgets.dialog_buttons import apply_icon
 from app.widgets.message_box import MessageBox
-from app.train.dialogs import _TrainStartDialog, _available_devices
+from app.train.dialogs import CONTROL_H, _TrainStartDialog, _available_devices
 from app.train.test_result_dialog import TestResultDialog
 from app.train.test_worker import TestWorker
 from ui.test_dialog import Ui_TestDialog
@@ -69,7 +69,7 @@ class TestDialog(QDialog):
         self._fill_data_combo()
         self._fill_device_combo()
         self._fill_defaults()
-        self.resize(max(self.sizeHint().width(), 520), self.sizeHint().height())
+        self.resize(max(self.sizeHint().width(), 680), self.sizeHint().height())
         self.ui.start_test_btn.clicked.connect(self._on_start)
         self.ui.cancel_btn.clicked.connect(self.reject)
         self._on_data_changed()
@@ -80,7 +80,7 @@ class TestDialog(QDialog):
                      "confidence_txt", "iou_treshold_txt"):
             w = getattr(self.ui, name, None)
             if w is not None:
-                w.setFixedHeight(30)
+                w.setFixedHeight(CONTROL_H)
         # 下拉的 sizeHint 按最长条目算，GPU 全名会把弹窗撑到 680+；
         # 改成按固定字符数估宽，实际列宽交给 minimumSize 决定
         for name in ("test_data_combo", "test_device_combo"):

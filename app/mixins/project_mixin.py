@@ -113,7 +113,6 @@ class ProjectMixin(object):
             self._init_project_tree()
         self.project_tree.clear()
         project_icon = self._tree_icon("项目.png")
-        # dataset_icon = self._tree_icon("图像.png")
         proj_font = QFont()
         proj_font.setBold(True)
         proj_font.setPointSize(12)

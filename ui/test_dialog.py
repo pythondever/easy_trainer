@@ -24,8 +24,8 @@ class Ui_TestDialog(object):
     def setupUi(self, TestDialog):
         if not TestDialog.objectName():
             TestDialog.setObjectName(u"TestDialog")
-        TestDialog.resize(520, 560)
-        TestDialog.setMinimumSize(QSize(500, 0))
+        TestDialog.resize(680, 560)
+        TestDialog.setMinimumSize(QSize(620, 0))
         self.mainLayout = QVBoxLayout(TestDialog)
         self.mainLayout.setSpacing(10)
         self.mainLayout.setObjectName(u"mainLayout")
@@ -77,16 +77,34 @@ class Ui_TestDialog(object):
 
         self.mainLayout.addWidget(self.model_card)
 
+        self.group_source_row = QHBoxLayout()
+        self.group_source_row.setSpacing(10)
+        self.group_source_row.setObjectName(u"group_source_row")
         self.group_source_title = QLabel(TestDialog)
         self.group_source_title.setObjectName(u"group_source_title")
 
-        self.mainLayout.addWidget(self.group_source_title)
+        self.group_source_row.addWidget(self.group_source_title)
+
+        self.group_source_line = QFrame(TestDialog)
+        self.group_source_line.setObjectName(u"group_source_line")
+        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        sizePolicy2.setHorizontalStretch(0)
+        sizePolicy2.setVerticalStretch(0)
+        sizePolicy2.setHeightForWidth(self.group_source_line.sizePolicy().hasHeightForWidth())
+        self.group_source_line.setSizePolicy(sizePolicy2)
+        self.group_source_line.setFrameShape(QFrame.HLine)
+        self.group_source_line.setFrameShadow(QFrame.Sunken)
+
+        self.group_source_row.addWidget(self.group_source_line)
+
+
+        self.mainLayout.addLayout(self.group_source_row)
 
         self.form_source = QFormLayout()
         self.form_source.setObjectName(u"form_source")
         self.form_source.setHorizontalSpacing(14)
         self.form_source.setVerticalSpacing(12)
-        self.form_source.setLabelAlignment(Qt.AlignRight|Qt.AlignVCenter)
+        self.form_source.setLabelAlignment(Qt.AlignLeft|Qt.AlignVCenter)
         self.test_data_label = QLabel(TestDialog)
         self.test_data_label.setObjectName(u"test_data_label")
 
@@ -94,9 +112,6 @@ class Ui_TestDialog(object):
 
         self.test_data_combo = QComboBox(TestDialog)
         self.test_data_combo.setObjectName(u"test_data_combo")
-        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        sizePolicy2.setHorizontalStretch(0)
-        sizePolicy2.setVerticalStretch(0)
         sizePolicy2.setHeightForWidth(self.test_data_combo.sizePolicy().hasHeightForWidth())
         self.test_data_combo.setSizePolicy(sizePolicy2)
         self.test_data_combo.setMinimumSize(QSize(300, 0))
@@ -119,16 +134,31 @@ class Ui_TestDialog(object):
 
         self.mainLayout.addLayout(self.form_source)
 
+        self.group_param_row = QHBoxLayout()
+        self.group_param_row.setSpacing(10)
+        self.group_param_row.setObjectName(u"group_param_row")
         self.group_param_title = QLabel(TestDialog)
         self.group_param_title.setObjectName(u"group_param_title")
 
-        self.mainLayout.addWidget(self.group_param_title)
+        self.group_param_row.addWidget(self.group_param_title)
+
+        self.group_param_line = QFrame(TestDialog)
+        self.group_param_line.setObjectName(u"group_param_line")
+        sizePolicy2.setHeightForWidth(self.group_param_line.sizePolicy().hasHeightForWidth())
+        self.group_param_line.setSizePolicy(sizePolicy2)
+        self.group_param_line.setFrameShape(QFrame.HLine)
+        self.group_param_line.setFrameShadow(QFrame.Sunken)
+
+        self.group_param_row.addWidget(self.group_param_line)
+
+
+        self.mainLayout.addLayout(self.group_param_row)
 
         self.form_param = QFormLayout()
         self.form_param.setObjectName(u"form_param")
         self.form_param.setHorizontalSpacing(14)
         self.form_param.setVerticalSpacing(10)
-        self.form_param.setLabelAlignment(Qt.AlignRight|Qt.AlignVCenter)
+        self.form_param.setLabelAlignment(Qt.AlignLeft|Qt.AlignVCenter)
         self.confidence_label = QLabel(TestDialog)
         self.confidence_label.setObjectName(u"confidence_label")
 
@@ -136,23 +166,22 @@ class Ui_TestDialog(object):
 
         self.conf_wrap = QWidget(TestDialog)
         self.conf_wrap.setObjectName(u"conf_wrap")
-        self.conf_wrap_layout = QVBoxLayout(self.conf_wrap)
+        self.conf_wrap_layout = QHBoxLayout(self.conf_wrap)
         self.conf_wrap_layout.setSpacing(4)
         self.conf_wrap_layout.setObjectName(u"conf_wrap_layout")
         self.conf_wrap_layout.setContentsMargins(0, 0, 0, 0)
         self.confidence_txt = QLineEdit(self.conf_wrap)
         self.confidence_txt.setObjectName(u"confidence_txt")
-        sizePolicy2.setHeightForWidth(self.confidence_txt.sizePolicy().hasHeightForWidth())
-        self.confidence_txt.setSizePolicy(sizePolicy2)
-        self.confidence_txt.setMinimumSize(QSize(300, 0))
+        self.confidence_txt.setMinimumSize(QSize(180, 0))
+        self.confidence_txt.setMaximumSize(QSize(180, 16777215))
 
         self.conf_wrap_layout.addWidget(self.confidence_txt)
 
         self.conf_note = QLabel(self.conf_wrap)
         self.conf_note.setObjectName(u"conf_note")
-        sizePolicy1.setHeightForWidth(self.conf_note.sizePolicy().hasHeightForWidth())
-        self.conf_note.setSizePolicy(sizePolicy1)
-        self.conf_note.setWordWrap(True)
+        sizePolicy.setHeightForWidth(self.conf_note.sizePolicy().hasHeightForWidth())
+        self.conf_note.setSizePolicy(sizePolicy)
+        self.conf_note.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignVCenter)
 
         self.conf_wrap_layout.addWidget(self.conf_note)
 
@@ -166,23 +195,22 @@ class Ui_TestDialog(object):
 
         self.iou_wrap = QWidget(TestDialog)
         self.iou_wrap.setObjectName(u"iou_wrap")
-        self.iou_wrap_layout = QVBoxLayout(self.iou_wrap)
+        self.iou_wrap_layout = QHBoxLayout(self.iou_wrap)
         self.iou_wrap_layout.setSpacing(4)
         self.iou_wrap_layout.setObjectName(u"iou_wrap_layout")
         self.iou_wrap_layout.setContentsMargins(0, 0, 0, 0)
         self.iou_treshold_txt = QLineEdit(self.iou_wrap)
         self.iou_treshold_txt.setObjectName(u"iou_treshold_txt")
-        sizePolicy2.setHeightForWidth(self.iou_treshold_txt.sizePolicy().hasHeightForWidth())
-        self.iou_treshold_txt.setSizePolicy(sizePolicy2)
-        self.iou_treshold_txt.setMinimumSize(QSize(300, 0))
+        self.iou_treshold_txt.setMinimumSize(QSize(180, 0))
+        self.iou_treshold_txt.setMaximumSize(QSize(180, 16777215))
 
         self.iou_wrap_layout.addWidget(self.iou_treshold_txt)
 
         self.iou_note = QLabel(self.iou_wrap)
         self.iou_note.setObjectName(u"iou_note")
-        sizePolicy1.setHeightForWidth(self.iou_note.sizePolicy().hasHeightForWidth())
-        self.iou_note.setSizePolicy(sizePolicy1)
-        self.iou_note.setWordWrap(True)
+        sizePolicy.setHeightForWidth(self.iou_note.sizePolicy().hasHeightForWidth())
+        self.iou_note.setSizePolicy(sizePolicy)
+        self.iou_note.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignVCenter)
 
         self.iou_wrap_layout.addWidget(self.iou_note)
 
@@ -293,10 +321,12 @@ class Ui_TestDialog(object):
         self.model_meta.setProperty(u"class", QCoreApplication.translate("TestDialog", u"modelMeta", None))
         self.group_source_title.setText(QCoreApplication.translate("TestDialog", u"\u6570\u636e\u4e0e\u8bbe\u5907", None))
         self.group_source_title.setProperty(u"class", QCoreApplication.translate("TestDialog", u"dialogSectionTitle", None))
+        self.group_source_line.setProperty(u"class", QCoreApplication.translate("TestDialog", u"dialogSectionLine", None))
         self.test_data_label.setText(QCoreApplication.translate("TestDialog", u"\u6570\u636e", None))
         self.test_device_label.setText(QCoreApplication.translate("TestDialog", u"\u8bbe\u5907", None))
         self.group_param_title.setText(QCoreApplication.translate("TestDialog", u"\u6d4b\u8bd5\u53c2\u6570", None))
         self.group_param_title.setProperty(u"class", QCoreApplication.translate("TestDialog", u"dialogSectionTitle", None))
+        self.group_param_line.setProperty(u"class", QCoreApplication.translate("TestDialog", u"dialogSectionLine", None))
         self.confidence_label.setText(QCoreApplication.translate("TestDialog", u"\u7f6e\u4fe1\u5ea6", None))
         self.conf_note.setText(QCoreApplication.translate("TestDialog", u"\u4f4e\u4e8e\u8be5\u5206\u6570\u7684\u9884\u6d4b\u76f4\u63a5\u4e22\u5f03", None))
         self.conf_note.setProperty(u"class", QCoreApplication.translate("TestDialog", u"fieldNote", None))

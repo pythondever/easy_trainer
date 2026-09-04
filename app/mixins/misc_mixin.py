@@ -32,11 +32,9 @@ except ImportError:
 class MiscMixin(object):
     @staticmethod
     def _write_log(msg):
-        """记录操作日志到 logs/app.log"""
         write_log(msg)
 
     def _log(self, msg):
-        """写日志"""
         self._write_log(msg)
 
     def _on_log_clicked(self):

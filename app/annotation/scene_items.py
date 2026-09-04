@@ -51,7 +51,6 @@ class SelectablePixmapItem(QGraphicsPixmapItem):
     def paint(self, painter, option, widget=None):
         pm = self.pixmap()
         card = self._card_rect()
-        # 卡片背景
         if self.isSelected():
             bg = QColor("#2c3a5e")
         elif self._hover:
@@ -61,9 +60,7 @@ class SelectablePixmapItem(QGraphicsPixmapItem):
         painter.setPen(QPen(QColor("#353a48"), 1))
         painter.setBrush(bg)
         painter.drawRoundedRect(card, 6, 6)
-        # 图像
         painter.drawPixmap(CARD_PAD, CARD_PAD, pm)
-        # hover/选中描边
         if self.isSelected():
             painter.setPen(QPen(self._sel_color, 2))
             painter.setBrush(Qt.NoBrush)

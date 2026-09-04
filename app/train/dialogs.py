@@ -24,6 +24,9 @@ try:
 except ImportError:
     torch = None
 
+# 弹窗输入类控件统一高度，与 style.qss 的 QDialog 规则（36）保持一致
+CONTROL_H = 36
+
 
 class _TrainStartDialog(QDialog):
     """训练/测试启动提示：确认按钮带倒计时，5s 后自动确认；手动点击立即确认并停止计时。"""
@@ -155,13 +158,13 @@ class TrainDialog(QDialog):
         """统一控件高度（宽度交给网格拉伸），数值输入框文字居中。"""
         for edit, _n, _d, _r in self._int_fields + self._float_fields:
             try:
-                edit.setFixedHeight(30)
+                edit.setFixedHeight(CONTROL_H)
                 edit.setAlignment(Qt.AlignHCenter)
             except Exception:
                 pass
         out_edit = getattr(self.ui, "output_line_txt", None)
         if out_edit is not None:
-            out_edit.setFixedHeight(30)
+            out_edit.setFixedHeight(CONTROL_H)
             out_edit.setAlignment(Qt.AlignHCenter)
             # 只读:路径只能通过"选择路径"按钮填入;悬停显示完整路径
             out_edit.setReadOnly(True)
@@ -173,7 +176,7 @@ class TrainDialog(QDialog):
                            "optimizer_comboBox"):
             combo = getattr(self.ui, combo_name, None)
             if combo is not None:
-                combo.setFixedHeight(30)
+                combo.setFixedHeight(CONTROL_H)
         # 下拉的 sizeHint 按最长条目算，GPU 全名会把整列撑宽，改成按固定字符数估宽
         for name in ("dataset_combo", "val_combo", "device_combo"):
             combo = getattr(self.ui, name, None)

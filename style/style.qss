@@ -62,6 +62,17 @@ QPushButton {
     min-height: 20px;
 }
 
+/* 弹窗内按钮统一 36 高（内容 22 + padding 12 + 边框 2），与输入框同高 */
+QDialog QPushButton {
+    min-height: 22px;
+}
+
+/* 纯图标按钮(确定/取消)尺寸由 dialog_buttons.setFixedSize(56,36) 决定，
+   min-height 22 的样式约束会和它打架顶到 38，这里压回 20 豁免 */
+QPushButton[class~="iconBtn"] {
+    min-height: 20px;
+}
+
 QPushButton:hover {
     background-color: #2b2f3b;
     border-color: #454b5e;
@@ -151,6 +162,12 @@ QLineEdit, QTextEdit, QPlainTextEdit, QSpinBox, QDoubleSpinBox {
     padding: 5px 10px;
     selection-background-color: #4f7dff;
     selection-color: #ffffff;
+}
+
+/* 弹窗内输入类控件统一 36 高（内容 24 + padding 10 + 边框 2），
+   与按钮同高；min-height 只算内容区，主界面不受影响 */
+QDialog QLineEdit, QDialog QComboBox, QDialog QSpinBox, QDialog QDoubleSpinBox {
+    min-height: 24px;
 }
 
 QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus {
@@ -710,7 +727,7 @@ QDialog#TrainDialog QPushButton#start_train {
     color: #ffffff;
     font-weight: 500;
     min-width: 120px;
-    padding: 7px 22px;
+    padding: 6px 22px;
 }
 QDialog#TrainDialog QPushButton#start_train:hover { background-color: #638cff; }
 QDialog#TrainDialog QPushButton#start_train:pressed { background-color: #3f6ceb; }
@@ -721,7 +738,6 @@ QDialog#TrainDialog QPushButton#start_train:disabled {
 
 /* ---------------- 测试参数对话框 ---------------- */
 QDialog#TestDialog { background-color: #1c1e25; }
-QDialog#TestDialog QLabel { color: #c3c9d6; }
 QDialog#TestDialog QComboBox,
 QDialog#TestDialog QLineEdit {
     background-color: #2a2e38;
@@ -731,7 +747,7 @@ QDialog#TestDialog QComboBox:focus,
 QDialog#TestDialog QLineEdit:focus { border-color: #4f7dff; }
 QDialog#TestDialog QPushButton#start_test_btn {
     background-color: #4f7dff; color: #ffffff; font-weight: 500;
-    min-width: 110px; padding: 7px 22px;
+    min-width: 110px; padding: 6px 22px;
 }
 QDialog#TestDialog QPushButton#start_test_btn:hover {
     background-color: #638cff;
@@ -758,15 +774,29 @@ QDialog#TestDialog QLabel[class~="modelMeta"] {
 
 /* ---------------- 通用弹窗组件（训练 / 测试对话框共用） ----------------
    一律按 class 匹配，不绑具体对话框 ID，两个弹窗改版不用各写一份 */
+/* 参数行的原生 QWidget 包裹容器必须透明：全局 QWidget 底色 #181a20
+   比弹窗底色 #1c1e25 暗一档，不透明会整行拖出“黑条” */
+QDialog#TrainDialog QWidget#section_data_wrap,
+QDialog#TrainDialog QWidget#section_hyper_wrap,
+QDialog#TrainDialog QWidget#early_wrap,
+QDialog#TrainDialog QWidget#lr_wrap,
+QDialog#TrainDialog QWidget#img_wrap,
+QDialog#TrainDialog QWidget#grad_wrap,
+QDialog#TrainDialog QWidget#section_out_wrap,
+QDialog#TestDialog QWidget#conf_wrap,
+QDialog#TestDialog QWidget#iou_wrap,
+QDialog#TestDialog QWidget#out_wrap {
+    background-color: transparent;
+}
 QLabel[class~="dialogTitle"] {
     color: #ffffff;
     font-size: 15px;
     font-weight: bold;
 }
-/* 分组标题：比字段名的 13px 大一号，撑起「组 → 字段」的层次 */
+/* 分组标题：比字段名的 13px 大两号，撑起「组 → 字段」的层次 */
 QLabel[class~="dialogSectionTitle"] {
     color: #8fb0ff;
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 600;
     margin-top: 2px;
 }
@@ -1024,7 +1054,7 @@ QPushButton#start_train {
     border-radius: 6px;
     color: #ffffff;
     font-weight: bold;
-    padding: 4px 26px;
+    padding: 6px 22px;
 }
 QPushButton#start_train:hover {
     background-color: #638cff;

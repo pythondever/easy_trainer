@@ -233,7 +233,6 @@ def main():
     per_class = {}   # {类别名: {"total": n, "correct": c, "accuracy": [每epoch...]}}
     for ep in range(1, epochs + 1):
         last_ep = ep
-        # 训练
         model.train()
         run_loss = 0.0
         for x, y in train_loader:
@@ -245,7 +244,6 @@ def main():
             optimizer.step()
             run_loss += loss.item() * x.size(0)
         train_loss = run_loss / max(len(train_ds), 1)
-        # 验证
         model.eval()
         val_loss = 0.0
         correct = 0
