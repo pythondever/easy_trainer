@@ -27,8 +27,9 @@ from app.annotation.box_item import (AnnotationBoxItem, AnnotationPolygonItem,
                                      LABEL_COLORS, assign_label_color, label_color)
 from app.core.label_utils import normalize_label, label_sort_key
 from app.core.utils import project_root, ui_font_family
-from app.widgets.dialog_buttons import apply_icon, add_ok_cancel
-from app.widgets.message_box import MessageBox
+from app.widgets.dialog_buttons import (apply_icon, add_ok_cancel,
+                                        _icon_path, _tinted)
+from app.widgets.message_box import MessageBox, ProgressDialog
 from app.core.log import write_log
 from PySide6.QtWidgets import QGraphicsView
 
@@ -379,7 +380,7 @@ class AddLabelDialog(QDialog):
     """
 
     def __init__(self, parent=None, preset_name="", preset_color="",
-                 db=None, project="", dataset=""):
+                 db=None, project="", dataset="", edit_mode=False):
         super().__init__(parent)
         self.ui = AddLabelUI()
         self.ui.setupUi(self)
@@ -395,6 +396,12 @@ class AddLabelDialog(QDialog):
             self.ui.input_label_name_txt.setText(preset_name)
         if preset_color:
             self._select_color(preset_color)
+        if edit_mode:
+            # 编辑已有标签：名称/数据集/导入全部锁定，只允许改颜色
+            self.setWindowTitle("编辑标签")
+            self.ui.input_label_name_txt.setEnabled(False)
+            self.ui.load_project_label_combo.setEnabled(False)
+            self.ui.load_label_btn.setEnabled(False)
 
     def _setup(self):
         BTN_H = 36
@@ -1104,41 +1111,153 @@ class AnnotationDialog(QDialog):
             name_lbl.setObjectName("labelRowName")
             rl.addWidget(name_lbl)
             rl.addStretch(1)
+            # 行尾编辑/删除小图标按钮
+            btn_style = (
+                "QPushButton { background: transparent; border: none; padding: 0;"
+                " margin: 0; min-width: 0; max-width: 22px; min-height: 0;"
+                " max-height: 22px; border-radius: 4px; }"
+                "QPushButton:hover { background: #2c303c; }")
+            for icon_file, tip, handler in (
+                    ("编辑.png", "编辑", self._edit_label),
+                    ("删除.png", "删除", self._delete_label_from_list)):
+                ibtn = QPushButton(row)
+                ibtn.setFixedSize(22, 22)
+                ibtn.setCursor(Qt.PointingHandCursor)
+                ibtn.setToolTip(tip)
+                ibtn.setStyleSheet(btn_style)
+                ipath = _icon_path(icon_file)
+                if ipath:
+                    ibtn.setIcon(_tinted(ipath, "#b8c0d0"))
+                    ibtn.setIconSize(QSize(14, 14))
+                ibtn.clicked.connect(
+                    lambda _=False, n=name, f=handler: f(n))
+                rl.addWidget(ibtn)
             row.mousePressEvent = (lambda ev, n=name, r=row: self._select_label(n, r))
-            row.setContextMenuPolicy(Qt.CustomContextMenu)
-            row.customContextMenuRequested.connect(
-                lambda pos, n=name, r=row: self._show_label_context_menu(n, r, pos))
             layout.addWidget(row)
             self._label_buttons[name] = row
         layout.addStretch(1)
 
-    def _show_label_context_menu(self, name, row, pos):
-        """标签行右键菜单：删除标签（含其所有标注）。"""
-        menu = QMenu(self)
-        act_del = menu.addAction("删除标签")
-        chosen = menu.exec(row.mapToGlobal(pos))
-        if chosen == act_del:
-            self._delete_label_from_list(name)
+    def _edit_label(self, name):
+        """编辑标签颜色：弹编辑标签窗(名称/导入锁定)，确定后写库并即时刷新。"""
+        dlg = AddLabelDialog(self, preset_name=name,
+                             preset_color=self.label_colors.get(name, ""),
+                             db=self.db, project=self.project,
+                             dataset=self.dataset, edit_mode=True)
+        if dlg.exec() != QDialog.Accepted:
+            return
+        items = dlg.result_data()
+        if not items:
+            return
+        new_color = items[0][1]
+        if new_color == self.label_colors.get(name):
+            return
+        self.db.add_dataset_label(self.project, self.dataset, name, new_color)
+        self.label_colors[name] = new_color
+        self.scene.label_colors[name] = QColor(new_color)
+        # 框颜色是 paint 时动态查 scene.label_colors, 重绘即可生效(A/D 翻页同源)
+        self.scene.update()
+        self._refresh_labels()
+        self._refresh_labeled_list()
+        write_log("修改标签颜色: {} → {} ({}/{})".format(
+            name, new_color, self.project, self.dataset))
+
+    def _dataset_image_paths(self):
+        """全数据集图像路径：优先主窗口索引(不受当前筛选视图影响)，退回当前列表。"""
+        cache = getattr(self._main, "dataset_cache", None) if self._main else None
+        recs = {}
+        if cache:
+            recs = cache.get(self.project, {}).get(self.dataset, {}) or {}
+        paths = [r.get("image_path", "") for r in (recs.get("all") or [])
+                 if r.get("image_path")]
+        return paths or list(self.image_list)
+
+    def _count_label_in_jsons(self, needle):
+        """无索引时退回统计：扫图像同路径 json 计数该标签的 shapes。"""
+        paths = self._dataset_image_paths()
+        progress = None
+        if len(paths) > 50:
+            progress = ProgressDialog("删除标签", "正在统计标注文件…", self,
+                                      maximum=len(paths),
+                                      cancellable=False)
+        try:
+            total = 0
+            for i, img_path in enumerate(paths):
+                if progress is not None:
+                    progress.set_progress(i)
+                base, _ = os.path.splitext(img_path)
+                jp = base + ".json"
+                if not os.path.exists(jp):
+                    continue
+                try:
+                    with open(jp, "r", encoding="utf-8") as f:
+                        text = f.read()
+                    if needle not in text:
+                        continue
+                    data = json.loads(text)
+                    total += sum(1 for s in data.get("shapes", [])
+                                 if normalize_label(s.get("label")) == needle)
+                except Exception:
+                    continue
+            return total
+        finally:
+            if progress is not None:
+                progress.close()
 
     def _delete_label_from_list(self, name):
         """
         删除标签并同步清理其标注：db / 本地 labelme json / 当前场景。
-        删除前统计该标签在场景和所有可见图像 json 中的标注数；
-        有标注时提示影响范围，确认后才执行（删除不可恢复）。
-        性能：文件多时弹进度框;先用文本快速检查跳过不含该标签的文件
-        (省去 json.load 解析),只有命中的文件才解析+过滤+写回。
+        统计口径与数据集统计一致：优先数主窗口内存索引的 boxes/labels
+        (统计页 label_counts 同源、即时)；无索引时退回扫描图像同路径 json。
+        先统计 → 确认 → 确认后才写文件(取消不落盘)。
+        当前图像的框通常已入索引，场景项只补计未保存部分，避免双计。
         """
         needle = normalize_label(name)
-        # 统计并清理所有可见图像json中该标签的shapes(含当前图像)
-        removed = 0
+        cur_img = (self.image_list[self.index]
+                   if 0 <= self.index < len(self.image_list) else "")
+        scene_items = [it for it in self.scene.all_items()
+                       if getattr(it, "label", None) == name]
+        cache = getattr(self._main, "dataset_cache", None) if self._main else None
+        index = {}
+        if cache:
+            index = cache.get(self.project, {}).get(self.dataset, {}) or {}
+        recs = index.get("all") or []
+        if recs:
+            total = 0
+            cur_saved = 0
+            for r in recs:
+                boxes = r.get("boxes") or []
+                cnt = (sum(1 for b in boxes if b[-1] == name) if boxes
+                       else sum(1 for l in (r.get("labels") or [])
+                                if l == name))
+                total += cnt
+                if r.get("image_path") == cur_img:
+                    cur_saved = cnt
+            total += max(0, len(scene_items) - cur_saved)
+        else:
+            total = self._count_label_in_jsons(needle)
+            total += max(0, len(scene_items))
+        if total > 0:
+            if not MessageBox.question(
+                    self, "删除标签",
+                    "标签「{}」已有 {} 处标注，删除后这些标注将被一并删除"
+                    "且不可恢复。\n确定删除吗？".format(name, total),
+                    default_yes=True):
+                return
+        else:
+            if not MessageBox.question(
+                    self, "删除标签",
+                    "确定删除标签「{}」吗？".format(name),
+                    default_yes=True):
+                return
+        # 确认后清理图像同路径 json(外部标签目录文件由主窗口关闭后统一清理)
+        paths = self._dataset_image_paths()
         progress = None
-        if len(self.image_list) > 50:
-            from app.widgets.message_box import ProgressDialog
+        if len(paths) > 50:
             progress = ProgressDialog("删除标签", "正在清理标注文件…", self,
-                                      maximum=len(self.image_list),
+                                      maximum=len(paths),
                                       cancellable=False)
         try:
-            for i, img_path in enumerate(self.image_list):
+            for i, img_path in enumerate(paths):
                 if progress is not None:
                     progress.set_progress(i)
                 base, _ = os.path.splitext(img_path)
@@ -1155,7 +1274,6 @@ class AnnotationDialog(QDialog):
                     data["shapes"] = [s for s in data.get("shapes", [])
                                       if normalize_label(s.get("label")) != needle]
                     if len(data["shapes"]) != before:
-                        removed += before - len(data["shapes"])
                         with open(jp, "w", encoding="utf-8") as f:
                             json.dump(data, f, ensure_ascii=False, indent=2)
                 except Exception:
@@ -1163,23 +1281,6 @@ class AnnotationDialog(QDialog):
         finally:
             if progress is not None:
                 progress.close()
-        # 当前场景中该标签的标注项(json 已清理,场景内仍需删除)
-        scene_items = [it for it in self.scene.all_items()
-                       if getattr(it, "label", None) == name]
-        total = removed + len(scene_items)
-        if total > 0:
-            if not MessageBox.question(
-                    self, "删除标签",
-                    "标签「{}」已有 {} 处标注，删除后这些标注将被一并删除"
-                    "且不可恢复。\n确定删除吗？".format(name, total),
-                    default_yes=True):
-                return
-        else:
-            if not MessageBox.question(
-                    self, "删除标签",
-                    "确定删除标签「{}」吗？".format(name),
-                    default_yes=True):
-                return
         for item in scene_items:
             self.scene.delete_item(item)
         self.db.remove_dataset_label(self.project, self.dataset, name)
