@@ -308,7 +308,7 @@ class DatasetViewMixin(object):
         deleted = getattr(dlg, "_deleted_labels", [])
         if deleted:
             self._apply_deleted_labels(proj, ds, deleted)
-        self._refresh_dataset_labels(proj, ds)
+        self._refresh_dataset_labels(proj, ds, rescan=True)
         self._refresh_label_filter(proj, ds)
         self._refresh_dataset_stats(proj, ds)
         if self.current_label:
@@ -405,6 +405,13 @@ class DatasetViewMixin(object):
         proj_cache = self.dataset_cache.get(project_name, {})
         data = proj_cache.get(dataset_name)
         if data:
+            bpi = getattr(self, "_by_path_index", None)
+            if not (bpi and bpi.get("ds") == (project_name, dataset_name)):
+                # 缓存命中直接渲染时补齐 path->rec 索引(仅切换数据集时一次, 低频)
+                self._by_path_index = {
+                    "ds": (project_name, dataset_name),
+                    "map": {r.get("image_path"): r for r in data.get("all", [])},
+                }
             self._render_scene(self._view_data_by_label(data))
             return
         binding = self.db.get_dataset_import(project_name, dataset_name)
@@ -445,50 +452,53 @@ class DatasetViewMixin(object):
                 index["labels"].setdefault(label, []).append(rec)
         return index
 
-    def _refresh_dataset_labels(self, project_name, dataset_name):
+    def _refresh_dataset_labels(self, project_name, dataset_name, rescan=False):
         """
-        标注完成后重建缓存中的 labels 索引：
-        对每张图读同路径 labelme json 获取最新标注标签(无 json 保留导入时的 labels),
-        然后重建 labels 分组索引写回 dataset_cache。
-        轻量操作：只读 json,不重新生成缩略图,不扫描磁盘。
+        重建缓存中的 labels 索引。
+        rescan=False(导入/载入完成): 缓存 rec 刚由后台扫描生成, labels/boxes
+          已是最新, 跳过逐图 json 重读, 只做归一化与索引重建(纯内存, 万级图不卡)。
+        rescan=True(标注后): 对每张图读同路径 labelme json 获取最新标注标签
+          (无 json 保留导入时的 labels), 再重建 labels 分组索引写回 dataset_cache。
+          轻量操作: 只读 json, 不重新生成缩略图, 不扫描目录树。
         """
         proj_cache = self.dataset_cache.get(project_name, {})
         index = proj_cache.get(dataset_name)
         if not index:
             return
-        for rec in index.get("all", []):
-            img_path = rec.get("image_path", "")
-            base, _ = os.path.splitext(img_path)
-            json_path = base + ".json"
-            if os.path.exists(json_path):
-                try:
-                    with open(json_path, "r", encoding="utf-8") as f:
-                        data = json.load(f)
-                    labels = []
-                    boxes = []
-                    for shape in data.get("shapes", []):
-                        lbl = normalize_label(shape.get("label", ""))
-                        if not lbl:
-                            continue
-                        labels.append(lbl)
-                        pts = shape.get("points", [])
-                        if len(pts) >= 2:
-                            xs = [p[0] for p in pts]
-                            ys = [p[1] for p in pts]
-                            x, y = int(min(xs)), int(min(ys))
-                            w, h = int(max(xs) - min(xs)), int(max(ys) - min(ys))
-                            boxes.append((max(0, x), max(0, y), max(1, w), max(1, h), lbl))
-                    rec["labels"] = labels
-                    rec["boxes"] = boxes if boxes else None
+        if rescan:
+            for rec in index.get("all", []):
+                img_path = rec.get("image_path", "")
+                base, _ = os.path.splitext(img_path)
+                json_path = base + ".json"
+                if os.path.exists(json_path):
+                    try:
+                        with open(json_path, "r", encoding="utf-8") as f:
+                            data = json.load(f)
+                        labels = []
+                        boxes = []
+                        for shape in data.get("shapes", []):
+                            lbl = normalize_label(shape.get("label", ""))
+                            if not lbl:
+                                continue
+                            labels.append(lbl)
+                            pts = shape.get("points", [])
+                            if len(pts) >= 2:
+                                xs = [p[0] for p in pts]
+                                ys = [p[1] for p in pts]
+                                x, y = int(min(xs)), int(min(ys))
+                                w, h = int(max(xs) - min(xs)), int(max(ys) - min(ys))
+                                boxes.append((max(0, x), max(0, y), max(1, w), max(1, h), lbl))
+                        rec["labels"] = labels
+                        rec["boxes"] = boxes if boxes else None
+                        rec["rois_by_idx"] = {}
+                        rec["_has_annotation_json"] = True
+                    except Exception:
+                        pass
+                elif rec.get("_has_annotation_json"):
+                    rec["labels"] = []
+                    rec["boxes"] = None
                     rec["rois_by_idx"] = {}
-                    rec["_has_annotation_json"] = True
-                except Exception:
-                    pass
-            elif rec.get("_has_annotation_json"):
-                rec["labels"] = []
-                rec["boxes"] = None
-                rec["rois_by_idx"] = {}
-                rec["_has_annotation_json"] = False
+                    rec["_has_annotation_json"] = False
 
         for rec in index.get("all", []):
             if rec.get("labels"):
@@ -501,6 +511,12 @@ class DatasetViewMixin(object):
             for label in set(rec.get("labels") or []):
                 index["labels"].setdefault(label, []).append(rec)
         proj_cache[dataset_name] = index
+        # 构建/刷新 path->rec 索引(一次性 O(N), 供缩略图/ROI 回调 O(1) 定位,
+        # 避免每个批次全量重建 dict); 带数据集标识, 切换数据集时自动失效。
+        self._by_path_index = {
+            "ds": (project_name, dataset_name),
+            "map": {r.get("image_path"): r for r in index.get("all", [])},
+        }
         self._sync_labels_to_db(project_name, dataset_name, index["labels"])
         self._sync_db_labels_from_cache(project_name, dataset_name)
 
@@ -557,7 +573,9 @@ class DatasetViewMixin(object):
         return self._thumb_worker
 
     def _on_thumb_batch_done(self, results):
-        """缩略图解码完成: 回写 rec 缓存, 有变化则防抖重渲当前页。"""
+        """缩略图解码完成: 回写 rec 缓存, 有变化则防抖重渲当前页。
+        复用 _by_path_index 做 O(1) 定位, 不再每次全量重建 by_path dict;
+        内存淘汰走 _throttled_evict 节流(翻页/切筛选仍有 _render_scene 全量兜底)。"""
         if getattr(self, "_closing", False):
             return
         cur_ds = getattr(self, "_current_dataset", None)
@@ -567,7 +585,8 @@ class DatasetViewMixin(object):
         index = self.dataset_cache.get(proj, {}).get(ds)
         if not index:
             return
-        by_path = {r.get("image_path"): r for r in index.get("all", [])}
+        bpi = getattr(self, "_by_path_index", None)
+        by_path = bpi.get("map") if bpi and bpi.get("ds") == (proj, ds) else {}
         changed = False
         for path, qimg in results:
             if path in getattr(self, "_thumb_pending", set()):
@@ -579,7 +598,7 @@ class DatasetViewMixin(object):
                 changed = True
         if changed and self._current_dataset == cur_ds:
             self._thumb_refresh_timer.start()
-        self._evict_img_cache()
+        self._throttled_evict()
 
     def _ensure_roi_worker(self):
         """懒创建 ROI 后台解码 worker(首页按类筛选首屏不卡顿)。"""
@@ -616,7 +635,8 @@ class DatasetViewMixin(object):
 
     def _on_roi_batch_done(self, results):
         """后台 ROI 解码完成: 回写 rec 缓存(成功/失败都缓存, 防重复请求),
-        有变化则防抖重渲当前页。"""
+        有变化则防抖重渲当前页。复用 _by_path_index O(1) 定位;
+        内存淘汰走 _throttled_evict 节流(翻页/切筛选仍有 _render_scene 全量兜底)。"""
         if getattr(self, "_closing", False):
             return
         cur_ds = getattr(self, "_current_dataset", None)
@@ -626,7 +646,8 @@ class DatasetViewMixin(object):
         index = self.dataset_cache.get(proj, {}).get(ds)
         if not index:
             return
-        by_path = {r.get("image_path"): r for r in index.get("all", [])}
+        bpi = getattr(self, "_by_path_index", None)
+        by_path = bpi.get("map") if bpi and bpi.get("ds") == (proj, ds) else {}
         changed = False
         for path, label, box_idx, qimg in results:
             key = (path, label, box_idx)
@@ -641,7 +662,15 @@ class DatasetViewMixin(object):
                     changed = True
         if changed and self._current_dataset == cur_ds:
             self._roi_refresh_timer.start()
-        self._evict_img_cache()
+        self._throttled_evict()
+
+    def _throttled_evict(self):
+        """节流 LRU 淘汰: 后台批次回调高频触发, 全量 O(N log N) 淘汰每 ~30 批次一次;
+        翻页/切筛选走 _render_scene 的全量淘汰, 不依赖本方法。"""
+        self._batch_evict_count = getattr(self, "_batch_evict_count", 0) + 1
+        if self._batch_evict_count >= 30:
+            self._batch_evict_count = 0
+            self._evict_img_cache()
 
     def _roi_redraw(self):
         """防抖重渲当前页(ROI 后台解码完成)。"""
@@ -881,7 +910,7 @@ class DatasetViewMixin(object):
                       " | 标签({}类): {}".format(
                 project_name, dataset_name, total, labeled,
                 len(label_counts), counts_str or "(无)"))
-            self._refresh_dataset_labels(project_name, dataset_name)
+            self._refresh_dataset_labels(project_name, dataset_name, rescan=False)
             if self._current_dataset == (project_name, dataset_name):
                 self._refresh_label_filter(project_name, dataset_name)
             if getattr(self, "_current_dataset", None) == (project_name, dataset_name):

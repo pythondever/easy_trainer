@@ -88,8 +88,9 @@ class ImportTask(QThread):
                     })
                 else:
                     label_path = self._label_of(img_path)
+                    from_same = False
                     try:
-                        boxes, labels = self._read_boxes(img_path, label_path)
+                        boxes, labels, from_same = self._read_boxes(img_path, label_path)
                     except Exception:
                         boxes, labels = None, []
                     thumb = None
@@ -100,6 +101,7 @@ class ImportTask(QThread):
                         "labels": labels,
                         "thumb": thumb,
                         "rois": {},
+                        "_has_annotation_json": from_same,
                     })
             except Exception:
                 pass
@@ -126,9 +128,11 @@ class ImportTask(QThread):
 
     def _read_boxes(self, img_path, label_path=""):
         """
-        读取标签，返回 (boxes, labels):
+        读取标签，返回 (boxes, labels, from_same_json):
         boxes = 像素坐标 [(x, y, w, h, label)]; labels = 对应类别列表
-        无标签返回(None, [])。
+        无标签返回(None, [], False)。
+        from_same_json 表示取自图像同路径 json，调用方据此落
+        _has_annotation_json 标记，主线程就不必为判断来源再探一次磁盘。
         优先读图像同路径 labelme json，与标注界面 _load_current
         一致；没有才回退 label_paths 的导入标签(txt/json)。否则重启后首页
         缩略图会显示标注界面修改前的旧标签。
@@ -137,13 +141,15 @@ class ImportTask(QThread):
         if os.path.exists(same_path_json):
             label_file = same_path_json
             fmt = ".json"
+            from_same = True
         elif label_path:
             label_file = label_path
             fmt = self.fmt
+            from_same = False
         else:
-            return None, []
+            return None, [], False
         if not os.path.exists(label_file):
-            return None, []
+            return None, [], False
         boxes = []
         labels = []
         if fmt == ".txt":
@@ -151,7 +157,7 @@ class ImportTask(QThread):
                 with pil_open(img_path) as im:
                     iw, ih = im.size
             except Exception:
-                return None, []
+                return None, [], False
             with open(label_file, "r", encoding="utf-8") as f:
                 for line in f:
                     parts = line.split()
@@ -197,4 +203,4 @@ class ImportTask(QThread):
                 lbl = normalize_label(shape.get("label", "unknown"))
                 boxes.append((max(0, x), max(0, y), max(1, w), max(1, h), lbl))
                 labels.append(lbl)
-        return boxes, labels
+        return boxes, labels, from_same
