@@ -11,6 +11,7 @@ from ui.add_dataset import Ui_AddDatasets
 from app.core.label_utils import label_sort_key
 from app.widgets.dialog_buttons import apply_icon, add_ok_cancel
 from app.widgets.message_box import MessageBox
+from app.widgets.project_sidebar import ProjectSidebar
 from PySide6.QtGui import QIcon, QFont, QPixmap, QColor
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtWidgets import QWidget, QDialog, QMenu, \
@@ -82,157 +83,71 @@ class ProjectMixin(object):
             self.refresh_project_list()
 
     def _init_project_tree(self):
-        self.project_tree = QTreeWidget()
-        self.project_tree.setObjectName("projectTree")
-        self.project_tree.setHeaderHidden(True)
-        self.project_tree.setRootIsDecorated(False)
-        self.project_tree.setIndentation(20)
-        self.project_tree.setIconSize(QSize(16, 16))
-        self.project_tree.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.project_tree.customContextMenuRequested.connect(self._on_project_tree_menu)
-        self.project_tree.itemExpanded.connect(self._on_project_expand_changed)
-        self.project_tree.itemCollapsed.connect(self._on_project_expand_changed)
-        self.project_tree.itemClicked.connect(self._on_project_tree_clicked)
-        self.project_tree.header().setSectionResizeMode(0, QHeaderView.Stretch)
-        self.project_tree.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.project_tree.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.project_tree = ProjectSidebar()
+        self.project_tree.datasetClicked.connect(self._on_sidebar_dataset_clicked)
+        self.project_tree.projectClicked.connect(self._on_sidebar_project_clicked)
+        self.project_tree.projectContextMenu.connect(self._on_sidebar_project_menu)
+        self.project_tree.datasetContextMenu.connect(self._on_sidebar_dataset_menu)
         self.project_scroll_area.setWidget(self.project_tree)
         self.project_scroll_area.setWidgetResizable(True)
-
-    @staticmethod
-    def _on_project_expand_changed(item):
-        """项目节点展开/折叠时切换文本前的 ▶/▼ 标记。"""
-        kind = item.data(0, Qt.UserRole)
-        if not kind or kind[0] != "project":
-            return
-        prefix = "▼" if item.isExpanded() else "▶"
-        item.setText(0, "{}{}".format(prefix, kind[1]))
 
     def refresh_project_list(self):
         if not hasattr(self, "project_tree"):
             self._init_project_tree()
-        self.project_tree.clear()
-        project_icon = self._tree_icon("项目.png")
-        proj_font = QFont()
-        proj_font.setBold(True)
-        proj_font.setPointSize(12)
+        data = []
         for name in self.db.get_projects():
-            proj_item = QTreeWidgetItem(["▶" + name])
-            proj_item.setData(0, Qt.UserRole, ("project", name))
-            proj_item.setFont(0, proj_font)
-            if not project_icon.isNull():
-                proj_item.setIcon(0, project_icon)
+            rows = []
             for ds in self.db.get_datasets(name):
-                ds_item = QTreeWidgetItem([""])
-                ds_item.setData(0, Qt.UserRole, ("dataset", name, ds["dataset_name"]))
-                proj_item.addChild(ds_item)
-                self._set_dataset_widget(ds_item, name, ds["dataset_name"])
-            self.project_tree.addTopLevelItem(proj_item)
+                binding = self.db.get_dataset_import(name, ds["dataset_name"])
+                rows.append((ds["dataset_name"],
+                             binding.get("labeled", 0) or 0,
+                             binding.get("total", 0) or 0))
+            data.append((name, rows))
+        self.project_tree.rebuild(data)
 
-    def _tree_icon(self, name):
-        """加载 resources/ 下图标, 缺失则返回空 QIcon。"""
-        path = os.path.join(WORKSPACE_DIRECTORY, "resources", name)
-        if os.path.exists(path):
-            return QIcon(path)
-        return QIcon()
-
-    def _set_dataset_widget(self, ds_item, project_name, dataset_name):
-        """
-        把数据集节点替换为整体行内容器: [图标 + 名称 + 拉伸 + 标注进度]，
-        """
-        container = QWidget(self)
-        container.setObjectName("datasetRowContainer")
-        # 事件穿透到 QTreeWidget, 让 ::item:hover / :selected 整行高亮生效
-        container.setAttribute(Qt.WA_TransparentForMouseEvents, True)
-        container.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        h = QHBoxLayout(container)
-        h.setContentsMargins(6, 0, 8, 0)
-        h.setSpacing(8)
-        h.setAlignment(Qt.AlignVCenter)
-        name_lbl = QLabel(container)
-        name_lbl.setObjectName("datasetRowName")
-        name_lbl.setTextFormat(Qt.RichText)
-        icon_path_uri = "file:///" + os.path.join(
-            WORKSPACE_DIRECTORY, "resources", "图像.png").replace("\\", "/")
-        name_lbl.setText(
-            '<img src="{0}" width="14" height="14" '
-            'style="vertical-align: middle;"/>&nbsp;{1}'.format(
-                icon_path_uri, dataset_name))
-        h.addWidget(name_lbl)
-        h.addStretch(1)
-        progress_lbl = QLabel(container)
-        progress_lbl.setObjectName("datasetRowProgress")
-        h.addWidget(progress_lbl)
-        binding = self.db.get_dataset_import(project_name, dataset_name)
-        total = binding.get("total", 0)
-        labeled = binding.get("labeled", 0)
-        self._style_progress_chip(progress_lbl, labeled, total)
-        progress_lbl.setText("{}/{}".format(labeled, total))
-        self.project_tree.setItemWidget(ds_item, 0, container)
-        return container, progress_lbl
-
-    @staticmethod
-    def _style_progress_chip(lbl, labeled, total):
-        """标注进度 chip: 全部标完绿色, 未完成主题蓝, 无数据中性。"""
-        if total > 0 and labeled >= total:
-            chip = ("background-color: #1f6b45; color: #d9f2e3;"
-                    " border-radius: 8px; padding: 2px 10px; font-size: 11px;")
-        elif total > 0:
-            chip = ("background-color: #2c3a5e; color: #c3d0f0;"
-                    " border-radius: 8px; padding: 2px 10px; font-size: 11px;")
-        else:
-            chip = ("color: #6c7385; background: transparent;"
-                    " padding-right: 4px; font-size: 12px;")
-        lbl.setStyleSheet(chip)
-
-    def _on_project_tree_menu(self, pos):
-        """
-        项目树右键菜单:
-        项目节点 -> 添加数据集 / 修改名称 / 删除项目
-        数据集节点 -> 修改 / 删除
-        """
-        item = self.project_tree.itemAt(pos)
-        if item is None:
-            return
-        kind = item.data(0, Qt.UserRole)
+    def _on_sidebar_project_menu(self, project, global_pos):
         menu = QMenu(self)
-        if kind[0] == "project":
-            act_add_ds = menu.addAction("添加数据集")
-            menu.addSeparator()
-            act_rename = menu.addAction("修改名称")
-            act_del = menu.addAction("删除项目")
-            act = menu.exec(self.project_tree.mapToGlobal(pos))
-            if act is None:
-                return
-            if act == act_add_ds:
-                self._add_dataset(kind[1])
-            elif act == act_rename:
-                self._rename_project(kind[1])
-            elif act == act_del:
-                self._delete_project(kind[1])
-        elif kind[0] == "dataset":
-            act_load = menu.addAction("载入")
-            act_import = menu.addAction("导入")
-            act_export = menu.addAction("导出")
-            act_move = menu.addAction("移动")
-            act_rename = menu.addAction("修改")
-            act_del = menu.addAction("删除")
-            act = menu.exec(self.project_tree.mapToGlobal(pos))
-            if act is None:
-                return
-            if act == act_load:
-                self._load_dataset_view(kind[1], kind[2])
-            elif act == act_import:
-                self._import_dataset(kind[1], kind[2])
-            elif act == act_export:
-                self.project_tree.setCurrentItem(item)
-                self._on_export_clicked()
-            elif act == act_move:
-                self._on_dataset_move(kind[1], kind[2])
-            elif act == act_rename:
-                self._rename_dataset(kind[1], kind[2])
-            elif act == act_del:
-                self._delete_dataset(kind[1], kind[2])
+        act_add_ds = menu.addAction("添加数据集")
+        menu.addSeparator()
+        act_export = menu.addAction("导出项目")
+        act_rename = menu.addAction("修改名称")
+        act_del = menu.addAction("删除项目")
+        act = menu.exec(global_pos)
+        if act is None:
+            return
+        if act == act_add_ds:
+            self._add_dataset(project)
+        elif act == act_export:
+            self._on_export_clicked(project, None)
+        elif act == act_rename:
+            self._rename_project(project)
+        elif act == act_del:
+            self._delete_project(project)
+
+    def _on_sidebar_dataset_menu(self, project, dataset, global_pos):
+        menu = QMenu(self)
+        act_load = menu.addAction("载入")
+        act_import = menu.addAction("导入")
+        act_export = menu.addAction("导出")
+        act_move = menu.addAction("移动")
+        act_rename = menu.addAction("修改")
+        act_del = menu.addAction("删除")
+        act = menu.exec(global_pos)
+        if act is None:
+            return
+        if act == act_load:
+            self._load_dataset_view(project, dataset)
+        elif act == act_import:
+            self._import_dataset(project, dataset)
+        elif act == act_export:
+            self.project_tree.select_dataset(project, dataset)
+            self._on_export_clicked()
+        elif act == act_move:
+            self._on_dataset_move(project, dataset)
+        elif act == act_rename:
+            self._rename_dataset(project, dataset)
+        elif act == act_del:
+            self._delete_dataset(project, dataset)
 
     def _show_add_dataset(self, preset_name="", title="添加数据集"):
         """

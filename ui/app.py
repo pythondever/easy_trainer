@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'app.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.3
+## Created by: Qt User Interface Compiler version 6.11.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -73,16 +73,28 @@ class Ui_AppUI(object):
         self.sidebarLayout.setSpacing(10)
         self.sidebarLayout.setObjectName(u"sidebarLayout")
         self.sidebarLayout.setContentsMargins(14, 16, 14, 14)
+        self.sidebarHeaderLayout = QHBoxLayout()
+        self.sidebarHeaderLayout.setSpacing(8)
+        self.sidebarHeaderLayout.setObjectName(u"sidebarHeaderLayout")
         self.sidebarTitle = QLabel(self.sidebarPanel)
         self.sidebarTitle.setObjectName(u"sidebarTitle")
 
-        self.sidebarLayout.addWidget(self.sidebarTitle)
+        self.sidebarHeaderLayout.addWidget(self.sidebarTitle)
+
+        self.sidebarHeaderSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.sidebarHeaderLayout.addItem(self.sidebarHeaderSpacer)
 
         self.add_project_btn = QPushButton(self.sidebarPanel)
         self.add_project_btn.setObjectName(u"add_project_btn")
-        self.add_project_btn.setCursor(QCursor(Qt.PointingHandCursor))
+        self.add_project_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.add_project_btn.setMinimumSize(QSize(24, 24))
+        self.add_project_btn.setMaximumSize(QSize(24, 24))
 
-        self.sidebarLayout.addWidget(self.add_project_btn)
+        self.sidebarHeaderLayout.addWidget(self.add_project_btn)
+
+
+        self.sidebarLayout.addLayout(self.sidebarHeaderLayout)
 
         self.project_scroll_area = QScrollArea(self.sidebarPanel)
         self.project_scroll_area.setObjectName(u"project_scroll_area")
@@ -274,7 +286,10 @@ class Ui_AppUI(object):
         self.appLogoLabel.setText("")
         self.appTitle.setText(QCoreApplication.translate("AppUI", u"EasyTrainer", None))
         self.sidebarTitle.setText(QCoreApplication.translate("AppUI", u"\u9879\u76ee", None))
-        self.add_project_btn.setText(QCoreApplication.translate("AppUI", u"+ \u6dfb\u52a0\u9879\u76ee", None))
+#if QT_CONFIG(tooltip)
+        self.add_project_btn.setToolTip(QCoreApplication.translate("AppUI", u"\u6dfb\u52a0\u9879\u76ee", None))
+#endif // QT_CONFIG(tooltip)
+        self.add_project_btn.setText(QCoreApplication.translate("AppUI", u"+", None))
         self.datasetTitleLabel.setText("")
         self.task_name_label.setText(QCoreApplication.translate("AppUI", u"\u9879\u76ee\u8bad\u7ec3\u4e2d", None))
         self.labelStatsLabel.setText("")

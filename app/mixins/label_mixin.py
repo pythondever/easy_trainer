@@ -15,7 +15,7 @@ from app.widgets.message_box import MessageBox, ProgressDialog
 from app.tasks.merge_task import MergeLabelsTask
 from PySide6.QtGui import QIcon, QPixmap, QColor
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QDialog, QLabel, QProgressBar, QComboBox
+from PySide6.QtWidgets import QDialog, QComboBox
 
 try:
     from shiboken6 import isValid as _is_valid
@@ -271,41 +271,22 @@ class LabelMixin(object):
                                       old_name, new_name, 0)
             return
         task = MergeLabelsTask(label_paths, old_ids, new_ids[0], parent=self)
-        ds_item = self._find_dataset_item(project_name, dataset_name)
-        progress = None
-        progress_lbl = None
-        if ds_item is not None:
-            container = self.project_tree.itemWidget(ds_item, 0)
-            if container is not None:
-                progress_lbl = container.findChild(QLabel, "datasetRowProgress")
-                if progress_lbl is not None:
-                    progress_lbl.setVisible(False)
-                progress = QProgressBar(container)
-                progress.setObjectName("miniProgressBar")
-                progress.setRange(0, 100)
-                progress.setValue(0)
-                progress.setFixedSize(140, 14)
-                progress.setTextVisible(True)
-                container.layout().addWidget(progress)
-                container.layout().setAlignment(progress, Qt.AlignVCenter)
+        self.project_tree.set_row_task(project_name, dataset_name, 0)
 
         def on_progress(v):
-            if progress is not None:
-                progress.setValue(v)
+            self.project_tree.set_row_task(project_name, dataset_name, v)
 
         def on_done(changed):
             self._merge_tasks.discard(task)
-            if progress is not None:
-                progress.deleteLater()
-            if progress_lbl is not None:
-                progress_lbl.setVisible(True)
-                # 实时重算已标注/总数(cache boxes 已是合并后,与缩略图一致)
-                index = self.dataset_cache.get(
-                    project_name, {}).get(dataset_name) or {}
-                total = len(index.get("all", []))
-                labeled = sum(1 for r in index.get("all", [])
-                              if r.get("boxes"))
-                progress_lbl.setText("{}/{}".format(labeled, total))
+            self.project_tree.set_row_task(project_name, dataset_name, None)
+            # 实时重算已标注/总数(cache boxes 已是合并后,与缩略图一致)
+            index = self.dataset_cache.get(
+                project_name, {}).get(dataset_name) or {}
+            total = len(index.get("all", []))
+            labeled = sum(1 for r in index.get("all", [])
+                          if r.get("boxes"))
+            self.project_tree.set_row_progress(project_name, dataset_name,
+                                               labeled, total)
             self._after_merge_refresh(project_name, dataset_name,
                                       old_name, new_name, changed)
 
@@ -495,41 +476,22 @@ class LabelMixin(object):
             if binding.get("label_path") else [])
         task = MergeLabelsTask(label_paths, old_ids, "", parent=self,
                                remove=True)
-        ds_item = self._find_dataset_item(project_name, dataset_name)
-        progress = None
-        progress_lbl = None
-        if ds_item is not None:
-            container = self.project_tree.itemWidget(ds_item, 0)
-            if container is not None:
-                progress_lbl = container.findChild(QLabel, "datasetRowProgress")
-                if progress_lbl is not None:
-                    progress_lbl.setVisible(False)
-                progress = QProgressBar(container)
-                progress.setObjectName("miniProgressBar")
-                progress.setRange(0, 100)
-                progress.setValue(0)
-                progress.setFixedSize(140, 14)
-                progress.setTextVisible(True)
-                container.layout().addWidget(progress)
-                container.layout().setAlignment(progress, Qt.AlignVCenter)
+        self.project_tree.set_row_task(project_name, dataset_name, 0)
 
         def on_progress(v):
-            if progress is not None:
-                progress.setValue(v)
+            self.project_tree.set_row_task(project_name, dataset_name, v)
 
         def on_done(changed):
             self._merge_tasks.discard(task)
-            if progress is not None:
-                progress.deleteLater()
-            if progress_lbl is not None:
-                progress_lbl.setVisible(True)
-                # 实时重算已标注/总数(cache boxes 已过滤被删的,与缩略图一致)
-                index = self.dataset_cache.get(
-                    project_name, {}).get(dataset_name) or {}
-                total = len(index.get("all", []))
-                labeled = sum(1 for r in index.get("all", [])
-                              if r.get("boxes"))
-                progress_lbl.setText("{}/{}".format(labeled, total))
+            self.project_tree.set_row_task(project_name, dataset_name, None)
+            # 实时重算已标注/总数(cache boxes 已过滤被删的,与缩略图一致)
+            index = self.dataset_cache.get(
+                project_name, {}).get(dataset_name) or {}
+            total = len(index.get("all", []))
+            labeled = sum(1 for r in index.get("all", [])
+                          if r.get("boxes"))
+            self.project_tree.set_row_progress(project_name, dataset_name,
+                                               labeled, total)
             self._after_merge_refresh(project_name, dataset_name,
                                       label_name, "", changed, op="delete")
 

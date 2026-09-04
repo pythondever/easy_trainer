@@ -194,6 +194,9 @@ class ProgressDialog(QDialog):
 
     def __init__(self, title, text, parent=None, maximum=100, cancellable=True):
         super().__init__(parent)
+        # objectName 供 QSS 用 QDialog#ProgressDialog 前缀锁样式, 防止弹窗
+        # parent 挂在 ModelDialog 等对话框上时被其通配按钮规则污染
+        self.setObjectName("ProgressDialog")
         self.setWindowTitle(title)
         self.setModal(True)
         self.setWindowModality(Qt.ApplicationModal)

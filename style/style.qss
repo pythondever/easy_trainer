@@ -40,7 +40,7 @@ QLabel#appTitle {
 
 /* ---------------- 侧边栏 ---------------- */
 QFrame#sidebarPanel {
-    background-color: #21232c;
+    background-color: #1a1c23;
     border-right: 1px solid #2c303c;
 }
 
@@ -50,6 +50,22 @@ QLabel#sidebarTitle {
     font-weight: 700;
     letter-spacing: 2px;
     padding: 2px 0 4px 2px;
+}
+
+/* 侧栏「+」ghost 小按钮（24x24, 覆盖全局 padding 避免文字被挤出） */
+QPushButton#add_project_btn {
+    background: transparent;
+    border: 1px solid #353a48;
+    border-radius: 6px;
+    padding: 0;
+    min-height: 0;
+    color: #8b93a5;
+    font-size: 15px;
+}
+QPushButton#add_project_btn:hover {
+    color: #e8eaf0;
+    border-color: #4a5164;
+    background-color: #23262f;
 }
 
 /* ---------------- 按钮 ---------------- */
@@ -558,34 +574,40 @@ QPushButton[class="danger"]:hover:focus {
     border-color: #ff9aa2;
 }
 
-/* ---------------- 项目树（项目 -> 数据集） ---------------- */
-QTreeWidget#projectTree {
+/* ---------------- 项目侧边栏（卡片式，行内容由 delegate 手绘） ---------------- */
+QWidget#projectSidebar {
     background: transparent;
+}
+QFrame#projectCard {
+    background-color: #20232b;
+    border: 1px solid #292d38;
+    border-radius: 10px;
+}
+/* 侧栏数据集列表: 背景与卡片同色(全局 QListWidget 是深底 #181a20);
+   item 的背景/边距全部归零, hover/选中态由 DatasetRowDelegate 手绘, 避免叠加 */
+QListWidget#datasetList {
+    background-color: #20232b;
     border: none;
     outline: none;
-    show-decoration-selected: true;
 }
-QTreeWidget#projectTree::item {
-    height: 32px;
-    padding-left: 6px;
-    color: #e8eaf0;
+QListWidget#datasetList::item {
+    background: transparent;
+    padding: 0;
+    margin: 0;
+    border-radius: 0;
 }
-QTreeWidget#projectTree::item:hover {
-    background-color: #262a35;
-}
-QTreeWidget#projectTree::item:selected {
-    background-color: #2c3a5e;
-    color: #ffffff;
-}
-/* 分支/缩进区跟随选中/hover 颜色(补 show-decoration-selected 在 setItemWidget 下不生效) */
-QTreeWidget#projectTree::branch {
+QListWidget#datasetList::item:hover,
+QListWidget#datasetList::item:selected {
     background: transparent;
 }
-QTreeWidget#projectTree::branch:hover {
-    background-color: #262a35;
+QFrame#sidebarStatsLine {
+    background-color: #242832;
+    border: none;
 }
-QTreeWidget#projectTree::branch:selected {
-    background-color: #2c3a5e;
+QLabel#sidebarStats {
+    color: #5a6273;
+    font-size: 11px;
+    background: transparent;
 }
 
 /* ---------------- 数据集对话框（ui/add_dataset） ---------------- */
@@ -605,23 +627,6 @@ QPushButton#done_btn:hover {
 }
 QPushButton#done_btn:pressed {
     background-color: #3f6ceb;
-}
-
-/* Branch 默认装饰：不显示图标；选中态背景与 item 选中色一致，保证选中背景是一条完整直线 */
-QTreeWidget#projectTree::branch,
-QTreeWidget#projectTree::branch:hover,
-QTreeWidget#projectTree::branch:!has-children,
-QTreeWidget#projectTree::branch:!has-children:hover {
-    background: transparent;
-    border: none;
-    image: none;
-}
-QTreeWidget#projectTree::branch:selected,
-QTreeWidget#projectTree::branch:has-children:selected,
-QTreeWidget#projectTree::branch:!has-children:selected {
-    background-color: #2c3a5e;
-    border: none;
-    image: none;
 }
 
 /* ================ 标注对话框（AnnotationDialog） ================
@@ -1082,15 +1087,6 @@ QPushButton#stop_train_btn:hover {
     background-color: #e05555;
 }
 
-/* ---------------- 项目树数据集行 ---------------- */
-QWidget#datasetRowContainer {
-    background: transparent;
-}
-QLabel#datasetRowName {
-    color: #ffffff;
-    background: transparent;
-}
-
 /* ---------------- 标注对话框标签列表 ---------------- */
 QLabel#show_boxes_label {
     color: #cfd6e4;
@@ -1116,35 +1112,46 @@ QLabel#labelRowInfo {
 }
 
 /* ---------------- message_box 自绘弹窗 ---------------- */
+/* 规则统一挂 QFrame#msgFrame 前缀(2 ID+2 类型): 后代选择器跨窗口层级,
+   弹窗 parent 挂在 ModelDialog 等对话框上时, QDialog#Xxx QPushButton(1 ID+2 类型)
+   会污染关闭/确认按钮(如删除模型记录弹窗的 ✕ 变小方块), 必须稳压它 */
 QFrame#msgFrame {
     background-color: #1c1e25;
     border: 1px solid #353a48;
     border-radius: 12px;
 }
-QLabel#msgTitle {
+QFrame#msgFrame QLabel#msgTitle {
     color: #e8eaf0;
     font-size: 14px;
     font-weight: 600;
 }
-QPushButton#msgClose {
+QFrame#msgFrame QPushButton#msgClose {
     background-color: transparent; color: #8b93a5; border: none;
     border-radius: 6px; font-size: 15px; padding: 2px 8px;
 }
-QPushButton#msgClose:hover { background-color: #3a3f4e; color: #e8eaf0; }
-QPushButton#msgBtn {
+QFrame#msgFrame QPushButton#msgClose:hover { background-color: #3a3f4e; color: #e8eaf0; }
+QFrame#msgFrame QPushButton#msgBtn {
     background-color: #2a2e38; color: #e8eaf0; border: none;
     border-radius: 6px; padding: 6px 18px; font-size: 13px;
 }
-QPushButton#msgBtn:hover { background-color: #343a48; }
-QPushButton#msgBtn:pressed { background-color: #3d4556; }
-QLabel#msgText {
+QFrame#msgFrame QPushButton#msgBtn:hover { background-color: #343a48; }
+QFrame#msgFrame QPushButton#msgBtn:pressed { background-color: #3d4556; }
+QFrame#msgFrame QLabel#msgText {
     color: #cfd6e4; font-size: 13px; background: transparent;
 }
 
 /* ---------------- ProgressDialog ---------------- */
-QLabel#progressText { color: #e8eaf0; font-size: 13px; }
-QProgressBar#progressBar {
+/* 同样挂 ID 前缀防通配按钮规则污染(见 message_box 段注释) */
+QDialog#ProgressDialog QLabel#progressText { color: #e8eaf0; font-size: 13px; }
+QDialog#ProgressDialog QProgressBar#progressBar {
     background: #2a2e38; border: none; border-radius: 4px;
     height: 10px; color: transparent;
 }
-QProgressBar#progressBar::chunk { background: #4f7dff; border-radius: 4px; }
+QDialog#ProgressDialog QProgressBar#progressBar::chunk {
+    background: #4f7dff; border-radius: 4px;
+}
+QDialog#ProgressDialog QPushButton#msgBtn {
+    background-color: #2a2e38; color: #e8eaf0; border: none;
+    border-radius: 6px; padding: 6px 18px; font-size: 13px;
+}
+QDialog#ProgressDialog QPushButton#msgBtn:hover { background-color: #343a48; }

@@ -160,21 +160,56 @@
            <number>14</number>
           </property>
           <item>
-           <widget class="QLabel" name="sidebarTitle">
-            <property name="text">
-             <string>项目</string>
+           <layout class="QHBoxLayout" name="sidebarHeaderLayout">
+            <property name="spacing">
+             <number>8</number>
             </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="add_project_btn">
-            <property name="cursor">
-             <cursorShape>PointingHandCursor</cursorShape>
-            </property>
-            <property name="text">
-             <string>+ 添加项目</string>
-            </property>
-           </widget>
+            <item>
+             <widget class="QLabel" name="sidebarTitle">
+              <property name="text">
+               <string>项目</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="sidebarHeaderSpacer">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QPushButton" name="add_project_btn">
+              <property name="cursor">
+               <cursorShape>PointingHandCursor</cursorShape>
+              </property>
+              <property name="toolTip">
+               <string>添加项目</string>
+              </property>
+              <property name="text">
+               <string>+</string>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>24</width>
+                <height>24</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>24</width>
+                <height>24</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
           <item>
            <widget class="QScrollArea" name="project_scroll_area">

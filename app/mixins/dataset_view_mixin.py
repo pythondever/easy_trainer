@@ -15,7 +15,7 @@ from app.tasks.import_task import ImportTask
 from PySide6.QtGui import QPixmap, QPainter, QColor, QImage, QImageReader
 from PySide6.QtCore import (Qt, Signal, QThread, QMutex, QMutexLocker, QTimer,
                             QRect, QSize)
-from PySide6.QtWidgets import QMenu, QLabel, QProgressBar, QGraphicsView, QGraphicsScene
+from PySide6.QtWidgets import QMenu, QGraphicsView, QGraphicsScene
 
 
 class _RoiDecodeWorker(QThread):
@@ -834,24 +834,7 @@ class DatasetViewMixin(object):
             self._loading_tasks.pop(key, None)
         elif key in self._loading_tasks:
             return
-        ds_item = self._find_dataset_item(project_name, dataset_name)
-        progress = None
-        progress_lbl = None
-        if ds_item is not None:
-            container = self.project_tree.itemWidget(ds_item, 0)
-            if container is not None:
-                progress_lbl = container.findChild(QLabel, "datasetRowProgress")
-                if progress_lbl is not None:
-                    progress_lbl.setVisible(False)
-                progress = QProgressBar(container)
-                progress.setObjectName("miniProgressBar")
-                progress.setRange(0, 100)
-                progress.setValue(0)
-                progress.setFixedSize(140, 14)
-                progress.setTextVisible(True)
-                h = container.layout()
-                h.addWidget(progress)
-                h.setAlignment(progress, Qt.AlignVCenter)
+        self.project_tree.set_row_task(project_name, dataset_name, 0)
         task = ImportTask(image_path, label_path, fmt, parent=self,
                           excluded=excluded,
                           label_ids=self.db.get_dataset_label_ids(
@@ -859,8 +842,7 @@ class DatasetViewMixin(object):
         self._loading_tasks[key] = task
 
         def on_progress(v):
-            if progress is not None:
-                progress.setValue(v)
+            self.project_tree.set_row_task(project_name, dataset_name, v)
 
         def on_finished(result):
             cls_mode = fmt == "cls"
@@ -897,11 +879,7 @@ class DatasetViewMixin(object):
                 binding = self.db.get_dataset_import(project_name, dataset_name)
                 labeled = binding.get("labeled", labeled)
                 total = binding.get("total", total) or total
-            if progress is not None:
-                progress.deleteLater()
-            if progress_lbl is not None:
-                progress_lbl.setVisible(True)
-                progress_lbl.setText("{}/{}".format(labeled, total))
+            self.project_tree.set_row_task(project_name, dataset_name, None)
             proj_cache = self.dataset_cache.setdefault(project_name, {})
             proj_cache[dataset_name] = self._build_dataset_index(result)
             # 检测/分割按框,分类按类别;持久化供属性页无缓存时展示
@@ -937,36 +915,19 @@ class DatasetViewMixin(object):
         task.finished_signal.connect(task.deleteLater)
         task.start()
 
-    def _find_dataset_item(self, project_name, dataset_name):
-        """在项目树中定位数据集节点(展开状态下)。"""
-        if not hasattr(self, "project_tree"):
-            return None
-        for i in range(self.project_tree.topLevelItemCount()):
-            proj_item = self.project_tree.topLevelItem(i)
-            if proj_item.data(0, Qt.UserRole) == ("project", project_name):
-                for j in range(proj_item.childCount()):
-                    child = proj_item.child(j)
-                    if child.data(0, Qt.UserRole) == ("dataset", project_name, dataset_name):
-                        return child
-        return None
-
-    def _on_project_tree_clicked(self, item, column):
+    def _on_sidebar_dataset_clicked(self, project, dataset):
         """
-        点击：仅记录选中；已缓存的数据集切换显示，未缓存不触发加载。
+        点击数据集行：仅记录选中；已缓存的数据集切换显示，未缓存不触发加载。
         不强制覆盖 current_label —— 由 _refresh_label_filter 根据新数据集的实际
         labels 决定保留/回退,避免 100% 标注数据集被强制选"未标注"导致视图空白。
         """
-        kind = item.data(0, Qt.UserRole)
-        if not kind:
-            return
-        if kind[0] == "dataset":
-            project, dataset = kind[1], kind[2]
-            self._current_dataset = (project, dataset)
-            if self.dataset_cache.get(project, {}).get(dataset):
-                self._refresh_label_filter(project, dataset)
-                self.show_dataset_images(project, dataset)
-            else:
-                self._reset_image_area()
-        elif kind[0] == "project":
-            self._current_dataset = None
+        self._current_dataset = (project, dataset)
+        if self.dataset_cache.get(project, {}).get(dataset):
+            self._refresh_label_filter(project, dataset)
+            self.show_dataset_images(project, dataset)
+        else:
             self._reset_image_area()
+
+    def _on_sidebar_project_clicked(self, project):
+        self._current_dataset = None
+        self._reset_image_area()

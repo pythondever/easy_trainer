@@ -282,21 +282,21 @@ class ImportExportMixin(object):
         project, dataset = self._current_dataset
         self._import_dataset(project, dataset)
 
-    def _on_export_clicked(self):
+    def _on_export_clicked(self, project=None, dataset=None):
         """
-        工具栏「导出」按钮:弹导出对话框（路径 + 格式）,
-        选中项目 -> 导出项目下全部数据集；选中数据集 → 导出该数据集。
+        「导出」入口：工具栏按钮导出当前选中的数据集；
+        项目右键菜单传 project、dataset=None 表示导出整个项目。
         目录结构：数据集 <保存路径>/<数据集名>/images|labels;
         项目 <保存路径>/<项目名>/<数据集名>/images|labels。
         标签按所选格式转换导出(labelme json / yolo txt)。
         """
-        item = self.project_tree.currentItem()
-        if item is None:
-            MessageBox.warning(self, "导出", "请先在左侧选中要导出的项目或数据集")
-            return
-        kind = item.data(0, Qt.UserRole)
-        if not kind:
-            return
+        if project is None:
+            sel = self.project_tree.current_dataset()
+            if sel is None:
+                MessageBox.warning(self, "导出", "请先在左侧选中要导出的数据集")
+                return
+            project, dataset = sel
+        export_all = dataset is None
         dlg = QDialog(self)
         dlg.setWindowTitle("导出")
         ui = ExportDataUI()
@@ -321,8 +321,8 @@ class ImportExportMixin(object):
             return
         fmt = "yolo" if ui.exp_yolo_fmt.isChecked() else "labelme"
         try:
-            if kind[0] == "project":
-                project_name = kind[1]
+            if export_all:
+                project_name = project
                 root = os.path.join(save_dir, project_name)
                 ds_list = [(project_name, d["dataset_name"])
                            for d in self.db.get_datasets(project_name)]
@@ -350,7 +350,7 @@ class ImportExportMixin(object):
                     project_name, total,
                     self._export_labels(project_name, ds_list), fmt, root))
             else:
-                project_name, dataset_name = kind[1], kind[2]
+                project_name, dataset_name = project, dataset
                 src = self._export_source(project_name, dataset_name)
                 self._log("开始导出: 数据集={}/{} | 源路径={} | 保存路径={} | 格式={}".format(
                     project_name, dataset_name, src, save_dir, fmt))

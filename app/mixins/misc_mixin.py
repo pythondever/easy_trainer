@@ -236,17 +236,8 @@ class MiscMixin(object):
         self._update_dataset_row_progress(project_name, dataset_name, labeled, total)
 
     def _update_dataset_row_progress(self, project_name, dataset_name, labeled, total):
-        """刷新项目树该数据集节点的进度文本。"""
-        ds_item = self._find_dataset_item(project_name, dataset_name)
-        if ds_item is None:
-            return
-        container = self.project_tree.itemWidget(ds_item, 0)
-        if container is None:
-            return
-        pl = container.findChild(QLabel, "datasetRowProgress")
-        if pl is not None:
-            self._style_progress_chip(pl, labeled, total)
-            pl.setText("{}/{}".format(labeled, total))
+        """刷新项目树该数据集行的进度数值。"""
+        self.project_tree.set_row_progress(project_name, dataset_name, labeled, total)
 
     def _calc_label_counts(self, project, dataset):
         """统计数据集各标签数量：内存缓存有(已载入)用实时数据并回写 db；未载入用 db 旧值。"""
@@ -266,21 +257,11 @@ class MiscMixin(object):
         return self.db.get_dataset_label_counts(project, dataset)
 
     def _refresh_dataset_row_progress(self, project_name, dataset_name):
-        """根据 db 当前 binding 刷新项目树该数据集节点的进度文本。"""
-        ds_item = self._find_dataset_item(project_name, dataset_name)
-        if ds_item is None:
-            return
-        container = self.project_tree.itemWidget(ds_item, 0)
-        if container is None:
-            return
-        pl = container.findChild(QLabel, "datasetRowProgress")
-        if pl is None:
-            return
+        """根据 db 当前 binding 刷新项目树该数据集行的进度数值。"""
         binding = self.db.get_dataset_import(project_name, dataset_name)
         total = binding.get("total", 0) or 0
         labeled = binding.get("labeled", 0) or 0
-        self._style_progress_chip(pl, labeled, total)
-        pl.setText("{}/{}".format(labeled, total))
+        self.project_tree.set_row_progress(project_name, dataset_name, labeled, total)
 
     @staticmethod
     def _has_label_file(image_path):
