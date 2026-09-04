@@ -704,6 +704,7 @@ class TrainDialog(QDialog):
                 "image_path": info.get("image_path", ""),
                 "label_path": info.get("label_path", ""),
                 "fmt": info.get("label_fmt", "txt"),
+                "label_ids": self.app.db.get_dataset_label_ids(proj, name),
             })
         for proj, name in self._selected_val_datasets():
             info = self.app.db.get_dataset_import(proj, name)
@@ -713,6 +714,7 @@ class TrainDialog(QDialog):
                 "image_path": info.get("image_path", ""),
                 "label_path": info.get("label_path", ""),
                 "fmt": info.get("label_fmt", "txt"),
+                "label_ids": self.app.db.get_dataset_label_ids(proj, name),
             })
         if not any(d["split"] == "train" for d in datasets):
             raise ValueError("请至少选择一个训练集数据集")

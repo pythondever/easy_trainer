@@ -10,9 +10,9 @@ sys.path.append(os.path.join(WORKSPACE_DIRECTORY, 'ui'))
 from PySide6.QtGui import QFontMetrics
 from ui.import_data import Ui_ImportData
 from ui.export_data import Ui_Dialog as ExportDataUI
-from app.core.label_utils import (label_sort_key,
-                             load_json_boxes, boxes_to_yolo_text,
-                             load_yolo_boxes, boxes_to_labelme_json)
+from app.core.label_utils import (label_sort_key, load_json_shapes,
+                             load_yolo_shapes, looks_like_labelme,
+                             shapes_to_yolo_text, shapes_to_labelme_json)
 from app.widgets.dialog_buttons import (apply_icon, ICON_SIZE, BTN_WIDTH,
                                         BTN_HEIGHT)
 from app.widgets.message_box import MessageBox, ProgressDialog
@@ -431,6 +431,10 @@ class ImportExportMixin(object):
         os.makedirs(img_dir, exist_ok=True)
         os.makedirs(lbl_dir, exist_ok=True)
         binding = self.db.get_dataset_import(project_name, dataset_name) or {}
+        # label_ids 用于把 txt 的数字 id 换成显示名, 与标注 json 的类别名对齐
+        binding = dict(binding,
+                       label_ids=self.db.get_dataset_label_ids(
+                           project_name, dataset_name))
         # yolo 类别 ID 映射:db 标签按 label_sort_key 排序后的序号
         labels = self.db.get_dataset_labels(project_name, dataset_name)
         label_to_id = {name: i for i, name in
@@ -459,43 +463,46 @@ class ImportExportMixin(object):
         """按目标格式把一张图的标注写入 lbl_dir(同名文件)."""
         stem = os.path.splitext(os.path.basename(img_src))[0]
         base_wo_ext, _ = os.path.splitext(img_src)
-        # labelme: 同路径 json 标注直接复制(保持标注界面的原始 json)
+        # labelme: 同路径 json 标注直接复制(保持标注界面的原始 json, 含多边形)
         if fmt == "labelme":
             same_json = base_wo_ext + ".json"
             if os.path.exists(same_json):
                 shutil.copy2(same_json, os.path.join(lbl_dir, stem + ".json"))
                 return
-        boxes = self._read_export_boxes(img_src, binding)
-        if not boxes:
-            return
         try:
             with PILImage.open(img_src) as im:
                 iw, ih = im.size
         except Exception:
             return
+        shapes, has_source = self._read_export_shapes(img_src, binding, iw, ih)
+        if not has_source:
+            return
         target = os.path.join(lbl_dir, stem + (".json" if fmt == "labelme" else ".txt"))
         if fmt == "labelme":
-            data = boxes_to_labelme_json(boxes, img_src, iw, ih)
+            data = shapes_to_labelme_json(shapes, img_src, iw, ih)
             with open(target, "w", encoding="utf-8") as f:
                 json.dump(data, f, ensure_ascii=False, indent=2)
         else:
-            text = boxes_to_yolo_text(boxes, iw, ih, label_to_id)
-            if text:
-                with open(target, "w", encoding="utf-8") as f:
-                    f.write(text + "\n")
+            # auto: 多边形写顶点、矩形写 bbox, 导出的数据集检测和分割都能用
+            text = shapes_to_yolo_text(shapes, iw, ih, label_to_id, "auto")
+            with open(target, "w", encoding="utf-8") as f:
+                f.write(text)
 
-    def _read_export_boxes(self, img_src, binding):
+    def _read_export_shapes(self, img_src, binding, iw=0, ih=0):
         """
-        读取一张图的标注 boxes(像素坐标 + label).
-        优先同路径 labelme json(标注产物),否则 label_paths 同名标签.
+        读取一张图的标注, 返回 ([(label, points)], 是否有权威来源).
+
+        points 保留多边形顶点(不只是外接框), 否则分割标注导出后只剩个框。
+        优先同路径 labelme json(标注产物),否则 label_paths 同名标签。
+        has_source 用于区分"标注为空"和"压根没标过": 前者要写空文件, 后者不写。
         """
         base_wo_ext, _ = os.path.splitext(img_src)
         same_json = base_wo_ext + ".json"
-        if os.path.exists(same_json):
-            return load_json_boxes(same_json)
+        if os.path.exists(same_json) and looks_like_labelme(same_json):
+            return load_json_shapes(same_json), True
         label_fmt = binding.get("label_fmt", "")
         if not label_fmt:
-            return []
+            return [], False
         ext = ".txt" if label_fmt == ".txt" else ".json"
         stem = os.path.splitext(os.path.basename(img_src))[0]
         for lp in (binding.get("label_paths") or
@@ -506,6 +513,7 @@ class ImportExportMixin(object):
             if not os.path.exists(cand):
                 continue
             if ext == ".json":
-                return load_json_boxes(cand)
-            return load_yolo_boxes(cand, img_src)
-        return []
+                return load_json_shapes(cand), True
+            return load_yolo_shapes(cand, iw, ih,
+                                    binding.get("label_ids")), True
+        return [], False

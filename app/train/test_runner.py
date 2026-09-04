@@ -185,7 +185,7 @@ def _read_yolo_label(txt_path, img_w, img_h):
 def _read_labelme_label(js_path):
     """
     labelme json → [(cls, box, poly)]，poly 是像素坐标顶点或 None。
-    自己解析而不是复用 load_json_boxes：后者只给外接框，拿不到 polygon 顶点，
+    自己解析而不是只取外接框：框的读取函数拿不到 polygon 顶点，
     而两次读文件再按序号对齐的做法在数据有脏 shape 时会错位。
     """
     out = []

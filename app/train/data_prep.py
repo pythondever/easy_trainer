@@ -13,8 +13,9 @@ import os
 import shutil
 from datetime import datetime
 from PIL import Image
-from app.core.label_utils import (normalize_label, load_json_boxes,
-                             boxes_to_yolo_text)
+from app.core.label_utils import (normalize_label, load_json_shapes,
+                                  load_yolo_shapes, looks_like_labelme,
+                                  shapes_to_yolo_text)
 
 
 def timestamp_dir():
@@ -54,71 +55,90 @@ def _img_size(path):
     return size
 
 
-def _copy_dataset_labels(src_label_path, fmt, dst_labels, label_to_id, img_dir):
-    """复制单个标签到 yolo txt 目录（labelme json 先转 txt）。返回出现过的标签。"""
+def _map_class_id(raw, label_ids):
+    """txt 里的数字 id → 显示名(与标注 json 里的类别名对齐)，无映射则原样。"""
+    raw = str(raw).strip()
+    if label_ids and raw in label_ids:
+        return normalize_label(label_ids[raw])
+    return normalize_label(raw)
+
+
+def _write_yolo_txt(dst_labels, base, shapes, iw, ih, label_to_id, as_polygon):
+    """shapes → dst_labels/base。空 shapes 写空文件(用于覆盖来源里的旧标注)。"""
+    if not shapes:
+        return
+    txt = shapes_to_yolo_text(shapes, iw, ih, label_to_id, as_polygon)
+    with open(os.path.join(dst_labels, base), "w", encoding="utf-8") as f:
+        f.write(txt)
+
+
+def _copy_dataset_labels(src_label_path, fmt, dst_labels, label_to_id, img_dir,
+                         as_polygon=False, label_ids=None):
+    """复制单个导入标签目录到 yolo txt 目录（labelme json / yolo txt 都转 txt）。"""
     if not src_label_path or not os.path.isdir(src_label_path):
-        return set()
-    labels_found = set()
+        return
     for fn in os.listdir(src_label_path):
-        if fmt == "json" and fn.lower().endswith(".json"):
-            boxes = load_json_boxes(os.path.join(src_label_path, fn))
-            if not boxes:
-                continue
-            for b in boxes:
-                labels_found.add(b[4])
-            iw, ih = _img_size_of_stem(img_dir, os.path.splitext(fn)[0])
+        stem, ext = os.path.splitext(fn)
+        if fmt == "json" and ext.lower() == ".json":
+            iw, ih = _img_size_of_stem(img_dir, stem)
             if iw and ih:
-                txt = boxes_to_yolo_text(boxes, iw, ih, label_to_id)
-                base = os.path.splitext(fn)[0] + ".txt"
-                with open(os.path.join(dst_labels, base), "w", encoding="utf-8") as f:
-                    f.write(txt)
-        elif fmt == "txt" and fn.lower().endswith(".txt"):
-            # txt 标签：class ID 重映射到 0..N-1(原始数据集可能非零基，如 1~14)
-            src = os.path.join(src_label_path, fn)
-            try:
-                lines = []
-                with open(src, "r", encoding="utf-8") as f:
-                    for line in f:
-                        parts = line.split()
-                        if len(parts) >= 5:
-                            new_cid = label_to_id.get(parts[0], parts[0])
-                            lines.append(" ".join([str(new_cid)] + parts[1:]))
-                if lines:
-                    with open(os.path.join(dst_labels, fn), "w",
-                              encoding="utf-8") as f:
-                        f.write("\n".join(lines) + "\n")
-            except Exception:
-                pass
-    return labels_found
+                shapes = load_json_shapes(os.path.join(src_label_path, fn))
+                _write_yolo_txt(dst_labels, stem + ".txt", shapes, iw, ih,
+                                label_to_id, as_polygon)
+        elif fmt == "txt" and ext.lower() == ".txt":
+            iw, ih = _img_size_of_stem(img_dir, stem)
+            if iw and ih:
+                shapes = load_yolo_shapes(os.path.join(src_label_path, fn),
+                                          iw, ih, label_ids)
+                _write_yolo_txt(dst_labels, stem + ".txt", shapes, iw, ih,
+                                label_to_id, as_polygon)
 
 
-def _collect_labels(datasets, label_to_id):
-    """扫描所有数据集标签收集完整类别集合（txt 直接读行，json 读 label）。"""
+def _collect_labels(datasets):
+    """收集类别集合：导入标签目录 + 图像同路径 json(标注产物) 都要扫。
+
+    只扫导入目录的话，标注界面新增的类别名进不了 label_to_id，
+    会被 shapes_to_yolo_text 的 get(label, 0) 静默写成类别 0。
+    txt 的类别按 label_ids 换成显示名，避免和 json 里的同一个类被当成两类。
+    """
     labels = []
-    seen = set()          # 用集合去重
+    seen = set()
     for info in datasets:
         label_path = info.get("label_path")
         fmt = str(info.get("fmt", "txt")).lstrip(".")
-        if not label_path or not os.path.isdir(label_path):
-            continue
-        for fn in sorted(os.listdir(label_path)):
-            if fmt == "json" and fn.lower().endswith(".json"):
-                for b in load_json_boxes(os.path.join(label_path, fn)):
-                    if b[4] not in seen:
-                        seen.add(b[4])
-                        labels.append(b[4])
-            elif fmt == "txt" and fn.lower().endswith(".txt"):
-                try:
-                    with open(os.path.join(label_path, fn), "r", encoding="utf-8") as f:
-                        for line in f:
-                            p = line.split()
-                            if len(p) >= 1:
-                                lb = normalize_label(p[0])
-                                if lb not in seen:
-                                    seen.add(lb)
-                                    labels.append(lb)
-                except Exception:
+        label_ids = info.get("label_ids") or {}
+
+        def _add(lb):
+            if lb and lb not in seen:
+                seen.add(lb)
+                labels.append(lb)
+
+        if label_path and os.path.isdir(label_path):
+            for fn in sorted(os.listdir(label_path)):
+                stem, ext = os.path.splitext(fn)
+                if fmt == "json" and ext.lower() == ".json":
+                    for lb, _ in load_json_shapes(os.path.join(label_path, fn)):
+                        _add(lb)
+                elif fmt == "txt" and ext.lower() == ".txt":
+                    try:
+                        with open(os.path.join(label_path, fn), "r",
+                                  encoding="utf-8") as f:
+                            for line in f:
+                                p = line.split()
+                                if len(p) >= 5:
+                                    _add(_map_class_id(p[0], label_ids))
+                    except Exception:
+                        continue
+        img_dir = info.get("image_path")
+        if img_dir and os.path.isdir(img_dir):
+            for fn in sorted(os.listdir(img_dir)):
+                if not fn.lower().endswith(".json"):
                     continue
+                jp = os.path.join(img_dir, fn)
+                if not looks_like_labelme(jp):
+                    continue
+                for lb, _ in load_json_shapes(jp):
+                    _add(lb)
     return labels
 
 
@@ -141,9 +161,14 @@ def _sort_labels(labels):
     return sorted(set(labels), key=key)
 
 
-def copy_datasets(out_root, project, datasets):
-    """把勾选数据集复制到 <out_root>/<项目>/<数据集>/images|labels（json→txt）。"""
-    labels = _sort_labels(_collect_labels(datasets, {}))
+def copy_datasets(out_root, project, datasets, task="detect"):
+    """把勾选数据集复制到 <out_root>/<项目>/<数据集>/images|labels（json/txt→yolo txt）。
+
+    task=segment 时写 yolo-seg 多边形顶点，检测写 cx cy w h。
+    每张图的标签来源以图像同路径 json 为准（存在即覆盖，空的也算：表示这张图没有目标）。
+    """
+    as_polygon = task == "segment"
+    labels = _sort_labels(_collect_labels(datasets))
     label_to_id = {lb: i for i, lb in enumerate(labels)}
     print("[train] 解析到类别 {} 个: {}".format(len(labels), labels), flush=True)
     for info in datasets:
@@ -153,30 +178,35 @@ def copy_datasets(out_root, project, datasets):
         dst_labels = os.path.join(dst, "labels")
         os.makedirs(dst_images, exist_ok=True)
         os.makedirs(dst_labels, exist_ok=True)
-        imgs = _copy_images(info.get("image_path"), dst_images)
+        img_dir = info.get("image_path")
+        imgs = _copy_images(img_dir, dst_images)
+        fmt = str(info.get("fmt", "txt")).lstrip(".")
         _copy_dataset_labels(
-            info.get("label_path"), str(info.get("fmt", "txt")).lstrip("."),
-            dst_labels, label_to_id, info.get("image_path"))
+            info.get("label_path"), fmt, dst_labels, label_to_id, img_dir,
+            as_polygon, info.get("label_ids"))
         n_lab = len([f for f in os.listdir(dst_labels)
                      if f.lower().endswith(".txt")])
         print("[train] 复制数据集 {}: 图像 {} 张, 标签 {} 个 → {}".format(
             ds_name, len(imgs), n_lab, dst), flush=True)
-        # 图像同路径的 labelme json(标注系统生成) -> txt 覆盖
-        if info.get("image_path") and os.path.isdir(info["image_path"]):
-            for fn in os.listdir(info["image_path"]):
-                if fn.lower().endswith(".json"):
-                    jp = os.path.join(info["image_path"], fn)
-                    boxes = load_json_boxes(jp)
-                    if not boxes:
-                        continue
-                    iw, ih = _img_size_of_stem(info["image_path"],
-                                               os.path.splitext(fn)[0])
-                    if iw and ih:
-                        txt = boxes_to_yolo_text(boxes, iw, ih, label_to_id)
-                        base = os.path.splitext(fn)[0] + ".txt"
-                        with open(os.path.join(dst_labels, base), "w",
-                                  encoding="utf-8") as f:
-                            f.write(txt)
+        # 图像同路径的 labelme json(标注界面产物)是权威来源, 覆盖导入标签目录的结果
+        if img_dir and os.path.isdir(img_dir):
+            for fn in sorted(os.listdir(img_dir)):
+                if not fn.lower().endswith(".json"):
+                    continue
+                stem = os.path.splitext(fn)[0]
+                iw, ih = _img_size_of_stem(img_dir, stem)
+                if not (iw and ih):
+                    continue
+                jp = os.path.join(img_dir, fn)
+                if not looks_like_labelme(jp):
+                    continue
+                shapes = load_json_shapes(jp)
+                txt = shapes_to_yolo_text(shapes, iw, ih, label_to_id,
+                                          as_polygon)
+                # 空 shapes 也要写(清空), 否则界面删掉的框会在训练里复活
+                with open(os.path.join(dst_labels, stem + ".txt"), "w",
+                          encoding="utf-8") as f:
+                    f.write(txt)
     return labels, label_to_id
 
 

@@ -67,7 +67,8 @@ def main():
         os.path.join(ts_dir, "config.json")), flush=True)
 
     datasets = cfg["datasets"]
-    labels, _ = copy_datasets(out_root, project, datasets)
+    labels, _ = copy_datasets(out_root, project, datasets,
+                              cfg.get("task", "detect"))
     if not labels:
         raise RuntimeError("未从数据集中解析到任何标签类别，请检查标签文件")
     clean_split(out_root)
