@@ -7,6 +7,21 @@ from . import keys
 from .log import write_log
 
 DEFAULT_MAP_SIZE = 128 * 1024 * 1024
+METRICS_DIR_NAME = "metrics"
+DEFAULT_DB_ROOT = os.path.join(os.path.expanduser("~"), ".easy_trainer")
+
+
+def load_train_metrics(record, db_path=None):
+    """取一条记录的指标: 优先外置文件, 文件缺失时退回记录内嵌字段(旧数据兼容)。"""
+    fname = record.get("metrics_file")
+    if fname:
+        path = os.path.join(db_path or DEFAULT_DB_ROOT, METRICS_DIR_NAME, fname)
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return record.get("metrics") or {}
 
 
 def _rename_item(item, old_name, new_name):
@@ -41,6 +56,62 @@ class DataBase:
             os.makedirs(self.db_path, exist_ok=True)
         db_file = os.path.join(self.db_path, 'app.mdb')
         self.mdb = lmdb.open(db_file, map_size=self.db_size)
+
+    @property
+    def metrics_dir(self):
+        return os.path.join(self.db_path, METRICS_DIR_NAME)
+
+    def _metrics_path(self, train_id):
+        return os.path.join(self.metrics_dir, "{}.json".format(train_id))
+
+    def save_train_metrics(self, train_id, metrics):
+        """把指标写到 metrics/<train_id>.json, 返回文件名(存进记录)而非指标本身。
+
+        先写 .tmp 再 os.replace: 训练中途被强杀不会留下半个损坏的 json。
+        """
+        if not train_id:
+            return ""
+        os.makedirs(self.metrics_dir, exist_ok=True)
+        target = self._metrics_path(train_id)
+        tmp = target + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump(metrics, f, ensure_ascii=False)
+        os.replace(tmp, target)
+        return os.path.basename(target)
+
+    def delete_train_metrics(self, train_id):
+        """删除记录时级联清理外置指标文件(文件不存在不报错)。"""
+        if not train_id:
+            return
+        try:
+            os.remove(self._metrics_path(train_id))
+        except OSError:
+            pass
+
+    def migrate_metrics_to_files(self):
+        """一次性迁移: 旧记录内嵌的 metrics 落到 metrics/ 目录, 清掉内嵌字段(幂等)。"""
+        updated = {}
+        for key in (keys.train_history, keys.model_history):
+            with self.mdb.begin(write=False) as txn:
+                raw = txn.get(key)
+            recs = json.loads(raw.decode()) if raw else []
+            dirty = False
+            for r in recs:
+                if not r.get("metrics") or r.get("metrics_file"):
+                    continue
+                # model 记录复用 train 记录的文件名, 两者共享同一份指标
+                tid = r.get("train_id") or r.get("id")
+                r["metrics_file"] = self.save_train_metrics(tid, r["metrics"])
+                del r["metrics"]
+                dirty = True
+            if dirty:
+                updated[key] = recs
+        if not updated:
+            return 0
+        with self.mdb.begin(write=True) as txn:
+            for key, recs in updated.items():
+                txn.put(key, json.dumps(recs, ensure_ascii=False).encode())
+        return len(updated)
 
     def add_project(self, name):
         key = keys.project_list
@@ -593,7 +664,7 @@ class DataBase:
             return []
 
     def delete_train_record(self, record_id):
-        """按 id 删除一条训练记录。"""
+        """按 id 删除一条训练记录(级联删除其外置指标文件)。"""
         key = keys.train_history
         txn = self.mdb.begin(write=True)
         data = txn.get(key)
@@ -602,12 +673,17 @@ class DataBase:
         if len(new_recs) != len(recs):
             txn.put(key, json.dumps(new_recs, ensure_ascii=False).encode())
         txn.commit()
+        self.delete_train_metrics(record_id)
 
     def update_train_record(self, record):
-        """按 id 覆盖一条训练记录（训练中实时更新 metrics 等字段）。"""
+        """
+        按 id 覆盖一条训练记录（训练中实时更新 metrics 等字段）。
+        序列化在写事务外完成: LMDB 同一时刻只允许一个写事务, 在事务内
+        loads/dumps 会把导入、保存标注等其他写操作一起堵住。
+        """
         key = keys.train_history
-        txn = self.mdb.begin(write=True)
-        data = txn.get(key)
+        with self.mdb.begin(write=False) as txn:
+            data = txn.get(key)
         recs = json.loads(data.decode()) if data else []
         rid = record.get("id")
         for i, r in enumerate(recs):
@@ -616,8 +692,9 @@ class DataBase:
                 break
         else:
             recs.append(record)
-        txn.put(key, json.dumps(recs, ensure_ascii=False).encode())
-        txn.commit()
+        blob = json.dumps(recs, ensure_ascii=False).encode()
+        with self.mdb.begin(write=True) as txn:
+            txn.put(key, blob)
 
     # ---------- 模型记录(独立于训练记录存储) ----------
     def add_model_record(self, record):
@@ -642,7 +719,10 @@ class DataBase:
             return []
 
     def delete_model_record(self, record_id):
-        """按 id 删除一条模型记录(不影响训练记录)。"""
+        """
+        按 id 删除一条模型记录(不影响训练记录)。
+        不删外置指标文件: 文件按 train_id 命名, 训练记录仍可能引用它。
+        """
         key = keys.model_history
         txn = self.mdb.begin(write=True)
         data = txn.get(key)
@@ -692,7 +772,11 @@ class DataBase:
         txn.commit()
 
     def delete_project_records(self, project_name):
-        """删除项目下所有训练记录与模型记录。"""
+        """删除项目下所有训练记录与模型记录(级联清理外置指标文件)。"""
+        with self.mdb.begin(write=False) as txn:
+            raw = txn.get(keys.train_history)
+        recs = json.loads(raw.decode()) if raw else []
+        doomed = [r.get("id") for r in recs if r.get("project") == project_name]
         txn = self.mdb.begin(write=True)
         for key in (keys.train_history, keys.model_history):
             data = txn.get(key)
@@ -701,6 +785,8 @@ class DataBase:
             if len(new_recs) != len(recs):
                 txn.put(key, json.dumps(new_recs, ensure_ascii=False).encode())
         txn.commit()
+        for tid in doomed:
+            self.delete_train_metrics(tid)
 
     def dataset_in_records(self, project_name, dataset_name):
         """该数据集是否被训练记录引用(训练集或验证集任一出现)。
@@ -740,6 +826,7 @@ class DataBase:
 
     def remove_dataset_from_records(self, project_name, ds_name):
         """数据集删除时从训练/模型记录中移除该数据集;记录无任何引用则删除。"""
+        dropped = []
         txn = self.mdb.begin(write=True)
         for key in (keys.train_history, keys.model_history):
             data = txn.get(key)
@@ -750,7 +837,6 @@ class DataBase:
                 if r.get("project") != project_name:
                     new_recs.append(r)
                     continue
-                # 元素可能带空格("A/2, A/4"),须 strip 后再比
                 train_names = [x.strip() for x in str(r.get("dataset", "")).split(",") if x.strip()]
                 val_names = [x.strip() for x in str(r.get("val_dataset", "")).split(",") if x.strip()]
                 if not any(_ds_of(n) == ds_name for n in train_names + val_names):
@@ -760,9 +846,13 @@ class DataBase:
                 changed = True
                 if still_used:
                     new_recs.append(r)
+                elif key == keys.train_history:
+                    dropped.append(r.get("id"))
             if changed:
                 txn.put(key, json.dumps(new_recs, ensure_ascii=False).encode())
         txn.commit()
+        for tid in dropped:
+            self.delete_train_metrics(tid)
 
 
 if __name__ == '__main__':

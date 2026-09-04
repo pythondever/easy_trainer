@@ -659,7 +659,8 @@ class TrainDialog(QDialog):
                 if hasattr(self.ui, "early_stop_line_txt") else "",
             "optimizer": self.ui.optimizer_comboBox.currentText()
                 if hasattr(self.ui, "optimizer_comboBox") else "",
-            "metrics": {},   # 训练中实时更新：{"epochs": [...], "series": {名称: [...]}}
+            "metrics_file": "",   # 指标外置为 metrics/<id>.json, 记录里只留文件名
+            "metrics_epochs": 0,
             "labels": self._collect_dataset_labels(ds_pairs),
             "device": self._device(),
         }

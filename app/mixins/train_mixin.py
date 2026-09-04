@@ -33,6 +33,9 @@ except ImportError:
 
 class TrainMixin(object):
     _nvml_state = None
+    METRICS_SAVE_INTERVAL = 10.0
+    _pending_metrics = None
+    _metrics_saved_ts = 0.0
 
     def is_training(self):
         return (self._train_worker is not None
@@ -53,6 +56,8 @@ class TrainMixin(object):
         self._train_start_ts = time.time()
         self._eta_total_epochs = int(config.get("epochs", 0))
         self._latest_map50 = None
+        self._pending_metrics = None
+        self._metrics_saved_ts = 0.0   # 0 = 首次指标立即落盘
         self._apply_progress_format()
         if self._eta_total_epochs > 0:
             self._eta_remain = self._eta_total_epochs * 300
@@ -93,6 +98,7 @@ class TrainMixin(object):
         elif s.get("mAP@50"):
             self._latest_map50 = float(s["mAP@50"][-1])
             self._apply_progress_format()
+        self._pending_metrics = metrics
         if self._training_record_id:
             self.update_train_metrics(self._training_record_id, metrics)
 
@@ -130,24 +136,40 @@ class TrainMixin(object):
             project, datasets, epoch, total),
             epoch * 100.0 / total if total else 0)
 
-    def update_train_metrics(self, record_id, metrics):
+    def update_train_metrics(self, record_id, metrics, force=False):
+        """指标写入 metrics/<id>.json, 记录里只留文件名 + 摘要, 不存全量曲线。"""
+        if not force and time.time() - self._metrics_saved_ts < self.METRICS_SAVE_INTERVAL:
+            return
+        self._metrics_saved_ts = time.time()
         for r in self.db.get_train_records():
             if r.get("id") == record_id:
-                r["metrics"] = metrics
+                r.pop("metrics", None)
+                r["metrics_file"] = self.db.save_train_metrics(record_id, metrics)
                 s = metrics.get("series", {})
                 if s.get("mAP@50"):
                     r["map50"] = "{:.3f}".format(float(s["mAP@50"][-1]))
                 if s.get("accuracy"):
                     r["accuracy"] = "{:.4f}".format(float(s["accuracy"][-1]))
+                r["metrics_epochs"] = len(metrics.get("epochs") or [])
                 self.db.update_train_record(r)
-                write_log("更新训练指标: record={} epochs={} mAP@50={} map50={} acc={} per_class={}".format(
-                    record_id[:8], metrics.get("epochs"),
-                    s.get("mAP@50"), r.get("map50"), r.get("accuracy"),
-                    list(metrics.get("per_class", {}).keys())))
+                write_log("更新训练指标: record={} 已完成epoch={} map50={} acc={} 类别数={}".format(
+                    record_id[:8], r.get("metrics_epochs"),
+                    r.get("map50"), r.get("accuracy"),
+                    len(metrics.get("per_class", {}))))
                 return
+
+    def _flush_train_metrics(self, record_id):
+        """训练结束/失败时补写最后一次指标(节流可能吞掉它)。"""
+        if self._pending_metrics is None:
+            return
+        metrics = self._pending_metrics
+        self._pending_metrics = None
+        self.update_train_metrics(record_id, metrics, force=True)
 
     def on_train_finished(self, record_id, result):
         self._hide_train_task()
+        if record_id:
+            self._flush_train_metrics(record_id)
         recs = self.db.get_train_records()
         for r in recs:
             if r.get("id") == record_id:

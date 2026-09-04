@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""训练指标折线图对话框：从训练记录的 metrics 字段绘制。"""
+"""训练指标折线图对话框：指标来自 metrics/<train_id>.json，旧记录退回内嵌字段。"""
 
 import re
 
@@ -10,6 +10,8 @@ from matplotlib.figure import Figure
 from PySide6.QtCore import Qt, QEvent, QObject, QTimer
 from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel,
                                QComboBox)
+
+from app.core.db import load_train_metrics
 
 
 def _muted_style(size=13):
@@ -61,19 +63,16 @@ class MetricsDialog(QDialog):
     下拉默认"全部指标"(overall series),选标签后显示该标签的 per-class 曲线。
     """
 
-    def __init__(self, record, parent=None):
+    def __init__(self, record, db=None, parent=None):
         super().__init__(parent)
-        # 关闭即销毁: 临时对象 .exec() 无引用持有, 不加此属性会导致
-        # C++ 对象(含 Figure)随 parent 常驻泄漏
         self.setAttribute(Qt.WA_DeleteOnClose)
         self.setWindowTitle("训练指标")
-        # 支持最小化/最大化(默认 dialog 只有关闭按钮)
         self.setWindowFlags(
             self.windowFlags() | Qt.WindowMinimizeButtonHint
             | Qt.WindowMaximizeButtonHint)
         self.resize(760, 520)
         self._record = record
-        metrics = record.get("metrics") or {}
+        metrics = load_train_metrics(record, getattr(db, "db_path", None))
         self._epochs = metrics.get("epochs") or []
         self._series = metrics.get("series") or {}
         self._per_class = metrics.get("per_class") or {}

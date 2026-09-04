@@ -195,17 +195,17 @@ class ModelDialog(QDialog):
                 else:
                     item = QTableWidgetItem(text)
                 item.setTextAlignment(Qt.AlignCenter)
-                # 模型精度: ≥0.85 绿, 0.6~0.85 蓝白, <0.6 橙;无法解析保持默认
+                # 模型精度: ≥0.8 绿, 0.5~0.8 黄, <0.5 红; 无法解析保持默认
                 if j == 5 and metric_val:
                     try:
                         v_num = float(metric_val)
-                        if v_num >= 0.85:
+                        if v_num >= 0.8:
                             item.setForeground(QColor("#7be39a"))
-                        elif v_num >= 0.6:
-                            item.setForeground(QColor("#e8eaf0"))
+                        elif v_num >= 0.5:
+                            item.setForeground(QColor("#ffd166"))
                         else:
-                            item.setForeground(QColor("#ffb46b"))
-                        item.setToolTip("高 ≥0.85 绿 / 中 0.6~0.85 白 / 低 <0.6 橙")
+                            item.setForeground(QColor("#ff6b6b"))
+                        item.setToolTip("高 ≥0.8 绿 / 中 0.5~0.8 黄 / 低 <0.5 红")
                     except (TypeError, ValueError):
                         pass
                 t.setItem(i, j, item)
@@ -285,7 +285,7 @@ class ModelDialog(QDialog):
 
     def _show_metrics(self, record):
         try:
-            MetricsDialog(record, self).exec()
+            MetricsDialog(record, self.app.db, self).exec()
         except Exception as e:
             print("[model_dialog] 打开指标失败: {}\n{}".format(
                 e, traceback.format_exc()), flush=True)
