@@ -308,7 +308,14 @@ class DatasetViewMixin(object):
         deleted = getattr(dlg, "_deleted_labels", [])
         if deleted:
             self._apply_deleted_labels(proj, ds, deleted)
-        self._refresh_dataset_labels(proj, ds, rescan=True)
+        modified = getattr(dlg, "_modified_paths", set()) or set()
+        if not changes and not deleted and not modified:
+            # 会话无任何改动: 缓存/db/文件均未变化, 收尾全跳过(9w 图省一次全量重建)
+            return
+        # 只重读本会话真正写过 json 的图(框增删改); 整标签删除/类别修改已由
+        # _apply_* 就地同步, 无框改动时无需读 json, 仅统一重建分组与 db 计数。
+        self._refresh_dataset_labels(proj, ds, rescan=bool(modified),
+                                     only_paths=modified or None)
         self._refresh_label_filter(proj, ds)
         self._refresh_dataset_stats(proj, ds)
         if self.current_label:
@@ -452,13 +459,16 @@ class DatasetViewMixin(object):
                 index["labels"].setdefault(label, []).append(rec)
         return index
 
-    def _refresh_dataset_labels(self, project_name, dataset_name, rescan=False):
+    def _refresh_dataset_labels(self, project_name, dataset_name, rescan=False,
+                                only_paths=None):
         """
         重建缓存中的 labels 索引。
         rescan=False(导入/载入完成): 缓存 rec 刚由后台扫描生成, labels/boxes
           已是最新, 跳过逐图 json 重读, 只做归一化与索引重建(纯内存, 万级图不卡)。
-        rescan=True(标注后): 对每张图读同路径 labelme json 获取最新标注标签
+        rescan=True(标注后): 逐图读同路径 labelme json 获取最新标注标签
           (无 json 保留导入时的 labels), 再重建 labels 分组索引写回 dataset_cache。
+          only_paths 提供时只重读这些图(标注会话真正改过的 json), 避免 9w 图
+          每次关标注全量重扫; 不提供时保持全量语义。
           轻量操作: 只读 json, 不重新生成缩略图, 不扫描目录树。
         """
         proj_cache = self.dataset_cache.get(project_name, {})
@@ -468,6 +478,8 @@ class DatasetViewMixin(object):
         if rescan:
             for rec in index.get("all", []):
                 img_path = rec.get("image_path", "")
+                if only_paths is not None and img_path not in only_paths:
+                    continue
                 base, _ = os.path.splitext(img_path)
                 json_path = base + ".json"
                 if os.path.exists(json_path):

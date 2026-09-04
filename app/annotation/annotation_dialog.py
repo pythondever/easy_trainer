@@ -598,6 +598,7 @@ class AnnotationDialog(QDialog):
         self.scene = None
         self._label_buttons = {}
         self._dirty = False
+        self._modified_paths = set()   # 本次会话真正写过 json 的图路径(主界面据此增量重扫)
         self.label_colors = dict(self.db.get_dataset_labels(project, dataset))
 
         self.ui = AnnotationUI()
@@ -1524,6 +1525,7 @@ class AnnotationDialog(QDialog):
             save_labelme(image_path, shapes, width=img_w, height=img_h)
         else:
             save_labelme(image_path, [], width=img_w, height=img_h)
+        self._modified_paths.add(image_path)
         self._dirty = False
 
 
