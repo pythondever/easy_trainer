@@ -34,10 +34,6 @@ class App(QWidget, MainUI, LabelMixin, ProjectMixin, ImportExportMixin,
             self.db.migrate_model_records()
         except Exception:
             pass
-        try:
-            self.db.migrate_metrics_to_files()
-        except Exception:
-            pass
         self.dataset_cache = {}
         self._loading_tasks = {}
         self.page_size = 50  # 每页图像记录数

@@ -88,31 +88,6 @@ class DataBase:
         except OSError:
             pass
 
-    def migrate_metrics_to_files(self):
-        """一次性迁移: 旧记录内嵌的 metrics 落到 metrics/ 目录, 清掉内嵌字段(幂等)。"""
-        updated = {}
-        for key in (keys.train_history, keys.model_history):
-            with self.mdb.begin(write=False) as txn:
-                raw = txn.get(key)
-            recs = json.loads(raw.decode()) if raw else []
-            dirty = False
-            for r in recs:
-                if not r.get("metrics") or r.get("metrics_file"):
-                    continue
-                # model 记录复用 train 记录的文件名, 两者共享同一份指标
-                tid = r.get("train_id") or r.get("id")
-                r["metrics_file"] = self.save_train_metrics(tid, r["metrics"])
-                del r["metrics"]
-                dirty = True
-            if dirty:
-                updated[key] = recs
-        if not updated:
-            return 0
-        with self.mdb.begin(write=True) as txn:
-            for key, recs in updated.items():
-                txn.put(key, json.dumps(recs, ensure_ascii=False).encode())
-        return len(updated)
-
     def add_project(self, name):
         key = keys.project_list
         txn = self.mdb.begin(write=True)
