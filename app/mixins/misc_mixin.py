@@ -9,6 +9,7 @@ from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from app.widgets.charts import render_label_chart
 from app.widgets.log_dialog import LogDialog
 from app.widgets.model_dialog import ModelDialog
+from app.widgets.queue_dialog import TrainQueueDialog
 from app.train.dialogs import TrainDialog, _ClickToPopupFilter
 from ui.dataset_properties import Ui_Dialog as DatasetPropertiesUI
 from app.widgets.message_box import MessageBox
@@ -51,6 +52,17 @@ class MiscMixin(object):
         md = ModelDialog(app=self, project="", dataset="", parent=self)
         md.exec()
         md.deleteLater()
+
+    def _on_queue_clicked(self):
+        """非模态队列面板：关闭只是隐藏，队列继续在后台跑。"""
+        dlg = getattr(self, "_queue_dialog", None)
+        if dlg is None:
+            dlg = TrainQueueDialog(self, parent=self)
+            self._queue_dialog = dlg
+        dlg.refresh()
+        dlg.show()
+        dlg.raise_()
+        dlg.activateWindow()
 
     def _on_train_clicked(self):
         dlg = TrainDialog(self)

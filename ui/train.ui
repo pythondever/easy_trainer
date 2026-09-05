@@ -730,6 +730,19 @@
             </widget>
           </item>
           <item>
+            <widget class="QPushButton" name="add_queue_btn">
+              <property name="minimumSize">
+                <size>
+                  <width>110</width>
+                  <height>38</height>
+                </size>
+              </property>
+              <property name="text">
+                <string>加入队列</string>
+              </property>
+            </widget>
+          </item>
+          <item>
             <widget class="QPushButton" name="start_train">
               <property name="minimumSize">
                 <size>

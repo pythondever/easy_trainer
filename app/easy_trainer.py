@@ -22,11 +22,11 @@ except ImportError:
     PILImage = None
 
 from app.mixins import (LabelMixin, ProjectMixin, ImportExportMixin,
-                        DatasetViewMixin, TrainMixin, MiscMixin)
+                        DatasetViewMixin, TrainMixin, QueueMixin, MiscMixin)
 
 
 class App(QWidget, MainUI, LabelMixin, ProjectMixin, ImportExportMixin,
-          DatasetViewMixin, TrainMixin, MiscMixin):
+          DatasetViewMixin, TrainMixin, QueueMixin, MiscMixin):
     def __init__(self):
         super().__init__()
         self.db = DataBase(os.path.join(os.path.expanduser("~"), ".easy_trainer"))
@@ -49,6 +49,8 @@ class App(QWidget, MainUI, LabelMixin, ProjectMixin, ImportExportMixin,
         self._log("软件退出")
         if self.is_training():
             self._log("软件退出前停止训练")
+            # 先停队列引擎,避免退出时弹出"仅停止当前/停止队列"选择框
+            self.stop_train_queue()
             self.stop_training(confirm=False)
         # 停止还在运行的测试线程,避免 QThread 崩溃
         for w in list(getattr(self, "_test_workers", set())):
@@ -179,6 +181,7 @@ class App(QWidget, MainUI, LabelMixin, ProjectMixin, ImportExportMixin,
         self.train_btn.clicked.connect(self._on_train_clicked)
         self.log_btn.clicked.connect(self._on_log_clicked)
         self.model_btn.clicked.connect(self._on_model_clicked)
+        self.queue_btn.clicked.connect(self._on_queue_clicked)
 
     def fill_setting(self):
         """启动时从 db 查询项目数据，显示到界面。"""

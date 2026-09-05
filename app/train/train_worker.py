@@ -19,11 +19,18 @@ from PySide6.QtCore import QThread, Signal
 
 from app.core.utils import read_text_any
 
+try:
+    import psutil
+except ImportError:
+    psutil = None
+
 WORKSPACE = os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__))))
 TRAIN_RUNNER = os.path.join(WORKSPACE, "app", "train", "train_runner.py")
 CLASSIFY_TRAIN_RUNNER = os.path.join(WORKSPACE, "app", "train",
                                      "classify_train_runner.py")
+# 判定一个 epoch 是否已产出指标(val 有了、或 train 行到了)的列
+_EPOCH_KEYS = ("val/mAP_50", "val/segm_mAP_50", "val/loss", "train/loss")
 
 CSV_POLL_INTERVAL = 5   # 定时检查 metrics.csv 修改时间的间隔(秒)
 LOG_FLUSH_SECS = 0.1
@@ -58,17 +65,54 @@ class TrainWorker(QThread):
         self._stop_flag = False
 
     def stop(self):
-        """请求停止：终止子进程。"""
+        """请求停止：终止子进程及其孙进程。
+
+        只 kill 直接子进程不够：rf-detr 的 dataloader(num_workers>0) 会 fork
+        孙进程，主进程被杀后它们变孤儿继续占显存，下一个训练会直接 OOM。
+        """
         self._stop_flag = True
-        if self._proc is not None and self._proc.poll() is None:
+        proc = self._proc
+        if proc is None or proc.poll() is not None:
+            return
+        if psutil is not None:
             try:
-                self._proc.terminate()
+                parent = psutil.Process(proc.pid)
+                children = parent.children(recursive=True)
+                for child in children:
+                    try:
+                        child.kill()
+                    except Exception:
+                        pass
+                try:
+                    parent.kill()
+                except Exception:
+                    pass
+                gone, _alive = psutil.wait_procs(children + [parent], timeout=5)
+                return
             except Exception:
                 pass
+        try:
+            proc.terminate()
+        except Exception:
+            pass
+        try:
+            proc.kill()
+        except Exception:
+            pass
+
+    def proc_exited(self):
+        """子进程是否已退出（队列据此判断显存是否可回收）。"""
+        proc = self._proc
+        if proc is None:
+            return True
+        if proc.poll() is not None:
+            return True
+        if psutil is not None:
             try:
-                self._proc.kill()
+                return not psutil.pid_exists(proc.pid)
             except Exception:
-                pass
+                return True
+        return False
 
     @staticmethod
     def _row_map(row):
@@ -276,43 +320,80 @@ class TrainWorker(QThread):
         csv_path = os.path.join(self._config["timestamp_dir"], "metrics.csv")
         last_mtime = 0.0
         last_poll = 0.0
-        csv_rows_read = 0        # 已消费的 CSV 行数, 供增量读跳过
+        csv_seen = set()         # 已由 CSV 写入过的 epoch(区分 stdout 预热表占的位)
 
-        def _read_new_epochs():
+        def _sync_csv():
             """
-            读 CSV 中新增的含 val 指标行(按 epoch 去重)。只解析上次之后新增的行
+            把 CSV 全量重解析并幂等写进 series, 返回是否有变化。
+
+            rf-detr 每个 epoch 会写多行(中间步的 lr 行、val 行、train 行), 且
+            写入时间分散。若只解析"上次之后的新增行", 同一 epoch 的行一旦跨了
+            轮询批次, 迟到的 train/loss 就再也补不进去(train_loss 隔帧为 None)。
+            全量重解析让每轮的合并结果只取决于 CSV 内容, 与批次边界无关。
             """
-            nonlocal last_mtime, csv_rows_read
+            nonlocal last_mtime
             if not os.path.exists(csv_path):
-                return []
+                return False
             mtime = os.path.getmtime(csv_path)
-            if mtime <= last_mtime and csv_rows_read:
-                return []
+            if mtime <= last_mtime and series.get("epochs"):
+                return False
             try:
                 text = read_text_any(csv_path)
             except OSError:
-                return []
+                return False
+            # 文件正被写入(末行不完整)时跳过, 下次轮询再解析
             if text and not text.endswith("\n"):
-                return []
+                return False
             last_mtime = mtime
             try:
                 rows = list(csv.DictReader(io.StringIO(text)))
             except Exception:
-                return []
-            if len(rows) <= csv_rows_read:
-                return []
-            new_rows = rows[csv_rows_read:]
-            csv_rows_read = len(rows)
+                return False
             by_epoch = {}
-            for r in new_rows:
-                has_box = r.get("val/mAP_50", "") not in (None, "")
-                has_mask = r.get("val/segm_mAP_50", "") not in (None, "")
-                if not (has_box or has_mask):
+            for r in rows:
+                try:
+                    ep = int(r.get("epoch", 0))
+                except (TypeError, ValueError):
                     continue
-                ep = int(r.get("epoch", 0))
-                by_epoch[ep] = r
-            return [by_epoch[ep] for ep in sorted(by_epoch)
-                    if self._should_apply(series, ep + 1, by_epoch[ep])]
+                merged = by_epoch.setdefault(ep, {})
+                for k, v in r.items():
+                    if v not in (None, ""):
+                        merged[k] = v
+            changed = False
+            max_ep = 0
+            eps = series.setdefault("epochs", [])
+            for ep in sorted(by_epoch):
+                row = by_epoch[ep]
+                gui_ep = ep + 1
+                if gui_ep in csv_seen:
+                    # 本 epoch 已由 CSV 写入过: 只补行内新出现的键(如迟到的
+                    # train/loss)。_write_row 只写 row 里存在的键。
+                    idx = eps.index(gui_ep)
+                    prev = series.get("train_loss") or []
+                    if (row.get("train/loss") not in (None, "")
+                            and (idx >= len(prev) or prev[idx] is None)):
+                        self._write_row(series, per_class, idx, row)
+                        changed = True
+                elif not any(row.get(k) not in (None, "") for k in _EPOCH_KEYS):
+                    # 只有 lr 的步进行: 该 epoch 还没跑完, 不建条目(否则曲线尾部
+                    # 会多一个全空点)
+                    continue
+                else:
+                    # 新 epoch, 或该位置的值来自 stdout 的预热表: CSV 才是真值,
+                    # 直接覆盖(stdout 预热表的 mAP 非 0 时会挡住真实 val 值)。
+                    if gui_ep in eps:
+                        idx = eps.index(gui_ep)
+                    else:
+                        epochs.append(gui_ep)
+                        eps.append(gui_ep)
+                        idx = len(eps) - 1
+                    self._write_row(series, per_class, idx, row)
+                    csv_seen.add(gui_ep)
+                    changed = True
+                max_ep = max(max_ep, gui_ep)
+            if changed and max_ep:
+                self.progress.emit(max_ep, self._config["epochs"])
+            return changed
 
         def _poll_csv():
             """每 CSV_POLL_INTERVAL 秒检查一次 metrics.csv，变了就累积新 epoch 并 emit。"""
@@ -321,13 +402,8 @@ class TrainWorker(QThread):
             if now - last_poll < CSV_POLL_INTERVAL:
                 return
             last_poll = now
-            rows = _read_new_epochs()
-            if not rows:
+            if not _sync_csv():
                 return
-            for r in rows:
-                self._accumulate(epochs, series, per_class, r)
-                self.progress.emit(int(r.get("epoch", 0)) + 1,
-                                   self._config["epochs"])
             self.metrics.emit(self._build_payload(series, per_class))
 
         cls_mode = self._config.get("task") == "classify"

@@ -214,6 +214,11 @@ class Ui_AppUI(object):
 
         self.datasetHeaderLayout.addWidget(self.model_btn)
 
+        self.queue_btn = QPushButton(self.datasetHeader)
+        self.queue_btn.setObjectName(u"queue_btn")
+
+        self.datasetHeaderLayout.addWidget(self.queue_btn)
+
         self.log_btn = QPushButton(self.datasetHeader)
         self.log_btn.setObjectName(u"log_btn")
 
@@ -302,6 +307,7 @@ class Ui_AppUI(object):
         self.dataset_properties_btn.setText(QCoreApplication.translate("AppUI", u"\u7edf\u8ba1", None))
         self.train_btn.setText(QCoreApplication.translate("AppUI", u"\u8bad\u7ec3", None))
         self.model_btn.setText(QCoreApplication.translate("AppUI", u"\u6a21\u578b", None))
+        self.queue_btn.setText(QCoreApplication.translate("AppUI", u"\u961f\u5217", None))
         self.log_btn.setText(QCoreApplication.translate("AppUI", u"\u65e5\u5fd7", None))
         self.pageInfoLabel.setText(QCoreApplication.translate("AppUI", u"0 / 0", None))
         self.pre_page_btn.setText(QCoreApplication.translate("AppUI", u"\u4e0a\u4e00\u9875", None))

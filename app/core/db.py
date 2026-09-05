@@ -723,6 +723,28 @@ class DataBase:
         txn.put(key, json.dumps(recs, ensure_ascii=False).encode())
         txn.commit()
 
+    # ---------- 训练队列 ----------
+    def get_train_queue(self):
+        """队列项列表(按 order 升序)。损坏时返回空列表,不抛异常。"""
+        key = keys.train_queue
+        with self.mdb.begin(write=False) as txn:
+            data = txn.get(key)
+        if not data:
+            return []
+        try:
+            items = json.loads(data.decode())
+        except Exception:
+            return []
+        items = [it for it in items if isinstance(it, dict)]
+        items.sort(key=lambda it: int(it.get("order") or 0))
+        return items
+
+    def save_train_queue(self, items):
+        """整体覆盖队列(序列化在事务外,避免堵住其他写操作)。"""
+        blob = json.dumps(list(items), ensure_ascii=False).encode()
+        with self.mdb.begin(write=True) as txn:
+            txn.put(keys.train_queue, blob)
+
     # ---------- 训练/模型记录级联删除 ----------
     def migrate_model_records(self):
         """一次性迁移:train_history 中带模型的历史记录补录到 model_history(幂等)。"""

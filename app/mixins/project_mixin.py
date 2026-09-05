@@ -6,11 +6,10 @@ CURRENT_DIRECTORY = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WORKSPACE_DIRECTORY = os.path.dirname(CURRENT_DIRECTORY)
 sys.path.append(WORKSPACE_DIRECTORY)
 sys.path.append(os.path.join(WORKSPACE_DIRECTORY, 'ui'))
-from ui.enter_name import Ui_Dialog as EnterNameUI
-from ui.add_dataset import Ui_AddDatasets
 from app.core.label_utils import label_sort_key
 from app.widgets.dialog_buttons import apply_icon, add_ok_cancel
 from app.widgets.message_box import MessageBox
+from app.widgets.name_input_dialog import NameInputDialog
 from app.widgets.project_sidebar import ProjectSidebar
 from PySide6.QtGui import QIcon, QFont, QPixmap, QColor
 from PySide6.QtCore import Qt, QSize
@@ -30,24 +29,12 @@ except ImportError:
 
 
 class ProjectMixin(object):
-    def _show_enter_name(self, preset=""):
-        """弹出项目名称输入框。返回(name, ok);ok=False 表示用户取消。"""
-        dlg = QDialog(self)
-        dlg.setWindowTitle("项目名称")
-        ui = EnterNameUI()
-        ui.setupUi(dlg)
-        if preset:
-            ui.project_name_txt.setText(preset)
-            ui.project_name_txt.selectAll()
-        ui.enter_name_lbl.setVisible(False)
-        apply_icon(ui.done_enter_name_btn, "确定")
-        ui.done_enter_name_btn.clicked.connect(dlg.accept)
-        dlg.exec()
-        name = ui.project_name_txt.text().strip()
-        return name, dlg.result() == QDialog.Accepted
+    def _show_enter_name(self, preset="", title="输入名称", placeholder="项目名称"):
+        return NameInputDialog.get_name(self, title=title, preset=preset,
+                                        placeholder=placeholder)
 
     def add_project(self):
-        name, ok = self._show_enter_name()
+        name, ok = self._show_enter_name(title="创建项目")
         if not ok or not name:
             return
         if name in self.db.get_projects():
@@ -58,7 +45,7 @@ class ProjectMixin(object):
         self.refresh_project_list()
 
     def _rename_project(self, old_name):
-        new_name, ok = self._show_enter_name(preset=old_name)
+        new_name, ok = self._show_enter_name(preset=old_name, title="修改名称")
         if not ok or not new_name or new_name == old_name:
             return
         if new_name in self.db.get_projects():
@@ -150,27 +137,8 @@ class ProjectMixin(object):
             self._delete_dataset(project, dataset)
 
     def _show_add_dataset(self, preset_name="", title="添加数据集"):
-        """
-        弹出数据集对话框(ui/add_dataset.py 设计器生成)。
-        数据集不再区分类型,隐藏类型下拉;返回(name, ok)。
-        """
-        dlg = QDialog(self)
-        ui = Ui_AddDatasets()
-        ui.setupUi(dlg)
-        dlg.setWindowTitle(title)
-        if preset_name:
-            ui.lineEdit.setText(preset_name)
-            ui.lineEdit.selectAll()
-        # 类型已废弃:隐藏类型下拉
-        combo = getattr(ui, "comboBox", None)
-        if combo is not None:
-            combo.setVisible(False)
-        apply_icon(ui.done_btn, "确定")
-        ui.done_btn.clicked.connect(dlg.accept)
-        dlg.setFixedHeight(dlg.sizeHint().height())
-        dlg.exec()
-        name = ui.lineEdit.text().strip()
-        return name, dlg.result() == QDialog.Accepted
+        return NameInputDialog.get_name(self, title=title, preset=preset_name,
+                                        placeholder="数据集名称")
 
     def _add_dataset(self, project_name):
         name, ok = self._show_add_dataset()

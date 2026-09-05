@@ -710,7 +710,11 @@ QPushButton#done_btn:pressed {
 #AnnotationDialog QMenu::item:disabled { color: #555b68; }
 
 /* ================ 训练对话框 ================ */
-QDialog#TrainDialog { background-color: #1c1e25; }
+QDialog#TrainDialog,
+QDialog#TrainQueueDialog { background-color: #1c1e25; }
+
+/* 队列面板:状态徽标跟随队列状态变色 */
+QDialog#TrainQueueDialog QLabel#queue_badge { color: #8b93a5; }
 
 /* 面板内控件比对话框底亮一档(#1c1e25 → #2a2e38)，聚焦只换边框色不改变盒子尺寸 */
 QDialog#TrainDialog QLineEdit,

@@ -245,7 +245,8 @@ class TestDialog(QDialog):
         metric = rec.get("map50") or rec.get("accuracy") or ""
         if metric:
             try:
-                label = "准确率" if rec.get("task") == "classify" else "mAP50"
+                label = {"classify": "准确率",
+                         "segment": "mask mAP50"}.get(rec.get("task"), "mAP50")
                 meta.append("{} {:.3f}".format(label, float(metric)))
             except (TypeError, ValueError):
                 pass

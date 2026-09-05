@@ -28,6 +28,180 @@ except ImportError:
 CONTROL_H = 36
 
 
+def collect_dataset_labels(db, ds_pairs):
+    """勾选数据集的标签并集(跨项目,训练启动时已知,指标界面下拉无需等验证)。"""
+    labels = set()
+    for proj, name in ds_pairs:
+        try:
+            for lb in db.get_dataset_labels(proj, name):
+                labels.add(str(lb))
+        except Exception:
+            pass
+    return sorted(labels)
+
+
+def make_train_record(config, db, project_fallback=""):
+    """按 config 组装训练记录(供训练界面回填)；不落库，调用方在启动成功后写入。
+
+    与 TrainDialog 解耦：队列出队时没有对话框实例，也走这个函数。
+    """
+    ds_pairs = [(d["project"], d["dataset_name"]) for d in config["datasets"]
+                if d.get("split") == "train"]
+    val_pairs = [(d["project"], d["dataset_name"]) for d in config["datasets"]
+                 if d.get("split") == "val"]
+    ds_names = ", ".join("{}/{}".format(p, d) for p, d in ds_pairs)
+    val_names = ", ".join("{}/{}".format(p, d) for p, d in val_pairs)
+    # dataset_info 包含训练集+验证集," / " 分隔两组;组内多个用逗号
+    dataset_info = (ds_names + " / " + val_names) if val_names else ds_names
+    first_proj = ds_pairs[0][0] if ds_pairs else project_fallback
+    return {
+        "id": str(uuid.uuid4()),
+        "project": first_proj,
+        "task": config.get("task", ""),
+        "dataset": ds_names,
+        "val_dataset": val_names,
+        "start_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "end_time": "",
+        "duration": "",
+        "model_size": config.get("model_size", ""),
+        "map50": "",
+        "img_size": config.get("img_size", ""),
+        "model_path": os.path.join(config.get("timestamp_dir", ""),
+                                   "checkpoint_best_regular.pth"),
+        "dataset_info": dataset_info,
+        "output_path": config.get("out_root", ""),
+        "epochs": config.get("epochs", ""),
+        "batch_size": config.get("batch_size", ""),
+        "lr": config.get("lr", ""),
+        "grad_accum": config.get("grad_accum", ""),
+        "num_workers": config.get("num_workers", ""),
+        "early_stop": config.get("early_stop", ""),
+        "optimizer": config.get("optimizer", ""),
+        "metrics_file": "",   # 指标外置为 metrics/<id>.json, 记录里只留文件名
+        "metrics_epochs": 0,
+        "labels": collect_dataset_labels(db, ds_pairs),
+        "device": config.get("device", ""),
+    }
+
+
+def params_to_record(params):
+    """队列项参数快照 → 训练对话框 preset_record 的字段格式(用于「编辑」回填)。"""
+    def _names(pairs):
+        return ", ".join("{}/{}".format(p[0], p[1]) for p in (pairs or []))
+    return {
+        "task": params.get("task", ""),
+        "dataset": _names(params.get("train_ds")),
+        "val_dataset": _names(params.get("val_ds")),
+        "epochs": params.get("epochs", ""),
+        "batch_size": params.get("batch_size", ""),
+        "lr": params.get("lr", ""),
+        "grad_accum": params.get("grad_accum", ""),
+        "num_workers": params.get("num_workers", ""),
+        "early_stop": params.get("early_stop", ""),
+        "img_size": params.get("img_size", ""),
+        "model_size": params.get("architecture", ""),
+        "device": params.get("device", ""),
+        "optimizer": params.get("optimizer", ""),
+        "output_path": params.get("out_root", ""),
+    }
+
+
+def check_dataset_imported(name, info):
+    """
+    校验数据集已导入且路径有效（防止未导入/加载中的数据集直接训练）。
+    分类数据集（fmt=="cls"）标签即子文件夹名,无需单独 label_path 目录，
+    所以跳过标签目录存在性检查。
+    """
+    img = info.get("image_path", "")
+    lab = info.get("label_path", "")
+    fmt = info.get("label_fmt", "")
+    if not img or not os.path.isdir(img):
+        raise ValueError(
+            "数据集「{}」尚未导入图像或路径无效，请先导入该数据集再训练".format(name))
+    if fmt == "cls":
+        return
+    if not lab or not os.path.isdir(lab):
+        raise ValueError(
+            "数据集「{}」尚未导入标签或路径无效，请先导入该数据集再训练".format(name))
+
+
+def make_train_config(db, params):
+    """把参数快照落盘成子进程配置。队列出队与开始训练共用同一条路径。
+
+    timestamp_dir 只在这里算一次：训练记录的 model_path 必须复用它，
+    否则两次调用跨秒会指向一个不存在的目录。
+    """
+    task = params.get("task") or "detect"
+    out_root = (params.get("out_root") or "").strip()
+    if not out_root:
+        raise ValueError("请先选择输出路径")
+    os.makedirs(out_root, exist_ok=True)
+    ts = timestamp_dir()
+    ts_dir = os.path.join(out_root, ts)
+    os.makedirs(ts_dir, exist_ok=True)
+    datasets = []
+    for split, pairs in (("train", params.get("train_ds") or []),
+                         ("val", params.get("val_ds") or [])):
+        for pair in pairs:
+            proj, name = pair[0], pair[1]
+            info = db.get_dataset_import(proj, name)
+            check_dataset_imported(name, info)
+            datasets.append({
+                "dataset_name": name, "project": proj, "split": split,
+                "image_path": info.get("image_path", ""),
+                "label_path": info.get("label_path", ""),
+                "fmt": info.get("label_fmt", "txt"),
+                "label_ids": db.get_dataset_label_ids(proj, name),
+            })
+    if not any(d["split"] == "train" for d in datasets):
+        raise ValueError("请至少选择一个训练集数据集")
+    if not any(d["split"] == "val" for d in datasets):
+        raise ValueError("请至少选择一个验证集数据集")
+    # model_size 保留界面可见值(nano/small),architecture 是 runner 实际用的名字
+    architecture = params.get("architecture") or "nano"
+    if task == "classify":
+        architecture = {
+            "nano": "resnet18", "small": "resnet34",
+            "medium": "resnet50", "large": "resnet101",
+        }.get(architecture, "resnet18")
+    config = {
+        "task": task,
+        "out_root": out_root,
+        "project": datasets[0]["project"],
+        "timestamp_dir": ts_dir,
+        "architecture": architecture,
+        "model_size": params.get("architecture") or "nano",
+        "device": params.get("device") or "",
+        "epochs": params.get("epochs", 100),
+        "batch_size": params.get("batch_size", 8),
+        "num_workers": params.get("num_workers", 8),
+        "optimizer": params.get("optimizer") or "adamw",
+        # 早停：>0 启用（值即 patience），<=0 禁用
+        "early_stop": params.get("early_stop", 20),
+        "lr": params.get("lr", 1e-4),
+        "img_size": params.get("img_size", 640),
+        "datasets": datasets,
+    }
+    # 分类不传梯度累积(runner 不消费该字段),检测/分割才传
+    if task != "classify":
+        config["grad_accum"] = params.get("grad_accum", 4)
+    cfg_path = os.path.join(ts_dir, "train_config.json")
+    with open(cfg_path, "w", encoding="utf-8") as f:
+        json.dump(config, f, ensure_ascii=False)
+    config["_cfg_path"] = cfg_path
+    return config
+
+
+def params_summary(params):
+    """队列项的一行摘要文本(任务/网络/数据集)。"""
+    task_text = {"detect": "检测", "segment": "分割", "classify": "分类"}.get(
+        params.get("task", ""), params.get("task", ""))
+    # 带项目名:不同项目下常有同名数据集(如 test1/train、test2/train)
+    names = ["{}/{}".format(p[0], p[1]) for p in (params.get("train_ds") or [])]
+    ds = ", ".join(names) if names else "未选数据集"
+    return "{} · {} · {}".format(task_text, params.get("architecture", ""), ds)
+
+
 class _TrainStartDialog(QDialog):
     """训练/测试启动提示：确认按钮带倒计时，5s 后自动确认；手动点击立即确认并停止计时。"""
 
@@ -127,6 +301,7 @@ class TrainDialog(QDialog):
         self._float_fields = []    # [(控件, 名称, 默认值, 是否必填)]
         self._combo_filters = []
         self._preset_record = preset_record
+        self.queue_edit_qid = None   # 队列面板「编辑」时回填用：保存即更新该队列项
         self._last_epochs_default = None
         self._last_lr_default = None
         self._last_img_default = None
@@ -221,6 +396,7 @@ class TrainDialog(QDialog):
 
     def _connect(self):
         self.ui.start_train.clicked.connect(self._on_start_train)
+        self.ui.add_queue_btn.clicked.connect(self._on_add_to_queue)
         self.ui.select_output_path_btn.clicked.connect(self._select_output_dir)
         apply_icon(self.ui.cancel_btn, "取消")
         self.ui.cancel_btn.clicked.connect(self.reject)
@@ -599,177 +775,79 @@ class TrainDialog(QDialog):
         if not ok:
             MessageBox.warning(self, "参数校验", msg)
             return
-        ds_pairs = self._selected_datasets()
-        val_pairs = self._selected_val_datasets()
-        ds_names = ", ".join("{}/{}".format(p, d) for p, d in ds_pairs)
-        val_names = ", ".join("{}/{}".format(p, d) for p, d in val_pairs)
-        write_log("开始训练: 任务类型={} 训练集={} 验证集={}".format(
-            self._task_text(), ds_names, val_names))
-        record = self._save_train_record()
-        # 全局启动(进度条/停止按钮在首页)
+        params = self.collect_train_params()
         try:
-            config = self._build_train_config()
-            if not self.app.start_training(config, record["id"]):
-                MessageBox.warning(self, "开始训练", "已有训练在进行中，请先停止!")
-                return
+            config = make_train_config(self.app.db, params)
         except Exception as exc:
+            # 落盘失败时不写训练记录,避免模型界面留下没有结果的空行
             MessageBox.critical(self, "训练启动失败", "{}\n\n{}".format(
                 exc, traceback.format_exc()))
             return
+        record = make_train_record(config, self.app.db, self.project)
+        self.app.db.add_train_record(record)
+        if not self.app.start_training(config, record["id"]):
+            self.app.db.delete_train_record(record["id"])
+            MessageBox.warning(self, "开始训练", "已有训练在进行中，请先停止!")
+            return
+        write_log("开始训练: 任务类型={} 训练集={} 验证集={}".format(
+            self._task_text(), record["dataset"], record["val_dataset"]))
         # 启动成功:立即关闭训练窗口 + 弹倒计时提示(5s 自动确认/点击立即确认)
         self.accept()
         _TrainStartDialog(parent=self).exec()
 
-    def _save_train_record(self):
-        """把本次训练的任务/数据集/参数记录到 db(供训练界面回填)。"""
-        ds_pairs = self._selected_datasets()
-        val_pairs = self._selected_val_datasets()
-        ds_names = ", ".join("{}/{}".format(p, d) for p, d in ds_pairs)
-        val_names = ", ".join("{}/{}".format(p, d) for p, d in val_pairs)
-        # dataset_info 包含训练集+验证集," / " 分隔两组;组内多个用逗号
-        dataset_info = (ds_names + " / " + val_names) if val_names else ds_names
-        first_proj = ds_pairs[0][0] if ds_pairs else self.project
-        record = {
-            "id": str(uuid.uuid4()),
-            "project": first_proj,
-            "task": self._task(),
-            "dataset": ds_names,
-            "val_dataset": val_names,
-            "start_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "end_time": "",
-            "duration": "",
-            "model_size": self.ui.network_combo.currentText()
-                if hasattr(self.ui, "network_combo") else "",
-            "map50": "",
-            "img_size": self._img_size(),
-            "model_path": self._predict_model_path(),
-            "dataset_info": dataset_info,
-            "output_path": self.ui.output_line_txt.text().strip(),
-            "epochs": self.param_int(self.ui.epochs_line_txt, 100)
-                if hasattr(self.ui, "epochs_line_txt") else "",
-            "batch_size": self.param_int(self.ui.batch_size_line_txt, 8)
-                if hasattr(self.ui, "batch_size_line_txt") else "",
-            "lr": self.param_float(self.ui.lr_line_txt, 1e-4)
-                if hasattr(self.ui, "lr_line_txt") else "",
-            "grad_accum": self.param_int(self.ui.grad_accum_line_txt, 4)
-                if hasattr(self.ui, "grad_accum_line_txt") else "",
-            "num_workers": self.param_int(self.ui.batch_size_line_txt_2, 4)
-                if hasattr(self.ui, "batch_size_line_txt_2") else "",
-            "early_stop": self.param_int(self.ui.early_stop_line_txt, 20)
-                if hasattr(self.ui, "early_stop_line_txt") else "",
-            "optimizer": self.ui.optimizer_comboBox.currentText()
-                if hasattr(self.ui, "optimizer_comboBox") else "",
-            "metrics_file": "",   # 指标外置为 metrics/<id>.json, 记录里只留文件名
-            "metrics_epochs": 0,
-            "labels": self._collect_dataset_labels(ds_pairs),
-            "device": self._device(),
-        }
-        self.app.db.add_train_record(record)
-        return record
-
-    def _collect_dataset_labels(self, ds_pairs):
-        """勾选数据集的标签并集(跨项目,训练启动时已知,指标界面下拉无需等验证)。"""
-        labels = set()
-        for proj, name in ds_pairs:
+    def _on_add_to_queue(self):
+        """把当前参数快照存入队列(不建目录、不启动训练)。"""
+        ok, msg = self._validate()
+        if not ok:
+            MessageBox.warning(self, "参数校验", msg)
+            return
+        params = self.collect_train_params()
+        if not params["out_root"]:
+            MessageBox.warning(self, "加入队列", "请先选择输出路径")
+            return
+        for proj, name in params["train_ds"] + params["val_ds"]:
+            info = self.app.db.get_dataset_import(proj, name)
             try:
-                for lb in self.app.db.get_dataset_labels(proj, name):
-                    labels.add(str(lb))
-            except Exception:
-                pass
-        return sorted(labels)
+                check_dataset_imported(name, info)
+            except ValueError as exc:
+                MessageBox.warning(self, "加入队列", str(exc))
+                return
+        if self.queue_edit_qid:
+            # 队列面板的「编辑」：保存即覆盖原队列项，不新增
+            if self.app.queue_update_params(self.queue_edit_qid, params):
+                MessageBox.information(self, "队列", "已更新该队列任务的参数")
+                self.accept()
+            return
+        try:
+            item = self.app.enqueue_train(params)
+        except Exception as exc:
+            MessageBox.critical(self, "加入队列失败", "{}".format(exc))
+            return
+        write_log("加入训练队列: {} | {}".format(item["name"], item["qid"]))
+        MessageBox.information(
+            self, "加入队列",
+            "已加入队列（第 {} 个），可在首页「队列」中查看或启动。".format(
+                item["order"] + 1))
+        self.accept()
 
-    def _predict_model_path(self):
-        """启动训练后 checkpoint_best_regular.pth 的路径（rfdetr 最佳常规模型，训练中即存在）。"""
-        out_root = self.ui.output_line_txt.text().strip()
-        if not out_root:
-            return ""
-        return os.path.join(out_root, timestamp_dir(), "checkpoint_best_regular.pth")
-
-    def _build_train_config(self):
-        """组装子进程训练配置并写入 config.json。"""
-        task = self._task()
-        out_root = self.ui.output_line_txt.text().strip()
-        if not out_root:
-            raise ValueError("请先选择输出路径")
-        os.makedirs(out_root, exist_ok=True)
-        ts = timestamp_dir()
-        ts_dir = os.path.join(out_root, ts)
-        os.makedirs(ts_dir, exist_ok=True)
-        datasets = []
-        for proj, name in self._selected_datasets():
-            info = self.app.db.get_dataset_import(proj, name)
-            self._check_dataset_imported(name, info)
-            datasets.append({
-                "dataset_name": name, "project": proj, "split": "train",
-                "image_path": info.get("image_path", ""),
-                "label_path": info.get("label_path", ""),
-                "fmt": info.get("label_fmt", "txt"),
-                "label_ids": self.app.db.get_dataset_label_ids(proj, name),
-            })
-        for proj, name in self._selected_val_datasets():
-            info = self.app.db.get_dataset_import(proj, name)
-            self._check_dataset_imported(name, info)
-            datasets.append({
-                "dataset_name": name, "project": proj, "split": "val",
-                "image_path": info.get("image_path", ""),
-                "label_path": info.get("label_path", ""),
-                "fmt": info.get("label_fmt", "txt"),
-                "label_ids": self.app.db.get_dataset_label_ids(proj, name),
-            })
-        if not any(d["split"] == "train" for d in datasets):
-            raise ValueError("请至少选择一个训练集数据集")
-        if not any(d["split"] == "val" for d in datasets):
-            raise ValueError("请至少选择一个验证集数据集")
-        architecture = self.ui.network_combo.currentText() or "nano"
-        if task == "classify":
-            # nano/small/medium/large → resnet18/34/50/101
-            architecture = {
-                "nano": "resnet18", "small": "resnet34",
-                "medium": "resnet50", "large": "resnet101",
-            }.get(architecture, "resnet18")
-        config = {
-            "task": task,
-            "out_root": out_root,
-            "project": datasets[0]["project"],
-            "timestamp_dir": ts_dir,
-            "architecture": architecture,
+    def collect_train_params(self):
+        """纯收集：只读 UI 与 db，不建目录、不落盘（入队与开始训练共用）。"""
+        return {
+            "task": self._task(),
+            "architecture": self.ui.network_combo.currentText() or "nano",
             "device": self._device(),
             "epochs": self.param_int(self.ui.epochs_line_txt, 100),
             "batch_size": self.param_int(self.ui.batch_size_line_txt, 8),
             "num_workers": self.param_int(self.ui.batch_size_line_txt_2, 8),
             "optimizer": self.ui.optimizer_comboBox.currentText() or "adamw",
-            # 早停：>0 启用（值即 patience），<=0 禁用
-            "early_stop": self.param_int(self.ui.early_stop_line_txt, 20),
             "lr": self.param_float(self.ui.lr_line_txt, 1e-4),
             "img_size": self._img_size(),
-            "datasets": datasets,
+            "early_stop": self.param_int(self.ui.early_stop_line_txt, 20),
+            "grad_accum": self.param_int(self.ui.grad_accum_line_txt, 4),
+            "out_root": self.ui.output_line_txt.text().strip(),
+            "train_ds": [list(x) for x in self._selected_datasets()],
+            "val_ds": [list(x) for x in self._selected_val_datasets()],
         }
-        # 分类不传梯度累积(runner 不消费该字段),检测/分割才传
-        if task != "classify":
-            config["grad_accum"] = self.param_int(self.ui.grad_accum_line_txt, 4)
-        cfg_path = os.path.join(ts_dir, "train_config.json")
-        with open(cfg_path, "w", encoding="utf-8") as f:
-            json.dump(config, f, ensure_ascii=False)
-        config["_cfg_path"] = cfg_path
-        return config
-
-    def _check_dataset_imported(self, name, info):
-        """
-        校验数据集已导入且路径有效（防止未导入/加载中的数据集直接训练）。
-        分类数据集（fmt=="cls"）标签即子文件夹名,无需单独 label_path 目录，
-        所以跳过标签目录存在性检查。
-        """
-        img = info.get("image_path", "")
-        lab = info.get("label_path", "")
-        fmt = info.get("label_fmt", "")
-        if not img or not os.path.isdir(img):
-            raise ValueError(
-                "数据集「{}」尚未导入图像或路径无效，请先导入该数据集再训练".format(name))
-        if fmt == "cls":
-            return
-        if not lab or not os.path.isdir(lab):
-            raise ValueError(
-                "数据集「{}」尚未导入标签或路径无效，请先导入该数据集再训练".format(name))
 
     def _img_size(self):
         edit = getattr(self.ui, "img_size_line_txt", None)

@@ -429,6 +429,13 @@
               </widget>
              </item>
              <item>
+              <widget class="QPushButton" name="queue_btn">
+               <property name="text">
+                <string>队列</string>
+               </property>
+              </widget>
+             </item>
+             <item>
               <widget class="QPushButton" name="log_btn">
                <property name="text">
                 <string>日志</string>

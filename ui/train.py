@@ -429,6 +429,12 @@ class Ui_TrainDialog(object):
 
         self.bottom_row.addWidget(self.cancel_btn)
 
+        self.add_queue_btn = QPushButton(TrainDialog)
+        self.add_queue_btn.setObjectName(u"add_queue_btn")
+        self.add_queue_btn.setMinimumSize(QSize(110, 38))
+
+        self.bottom_row.addWidget(self.add_queue_btn)
+
         self.start_train = QPushButton(TrainDialog)
         self.start_train.setObjectName(u"start_train")
         self.start_train.setMinimumSize(QSize(120, 38))
@@ -493,6 +499,7 @@ class Ui_TrainDialog(object):
         self.summary_text.setText(QCoreApplication.translate("TrainDialog", u"\u8bf7\u9009\u62e9\u8bad\u7ec3\u96c6\u4e0e\u9a8c\u8bc1\u96c6", None))
         self.summary_text.setProperty(u"class", QCoreApplication.translate("TrainDialog", u"summaryText", None))
         self.cancel_btn.setText(QCoreApplication.translate("TrainDialog", u"\u53d6\u6d88", None))
+        self.add_queue_btn.setText(QCoreApplication.translate("TrainDialog", u"\u52a0\u5165\u961f\u5217", None))
         self.start_train.setText(QCoreApplication.translate("TrainDialog", u"\u5f00\u59cb\u8bad\u7ec3", None))
     # retranslateUi
 

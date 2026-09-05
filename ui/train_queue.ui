@@ -1,0 +1,285 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<ui version="4.0">
+  <class>TrainQueueDialog</class>
+  <widget class="QDialog" name="TrainQueueDialog">
+    <property name="geometry">
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>900</width>
+        <height>600</height>
+      </rect>
+    </property>
+    <property name="windowTitle">
+      <string>训练队列</string>
+    </property>
+    <layout class="QVBoxLayout" name="mainLayout">
+      <property name="spacing">
+        <number>10</number>
+      </property>
+      <property name="leftMargin">
+        <number>24</number>
+      </property>
+      <property name="topMargin">
+        <number>20</number>
+      </property>
+      <property name="rightMargin">
+        <number>24</number>
+      </property>
+      <property name="bottomMargin">
+        <number>18</number>
+      </property>
+      <item>
+        <layout class="QHBoxLayout" name="title_row">
+          <property name="spacing">
+            <number>10</number>
+          </property>
+          <item>
+            <widget class="QLabel" name="title_label">
+              <property name="text">
+                <string>训练队列</string>
+              </property>
+              <property name="class" stdset="0">
+                <string>dialogTitle</string>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <widget class="QLabel" name="queue_badge">
+              <property name="text">
+                <string>空闲</string>
+              </property>
+              <property name="class" stdset="0">
+                <string>taskBadge</string>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <spacer name="title_spacer">
+              <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+                <size>
+                  <width>40</width>
+                  <height>20</height>
+                </size>
+              </property>
+            </spacer>
+          </item>
+        </layout>
+      </item>
+      <item>
+        <widget class="QTableWidget" name="queue_table">
+          <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+            </sizepolicy>
+          </property>
+          <attribute name="horizontalHeaderVisible">
+            <bool>true</bool>
+          </attribute>
+          <attribute name="verticalHeaderVisible">
+            <bool>false</bool>
+          </attribute>
+          <row>
+            <property name="text">
+              <string/>
+            </property>
+          </row>
+          <column>
+            <property name="text">
+              <string>#</string>
+            </property>
+          </column>
+          <column>
+            <property name="text">
+              <string>名称</string>
+            </property>
+          </column>
+          <column>
+            <property name="text">
+              <string>任务</string>
+            </property>
+          </column>
+          <column>
+            <property name="text">
+              <string>数据集</string>
+            </property>
+          </column>
+          <column>
+            <property name="text">
+              <string>网络</string>
+            </property>
+          </column>
+          <column>
+            <property name="text">
+              <string>轮次</string>
+            </property>
+          </column>
+          <column>
+            <property name="text">
+              <string>状态</string>
+            </property>
+          </column>
+        </widget>
+      </item>
+      <item>
+        <widget class="QFrame" name="summary_bar">
+          <property name="frameShape">
+            <enum>QFrame::NoFrame</enum>
+          </property>
+          <layout class="QHBoxLayout" name="summary_bar_layout">
+            <property name="spacing">
+              <number>8</number>
+            </property>
+            <property name="leftMargin">
+              <number>12</number>
+            </property>
+            <property name="topMargin">
+              <number>10</number>
+            </property>
+            <property name="rightMargin">
+              <number>12</number>
+            </property>
+            <property name="bottomMargin">
+              <number>10</number>
+            </property>
+            <item>
+              <widget class="QLabel" name="summary_icon">
+                <property name="text">
+                  <string>i</string>
+                </property>
+                <property name="class" stdset="0">
+                  <string>summaryIcon</string>
+                </property>
+              </widget>
+            </item>
+            <item>
+              <widget class="QLabel" name="summary_text">
+                <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                  </sizepolicy>
+                </property>
+                <property name="text">
+                  <string>队列为空，可在训练界面点「加入队列」添加任务</string>
+                </property>
+                <property name="class" stdset="0">
+                  <string>summaryText</string>
+                </property>
+                <property name="alignment">
+                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                </property>
+              </widget>
+            </item>
+          </layout>
+        </widget>
+      </item>
+      <item>
+        <widget class="QFrame" name="button_line">
+          <property name="frameShape">
+            <enum>QFrame::HLine</enum>
+          </property>
+          <property name="frameShadow">
+            <enum>QFrame::Sunken</enum>
+          </property>
+        </widget>
+      </item>
+      <item>
+        <layout class="QHBoxLayout" name="bottom_row">
+          <property name="spacing">
+            <number>8</number>
+          </property>
+          <item>
+            <widget class="QPushButton" name="move_up_btn">
+              <property name="text">
+                <string>上移</string>
+              </property>
+              <property name="class" stdset="0">
+                <string>ghost</string>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <widget class="QPushButton" name="move_down_btn">
+              <property name="text">
+                <string>下移</string>
+              </property>
+              <property name="class" stdset="0">
+                <string>ghost</string>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <widget class="QPushButton" name="remove_btn">
+              <property name="text">
+                <string>移除</string>
+              </property>
+              <property name="class" stdset="0">
+                <string>ghost</string>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <widget class="QPushButton" name="clear_done_btn">
+              <property name="text">
+                <string>清理已完成</string>
+              </property>
+              <property name="class" stdset="0">
+                <string>ghost</string>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <spacer name="bottom_spacer_left">
+              <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+                <size>
+                  <width>40</width>
+                  <height>20</height>
+                </size>
+              </property>
+            </spacer>
+          </item>
+          <item>
+            <widget class="QPushButton" name="edit_btn">
+              <property name="text">
+                <string>编辑</string>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <widget class="QPushButton" name="close_btn">
+              <property name="text">
+                <string>关闭</string>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <widget class="QPushButton" name="start_btn">
+              <property name="minimumSize">
+                <size>
+                  <width>120</width>
+                  <height>38</height>
+                </size>
+              </property>
+              <property name="text">
+                <string>开始队列</string>
+              </property>
+              <property name="class" stdset="0">
+                <string>primary</string>
+              </property>
+            </widget>
+          </item>
+        </layout>
+      </item>
+    </layout>
+  </widget>
+  <resources />
+  <connections />
+</ui>

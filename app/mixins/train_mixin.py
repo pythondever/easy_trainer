@@ -31,6 +31,20 @@ except ImportError:
     pynvml = None
 
 
+def _series_last(series, key):
+    """序列最后一个非空值; 全空返回 None(序列尾部常有补齐的 None 占位)。"""
+    for v in reversed(series.get(key) or []):
+        if v is not None:
+            return float(v)
+    return None
+
+
+def _main_map50(series):
+    """主 mAP@50: 分割任务取 mask_mAP@50, 框指标对分割虚高且无意义。"""
+    v = _series_last(series, "mask_mAP@50")
+    return v if v is not None else _series_last(series, "mAP@50")
+
+
 class TrainMixin(object):
     _nvml_state = None
     METRICS_SAVE_INTERVAL = 10.0
@@ -45,12 +59,17 @@ class TrainMixin(object):
         if self.is_training():
             return False
         self._training_record_id = record_id
+        self._train_settled = False
+        self._train_stopped = False
         self._train_worker = TrainWorker(config, self)
         self._train_worker.progress.connect(self._on_train_progress)
         self._train_worker.metrics.connect(self._on_train_metrics)
         self._train_worker.finished_ok.connect(self._on_train_done)
         self._train_worker.failed.connect(self._on_train_failed)
         self._train_worker.log.connect(self._on_train_log)
+        # 兜底: run() 的三个分支可能全不命中(rc=0 但没抓到 RESULT),
+        # 此时没有任何结果信号, 进度条与队列会永远卡住
+        self._train_worker.finished.connect(self._on_worker_thread_finished)
         self._show_train_task("{} 训练中 0/{}".format(
             config["project"], config["epochs"]), 0)
         self._train_start_ts = time.time()
@@ -66,18 +85,62 @@ class TrainMixin(object):
         self._train_worker.start()
         return True
 
-    def stop_training(self, confirm=True):
-        if confirm and not MessageBox.question(self, "停止训练", "确定要停止当前训练吗？"):
-            return
+    def kill_training_worker(self, timeout_ms=10000):
+        """杀掉训练进程树并等它真正退出，返回是否已退出。
+
+        孙进程(dataloader)没退干净就启动下一个任务会直接 OOM，
+        所以这里必须等，等不到就返回 False 让调用方放弃推进。
+        """
         w = self._train_worker
-        if w is not None:
-            w.stop()
-            w.wait(3000)
-            self._train_worker = None
-            self._log("手动停止训练: {}".format(self._training_record_id))
+        if w is None:
+            return True
+        w.stop()
+        w.wait(timeout_ms)
+        if w.isRunning():
+            return False
+        return True
+
+    def _on_worker_thread_finished(self):
+        """线程结束但没收到任何结果信号时的兜底收尾。"""
+        if getattr(self, "_train_settled", True):
+            return
+        rid = self._training_record_id
+        self._log("[train] 训练线程已结束但未返回结果，按失败收尾")
+        if rid:
+            self.on_train_finished(rid, None)
+
+    def stop_training(self, confirm=True):
+        """停止训练。队列激活时先问清范围，避免一次误操作停掉整夜的队列。"""
+        if not self.is_training():
+            self._hide_train_task()
+            return
+        queued = self.queue_is_running() and self.queue_pending_count() > 0
+        if queued:
+            choice = MessageBox.choose(
+                self, "停止训练", "当前正在跑训练队列，要停止到什么范围？",
+                [("仅停止当前", "primary"), ("停止队列", "danger"),
+                 ("取消", "normal")])
+            if choice is None or choice == "取消":
+                return
+            if choice == "停止队列":
+                self.stop_train_queue()
+        else:
+            if confirm and not MessageBox.question(
+                    self, "停止训练", "确定要停止当前训练吗？"):
+                return
+        self._train_stopped = True
+        exited = self.kill_training_worker()
         self._hide_train_task()
         rid = self._training_record_id
         self._training_record_id = None
+        self._train_worker = None
+        self._log("手动停止训练: {}".format(rid))
+        if not exited:
+            self._log("[train] 训练进程 10 秒内未退出，可能有子进程残留占用显存")
+            MessageBox.warning(
+                self, "停止训练",
+                "训练进程未能完全退出，可能仍有子进程占用显存。\n"
+                "建议稍等片刻再启动下一个任务。")
         if rid:
             self.on_train_finished(rid, None)
 
@@ -92,11 +155,13 @@ class TrainMixin(object):
     def _on_train_metrics(self, metrics):
         # 同步最新指标到进度条文本(分类->精度, 检测/分割→mAP@50)
         s = metrics.get("series", {})
-        if s.get("accuracy"):
-            self._latest_map50 = float(s["accuracy"][-1])
+        acc = _series_last(s, "accuracy")
+        m = _main_map50(s)
+        if acc is not None:
+            self._latest_map50 = acc
             self._apply_progress_format()
-        elif s.get("mAP@50"):
-            self._latest_map50 = float(s["mAP@50"][-1])
+        elif m is not None:
+            self._latest_map50 = m
             self._apply_progress_format()
         self._pending_metrics = metrics
         if self._training_record_id:
@@ -126,6 +191,10 @@ class TrainMixin(object):
             self.on_train_finished(rid, None)
         for line in detail.splitlines():
             self._log("[train] " + line)
+        # 队列运行时不弹模态框：无人值守时会一直等点击，整个队列停摆
+        if self.queue_is_running():
+            write_log("训练失败(队列模式，已跳过弹窗): {}".format(detail[:2000]))
+            return
         MessageBox.critical(self, "训练失败", "训练过程中发生错误，Err：\n\n{}".format(detail))
 
     def _on_train_log(self, line):
@@ -146,10 +215,12 @@ class TrainMixin(object):
                 r.pop("metrics", None)
                 r["metrics_file"] = self.db.save_train_metrics(record_id, metrics)
                 s = metrics.get("series", {})
-                if s.get("mAP@50"):
-                    r["map50"] = "{:.3f}".format(float(s["mAP@50"][-1]))
-                if s.get("accuracy"):
-                    r["accuracy"] = "{:.4f}".format(float(s["accuracy"][-1]))
+                m = _main_map50(s)
+                if m is not None:
+                    r["map50"] = "{:.3f}".format(m)
+                acc = _series_last(s, "accuracy")
+                if acc is not None:
+                    r["accuracy"] = "{:.4f}".format(acc)
                 r["metrics_epochs"] = len(metrics.get("epochs") or [])
                 self.db.update_train_record(r)
                 write_log("更新训练指标: record={} 已完成epoch={} map50={} acc={} 类别数={}".format(
@@ -167,6 +238,7 @@ class TrainMixin(object):
         self.update_train_metrics(record_id, metrics, force=True)
 
     def on_train_finished(self, record_id, result):
+        self._train_settled = True
         self._hide_train_task()
         if record_id:
             self._flush_train_metrics(record_id)
@@ -194,6 +266,10 @@ class TrainMixin(object):
                 if result and result.get("model_path"):
                     self._save_model_record(r)
                 break
+        stopped = bool(getattr(self, "_train_stopped", False))
+        self._train_stopped = False
+        if hasattr(self, "on_queue_train_finished"):
+            self.on_queue_train_finished(record_id, result, stopped=stopped)
 
     def _save_model_record(self, train_record):
         """把训练记录副本写入 model_history(独立 id,幂等,删除不影响训练参数)。"""
