@@ -50,6 +50,60 @@ def _make_model(architecture, task="detect"):
     return cls()
 
 
+def _find_metric_col(header, base, task):
+    """CSV 里同一指标有 ema / regular 两套列，优先 ema。
+
+    use_ema 时 BestModelCallback 按 val/ema_* 选 best（早停同理），
+    显示的精度必须跟它同源，否则数值和交付的 checkpoint 对不上。
+    """
+    seg = "segm_" if task == "segment" else ""
+    for name in ("val/ema_{}{}".format(seg, base),
+                 "val/{}{}".format(seg, base)):
+        if name in header:
+            return name
+    return None
+
+
+def _best_row_metrics(csv_path, task):
+    """取 best checkpoint 那一轮的 mAP，而不是 CSV 末行。
+
+    早停训练末轮通常已明显回落，用末行会让界面显示的精度远低于实际
+    交付的模型（实测末轮 0.459 / best 0.645）。
+    """
+    # CSV 是 lightning 用系统 ANSI 码页写的, 中文类别名下必须降级解码
+    text = read_text_any(csv_path)
+    lines = [l for l in text.splitlines() if l.strip()]
+    if len(lines) < 2:
+        return {}
+    header = lines[0].split(",")
+    rows = [dict(zip(header, ln.split(","))) for ln in lines[1:]]
+
+    def _num(row, col):
+        if not col:
+            return None
+        try:
+            return float(row.get(col, ""))
+        except (TypeError, ValueError):
+            return None
+
+    monitor = _find_metric_col(header, "mAP_50_95", task)
+    best, best_v = None, None
+    for r in rows:
+        v = _num(r, monitor)
+        if v is None:
+            continue
+        if best_v is None or v > best_v:
+            best, best_v = r, v
+    if best is None:
+        best = rows[-1]
+    out = {}
+    for key, base in (("map50", "mAP_50"), ("map50_95", "mAP_50_95")):
+        v = _num(best, _find_metric_col(header, base, task))
+        if v is not None:
+            out[key] = round(v, 4)
+    return out
+
+
 def main():
     cfg_path = sys.argv[1]
     with open(cfg_path, "r", encoding="utf-8") as f:
@@ -182,19 +236,7 @@ def main():
     csv_path = result["metrics_csv"]
     if os.path.exists(csv_path):
         try:
-            # CSV 是 lightning 用系统 ANSI 码页写的, 中文类别名下必须降级解码
-            lines = [l for l in read_text_any(csv_path).splitlines()
-                     if l.strip()]
-            if len(lines) > 1:
-                header = lines[0].split(",")
-                row = lines[-1].split(",")
-                d = dict(zip(header, row))
-                for k in ("map50", "map50_95", "map", "map50-95"):
-                    if k in d:
-                        try:
-                            result["map50"] = round(float(d[k]), 3)
-                        except ValueError:
-                            pass
+            result.update(_best_row_metrics(csv_path, task))
         except Exception:
             pass
     with open(os.path.join(ts_dir, "result.json"), "w", encoding="utf-8") as f:

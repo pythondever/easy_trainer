@@ -31,18 +31,25 @@ except ImportError:
     pynvml = None
 
 
-def _series_last(series, key):
-    """序列最后一个非空值; 全空返回 None(序列尾部常有补齐的 None 占位)。"""
-    for v in reversed(series.get(key) or []):
-        if v is not None:
-            return float(v)
-    return None
+def _series_best(series, key):
+    """全空返回 None: 序列尾部常有补齐的 None 占位。"""
+    vals = [float(v) for v in (series.get(key) or []) if v is not None]
+    return max(vals) if vals else None
 
 
 def _main_map50(series):
-    """主 mAP@50: 分割任务取 mask_mAP@50, 框指标对分割虚高且无意义。"""
-    v = _series_last(series, "mask_mAP@50")
-    return v if v is not None else _series_last(series, "mAP@50")
+    """优先 ema 列: rf-detr 按 ema 的 mAP@50-95 选 best checkpoint,
+    界面数字必须和交付的模型同源, 否则对不上。
+    """
+    # 按有无 mask 系列判定, 不能按键存在性回退: 旧分割记录没有 mask_ema 列
+    is_seg = bool(series.get("mask_mAP@50") or series.get("mask_ema_mAP@50"))
+    keys = ("mask_ema_mAP@50", "mask_mAP@50") if is_seg else ("ema_mAP@50",
+                                                              "mAP@50")
+    for key in keys:
+        v = _series_best(series, key)
+        if v is not None:
+            return v
+    return None
 
 
 class TrainMixin(object):
@@ -50,6 +57,8 @@ class TrainMixin(object):
     METRICS_SAVE_INTERVAL = 10.0
     _pending_metrics = None
     _metrics_saved_ts = 0.0
+    _best_map50 = None
+    _progress_tip = ""
 
     def is_training(self):
         return (self._train_worker is not None
@@ -74,14 +83,14 @@ class TrainMixin(object):
             config["project"], config["epochs"]), 0)
         self._train_start_ts = time.time()
         self._eta_total_epochs = int(config.get("epochs", 0))
-        self._latest_map50 = None
+        self._best_map50 = None
+        self._progress_tip = ""
         self._pending_metrics = None
         self._metrics_saved_ts = 0.0   # 0 = 首次指标立即落盘
         self._apply_progress_format()
         if self._eta_total_epochs > 0:
             self._eta_remain = self._eta_total_epochs * 300
             self._show_eta()
-        self.stop_train_btn.show()
         self._train_worker.start()
         return True
 
@@ -102,6 +111,10 @@ class TrainMixin(object):
 
     def _on_worker_thread_finished(self):
         """线程结束但没收到任何结果信号时的兜底收尾。"""
+        # 旧 worker 的 finished 可能在新任务启动后才送达(信号排队晚于冷却
+        # 定时器), 此时 _training_record_id 已被换掉, 收尾会误杀新任务
+        if self.sender() is not self._train_worker:
+            return
         if getattr(self, "_train_settled", True):
             return
         rid = self._training_record_id
@@ -153,21 +166,26 @@ class TrainMixin(object):
         self._update_eta(epoch, total)
 
     def _on_train_metrics(self, metrics):
-        # 同步最新指标到进度条文本(分类->精度, 检测/分割→mAP@50)
+        # 分类看准确率, 检测/分割看 mAP@50
         s = metrics.get("series", {})
-        acc = _series_last(s, "accuracy")
+        acc = _series_best(s, "accuracy")
         m = _main_map50(s)
         if acc is not None:
-            self._latest_map50 = acc
-            self._apply_progress_format()
+            self._best_map50 = acc
+            self._progress_tip = "进度 | 当前最好准确率"
         elif m is not None:
-            self._latest_map50 = m
+            self._best_map50 = m
+            self._progress_tip = "进度 | 当前最好 mAP@50"
+        if acc is not None or m is not None:
             self._apply_progress_format()
         self._pending_metrics = metrics
         if self._training_record_id:
             self.update_train_metrics(self._training_record_id, metrics)
 
     def _on_train_done(self, result):
+        # 防旧 worker 的迟到信号把新任务收掉(与 _on_worker_thread_finished 同因)
+        if self.sender() is not self._train_worker:
+            return
         rid = self._training_record_id
         self._hide_train_task()
         self._train_worker = None
@@ -183,6 +201,8 @@ class TrainMixin(object):
             self._training_record_id = None
 
     def _on_train_failed(self, detail):
+        if self.sender() is not self._train_worker:
+            return
         rid = self._training_record_id
         self._hide_train_task()
         self._training_record_id = None
@@ -218,7 +238,7 @@ class TrainMixin(object):
                 m = _main_map50(s)
                 if m is not None:
                     r["map50"] = "{:.3f}".format(m)
-                acc = _series_last(s, "accuracy")
+                acc = _series_best(s, "accuracy")
                 if acc is not None:
                     r["accuracy"] = "{:.4f}".format(acc)
                 r["metrics_epochs"] = len(metrics.get("epochs") or [])
@@ -290,6 +310,9 @@ class TrainMixin(object):
         self.train_progress.setValue(max(0, min(100, int(value))))
         self.task_name_label.show()
         self.train_progress.show()
+        # 停止按钮的 show/hide 必须与 _hide_train_task 对称且都在这一处:
+        # 每个 epoch 的进度回调都会走到这里, 任何一次误 hide 都能自愈
+        self.stop_train_btn.show()
         self.time_count_label.show()
         self.time_count_edit.show()
         self.gpu_memory_label.show()
@@ -305,10 +328,11 @@ class TrainMixin(object):
         self.train_progress.setValue(max(0, min(100, int(value))))
 
     def _apply_progress_format(self):
-        """进度条文本:`30% | 0.556` 进度 | 精度 """
-        m = self._latest_map50
+        """进度条文本:`30% | 0.556` 进度 | 当前最好精度 """
+        m = self._best_map50
         tail = "{:.3f}".format(m) if m is not None else "--"
         self.train_progress.setFormat("%p% | " + tail)
+        self.train_progress.setToolTip(self._progress_tip)
 
     def _hide_train_task(self):
         """训练结束/无训练任务时隐藏。"""

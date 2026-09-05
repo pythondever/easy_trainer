@@ -153,6 +153,8 @@ class TrainWorker(QThread):
                              ("ema_mAP@50-95", "val/ema_mAP_50_95"),
                              ("mask_mAP@50", "val/segm_mAP_50"),
                              ("mask_mAP@50-95", "val/segm_mAP_50_95"),
+                             ("mask_ema_mAP@50", "val/ema_segm_mAP_50"),
+                             ("mask_ema_mAP@50-95", "val/ema_segm_mAP_50_95"),
                              ("train_loss", "train/loss"),
                              ("val_loss", "val/loss")):
             if csv_key not in row:
