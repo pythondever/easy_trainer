@@ -26,6 +26,7 @@ except ImportError:
 
 # 弹窗输入类控件统一高度，与 style.qss 的 QDialog 规则（36）保持一致
 CONTROL_H = 36
+TASK_CN = {"detect": "检测", "segment": "分割", "classify": "分类"}
 
 
 def collect_dataset_labels(db, ds_pairs):
@@ -38,6 +39,11 @@ def collect_dataset_labels(db, ds_pairs):
         except Exception:
             pass
     return sorted(labels)
+
+
+# 各任务 best 权重的文件名: rf-detr 用 ema track, 分类 runner 只有单一 best
+BEST_CKPT = {"classify": "checkpoint_best.pth"}
+BEST_CKPT_DEFAULT = "checkpoint_best_ema.pth"
 
 
 def make_train_record(config, db, project_fallback=""):
@@ -66,8 +72,10 @@ def make_train_record(config, db, project_fallback=""):
         "model_size": config.get("model_size", ""),
         "map50": "",
         "img_size": config.get("img_size", ""),
-        "model_path": os.path.join(config.get("timestamp_dir", ""),
-                                   "checkpoint_best_regular.pth"),
+        # ema 优先: 与 runner 交付的 best 同源(regular 是另一条 track 的 best)
+        "model_path": os.path.join(
+            config.get("timestamp_dir", ""),
+            BEST_CKPT.get(config.get("task", ""), BEST_CKPT_DEFAULT)),
         "dataset_info": dataset_info,
         "output_path": config.get("out_root", ""),
         "epochs": config.get("epochs", ""),
@@ -125,6 +133,20 @@ def check_dataset_imported(name, info):
             "数据集「{}」尚未导入标签或路径无效，请先导入该数据集再训练".format(name))
 
 
+def _unique_ts_dir(out_root, ts):
+    """时间戳只到秒: 队列里上一个任务秒退时下一个会撞名, 两个训练的输出会互相覆盖。"""
+    path = os.path.join(out_root, ts)
+    if not os.path.isdir(path):
+        os.makedirs(path, exist_ok=True)
+        return path
+    i = 2
+    while os.path.isdir("{}_{}".format(path, i)):
+        i += 1
+    path = "{}_{}".format(path, i)
+    os.makedirs(path, exist_ok=True)
+    return path
+
+
 def make_train_config(db, params):
     """把参数快照落盘成子进程配置。队列出队与开始训练共用同一条路径。
 
@@ -136,9 +158,6 @@ def make_train_config(db, params):
     if not out_root:
         raise ValueError("请先选择输出路径")
     os.makedirs(out_root, exist_ok=True)
-    ts = timestamp_dir()
-    ts_dir = os.path.join(out_root, ts)
-    os.makedirs(ts_dir, exist_ok=True)
     datasets = []
     for split, pairs in (("train", params.get("train_ds") or []),
                          ("val", params.get("val_ds") or [])):
@@ -146,17 +165,29 @@ def make_train_config(db, params):
             proj, name = pair[0], pair[1]
             info = db.get_dataset_import(proj, name)
             check_dataset_imported(name, info)
+            fmt = info.get("label_fmt", "")
+            # 入队后数据集可能被重新导入成别的格式, 出队时再校验一次
+            # (队列可能挂着几个小时, 中间改了数据集这里才发现)
+            if task == "classify" and fmt != "cls":
+                raise ValueError(
+                    "数据集「{}/{}」不是分类数据集(标签格式={})，无法训练图像分类"
+                    .format(proj, name, fmt or "未知"))
+            if task != "classify" and fmt == "cls":
+                raise ValueError(
+                    "数据集「{}/{}」是分类数据集，无法训练{}任务".format(
+                        proj, name, TASK_CN.get(task, task)))
             datasets.append({
                 "dataset_name": name, "project": proj, "split": split,
                 "image_path": info.get("image_path", ""),
                 "label_path": info.get("label_path", ""),
-                "fmt": info.get("label_fmt", "txt"),
+                "fmt": fmt,
                 "label_ids": db.get_dataset_label_ids(proj, name),
             })
     if not any(d["split"] == "train" for d in datasets):
         raise ValueError("请至少选择一个训练集数据集")
     if not any(d["split"] == "val" for d in datasets):
         raise ValueError("请至少选择一个验证集数据集")
+    ts_dir = _unique_ts_dir(out_root, timestamp_dir())
     # model_size 保留界面可见值(nano/small),architecture 是 runner 实际用的名字
     architecture = params.get("architecture") or "nano"
     if task == "classify":
@@ -194,8 +225,8 @@ def make_train_config(db, params):
 
 def params_summary(params):
     """队列项的一行摘要文本(任务/网络/数据集)。"""
-    task_text = {"detect": "检测", "segment": "分割", "classify": "分类"}.get(
-        params.get("task", ""), params.get("task", ""))
+    task = params.get("task", "")
+    task_text = TASK_CN.get(task, task)
     # 带项目名:不同项目下常有同名数据集(如 test1/train、test2/train)
     names = ["{}/{}".format(p[0], p[1]) for p in (params.get("train_ds") or [])]
     ds = ", ".join(names) if names else "未选数据集"

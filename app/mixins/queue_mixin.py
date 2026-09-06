@@ -228,10 +228,9 @@ class QueueMixin(object):
         self._mark_item(item["qid"], "running",
                         record_id=record["id"],
                         started_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-        self._log("[队列] 开始任务 {}/{}: {}".format(
+        self._log("[队列] 开始队列第 {}/{} 项: {}".format(
             int(item.get("order") or 0) + 1,
-            len([i for i in self.queue_items()
-                 if i.get("status") != "waiting"]) + 1,
+            len(self.queue_items()),
             item.get("name", "")))
         write_log("队列启动任务: {} record={}".format(
             item.get("name"), record["id"]))
