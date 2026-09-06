@@ -804,6 +804,7 @@ class TrainDialog(QDialog):
             return
         ok, msg = self._validate()
         if not ok:
+            write_log("参数校验未通过: {}".format(msg))
             MessageBox.warning(self, "参数校验", msg)
             return
         params = self.collect_train_params()
@@ -811,8 +812,10 @@ class TrainDialog(QDialog):
             config = make_train_config(self.app.db, params)
         except Exception as exc:
             # 落盘失败时不写训练记录,避免模型界面留下没有结果的空行
+            tb = traceback.format_exc()
+            write_log("训练启动失败: {}\n{}".format(exc, tb))
             MessageBox.critical(self, "训练启动失败", "{}\n\n{}".format(
-                exc, traceback.format_exc()))
+                exc, tb))
             return
         record = make_train_record(config, self.app.db, self.project)
         self.app.db.add_train_record(record)

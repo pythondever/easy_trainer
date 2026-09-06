@@ -207,10 +207,11 @@ class TrainMixin(object):
         self._hide_train_task()
         self._training_record_id = None
         self._train_worker = None
-        if rid:
-            self.on_train_finished(rid, None)
+        # 先落失败原因: on_train_finished 会推进队列并打出下一条任务的启动日志
         for line in detail.splitlines():
             self._log("[train] " + line)
+        if rid:
+            self.on_train_finished(rid, None)
         # 队列运行时不弹模态框：无人值守时会一直等点击，整个队列停摆
         if self.queue_is_running():
             write_log("训练失败(队列模式，已跳过弹窗): {}".format(detail[:2000]))
