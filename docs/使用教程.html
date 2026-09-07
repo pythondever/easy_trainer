@@ -32,6 +32,11 @@
   .toc li { font-size: 14px; margin-bottom: 4px; }
   .toc a { color: #2b2f3b; text-decoration: none; }
   .toc a:hover { color: #4f7dff; }
+  /* 打印/PDF 排版: 标题不孤行, 图片不跨页截断 */
+  @media print {
+    h2, h3 { page-break-after: avoid; }
+    figure, img, table { page-break-inside: avoid; }
+  }
 </style>
 </head>
 <body>
@@ -42,12 +47,12 @@
   <h2>目录</h2>
   <ol>
     <li><a href="#intro">软件概览</a></li>
-    <li><a href="#project">项目管理（添加 / 删除 / 导入）</a></li>
+    <li><a href="#project">项目与数据集管理</a></li>
     <li><a href="#label">标签管理</a></li>
     <li><a href="#annotate">图像标注</a></li>
-    <li><a href="#train">训练</a></li>
+    <li><a href="#train">训练与训练队列</a></li>
     <li><a href="#model">模型管理</a></li>
-    <li><a href="#test">测试 / 评估</a></li>
+    <li><a href="#test">模型测试与评估报告</a></li>
     <li><a href="#log">日志</a></li>
   </ol>
 </div>
@@ -57,9 +62,9 @@
 <p>主界面采用三栏布局：</p>
 
 <ul>
-  <li><strong>左侧项目树</strong>：项目与数据集层级展示</li>
-  <li><strong>中间图像区</strong>：缩略图分页浏览、当前图像标注展示</li>
-  <li><strong>顶部工具栏</strong>：常用操作按钮（缩略图切换、编辑、删除、导入、导出、属性、训练、模型、日志）</li>
+  <li><strong>左侧项目树</strong>：项目与数据集层级展示，数据集节点带标注进度（如 126/128）</li>
+  <li><strong>中间图像区</strong>：缩略图分页浏览，底部有翻页与总数</li>
+  <li><strong>顶部工具栏</strong>：显示比例、标注筛选，以及编辑、删除、导入、导出、属性、训练、模型、日志等按钮</li>
 </ul>
 
 <figure>
@@ -67,11 +72,11 @@
   <figcaption>EasyTrainer 主界面</figcaption>
 </figure>
 
-<h2 id="project">2. 项目管理</h2>
+<h2 id="project">2. 项目与数据集管理</h2>
 
 <h3>2.1 添加项目</h3>
 
-<p>点击左侧 <code>+ 添加项目</code> 按钮，弹出输入框，输入项目名称后确定。
+<p>点击左侧 <code>+ 添加项目</code> 按钮，输入项目名称后确定。
 项目是数据集的容器，所有数据集必须归属于某个项目。</p>
 
 <figure>
@@ -79,18 +84,18 @@
   <figcaption>输入项目名称</figcaption>
 </figure>
 
-<h3>2.2 添加 / 修改 / 删除数据集</h3>
+<h3>2.2 添加 / 重命名 / 删除数据集</h3>
 
-<p>右键左侧项目节点（或项目下任意位置）弹出操作菜单，可以：</p>
+<p>右键点击项目节点弹出操作菜单：</p>
 <ul>
   <li><strong>添加数据集</strong>：在项目下新建一个数据集</li>
-  <li><strong>修改名称</strong>：重命名数据集</li>
-  <li><strong>删除数据集</strong>：连同数据集标注、训练记录一并清除</li>
+  <li><strong>修改名称</strong>：重命名项目或数据集</li>
+  <li><strong>删除项目</strong>：连同其下数据集、标注、训练记录一并清除</li>
 </ul>
 
 <figure>
-  <img src="images/添加_修改_删除_数据集.png" alt="数据集操作菜单">
-  <figcaption>数据集右键菜单</figcaption>
+  <img src="images/添加_修改_删除_数据集.png" alt="项目右键菜单">
+  <figcaption>项目右键菜单</figcaption>
 </figure>
 
 <h3>2.3 导入数据</h3>
@@ -99,11 +104,11 @@
 <ul>
   <li><strong>图像路径</strong>：选择图片所在文件夹</li>
   <li><strong>标签路径</strong>：选择标注文件所在文件夹</li>
-  <li><strong>标签格式</strong>：YOLO txt / Labelme json / 按文件夹分类导入</li>
+  <li><strong>标签格式</strong>：Yolo txt / Labelme json / 按子文件夹分类导入</li>
 </ul>
 
 <div class="note">
-  <strong>分类数据集</strong>选择"按文件夹分类导入"：每个子文件夹名作为一个类别，<strong>无需标注文件</strong>。
+  <strong>分类数据集</strong>选择"按子文件夹分类导入"：每个子文件夹名作为一个类别，<strong>无需标注文件</strong>。
 </div>
 
 <figure>
@@ -111,13 +116,10 @@
   <figcaption>导入数据对话框</figcaption>
 </figure>
 
-<h3>2.4 数据集属性</h3>
+<h3>2.4 数据集属性与标签分布</h3>
 
-<p>选中数据集后点击顶部 <strong>属性</strong> 按钮，查看：</p>
-<ul>
-  <li>图像路径 / 标签路径</li>
-  <li><strong>标签分布柱状图</strong>：每个类别的已标注图像数</li>
-</ul>
+<p>选中数据集后点击顶部 <strong>属性</strong> 按钮，可查看图像路径、标签路径，
+以及<strong>标签分布柱状图</strong>（每个类别的标注框数量），用于快速发现类别不均衡问题。</p>
 
 <figure>
   <img src="images/数据集属性_标签分布.png" alt="数据集属性与标签分布">
@@ -128,10 +130,11 @@
 
 <h3>3.1 添加或导入标签</h3>
 
-<p>在标注界面右侧标签列表上方点击 <strong>添加标签</strong>，可以：</p>
+<p>在标注界面右侧标签列表上方点击 <strong>添加标签</strong>：</p>
 <ul>
-  <li>从已有数据集导入标签（点击"导入"选择数据集路径）</li>
-  <li>从预设色板选色，或点击"自定义"挑颜色</li>
+  <li><strong>标签名称</strong>：多个标签用逗号分隔，可一次添加多个</li>
+  <li><strong>导入</strong>：从已有数据集一键导入全部标签</li>
+  <li><strong>颜色</strong>：从预设色板选取，或点击"自定义"挑选颜色</li>
 </ul>
 
 <figure>
@@ -141,55 +144,76 @@
 
 <h3>3.2 批量修改类别</h3>
 
-<p>选中数据集后，在<strong>图像区缩略图上右键</strong>，选择"批量修改类别"，可把某标签批量改名为另一个：</p>
+<p>选中数据集后，在<strong>图像区缩略图上右键</strong>选择"批量修改类别"，
+输入原类别与新类别，即可把整个数据集中该类的标注全部改名：</p>
 
 <figure>
   <img src="images/标签批量修改.png" alt="批量修改类别">
   <figcaption>类别批量修改弹窗</figcaption>
 </figure>
 
-<h3>3.3 修改单个类别</h3>
+<h3>3.3 修改单个标注的类别</h3>
 
-<p>标注界面右侧标签列表，每个标签 chip 上右键可重命名 / 改颜色 / 删除。</p>
+<p>进入标注界面后，<strong>在标注框上点击</strong>即可弹出类别下拉菜单，
+选中新类别即完成修改；右侧标签列表中的标签也可重命名、改色、删除。</p>
 
 <figure>
   <img src="images/修改类别.png" alt="修改类别">
-  <figcaption>标签右键菜单（标注界面）</figcaption>
+  <figcaption>在标注框上直接修改类别</figcaption>
 </figure>
 
 <h2 id="annotate">4. 图像标注</h2>
 
 <h3>4.1 进入标注界面</h3>
 
-<p>在左侧树选中具体数据集后，右键缩略图选择"标注"，或直接双击缩略图，进入标注界面。</p>
+<p>在左侧树选中具体数据集后，右键缩略图选择"标注"，或直接双击缩略图进入。
+窗口标题显示当前<strong>项目 / 数据集</strong>，底部有"上一张 / 下一张"切换图像。</p>
 
-<h3>4.2 标注工具</h3>
+<h3>4.2 矩形与多边形标注</h3>
 
-<p>标注界面顶部工具栏提供三种标注方式：</p>
+<p>标注界面顶部工具栏提供两种绘制工具：</p>
 
 <ul>
   <li><strong>矩形</strong>：拖拽鼠标画矩形框</li>
-  <li><strong>多边形</strong>：依次点击点出多边形顶点，双击或回车结束</li>
-  <li><strong>格式刷</strong>：鼠标拖动选取区域，然后可将该区域抠出来粘贴至图像其他区域，或者其他图像上</li>
+  <li><strong>多边形</strong>：依次点击顶点，双击或回车结束（分割任务用）</li>
+  <li><strong>删除图像</strong>：删除当前这张图</li>
 </ul>
 
-<p>右侧<strong>标签列表</strong>选择类别，颜色随机；勾选"显示标注"可隐藏所有框以看原图。</p>
+<p>右侧<strong>标签列表</strong>选择类别；勾选"显示标注"可随时隐藏所有框查看原图。
+右下方"当前图像标注"面板列出本图所有标注对象及其顶点数、面积。</p>
 
 <figure>
-  <img src="images/图像标注_矩形_多边形_格式刷.png" alt="图像标注">
-  <figcaption>矩形 / 多边形 / 格式刷三种标注工具</figcaption>
+  <img src="images/图像标注_矩形_多边形.png" alt="图像标注">
+  <figcaption>矩形 / 多边形标注工具与标签列表</figcaption>
 </figure>
 
-<h3>4.3 按标注类别分类筛选</h3>
+<h3>4.3 标注对象复制（数据增强）</h3>
 
-<p>顶部工具栏的<strong>类别筛选</strong>下拉框，选择某类别后图像区只显示含该类别的图。</p>
+<p>右键任意标注对象选择<strong>复制</strong>，再在目标位置粘贴，可把缺陷样本
+"复制 + 粘贴"到同图或跨图的其他区域，快速扩充训练样本：</p>
+
+<ul>
+  <li><strong>角度范围</strong>：粘贴时随机旋转的角度区间（默认 -180 ~ 180）</li>
+  <li><strong>融合强度</strong>：0 ~ 1，默认 0.70。粘贴时自动做亮度补偿和边缘羽化，
+      让粘贴区域与背景自然过渡；设为 0 则等同直接硬贴</li>
+</ul>
+
+<figure>
+  <img src="images/标注对象复制.png" alt="标注对象复制">
+  <figcaption>右键复制标注对象，工具栏设置角度范围与融合强度</figcaption>
+</figure>
+
+<h3>4.4 按标注类别筛选</h3>
+
+<p>首页顶部工具栏的类别下拉框，选择某类别后图像区只显示含该类别的图，
+便于集中检查、补标某一类。</p>
 
 <figure>
   <img src="images/按标注类别_分类筛选.png" alt="按类别筛选">
   <figcaption>按类别筛选缩略图</figcaption>
 </figure>
 
-<h2 id="train">5. 训练</h2>
+<h2 id="train">5. 训练与训练队列</h2>
 
 <h3>5.1 训练参数配置</h3>
 
@@ -198,30 +222,49 @@
 <ul>
   <li><strong>任务类型</strong>：检测 / 分割 / 分类（按数据集格式自动联动）</li>
   <li><strong>训练集 / 验证集</strong>：多选数据集，可跨项目组合</li>
-  <li><strong>网络</strong>：nano / small / medium / large</li>
-  <li><strong>设备</strong>：cuda:0（自动列出可用 GPU）</li>
-  <li><strong>优化器</strong>：按任务推荐（检测/分割=adamw、分类=sgd）</li>
-  <li><strong>图像尺寸</strong>：检测 640 / 分割 636 / 分类 224（按任务自动）</li>
-  <li><strong>早停</strong>：连续 N 个 epoch 精度无提升则停（0=禁用）</li>
-  <li><strong>批次 / 梯度累积 / 轮次 / 线程数 / 学习率</strong></li>
-  <li><strong>输出路径</strong>：点"选择路径"挑选目录，鼠标悬停看完整路径</li>
+  <li><strong>设备</strong>：自动列出可用 GPU（如 NVIDIA GeForce RTX 4060 Ti）</li>
+  <li><strong>训练超参</strong>：轮次、优化器（检测/分割=adamw、分类=sgd）、早停
+      （连续 N 轮无提升则提前结束，0 为关闭）、学习率（训练中自动衰减）、
+      批次、图像尺寸（32 的倍数）、梯度累积（显存不足时等效放大批次）、线程数</li>
+  <li><strong>输出路径</strong>：留空则自动按时间生成目录，也可点"选择路径"指定</li>
 </ul>
 
 <figure>
-  <img src="images/训练参数设置.png" alt="训练参数配置">
+  <img src="images/训练参数与队列.png" alt="训练参数配置">
   <figcaption>训练参数配置对话框</figcaption>
 </figure>
 
-<h3>5.2 训练进度监控</h3>
+<h3>5.2 训练队列</h3>
+
+<p>配置好后除"开始训练"外，还可以点<strong>加入队列</strong>把任务先挂起来，
+继续配置下一个。点击首页 <strong>训练队列</strong>（或训练窗口入口）打开队列窗口：</p>
+
+<ul>
+  <li>队列按顺序依次执行，<strong>支持检测 / 分割 / 分类任务混排</strong>，自动逐项切换</li>
+  <li><strong>上移 / 下移 / 移除</strong>：调整执行顺序或删除任务</li>
+  <li><strong>编辑</strong>：修改选中任务的参数</li>
+  <li><strong>清理已完成</strong>：移除已跑完的记录</li>
+  <li><strong>开始队列</strong>：从头依次执行队列中的任务</li>
+</ul>
+
+<div class="note">
+  队列适合晚上挂机：把多个数据集的任务一次配好，软件会自动跑完全部并分别保存模型。
+</div>
+
+<figure>
+  <img src="images/训练队列查看.png" alt="训练队列">
+  <figcaption>训练队列窗口</figcaption>
+</figure>
+
+<h3>5.3 训练进度监控</h3>
 
 <p>点击"开始训练"后回到首页，顶部出现进度条与控制条：</p>
 
 <ul>
-  <li><strong>任务名 + 进度</strong>：如 "coco128 训练中 5/100"</li>
-  <li><strong>当前 map</strong>：验证集最新精度</li>
-  <li><strong>停止训练</strong>：随时终止（模型会保存已完成的部分）</li>
+  <li><strong>任务名 + 进度</strong>：如 "coco128 训练中 5/100"，进度条内显示当前轮 loss</li>
+  <li><strong>停止训练</strong>：随时终止（已完成的部分会保存）</li>
   <li><strong>剩余时间</strong>：按已用时长外推估算</li>
-  <li><strong>显存用量</strong>：实时显示 GPU 显存</li>
+  <li><strong>显存</strong>：实时显示 GPU 显存占用率</li>
 </ul>
 
 <figure>
@@ -229,84 +272,109 @@
   <figcaption>训练进度条与状态栏</figcaption>
 </figure>
 
-<h3>5.3 训练指标查看</h3>
+<h3>5.4 训练指标查看</h3>
 
-<p>训练结束后，在模型列表点击对应行的<strong>指标</strong>按钮，弹出训练曲线窗口：</p>
+<p>在模型列表点击对应行的<strong>指标</strong>按钮，弹出训练曲线窗口：</p>
 
 <ul>
   <li>上半图：<strong>val loss</strong> 曲线</li>
-  <li>下半图：<strong>mAP@50-95 / mAP@50 / AR / F1 / 准确率 / 召回率</strong> 等多条曲线</li>
-  <li>下拉筛选"全部指标"或某具体类别，查看 per-class 曲线</li>
+  <li>下半图：mAP@50-95 / mAP@50 / AR / F1 / precision / recall 等多条曲线
+      （分割任务还会显示 mask mAP 曲线）</li>
+  <li>右上角"标签筛选"下拉框可切换查看全部指标或某个类别的曲线</li>
 </ul>
 
 <figure>
   <img src="images/训练指标查看.png" alt="训练指标">
-  <figcaption>训练指标曲线（val loss + 各类 mAP）</figcaption>
+  <figcaption>训练指标曲线（val loss + 各项精度）</figcaption>
 </figure>
 
 <h2 id="model">6. 模型管理</h2>
 
-<p>点击首页/顶部 <strong>模型</strong> 按钮，打开模型管理窗口，显示所有已完成训练：</p>
+<p>点击首页 <strong>模型</strong> 按钮，打开模型管理窗口，列出所有训练记录：</p>
 
 <ul>
-  <li><strong>开始/完成时间</strong>、<strong>耗时</strong>、<strong>模型大小</strong>（nano/small/...）</li>
-  <li><strong>模型类型</strong>（检测/分割/分类）、<strong>模型精度</strong></li>
-  <li><strong>图像尺寸</strong>、<strong>模型路径</strong>、<strong>数据集信息</strong>（训练集/验证集）</li>
+  <li><strong>开始 / 完成训练时间</strong>、<strong>耗时</strong>、<strong>模型大小</strong>（nano/small/...）</li>
+  <li><strong>模型类型</strong>（检测 / 分割 / 分类）、<strong>模型精度</strong>、<strong>图像尺寸</strong></li>
+  <li><strong>模型路径</strong>、<strong>数据集信息</strong>（训练集 / 验证集，悬停可看完整路径）</li>
   <li>行尾按钮：<strong>导出 / 指标 / 删除 / 测试 / 训练</strong></li>
 </ul>
+
+<div class="note">
+  <strong>"训练"按钮</strong>：用该条记录的参数（任务类型/数据集/图像尺寸/学习率/优化器等）
+  重新打开训练窗口，等于基于此记录再来一次。
+</div>
 
 <figure>
   <img src="images/模型训练记录.png" alt="模型训练记录">
   <figcaption>模型管理列表</figcaption>
 </figure>
 
-<div class="note">
-  <strong>"训练"按钮</strong>：点它会用该条记录的参数（任务类型/数据集/图像尺寸/学习率/优化器等）打开训练窗口，等于基于此记录再来一次。
-</div>
-
-<h2 id="test">7. 测试 / 评估</h2>
+<h2 id="test">7. 模型测试与评估报告</h2>
 
 <h3>7.1 测试参数设置</h3>
 
-<p>点击模型行的 <strong>测试</strong> 按钮，弹出测试参数对话框：</p>
+<p>点击模型行的 <strong>测试</strong> 按钮，弹出模型测试对话框。顶部显示模型信息
+（任务类型、权重文件、训练精度、输入尺寸、规模），下方配置：</p>
 
 <ul>
   <li><strong>数据</strong>：跨项目所有数据集可选</li>
-  <li><strong>设备</strong>：默认 cuda:0</li>
-  <li><strong>模型</strong>：自动锁定该行模型</li>
-  <li><strong>置信度 / IoU 阈值</strong>（检测/分割）、<strong>输出标签文件</strong>（推理模式勾上会写出预测 json）</li>
+  <li><strong>设备</strong>：默认第一个可用 GPU</li>
+  <li><strong>置信度</strong>：低于该分数的预测直接丢弃</li>
+  <li><strong>IoU 阈值</strong>：预测框与标注框重合度达标才算正确检出</li>
+  <li><strong>输出标签文件</strong>：勾选后把预测框写成 labelme json，便于人工复核</li>
 </ul>
 
+<div class="note">
+  数据集已标注时自动进入<strong>评估模式</strong>：统计检出率 / 漏检 / 误检。
+</div>
+
 <figure>
-  <img src="images/测试参数设置.png" alt="测试参数">
-  <figcaption>测试参数配置</figcaption>
+  <img src="images/模型测试与评估.png" alt="模型测试">
+  <figcaption>模型测试参数配置</figcaption>
 </figure>
 
 <h3>7.2 测试结果分析</h3>
 
-<p>测试完成后弹出"测试结果分析"窗口：</p>
+<p>测试完成后弹出"测试结果分析"窗口，分两个维度统计（全部用直白的
+"正确检出 / 漏检 / 误检"表述）：</p>
 
 <ul>
-  <li>顶部：<strong>测试张数 / 正确检出(检出率) / 漏检 / 误检 / 准确率</strong>（用"正确检出/漏检/误检"代替 TP/FN/FP）</li>
-  <li>中部：<strong>按类别表格</strong>——每类标注数 / 正确检出 / 漏检 / 误检 / 检出率 / 准确率</li>
-  <li>底部：<strong>一句直白结论</strong>（"漏检偏多/误检偏多"+ 拖累最大的类别）</li>
+  <li><strong>图像维度</strong>（按张统计，检出 1 个即算检出）：测试张数、检出图像及检出率、
+      未检出图像、有误检图像</li>
+  <li><strong>标注维度</strong>（按标注框统计）：正确检出、漏检、误检、准确率</li>
+  <li><strong>按类别表格</strong>：每类的标注数 / 正确检出 / 漏检 / 误检 / 检出率 / 准确率</li>
+  <li><strong>底部结论</strong>：一句话点出整体偏漏检还是偏误检、拖累最大的类别</li>
 </ul>
 
 <figure>
-  <img src="images/模型评估结果.png" alt="模型评估结果">
-  <figcaption>测试结果分析对话框</figcaption>
+  <img src="images/模型结果评估与报告.png" alt="测试结果分析与报告">
+  <figcaption>测试结果分析窗口（图像维度 + 标注维度 + 按类别明细）</figcaption>
 </figure>
+
+<h3>7.3 导出 PDF 报告</h3>
+
+<p>点击右下角 <strong>导出 PDF 报告</strong>，后台线程生成评估报告，内容包含：</p>
+
+<ul>
+  <li>总览页：指标汇总表 + 标注分布图</li>
+  <li>漏检样本页、误检样本页：按"每类抽取 N 张"（左下角可调）展示缩略图，
+      图上用红框标出漏检 / 误检位置，并注明抽取比例</li>
+  <li>建议页：针对各类错误给出改进方向</li>
+</ul>
+
+<div class="note">
+  抽样只发生在出报告这一步，明细数据仍是全量，后续做难例挖掘不会丢数据。
+</div>
 
 <h2 id="log">8. 日志</h2>
 
 <p>点击首页顶部 <strong>日志</strong> 按钮，打开日志窗口，实时显示：</p>
 <ul>
-  <li>软件启动/退出</li>
-  <li>项目/数据集创建/重命名/删除/移动</li>
-  <li>数据集导入/导出</li>
-  <li>标签创建/重命名/删除</li>
-  <li>训练开始 / 训练中（[train] 前缀转发子进程）/ 指标更新 / 模型保存 / 手动停止</li>
-  <li>测试启动 / 测试中（[test] 前缀）/ 完成 / 失败</li>
+  <li>软件启动 / 退出</li>
+  <li>项目 / 数据集创建、重命名、删除、导入 / 导出</li>
+  <li>标签创建、重命名、删除</li>
+  <li>训练开始、训练中（[train] 前缀转发子进程输出）、指标更新、模型保存、手动停止</li>
+  <li>测试启动、测试中（[test] 前缀）、完成、失败</li>
 </ul>
 
 <figure>
