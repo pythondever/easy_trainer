@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import csv
 import os
 import re
 import shutil
@@ -76,6 +77,77 @@ STATUS_COLOR = {
     "失败/已停止": "#ff9f6b",   # 旧记录: 无法判定
     "训练中": "#6bb8ff",
 }
+
+
+# 训练 metrics.csv 列名 -> 指标文件 series 键名, 与 train_worker._write_row 保持一致
+_CSV_KEYS = (
+    ("mAP@50-95", "val/mAP_50_95"), ("mAP@50", "val/mAP_50"),
+    ("precision", "val/precision"), ("recall", "val/recall"),
+    ("F1", "val/F1"), ("mAR", "val/mAR"),
+    ("ema_mAP@50", "val/ema_mAP_50"), ("ema_mAP@50-95", "val/ema_mAP_50_95"),
+    ("mask_mAP@50", "val/segm_mAP_50"), ("mask_mAP@50-95", "val/segm_mAP_50_95"),
+    ("mask_ema_mAP@50", "val/ema_segm_mAP_50"),
+    ("mask_ema_mAP@50-95", "val/ema_segm_mAP_50_95"),
+    ("train_loss", "train/loss"), ("val_loss", "val/loss"),
+)
+
+
+def _series_from_csv(csv_path):
+    """全量解析训练的 metrics.csv; 同一 epoch 多行时后写的值覆盖先写的。"""
+    try:
+        with open(csv_path, "r", encoding="utf-8", errors="replace") as f:
+            rows = list(csv.DictReader(f))
+    except OSError:
+        return {}
+    by_epoch = {}
+    for r in rows:
+        try:
+            ep = int(float(r.get("epoch", 0)))
+        except (TypeError, ValueError):
+            continue
+        merged = by_epoch.setdefault(ep, {})
+        for k, v in r.items():
+            if v not in (None, ""):
+                merged[k] = v
+    series = {"epochs": sorted(by_epoch)}
+    for key, csv_key in _CSV_KEYS:
+        vals = []
+        for ep in series["epochs"]:
+            try:
+                vals.append(float(by_epoch[ep].get(csv_key)))
+            except (TypeError, ValueError):
+                vals.append(None)
+        if any(v is not None for v in vals):
+            series[key] = vals
+    return series
+
+
+def _load_series(rec, db_path):
+    """显示用曲线数据: 优先训练目录的 metrics.csv(rf-detr 真源);
+    指标 json 只是训练中的节流快照, 可能缺列或缺尾轮。分类无 csv, 走 json。"""
+    model_path = rec.get("model_path") or ""
+    csv_path = os.path.join(os.path.dirname(model_path), "metrics.csv") if model_path else ""
+    if csv_path and os.path.isfile(csv_path):
+        s = _series_from_csv(csv_path)
+        if s.get("epochs"):
+            return s
+    try:
+        return (load_train_metrics(rec, db_path) or {}).get("series") or {}
+    except Exception:
+        return {}
+
+
+def _curve_series(series):
+    """曲线数据与精度列同源: 优先 ema 列(交付模型按 ema 选 best checkpoint)。"""
+    if "accuracy" in series:
+        key = "accuracy"
+    else:
+        is_seg = bool(series.get("mask_mAP@50") or series.get("mask_ema_mAP@50"))
+        key = next((k for k in (("mask_ema_mAP@50", "mask_mAP@50") if is_seg
+                                else ("ema_mAP@50", "mAP@50"))
+                    if series.get(k)), "")
+    ys = [v for v in (series.get(key) or []) if isinstance(v, (int, float))]
+    return key, ys
 
 
 def _duration_seconds(text):
@@ -235,16 +307,28 @@ class ModelDialog(QDialog):
         for m in model_recs:
             if not self._record_match(m):
                 continue
+            self._refresh_metric_from_file(m)
             recs.append(m)
             seen_train_ids.add(m.get("train_id"))
         for t in train_recs:
             if t.get("id") in seen_train_ids:
                 continue
+            self._refresh_metric_from_file(t)
             if not self._record_match(t):
                 continue
             recs.append(t)
         self._all_records = recs
         self._apply_filters()
+
+    # 库里的 map50/accuracy 可能是训练中途的快照(result.json 也不带 map50),
+    # 显示一律以训练目录的 csv(或指标 json)全程最佳为准
+    def _refresh_metric_from_file(self, rec):
+        if not (rec.get("metrics_file") or rec.get("model_path")):
+            return
+        series = _load_series(rec, getattr(self.app.db, "db_path", None))
+        key, ys = _curve_series(series)
+        if ys:
+            rec["map50" if key != "accuracy" else "accuracy"] = "{:.3f}".format(max(ys))
 
     def _record_match(self, r):
         if self._project and r.get("project") != self._project:
@@ -513,14 +597,8 @@ class ModelDialog(QDialog):
     def _draw_curve(self, rec):
         label = self.ui.detail_curve
         label.setText("")
-        try:
-            metrics = load_train_metrics(rec, getattr(self.app.db, "db_path", None))
-        except Exception:
-            metrics = {}
-        series = metrics.get("series") or {}
-        key = "accuracy" if "accuracy" in series else (
-            "mAP@50" if "mAP@50" in series else "")
-        ys = [v for v in (series.get(key) or []) if isinstance(v, (int, float))]
+        series = _load_series(rec, getattr(self.app.db, "db_path", None))
+        key, ys = _curve_series(series)
         if not ys:
             label.setPixmap(QPixmap())
             label.setText("暂无曲线")
