@@ -6,6 +6,7 @@
 
 import json
 import os
+import tempfile
 
 import numpy as np
 import matplotlib
@@ -770,12 +771,13 @@ def build_report(res, out_pdf=None, thumb_w=480, summary_png=None,
     if out_pdf is None:
         out_dir = res.get("report_dir") or os.path.dirname(detail_path)
         out_pdf = os.path.join(out_dir, "report.pdf")
-    os.makedirs(os.path.dirname(out_pdf), exist_ok=True)
-    out_dir = os.path.dirname(out_pdf)
+    os.makedirs(os.path.dirname(out_pdf) or ".", exist_ok=True)
+    # 中间图只是嵌入 PDF 的页, 写在临时目录, 别在报告目录里留下一堆 png
+    tmp_dir = tempfile.TemporaryDirectory(prefix="et_report_")
     if summary_png is None:
-        summary_png = os.path.join(out_dir, "summary.png")
-    advice_png = os.path.join(out_dir, "advice.png")
-    chart_png = os.path.join(out_dir, "label_chart.png")
+        summary_png = os.path.join(tmp_dir.name, "summary.png")
+    advice_png = os.path.join(tmp_dir.name, "advice.png")
+    chart_png = os.path.join(tmp_dir.name, "label_chart.png")
 
     _setup_font()
     try:
