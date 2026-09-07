@@ -54,7 +54,6 @@ class AnnotationScene(QGraphicsScene):
         self.current_label = "object"
         self._preview_item = None
         self._draw_start = None
-        self._polygon_points = []
         self._free_track = []   # 画笔轨迹(手绘多边形采样点)
         self._last_box = None
         self.label_colors = {}
@@ -73,6 +72,7 @@ class AnnotationScene(QGraphicsScene):
 
     def set_image(self, pixmap):
         self.clear()
+        self._reset_draw_state()
         self.image_item = QGraphicsPixmapItem(pixmap)
         self.image_item.setZValue(0)
         self.image_modified = False
@@ -468,11 +468,20 @@ class AnnotationScene(QGraphicsScene):
                 self.add_box(box["x1"], box["y1"], box["x2"], box["y2"], box["label"])
         self.boxes_changed.emit()
 
+    def _reset_draw_state(self):
+        """
+        丢弃绘制中间态。切换图片/清空标注时 item 已被 scene 销毁,
+        这些 Python 引用若不一起清掉, 后续事件会打到已删除的 C++ 对象上。
+        """
+        self._preview_item = None
+        self._draw_start = None
+        self._free_track = []
+        self._last_box = None
+
     def clear_boxes(self):
         for item in self.all_items():
             self.removeItem(item)
-        self._preview_item = None
-        self._polygon_points = []
+        self._reset_draw_state()
 
     def selected_item(self):
         items = self.selectedItems()
@@ -553,7 +562,6 @@ class AnnotationScene(QGraphicsScene):
 
     def _cancel_polygon(self):
         """取消未完成的多边形(清轨迹+预览)。"""
-        self._polygon_points = []
         self._free_track = []
         if self._preview_item is not None:
             self.removeItem(self._preview_item)
@@ -687,7 +695,7 @@ class AnnotationScene(QGraphicsScene):
 
     def _finish_polygon(self):
         # 轨迹抽稀成多边形顶点(采样间隔+共线合并),生成标注
-        pts = self._simplify_track(self._free_track or self._polygon_points)
+        pts = self._simplify_track(self._free_track)
         self._cancel_polygon()
         if len(pts) < 3:
             return
@@ -783,7 +791,7 @@ class AnnotationScene(QGraphicsScene):
     def mouseDoubleClickEvent(self, event):
         """多边形模式：双击闭合（>=3 顶点）。"""
         if self.draw_mode and self.draw_shape == "polygon" and event.button() == Qt.LeftButton:
-            if len(self._polygon_points) >= 3:
+            if len(self._free_track) >= 3:
                 self._finish_polygon()
                 event.accept()
                 return

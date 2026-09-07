@@ -90,15 +90,14 @@ class DataBase:
 
     def add_project(self, name):
         key = keys.project_list
-        txn = self.mdb.begin(write=True)
-        project_list = txn.get(key)
-        if project_list is None:
-            project_list = [name]
-        else:
-            project_list = json.loads(project_list.decode())
-            project_list.append(name)
-        txn.put(key, json.dumps(project_list, ensure_ascii=False).encode())
-        txn.commit()
+        with self.mdb.begin(write=True) as txn:
+            project_list = txn.get(key)
+            if project_list is None:
+                project_list = [name]
+            else:
+                project_list = json.loads(project_list.decode())
+                project_list.append(name)
+            txn.put(key, json.dumps(project_list, ensure_ascii=False).encode())
 
     def rename_project(self, old_name, new_name):
         project_list = self.get_projects()
@@ -107,9 +106,8 @@ class DataBase:
                 if project_name == old_name:
                     project_list[idx] = new_name
             key = keys.project_list
-            txn = self.mdb.begin(write=True)
-            txn.put(key, json.dumps(project_list, ensure_ascii=False).encode())
-            txn.commit()
+            with self.mdb.begin(write=True) as txn:
+                txn.put(key, json.dumps(project_list, ensure_ascii=False).encode())
         info_list = self.get_project_info()
         changed = False
         for info in info_list:
@@ -123,31 +121,30 @@ class DataBase:
 
     def _rename_records_project(self, old_name, new_name):
         """训练/模型记录中项目名替换(含 dataset/val_dataset/dataset_info 的"项目/"前缀)。"""
-        txn = self.mdb.begin(write=True)
-        for key in (keys.train_history, keys.model_history):
-            data = txn.get(key)
-            recs = json.loads(data.decode()) if data else []
-            changed = False
-            for r in recs:
-                if r.get("project") != old_name:
-                    continue
-                r["project"] = new_name
-                for field in ("dataset", "val_dataset", "dataset_info"):
-                    items = [x.strip() for x in str(r.get(field, "")).split(",") if x.strip()]
-                    new_items = []
-                    for it in items:
-                        if "/" in it:
-                            proj, ds = it.rsplit("/", 1)
-                            new_items.append("{}/{}".format(
-                                new_name if proj == old_name else proj, ds))
-                        else:
-                            new_items.append(it)
-                    if new_items != items:
-                        r[field] = ", ".join(new_items)
-                changed = True
-            if changed:
-                txn.put(key, json.dumps(recs, ensure_ascii=False).encode())
-        txn.commit()
+        with self.mdb.begin(write=True) as txn:
+            for key in (keys.train_history, keys.model_history):
+                data = txn.get(key)
+                recs = json.loads(data.decode()) if data else []
+                changed = False
+                for r in recs:
+                    if r.get("project") != old_name:
+                        continue
+                    r["project"] = new_name
+                    for field in ("dataset", "val_dataset", "dataset_info"):
+                        items = [x.strip() for x in str(r.get(field, "")).split(",") if x.strip()]
+                        new_items = []
+                        for it in items:
+                            if "/" in it:
+                                proj, ds = it.rsplit("/", 1)
+                                new_items.append("{}/{}".format(
+                                    new_name if proj == old_name else proj, ds))
+                            else:
+                                new_items.append(it)
+                        if new_items != items:
+                            r[field] = ", ".join(new_items)
+                    changed = True
+                if changed:
+                    txn.put(key, json.dumps(recs, ensure_ascii=False).encode())
 
     def delete_project(self, name):
         project_list = self.get_projects()
@@ -157,14 +154,13 @@ class DataBase:
             if project_name == name:
                 project_list.remove(name)
         key = keys.project_list
-        txn = self.mdb.begin(write=True)
-        txn.put(key, json.dumps(project_list, ensure_ascii=False).encode())
-        txn.commit()
+        with self.mdb.begin(write=True) as txn:
+            txn.put(key, json.dumps(project_list, ensure_ascii=False).encode())
 
     def get_projects(self):
         key = keys.project_list
-        txn = self.mdb.begin(write=False)
-        project_list = txn.get(key)
+        with self.mdb.begin(write=False) as txn:
+            project_list = txn.get(key)
         if project_list is None:
             project_list = []
         else:
@@ -176,23 +172,22 @@ class DataBase:
         # 字段：project_name / dataset_name / dataset_type / image_path /
         #       label_path / label_fmt / labeled / total / labels
         key = keys.project_info_list
-        txn = self.mdb.begin(write=True)
-        info_list = txn.get(key)
-        if info_list is None:
-            info_list = [info]
-        else:
-            info_list = json.loads(info_list.decode())
-            info_list.append(info)
-        txn.put(key, json.dumps(info_list, ensure_ascii=False).encode())
-        txn.commit()
+        with self.mdb.begin(write=True) as txn:
+            info_list = txn.get(key)
+            if info_list is None:
+                info_list = [info]
+            else:
+                info_list = json.loads(info_list.decode())
+                info_list.append(info)
+            txn.put(key, json.dumps(info_list, ensure_ascii=False).encode())
         self._invalidate_info_cache()
 
     def get_project_info(self):
         if self._project_info_cache is not None:
             return self._project_info_cache
         key = keys.project_info_list
-        txn = self.mdb.begin(write=False)
-        info_list = txn.get(key)
+        with self.mdb.begin(write=False) as txn:
+            info_list = txn.get(key)
         if info_list is None:
             info_list = []
         else:
@@ -215,9 +210,8 @@ class DataBase:
 
     def update_project_info(self, info):
         key = keys.project_info_list
-        txn = self.mdb.begin(write=True)
-        txn.put(key, json.dumps(info, ensure_ascii=False).encode())
-        txn.commit()
+        with self.mdb.begin(write=True) as txn:
+            txn.put(key, json.dumps(info, ensure_ascii=False).encode())
         self._invalidate_info_cache()
 
     def delete_project_info(self, name):
@@ -228,15 +222,14 @@ class DataBase:
             if project_name != name:
                 keep_info.append(info)
         key = keys.project_info_list
-        txn = self.mdb.begin(write=True)
-        txn.put(key, json.dumps(keep_info, ensure_ascii=False).encode())
-        txn.commit()
+        with self.mdb.begin(write=True) as txn:
+            txn.put(key, json.dumps(keep_info, ensure_ascii=False).encode())
         self._invalidate_info_cache()
 
     def _get_deleted_maps(self):
         key = keys.deleted_images
-        txn = self.mdb.begin(write=False)
-        data = txn.get(key)
+        with self.mdb.begin(write=False) as txn:
+            data = txn.get(key)
         if data is None:
             return {}
         try:
@@ -252,18 +245,9 @@ class DataBase:
         if not paths:
             return 0
         key = keys.deleted_images
-        txn = self.mdb.begin(write=True)
-        maps = txn.get(key)
+        maps = self._read_deleted_maps()
         if maps is None:
-            maps = {}
-        else:
-            try:
-                maps = json.loads(maps.decode())
-            except Exception as e:
-                txn.abort()
-                write_log("已删除图像记录解析失败，本次未写入以免覆盖丢失 "
-                          "({}): {}".format(key, e))
-                return 0
+            return 0
         existing = maps.setdefault(project_name, {}).setdefault(dataset_name, [])
         seen = set(existing)
         added = 0
@@ -276,8 +260,8 @@ class DataBase:
                 existing.append(norm)
                 added += 1
         if added:
-            txn.put(key, json.dumps(maps, ensure_ascii=False).encode())
-        txn.commit()
+            with self.mdb.begin(write=True) as txn:
+                txn.put(key, json.dumps(maps, ensure_ascii=False).encode())
         return added
 
     def add_deleted_image(self, project_name, dataset_name, image_path):
@@ -347,30 +331,29 @@ class DataBase:
         训练/模型记录中该数据集名替换(训练集/验证集/dataset_info)。
         dataset 字段为 "项目/数据集" 格式,匹配后半段数据集名。
         """
-        txn = self.mdb.begin(write=True)
-        for key in (keys.train_history, keys.model_history):
-            data = txn.get(key)
-            recs = json.loads(data.decode()) if data else []
-            changed = False
-            for r in recs:
-                if r.get("project") != project_name:
-                    continue
-                replaced = False
-                for field in ("dataset", "val_dataset"):
-                    names = [x.strip() for x in str(r.get(field, "")).split(",") if x.strip()]
-                    new_names = [_rename_item(n, old_name, new_name) for n in names]
-                    if new_names != names:
-                        r[field] = ", ".join(new_names)
-                        replaced = True
-                if replaced:
-                    info = str(r.get("dataset_info", ""))
-                    items = [x.strip() for x in info.split(",") if x.strip()]
-                    new_items = [_rename_item(n, old_name, new_name) for n in items]
-                    r["dataset_info"] = ", ".join(new_items)
-                    changed = True
-            if changed:
-                txn.put(key, json.dumps(recs, ensure_ascii=False).encode())
-        txn.commit()
+        with self.mdb.begin(write=True) as txn:
+            for key in (keys.train_history, keys.model_history):
+                data = txn.get(key)
+                recs = json.loads(data.decode()) if data else []
+                changed = False
+                for r in recs:
+                    if r.get("project") != project_name:
+                        continue
+                    replaced = False
+                    for field in ("dataset", "val_dataset"):
+                        names = [x.strip() for x in str(r.get(field, "")).split(",") if x.strip()]
+                        new_names = [_rename_item(n, old_name, new_name) for n in names]
+                        if new_names != names:
+                            r[field] = ", ".join(new_names)
+                            replaced = True
+                    if replaced:
+                        info = str(r.get("dataset_info", ""))
+                        items = [x.strip() for x in info.split(",") if x.strip()]
+                        new_items = [_rename_item(n, old_name, new_name) for n in items]
+                        r["dataset_info"] = ", ".join(new_items)
+                        changed = True
+                if changed:
+                    txn.put(key, json.dumps(recs, ensure_ascii=False).encode())
 
     def delete_dataset(self, project_name, dataset_name):
         """删除项目下的一个数据集记录。"""
@@ -387,17 +370,16 @@ class DataBase:
     def delete_dataset_deleted(self, project_name, dataset_name):
         """删除数据集时清理其已删除图像记录。"""
         key = keys.deleted_images
-        txn = self.mdb.begin(write=True)
-        maps = txn.get(key)
-        if maps is not None:
-            maps = json.loads(maps.decode())
-            project_data = maps.get(project_name)
-            if project_data is not None:
-                project_data.pop(dataset_name, None)
-                if not project_data:
-                    maps.pop(project_name, None)
-                txn.put(key, json.dumps(maps, ensure_ascii=False).encode())
-        txn.commit()
+        with self.mdb.begin(write=True) as txn:
+            maps = txn.get(key)
+            if maps is not None:
+                maps = json.loads(maps.decode())
+                project_data = maps.get(project_name)
+                if project_data is not None:
+                    project_data.pop(dataset_name, None)
+                    if not project_data:
+                        maps.pop(project_name, None)
+                    txn.put(key, json.dumps(maps, ensure_ascii=False).encode())
 
     def update_dataset_import(self, project_name, dataset_name, image_path, label_path='',
                               label_fmt='', labeled=None, total=None, append=False):
@@ -472,9 +454,14 @@ class DataBase:
                 return True
         return False
 
-    def _load_deleted_maps(self, txn):
-        """读 deleted_images 全表。损坏时返回 None（调用方须放弃写入并 abort）。"""
-        data = txn.get(keys.deleted_images)
+    def _read_deleted_maps(self):
+        """读 deleted_images 全表。损坏时返回 None（调用方须放弃写入）。
+
+        只读事务取数据: 有了这份副本就能在开写事务前判断是否需要放弃,
+        不必在写事务里 abort 后再 return。
+        """
+        with self.mdb.begin(write=False) as txn:
+            data = txn.get(keys.deleted_images)
         if data is None:
             return {}
         try:
@@ -486,10 +473,8 @@ class DataBase:
 
     def _rename_deleted_project(self, old_name, new_name):
         """项目改名时迁移排除记录, 否则重命名后这些图会全部重新出现。"""
-        txn = self.mdb.begin(write=True)
-        maps = self._load_deleted_maps(txn)
+        maps = self._read_deleted_maps()
         if maps is None or old_name not in maps:
-            txn.abort()
             return
         dst = maps.setdefault(new_name, {})
         for ds, paths in maps.pop(old_name).items():
@@ -497,47 +482,44 @@ class DataBase:
             for p in paths:
                 if p not in cur:
                     cur.append(p)
-        txn.put(keys.deleted_images,
-                json.dumps(maps, ensure_ascii=False).encode())
-        txn.commit()
+        with self.mdb.begin(write=True) as txn:
+            txn.put(keys.deleted_images,
+                    json.dumps(maps, ensure_ascii=False).encode())
 
     def _rename_deleted_dataset(self, project_name, old_name, new_name):
         """数据集改名时迁移排除记录, 否则重命名后这些图会全部重新出现。"""
-        txn = self.mdb.begin(write=True)
-        maps = self._load_deleted_maps(txn)
+        maps = self._read_deleted_maps()
         if maps is None or old_name not in maps.get(project_name, {}):
-            txn.abort()
             return
         proj = maps[project_name]
         cur = proj.setdefault(new_name, [])
         for p in proj.pop(old_name):
             if p not in cur:
                 cur.append(p)
-        txn.put(keys.deleted_images,
-                json.dumps(maps, ensure_ascii=False).encode())
-        txn.commit()
+        with self.mdb.begin(write=True) as txn:
+            txn.put(keys.deleted_images,
+                    json.dumps(maps, ensure_ascii=False).encode())
 
     def move_deleted_images(self, src_project, src_dataset,
                             dst_project, dst_dataset):
         """迁移"已删除/不加载"图像记录：src → dst（dst 追加，src 清空）。"""
         key = keys.deleted_images
-        txn = self.mdb.begin(write=True)
-        maps = txn.get(key)
-        if maps is None:
-            maps = {}
-        else:
-            maps = json.loads(maps.decode())
-        src_set = list(maps.get(src_project, {}).get(src_dataset, []))
-        if src_set:
-            dst_set = maps.setdefault(dst_project, {}).setdefault(dst_dataset, [])
-            for p in src_set:
-                if p not in dst_set:
-                    dst_set.append(p)
-        maps.get(src_project, {}).pop(src_dataset, None)
-        if not maps.get(src_project, {}):
-            maps.pop(src_project, None)
-        txn.put(key, json.dumps(maps, ensure_ascii=False).encode())
-        txn.commit()
+        with self.mdb.begin(write=True) as txn:
+            maps = txn.get(key)
+            if maps is None:
+                maps = {}
+            else:
+                maps = json.loads(maps.decode())
+            src_set = list(maps.get(src_project, {}).get(src_dataset, []))
+            if src_set:
+                dst_set = maps.setdefault(dst_project, {}).setdefault(dst_dataset, [])
+                for p in src_set:
+                    if p not in dst_set:
+                        dst_set.append(p)
+            maps.get(src_project, {}).pop(src_dataset, None)
+            if not maps.get(src_project, {}):
+                maps.pop(src_project, None)
+            txn.put(key, json.dumps(maps, ensure_ascii=False).encode())
 
     def get_dataset_import(self, project_name, dataset_name):
         """
@@ -620,17 +602,16 @@ class DataBase:
     def add_train_record(self, record):
         """追加一条训练记录（record 为 dict，见 main 训练启动处）。"""
         key = keys.train_history
-        txn = self.mdb.begin(write=True)
-        recs = txn.get(key)
-        recs = json.loads(recs.decode()) if recs else []
-        recs.append(record)
-        txn.put(key, json.dumps(recs, ensure_ascii=False).encode())
-        txn.commit()
+        with self.mdb.begin(write=True) as txn:
+            recs = txn.get(key)
+            recs = json.loads(recs.decode()) if recs else []
+            recs.append(record)
+            txn.put(key, json.dumps(recs, ensure_ascii=False).encode())
 
     def get_train_records(self):
         key = keys.train_history
-        txn = self.mdb.begin(write=False)
-        recs = txn.get(key)
+        with self.mdb.begin(write=False) as txn:
+            recs = txn.get(key)
         if recs is None:
             return []
         try:
@@ -641,13 +622,12 @@ class DataBase:
     def delete_train_record(self, record_id):
         """按 id 删除一条训练记录(级联删除其外置指标文件)。"""
         key = keys.train_history
-        txn = self.mdb.begin(write=True)
-        data = txn.get(key)
-        recs = json.loads(data.decode()) if data else []
-        new_recs = [r for r in recs if r.get("id") != record_id]
-        if len(new_recs) != len(recs):
-            txn.put(key, json.dumps(new_recs, ensure_ascii=False).encode())
-        txn.commit()
+        with self.mdb.begin(write=True) as txn:
+            data = txn.get(key)
+            recs = json.loads(data.decode()) if data else []
+            new_recs = [r for r in recs if r.get("id") != record_id]
+            if len(new_recs) != len(recs):
+                txn.put(key, json.dumps(new_recs, ensure_ascii=False).encode())
         self.delete_train_metrics(record_id)
 
     def update_train_record(self, record):
@@ -675,17 +655,16 @@ class DataBase:
     def add_model_record(self, record):
         """追加一条模型记录(有模型文件的训练)。"""
         key = keys.model_history
-        txn = self.mdb.begin(write=True)
-        recs = txn.get(key)
-        recs = json.loads(recs.decode()) if recs else []
-        recs.append(record)
-        txn.put(key, json.dumps(recs, ensure_ascii=False).encode())
-        txn.commit()
+        with self.mdb.begin(write=True) as txn:
+            recs = txn.get(key)
+            recs = json.loads(recs.decode()) if recs else []
+            recs.append(record)
+            txn.put(key, json.dumps(recs, ensure_ascii=False).encode())
 
     def get_model_records(self):
         key = keys.model_history
-        txn = self.mdb.begin(write=False)
-        recs = txn.get(key)
+        with self.mdb.begin(write=False) as txn:
+            recs = txn.get(key)
         if recs is None:
             return []
         try:
@@ -699,29 +678,27 @@ class DataBase:
         不删外置指标文件: 文件按 train_id 命名, 训练记录仍可能引用它。
         """
         key = keys.model_history
-        txn = self.mdb.begin(write=True)
-        data = txn.get(key)
-        recs = json.loads(data.decode()) if data else []
-        new_recs = [r for r in recs if r.get("id") != record_id]
-        if len(new_recs) != len(recs):
-            txn.put(key, json.dumps(new_recs, ensure_ascii=False).encode())
-        txn.commit()
+        with self.mdb.begin(write=True) as txn:
+            data = txn.get(key)
+            recs = json.loads(data.decode()) if data else []
+            new_recs = [r for r in recs if r.get("id") != record_id]
+            if len(new_recs) != len(recs):
+                txn.put(key, json.dumps(new_recs, ensure_ascii=False).encode())
 
     def update_model_record(self, record):
         """按 id 覆盖一条模型记录。"""
         key = keys.model_history
-        txn = self.mdb.begin(write=True)
-        data = txn.get(key)
-        recs = json.loads(data.decode()) if data else []
-        rid = record.get("id")
-        for i, r in enumerate(recs):
-            if r.get("id") == rid:
-                recs[i] = record
-                break
-        else:
-            recs.append(record)
-        txn.put(key, json.dumps(recs, ensure_ascii=False).encode())
-        txn.commit()
+        with self.mdb.begin(write=True) as txn:
+            data = txn.get(key)
+            recs = json.loads(data.decode()) if data else []
+            rid = record.get("id")
+            for i, r in enumerate(recs):
+                if r.get("id") == rid:
+                    recs[i] = record
+                    break
+            else:
+                recs.append(record)
+            txn.put(key, json.dumps(recs, ensure_ascii=False).encode())
 
     # ---------- 训练队列 ----------
     def get_train_queue(self):
@@ -748,14 +725,13 @@ class DataBase:
     # ---------- 训练/模型记录级联删除 ----------
     def migrate_model_records(self):
         """一次性迁移:train_history 中带模型的历史记录补录到 model_history(幂等)。"""
-        txn = self.mdb.begin(write=True)
-        existing = txn.get(keys.model_history)
+        with self.mdb.begin(write=False) as txn:
+            existing = txn.get(keys.model_history)
+            train_raw = txn.get(keys.train_history)
         existing = json.loads(existing.decode()) if existing else []
         if existing:
-            txn.commit()
             return
-        data = txn.get(keys.train_history)
-        recs = json.loads(data.decode()) if data else []
+        recs = json.loads(train_raw.decode()) if train_raw else []
         added = False
         for r in recs:
             if r.get("model_path") and r.get("end_time"):
@@ -765,8 +741,9 @@ class DataBase:
                 existing.append(m)
                 added = True
         if added:
-            txn.put(keys.model_history, json.dumps(existing, ensure_ascii=False).encode())
-        txn.commit()
+            with self.mdb.begin(write=True) as txn:
+                txn.put(keys.model_history,
+                        json.dumps(existing, ensure_ascii=False).encode())
 
     def delete_project_records(self, project_name):
         """删除项目下所有训练记录与模型记录(级联清理外置指标文件)。"""
@@ -774,14 +751,13 @@ class DataBase:
             raw = txn.get(keys.train_history)
         recs = json.loads(raw.decode()) if raw else []
         doomed = [r.get("id") for r in recs if r.get("project") == project_name]
-        txn = self.mdb.begin(write=True)
-        for key in (keys.train_history, keys.model_history):
-            data = txn.get(key)
-            recs = json.loads(data.decode()) if data else []
-            new_recs = [r for r in recs if r.get("project") != project_name]
-            if len(new_recs) != len(recs):
-                txn.put(key, json.dumps(new_recs, ensure_ascii=False).encode())
-        txn.commit()
+        with self.mdb.begin(write=True) as txn:
+            for key in (keys.train_history, keys.model_history):
+                data = txn.get(key)
+                recs = json.loads(data.decode()) if data else []
+                new_recs = [r for r in recs if r.get("project") != project_name]
+                if len(new_recs) != len(recs):
+                    txn.put(key, json.dumps(new_recs, ensure_ascii=False).encode())
         for tid in doomed:
             self.delete_train_metrics(tid)
 
@@ -791,8 +767,8 @@ class DataBase:
         model_history 是 train_history 的子集(训练完成时浅拷贝),无需重复检查。
         """
         key = keys.train_history
-        txn = self.mdb.begin(write=False)
-        data = txn.get(key)
+        with self.mdb.begin(write=False) as txn:
+            data = txn.get(key)
         recs = json.loads(data.decode()) if data else []
         for r in recs:
             if r.get("project") != project_name:
@@ -824,30 +800,29 @@ class DataBase:
     def remove_dataset_from_records(self, project_name, ds_name):
         """数据集删除时从训练/模型记录中移除该数据集;记录无任何引用则删除。"""
         dropped = []
-        txn = self.mdb.begin(write=True)
-        for key in (keys.train_history, keys.model_history):
-            data = txn.get(key)
-            recs = json.loads(data.decode()) if data else []
-            new_recs = []
-            changed = False
-            for r in recs:
-                if r.get("project") != project_name:
-                    new_recs.append(r)
-                    continue
-                train_names = [x.strip() for x in str(r.get("dataset", "")).split(",") if x.strip()]
-                val_names = [x.strip() for x in str(r.get("val_dataset", "")).split(",") if x.strip()]
-                if not any(_ds_of(n) == ds_name for n in train_names + val_names):
-                    new_recs.append(r)
-                    continue
-                r, still_used = self._strip_dataset_from_record(r, ds_name)
-                changed = True
-                if still_used:
-                    new_recs.append(r)
-                elif key == keys.train_history:
-                    dropped.append(r.get("id"))
-            if changed:
-                txn.put(key, json.dumps(new_recs, ensure_ascii=False).encode())
-        txn.commit()
+        with self.mdb.begin(write=True) as txn:
+            for key in (keys.train_history, keys.model_history):
+                data = txn.get(key)
+                recs = json.loads(data.decode()) if data else []
+                new_recs = []
+                changed = False
+                for r in recs:
+                    if r.get("project") != project_name:
+                        new_recs.append(r)
+                        continue
+                    train_names = [x.strip() for x in str(r.get("dataset", "")).split(",") if x.strip()]
+                    val_names = [x.strip() for x in str(r.get("val_dataset", "")).split(",") if x.strip()]
+                    if not any(_ds_of(n) == ds_name for n in train_names + val_names):
+                        new_recs.append(r)
+                        continue
+                    r, still_used = self._strip_dataset_from_record(r, ds_name)
+                    changed = True
+                    if still_used:
+                        new_recs.append(r)
+                    elif key == keys.train_history:
+                        dropped.append(r.get("id"))
+                if changed:
+                    txn.put(key, json.dumps(new_recs, ensure_ascii=False).encode())
         for tid in dropped:
             self.delete_train_metrics(tid)
 
