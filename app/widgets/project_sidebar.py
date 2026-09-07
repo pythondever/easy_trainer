@@ -22,6 +22,10 @@ LIST_PAD_Y = 3                      # 数据集列表上下留白(走 viewport m
 ROLE = Qt.UserRole
 
 
+DOT_SIZE = 6        # 数据集行缓存状态圆点直径
+DOT_GAP = 5         # 圆点与进度色块的间距
+
+
 def _alpha_color(hex_color, alpha):
     c = QColor(hex_color)
     c.setAlpha(alpha)
@@ -103,7 +107,7 @@ class DatasetRowDelegate(QStyledItemDelegate):
         nfm = QFontMetrics(name_font)
         text_x = row.x() + 28
         num_right = row.right() - NUM_PAD_R
-        avail_full = num_right - (w_num + CHIP_PAD_X * 2) - text_x - 8
+        avail_full = num_right - (w_num + CHIP_PAD_X * 2) - text_x - 8 - DOT_SIZE - DOT_GAP
         # 任务进度条占住数值区, 名称让位避免被盖住
         if task is not None:
             avail = num_right - TASK_BAR_W - text_x - 10
@@ -144,6 +148,12 @@ class DatasetRowDelegate(QStyledItemDelegate):
             chip_path = QPainterPath()
             chip_path.addRoundedRect(chip, 4, 4)
             p.fillPath(chip_path, _alpha_color(chip_hex, 72))
+            # 缓存状态圆点: 已加载进内存绿, 未加载红
+            p.setPen(Qt.NoPen)
+            p.setBrush(QColor("#7be39a") if data.get("loaded") else QColor("#ff6b6b"))
+            p.drawEllipse(QRectF(chip.x() - DOT_GAP - DOT_SIZE,
+                                 option.rect.center().y() - DOT_SIZE / 2,
+                                 DOT_SIZE, DOT_SIZE))
             c_lab = QColor(chip_hex)
             c_dim = _alpha_color(chip_hex, 150)
             x = num_right - CHIP_PAD_X
@@ -250,7 +260,7 @@ class ProjectCardHeader(QWidget):
 class ProjectCard(QFrame):
     expandToggled = Signal(str, bool)  # project, expanded
 
-    def __init__(self, project, datasets, expanded=False, parent=None):
+    def __init__(self, project, datasets, expanded=False, parent=None, loaded=None):
         QFrame.__init__(self, parent)
         self.setObjectName("projectCard")
         self.project = project
@@ -270,7 +280,8 @@ class ProjectCard(QFrame):
         for ds_name, labeled, total in datasets:
             item = QListWidgetItem()
             item.setData(ROLE, {"project": project, "dataset": ds_name,
-                                "labeled": labeled, "total": total, "task": None})
+                                "labeled": labeled, "total": total, "task": None,
+                                "loaded": (project, ds_name) in (loaded or set())})
             self.list.addItem(item)
         self.list.sync_height()
         v.addWidget(self.list)
@@ -304,6 +315,8 @@ class ProjectSidebar(QWidget):
         self.cards = {}
         # 展开态只存内存: 刷新列表不丢, 重启后全部展开
         self._expanded = {}
+        # 已加载进内存的数据集集合, 跨 rebuild 保留(行不在时只记集合)
+        self._loaded = set()
         v = QVBoxLayout(self)
         v.setContentsMargins(12, 4, 12, 12)
         v.setSpacing(10)
@@ -337,7 +350,7 @@ class ProjectSidebar(QWidget):
                 expanded = True   # 当前选中数据集所在项目保持展开, 否则刷新后选中看不见
             else:
                 expanded = False
-            card = ProjectCard(project, datasets, expanded)
+            card = ProjectCard(project, datasets, expanded, loaded=self._loaded)
             card.expandToggled.connect(self._on_expand_changed)
             card.header.clicked.connect(
                 lambda p=project: self._on_header_clicked(p))
@@ -408,6 +421,20 @@ class ProjectSidebar(QWidget):
         d = dict(item.data(ROLE))
         d["labeled"] = labeled
         d["total"] = total
+        item.setData(ROLE, d)
+        self._repaint_row(item)
+
+    def set_row_loaded(self, project, dataset, loaded):
+        """同步数据集缓存状态圆点; 行未建(列表未刷新)时只记集合, rebuild 时带上。"""
+        if loaded:
+            self._loaded.add((project, dataset))
+        else:
+            self._loaded.discard((project, dataset))
+        item = self._find(project, dataset)
+        if item is None:
+            return
+        d = dict(item.data(ROLE))
+        d["loaded"] = loaded
         item.setData(ROLE, d)
         self._repaint_row(item)
 

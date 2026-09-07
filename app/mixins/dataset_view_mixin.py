@@ -363,6 +363,7 @@ class DatasetViewMixin(object):
         self.current_page = 0
         proj_cache = self.dataset_cache.setdefault(project, {})
         proj_cache.pop(dataset, None)
+        self.project_tree.set_row_loaded(project, dataset, False)
         self._refresh_label_filter(project, dataset)
         self.show_dataset_images(project, dataset, update_stats=True)
 
@@ -882,6 +883,7 @@ class DatasetViewMixin(object):
             self.project_tree.set_row_task(project_name, dataset_name, None)
             proj_cache = self.dataset_cache.setdefault(project_name, {})
             proj_cache[dataset_name] = self._build_dataset_index(result)
+            self.project_tree.set_row_loaded(project_name, dataset_name, True)
             # 检测/分割按框,分类按类别;持久化供属性页无缓存时展示
             label_counts = {}
             for rec in result:
