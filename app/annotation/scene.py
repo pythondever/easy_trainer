@@ -2,11 +2,13 @@
 """标注场景：负责画框/画多边形、删除、与列表同步。"""
 import math
 import random
+import numpy as np
 from PySide6.QtCore import QRectF, QPointF, Qt, Signal
 from PySide6.QtGui import (QPen, QColor, QBrush, QPolygonF, QPainterPath,
                            QPixmap, QPainter, QImage)
 from PySide6.QtWidgets import (QGraphicsScene, QGraphicsPixmapItem, QGraphicsItem,
                                QGraphicsPathItem, QGraphicsPolygonItem)
+from app.annotation.blend import blend_patch
 from app.annotation.box_item import AnnotationBoxItem, AnnotationPolygonItem, label_color
 
 
@@ -22,6 +24,16 @@ def _simplify_track(pts, max_pts=32):
         i += 1
     out.append(pts[-1])
     return out
+
+
+def _bgra_view(img):
+    """
+    QImage(ARGB32 系) → HxWx4 BGRA 视图(小端内存序), 不拷贝;
+    img 必须在结果使用期间存活, 否则段错误。
+    """
+    w, h = img.width(), img.height()
+    arr = np.frombuffer(img.bits(), dtype=np.uint8)
+    return arr.reshape(h, img.bytesPerLine())[:, :w * 4].reshape(h, w, 4)
 
 
 class AnnotationScene(QGraphicsScene):
@@ -57,6 +69,7 @@ class AnnotationScene(QGraphicsScene):
         self._fp_undo_stack = []
         self._paste_pos = None   # 复制/粘贴: 左键点击空白处记录的粘贴锚点
         self.angle_range = (-180, 180)   # 粘贴随机旋转角度范围(由标注界面输入框设置)
+        self.blend_strength = 0.7        # 粘贴融合力度 0~1(由标注界面输入框设置)
 
     def set_image(self, pixmap):
         self.clear()
@@ -260,6 +273,39 @@ class AnnotationScene(QGraphicsScene):
             return [[x + dx, y + dy] for x, y in pts]
         return pts
 
+    def _render_blend_layer(self, pix, patch, center, angle, rx, ry, side,
+                            ox, oy, w, h, strength):
+        """
+        离屏渲染旋转后的 patch 并与图像 ROI 融合, 返回可绘制的 QImage。
+        rx/ry/side = 离屏方框在图像中的位置和边长, ox/oy/w/h = 与图像重叠的有效区。
+        """
+        rot = QImage(side, side, QImage.Format_ARGB32_Premultiplied)
+        rot.fill(Qt.transparent)
+        rp = QPainter(rot)
+        rp.setRenderHint(QPainter.Antialiasing)
+        rp.translate(center.x() - rx, center.y() - ry)
+        rp.rotate(angle)
+        rp.drawImage(-patch.width() / 2.0, -patch.height() / 2.0, patch)
+        rp.end()
+        sx, sy = ox - rx, oy - ry
+        src = _bgra_view(rot)[sy:sy + h, sx:sx + w]
+        dst_q = pix.copy(ox, oy, w, h).toImage().convertToFormat(
+            QImage.Format_ARGB32)
+        dst = _bgra_view(dst_q)
+        a = src[..., 3].astype(np.float32)
+        # QImage 存的是预乘 alpha, 参与混合前要还原成真实颜色
+        scale = np.where(a > 0.0, 255.0 / np.maximum(a, 1e-6), 0.0)[..., None]
+        bgra = np.empty((h, w, 4), np.uint8)
+        bgra[..., :3] = np.clip(src[..., :3].astype(np.float32) * scale, 0, 255)
+        bgra[..., 3] = a.astype(np.uint8)
+        out = np.empty((h, w, 4), np.uint8)
+        out[..., :3] = blend_patch(dst[..., :3], bgra, strength)
+        out[..., 3] = 255
+        # 必须写进 QImage 自己的缓冲区: 用外部 bytes 构造的 QImage 不持有数据, 会悬空
+        layer = QImage(w, h, QImage.Format_ARGB32)
+        _bgra_view(layer)[:] = out
+        return layer
+
     def _paste_template(self, pos):
         """
         把模板（抠图 patch + 多边形）粘贴到 pos 为中心, 随机旋转 0~180°(正负)。
@@ -284,17 +330,28 @@ class AnnotationScene(QGraphicsScene):
         radius = math.sqrt(pw * pw + ph * ph) / 2.0
         pix = self.image_item.pixmap()
         if pix is not None and t.get("patch") is not None:
-            ox = max(0, int(center.x() - radius))
-            oy = max(0, int(center.y() - radius))
-            bw = min(int(2 * radius) + 1, pix.width() - ox)
-            bh = min(int(2 * radius) + 1, pix.height() - oy)
+            # 旋转后的 patch 一定落在以 center 为中心、边长 2*radius 的方框内
+            rx = int(center.x() - radius)
+            ry = int(center.y() - radius)
+            side = int(2 * radius) + 1
+            ox = max(0, rx)
+            oy = max(0, ry)
+            bw = min(rx + side, pix.width()) - ox
+            bh = min(ry + side, pix.height()) - oy
             before = pix.copy(ox, oy, max(0, bw), max(0, bh))
             if before.isNull():
                 before = None
             p = QPainter(pix)
-            p.translate(center.x(), center.y())
-            p.rotate(angle)
-            p.drawImage(-pw / 2.0, -ph / 2.0, t["patch"])
+            strength = float(getattr(self, "blend_strength", 0.0) or 0.0)
+            if strength > 0.0 and bw > 0 and bh > 0:
+                layer = self._render_blend_layer(
+                    pix, t["patch"], center, angle, rx, ry, side, ox, oy, bw, bh,
+                    strength)
+                p.drawImage(ox, oy, layer)
+            else:
+                p.translate(center.x(), center.y())
+                p.rotate(angle)
+                p.drawImage(-pw / 2.0, -ph / 2.0, t["patch"])
             p.end()
             self.image_item.setPixmap(pix)
             self.image_modified = True

@@ -462,34 +462,35 @@ QRadioButton, QCheckBox {
     background-color: transparent;
 }
 
-QRadioButton::indicator, QCheckBox::indicator {
+QCheckBox::indicator {
     width: 14px;
     height: 14px;
     border: 1px solid #454b5e;
+    border-radius: 3px;
     background-color: #181a20;
 }
-
-QRadioButton::indicator {
-    border-radius: 7px;
-}
-
-QCheckBox::indicator {
-    border-radius: 3px;
-}
-
-QRadioButton::indicator:checked {
-    background-color: #4f7dff;
-    border: 2px solid #181a20;
-}
-
 QCheckBox::indicator:checked {
     background-color: #4f7dff;
     border-color: #4f7dff;
-    image: none;
+}
+QCheckBox::indicator:hover {
+    border-color: #4f7dff;
 }
 
-QRadioButton::indicator:hover, QCheckBox::indicator:hover {
-    border-color: #4f7dff;
+/* 单选指示器用预渲染 PNG(QPainter 反锯齿正圆):
+   QSS border-radius 在小尺寸+分数缩放(125%/150%)下会画成圆角方块 */
+QRadioButton::indicator {
+    width: 16px;
+    height: 16px;
+    border: none;
+    background-color: transparent;
+    image: url({{STYLE_DIR}}/radio_off.png);
+}
+QRadioButton::indicator:hover {
+    image: url({{STYLE_DIR}}/radio_off_hover.png);
+}
+QRadioButton::indicator:checked {
+    image: url({{STYLE_DIR}}/radio_on.png);
 }
 
 /* ---------------- 分割条 ---------------- */
@@ -540,7 +541,14 @@ QSlider::sub-page:horizontal {
    列表/滑条用 outline：focus rect 覆盖整个控件。
    表格不用 outline：Qt 会把 focus rect 画在 current cell 周围，
    看起来像单元格外多一圈蓝框；用 selection 颜色变化已足够表达焦点。 */
-QCheckBox:focus, QRadioButton:focus,
+QCheckBox:focus, QRadioButton:focus {
+    /* 单选/复选不能用 outline: Qt 画在文字一圈, 点击后也会带框;
+       焦点改由指示器边框变蓝表达, 键盘导航仍可见 */
+    outline: none;
+}
+QCheckBox:focus::indicator {
+    border-color: #4f7dff;
+}
 QListWidget:focus, QTreeWidget:focus,
 QSlider:focus {
     outline: 2px solid #4f7dff;

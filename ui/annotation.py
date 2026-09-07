@@ -55,6 +55,11 @@ class Ui_annotationDialog(object):
 
         self.horizontalLayout.addWidget(self.delete_image_btn)
 
+        self.vert_sep_label = QLabel(annotationDialog)
+        self.vert_sep_label.setObjectName(u"vert_sep_label")
+
+        self.horizontalLayout.addWidget(self.vert_sep_label)
+
         self.angle_range_label = QLabel(annotationDialog)
         self.angle_range_label.setObjectName(u"angle_range_label")
 
@@ -76,6 +81,17 @@ class Ui_annotationDialog(object):
         self.max_ange_lineEdit.setMinimumSize(QSize(65, 0))
 
         self.horizontalLayout.addWidget(self.max_ange_lineEdit)
+
+        self.blend_strength_label = QLabel(annotationDialog)
+        self.blend_strength_label.setObjectName(u"blend_strength_label")
+
+        self.horizontalLayout.addWidget(self.blend_strength_label)
+
+        self.blend_strength_lineEdit = QLineEdit(annotationDialog)
+        self.blend_strength_lineEdit.setObjectName(u"blend_strength_lineEdit")
+        self.blend_strength_lineEdit.setMinimumSize(QSize(65, 0))
+
+        self.horizontalLayout.addWidget(self.blend_strength_lineEdit)
 
         self.horizontalSpacer_3 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
@@ -216,8 +232,10 @@ class Ui_annotationDialog(object):
         self.draw_rect_btn.setText(QCoreApplication.translate("annotationDialog", u"\u77e9\u5f62", None))
         self.poly_btn.setText(QCoreApplication.translate("annotationDialog", u"\u591a\u8fb9\u5f62", None))
         self.delete_image_btn.setText(QCoreApplication.translate("annotationDialog", u"\u5220\u9664\u56fe\u50cf", None))
+        self.vert_sep_label.setText(QCoreApplication.translate("annotationDialog", u"|", None))
         self.angle_range_label.setText(QCoreApplication.translate("annotationDialog", u"\u89d2\u5ea6:", None))
         self.label.setText(QCoreApplication.translate("annotationDialog", u"-", None))
+        self.blend_strength_label.setText(QCoreApplication.translate("annotationDialog", u"\u878d\u5408\u5f3a\u5ea6", None))
         self.label_list.setText(QCoreApplication.translate("annotationDialog", u"\u6807\u7b7e\u5217\u8868", None))
         self.add_label.setText(QCoreApplication.translate("annotationDialog", u"\u6dfb\u52a0", None))
         self.labeled_list.setText(QCoreApplication.translate("annotationDialog", u"\u6807\u6ce8\u4fe1\u606f", None))

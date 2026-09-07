@@ -13,7 +13,7 @@ from PySide6.QtCore import (Qt, Signal, QPointF, QTimer, QSize, QThread,
                             QMutex, QMutexLocker)
 from PySide6.QtGui import (QColor, QPixmap, QKeySequence, QShortcut, QPen,
                            QPainter, QImage, QIcon, QCursor, QLinearGradient,
-                           QFont, QImageReader, QIntValidator)
+                           QFont, QImageReader, QIntValidator, QDoubleValidator)
 from PySide6.QtWidgets import (QDialog, QWidget, QApplication, QVBoxLayout,
                                QHBoxLayout, QLabel, QMessageBox,
                                QGridLayout, QLineEdit, QSpinBox, QPushButton, QFrame,
@@ -32,6 +32,9 @@ from app.widgets.dialog_buttons import (apply_icon, add_ok_cancel,
 from app.widgets.message_box import MessageBox, ProgressDialog
 from app.core.log import write_log
 from PySide6.QtWidgets import QGraphicsView
+
+
+BLEND_STRENGTH_DEFAULT = "0.7"   # 粘贴融合力度: 0=原始硬贴, 1=完全融合
 
 
 def _resource_path(name):
@@ -637,6 +640,13 @@ class AnnotationDialog(QDialog):
             edit.setFixedSize(65, u.draw_rect_btn.height())
         u.angle_range_label.setText("角度范围")
         u.label.setText("~")
+        # 融合强度: 粘贴时的像素融合力度(0=原始硬贴, 1=完全融合)
+        u.blend_strength_lineEdit.setText(BLEND_STRENGTH_DEFAULT)
+        u.blend_strength_lineEdit.setAlignment(Qt.AlignCenter)
+        u.blend_strength_lineEdit.setValidator(QDoubleValidator(0.0, 1.0, 2, self))
+        u.blend_strength_lineEdit.setFixedSize(65, u.draw_rect_btn.height())
+        u.blend_strength_lineEdit.editingFinished.connect(self._normalize_blend_strength)
+        self._normalize_blend_strength()
         u.switchButton = SwitchButton(self)
         u.switchButton.setObjectName("switchButton")
         u.switchButton.setChecked(True)
@@ -669,6 +679,19 @@ class AnnotationDialog(QDialog):
             for w in (u.draw_rect_btn, u.poly_btn,
                       u.add_label):
                 w.setEnabled(False)
+
+    def _normalize_blend_strength(self):
+        """失焦时把融合强度收敛到 [0,1]; 空值/非法值回到默认。"""
+        edit = self.ui.blend_strength_lineEdit
+        try:
+            v = float(edit.text().strip())
+        except ValueError:
+            v = float(BLEND_STRENGTH_DEFAULT)
+        v = min(1.0, max(0.0, v))
+        edit.setText("{:.2f}".format(v))
+        scene = getattr(self, "scene", None)
+        if scene is not None:
+            scene.blend_strength = v
 
     def _on_boxes_changed(self):
         """
