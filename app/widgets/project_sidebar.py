@@ -5,10 +5,12 @@
 导入/合并标签的任务进度也走 delegate(QStyleOptionProgressBar)，不再往行里塞控件。
 """
 from PySide6.QtCore import Qt, QRectF, QPointF, QSize, Signal
-from PySide6.QtGui import QColor, QFont, QFontMetrics, QPainter, QPainterPath, QPen
-from PySide6.QtWidgets import (QWidget, QFrame, QLabel, QHBoxLayout, QVBoxLayout,
-                               QListWidget, QListWidgetItem, QStyledItemDelegate,
-                               QStyle, QSizePolicy)
+from PySide6.QtGui import (QColor, QFont, QFontMetrics, QPainter, QPainterPath,
+                           QPen, QWheelEvent)
+from PySide6.QtWidgets import (QApplication, QWidget, QFrame, QLabel, QHBoxLayout,
+                               QVBoxLayout, QListWidget, QListWidgetItem,
+                               QStyledItemDelegate, QStyle, QSizePolicy,
+                               QScrollArea)
 
 ROW_H = 28
 CARD_RADIUS = 10
@@ -18,6 +20,7 @@ TASK_BAR_W = 116    # 行内任务进度条宽度
 CHIP_PAD_X = 6      # 进度整块色底的左右内边距
 BADGE_PAD_R = ROW_PAD_X + NUM_PAD_R  # 徽标与进度数值右缘对齐在同一垂线
 LIST_PAD_Y = 3                      # 数据集列表上下留白(走 viewport margin)
+MAX_ROWS = 10       # 单个项目最多铺开的行数, 超出后在卡片内滚动
 
 ROLE = Qt.UserRole
 
@@ -180,7 +183,7 @@ class DatasetListWidget(QListWidget):
         self.setObjectName("datasetList")
         self.setFrameShape(QFrame.NoFrame)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.setSelectionMode(QListWidget.SingleSelection)
         self.setFocusPolicy(Qt.NoFocus)
         self.setMouseTracking(True)
@@ -196,7 +199,38 @@ class DatasetListWidget(QListWidget):
         self.contextRequested.emit(self.itemAt(pos), self.viewport().mapToGlobal(pos))
 
     def sync_height(self):
-        self.setFixedHeight(self.count() * ROW_H + LIST_PAD_Y * 2)
+        rows = min(self.count(), MAX_ROWS)
+        self.setFixedHeight(rows * ROW_H + LIST_PAD_Y * 2)
+
+    def _outer_scroll_area(self):
+        w = self.parent()
+        while w is not None:
+            if isinstance(w, QScrollArea):
+                return w
+            w = w.parent()
+        return None
+
+    def wheelEvent(self, event):
+        # 卡片内滚到头/没溢出时把滚轮事件交给外层: 否则一次连续的滚轮会被卡在
+        # 这个列表里, 得松手再滚一次才能动整体列表
+        sb = self.verticalScrollBar()
+        dy = event.angleDelta().y()
+        if sb is None or not sb.isVisible() or dy == 0:
+            hand_off = True
+        else:
+            hand_off = ((dy > 0 and sb.value() <= sb.minimum())
+                        or (dy < 0 and sb.value() >= sb.maximum()))
+        area = self._outer_scroll_area() if hand_off else None
+        if area is None:
+            QListWidget.wheelEvent(self, event)
+            return
+        target = area.viewport()
+        forwarded = QWheelEvent(
+            QPointF(target.mapFromGlobal(event.globalPosition().toPoint())),
+            event.globalPosition(), event.pixelDelta(), event.angleDelta(),
+            event.buttons(), event.modifiers(), event.phase(), event.inverted())
+        QApplication.sendEvent(target, forwarded)
+        event.accept()
 
 
 class ProjectCardHeader(QWidget):
