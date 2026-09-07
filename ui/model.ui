@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>960</width>
-    <height>540</height>
+    <width>1200</width>
+    <height>700</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,87 +15,245 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QTableWidget" name="tableWidget">
-     <property name="alternatingRowColors">
-      <bool>true</bool>
-     </property>
-     <property name="selectionBehavior">
-      <enum>QAbstractItemView::SelectRows</enum>
-     </property>
-     <property name="columnCount">
-      <number>14</number>
-     </property>
-     <column>
-      <property name="text">
-       <string>开始训练时间</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>完成训练时间</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>耗时</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>模型大小</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>模型类型</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>模型精度</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>图像尺寸</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>模型路径</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>数据集信息</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>导出模型</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>指标</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>删除</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>测试</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>训练</string>
-      </property>
-     </column>
-    </widget>
+    <layout class="QHBoxLayout" name="filterLayout">
+     <item>
+      <widget class="QLineEdit" name="search_edit">
+       <property name="minimumSize">
+        <size>
+         <width>200</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="placeholderText">
+        <string>搜索项目 / 数据集 / 标签</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="task_combo">
+       <property name="minimumWidth">
+        <number>96</number>
+       </property>
+       <item>
+        <property name="text">
+         <string>全部任务</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>检测</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>分割</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>分类</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="status_combo">
+       <property name="minimumWidth">
+        <number>96</number>
+       </property>
+       <item>
+        <property name="text">
+         <string>全部状态</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>已完成</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>训练中</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>失败</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>已停止</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="best_only_check">
+       <property name="text">
+        <string>仅看每个数据集最佳</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="filterSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QLabel" name="count_label">
+       <property name="text">
+        <string>共 0 条</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="contentLayout">
+     <item>
+      <widget class="QTableWidget" name="tableWidget">
+       <property name="alternatingRowColors">
+        <bool>true</bool>
+       </property>
+       <property name="selectionBehavior">
+        <enum>QAbstractItemView::SelectRows</enum>
+       </property>
+       <property name="columnCount">
+        <number>7</number>
+       </property>
+       <column>
+        <property name="text">
+         <string>任务</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>数据集 / 标签</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>精度</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>训练时间</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>耗时</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>图像尺寸</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>操作</string>
+        </property>
+       </column>
+      </widget>
+     </item>
+     <item>
+      <widget class="QWidget" name="detail_panel" native="true">
+       <property name="minimumWidth">
+        <number>250</number>
+       </property>
+       <property name="maximumWidth">
+        <number>280</number>
+       </property>
+       <layout class="QVBoxLayout" name="detail_layout">
+        <item>
+         <widget class="QLabel" name="detail_title">
+          <property name="text">
+           <string>模型详情</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="detail_info">
+          <property name="text">
+           <string>选中一行查看详情</string>
+          </property>
+          <property name="wordWrap">
+           <bool>true</bool>
+          </property>
+          <property name="textInteractionFlags">
+           <enum>Qt::TextSelectableByMouse</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="detail_curve">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>110</height>
+           </size>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="detail_metrics_btn">
+          <property name="text">
+           <string>查看完整指标</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="detail_test_btn">
+          <property name="text">
+           <string>测试此模型</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="detail_retrain_btn">
+          <property name="text">
+           <string>按此配置重训</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="detail_open_dir_btn">
+          <property name="text">
+           <string>打开模型目录</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="detailSpacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item>
     <layout class="QHBoxLayout" name="pagerLayout">

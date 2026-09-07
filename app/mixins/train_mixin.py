@@ -211,7 +211,7 @@ class TrainMixin(object):
         for line in detail.splitlines():
             self._log("[train] " + line)
         if rid:
-            self.on_train_finished(rid, None)
+            self.on_train_finished(rid, None, error=detail)
         # 队列运行时不弹模态框：无人值守时会一直等点击，整个队列停摆
         if self.queue_is_running():
             write_log("训练失败(队列模式，已跳过弹窗): {}".format(detail[:2000]))
@@ -258,9 +258,11 @@ class TrainMixin(object):
         self._pending_metrics = None
         self.update_train_metrics(record_id, metrics, force=True)
 
-    def on_train_finished(self, record_id, result):
+    def on_train_finished(self, record_id, result, error=None):
         self._train_settled = True
         self._hide_train_task()
+        # 停止标记要在写库前取: 队列回调用完就会清掉
+        stopped = bool(getattr(self, "_train_stopped", False))
         if record_id:
             self._flush_train_metrics(record_id)
         recs = self.db.get_train_records()
@@ -282,12 +284,13 @@ class TrainMixin(object):
                     if result.get("model_path"):
                         r["model_path"] = result["model_path"]
                 else:
-                    r["status"] = "失败/已停止"
+                    r["status"] = "已停止" if stopped else "失败"
+                    if error:
+                        r["error"] = error[:2000]
                 self.db.update_train_record(r)
                 if result and result.get("model_path"):
                     self._save_model_record(r)
                 break
-        stopped = bool(getattr(self, "_train_stopped", False))
         self._train_stopped = False
         if hasattr(self, "on_queue_train_finished"):
             self.on_queue_train_finished(record_id, result, stopped=stopped)

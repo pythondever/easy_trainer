@@ -1,28 +1,100 @@
 # -*- coding: utf-8 -*-
 import os
+import re
 import shutil
+import subprocess
+import sys
 from datetime import datetime
 from math import ceil
 
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QColor
-from PySide6.QtWidgets import (QDialog, QTableWidgetItem, QPushButton,
+from PySide6.QtGui import QColor, QPainter, QPixmap, QPen
+from PySide6.QtWidgets import (QDialog, QTableWidgetItem, QPushButton, QLabel,
                                QFileDialog, QAbstractItemView, QHeaderView,
-                               QSizePolicy, QHBoxLayout, QWidget)
+                               QSizePolicy, QHBoxLayout, QVBoxLayout, QWidget, QProgressBar)
 
 import traceback
 
 from PySide6.QtCore import QTimer
 
+from app.core.db import load_train_metrics
 from app.widgets.message_box import MessageBox
 from app.widgets.metrics_dialog import MetricsDialog
 from app.widgets.test_dialog import TestDialog
 from app.train.dialogs import TrainDialog
 from ui.model import Ui_ModelDialog
 
+TASK_TEXT = {"detect": "检测", "segment": "分割", "classify": "分类"}
+COL_TASK, COL_DATA, COL_METRIC, COL_TIME, COL_DUR, COL_IMG, COL_OPS = range(7)
+METRIC_GOOD, METRIC_MID, METRIC_BAD = "#7be39a", "#ffd166", "#ff6b6b"
+
+# 操作列按钮配色: 测试/导出绿, 删除红。行内样式会盖掉全局, 故 disabled 态要自己补
+_OPS_BTN = "QPushButton{font-size:12px;padding:2px 4px;background-color:%s;" \
+           "border:1px solid %s;color:%s;}" \
+           "QPushButton:hover{background-color:%s;border-color:%s;}" \
+           "QPushButton:pressed{background-color:%s;}" \
+           "QPushButton:disabled{background-color:#1c1e25;border-color:#2a2d37;" \
+           "color:#5c6270;}"
+OPS_BTN_QSS = {
+    "opsGo": _OPS_BTN % ("#2b6b4a", "#3d8c62", "#d6f5e4",
+                         "#357f58", "#4ba376", "#245c40"),
+    "opsDel": _OPS_BTN % ("#7a3336", "#a3454b", "#ffd9d9",
+                          "#8f3d41", "#bd5359", "#6a2c2f"),
+}
+CURVE_BG, CURVE_LINE = QColor("#181a20"), QColor("#4f7dff")
+
+
+def _metric_value(rec):
+    """精度统一取成 float: 检测/分割用 map50, 分类用 accuracy。"""
+    for key in ("map50", "accuracy"):
+        v = rec.get(key)
+        if v in (None, ""):
+            continue
+        try:
+            return float(v)
+        except (TypeError, ValueError):
+            continue
+    return None
+
+
+def _status(rec):
+    st = str(rec.get("status") or "").strip()
+    if not st:
+        return "训练中" if not rec.get("model_path") else "已完成"
+    if st in ("失败", "已停止", "失败/已停止"):
+        return st      # "失败/已停止" 是旧记录, 区分不出停止还是报错
+    if "失败" in st or "停止" in st:
+        return "失败/已停止"
+    if "训练" in st or "运行" in st:
+        return "训练中"
+    return "已完成"
+
+
+STATUS_COLOR = {
+    "失败": "#ff6b6b",
+    "已停止": "#ffd166",
+    "失败/已停止": "#ff9f6b",   # 旧记录: 无法判定
+    "训练中": "#6bb8ff",
+}
+
+
+def _duration_seconds(text):
+    def pick(pattern):
+        m = re.search(pattern, str(text or ""))
+        return int(m.group(1)) if m else 0
+
+    return (pick(r"(\d+)\s*(?:小时|h)") * 3600
+            + pick(r"(\d+)\s*(?:分|min)") * 60
+            + pick(r"(\d+)\s*(?:秒|s)"))
+
+
+def _esc(text):
+    return (str(text).replace("&", "&amp;").replace("<", "&lt;")
+            .replace(">", "&gt;"))
+
 
 class ModelDialog(QDialog):
-    """模型管理：分页表格展示 db 训练记录，支持导出模型/查看指标/删除。"""
+    """模型管理：筛选 + 排序的分页表格，选中行在右侧显示详情与精度曲线。"""
 
     def __init__(self, app, project="", dataset="", parent=None):
         super().__init__(parent)
@@ -33,9 +105,14 @@ class ModelDialog(QDialog):
         self.app = app
         self._project = project
         self._dataset = dataset
+        self._all_records = []
         self._records = []
+        self._page_recs = []
         self._page = 0
         self._page_size = 15
+        self._sort_col = COL_TIME
+        self._sort_desc = True
+        self._current = None
         self._resize_timer = QTimer(self)
         self._resize_timer.setSingleShot(True)
         self._resize_timer.setInterval(150)
@@ -43,6 +120,7 @@ class ModelDialog(QDialog):
         # 注册到 app:测试倒计时结束后由 TestDialog 关闭本窗口回首页
         self.app._model_dialog = self
         self._setup_table()
+        self._setup_filters()
         self.ui.pre_page_btn.clicked.connect(self._prev_page)
         self.ui.next_page_btn.clicked.connect(self._next_page)
         self._load_records()
@@ -51,6 +129,9 @@ class ModelDialog(QDialog):
         super().showEvent(event)
         self._calc_page_size()
         self._render_page()
+        # 首次渲染时详情面板还没布局完, 曲线宽度拿不到, 这里按实际宽度补画一次
+        if self._current is not None:
+            self._draw_curve(self._current)
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -73,6 +154,8 @@ class ModelDialog(QDialog):
             pass
         super().done(result)
 
+    # ---------- 表格与筛选控件 ----------
+
     def _setup_table(self):
         t = self.ui.tableWidget
         t.verticalHeader().setVisible(False)
@@ -81,22 +164,14 @@ class ModelDialog(QDialog):
         t.setSelectionMode(QAbstractItemView.SingleSelection)
         t.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         h = t.horizontalHeader()
-        # 列宽策略: 时间/类型/尺寸走 ResizeToContents, 数据集信息 Stretch 吃剩余, 其余 Interactive 给默认宽
         widths = {
-            0: (QHeaderView.ResizeToContents, 150),  # 开始训练时间
-            1: (QHeaderView.ResizeToContents, 150),  # 完成训练时间
-            2: (QHeaderView.ResizeToContents, 80),   # 耗时
-            3: (QHeaderView.ResizeToContents, 90),   # 模型大小
-            4: (QHeaderView.ResizeToContents, 70),   # 模型类型
-            5: (QHeaderView.Interactive, 90),        # 模型精度
-            6: (QHeaderView.ResizeToContents, 80),   # 图像尺寸
-            7: (QHeaderView.Interactive, 220),       # 模型路径
-            8: (QHeaderView.Stretch, 0),             # 数据集信息
-            9: (QHeaderView.Fixed, 80),  # 导出
-            10: (QHeaderView.Fixed, 80), # 指标
-            11: (QHeaderView.Fixed, 80), # 删除
-            12: (QHeaderView.Fixed, 80), # 测试
-            13: (QHeaderView.Fixed, 80), # 训练
+            COL_TASK: (QHeaderView.ResizeToContents, 60),
+            COL_DATA: (QHeaderView.Stretch, 0),
+            COL_METRIC: (QHeaderView.Fixed, 110),
+            COL_TIME: (QHeaderView.ResizeToContents, 130),
+            COL_DUR: (QHeaderView.ResizeToContents, 90),
+            COL_IMG: (QHeaderView.ResizeToContents, 80),
+            COL_OPS: (QHeaderView.Fixed, 150),
         }
         for i, (mode, w) in widths.items():
             h.setSectionResizeMode(i, mode)
@@ -104,10 +179,39 @@ class ModelDialog(QDialog):
                 t.setColumnWidth(i, w)
         h.setMinimumSectionSize(60)
         h.setStretchLastSection(False)
-        t.verticalHeader().setDefaultSectionSize(44)
+        h.setSortIndicatorShown(True)
+        h.setSortIndicator(self._sort_col, Qt.DescendingOrder)
+        h.sectionClicked.connect(self._on_header_clicked)
+        t.verticalHeader().setDefaultSectionSize(46)
         t.verticalHeader().setMinimumSectionSize(40)
-        for c in (9, 10, 11, 12, 13):
-            t.setHorizontalHeaderItem(c, QTableWidgetItem(""))
+        t.itemSelectionChanged.connect(self._on_selection_changed)
+
+    def _setup_filters(self):
+        u = self.ui
+        u.search_edit.textChanged.connect(self._apply_filters)
+        u.task_combo.currentTextChanged.connect(self._apply_filters)
+        u.status_combo.currentTextChanged.connect(self._apply_filters)
+        u.best_only_check.stateChanged.connect(self._apply_filters)
+        u.detail_metrics_btn.clicked.connect(
+            lambda: self._current and self._show_metrics(self._current))
+        u.detail_test_btn.clicked.connect(
+            lambda: self._current and self._test(self._current))
+        u.detail_retrain_btn.clicked.connect(
+            lambda: self._current and self._retrain(self._current))
+        u.detail_open_dir_btn.clicked.connect(self._open_model_dir)
+        self._show_detail(None)
+
+    def _on_header_clicked(self, col):
+        if col == COL_OPS:
+            return
+        if col == self._sort_col:
+            self._sort_desc = not self._sort_desc
+        else:
+            self._sort_col = col
+            self._sort_desc = True
+        self.ui.tableWidget.horizontalHeader().setSortIndicator(
+            col, Qt.DescendingOrder if self._sort_desc else Qt.AscendingOrder)
+        self._apply_filters()
 
     def _calc_page_size(self):
         """每页行数 = 视口能容纳的行数，尽量铺满窗口。"""
@@ -116,6 +220,8 @@ class ModelDialog(QDialog):
         if row_h <= 0:
             row_h = 40
         self._page_size = max(10, t.viewport().height() // row_h)
+
+    # ---------- 数据 ----------
 
     def _load_records(self):
         """
@@ -137,10 +243,8 @@ class ModelDialog(QDialog):
             if not self._record_match(t):
                 continue
             recs.append(t)
-        recs.sort(key=lambda r: r.get("start_time", ""), reverse=True)
-        self._records = recs
-        self._page = 0
-        self._render_page()
+        self._all_records = recs
+        self._apply_filters()
 
     def _record_match(self, r):
         if self._project and r.get("project") != self._project:
@@ -152,6 +256,74 @@ class ModelDialog(QDialog):
                 return False
         return True
 
+    def _apply_filters(self):
+        kw = self.ui.search_edit.text().strip().lower()
+        task = self.ui.task_combo.currentText()
+        status = self.ui.status_combo.currentText()
+        recs = []
+        for r in self._all_records:
+            if task != "全部任务" and TASK_TEXT.get(r.get("task", ""), "—") != task:
+                continue
+            if status != "全部状态":
+                st = _status(r)
+                # 旧记录的"失败/已停止"判定不了, 两种筛选都让它命中
+                if st != status and not (st == "失败/已停止"
+                                         and status in ("失败", "已停止")):
+                    continue
+            if kw:
+                labels = r.get("labels") or []
+                if not isinstance(labels, (list, tuple)):
+                    labels = [labels]
+                hay = " ".join([str(r.get(k, "")) for k in
+                                ("project", "dataset", "val_dataset",
+                                 "dataset_info")] + [str(x) for x in labels])
+                if kw not in hay.lower():
+                    continue
+            recs.append(r)
+        if self.ui.best_only_check.isChecked():
+            best = {}
+            for r in recs:
+                m = _metric_value(r)
+                if m is None:
+                    continue
+                key = r.get("dataset") or r.get("dataset_info") or ""
+                cur = best.get(key)
+                if cur is None or m > _metric_value(cur):
+                    best[key] = r
+            recs = list(best.values())
+        self._records = self._sort_records(recs)
+        self._page = 0
+        self.ui.count_label.setText("共 {} 条".format(len(self._records)))
+        self._render_page()
+
+    def _sort_records(self, recs):
+        # 无精度的(训练中/失败)无论升降序都沉到最后, 否则按精度升序时它们霸占榜首
+        if self._sort_col == COL_METRIC:
+            has = [r for r in recs if _metric_value(r) is not None]
+            none = [r for r in recs if _metric_value(r) is None]
+            has.sort(key=_metric_value, reverse=self._sort_desc)
+            return has + none
+
+        def key(r):
+            if self._sort_col == COL_TIME:
+                v = str(r.get("start_time", ""))
+            elif self._sort_col == COL_DUR:
+                v = _duration_seconds(r.get("duration"))
+            elif self._sort_col == COL_IMG:
+                try:
+                    v = int(r.get("img_size") or 0)
+                except (TypeError, ValueError):
+                    v = 0
+            elif self._sort_col == COL_DATA:
+                v = str(r.get("dataset_info") or r.get("dataset") or "")
+            else:
+                v = TASK_TEXT.get(r.get("task", ""), "—")
+            return v
+
+        return sorted(recs, key=key, reverse=self._sort_desc)
+
+    # ---------- 渲染 ----------
+
     def _render_page(self):
         t = self.ui.tableWidget
         total = len(self._records)
@@ -159,119 +331,243 @@ class ModelDialog(QDialog):
         self._page = min(self._page, pages - 1)
         start = self._page * self._page_size
         page_recs = self._records[start:start + self._page_size]
-        rows = self._page_size
+        self._page_recs = page_recs
         t.clearContents()
-        t.setRowCount(rows)
+        t.setRowCount(self._page_size)
         for i, r in enumerate(page_recs):
-            map50 = r.get("map50", "")
-            metric_val = ""
-            if map50:
-                try:
-                    metric_val = "{:.3f}".format(float(map50))
-                except (TypeError, ValueError):
-                    metric_val = str(map50)
-            acc = r.get("accuracy", "")
-            if acc:
-                try:
-                    metric_val = "{:.3f}".format(float(acc))
-                except (TypeError, ValueError):
-                    metric_val = str(acc)
-            task_text = {"detect": "检测", "segment": "分割",
-                         "classify": "分类"}.get(r.get("task", ""), "—")
-            vals = [r.get("start_time", ""), r.get("end_time", ""),
-                    r.get("duration", ""), r.get("model_size", ""),
-                    task_text, metric_val, r.get("img_size", ""),
-                    r.get("model_path", ""), r.get("dataset_info", "")]
+            st = _status(r)
+            m = _metric_value(r)
+            labels = r.get("labels") or []
+            if not isinstance(labels, (list, tuple)):
+                labels = [labels]
+            label_text = " · ".join(str(x) for x in labels[:6])
+            if len(labels) > 6:
+                label_text += " 等 {} 类".format(len(labels))
+            data_text = str(r.get("dataset_info") or r.get("dataset") or "")
+            if label_text:
+                data_text += "\n{}".format(label_text)
+            vals = [TASK_TEXT.get(r.get("task", ""), "—"), data_text,
+                    "", r.get("start_time", ""), r.get("duration", ""),
+                    r.get("img_size", "")]
             for j, v in enumerate(vals):
-                text = str(v)
-                if j == 7:
-                    text = os.path.dirname(str(v)) if v else ""
-                    item = QTableWidgetItem(text)
-                    item.setToolTip(str(v))
-                elif j == 8:
-                    full = str(v)
-                    item = QTableWidgetItem(full)
-                    item.setToolTip(full)
-                else:
-                    item = QTableWidgetItem(text)
-                item.setTextAlignment(Qt.AlignCenter)
-                # 模型精度: ≥0.8 绿, 0.5~0.8 黄, <0.5 红; 无法解析保持默认
-                if j == 5 and metric_val:
-                    try:
-                        v_num = float(metric_val)
-                        if v_num >= 0.8:
-                            item.setForeground(QColor("#7be39a"))
-                        elif v_num >= 0.5:
-                            item.setForeground(QColor("#ffd166"))
-                        else:
-                            item.setForeground(QColor("#ff6b6b"))
-                        item.setToolTip("高 ≥0.8 绿 / 中 0.5~0.8 黄 / 低 <0.5 红")
-                    except (TypeError, ValueError):
-                        pass
+                item = QTableWidgetItem(str(v))
+                item.setTextAlignment(
+                    Qt.AlignCenter if j != COL_DATA else Qt.AlignLeft | Qt.AlignVCenter)
+                item.setToolTip(str(v))
                 t.setItem(i, j, item)
-            btn = QPushButton("导出")
-            path = r.get("model_path", "")
-            btn.setEnabled(bool(path))
-            btn.setMinimumSize(68, 28)
-            btn.setMaximumWidth(76)
-            btn.setStyleSheet(
-                "QPushButton{font-size:12px;padding:2px 6px;}"
-            )
-            btn.clicked.connect(lambda checked=False, rec=r: self._export(rec))
-            t.setCellWidget(i, 9, self._make_centered_cell(btn))
-            mbtn = QPushButton("指标")
-            mbtn.setMinimumSize(68, 28)
-            mbtn.setMaximumWidth(76)
-            mbtn.setStyleSheet(
-                "QPushButton{font-size:12px;padding:2px 6px;}"
-            )
-            mbtn.clicked.connect(
-                lambda checked=False, rec=r: self._show_metrics(rec))
-            t.setCellWidget(i, 10, self._make_centered_cell(mbtn))
-            dbtn = QPushButton("删除")
-            dbtn.setMinimumSize(68, 28)
-            dbtn.setMaximumWidth(76)
-            dbtn.setStyleSheet(
-                "QPushButton{font-size:12px;padding:2px 6px;}"
-            )
-            dbtn.clicked.connect(
-                lambda checked=False, rec=r: self._delete(rec))
-            t.setCellWidget(i, 11, self._make_centered_cell(dbtn))
+            if m is None:
+                item = QTableWidgetItem(st)
+                item.setTextAlignment(Qt.AlignCenter)
+                item.setForeground(QColor(STATUS_COLOR.get(st, "#ffd166")))
+                err = str(r.get("error") or "").strip()
+                item.setToolTip(err or st)
+                t.setItem(i, COL_METRIC, item)
+            else:
+                t.setCellWidget(i, COL_METRIC, self._make_metric_cell(
+                    m, st if st != "已完成" else None, r.get("error")))
+            btns = []
             tbtn = QPushButton("测试")
-            tbtn.setMinimumSize(68, 28)
-            tbtn.setMaximumWidth(76)
-            tbtn.setStyleSheet(
-                "QPushButton{font-size:12px;padding:2px 6px;}"
-            )
+            tbtn.setObjectName("opsGo")
             tbtn.setEnabled(bool(r.get("model_path")))
-            tbtn.clicked.connect(
-                lambda checked=False, rec=r: self._test(rec))
-            t.setCellWidget(i, 12, self._make_centered_cell(tbtn))
-            trbtn = QPushButton("训练")
-            trbtn.setMinimumSize(68, 28)
-            trbtn.setMaximumWidth(76)
-            trbtn.setStyleSheet(
-                "QPushButton{font-size:12px;padding:2px 6px;}"
-            )
-            trbtn.clicked.connect(
-                lambda checked=False, rec=r: self._retrain(rec))
-            t.setCellWidget(i, 13, self._make_centered_cell(trbtn))
+            tbtn.clicked.connect(lambda checked=False, rec=r: self._test(rec))
+            btns.append(tbtn)
+            ebtn = QPushButton("导出")
+            ebtn.setObjectName("opsGo")
+            ebtn.setEnabled(bool(r.get("model_path")))
+            ebtn.clicked.connect(lambda checked=False, rec=r: self._export(rec))
+            btns.append(ebtn)
+            dbtn = QPushButton("删除")
+            dbtn.setObjectName("opsDel")
+            dbtn.clicked.connect(lambda checked=False, rec=r: self._delete(rec))
+            btns.append(dbtn)
+            t.setCellWidget(i, COL_OPS, self._make_ops_cell(btns))
         self.ui.page_label.setText("{}/{}".format(self._page + 1, pages))
         self.ui.pre_page_btn.setEnabled(self._page > 0)
         self.ui.next_page_btn.setEnabled(self._page < pages - 1)
+        if page_recs:
+            t.selectRow(0)
+        else:
+            self._show_detail(None)
 
-    def _make_centered_cell(self, widget):
-        """包裹按钮到 QWidget + QHBoxLayout，让 cellWidget 居中显示。"""
+    # 全局 qss 的 QWidget 背景会把单元格容器刷成黑色, 用 id 选择器只对容器本身透明
+    @staticmethod
+    def _transparent_wrap(wrap):
+        wrap.setObjectName("cellWrap")
+        wrap.setStyleSheet("#cellWrap{background:transparent;}")
+        return wrap
+
+    def _make_metric_cell(self, value, status=None, error=None):
+        color = METRIC_GOOD if value >= 0.8 else (
+            METRIC_MID if value >= 0.5 else METRIC_BAD)
         wrap = QWidget()
-        wrap.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        v = QVBoxLayout(wrap)
+        v.setContentsMargins(2, 2, 2, 2)
+        v.setSpacing(2)
+        lbl = QLabel("{:.3f}".format(value))
+        lbl.setAlignment(Qt.AlignCenter)
+        lbl.setStyleSheet("font-size:12px;color:%s;" % color)
+        if status:
+            s = QLabel(status)
+            s.setAlignment(Qt.AlignCenter)
+            s.setStyleSheet("font-size:10px;color:%s;"
+                            % STATUS_COLOR.get(status, METRIC_MID))
+            v.addWidget(s)
+            if error:
+                wrap.setToolTip(error)
+        bar = QProgressBar()
+        bar.setRange(0, 100)
+        bar.setValue(int(round(value * 100)))
+        bar.setTextVisible(False)
+        bar.setFixedHeight(5)
+        bar.setStyleSheet(
+            "QProgressBar{border:none;background:#2c303c;border-radius:2px;}"
+            "QProgressBar::chunk{background:%s;border-radius:2px;}" % color)
+        v.addWidget(lbl)
+        v.addWidget(bar)
+        return self._transparent_wrap(wrap)
+
+    def _make_ops_cell(self, buttons):
+        wrap = QWidget()
         h = QHBoxLayout(wrap)
         h.setContentsMargins(0, 0, 0, 0)
-        h.setSpacing(0)
+        h.setSpacing(4)
         h.addStretch(1)
-        h.addWidget(widget)
+        for b in buttons:
+            b.setMinimumSize(44, 26)
+            b.setMaximumWidth(50)
+            b.setStyleSheet(OPS_BTN_QSS[b.objectName()])
+            h.addWidget(b)
         h.addStretch(1)
-        h.setAlignment(Qt.AlignCenter)
-        return wrap
+        return self._transparent_wrap(wrap)
+
+    def _on_selection_changed(self):
+        row = self.ui.tableWidget.currentRow()
+        rec = self._page_recs[row] if 0 <= row < len(self._page_recs) else None
+        self._show_detail(rec)
+
+    # ---------- 详情面板 ----------
+
+    def _show_detail(self, rec):
+        self._current = rec
+        u = self.ui
+        if rec is None:
+            u.detail_info.setText("选中一行查看详情")
+            u.detail_curve.setPixmap(QPixmap())
+            u.detail_curve.setText("")
+            for b in (u.detail_metrics_btn, u.detail_test_btn,
+                      u.detail_retrain_btn, u.detail_open_dir_btn):
+                b.setEnabled(False)
+            return
+        m = _metric_value(rec)
+        labels = rec.get("labels") or []
+        if not isinstance(labels, (list, tuple)):
+            labels = [labels]
+        batch = rec.get("batch_size", "")
+        if batch and str(rec.get("grad_accum", "")) not in ("", "1"):
+            batch = "{} × {} 累积".format(batch, rec.get("grad_accum"))
+        rows = [
+            ("任务", "{} · {}".format(TASK_TEXT.get(rec.get("task", ""), "—"),
+                                     rec.get("model_size", "—"))),
+            ("状态", _status(rec)),
+            ("精度", "{:.3f}".format(m) if m is not None else "—"),
+            ("训练集", rec.get("dataset", "—")),
+            ("验证集", rec.get("val_dataset", "—")),
+            ("图像尺寸", rec.get("img_size", "—")),
+            ("轮数 / 早停", "{} / {}".format(rec.get("epochs", "—"),
+                                            rec.get("early_stop", "—"))),
+            ("批大小", batch or "—"),
+            ("学习率", rec.get("lr", "—")),
+            ("优化器", rec.get("optimizer", "—")),
+            ("设备", rec.get("device", "—")),
+            ("标签", " · ".join(str(x) for x in labels) or "—"),
+            ("训练时间", "{} ~ {}".format(rec.get("start_time", "—"),
+                                         rec.get("end_time", "—"))),
+            ("耗时", rec.get("duration", "—")),
+            ("模型路径", rec.get("model_path", "—")),
+        ]
+        html = ""
+        for k, v in rows:
+            val = _esc(v)
+            if k == "状态":
+                val = "<span style='color:{}'>{}</span>".format(
+                    STATUS_COLOR.get(v, "#e8eaf0"), val)
+            html += ("<tr><td style='color:#8b8b8b;padding-right:6px;"
+                     "white-space:nowrap'>{}</td><td>{}</td></tr>".format(
+                         _esc(k), val))
+        err = str(rec.get("error") or "").strip()
+        if err:
+            html += ("<tr><td style='color:#8b8b8b;padding-right:6px;"
+                     "vertical-align:top;white-space:nowrap'>失败原因</td>"
+                     "<td><pre style='margin:0;white-space:pre-wrap;"
+                     "font-family:inherit;color:#ff9aa2'>{}</pre></td></tr>"
+                     .format(_esc(err[:800])))
+        u.detail_info.setText(
+            "<table style='font-size:12px;line-height:150%'>{}</table>".format(html))
+        self._draw_curve(rec)
+        has_model = bool(rec.get("model_path"))
+        u.detail_metrics_btn.setEnabled(True)
+        u.detail_test_btn.setEnabled(has_model)
+        u.detail_retrain_btn.setEnabled(True)
+        u.detail_open_dir_btn.setEnabled(has_model)
+
+    def _draw_curve(self, rec):
+        label = self.ui.detail_curve
+        label.setText("")
+        try:
+            metrics = load_train_metrics(rec, getattr(self.app.db, "db_path", None))
+        except Exception:
+            metrics = {}
+        series = metrics.get("series") or {}
+        key = "accuracy" if "accuracy" in series else (
+            "mAP@50" if "mAP@50" in series else "")
+        ys = [v for v in (series.get(key) or []) if isinstance(v, (int, float))]
+        if not ys:
+            label.setPixmap(QPixmap())
+            label.setText("暂无曲线")
+            return
+        w = max(120, label.width() - 4)
+        h = 104
+        pix = QPixmap(w, h)
+        pix.fill(CURVE_BG)
+        p = QPainter(pix)
+        p.setRenderHint(QPainter.Antialiasing)
+        p.setPen(QPen(QColor("#3a3f4b"), 1))
+        p.drawRect(0, 0, w - 1, h - 1)
+        lo, hi = min(ys), max(ys)
+        span = max(hi - lo, 1e-6)
+        pad = 8
+        n = len(ys)
+        pts = []
+        for i, v in enumerate(ys):
+            x = pad + (w - 2 * pad) * (i / max(1, n - 1))
+            y = h - pad - (h - 2 * pad) * ((v - lo) / span)
+            pts.append((x, y))
+        p.setPen(QPen(CURVE_LINE, 2))
+        for i in range(1, len(pts)):
+            p.drawLine(int(pts[i - 1][0]), int(pts[i - 1][1]),
+                       int(pts[i][0]), int(pts[i][1]))
+        p.setPen(QColor("#8b8b8b"))
+        p.drawText(6, 14, "{}  最佳 {:.3f}".format(key, hi))
+        p.end()
+        label.setPixmap(pix)
+
+    def _open_model_dir(self):
+        path = (self._current or {}).get("model_path", "")
+        d = os.path.dirname(path) if path else ""
+        if not d or not os.path.isdir(d):
+            MessageBox.warning(self, "打开目录", "模型目录不存在：\n{}".format(d))
+            return
+        try:
+            if sys.platform.startswith("win"):
+                os.startfile(d)
+            elif sys.platform == "darwin":
+                subprocess.Popen(["open", d])
+            else:
+                subprocess.Popen(["xdg-open", d])
+        except Exception as e:
+            MessageBox.warning(self, "打开目录", str(e))
+
+    # ---------- 操作 ----------
 
     def _prev_page(self):
         if self._page > 0:
