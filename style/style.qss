@@ -484,13 +484,13 @@ QRadioButton::indicator {
     height: 16px;
     border: none;
     background-color: transparent;
-    image: url({{STYLE_DIR}}/radio_off.png);
+    image: url({{RES_DIR}}/radio_off.png);
 }
 QRadioButton::indicator:hover {
-    image: url({{STYLE_DIR}}/radio_off_hover.png);
+    image: url({{RES_DIR}}/radio_off_hover.png);
 }
 QRadioButton::indicator:checked {
-    image: url({{STYLE_DIR}}/radio_on.png);
+    image: url({{RES_DIR}}/radio_on.png);
 }
 
 /* ---------------- 分割条 ---------------- */

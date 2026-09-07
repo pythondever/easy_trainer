@@ -96,7 +96,7 @@ def read_text_any(path):
 
 
 def load_style_sheet():
-    """加载 resources/style.qss, 并把素材占位符替换为绝对路径(QSS 的 url 相对路径按 cwd 解析, 不可靠)"""
+    """加载 style/style.qss, 并把素材占位符替换为绝对路径(QSS 的 url 相对路径按 cwd 解析, 不可靠)"""
     here = project_root()
     qss_path = os.path.join(here, "style", "style.qss")
     try:
@@ -104,5 +104,5 @@ def load_style_sheet():
             qss = f.read()
     except OSError:
         return ""
-    style_dir = os.path.join(here, "style").replace("\\", "/")
-    return qss.replace("{{STYLE_DIR}}", style_dir)
+    res_dir = os.path.join(here, "resources").replace("\\", "/")
+    return qss.replace("{{RES_DIR}}", res_dir)
