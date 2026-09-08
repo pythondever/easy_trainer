@@ -93,6 +93,17 @@ class Ui_annotationDialog(object):
 
         self.horizontalLayout.addWidget(self.blend_strength_lineEdit)
 
+        self.fill_value_label = QLabel(annotationDialog)
+        self.fill_value_label.setObjectName(u"fill_value_label")
+
+        self.horizontalLayout.addWidget(self.fill_value_label)
+
+        self.fill_value_lineEdit = QLineEdit(annotationDialog)
+        self.fill_value_lineEdit.setObjectName(u"fill_value_lineEdit")
+        self.fill_value_lineEdit.setMinimumSize(QSize(65, 0))
+
+        self.horizontalLayout.addWidget(self.fill_value_lineEdit)
+
         self.horizontalSpacer_3 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout.addItem(self.horizontalSpacer_3)
@@ -236,6 +247,7 @@ class Ui_annotationDialog(object):
         self.angle_range_label.setText(QCoreApplication.translate("annotationDialog", u"\u89d2\u5ea6:", None))
         self.label.setText(QCoreApplication.translate("annotationDialog", u"-", None))
         self.blend_strength_label.setText(QCoreApplication.translate("annotationDialog", u"\u878d\u5408\u5f3a\u5ea6", None))
+        self.fill_value_label.setText(QCoreApplication.translate("annotationDialog", u"\u586b\u5145\u503c", None))
         self.label_list.setText(QCoreApplication.translate("annotationDialog", u"\u6807\u7b7e\u5217\u8868", None))
         self.add_label.setText(QCoreApplication.translate("annotationDialog", u"\u6dfb\u52a0", None))
         self.labeled_list.setText(QCoreApplication.translate("annotationDialog", u"\u6807\u6ce8\u4fe1\u606f", None))

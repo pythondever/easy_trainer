@@ -368,8 +368,38 @@ class AnnotationScene(QGraphicsScene):
             self._fp_undo_stack.append(
                 {"before": before, "ox": ox, "oy": oy, "item": item})
 
+    def fill_polygon(self, item, value):
+        """把多边形区域内像素填成灰度 value(0~255), 入同一撤销栈供 Ctrl+Z 恢复。"""
+        pix = self.image_item.pixmap() if self.image_item is not None else None
+        poly = item.polygon() if item is not None else None
+        if pix is None or poly is None or poly.isEmpty():
+            return False
+        v = min(255, max(0, int(value)))
+        box = poly.boundingRect()
+        ox = max(0, int(box.x()))
+        oy = max(0, int(box.y()))
+        bw = min(int(box.right()) + 1, pix.width()) - ox
+        bh = min(int(box.bottom()) + 1, pix.height()) - oy
+        if bw <= 0 or bh <= 0:
+            return False
+        before = pix.copy(ox, oy, bw, bh)
+        if before.isNull():
+            return False
+        p = QPainter(pix)
+        p.setRenderHint(QPainter.Antialiasing)
+        path = QPainterPath()
+        path.addPolygon(poly)
+        p.fillPath(path, QColor(v, v, v))
+        p.end()
+        self.image_item.setPixmap(pix)
+        self.image_modified = True
+        self.image_pixels_changed.emit()
+        self._fp_undo_stack.append(
+            {"before": before, "ox": ox, "oy": oy, "item": None})
+        return True
+
     def undo_last_paste(self):
-        """撤销最后一次格式刷粘贴：恢复图像区域像素 + 删除标注。"""
+        """撤销最后一次像素改动(粘贴/填充): 恢复图像区域像素 + 删除随粘贴新增的标注。"""
         if not self._fp_undo_stack:
             return False
         rec = self._fp_undo_stack.pop()

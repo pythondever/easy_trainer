@@ -35,6 +35,7 @@ from PySide6.QtWidgets import QGraphicsView
 
 
 BLEND_STRENGTH_DEFAULT = "0.7"   # 粘贴融合力度: 0=原始硬贴, 1=完全融合
+FILL_VALUE_DEFAULT = "255"       # 多边形填充灰度: 0=黑, 255=白
 
 
 def _resource_path(name):
@@ -156,6 +157,8 @@ def _upgrade_graphics_view(view):
             menu = QMenu(_v)
             act_copy = menu.addAction("复制")
             act_copy.triggered.connect(lambda: scene.copy_template_from_item(hit))
+            act_fill = menu.addAction("填充")
+            act_fill.triggered.connect(lambda: _do_fill(scene, hit))
             menu.exec(ev.globalPos())
             ev.accept()
             return
@@ -185,6 +188,13 @@ def _upgrade_graphics_view(view):
             hi = 180
         _scene.angle_range = (lo, hi)
         _scene._paste_template(_pos)
+
+    def _do_fill(_scene, _item):
+        """多边形填充: 把区域内像素改成"填充值"输入框的灰度, 可 Ctrl+Z 撤销。"""
+        dialog = view.window()
+        if _scene.fill_polygon(_item, dialog._fill_value()):
+            dialog._dirty = True
+            dialog._autosave_timer.start()
 
     def _zoom_level(_v=view):
         return _v.transform().m11()
@@ -647,6 +657,13 @@ class AnnotationDialog(QDialog):
         u.blend_strength_lineEdit.setFixedSize(65, u.draw_rect_btn.height())
         u.blend_strength_lineEdit.editingFinished.connect(self._normalize_blend_strength)
         self._normalize_blend_strength()
+        # 填充值: 多边形右键"填充"写入的灰度(0~255, 仅整数)
+        u.fill_value_lineEdit.setText(FILL_VALUE_DEFAULT)
+        u.fill_value_lineEdit.setAlignment(Qt.AlignCenter)
+        u.fill_value_lineEdit.setValidator(QIntValidator(0, 255, self))
+        u.fill_value_lineEdit.setFixedSize(65, u.draw_rect_btn.height())
+        u.fill_value_lineEdit.editingFinished.connect(self._normalize_fill_value)
+        u.fill_value_label.setText("填充值")
         u.switchButton = SwitchButton(self)
         u.switchButton.setObjectName("switchButton")
         u.switchButton.setChecked(True)
@@ -692,6 +709,23 @@ class AnnotationDialog(QDialog):
         scene = getattr(self, "scene", None)
         if scene is not None:
             scene.blend_strength = v
+
+    def _normalize_fill_value(self):
+        """失焦时把填充值收敛到 [0,255]; 空值/非法值回到默认。"""
+        edit = self.ui.fill_value_lineEdit
+        try:
+            v = int(float(edit.text().strip()))
+        except ValueError:
+            v = int(FILL_VALUE_DEFAULT)
+        edit.setText(str(min(255, max(0, v))))
+
+    def _fill_value(self):
+        """当前填充灰度(0~255); 输入框异常时回退默认。"""
+        try:
+            v = int(float(self.ui.fill_value_lineEdit.text().strip()))
+        except ValueError:
+            v = int(FILL_VALUE_DEFAULT)
+        return min(255, max(0, v))
 
     def _on_boxes_changed(self):
         """
@@ -979,7 +1013,7 @@ class AnnotationDialog(QDialog):
         self.scene.invalidate()
 
     def _undo_fp_paste(self):
-        """Ctrl+Z：撤销最后一次格式刷粘贴（恢复图像像素 + 删标注）。"""
+        """Ctrl+Z：撤销最后一次像素改动（粘贴/填充，恢复图像像素 + 删标注）。"""
         if self.scene.undo_last_paste():
             self._refresh_labeled_list()
 

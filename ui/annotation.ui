@@ -101,6 +101,20 @@
         </widget>
        </item>
        <item>
+        <widget class="QLabel" name="fill_value_label">
+         <property name="text">
+          <string>填充值</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="fill_value_lineEdit">
+         <property name="minimumSize">
+          <size><width>65</width><height>0</height></size>
+         </property>
+        </widget>
+       </item>
+       <item>
         <spacer name="horizontalSpacer_3">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
