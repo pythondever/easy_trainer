@@ -49,7 +49,7 @@ class App(QWidget, MainUI, LabelMixin, ProjectMixin, ImportExportMixin,
         self._log("软件退出")
         if self.is_training():
             self._log("软件退出前停止训练")
-            # 先停队列引擎,避免退出时弹出"仅停止当前/停止队列"选择框
+            # 先停队列
             self.stop_train_queue()
             self.stop_training(confirm=False)
         # 停止还在运行的测试线程,避免 QThread 崩溃
