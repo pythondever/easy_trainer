@@ -7,7 +7,7 @@
     style/ resources/   素材原样拷贝
     examples/           参考代码原样拷贝（导出 ONNX 时会复制给用户）
 
-保留明文：所有 __init__.py（包结构需要）、app/easy_trainer.py（launcher 用pythonw 直接执行它，sys.path[0] 在 app/ 下，
+保留明文：所有 __init__.py（包结构需要）、app/easy_trainer.py（桌面快捷方式用 pythonw 直接执行它，sys.path[0] 在 app/ 下，
 靠文件头 append 到项目根）。其余模块含 train_runner/test_runner 全部编译 —— worker 已改 python -m 调用。
 
 Windows 需要 cl.exe 可用（在 VS Developer Prompt / vcvars64 里执行），否则
@@ -19,6 +19,7 @@ import glob
 import os
 import platform
 import shutil
+import subprocess
 import sys
 import zipfile
 
@@ -71,12 +72,42 @@ def copy_data(target):
             shutil.copytree(src, os.path.join(target, name), dirs_exist_ok=True)
 
 
+def publish_installer():
+    """
+    dotnet publish 安装器：csproj 构建期把 program.zip 与 requirements-release.txt
+    嵌进 exe，所以必须在 program.zip 就绪后执行。失败中断 —— 缺内嵌资源的
+    安装器发布出去是不完整的。
+    """
+    dotnet = shutil.which("dotnet")
+    if dotnet is None:
+        sys.exit("找不到 dotnet，无法发布安装器。请先安装 .NET SDK：https://dotnet.microsoft.com/download")
+    proj_dir = os.path.join(ROOT, "installer", "EasyTrainer.Installer")
+    proj = os.path.join(proj_dir, "EasyTrainer.Installer.csproj")
+    out_dir = os.path.join(ROOT, "dist", "release")
+    cmd = [dotnet, "publish", proj,
+           "-c", "Release", "-r", "win-x64",
+           "--self-contained", "true",
+           "-p:PublishSingleFile=true",
+           "-o", out_dir]
+    print("发布安装器: " + " ".join(cmd))
+    ret = subprocess.run(cmd, cwd=proj_dir)
+    if ret.returncode != 0:
+        sys.exit("dotnet publish 失败 (exit={})，请查看上方错误".format(ret.returncode))
+    exe = os.path.join(out_dir, "installer.exe")
+    if os.path.isfile(exe):
+        print("installer.exe 就绪: {} ({:.1f}MB)".format(exe, os.path.getsize(exe) / 1048576))
+    else:
+        sys.exit("dotnet publish 结束但未找到 {}".format(exe))
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("-t", "--target", default=os.path.join(ROOT, "dist", "program"),
                     help="输出目录(默认 dist/program)")
     ap.add_argument("--keep-build", action="store_true",
                     help="编译后保留 build/ 与生成的 .c")
+    ap.add_argument("--no-publish", action="store_true",
+                    help="跳过 dotnet publish（仅编译 pyd 调试用）")
     args = ap.parse_args()
 
     target = os.path.abspath(args.target)
@@ -140,8 +171,6 @@ def main():
     if not args.keep_build:
         shutil.rmtree(os.path.join(ROOT, "build"), ignore_errors=True)
     print("program 根目录就绪: {}".format(target))
-
-    # 顺手打成 program.zip：installer 的 csproj 构建期嵌入此文件（程序本体随安装器分发）
     zip_out = os.path.join(os.path.dirname(target), "program.zip")
     count = 0
     with zipfile.ZipFile(zip_out, "w", zipfile.ZIP_DEFLATED, allowZip64=True) as zf:
@@ -154,6 +183,11 @@ def main():
                 count += 1
     print("program.zip 就绪: {} ({} 个文件, {:.1f}MB)".format(
         zip_out, count, os.path.getsize(zip_out) / 1048576))
+
+    if not args.no_publish:
+        publish_installer()
+    else:
+        print("已跳过 dotnet publish（--no-publish）")
 
 
 if __name__ == "__main__":
