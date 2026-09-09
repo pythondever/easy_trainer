@@ -1167,3 +1167,21 @@ QDialog#ProgressDialog QPushButton#msgBtn {
     border-radius: 6px; padding: 6px 18px; font-size: 13px;
 }
 QDialog#ProgressDialog QPushButton#msgBtn:hover { background-color: #343a48; }
+
+/* 标注界面"添加标签"与首页"+"同款 ghost 样式。
+   必须放在 #AnnotationDialog QPushButton 之后: 两者特异性相同, 靠后者胜,
+   放前面会被它的 padding:6px 14px 把加号挤出 24px 方块 */
+QPushButton#add_label {
+    background: transparent;
+    border: 1px solid #353a48;
+    border-radius: 6px;
+    padding: 0;
+    min-height: 0;
+    color: #8b93a5;
+    font-size: 15px;
+}
+QPushButton#add_label:hover {
+    color: #e8eaf0;
+    border-color: #4a5164;
+    background-color: #23262f;
+}

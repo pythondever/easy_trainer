@@ -642,9 +642,8 @@ class AnnotationDialog(QDialog):
         u = self.ui
         u.draw_rect_btn.setText("矩形")
         u.poly_btn.setText("多边形")
-        u.add_label.setText("添加标签")
         u.label_list.setText("标签列表")
-        u.labeled_list.setText("当前图像标注")
+        u.labeled_list.setText("标注信息")
         u.pre_page_btn.setText("上一张")
         u.next_page_btn.setText("下一张")
         u.lineEdit.hide()
@@ -978,7 +977,7 @@ class AnnotationDialog(QDialog):
         self._apply_draw_cursor()
         self._set_draw_button_states(True)
         if not self.label_colors:
-            MessageBox.information(self, "添加标签", "请先添加标签(点击「添加标签」)")
+            MessageBox.information(self, "添加标签", "请先添加标签(点击「+」)")
 
     def _apply_draw_cursor(self):
         """多边形=画笔光标, 矩形=十字; override 保证不被 item 光标覆盖。"""
@@ -1513,7 +1512,7 @@ class AnnotationDialog(QDialog):
 
     def _refresh_labeled_list(self):
         """
-        右侧"当前图像标注"列表：每行与场景框双向联动，显示宽×高/顶点数 + 面积 px²。
+        右侧"标注信息"列表：每行与场景框双向联动，显示宽×高/顶点数 + 面积 px²。
         行复用优化: 已有行只更新内容(不 deleteLater 重建), 仅数量变化时增删,
         避免框多时每次操作(拖动/缩放触发 boxes_changed)重建数百控件。
         """

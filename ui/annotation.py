@@ -129,8 +129,15 @@ class Ui_annotationDialog(object):
 
         self.horizontalLayout_3.addWidget(self.label_list)
 
+        self.horizontalSpacer_label = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_3.addItem(self.horizontalSpacer_label)
+
         self.add_label = QPushButton(annotationDialog)
         self.add_label.setObjectName(u"add_label")
+        self.add_label.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.add_label.setMinimumSize(QSize(24, 24))
+        self.add_label.setMaximumSize(QSize(24, 24))
 
         self.horizontalLayout_3.addWidget(self.add_label)
 
@@ -274,7 +281,10 @@ class Ui_annotationDialog(object):
         self.blend_strength_label.setText(QCoreApplication.translate("annotationDialog", u"\u878d\u5408\u5f3a\u5ea6", None))
         self.fill_value_label.setText(QCoreApplication.translate("annotationDialog", u"\u586b\u5145\u503c", None))
         self.label_list.setText(QCoreApplication.translate("annotationDialog", u"\u6807\u7b7e\u5217\u8868", None))
-        self.add_label.setText(QCoreApplication.translate("annotationDialog", u"\u6dfb\u52a0", None))
+#if QT_CONFIG(tooltip)
+        self.add_label.setToolTip(QCoreApplication.translate("annotationDialog", u"\u6dfb\u52a0\u6807\u7b7e", None))
+#endif // QT_CONFIG(tooltip)
+        self.add_label.setText(QCoreApplication.translate("annotationDialog", u"+", None))
         self.labeled_list.setText(QCoreApplication.translate("annotationDialog", u"\u6807\u6ce8\u4fe1\u606f", None))
         self.image_info_label.setText(QCoreApplication.translate("annotationDialog", u"\u56fe\u50cf\u4fe1\u606f", None))
         self.clipboard_label.setText(QCoreApplication.translate("annotationDialog", u"\u526a\u5207\u677f", None))
