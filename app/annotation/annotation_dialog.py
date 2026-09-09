@@ -17,7 +17,7 @@ from PySide6.QtGui import (QColor, QPixmap, QKeySequence, QShortcut, QPen,
 from PySide6.QtWidgets import (QDialog, QWidget, QApplication, QVBoxLayout,
                                QHBoxLayout, QLabel, QMessageBox,
                                QGridLayout, QLineEdit, QSpinBox, QPushButton, QFrame,
-                               QSlider, QMenu, QGraphicsTextItem)
+                               QSlider, QMenu, QGraphicsTextItem, QButtonGroup)
 
 from ui.annotation import Ui_annotationDialog as AnnotationUI
 from ui.add_label import Ui_addLabelDialog as AddLabelUI
@@ -36,6 +36,11 @@ from PySide6.QtWidgets import QGraphicsView
 
 BLEND_STRENGTH_DEFAULT = "0.7"   # 粘贴融合力度: 0=原始硬贴, 1=完全融合
 FILL_VALUE_DEFAULT = "255"       # 多边形填充灰度: 0=黑, 255=白
+
+# 全局粘贴剪切板: 软件重启才清空。
+# 元素即 scene.fp_template 的结构(points/patch/w/h/label), 最新的在下标 0。
+CLIP_MAX = 15
+_clip_templates = []
 
 
 def _resource_path(name):
@@ -156,7 +161,7 @@ def _upgrade_graphics_view(view):
         if isinstance(hit, AnnotationPolygonItem):
             menu = QMenu(_v)
             act_copy = menu.addAction("复制")
-            act_copy.triggered.connect(lambda: scene.copy_template_from_item(hit))
+            act_copy.triggered.connect(lambda: _v.window()._copy_template(hit))
             act_fill = menu.addAction("填充")
             act_fill.triggered.connect(lambda: _do_fill(scene, hit))
             menu.exec(ev.globalPos())
@@ -617,8 +622,12 @@ class AnnotationDialog(QDialog):
         self.ui = AnnotationUI()
         self.ui.setupUi(self)
         self.setWindowTitle("标注 - {} / {}".format(project, dataset))
+        # 标题栏补上最小化/最大化按钮(默认 QDialog 只有关闭)
+        self.setWindowFlags(self.windowFlags()
+                            | Qt.WindowMinimizeButtonHint | Qt.WindowMaximizeButtonHint)
         self._replace_view()
         self._setup_ui()
+        self._setup_clipboard()
         self._setup_shortcuts()
         self.scene.label_colors = {k: QColor(v) for k, v in self.label_colors.items()}
         self._refresh_labels()
@@ -1011,6 +1020,106 @@ class AnnotationDialog(QDialog):
         for item in self.scene.all_items():
             item.setVisible(checked)
         self.scene.invalidate()
+
+    # ---------------- 剪切板缩略图(全局粘贴模板) ----------------
+    CLIP_W, CLIP_H = 120, 90
+    _CLIP_QSS = ("QPushButton#clipThumb { border: 1px solid #3a3f4e;"
+                 " border-radius: 4px; background: #22252d; }"
+                 "QPushButton#clipThumb:hover { border-color: #4f7dff; }"
+                 "QPushButton#clipThumb:checked { border: 2px solid #4f7dff;"
+                 " background: #1d2735; }")
+
+    def _copy_template(self, item):
+        """右键"复制"入口: 抠模板入全局剪切板并选中最新缩略图。"""
+        if not self.scene.copy_template_from_item(item):
+            return
+        _clip_templates.insert(0, dict(self.scene.fp_template))
+        if len(_clip_templates) > CLIP_MAX:
+            _clip_templates.pop()
+        self._rebuild_clipboard(select=0)
+
+    def _setup_clipboard(self):
+        u = self.ui
+        u.clipboard_label.setText("剪切板")
+        u.clipboard_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        u.clipboard_container.setStyleSheet(self._CLIP_QSS)
+        self._clip_group = QButtonGroup(self)
+        self._clip_group.setExclusive(True)
+        self._clip_group.idClicked.connect(self._on_clip_id)
+        self._clip_btns = []
+        self._clip_current = None
+        self._rebuild_clipboard(select=0 if _clip_templates else None)
+
+    def _rebuild_clipboard(self, select=None):
+        """按全局剪切板重建缩略图; select=选中下标(None=无选中)。"""
+        layout = self.ui.clipboard_layout
+        while layout.count():
+            w = layout.takeAt(0).widget()
+            if w is not None:
+                self._clip_group.removeButton(w)
+                w.deleteLater()
+        self._clip_btns = []
+        self._clip_current = None
+        for i, t in enumerate(_clip_templates):
+            btn = QPushButton(self.ui.clipboard_container)
+            btn.setObjectName("clipThumb")
+            btn.setCheckable(True)
+            btn.setFixedSize(self.CLIP_W, self.CLIP_H)
+            icon = QIcon(QPixmap.fromImage(t["patch"]))
+            btn.setIcon(icon)
+            btn.setIconSize(QSize(self.CLIP_W, self.CLIP_H))
+            btn.setToolTip("第 {} 个模板  {}x{}\n左键选中用于粘贴, 右键删除/清空"
+                           .format(i + 1, t["w"], t["h"]))
+            btn.setContextMenuPolicy(Qt.CustomContextMenu)
+            btn.customContextMenuRequested.connect(
+                lambda _pos, b=btn: self._clip_menu(b))
+            self._clip_group.addButton(btn, i)
+            self.ui.clipboard_layout.addWidget(btn, 0, Qt.AlignHCenter)
+            self._clip_btns.append(btn)
+        if select is not None and _clip_templates:
+            select = max(0, min(select, len(_clip_templates) - 1))
+            self._clip_btns[select].setChecked(True)
+            self._clip_current = select
+            self._apply_clip_template(select)
+
+    def _on_clip_id(self, i):
+        self._clip_current = i
+        self._apply_clip_template(i)
+
+    def _apply_clip_template(self, i):
+        t = _clip_templates[i]
+        # 先退出画笔态(会把 fp_template 清掉)再换模板, 防 ghost 残留
+        if self.scene.fp_mode is not None:
+            self.scene.set_format_painter(False)
+        self.scene.fp_template = t
+
+    def _clip_menu(self, btn):
+        """缩略图右键: 删除该张 / 清空全部。"""
+        menu = QMenu(self)
+        act_del = menu.addAction("删除")
+        act_clr = menu.addAction("清空")
+        act = menu.exec(QCursor.pos())
+        i = self._clip_btns.index(btn)
+        if act is act_del:
+            was_current = self.scene.fp_template is _clip_templates[i]
+            _clip_templates.pop(i)
+            # 删掉的正是当前粘贴模板且剪切板已空 → 置空; 手绘轨迹模板不在剪切板, 不受影响
+            if was_current and not _clip_templates:
+                self.scene.fp_template = None
+            self._rebuild_clipboard(select=0 if _clip_templates else None)
+        elif act is act_clr:
+            cur = self.scene.fp_template
+            if cur is not None and any(cur is t for t in _clip_templates):
+                self.scene.fp_template = None
+            _clip_templates.clear()
+            self._rebuild_clipboard(select=None)
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        # QDialog 首次显示后置最大化(exec 前设置不生效)
+        if not getattr(self, "_maximized_once", False):
+            self._maximized_once = True
+            self.setWindowState(Qt.WindowMaximized)
 
     def _undo_fp_paste(self):
         """Ctrl+Z：撤销最后一次像素改动（粘贴/填充，恢复图像像素 + 删标注）。"""

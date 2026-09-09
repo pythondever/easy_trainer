@@ -198,6 +198,31 @@ class Ui_annotationDialog(object):
 
         self.verticalLayout_4.addLayout(self.verticalLayout_3)
 
+        self.verticalLayout_clip = QVBoxLayout()
+        self.verticalLayout_clip.setObjectName(u"verticalLayout_clip")
+        self.clipboard_label = QLabel(annotationDialog)
+        self.clipboard_label.setObjectName(u"clipboard_label")
+
+        self.verticalLayout_clip.addWidget(self.clipboard_label)
+
+        self.clipboard_scroll = QScrollArea(annotationDialog)
+        self.clipboard_scroll.setObjectName(u"clipboard_scroll")
+        self.clipboard_scroll.setWidgetResizable(True)
+        self.clipboard_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.clipboard_container = QWidget()
+        self.clipboard_container.setObjectName(u"clipboard_container")
+        self.clipboard_container.setGeometry(QRect(0, 0, 200, 120))
+        self.clipboard_layout = QVBoxLayout(self.clipboard_container)
+        self.clipboard_layout.setSpacing(6)
+        self.clipboard_layout.setObjectName(u"clipboard_layout")
+        self.clipboard_layout.setContentsMargins(0, 0, 0, 0)
+        self.clipboard_scroll.setWidget(self.clipboard_container)
+
+        self.verticalLayout_clip.addWidget(self.clipboard_scroll)
+
+
+        self.verticalLayout_4.addLayout(self.verticalLayout_clip)
+
 
         self.horizontalLayout_5.addLayout(self.verticalLayout_4)
 
@@ -252,6 +277,7 @@ class Ui_annotationDialog(object):
         self.add_label.setText(QCoreApplication.translate("annotationDialog", u"\u6dfb\u52a0", None))
         self.labeled_list.setText(QCoreApplication.translate("annotationDialog", u"\u6807\u6ce8\u4fe1\u606f", None))
         self.image_info_label.setText(QCoreApplication.translate("annotationDialog", u"\u56fe\u50cf\u4fe1\u606f", None))
+        self.clipboard_label.setText(QCoreApplication.translate("annotationDialog", u"\u526a\u5207\u677f", None))
         self.pre_page_btn.setText(QCoreApplication.translate("annotationDialog", u"\u4e0a\u4e00\u5f20(A)", None))
         self.next_page_btn.setText(QCoreApplication.translate("annotationDialog", u"\u4e0b\u4e00\u5f20(D)", None))
     # retranslateUi
