@@ -1023,11 +1023,20 @@ class AnnotationDialog(QDialog):
 
     # ---------------- 剪切板缩略图(全局粘贴模板) ----------------
     CLIP_W, CLIP_H = 120, 90
-    _CLIP_QSS = ("QPushButton#clipThumb { border: 1px solid #3a3f4e;"
-                 " border-radius: 4px; background: #22252d; }"
-                 "QPushButton#clipThumb:hover { border-color: #4f7dff; }"
-                 "QPushButton#clipThumb:checked { border: 2px solid #4f7dff;"
-                 " background: #1d2735; }")
+    CLIP_ROWS = 3   # 剪切板可视行数, 超出后滚动
+
+    def _clip_qss(self):
+        """缩略图尺寸必须锁进 QSS: 全局 QSS 的 QPushButton{min-height} 会覆盖
+        setFixedSize 的 minimumSize, 布局会把 90px 压到 36px 且挤不出滚动条。
+        另: QSS 的 min/max 只管内容盒, 还要扣掉两侧 2px 边框才等于 120x90。"""
+        w, h = self.CLIP_W - 4, self.CLIP_H - 4
+        return ("QPushButton#clipThumb {{ border: 2px solid #3a3f4e;"
+                " border-radius: 4px; padding: 0px; background: #22252d;"
+                " min-width: {w}px; max-width: {w}px;"
+                " min-height: {h}px; max-height: {h}px; }}"
+                "QPushButton#clipThumb:hover {{ border-color: #6b8bff; }}"
+                "QPushButton#clipThumb:checked {{ border-color: #4f7dff;"
+                " background: #1d2735; }}").format(w=w, h=h)
 
     def _copy_template(self, item):
         """右键"复制"入口: 抠模板入全局剪切板并选中最新缩略图。"""
@@ -1042,7 +1051,9 @@ class AnnotationDialog(QDialog):
         u = self.ui
         u.clipboard_label.setText("剪切板")
         u.clipboard_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        u.clipboard_container.setStyleSheet(self._CLIP_QSS)
+        u.clipboard_container.setStyleSheet(self._clip_qss())
+        u.clipboard_scroll.setMinimumHeight(
+            self.CLIP_ROWS * (self.CLIP_H + 6))
         self._clip_group = QButtonGroup(self)
         self._clip_group.setExclusive(True)
         self._clip_group.idClicked.connect(self._on_clip_id)
@@ -1067,7 +1078,7 @@ class AnnotationDialog(QDialog):
             btn.setFixedSize(self.CLIP_W, self.CLIP_H)
             icon = QIcon(QPixmap.fromImage(t["patch"]))
             btn.setIcon(icon)
-            btn.setIconSize(QSize(self.CLIP_W, self.CLIP_H))
+            btn.setIconSize(QSize(self.CLIP_W - 8, self.CLIP_H - 8))
             btn.setToolTip("第 {} 个模板  {}x{}\n左键选中用于粘贴, 右键删除/清空"
                            .format(i + 1, t["w"], t["h"]))
             btn.setContextMenuPolicy(Qt.CustomContextMenu)
