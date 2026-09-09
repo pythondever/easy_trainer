@@ -9,6 +9,10 @@ numpy==2.2.6
 scipy==1.15.3
 pandas==2.3.3
 
+# GUI/数据层：LMDB 缓存库 + nvidia-ml-py（pynvml，GPU 信息）——曾漏装导致启动失败
+lmdb==2.3.0
+nvidia-ml-py==13.610.43
+
 # rfdetr（含 train extra：lightning/torchmetrics/pycocotools/roboflow 等）
 rfdetr[train]==1.9.2
 transformers==5.15.0

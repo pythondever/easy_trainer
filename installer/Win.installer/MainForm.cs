@@ -152,7 +152,7 @@ public sealed class MainForm : Form
             total += c.Size;
         }
         _needLabel.Text = total > 0
-            ? $"需下载 {FormatSize(total)},依赖约 2.5GB"
+            ? $"需下载 {FormatSize(total)},以及相关依赖约 2.5GB"
             : "";
         AppendLog("组件清单(内置)版本: " + (_mf.Version.Length > 0 ? _mf.Version : "(未标注)"));
         foreach (var c in _mf.Components)
@@ -165,7 +165,7 @@ public sealed class MainForm : Form
         var root = _dirBox.Text.Trim();
         if (string.IsNullOrEmpty(root) || !Path.IsPathRooted(root))
         {
-            MessageBox.Show(this, "请先填写有效的安装目录。", "EasyTrainer", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            MessageBox.Show(this, "请先填写有效的安装目录。", "installer", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return;
         }
 

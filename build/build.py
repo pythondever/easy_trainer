@@ -107,7 +107,7 @@ def main():
     ap.add_argument("--keep-build", action="store_true",
                     help="编译后保留 build/ 与生成的 .c")
     ap.add_argument("--no-publish", action="store_true",
-                    help="跳过 dotnet publish（仅编译 pyd 调试用）")
+                    help="跳过 dotnet publish(仅编译 pyd 调试用)")
     args = ap.parse_args()
 
     target = os.path.abspath(args.target)
@@ -144,7 +144,6 @@ def main():
           script_args=["build_ext"],
           options={
               "build_ext": {"inplace": False},
-              # build_base 固定到 ROOT/build：distutils 默认相对 cwd，
               "build": {"build_base": os.path.join(ROOT, "build")},
           })
 
@@ -199,9 +198,9 @@ def main():
                 shutil.rmtree(_p, ignore_errors=True)
             elif os.path.isfile(_p):
                 os.remove(_p)
-        print("已清理中间产物: dist/program/ dist/program.zip")
+        print("已清理: dist/program/ dist/program.zip")
     else:
-        print("已跳过 dotnet publish（--no-publish），保留 program/ 与 program.zip 供检查")
+        print("已跳过 dotnet publish(--no-publish),保留 program/ 与 program.zip 供检查")
 
 
 if __name__ == "__main__":
