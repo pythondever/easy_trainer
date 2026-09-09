@@ -81,8 +81,8 @@ def publish_installer():
     dotnet = shutil.which("dotnet")
     if dotnet is None:
         sys.exit("找不到 dotnet，无法发布安装器。请先安装 .NET SDK：https://dotnet.microsoft.com/download")
-    proj_dir = os.path.join(ROOT, "installer", "EasyTrainer.Installer")
-    proj = os.path.join(proj_dir, "EasyTrainer.Installer.csproj")
+    proj_dir = os.path.join(ROOT, "installer", "Win.installer")
+    proj = os.path.join(proj_dir, "Win.installer.csproj")
     out_dir = os.path.join(ROOT, "dist", "release")
     cmd = [dotnet, "publish", proj,
            "-c", "Release", "-r", "win-x64",
@@ -169,7 +169,15 @@ def main():
             print("  pyd:", os.path.relpath(dst, target))
 
     if not args.keep_build:
-        shutil.rmtree(os.path.join(ROOT, "build"), ignore_errors=True)
+        _bdir = os.path.join(ROOT, "build")
+        for _name in os.listdir(_bdir):
+            if _name in ("build.py", "requirements-release.txt"):
+                continue
+            _p = os.path.join(_bdir, _name)
+            if os.path.isdir(_p):
+                shutil.rmtree(_p, ignore_errors=True)
+            else:
+                os.remove(_p)
     print("program 根目录就绪: {}".format(target))
     zip_out = os.path.join(os.path.dirname(target), "program.zip")
     count = 0
@@ -186,8 +194,14 @@ def main():
 
     if not args.no_publish:
         publish_installer()
+        for _p in (target, zip_out):
+            if os.path.isdir(_p):
+                shutil.rmtree(_p, ignore_errors=True)
+            elif os.path.isfile(_p):
+                os.remove(_p)
+        print("已清理中间产物: dist/program/ dist/program.zip")
     else:
-        print("已跳过 dotnet publish（--no-publish）")
+        print("已跳过 dotnet publish（--no-publish），保留 program/ 与 program.zip 供检查")
 
 
 if __name__ == "__main__":

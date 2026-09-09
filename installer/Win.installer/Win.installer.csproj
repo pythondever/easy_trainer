@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>installer</AssemblyName>
+    <ApplicationIcon>..\..\resources\favicon.ico</ApplicationIcon>
+    <Version>1.0.0</Version>
+    <AssemblyTitle>EasyTrainer 安装程序</AssemblyTitle>
+    <Product>EasyTrainer</Product>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- 程序本体内嵌：先跑 build/build.py（编译 pyd 并打 dist/program.zip） -->
+    <EmbeddedResource Include="..\..\dist\program.zip"
+                      Condition="Exists('..\..\dist\program.zip')"
+                      LogicalName="program.zip" />
+    <!-- pip 现场安装依赖清单（runtime 组件用），随仓库维护在 build/ -->
+    <EmbeddedResource Include="..\..\build\requirements-release.txt"
+                      Condition="Exists('..\..\build\requirements-release.txt')"
+                      LogicalName="requirements.txt" />
+  </ItemGroup>
+
+</Project>
