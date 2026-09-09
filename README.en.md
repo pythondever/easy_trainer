@@ -112,12 +112,19 @@ Real-time training / testing / operation logs; errors pop up automatically. Logs
 | Pillow | ≥ 9.0 | Image processing |
 | matplotlib | ≥ 3.5 | Metric charts |
 | numpy | ≥ 1.21 | Numeric computing |
+| opencv-python-headless | ≥ 4.8 | Image I/O and resizing |
 
 **Additional dependencies for training/inference** (install in a Python 3.10+ environment):
 
 ```bash
 pip install torch torchvision
 pip install "rfdetr>=1.9.2"
+```
+
+**Additional dependencies for ONNX export** (only needed by Model Manager → Export):
+
+```bash
+pip install onnx onnxsim onnxruntime
 ```
 
 ## 🚀 Quick Start
@@ -129,7 +136,10 @@ pip install -r requirements.txt
 # 2. Install training dependencies (Python 3.10+)
 pip install torch torchvision "rfdetr>=1.9.2"
 
-# 3. Run
+# 3. Install export dependencies (optional, for ONNX export)
+pip install onnx onnxsim onnxruntime
+
+# 4. Run
 python app/easy_trainer.py
 ```
 

@@ -3,6 +3,8 @@ lmdb>=1.4
 Pillow>=9.0
 matplotlib>=3.5
 numpy>=1.21
+# 图像读取/尺寸处理(test_runner 用 cv2), headless 版无 GUI 依赖, 体积更小
+opencv-python-headless>=4.8
 # GPU 显存查询：nvidia-ml-py 提供 pynvml 模块（替代已弃用的 pynvml 包）
 nvidia-ml-py>=11.5.0
 # 训练/推理(RF-DETR)rfdetr 要求 Python 3.10+
@@ -10,3 +12,10 @@ nvidia-ml-py>=11.5.0
 # torch>=2.0
 # torchvision>=0.15
 # rfdetr>=1.9.2
+# 模型导出 ONNX(模型管理 → 导出): 检测/分割走 rfdetr.export, 分类走 torch.onnx.export
+# 只在使用导出功能时需要, 不导出可以不装
+onnx>=1.16
+onnxsim>=0.4.33
+# onnxruntime 不参与导出, 仅用于跑通 examples/python 示例与校验导出结果
+# 有 NVIDIA 显卡可换成 onnxruntime-gpu
+onnxruntime>=1.16

@@ -323,9 +323,22 @@
   <li data-page-node-id="ijwHkSdGUCBZwxnvb6jGDA">列表列：任务、数据集·标签、精度、训练时间、耗时、图像尺寸、操作</li>
   <li data-page-node-id="6UNQDaMVMLaMZRI79RC1On"><strong data-page-node-id="6iyqOHk1Vuo5cyghc07cwY">精度</strong>列带色条：绿 ≥0.8、黄 0.5～0.8、红 &lt;0.5；
       失败/已停止的记录在精度列显示状态文字，悬停可看失败原因</li>
-  <li data-page-node-id="5Ql0NsPefH5MppeB7tzQ0y">行内按钮：<strong data-page-node-id="G6x5Wjbtxrn2Qmg4yWhJj9">测试</strong>（打开模型测试）、<strong data-page-node-id="JQmhIj1qVLTEmLCgzd54P8">导出</strong>（导出模型权重并附带
-      classes.txt 类别对照）、<strong data-page-node-id="KcMBWHwJfGlonR0H18ctJz">删除</strong>（同时清理对应训练记录）</li>
+  <li data-page-node-id="5Ql0NsPefH5MppeB7tzQ0y">行内按钮：<strong data-page-node-id="G6x5Wjbtxrn2Qmg4yWhJj9">测试</strong>（打开模型测试）、<strong data-page-node-id="JQmhIj1qVLTEmLCgzd54P8">导出</strong>、<strong data-page-node-id="KcMBWHwJfGlonR0H18ctJz">删除</strong>（同时清理对应训练记录）</li>
 </ul>
+
+<p>点击<strong>导出</strong>选择目录后，会生成「项目_时间戳」文件夹，里面包含：</p>
+
+<ul>
+  <li><strong>模型 .onnx</strong>：检测/分割由 RF-DETR 导出，分类由 torch 导出，命名
+      「项目_任务_图像尺寸_模型规模.onnx」</li>
+  <li><strong>classes.txt</strong>：类别 id 与名称对照</li>
+  <li><strong>评估报告 PDF</strong>：自动在验证集上跑一遍评估，复用测试报告的模板，
+      命名「…_评估报告.pdf」</li>
+  <li><strong>examples/</strong>：C++ / C# / Python 三种语言调用 ONNX 做检测、分割、分类的示例代码</li>
+</ul>
+
+<p>导出过程有进度提示；ONNX 转换需要 <code>onnx</code> / <code>onnxsim</code>，
+未安装会在弹窗里提示。分类任务不生成评估报告（检测/分割的漏检误检报告不适用）。</p>
 
 <h3 data-page-node-id="RLy0BBwABnMwvjpRzyy8Bn">6.2 右侧详情面板</h3>
 

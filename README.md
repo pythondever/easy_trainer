@@ -112,12 +112,19 @@
 | Pillow | ≥ 9.0 | 图像处理 |
 | matplotlib | ≥ 3.5 | 指标曲线绘制 |
 | numpy | ≥ 1.21 | 数值计算 |
+| opencv-python-headless | ≥ 4.8 | 图像读取与尺寸处理 |
 
 **训练 / 推理额外依赖**（需在 Python 3.10+ 环境安装）：
 
 ```bash
 pip install torch torchvision
 pip install "rfdetr>=1.9.2"
+```
+
+**模型导出 ONNX 额外依赖**（仅使用「模型管理 → 导出」时需要）：
+
+```bash
+pip install onnx onnxsim onnxruntime
 ```
 
 ## 🚀 快速开始
@@ -129,7 +136,10 @@ pip install -r requirements.txt
 # 2. 安装训练依赖（Python 3.10+）
 pip install torch torchvision "rfdetr>=1.9.2"
 
-# 3. 启动
+# 3. 安装导出依赖（可选，需要导出 ONNX 时）
+pip install onnx onnxsim onnxruntime
+
+# 4. 启动
 python app/easy_trainer.py
 ```
 
@@ -170,7 +180,14 @@ easy_trainer/
 │       ├── test_worker.py  # 测试子进程线程
 │       ├── test_runner.py  # 检测/分割测试脚本
 │       ├── classify_test_runner.py   # 分类测试脚本
+│       ├── test_report.py  # 评估报告 PDF 生成
+│       ├── onnx_export.py  # ONNX 导出（检测/分割走 rfdetr，分类走 torch.onnx）
+│       ├── export_worker.py  # 导出后台线程
 │       └── dialogs.py      # 训练/测试弹窗
+├── examples/               # ONNX 调用示例（导出时一并复制到导出目录）
+│   ├── cpp/                # C++（ONNX Runtime + OpenCV）
+│   ├── csharp/             # C#（Microsoft.ML.OnnxRuntime + OpenCvSharp4）
+│   └── python/             # Python（onnxruntime + opencv）
 ├── ui/                     # PySide6 UI 类（.py 由 .ui 编译生成）
 ├── docs/                   # 设计文档 + README 截图
 ├── resources/              # 图标等资源

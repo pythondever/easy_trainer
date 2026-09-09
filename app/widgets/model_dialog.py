@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 import csv
+import json
 import os
 import re
 import shutil
 import subprocess
 import sys
+import tempfile
 from datetime import datetime
 from math import ceil
 
@@ -19,10 +21,12 @@ import traceback
 from PySide6.QtCore import QTimer
 
 from app.core.db import load_train_metrics
-from app.widgets.message_box import MessageBox
+from app.widgets.message_box import MessageBox, ProgressDialog
 from app.widgets.metrics_dialog import MetricsDialog
 from app.widgets.test_dialog import TestDialog
 from app.train.dialogs import TrainDialog
+from app.train.test_worker import TestWorker
+from app.train.export_worker import OnnxExportWorker, examples_dir
 from ui.model import Ui_ModelDialog
 
 TASK_TEXT = {"detect": "检测", "segment": "分割", "classify": "分类"}
@@ -185,6 +189,10 @@ class ModelDialog(QDialog):
         self._sort_col = COL_TIME
         self._sort_desc = True
         self._current = None
+        self._exp = None          # 导出任务上下文
+        self._exp_dlg = None
+        self._onnx_worker = None
+        self._eval_worker = None
         self._resize_timer = QTimer(self)
         self._resize_timer.setSingleShot(True)
         self._resize_timer.setInterval(150)
@@ -724,10 +732,10 @@ class ModelDialog(QDialog):
                 e, trace), flush=True)
             MessageBox.warning(self, "打开测试失败", str(e))
 
+    # ---------------- 导出 ----------------
     def _export(self, rec):
         """
-        导出模型: 建时间戳文件夹, 模型命名 "项目_任务_图像尺寸_模型规模.pth",
-        附带 classes.txt 供使用者对照类别。
+        导出模型到时间戳文件夹: onnx + classes.txt + 验证集评估报告 PDF + 调用示例。
         """
         model_path = rec.get("model_path", "") if isinstance(rec, dict) else rec
         if not model_path or not os.path.exists(model_path):
@@ -746,73 +754,246 @@ class ModelDialog(QDialog):
             return
         if not isinstance(rec, dict):
             rec = {}
-        task_text = {"detect": "检测", "segment": "分割",
-                     "classify": "分类"}.get(rec.get("task", ""), "模型")
+        task = rec.get("task", "")
         project = str(rec.get("project", "") or "项目")
         img_size = str(rec.get("img_size", "") or "")
         model_size = str(rec.get("model_size", "") or "")
         ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+        out_dir = os.path.join(d, "{}_{}".format(project, ts))
         try:
-            out_dir = os.path.join(d, "{}_{}".format(project, ts))
             os.makedirs(out_dir, exist_ok=True)
-            ext = os.path.splitext(os.path.basename(model_path))[1] or ".pth"
-            base = "_".join([p for p in (project, task_text,
-                                         img_size, model_size) if p])
-            dst_model = os.path.join(out_dir, base + ext)
-            shutil.copy2(model_path, dst_model)
-            copied = []
-            model_dir = os.path.dirname(model_path)
-            yaml_src = ""
-            # classes.txt: 目录已有则复制; data.yaml 只读不复制(解析 names 用)
-            src = os.path.join(model_dir, "classes.txt")
-            if os.path.exists(src):
-                shutil.copy2(src, os.path.join(out_dir, "classes.txt"))
-                copied.append("classes.txt")
-            for cand in (os.path.join(model_dir, "data.yaml"),
-                         os.path.join(os.path.dirname(model_dir), "data.yaml")):
-                if os.path.exists(cand):
-                    yaml_src = cand
-                    break
-            if "classes.txt" not in copied:
-                generated = False
-                if task_text == "分类":
-                    try:
-                        import torch
-                        ckpt = torch.load(model_path, map_location="cpu",
-                                          weights_only=False)
-                        classes = ckpt.get("classes") if isinstance(ckpt, dict) else None
-                        if classes:
-                            with open(os.path.join(out_dir, "classes.txt"),
-                                      "w", encoding="utf-8") as f:
-                                for i, lb in enumerate(classes):
-                                    f.write("{} {}\n".format(i, lb))
-                            generated = True
-                    except Exception:
-                        pass
-                elif yaml_src and os.path.exists(yaml_src):
-                    try:
-                        # 解析 data.yaml 的 names: {id: name}
-                        pairs = []
-                        with open(yaml_src, "r", encoding="utf-8") as f:
-                            for line in f:
-                                line = line.strip()
-                                if line.startswith("names:") or not line:
-                                    continue
-                                if ":" in line:
-                                    k, _, v = line.partition(":")
-                                    if k.strip().isdigit():
-                                        pairs.append(
-                                            (int(k.strip()), v.strip().strip('"')))
-                        if pairs:
-                            with open(os.path.join(out_dir, "classes.txt"),
-                                      "w", encoding="utf-8") as f:
-                                for _, name in sorted(pairs):
-                                    f.write("{} {}\n".format(_, name))
-                            generated = True
-                    except Exception:
-                        pass
-                if generated:
-                    copied.append("classes.txt(生成)")
-            MessageBox.information(self, "导出模型", "导出成功")
         except OSError as e:
-            MessageBox.warning(self, "导出模型", "导出失败：{}".format(e))
+            MessageBox.warning(self, "导出模型", "创建目录失败：{}".format(e))
+            return
+        base = "_".join([p for p in (project, TASK_TEXT.get(task, "模型"),
+                                     img_size, model_size) if p])
+        self._exp = {
+            "rec": rec, "task": task, "out_dir": out_dir, "base": base,
+            "model_path": model_path, "model_dir": os.path.dirname(model_path),
+            "onnx": os.path.join(out_dir, base + ".onnx"),
+            "copied": [], "report": "", "note": "",
+        }
+        # maximum=0 → 忙碌进度条(不确定时长); 统一深色样式见 message_box.ProgressDialog
+        self._exp_dlg = ProgressDialog("导出模型", "正在导出 ONNX…", self,
+                                       maximum=0, cancellable=False)
+        try:
+            size = int(rec.get("img_size") or 0)
+        except (TypeError, ValueError):
+            size = 0
+        self._onnx_worker = OnnxExportWorker(model_path, task,
+                                             self._exp["onnx"], size, parent=self)
+        self._onnx_worker.stage.connect(
+            lambda msg: self._exp_dlg.set_text(
+                str(msg).replace("[export] ", "")))
+        self._onnx_worker.finished_ok.connect(self._export_after_onnx)
+        self._onnx_worker.failed.connect(self._export_failed)
+        self._onnx_worker.start()
+
+    def _export_after_onnx(self, onnx_path):
+        self._exp["copied"].append(os.path.basename(onnx_path))
+        self._write_export_classes()
+        self._export_start_eval()
+
+    def _write_export_classes(self):
+        """classes.txt: 模型目录已有则复制, 否则从 data.yaml(检测/分割)或 ckpt(分类)生成。"""
+        out_dir = self._exp["out_dir"]
+        model_dir = self._exp["model_dir"]
+        model_path = self._exp["model_path"]
+        task = self._exp["task"]
+        src = os.path.join(model_dir, "classes.txt")
+        if os.path.exists(src):
+            shutil.copy2(src, os.path.join(out_dir, "classes.txt"))
+            self._exp["copied"].append("classes.txt")
+            return
+        yaml_src = ""
+        for cand in (os.path.join(model_dir, "data.yaml"),
+                     os.path.join(os.path.dirname(model_dir), "data.yaml")):
+            if os.path.exists(cand):
+                yaml_src = cand
+                break
+        try:
+            if task == "classify":
+                import torch
+                ckpt = torch.load(model_path, map_location="cpu",
+                                  weights_only=False)
+                classes = ckpt.get("classes") if isinstance(ckpt, dict) else None
+                if not classes:
+                    return
+                pairs = list(enumerate(classes))
+            elif yaml_src:
+                pairs = []
+                with open(yaml_src, "r", encoding="utf-8") as f:
+                    for line in f:
+                        line = line.strip()
+                        if line.startswith("names:") or not line:
+                            continue
+                        if ":" in line:
+                            k, _, v = line.partition(":")
+                            if k.strip().isdigit():
+                                pairs.append((int(k.strip()), v.strip().strip('"')))
+            else:
+                return
+            if not pairs:
+                return
+            with open(os.path.join(out_dir, "classes.txt"), "w",
+                      encoding="utf-8") as f:
+                for i, name in sorted(pairs):
+                    f.write("{} {}\n".format(i, name))
+            self._exp["copied"].append("classes.txt")
+        except Exception as e:
+            print("[export] 生成 classes.txt 失败: {}".format(e), flush=True)
+
+    def _export_start_eval(self):
+        """用验证集跑一次评估, 结果交给 build_report 出 PDF。"""
+        if self._exp["task"] == "classify":
+            # test_report 是检测/分割的漏检误检报告, 分类任务不适用
+            self._export_finish("分类任务不生成评估报告")
+            return
+        cfg = self._build_eval_cfg()
+        if not cfg:
+            self._export_finish("未找到验证集，已跳过评估报告")
+            return
+        self._exp_dlg.set_text("正在生成模型报告…")
+        self._eval_worker = TestWorker(cfg, parent=self)
+        self._eval_worker.progress.connect(
+            lambda done, total: self._exp_dlg.set_text(
+                "正在生成模型报告 {}/{}".format(done, total)))
+        self._eval_worker.finished_ok.connect(self._export_on_eval_done)
+        self._eval_worker.failed.connect(
+            lambda msg: self._export_finish(
+                "评估失败，已跳过报告：{}".format((msg or "").splitlines()[0])))
+        self._eval_worker.start()
+
+    def _build_eval_cfg(self):
+        """按记录的 val_dataset 组装测试配置(与测试界面同一套 runner)。"""
+        rec = self._exp["rec"]
+        db = getattr(self.app, "db", None)
+        if db is None:
+            return None
+        pairs = []
+        for field in ("val_dataset", "dataset"):
+            pairs = []
+            for tok in str(rec.get(field, "") or "").split(","):
+                tok = tok.strip()
+                if "/" in tok:
+                    proj, _, name = tok.partition("/")
+                    if proj.strip() and name.strip():
+                        pairs.append((proj.strip(), name.strip()))
+            if pairs:
+                break
+        if not pairs:
+            return None
+        items, total = [], 0
+        has_label, cls_mode = False, False
+        for i, (proj, ds_name) in enumerate(pairs):
+            binding = db.get_dataset_import(proj, ds_name) or {}
+            image_paths = binding.get("image_paths") or (
+                [binding["image_path"]] if binding.get("image_path") else [])
+            if not image_paths:
+                continue
+            label_paths = binding.get("label_paths") or (
+                [binding["label_path"]] if binding.get("label_path") else [])
+            if i == 0:
+                has_label = int(binding.get("labeled") or 0) > 0
+                cls_mode = binding.get("label_fmt", "") == "cls"
+            items.append({"project": proj, "dataset": ds_name,
+                          "image_path": image_paths[0],
+                          "label_path": label_paths[0] if label_paths else ""})
+            total += int(binding.get("total") or 0)
+        if not items:
+            return None
+        report_dir = tempfile.mkdtemp(prefix="et_eval_")
+        fd, cfg_path = tempfile.mkstemp(suffix=".json")
+        os.close(fd)
+        cfg = {
+            "model_path": self._exp["model_path"], "items": items,
+            "iou_threshold": 0.5, "confidence": 0.5,
+            "has_label": has_label, "device": rec.get("device") or "cuda",
+            "total": total, "output_labels": False,
+            "task": "classify" if cls_mode else "",
+            "report_dir": report_dir, "_cfg_path": cfg_path,
+        }
+        with open(cfg_path, "w", encoding="utf-8") as f:
+            json.dump(cfg, f, ensure_ascii=False)
+        return cfg
+
+    def _export_on_eval_done(self, res):
+        pdf = ""
+        try:
+            # matplotlib 较重, 只在真的要出报告时才导入
+            from app.train.test_report import build_report
+            self._inject_label_stats(res)
+            pdf = build_report(
+                res, out_pdf=os.path.join(
+                    self._exp["out_dir"],
+                    self._exp["base"] + "_评估报告.pdf"))
+        except Exception:
+            print("[export] 生成评估报告失败:\n{}".format(
+                traceback.format_exc()), flush=True)
+        if pdf:
+            self._exp["report"] = os.path.basename(pdf)
+            self._exp["copied"].append(os.path.basename(pdf))
+        self._export_finish("" if pdf else "评估完成，但报告生成失败")
+
+    def _inject_label_stats(self, res):
+        """把验证集的标注分布塞进 res, PDF 首页才有类别分布图。"""
+        db = getattr(self.app, "db", None)
+        if db is None:
+            return
+        pairs = []
+        for field in ("val_dataset", "dataset"):
+            for tok in (x.strip() for x in
+                        str(self._exp["rec"].get(field, "") or "").split(",")):
+                if "/" in tok:
+                    proj, _, name = tok.partition("/")
+                    if proj.strip() and name.strip():
+                        pairs.append((proj.strip(), name.strip()))
+            if pairs:
+                break
+        counts, colors = {}, {}
+        for proj, name in pairs:
+            for k, v in (db.get_dataset_label_counts(proj, name) or {}).items():
+                counts[k] = counts.get(k, 0) + v
+            if not colors:
+                colors = dict(db.get_dataset_labels(proj, name) or {})
+        if counts:
+            res["label_stats"] = counts
+        if colors:
+            res["label_colors"] = colors
+
+    def _export_finish(self, note=""):
+        self._copy_examples()
+        if self._exp_dlg is not None:
+            self._exp_dlg.close()
+            self._exp_dlg = None
+        files = "、".join(self._exp["copied"]) or "（空）"
+        msg = "已导出到：\n{}\n\n包含：{}".format(self._exp["out_dir"], files)
+        if note:
+            msg += "\n\n{}".format(note)
+        MessageBox.information(self, "导出模型", msg)
+
+    def _export_failed(self, msg):
+        if self._exp_dlg is not None:
+            self._exp_dlg.close()
+            self._exp_dlg = None
+        head = (msg or "").strip().splitlines()
+        tip = head[0] if head else "未知错误"
+        print("[export] ONNX 导出失败: {}".format(msg), flush=True)
+        MessageBox.warning(
+            self, "导出模型",
+            "ONNX 导出失败：{}\n\n若提示缺少 onnx / onnxsim，请先安装：\n"
+            "pip install onnx onnxsim".format(tip))
+
+    def _copy_examples(self):
+        src = examples_dir()
+        if not src:
+            return
+        dst = os.path.join(self._exp["out_dir"], "examples")
+        try:
+            if os.path.exists(dst):
+                shutil.rmtree(dst, ignore_errors=True)
+            shutil.copytree(src, dst,
+                            ignore=shutil.ignore_patterns("__pycache__"))
+            self._exp["copied"].append("examples/")
+        except OSError as e:
+            print("[export] 复制示例失败: {}".format(e), flush=True)
