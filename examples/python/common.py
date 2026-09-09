@@ -17,6 +17,12 @@ def preprocess(bgr, size):
     return np.ascontiguousarray(np.transpose(x, (2, 0, 1))[None])
 
 
+def input_size(session, fallback):
+    """模型输入尺寸是静态的, 用模型实际的 H(训练尺寸不一定是 640/224)。"""
+    shape = session.get_inputs()[0].shape
+    return int(shape[2]) if len(shape) == 4 and isinstance(shape[2], int) else fallback
+
+
 def sigmoid(v):
     return 1.0 / (1.0 + np.exp(-v))
 

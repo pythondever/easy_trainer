@@ -16,15 +16,15 @@ namespace EasyTrainerOnnx
             using var img = OnnxModel.ImRead(imagePath);
             if (img.Empty()) throw new Exception("读图失败: " + imagePath);
 
-            var input = OnnxModel.Preprocess(img, InputSize);
+            var input = OnnxModel.Preprocess(img, OnnxModel.InputSize(session, InputSize));
             var inputs = new List<NamedOnnxValue>
             {
                 NamedOnnxValue.CreateFromTensor("input", input),
             };
             using var outputs = session.Run(inputs);
-            var dets = outputs[0].AsTensor<float>().ToArray();
+            var dets = OnnxModel.Data(outputs[0].AsTensor<float>());
             var labelsTensor = outputs[1].AsTensor<float>();
-            var labels = labelsTensor.ToArray();
+            var labels = OnnxModel.Data(labelsTensor);
             var shape = labelsTensor.Dimensions.ToArray();
             int numQueries = (int)shape[1], numClasses = (int)shape[2] - 1;
 

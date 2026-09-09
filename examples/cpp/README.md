@@ -33,5 +33,5 @@ segment.exe  模型.onnx test.jpg ..\classes.txt
 classify.exe 模型.onnx test.jpg ..\classes.txt
 ```
 
-分辨率与阈值在各自 cpp 顶部的 `INPUT_SIZE` / `SCORE_THR` 常量里改。
+分辨率不用改：示例自动从模型输入 shape 读取（`INPUT_SIZE` 仅在模型输入为动态尺寸时兜底），阈值在各自 cpp 顶部的 `SCORE_THR` 常量里改。
 需要 GPU 时给 `Ort::SessionOptions` 追加 `OrtSessionOptionsAppendExecutionProvider_CUDA(opt, 0);`。

@@ -9,7 +9,7 @@ import os
 import cv2
 import numpy as np
 import onnxruntime as ort
-from common import decode_dets, load_classes, preprocess
+from common import decode_dets, input_size, load_classes, preprocess
 
 INPUT_SIZE = 640          # 与训练时的图像尺寸一致
 SCORE_THR = 0.5
@@ -20,7 +20,7 @@ def main():
     ap.add_argument("--model", required=True)
     ap.add_argument("--image", required=True)
     ap.add_argument("--classes", default="classes.txt")
-    ap.add_argument("--size", type=int, default=INPUT_SIZE)
+    ap.add_argument("--size", type=int, default=None)
     ap.add_argument("--thr", type=float, default=SCORE_THR)
     ap.add_argument("--save", default="")
     args = ap.parse_args()
@@ -31,7 +31,9 @@ def main():
         raise SystemExit("读图失败: {}".format(args.image))
     h, w = img.shape[:2]
 
-    x = preprocess(img, args.size)
+    size = args.size or input_size(sess, INPUT_SIZE)
+
+    x = preprocess(img, size)
     dets, labels = sess.run(None, {"input": x})
 
     names = load_classes(args.classes if os.path.exists(args.classes) else "")

@@ -30,7 +30,7 @@ int main(int argc, char** argv) {
     Ort::Env env(ORT_LOGGING_LEVEL_WARNING, "segment");
     Ort::SessionOptions opt;
     opt.SetIntraOpNumThreads(4);
-    Ort::Session session(env, modelPath.c_str(), opt);
+    Ort::Session session(env, ortPath(modelPath).c_str(), opt);
 
     Ort::AllocatorWithDefaultOptions alloc;
     Ort::AllocatedStringPtr inName = session.GetInputNameAllocated(0, alloc);
@@ -40,10 +40,10 @@ int main(int argc, char** argv) {
     std::vector<const char*> inNames{inName.get()};
     std::vector<const char*> outNames{outDets.get(), outLabels.get(), outMasks.get()};
 
-    std::vector<float> input = preprocess(img, INPUT_SIZE);
-    std::vector<int64_t> shape{1, 3, INPUT_SIZE, INPUT_SIZE};
-    Ort::Value inTensor = Ort::Value::CreateTensor<float>(
-        shape.data(), shape.size(), input.data(), input.size());
+    int size = inputSize(session, INPUT_SIZE);
+    std::vector<float> input = preprocess(img, size);
+    std::vector<int64_t> shape{1, 3, size, size};
+    Ort::Value inTensor = makeInput(input, shape);
 
     auto outputs = session.Run(Ort::RunOptions{nullptr}, inNames.data(),
                                &inTensor, 1, outNames.data(), 3);

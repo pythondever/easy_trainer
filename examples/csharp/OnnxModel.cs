@@ -46,6 +46,21 @@ namespace EasyTrainerOnnx
 
         public static float Sigmoid(float v) => 1f / (1f + (float)Math.Exp(-v));
 
+        /// 模型输入尺寸是静态的, 按模型实际的 H 缩放(训练尺寸不一定是 640/224)
+        public static int InputSize(InferenceSession session, int fallback)
+        {
+            var shape = session.InputMetadata.Values.First().Dimensions;
+            return shape.Length == 4 && shape[2] > 0 ? (int)shape[2] : fallback;
+        }
+
+        /// 取张量数据(行优先一维)。Tensor<T> 没有 ToArray / Buffer, 只能按索引取
+        public static float[] Data(Tensor<float> t)
+        {
+            var data = new float[t.Length];
+            for (int i = 0; i < data.Length; i++) data[i] = t.GetValue(i);
+            return data;
+        }
+
         /// dets [300,4] (cx cy w h 归一化) + labels [300, C+1] logits → 原图像素框。
         /// 最后一列是「无目标」, 只在前 C 列取类别; 300 个候选已端到端去重, 不需要 NMS。
         public static List<Det> DecodeDets(float[] dets, float[] labels, int numQueries,

@@ -18,10 +18,11 @@ namespace EasyTrainerOnnx
 
             var inputs = new List<NamedOnnxValue>
             {
-                NamedOnnxValue.CreateFromTensor("images", OnnxModel.Preprocess(img, InputSize)),
+                NamedOnnxValue.CreateFromTensor("images",
+                    OnnxModel.Preprocess(img, OnnxModel.InputSize(session, InputSize))),
             };
             using var outputs = session.Run(inputs);
-            var logits = outputs[0].AsTensor<float>().ToArray();
+            var logits = OnnxModel.Data(outputs[0].AsTensor<float>());
 
             var max = logits.Max();
             var prob = logits.Select(v => (float)Math.Exp(v - max)).ToArray();

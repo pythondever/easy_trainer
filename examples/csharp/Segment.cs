@@ -19,14 +19,15 @@ namespace EasyTrainerOnnx
 
             var inputs = new List<NamedOnnxValue>
             {
-                NamedOnnxValue.CreateFromTensor("input", OnnxModel.Preprocess(img, InputSize)),
+                NamedOnnxValue.CreateFromTensor("input",
+                    OnnxModel.Preprocess(img, OnnxModel.InputSize(session, InputSize))),
             };
             using var outputs = session.Run(inputs);
-            var dets = outputs[0].AsTensor<float>().ToArray();
+            var dets = OnnxModel.Data(outputs[0].AsTensor<float>());
             var labelsTensor = outputs[1].AsTensor<float>();
-            var labels = labelsTensor.ToArray();
+            var labels = OnnxModel.Data(labelsTensor);
             var masksTensor = outputs[2].AsTensor<float>();
-            var masks = masksTensor.ToArray();
+            var masks = OnnxModel.Data(masksTensor);
 
             var labShape = labelsTensor.Dimensions.ToArray();
             var maskShape = masksTensor.Dimensions.ToArray();
@@ -46,7 +47,7 @@ namespace EasyTrainerOnnx
                 var sigData = new float[mask.Length];
                 for (int i = 0; i < mask.Length; i++)
                     sigData[i] = OnnxModel.Sigmoid(mask[i]);
-                using var sig = Mat.FromPixelData(maskH, maskW, MatType.CV_32FC1, sigData);
+                using var sig = new Mat(maskH, maskW, MatType.CV_32FC1, sigData);
                 using var resized = new Mat();
                 Cv2.Resize(sig, resized, new Size(img.Width, img.Height), 0, 0,
                            InterpolationFlags.Linear);

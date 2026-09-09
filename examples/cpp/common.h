@@ -8,6 +8,11 @@
 #include <vector>
 
 #include <opencv2/opencv.hpp>
+#include <onnxruntime_cxx_api.h>
+
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 struct Det {
     float x1 = 0, y1 = 0, x2 = 0, y2 = 0;
@@ -70,6 +75,34 @@ inline std::vector<Det> decodeDets(const float* dets, const float* labels,
         res.push_back(d);
     }
     return res;
+}
+
+// Windows 下 ORTCHAR_T 是 wchar_t, 路径要先转宽字符
+inline std::basic_string<ORTCHAR_T> ortPath(const std::string& s) {
+#ifdef _WIN32
+    int n = MultiByteToWideChar(CP_UTF8, 0, s.c_str(), (int)s.size(), nullptr, 0);
+    std::wstring w((size_t)n, L'\0');
+    MultiByteToWideChar(CP_UTF8, 0, s.c_str(), (int)s.size(), &w[0], n);
+    return w;
+#else
+    return s;
+#endif
+}
+
+// 模型输入尺寸是静态的, 必须按模型实际的 H 缩放(训练尺寸不一定是 640/224)
+inline int inputSize(Ort::Session& s, int fallback) {
+    auto shape = s.GetInputTypeInfo(0).GetTensorTypeAndShapeInfo().GetShape();
+    if (shape.size() == 4 && shape[2] > 0) return (int)shape[2];
+    return fallback;
+}
+
+// 1.23 起 CreateTensor 必须带 MemoryInfo, 没有四参数的简便重载了
+inline Ort::Value makeInput(std::vector<float>& data,
+                            const std::vector<int64_t>& shape) {
+    Ort::MemoryInfo info =
+        Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
+    return Ort::Value::CreateTensor<float>(info, data.data(), data.size(),
+                                           shape.data(), shape.size());
 }
 
 // classes.txt: 每行 "id name" 或只有 name, 行号即类别 id

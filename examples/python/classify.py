@@ -11,7 +11,7 @@ import cv2
 import numpy as np
 import onnxruntime as ort
 
-from common import load_classes, preprocess
+from common import input_size, load_classes, preprocess
 
 INPUT_SIZE = 224          # 分类模型固定 224（导出时若指定过别的尺寸就改这里）
 TOP_K = 5
@@ -28,7 +28,7 @@ def main():
     ap.add_argument("--model", required=True)
     ap.add_argument("--image", required=True)
     ap.add_argument("--classes", default="classes.txt")
-    ap.add_argument("--size", type=int, default=INPUT_SIZE)
+    ap.add_argument("--size", type=int, default=None)
     ap.add_argument("--topk", type=int, default=TOP_K)
     args = ap.parse_args()
 
@@ -37,7 +37,9 @@ def main():
     if img is None:
         raise SystemExit("读图失败: {}".format(args.image))
 
-    scores = sess.run(None, {"images": preprocess(img, args.size)})[0][0]
+    size = args.size or input_size(sess, INPUT_SIZE)
+
+    scores = sess.run(None, {"images": preprocess(img, size)})[0][0]
     prob = softmax(scores)
     names = load_classes(args.classes if os.path.exists(args.classes) else "")
 

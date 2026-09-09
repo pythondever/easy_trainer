@@ -11,7 +11,7 @@ import cv2
 import numpy as np
 import onnxruntime as ort
 
-from common import decode_dets, load_classes, preprocess, sigmoid
+from common import decode_dets, input_size, load_classes, preprocess, sigmoid
 
 INPUT_SIZE = 640
 SCORE_THR = 0.5
@@ -23,7 +23,7 @@ def main():
     ap.add_argument("--model", required=True)
     ap.add_argument("--image", required=True)
     ap.add_argument("--classes", default="classes.txt")
-    ap.add_argument("--size", type=int, default=INPUT_SIZE)
+    ap.add_argument("--size", type=int, default=None)
     ap.add_argument("--thr", type=float, default=SCORE_THR)
     ap.add_argument("--save", default="")
     args = ap.parse_args()
@@ -34,7 +34,9 @@ def main():
         raise SystemExit("读图失败: {}".format(args.image))
     h, w = img.shape[:2]
 
-    dets, labels, masks = sess.run(None, {"input": preprocess(img, args.size)})
+    size = args.size or input_size(sess, INPUT_SIZE)
+
+    dets, labels, masks = sess.run(None, {"input": preprocess(img, size)})
     prob = sigmoid(labels[0])
     scores = prob[:, :-1].max(axis=1)
     names = load_classes(args.classes if os.path.exists(args.classes) else "")
