@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
+<html lang="zh-CN" data-page-node-id="VxDAAUyjxRmKeGYg19nGOa">
+<head data-page-node-id="XKo749OT5F1CXa3JsO6byg">
+<meta charset="UTF-8" data-page-node-id="bXCIMEbZHfpNNgXdfmVlu9">
 <title>EasyTrainer 使用教程</title>
 <style>
   body { font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
@@ -39,372 +39,387 @@
   }
 </style>
 </head>
-<body>
+<body data-page-node-id="fyjPWixOOXzDP24mi6jxui">
 
-<h1>EasyTrainer 使用教程</h1>
+<h1 data-page-node-id="o8YipVKgxNN7WMpBsSBJ0V">EasyTrainer 使用教程</h1>
 
-<div class="toc">
-  <h2>目录</h2>
-  <ol>
-    <li><a href="#intro">软件概览</a></li>
-    <li><a href="#project">项目与数据集管理</a></li>
-    <li><a href="#label">标签管理</a></li>
-    <li><a href="#annotate">图像标注</a></li>
-    <li><a href="#train">训练与训练队列</a></li>
-    <li><a href="#model">模型管理</a></li>
-    <li><a href="#test">模型测试与评估报告</a></li>
-    <li><a href="#log">日志</a></li>
+<div class="toc" data-page-node-id="4XpBZTKeZcWmlxFYPddsBQ">
+  <h2 data-page-node-id="QaEG3i1vIAEPnI4XFQUlhQ">目录</h2>
+  <ol data-page-node-id="qoElvENymaG8LCnWBX5oHg">
+    <li data-page-node-id="V7drVItkOo5zzMcHDxIkdf"><a href="#intro" data-page-node-id="bW7d82tpHQbIVFWd0ZbkFv">软件概览</a></li>
+    <li data-page-node-id="S15w7amtmVYV7n27LHoxf1"><a href="#project" data-page-node-id="iGiRzFhxydO6Y96YSkzuBN">项目与数据集管理</a></li>
+    <li data-page-node-id="xSDDhEphvOgtoaEZKBKmoG"><a href="#label" data-page-node-id="DRCuPgDDPs0cSlGUM4Egn0">标签管理</a></li>
+    <li data-page-node-id="VorB4uAFJrF8nefdQKvO4h"><a href="#annotate" data-page-node-id="V3WSarWvA5TsKJICvFS35Q">图像标注</a></li>
+    <li data-page-node-id="xOg1ivJtfhn4B2I6inzpt7"><a href="#train" data-page-node-id="En0I6UBE9R0Y3Il1H6P5Tp">训练与训练队列</a></li>
+    <li data-page-node-id="PsjjYtHBn8xnut7uznHPq1"><a href="#model" data-page-node-id="S2zd3lA1BKnOGaSInMLNFl">模型管理</a></li>
+    <li data-page-node-id="S6FlC2RC16XjbzOQ0s8CwI"><a href="#test" data-page-node-id="FzToPpQXIqBstVbHdXA7LK">模型测试与评估报告</a></li>
+    <li data-page-node-id="fRNU8niHvjOjmKW25dmw56"><a href="#log" data-page-node-id="h0R7PLetJ38HABIiGjtmFy">日志</a></li>
   </ol>
 </div>
 
-<h2 id="intro">1. 软件概览</h2>
+<h2 id="intro" data-page-node-id="W5aH6IHP3JhxeAAloNWYv3">1. 软件概览</h2>
 
-<p>主界面采用三栏布局：</p>
+<p data-page-node-id="UvJpzk36Z2AdP7usG77Wl9">主界面采用三栏布局：</p>
 
-<ul>
-  <li><strong>左侧项目树</strong>：项目与数据集层级展示，数据集节点带标注进度（如 126/128）；
-      名称前的圆点表示该数据集<strong>是否已加载进内存</strong>（绿=已加载，红=未加载）</li>
-  <li><strong>中间图像区</strong>：缩略图分页浏览，底部有翻页与总数</li>
-  <li><strong>顶部工具栏</strong>：显示比例、标注筛选，以及编辑、删除、导入、导出、属性、训练、模型、日志等按钮</li>
+<ul data-page-node-id="z3BEp2FCKztzqPEVy5pH7j">
+  <li data-page-node-id="kWkhyJOEM6JJvyMEkb2uZj"><strong data-page-node-id="m7lQm25IvQ02j4NGo65AqN">左侧项目树</strong>：项目与数据集层级展示，数据集节点带标注进度（如 126/128）；
+      名称前的圆点表示该数据集<strong data-page-node-id="mz3CXIAJ7mpdG0byQUPakX">是否已加载进内存</strong>（绿=已加载，红=未加载）</li>
+  <li data-page-node-id="ZNsYrpDdDXhM5Cq1EFlhKh"><strong data-page-node-id="IQS6pgKESuXQOm1INYiekJ">中间图像区</strong>：缩略图分页浏览，底部有翻页与总数</li>
+  <li data-page-node-id="ig3anMDDYpACwcu61esIjD"><strong data-page-node-id="wHGxlguD5wEW2SivuHbRkS">顶部工具栏</strong>：显示比例、标注筛选，以及编辑、删除、导入、导出、属性、训练、模型、日志等按钮</li>
 </ul>
 
-<figure>
-  <img src="images/主页.png" alt="EasyTrainer 主页">
-  <figcaption>EasyTrainer 主界面</figcaption>
+<figure data-page-node-id="53Y78EVgaJO2RRmH6ViZxN">
+  <img src="images/主页.png" alt="EasyTrainer 主页" data-page-node-id="n1FdmHuqRgvDzhx63wUIzB">
+  <figcaption data-page-node-id="l7mFoNVsgDxqwVjfP73Uky">EasyTrainer 主界面</figcaption>
 </figure>
 
-<h2 id="project">2. 项目与数据集管理</h2>
+<h2 id="project" data-page-node-id="JG8ehLmnd0qMEfhlprXUmX">2. 项目与数据集管理</h2>
 
-<h3>2.1 添加项目</h3>
+<h3 data-page-node-id="8PCy2yGe9kHP3YmcPufVdm">2.1 添加项目</h3>
 
-<p>点击左侧 <code>+ 添加项目</code> 按钮，输入项目名称后确定。
+<p data-page-node-id="DHazr0j1jFI8oF7nyTN8pG">点击左侧 <code data-page-node-id="LAzbvRQVKNX9lqxrffF27Y">+ 添加项目</code> 按钮，输入项目名称后确定。
 项目是数据集的容器，所有数据集必须归属于某个项目。</p>
 
-<figure>
-  <img src="images/添加项目.png" alt="添加项目">
-  <figcaption>输入项目名称</figcaption>
+<figure data-page-node-id="HB9tZXyTsoWhW65bBrGL0t">
+  <img src="images/添加项目.png" alt="添加项目" data-page-node-id="T9gXncp8ddJ9qiK3WeahEr">
+  <figcaption data-page-node-id="hV0XY86K2RVm2ABjJT6ofN">输入项目名称</figcaption>
 </figure>
 
-<h3>2.2 添加 / 重命名 / 删除数据集</h3>
+<h3 data-page-node-id="QD0poGDBPLwVJkUCqpdP4G">2.2 添加 / 重命名 / 删除数据集</h3>
 
-<p>右键点击<strong>项目节点</strong>弹出菜单：添加数据集 / 导出项目 / 修改名称 / 删除项目。</p>
+<p data-page-node-id="I0AWhQi9fEB3l82ReOcmM4">右键点击<strong data-page-node-id="Jl77RljZokkxIMWPOkbrM3">项目节点</strong>弹出菜单：添加数据集 / 导出项目 / 修改名称 / 删除项目。</p>
 
-<ul>
-  <li><strong>添加数据集</strong>：在项目下新建一个数据集</li>
-  <li><strong>导出项目</strong>：把整个项目的数据集与标注导出为指定格式</li>
-  <li><strong>修改名称</strong>：重命名项目</li>
-  <li><strong>删除项目</strong>：连同其下数据集、标注、训练记录一并清除</li>
+<ul data-page-node-id="qjCQoHZayeMMjFs6ofPmYJ">
+  <li data-page-node-id="SZIx3bHgCPlk5x4NINEEBW"><strong data-page-node-id="Aj1zaVQ3hKQSCMLhjhO955">添加数据集</strong>：在项目下新建一个数据集</li>
+  <li data-page-node-id="scQvJNHxOqcq3dN0JdD2hW"><strong data-page-node-id="hSgdvUSdMEK1WEJNCwEHec">导出项目</strong>：把整个项目的数据集与标注导出为指定格式</li>
+  <li data-page-node-id="Zekf8D2dnmuQPNcZEfJ0dz"><strong data-page-node-id="7filJV1bDbzcRxDHBNevdy">修改名称</strong>：重命名项目</li>
+  <li data-page-node-id="J5bsZUrvktYTAEJp0xWYsC"><strong data-page-node-id="M8gDJMBk9XUp3hXv1xT0xr">删除项目</strong>：连同其下数据集、标注、训练记录一并清除</li>
 </ul>
 
-<p>右键点击<strong>数据集节点</strong>则是对该数据集的操作：载入 / 导入 / 导出 / 移动 / 修改 / 删除。
-其中<strong>载入</strong>用于重新扫描该数据集的图像与标注并重建缓存。</p>
+<p data-page-node-id="foaZ4tyNoQq9gLDYYPmXDq">右键点击<strong data-page-node-id="qEM6eJK723ow3D9Ow5VIhO">数据集节点</strong>则是对该数据集的操作：载入 / 导入 / 导出 / 移动 / 修改 / 删除。
+其中<strong data-page-node-id="ZSBYXvnNEjKkFoDSH6gArJ">载入</strong>用于重新扫描该数据集的图像与标注并重建缓存。</p>
 
-<figure>
-  <img src="images/添加_修改_删除_数据集.png" alt="项目右键菜单">
-  <figcaption>项目右键菜单</figcaption>
+<figure data-page-node-id="KaRgJmTwHT6He1ASkUH86i">
+  <img src="images/添加_修改_删除_数据集.png" alt="项目右键菜单" data-page-node-id="FxOq6g91k6VZhH9WW8qC7I">
+  <figcaption data-page-node-id="8B9HdUW4HgxBBEGH9Phgy1">项目右键菜单</figcaption>
 </figure>
 
-<h3>2.3 导入数据</h3>
+<h3 data-page-node-id="H4UFZLKhAMPh0DIW28tEsQ">2.3 导入数据</h3>
 
-<p>选中数据集后，点击顶部 <strong>导入</strong> 按钮，弹出"导入数据"对话框：</p>
-<ul>
-  <li><strong>图像路径</strong>：选择图片所在文件夹</li>
-  <li><strong>标签路径</strong>：选择标注文件所在文件夹</li>
-  <li><strong>标签格式</strong>：Yolo txt / Labelme json / 按子文件夹分类导入</li>
+<p data-page-node-id="d9zZjY0RtgESTHHBerNMAk">选中数据集后，点击顶部 <strong data-page-node-id="tw9VBxIPOeGXxz0RGvSiVh">导入</strong> 按钮，弹出"导入数据"对话框：</p>
+<ul data-page-node-id="REz7btnpdONHO5OJTQEyCX">
+  <li data-page-node-id="TygDqLj5rIo6MM7vOG7XAr"><strong data-page-node-id="zRYzRm42ShUAkP0uOJmon0">图像路径</strong>：选择图片所在文件夹</li>
+  <li data-page-node-id="TJaJnP85JPNin0NIkWxrJ8"><strong data-page-node-id="EE1qmiXKeAuR8xsPp0pbYS">标签路径</strong>：选择标注文件所在文件夹</li>
+  <li data-page-node-id="eTMBVDDaD8ylUY0N6TqRYG"><strong data-page-node-id="Nll6NKeZrP0aoeek3Aq4JA">标签格式</strong>：Yolo txt / Labelme json / 按子文件夹分类导入</li>
 </ul>
 
-<div class="note">
-  <strong>分类数据集</strong>选择"按子文件夹分类导入"：每个子文件夹名作为一个类别，<strong>无需标注文件</strong>。
+<div class="note" data-page-node-id="yF3lLJEVC3AMS0Vyz59mKj">
+  <strong data-page-node-id="zhpiEHQ2YYuxJw3kYdXltQ">分类数据集</strong>选择"按子文件夹分类导入"：每个子文件夹名作为一个类别，<strong data-page-node-id="ZeZ6JZHCxS0Cg7MZHtWKtZ">无需标注文件</strong>。
 </div>
 
-<figure>
-  <img src="images/导入数据.png" alt="导入数据">
-  <figcaption>导入数据对话框</figcaption>
+<figure data-page-node-id="vhK7Yn38q8xhBG8u6gkUyD">
+  <img src="images/导入数据.png" alt="导入数据" data-page-node-id="d9OZkMzk5S4nIHVl6udqRO">
+  <figcaption data-page-node-id="Sae5cG6E6qC0wR43X4iVrP">导入数据对话框</figcaption>
 </figure>
 
-<h3>2.4 数据集属性与标签分布</h3>
+<h3 data-page-node-id="bfrBQKCQBBNSxw4Hi0MBHe">2.4 数据集属性与标签分布</h3>
 
-<p>选中数据集后点击顶部 <strong>属性</strong> 按钮，可查看图像路径、标签路径，
-以及<strong>标签分布柱状图</strong>（每个类别的标注框数量），用于快速发现类别不均衡问题。</p>
+<p data-page-node-id="osHDuhdYrOm5tjaabIbz7s">选中数据集后点击顶部 <strong data-page-node-id="MmVmmx6ADt67q9wd2YjgTv">属性</strong> 按钮，可查看图像路径、标签路径，
+以及<strong data-page-node-id="YNV0yc7PeQNAUIz2VZMaQC">标签分布柱状图</strong>（每个类别的标注框数量），用于快速发现类别不均衡问题。</p>
 
-<figure>
-  <img src="images/数据集属性_标签分布.png" alt="数据集属性与标签分布">
-  <figcaption>数据集属性与标签分布</figcaption>
+<figure data-page-node-id="EAVNhACMdbWZPpTJOdEkkF">
+  <img src="images/数据集属性_标签分布.png" alt="数据集属性与标签分布" data-page-node-id="bIcO8MOt50cfETbUFk4gTB">
+  <figcaption data-page-node-id="T1Kgfg2OuJSmoUTO3TkCyB">数据集属性与标签分布</figcaption>
 </figure>
 
-<h2 id="label">3. 标签管理</h2>
+<h2 id="label" data-page-node-id="PlpIr7NmwuWbkULbkV7H1l">3. 标签管理</h2>
 
-<h3>3.1 添加或导入标签</h3>
+<h3 data-page-node-id="HMUYIgLOoyjEWA75SiDNSu">3.1 添加或导入标签</h3>
 
-<p>在标注界面右侧标签列表上方点击 <strong>添加标签</strong>：</p>
-<ul>
-  <li><strong>标签名称</strong>：多个标签用逗号分隔，可一次添加多个</li>
-  <li><strong>导入</strong>：从已有数据集一键导入全部标签</li>
-  <li><strong>颜色</strong>：从预设色板选取，或点击"自定义"挑选颜色</li>
+<p data-page-node-id="3AofMsGBBUi1uxCmnMTwBW">在标注界面右侧标签列表上方点击 <strong data-page-node-id="fUm1ZOK6JvNC6vTHoOInuM">添加标签</strong>：</p>
+<ul data-page-node-id="V5eGJolFTyu8WfqBcG6VZX">
+  <li data-page-node-id="rBIG0y7qpBcBosTuP7GDnq"><strong data-page-node-id="wf6sTm6g2BZJJ9N7pJqX1P">标签名称</strong>：多个标签用逗号分隔，可一次添加多个</li>
+  <li data-page-node-id="tfkEmUOMWLq1NE4K6Jziii"><strong data-page-node-id="ECOb9kYw6ttOtoKKvbb6t3">导入</strong>：从已有数据集一键导入全部标签</li>
+  <li data-page-node-id="aGwI9Lqq3gAo6heEnbP3B6"><strong data-page-node-id="WiT1qssGQsNfRRHAIldMk5">颜色</strong>：从预设色板选取，或点击"自定义"挑选颜色</li>
 </ul>
 
-<figure>
-  <img src="images/添加或导入标签.png" alt="添加标签">
-  <figcaption>添加或导入标签</figcaption>
+<figure data-page-node-id="EjutF70F3sUSJusFFaLYyG">
+  <img src="images/添加或导入标签.png" alt="添加标签" data-page-node-id="ONPxdqBI2XwBEgXXrTkFMh">
+  <figcaption data-page-node-id="DjFdmWfy3b6qZ58I5jcIDG">添加或导入标签</figcaption>
 </figure>
 
-<h3>3.2 批量修改类别</h3>
+<h3 data-page-node-id="rqTAlYLln2bdjSv61DX76q">3.2 批量修改类别</h3>
 
-<p>选中数据集后，在<strong>图像区缩略图上右键</strong>选择"批量修改类别"，
+<p data-page-node-id="DAMjjxJrlvUqPWmmoboXFj">选中数据集后，在<strong data-page-node-id="u5pHBE84Ht8ttWyo5FCSBI">图像区缩略图上右键</strong>选择"批量修改类别"，
 输入原类别与新类别，即可把整个数据集中该类的标注全部改名：</p>
 
-<figure>
-  <img src="images/标签批量修改.png" alt="批量修改类别">
-  <figcaption>类别批量修改弹窗</figcaption>
+<figure data-page-node-id="GzVPdYy5ZkMD6EqK7ulCVu">
+  <img src="images/标签批量修改.png" alt="批量修改类别" data-page-node-id="ZnE2HYcg0vlrZgM3GBCYY6">
+  <figcaption data-page-node-id="o4N1bOYS6eWgkNRTM7Ot94">类别批量修改弹窗</figcaption>
 </figure>
 
-<h3>3.3 修改单个标注的类别</h3>
+<h3 data-page-node-id="bPRDrH3M3bxSh7ecVs7zEY">3.3 修改单个标注的类别</h3>
 
-<p>进入标注界面后，<strong>在标注框上点击</strong>即可弹出类别下拉菜单，
+<p data-page-node-id="sgikSBgTDkdZg8fhnhcTAQ">进入标注界面后，<strong data-page-node-id="YZgu1ZBlW086nzG3HExoj4">在标注框上点击</strong>即可弹出类别下拉菜单，
 选中新类别即完成修改；右侧标签列表中的标签也可重命名、改色、删除。</p>
 
-<figure>
-  <img src="images/修改类别.png" alt="修改类别">
-  <figcaption>在标注框上直接修改类别</figcaption>
+<figure data-page-node-id="MVxXNvWbdC8ekH6MKRHZB8">
+  <img src="images/修改类别.png" alt="修改类别" data-page-node-id="dQnIBVcQbTfSs7Tu3t4s6y">
+  <figcaption data-page-node-id="0FhiM98qT4tFFKMirrMjeR">在标注框上直接修改类别</figcaption>
 </figure>
 
-<h2 id="annotate">4. 图像标注</h2>
+<h2 id="annotate" data-page-node-id="eFpVnq9L7HPJ0kp0R2ECmh">4. 图像标注</h2>
 
-<h3>4.1 进入标注界面</h3>
+<h3 data-page-node-id="0xTTDmciChAH6YhKu39y18">4.1 进入标注界面</h3>
 
-<p>在左侧树选中具体数据集后，右键缩略图选择"标注"，或直接双击缩略图进入。
-窗口标题显示当前<strong>项目 / 数据集</strong>，底部有"上一张 / 下一张"切换图像。</p>
+<p data-page-node-id="XpCdCCTEMCS7wmYh42ZrCH">在左侧树选中具体数据集后，右键缩略图选择“标注”，或直接双击缩略图进入。</p>
 
-<h3>4.2 矩形与多边形标注</h3>
+<h3 data-page-node-id="BuvJ5N08hnLlpEri2OFqBA">4.2 矩形与多边形标注</h3>
 
-<p>标注界面顶部工具栏提供两种绘制工具：</p>
+<p data-page-node-id="xwmjuCSCAMKUVBQpsQrmzG">标注界面顶部工具栏提供两种绘制工具：</p>
 
-<ul>
-  <li><strong>矩形</strong>：拖拽鼠标画矩形框</li>
-  <li><strong>多边形</strong>：依次点击顶点，双击或回车结束（分割任务用）</li>
-  <li><strong>删除图像</strong>：删除当前这张图</li>
+<ul data-page-node-id="mMmzgnonc8prHDJMTLwz20">
+  <li data-page-node-id="onxqvYMS0cAyAeWLEb1qrc"><strong data-page-node-id="bAgtEZ0h3cOhMx5QPGaCEC">矩形</strong>：拖拽鼠标画矩形框</li>
+  <li data-page-node-id="AefCAJAN0P4QtcB3Sa30jx"><strong data-page-node-id="xC6sGjSNMWFFzsoBB2eIzF">多边形</strong>：依次点击顶点，双击或回车结束（分割任务用）</li>
+  <li data-page-node-id="cAZIqZIx91r6GTMMo5r26K"><strong data-page-node-id="sdjJYEm6Ji7OUBexXASKFZ">删除图像</strong>：删除当前这张图</li>
 </ul>
 
-<p>右侧<strong>标签列表</strong>选择类别；勾选“显示标注”可随时隐藏所有框查看原图。
-右下方“当前图像标注”面板列出本图所有标注对象的形状（矩形/多边形）、顶点数与面积。</p>
+<p data-page-node-id="vRClgAzlOt5WcDuPVzFB0X">右侧<strong data-page-node-id="MmhUdWGkyBJVM1ZSCcy0f5">标签列表</strong>选择类别；勾选“显示标注”可随时隐藏所有框查看原图。
+右下方“当前图像标注”面板列出本图所有标注对象的形状（矩形/多边形）、顶点数与面积；
+其下方<strong data-page-node-id="RTQWZSHRxq2knc5Cy3ECtz">图像信息</strong>显示当前图的宽 × 高 × 通道数（如 505×505×3）与序号。</p>
 
-<figure>
-  <img src="images/图像标注_矩形_多边形.png" alt="图像标注">
-  <figcaption>矩形 / 多边形标注工具与标签列表</figcaption>
+<p data-page-node-id="4N29Sw37ZZSXffVIsrCuQG"><strong data-page-node-id="L4pRNTASve2qip1gxxBxtq">“图像信息”下方为剪切板区</strong>：右键复制多边形后，被复制区域的缩略图
+（120 × 90）会加入这里，最多 9 张、纵向排列、可上下滚动，
+<strong data-page-node-id="TEJXhEFFvrAt6GLHHmoVnc">最新一张默认选中并带蓝色边框</strong>；右键缩略图可<strong data-page-node-id="sbYfONCfGp1YESJzSl0qGR">删除</strong>该张或<strong data-page-node-id="6KIld7SF4qyzyg9rr0aTiC">清空</strong>全部。</p>
+
+<figure data-page-node-id="hhY4IXBM2t1oOMoYpfvzlg">
+  <img src="images/图像标注_剪切板.png" alt="图像标注" data-page-node-id="fJE0bipATvvW20EsY6fX6Z">
+  <figcaption data-page-node-id="EOcJCVCvCpMVveSmjiLXMg">矩形 / 多边形标注、标签列表与右下角剪切板</figcaption>
 </figure>
 
-<h3>4.3 标注对象复制（数据增强）</h3>
+<h3 data-page-node-id="j5F2DDVUSDE7BzWXn3yvsr">4.3 标注对象复制（数据增强）</h3>
 
-<p>右键任意标注对象选择<strong>复制</strong>，再在目标位置粘贴，可把缺陷样本
-"复制 + 粘贴"到同图或跨图的其他区域，快速扩充训练样本：</p>
+<p data-page-node-id="Y0S9LRw9baaTrg1CDSejtw">右键<strong data-page-node-id="E5jJiaWmfOpJoIkQAoV2iD">多边形</strong>标注有两个操作：</p>
 
-<ul>
-  <li><strong>角度范围</strong>：粘贴时随机旋转的角度区间（默认 -180 ~ 180）</li>
-  <li><strong>融合强度</strong>：0 ~ 1，默认 0.70。粘贴时自动做亮度补偿和边缘羽化，
+<ul data-page-node-id="MMCfMgC3GZslLhePUdrd12">
+  <li data-page-node-id="BiI3DqgxjdrDanduE2MSB0"><strong data-page-node-id="UqUha6JJ3ic00dTjVpiw6X">复制</strong>：把该多边形区域的像素存为模板，同时在右下角剪切板生成缩略图</li>
+  <li data-page-node-id="cI1WGDQBFAI6Hx5hiDrNhW"><strong data-page-node-id="vayOCktsoKCsjj28dlK1Me">填充</strong>：把区域内的像素改成“填充值”输入框的灰度（0 ~ 255，默认 255）,
+      常用于把缺陷区域抹成背景色</li>
+</ul>
+
+<p data-page-node-id="pWjWypXq10MrcY1KO15sCk">复制后在图像空白处右键选择<strong data-page-node-id="SjRBrY5eaytevDt1pnXQxY">粘贴</strong>，即可把<strong data-page-node-id="A25JlgR12LXRIOYOx9lyTD">剪切板中当前选中</strong>的那张缩略图
+贴到鼠标位置（同图或跨图均可）：</p>
+
+<ul data-page-node-id="AAsQTGeDdMXrVemn40EgZa">
+  <li data-page-node-id="91QzL34HQbuGLuVCsAkBos"><strong data-page-node-id="x9gMZaAektZfElpLQM6m9c">角度范围</strong>：粘贴时随机旋转的角度区间（默认 -180 ~ 180）</li>
+  <li data-page-node-id="nH9hzbNleDAL07jTisJy0F"><strong data-page-node-id="wmtYcSPbGmXBiQFl23lG5u">融合强度</strong>：0 ~ 1，默认 0.70。粘贴时自动做亮度补偿和边缘羽化，
       让粘贴区域与背景自然过渡；设为 0 则等同直接硬贴</li>
+  <li data-page-node-id="UuiJlSFkSAXquLHLPOhn05"><strong data-page-node-id="feCbWMLCxKikHu3IsZJ2eX">填充值</strong>：0 ~ 255，默认 255，配合右键“填充”把区域抹成该灰度</li>
+  <li data-page-node-id="LwtRjxaGDIjOIyyWS3Kmpc"><strong data-page-node-id="sBVkl6EO4NCzcnLsiowK37">Ctrl + Z</strong>：撤销最近一次粘贴或填充（恢复像素并移除随之新增的标注），
+      可连续撤销</li>
 </ul>
 
-<figure>
-  <img src="images/标注对象复制.png" alt="标注对象复制">
-  <figcaption>右键复制标注对象，工具栏设置角度范围与融合强度</figcaption>
+<figure data-page-node-id="GqGmS1ps1kFxiYTIpfbj0i">
+  <img src="images/标注对象复制.png" alt="标注对象复制" data-page-node-id="BBQHV8qBGbolxH4VLf1pFn">
+  <figcaption data-page-node-id="koVEQM8QYsnLgqNq1gk5MG">右键复制标注对象 → 剪切板缩略图，工具栏设置角度范围 / 融合强度 / 填充值</figcaption>
 </figure>
 
-<h3>4.4 按标注类别筛选</h3>
+<h3 data-page-node-id="xx5TwSDXQZLCItpwEonRnQ">4.4 按标注类别筛选</h3>
 
-<p>首页顶部工具栏的类别下拉框，选择某类别后图像区只显示含该类别的图，
+<p data-page-node-id="35aiu9pGC5OFyvHdX0Th2F">首页顶部工具栏的类别下拉框，选择某类别后图像区只显示含该类别的图，
 便于集中检查、补标某一类。</p>
 
-<figure>
-  <img src="images/按标注类别_分类筛选.png" alt="按类别筛选">
-  <figcaption>按类别筛选缩略图</figcaption>
+<figure data-page-node-id="PXAnIp6SPE9WKgM0yQMUAw">
+  <img src="images/按标注类别_分类筛选.png" alt="按类别筛选" data-page-node-id="34t07nG8cHo7ZTcS73q1k3">
+  <figcaption data-page-node-id="gVX4GPtmBgQ5qB9khHIrHD">按类别筛选缩略图</figcaption>
 </figure>
 
-<h2 id="train">5. 训练与训练队列</h2>
+<h2 id="train" data-page-node-id="8yiEH7kAR5O85CVMiJfs8F">5. 训练与训练队列</h2>
 
-<h3>5.1 训练参数配置</h3>
+<h3 data-page-node-id="ZUBqBEf30tyI5qLrK9SXIA">5.1 训练参数配置</h3>
 
-<p>点击首页或模型界面的<strong>训练</strong>按钮，弹出训练参数配置：</p>
+<p data-page-node-id="Ag1ExVz5LSWmFsdCu55cov">点击首页或模型界面的<strong data-page-node-id="crrBsB7ENTFg5N4INdsgFL">训练</strong>按钮，弹出训练参数配置：</p>
 
-<ul>
-  <li><strong>任务类型</strong>：检测 / 分割 / 分类（按数据集格式自动联动）</li>
-  <li><strong>训练集 / 验证集</strong>：多选数据集，可跨项目组合</li>
-  <li><strong>设备</strong>：自动列出可用 GPU（如 NVIDIA GeForce RTX 4060 Ti）</li>
-  <li><strong>训练超参</strong>：轮次、优化器（检测/分割=adamw、分类=sgd）、早停
+<ul data-page-node-id="1RgEJeuqqwEukGs2s5NZ5B">
+  <li data-page-node-id="GhQd4Iq558CSKJlf2IOvqd"><strong data-page-node-id="GTQJGwNWvpDEfgEG3S76YK">任务类型</strong>：检测 / 分割 / 分类（按数据集格式自动联动）</li>
+  <li data-page-node-id="LoSnqLgYTVPsb8AJxiOPmu"><strong data-page-node-id="9dOG349Yy5R7XT3jx9qIXx">训练集 / 验证集</strong>：多选数据集，可跨项目组合</li>
+  <li data-page-node-id="enC3ZQdJD1qWqxZBUrZlSA"><strong data-page-node-id="n1CE7q6ZIRbYeA3XA8qHWF">设备</strong>：自动列出可用 GPU（如 NVIDIA GeForce RTX 4060 Ti）</li>
+  <li data-page-node-id="D9CK8QwPNchtkBx9a1JEmp"><strong data-page-node-id="rn5SvsLNeeAA3hwPUHmd3N">训练超参</strong>：轮次、优化器（检测/分割=adamw、分类=sgd）、早停
       （连续 N 轮无提升则提前结束，0 为关闭）、学习率（训练中自动衰减）、
       批次、图像尺寸（32 的倍数）、梯度累积（显存不足时等效放大批次）、线程数</li>
-  <li><strong>输出路径</strong>：留空则自动按时间生成目录，也可点"选择路径"指定</li>
+  <li data-page-node-id="KUFDKwQmn1EuZWAig0pHt0"><strong data-page-node-id="n6NUcnszAcFeDnKNgDO96g">输出路径</strong>：留空则自动按时间生成目录，也可点"选择路径"指定</li>
 </ul>
 
-<figure>
-  <img src="images/训练参数与队列.png" alt="训练参数配置">
-  <figcaption>训练参数配置对话框</figcaption>
+<figure data-page-node-id="by9jFSk6GWTs1PnJKlX1qE">
+  <img src="images/训练参数与队列.png" alt="训练参数配置" data-page-node-id="1t2HAJHx5cB3sNBZfXOork">
+  <figcaption data-page-node-id="9CDfqDEkikRjdYRAgYLICn">训练参数配置对话框</figcaption>
 </figure>
 
-<h3>5.2 训练队列</h3>
+<h3 data-page-node-id="BLQdQYBNMSzAjTs94Ua3Tw">5.2 训练队列</h3>
 
-<p>配置好后除"开始训练"外，还可以点<strong>加入队列</strong>把任务先挂起来，
-继续配置下一个。点击首页 <strong>训练队列</strong>（或训练窗口入口）打开队列窗口：</p>
+<p data-page-node-id="aaUMdfvytHBOaBDrjZJOSh">配置好后除"开始训练"外，还可以点<strong data-page-node-id="pC3vOKjVX0i13faZ6qNyCS">加入队列</strong>把任务先挂起来，
+继续配置下一个。点击首页 <strong data-page-node-id="z3UeCBgpRZT5GvTYKy2M47">训练队列</strong>（或训练窗口入口）打开队列窗口：</p>
 
-<ul>
-  <li>队列按顺序依次执行，<strong>支持检测 / 分割 / 分类任务混排</strong>，自动逐项切换</li>
-  <li><strong>上移 / 下移 / 移除</strong>：调整执行顺序或删除任务</li>
-  <li><strong>编辑</strong>：修改选中任务的参数</li>
-  <li><strong>清理已完成</strong>：移除已跑完的记录</li>
-  <li><strong>开始队列</strong>：从头依次执行队列中的任务</li>
+<ul data-page-node-id="Z0Bzo2KGWUYUa8DWDk3Z7y">
+  <li data-page-node-id="8svVaSY6gdmb4RSKZVBODV">队列按顺序依次执行，<strong data-page-node-id="D96QvbIbiVOojYnL96mkwO">支持检测 / 分割 / 分类任务混排</strong>，自动逐项切换</li>
+  <li data-page-node-id="QpVH0ZziIXOgjWR69RErB2"><strong data-page-node-id="aEQw5fd8yPox9pRecaicze">上移 / 下移 / 移除</strong>：调整执行顺序或删除任务</li>
+  <li data-page-node-id="DinLB8Yk1r3OL2iDisOav3"><strong data-page-node-id="mfBkLKjl3Y0SkKiDCnDGSy">编辑</strong>：修改选中任务的参数</li>
+  <li data-page-node-id="pnbCArF3D9IpIwKCF5qsFG"><strong data-page-node-id="tAaxk1Ur5NQsV1fRbRoIHn">清理已完成</strong>：移除已跑完的记录</li>
+  <li data-page-node-id="g0r0NlEHBpQQ4yjqtXdHL3"><strong data-page-node-id="ELNimkJrSJxsl0qBYKPotK">开始队列</strong>：从头依次执行队列中的任务</li>
 </ul>
 
-<div class="note">
+<div class="note" data-page-node-id="PUAzDU5fYuIeBKy6GKuRJM">
   队列适合晚上挂机：把多个数据集的任务一次配好，软件会自动跑完全部并分别保存模型。
 </div>
 
-<figure>
-  <img src="images/训练队列查看.png" alt="训练队列">
-  <figcaption>训练队列窗口</figcaption>
+<figure data-page-node-id="q3FTSNRLKIrdyTKh80NyzJ">
+  <img src="images/训练队列查看.png" alt="训练队列" data-page-node-id="jZjlKS7e4vcxj8fyHj5dDg">
+  <figcaption data-page-node-id="O7ySy4TjXfaIKf2W7XgSXZ">训练队列窗口</figcaption>
 </figure>
 
-<h3>5.3 训练进度监控</h3>
+<h3 data-page-node-id="YnEjxtm82HrLIjUBKwxRne">5.3 训练进度监控</h3>
 
-<p>点击"开始训练"后回到首页，顶部出现进度条与控制条：</p>
+<p data-page-node-id="RrO2eFDLTmxxqzFL9Ad1IS">点击"开始训练"后回到首页，顶部出现进度条与控制条：</p>
 
-<ul>
-  <li><strong>任务名 + 进度</strong>：如 "coco128 训练中 5/100"，进度条内显示当前轮 loss</li>
-  <li><strong>停止训练</strong>：随时终止（已完成的部分会保存）</li>
-  <li><strong>剩余时间</strong>：按已用时长外推估算</li>
-  <li><strong>显存</strong>：实时显示 GPU 显存占用率</li>
+<ul data-page-node-id="N77VavJ9OLHHVI70WURUUt">
+  <li data-page-node-id="U5lCX1EpxuKN0HdkJEMiHB"><strong data-page-node-id="TmBg6KfBCT6nf8E5e27KtT">任务名 + 进度</strong>：如 "coco128 训练中 5/100"，进度条内显示当前轮 loss</li>
+  <li data-page-node-id="lPkaED5mgAsG4f0WykQzRS"><strong data-page-node-id="fE3mbYy3yy79iiafa2Gxkj">停止训练</strong>：随时终止（已完成的部分会保存）</li>
+  <li data-page-node-id="BWQcmQFjNSHUEKSAksxq0e"><strong data-page-node-id="owxXdj3wptfJwy5kk7ofrV">剩余时间</strong>：按已用时长外推估算</li>
+  <li data-page-node-id="Z4vt1m8h8ixRKeOvnYSFpi"><strong data-page-node-id="d3oP0x7N4dFe08SRe5jtnh">显存</strong>：实时显示 GPU 显存占用率</li>
 </ul>
 
-<figure>
-  <img src="images/训练进度_指标_剩余时间_显存用量.png" alt="训练进度">
-  <figcaption>训练进度条与状态栏</figcaption>
+<figure data-page-node-id="DfqTH5uFqcYfkmkREAHSok">
+  <img src="images/训练进度_指标_剩余时间_显存用量.png" alt="训练进度" data-page-node-id="yuN41MreLHpez8Az7WCOwO">
+  <figcaption data-page-node-id="r6sXNHkuSXL5BI5n8jDou9">训练进度条与状态栏</figcaption>
 </figure>
 
-<h3>5.4 训练指标查看</h3>
+<h3 data-page-node-id="MyuyEj5VvomcVduTyqenJm">5.4 训练指标查看</h3>
 
-<p>在模型管理窗口选中某条训练记录，点击右侧详情面板的<strong>查看完整指标</strong>，弹出训练曲线窗口：</p>
+<p data-page-node-id="tr2XiDzpN0NXfmg19p6hAW">在模型管理窗口选中某条训练记录，点击右侧详情面板的<strong data-page-node-id="yGc6CEKARzJGk5l36WedgY">查看完整指标</strong>，弹出训练曲线窗口：</p>
 
-<ul>
-  <li>上半图：<strong>val loss</strong> 曲线</li>
-  <li>下半图：mAP@50-95 / mAP@50 / AR / F1 / precision / recall 等多条曲线
+<ul data-page-node-id="2YbCEPd8ZLHBZgrLABrBr6">
+  <li data-page-node-id="aZaUM4venMXtOXuE5Hfa25">上半图：<strong data-page-node-id="sXjzioir6TYFH8OAP9bHEq">val loss</strong> 曲线</li>
+  <li data-page-node-id="YllKLv58m2LLSJyyCVS1Gy">下半图：mAP@50-95 / mAP@50 / AR / F1 / precision / recall 等多条曲线
       （分割任务还会显示 mask mAP 曲线）</li>
-  <li>右上角"标签筛选"下拉框可切换查看全部指标或某个类别的曲线</li>
+  <li data-page-node-id="w4Wa9g84GtMiEC7IdHSgt0">右上角"标签筛选"下拉框可切换查看全部指标或某个类别的曲线</li>
 </ul>
 
-<figure>
-  <img src="images/训练指标查看.png" alt="训练指标">
-  <figcaption>训练指标曲线（val loss + 各项精度）</figcaption>
+<figure data-page-node-id="n13zjfZeQeh2a4Hbm9FkW3">
+  <img src="images/训练指标查看.png" alt="训练指标" data-page-node-id="wXIDTDJi4jBmD3Fi5vLWO6">
+  <figcaption data-page-node-id="a9sYeUFFpZXTxkjfK9qpS2">训练指标曲线（val loss + 各项精度）</figcaption>
 </figure>
 
-<h2 id="model">6. 模型管理</h2>
+<h2 id="model" data-page-node-id="0zuCrI0ilh6UDDZxN5mcmw">6. 模型管理</h2>
 
-<p>点击首页 <strong>模型</strong> 按钮打开模型管理窗口，左侧为训练记录列表，
+<p data-page-node-id="7id7SXBYBMLZeNN7IdTzXx">点击首页 <strong data-page-node-id="G10yK7T30B3PwEycjfbola">模型</strong> 按钮打开模型管理窗口，左侧为训练记录列表，
 右侧为固定详情面板：</p>
 
-<h3>6.1 筛选与列表</h3>
+<h3 data-page-node-id="CWppXVAMM4dSy8arxEJi0R">6.1 筛选与列表</h3>
 
-<ul>
-  <li><strong>搜索框</strong>：按项目 / 数据集 / 标签关键字过滤</li>
-  <li><strong>任务 / 状态下拉</strong>：只看检测 / 分割 / 分类，或训练中 / 已完成 / 失败 / 已停止</li>
-  <li><strong>仅看每个数据集最佳</strong>：同一数据集只保留精度最高的一条</li>
-  <li>列表列：任务、数据集·标签、精度、训练时间、耗时、图像尺寸、操作</li>
-  <li><strong>精度</strong>列带色条：绿 ≥0.8、黄 0.5～0.8、红 &lt;0.5；
+<ul data-page-node-id="cq1eCUvH63TACPIWjX3xS0">
+  <li data-page-node-id="ip4xbT3Y7M1lJpb0QEkAL3"><strong data-page-node-id="l6dZgSczXN7pG79Qk5HH2w">搜索框</strong>：按项目 / 数据集 / 标签关键字过滤</li>
+  <li data-page-node-id="fxUfGCFoBUCgCitGRvjfia"><strong data-page-node-id="5wmsgoa2lYLeNQ9pe2gtC0">任务 / 状态下拉</strong>：只看检测 / 分割 / 分类，或训练中 / 已完成 / 失败 / 已停止</li>
+  <li data-page-node-id="GJdUUP73FXdejXSn448wG6"><strong data-page-node-id="Z6iH1A70AZbz36DOzPfzqg">仅看每个数据集最佳</strong>：同一数据集只保留精度最高的一条</li>
+  <li data-page-node-id="ijwHkSdGUCBZwxnvb6jGDA">列表列：任务、数据集·标签、精度、训练时间、耗时、图像尺寸、操作</li>
+  <li data-page-node-id="6UNQDaMVMLaMZRI79RC1On"><strong data-page-node-id="6iyqOHk1Vuo5cyghc07cwY">精度</strong>列带色条：绿 ≥0.8、黄 0.5～0.8、红 &lt;0.5；
       失败/已停止的记录在精度列显示状态文字，悬停可看失败原因</li>
-  <li>行内按钮：<strong>测试</strong>（打开模型测试）、<strong>导出</strong>（导出模型权重并附带
-      classes.txt 类别对照）、<strong>删除</strong>（同时清理对应训练记录）</li>
+  <li data-page-node-id="5Ql0NsPefH5MppeB7tzQ0y">行内按钮：<strong data-page-node-id="G6x5Wjbtxrn2Qmg4yWhJj9">测试</strong>（打开模型测试）、<strong data-page-node-id="JQmhIj1qVLTEmLCgzd54P8">导出</strong>（导出模型权重并附带
+      classes.txt 类别对照）、<strong data-page-node-id="KcMBWHwJfGlonR0H18ctJz">删除</strong>（同时清理对应训练记录）</li>
 </ul>
 
-<h3>6.2 右侧详情面板</h3>
+<h3 data-page-node-id="RLy0BBwABnMwvjpRzyy8Bn">6.2 右侧详情面板</h3>
 
-<p>点击任意一行，右侧显示该记录的完整参数：任务·规模、状态、精度、训练/验证集、
+<p data-page-node-id="AH8zEHByk2F5pEsXWplNEx">点击任意一行，右侧显示该记录的完整参数：任务·规模、状态、精度、训练/验证集、
 图像尺寸、轮数/早停、批大小、学习率、优化器、设备、标签、训练时间、耗时、模型路径，
-上方还有<strong>精度曲线缩略图</strong>。面板底部四个按钮：</p>
+上方还有<strong data-page-node-id="G1bqvbFIjJTM6lOB3eXSAq">精度曲线缩略图</strong>。面板底部四个按钮：</p>
 
-<ul>
-  <li><strong>查看完整指标</strong>：打开训练曲线窗口（见 5.4 节）</li>
-  <li><strong>测试此模型</strong>：用该模型打开测试对话框（见 7.1 节）</li>
-  <li><strong>按此配置重训</strong>：带出该记录的全部训练参数重新开一次训练</li>
-  <li><strong>打开模型目录</strong>：在资源管理器中定位权重文件</li>
+<ul data-page-node-id="PB1hHX2JGCGx8tGoji0d1E">
+  <li data-page-node-id="t39Eh1nQNbuEdePdm5YzUn"><strong data-page-node-id="nqILjsKEEBbJzDlVYXiceM">查看完整指标</strong>：打开训练曲线窗口（见 5.4 节）</li>
+  <li data-page-node-id="YvGvtj9AhoET7qn0bTbqXv"><strong data-page-node-id="ACwEh8psokC7MccN0Qmbr5">测试此模型</strong>：用该模型打开测试对话框（见 7.1 节）</li>
+  <li data-page-node-id="rOKZ0FSaoEpU2UksKDQVCJ"><strong data-page-node-id="r9fCCCKOq1dAmAiWX6vq5h">按此配置重训</strong>：带出该记录的全部训练参数重新开一次训练</li>
+  <li data-page-node-id="9GfPuKvqQ1PxQ7ko0c9bSS"><strong data-page-node-id="Tlmjo1THblFXsXOLGjkbF5">打开模型目录</strong>：在资源管理器中定位权重文件</li>
 </ul>
 
-<figure>
-  <img src="images/模型训练记录.png" alt="模型训练记录">
-  <figcaption>模型管理：筛选条 + 训练记录列表 + 右侧详情面板</figcaption>
+<figure data-page-node-id="PO7ISl1xgOrm46mPXcmAKM">
+  <img src="images/模型训练记录.png" alt="模型训练记录" data-page-node-id="ubFkWgHtOPu9MTFNDOOZVN">
+  <figcaption data-page-node-id="KAcWWw7lym4ziiqv4Od9E4">模型管理：筛选条 + 训练记录列表 + 右侧详情面板</figcaption>
 </figure>
 
-<h2 id="test">7. 模型测试与评估报告</h2>
+<h2 id="test" data-page-node-id="BjGYnsgY0VJUsMiC8BtzwH">7. 模型测试与评估报告</h2>
 
-<h3>7.1 测试参数设置</h3>
+<h3 data-page-node-id="mFA5mQUE5o9L8KX3rgPHoe">7.1 测试参数设置</h3>
 
-<p>在模型管理窗口点击行内<strong>测试</strong>按钮（或详情面板的“测试此模型”），
+<p data-page-node-id="Us1otgPJMm6NxgvLFVi3qs">在模型管理窗口点击行内<strong data-page-node-id="5z7Ieo1nBQSpBTOQSrp6Im">测试</strong>按钮（或详情面板的“测试此模型”），
 弹出模型测试对话框。顶部显示模型信息
 （任务类型、权重文件、训练精度、输入尺寸、规模），下方配置：</p>
 
-<ul>
-  <li><strong>数据</strong>：跨项目所有数据集可选</li>
-  <li><strong>设备</strong>：默认第一个可用 GPU</li>
-  <li><strong>置信度</strong>：低于该分数的预测直接丢弃</li>
-  <li><strong>IoU 阈值</strong>：预测框与标注框重合度达标才算正确检出</li>
-  <li><strong>输出标签文件</strong>：勾选后把预测框写成 labelme json，便于人工复核</li>
+<ul data-page-node-id="OyTWcgj0CVFxTPKQhzQcJ4">
+  <li data-page-node-id="XFq8wyPjK6jEH8dgR306gq"><strong data-page-node-id="A0QBwU2HXJ8GBCgHgPsUiw">数据</strong>：跨项目所有数据集可选</li>
+  <li data-page-node-id="Ku97CXPK3AzU7HAZ4B40Fo"><strong data-page-node-id="o4uHlHyIeQjpYpSZIf3C46">设备</strong>：默认第一个可用 GPU</li>
+  <li data-page-node-id="yBx23K99N1p74WM1RKKc0D"><strong data-page-node-id="Vk5rWEEZZFHbeU1U1pD2UK">置信度</strong>：低于该分数的预测直接丢弃</li>
+  <li data-page-node-id="32SQkJbdqnpvXP5z5Fq2l2"><strong data-page-node-id="PWnhkqfIGZssXCBAGDUOWP">IoU 阈值</strong>：预测框与标注框重合度达标才算正确检出</li>
+  <li data-page-node-id="0kU3qv1sKn7ocu5hysHvt1"><strong data-page-node-id="FX2rm42KdtRiyldgemMVnB">输出标签文件</strong>：勾选后把预测框写成 labelme json，便于人工复核</li>
 </ul>
 
-<div class="note">
-  数据集已标注时自动进入<strong>评估模式</strong>：统计检出率 / 漏检 / 误检。
+<div class="note" data-page-node-id="RRpu3jHy4Fa3uGl13858zp">
+  数据集已标注时自动进入<strong data-page-node-id="mp46glzu3pBDmcOKDTVt3A">评估模式</strong>：统计检出率 / 漏检 / 误检。
 </div>
 
-<figure>
-  <img src="images/模型测试与评估.png" alt="模型测试">
-  <figcaption>模型测试参数配置</figcaption>
+<figure data-page-node-id="IaywnKZOpCk2iQ0V3UqAI0">
+  <img src="images/模型测试与评估.png" alt="模型测试" data-page-node-id="cHQzSTwtVP58vk12UVI5jh">
+  <figcaption data-page-node-id="s9mesScR0BGf0fB8K0ttJN">模型测试参数配置</figcaption>
 </figure>
 
-<h3>7.2 测试结果分析</h3>
+<h3 data-page-node-id="dEezVeaGeqZTLMNs3pHOkO">7.2 测试结果分析</h3>
 
-<p>测试完成后弹出"测试结果分析"窗口，分两个维度统计（全部用直白的
+<p data-page-node-id="Q6HrSHyqY41EThCjb8Pn9d">测试完成后弹出"测试结果分析"窗口，分两个维度统计（全部用直白的
 "正确检出 / 漏检 / 误检"表述）：</p>
 
-<ul>
-  <li><strong>图像维度</strong>（按张统计，检出 1 个即算检出）：测试张数、检出图像及检出率、
+<ul data-page-node-id="jamSCeh4mJyo2ryL4HlZyX">
+  <li data-page-node-id="5O3ZUwarJaK6vgKuqe5bg0"><strong data-page-node-id="ENZFFWzFKHkDJcPThCTJSh">图像维度</strong>（按张统计，检出 1 个即算检出）：测试张数、检出图像及检出率、
       未检出图像、有误检图像</li>
-  <li><strong>标注维度</strong>（按标注框统计）：正确检出、漏检、误检、准确率</li>
-  <li><strong>按类别表格</strong>：每类的标注数 / 正确检出 / 漏检 / 误检 / 检出率 / 准确率</li>
-  <li><strong>底部结论</strong>：一句话点出整体偏漏检还是偏误检、拖累最大的类别</li>
+  <li data-page-node-id="fWTsEDeK1UzUmCRrFcQNnc"><strong data-page-node-id="VQGHBDMIPPAfN5ka1ytmnc">标注维度</strong>（按标注框统计）：正确检出、漏检、误检、准确率</li>
+  <li data-page-node-id="BG4S0v5W7WmwuDOuHV77nJ"><strong data-page-node-id="FRrgkSVjfgN0UXPs0Q7lW8">按类别表格</strong>：每类的标注数 / 正确检出 / 漏检 / 误检 / 检出率 / 准确率</li>
+  <li data-page-node-id="FdCmj2JjXEpBhSLsTX3dc9"><strong data-page-node-id="CZ831wpUzJbU7k28lK9wsp">底部结论</strong>：一句话点出整体偏漏检还是偏误检、拖累最大的类别</li>
 </ul>
 
-<figure>
-  <img src="images/模型结果评估与报告.png" alt="测试结果分析与报告">
-  <figcaption>测试结果分析窗口（图像维度 + 标注维度 + 按类别明细）</figcaption>
+<figure data-page-node-id="VeiG0i9p532vJfPj803CCA">
+  <img src="images/模型结果评估与报告.png" alt="测试结果分析与报告" data-page-node-id="NcyisYMUSwsBuYdv4PBJqV">
+  <figcaption data-page-node-id="V763VWA0TcBUxRU2wCG4uX">测试结果分析窗口（图像维度 + 标注维度 + 按类别明细）</figcaption>
 </figure>
 
-<h3>7.3 导出 PDF 报告</h3>
+<h3 data-page-node-id="cbD9vYtLJNCTBhCge8ef0q">7.3 导出 PDF 报告</h3>
 
-<p>点击右下角 <strong>导出 PDF 报告</strong>，后台线程生成评估报告，内容包含：</p>
+<p data-page-node-id="9rn6WdfLtXuxL5a7RO6OH9">点击右下角 <strong data-page-node-id="zQRA8RiN0C1HN0HoVEvqy5">导出 PDF 报告</strong>，后台线程生成评估报告，内容包含：</p>
 
-<ul>
-  <li>总览页：指标汇总表 + 标注分布图</li>
-  <li>漏检样本页、误检样本页：按"每类抽取 N 张"（左下角可调）展示缩略图，
+<ul data-page-node-id="pNUwGr2a1UqtGflPYpSzBP">
+  <li data-page-node-id="s48oADHamjw5oH1UwH02oz">总览页：指标汇总表 + 标注分布图</li>
+  <li data-page-node-id="kXAkGClC0jigcFdt7bzkFM">漏检样本页、误检样本页：按"每类抽取 N 张"（左下角可调）展示缩略图，
       图上用红框标出漏检 / 误检位置，并注明抽取比例</li>
-  <li>建议页：针对各类错误给出改进方向</li>
+  <li data-page-node-id="rdX5GFXEDlL6vPX2uuKK2T">建议页：针对各类错误给出改进方向</li>
 </ul>
 
-<div class="note">
+<div class="note" data-page-node-id="5Dsenl6UT8kBg4KEh5BaQC">
   抽样只发生在出报告这一步，明细数据仍是全量，后续做难例挖掘不会丢数据。
 </div>
 
-<h2 id="log">8. 日志</h2>
+<h2 id="log" data-page-node-id="OPqMorKvoOAkxzDZvlbcRM">8. 日志</h2>
 
-<p>点击首页顶部 <strong>日志</strong> 按钮，打开日志窗口，实时显示：</p>
-<ul>
-  <li>软件启动 / 退出</li>
-  <li>项目 / 数据集创建、重命名、删除、导入 / 导出</li>
-  <li>标签创建、重命名、删除</li>
-  <li>训练开始、训练中（[train] 前缀转发子进程输出）、指标更新、模型保存、手动停止</li>
-  <li>测试启动、测试中（[test] 前缀）、完成、失败</li>
+<p data-page-node-id="X0x5AlqFj0pAQ6lhztxDy8">点击首页顶部 <strong data-page-node-id="ATwaGKk9dQLeereMLl87Nt">日志</strong> 按钮，打开日志窗口，实时显示：</p>
+<ul data-page-node-id="hq5uUhXmIr0sivJCJbhg0n">
+  <li data-page-node-id="zb9WHWcvftyql9AJcw8Htd">软件启动 / 退出</li>
+  <li data-page-node-id="EoUi4b9HP0hSDmwT0DOOmz">项目 / 数据集创建、重命名、删除、导入 / 导出</li>
+  <li data-page-node-id="XDuxYQUhZUwgOHgrRUKUqL">标签创建、重命名、删除</li>
+  <li data-page-node-id="rA0lfBvGfDCsrvufa9J9sC">训练开始、训练中（[train] 前缀转发子进程输出）、指标更新、模型保存、手动停止</li>
+  <li data-page-node-id="TKepEYZXyLFA00Sf4UHu4X">测试启动、测试中（[test] 前缀）、完成、失败</li>
 </ul>
 
-<figure>
-  <img src="images/日志.png" alt="日志窗口">
-  <figcaption>日志窗口</figcaption>
+<figure data-page-node-id="eVDLX2LQx50F37e0aoRg2k">
+  <img src="images/日志.png" alt="日志窗口" data-page-node-id="3Wr0vMEpgdA8x42ZMl4Lwe">
+  <figcaption data-page-node-id="7xn2a9nEOwv5yeA40TJIj9">日志窗口</figcaption>
 </figure>
 
-<hr style="margin-top:48px; border:none; border-top:1px solid #dde1ea;">
+<hr style="margin-top:48px; border:none; border-top:1px solid #dde1ea;" data-page-node-id="FLF1BPvnyWvJ6yCLCH9Ptw">
 
 </body>
 </html>
