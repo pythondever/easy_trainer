@@ -16,6 +16,15 @@ cmake --build build --config Release
 
 运行时把 `onnxruntime.dll`、`onnxruntime_providers_shared.dll` 放到 exe 同目录。
 
+## 中文路径
+
+模型路径、图像路径、`classes.txt` 路径以及工作目录都可以是中文，示例已做处理：
+
+- 参数不用 `main` 的 `argv`（Windows 下已被 CRT 转成 GBK，中文必乱码），改用 `GetCommandLineW` 取 UTF-8；
+- 读图走「读字节 + `imdecode`」而不是 `cv::imread`，写图走 `imencode` + 字节落盘
+  （OpenCV 的窄字符 `imread/imwrite` 走 ANSI 代码页，中文路径打不开）；
+- classes.txt 同样按字节流解析。
+
 ## 文件
 
 | 文件 | 作用 |

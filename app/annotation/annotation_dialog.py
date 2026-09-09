@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""标注对话框：封装 ui/annotation.py + annotation 引擎。
+"""
+标注对话框：封装 ui/annotation.py + annotation 引擎。
 - 矩形/多边形标注（颜色 = 标签颜色，支持中文标签）
 - 左侧标签列表（点击切换当前标签），添加标签弹窗（10 默认色 + 自定义色 + 跨数据集导入）
 - A/D 切换上一张/下一张，切换/关闭时保存 labelme json（图像同路径）
@@ -1068,9 +1069,9 @@ class AnnotationDialog(QDialog):
     CLIP_ROWS = 3   # 剪切板可视行数, 超出后滚动
 
     def _clip_qss(self):
-        """缩略图尺寸必须锁进 QSS: 全局 QSS 的 QPushButton{min-height} 会覆盖
-        setFixedSize 的 minimumSize, 布局会把 90px 压到 36px 且挤不出滚动条。
-        另: QSS 的 min/max 只管内容盒, 还要扣掉两侧 2px 边框才等于 120x90。"""
+        """
+        缩略图尺寸QSS
+        """
         w, h = self.CLIP_W - 4, self.CLIP_H - 4
         return ("QPushButton#clipThumb {{ border: 2px solid #3a3f4e;"
                 " border-radius: 4px; padding: 0px; background: #22252d;"
@@ -1141,7 +1142,7 @@ class AnnotationDialog(QDialog):
 
     def _apply_clip_template(self, i):
         t = _clip_templates[i]
-        # 先退出画笔态(会把 fp_template 清掉)再换模板, 防 ghost 残留
+        # 先退出画笔态(会把 fp_template 清掉)再换模板
         if self.scene.fp_mode is not None:
             self.scene.set_format_painter(False)
         self.scene.fp_template = t
@@ -1428,8 +1429,7 @@ class AnnotationDialog(QDialog):
         删除标签并同步清理其标注：db / 本地 labelme json / 当前场景。
         统计口径与数据集统计一致：优先数主窗口内存索引的 boxes/labels
         (统计页 label_counts 同源、即时)；无索引时退回扫描图像同路径 json。
-        先统计 → 确认 → 确认后才写文件(取消不落盘)。
-        当前图像的框通常已入索引，场景项只补计未保存部分，避免双计。
+        先统计,用户确认后才写文件(取消不落盘)。
         """
         needle = normalize_label(name)
         cur_img = (self.image_list[self.index]

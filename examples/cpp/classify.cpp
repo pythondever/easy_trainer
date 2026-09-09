@@ -15,14 +15,16 @@ static const int INPUT_SIZE = 224;
 static const int TOP_K = 5;
 
 int main(int argc, char** argv) {
-    if (argc < 3) {
+    initConsoleUtf8();
+    std::vector<std::string> args = utf8Args(argc, argv);
+    if (args.size() < 2) {
         std::cout << "用法: classify <model.onnx> <image> [classes.txt]\n";
         return 1;
     }
-    std::string modelPath = argv[1], imagePath = argv[2];
-    std::string classesPath = argc > 3 ? argv[3] : "classes.txt";
+    std::string modelPath = args[0], imagePath = args[1];
+    std::string classesPath = args.size() > 2 ? args[2] : "classes.txt";
 
-    cv::Mat img = cv::imread(imagePath);
+    cv::Mat img = imreadUtf8(imagePath);
     if (img.empty()) {
         std::cout << "读图失败: " << imagePath << "\n";
         return 1;

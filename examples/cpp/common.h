@@ -3,7 +3,9 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdio>
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -12,6 +14,8 @@
 
 #ifdef _WIN32
 #include <windows.h>
+#include <shellapi.h>
+#pragma comment(lib, "shell32.lib")
 #endif
 
 struct Det {
@@ -77,16 +81,101 @@ inline std::vector<Det> decodeDets(const float* dets, const float* labels,
     return res;
 }
 
+// 以下路径/IO 一律以 UTF-8 字符串为准, 需要系统 API 时再转宽字符。
+#ifdef _WIN32
+inline std::wstring toWide(const std::string& utf8) {
+    int n = MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), (int)utf8.size(), nullptr, 0);
+    std::wstring w((size_t)(n > 0 ? n : 0), L'\0');
+    if (n > 0) MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), (int)utf8.size(), &w[0], n);
+    return w;
+}
+
+inline std::string toUtf8(const std::wstring& w) {
+    int n = WideCharToMultiByte(CP_UTF8, 0, w.c_str(), (int)w.size(), nullptr, 0, nullptr, nullptr);
+    std::string s((size_t)(n > 0 ? n : 0), '\0');
+    if (n > 0) WideCharToMultiByte(CP_UTF8, 0, w.c_str(), (int)w.size(), &s[0], n, nullptr, nullptr);
+    return s;
+}
+#endif
+
 // Windows 下 ORTCHAR_T 是 wchar_t, 路径要先转宽字符
 inline std::basic_string<ORTCHAR_T> ortPath(const std::string& s) {
 #ifdef _WIN32
-    int n = MultiByteToWideChar(CP_UTF8, 0, s.c_str(), (int)s.size(), nullptr, 0);
-    std::wstring w((size_t)n, L'\0');
-    MultiByteToWideChar(CP_UTF8, 0, s.c_str(), (int)s.size(), &w[0], n);
-    return w;
+    return toWide(s);
 #else
     return s;
 #endif
+}
+
+// 命令行参数统一取 UTF-8。不能直接用 main 的 argv: Windows 下 CRT 已把它转成
+// ANSI 代码页(GBK), 从 PowerShell/cmd 传中文路径会先一步变成乱码。
+inline std::vector<std::string> utf8Args(int argc, char** argv) {
+    std::vector<std::string> out;
+#ifdef _WIN32
+    (void)argv;
+    int n = 0;
+    LPWSTR* wargv = CommandLineToArgvW(GetCommandLineW(), &n);
+    if (wargv) {
+        for (int i = 1; i < n; ++i) out.push_back(toUtf8(wargv[i]));
+        LocalFree(wargv);
+    }
+#else
+    (void)argc;
+    for (int i = 1; i < argc; ++i) out.push_back(argv[i]);
+#endif
+    return out;
+}
+
+// 让 printf/std::cout 的 UTF-8 中文在 Windows 控制台正常显示(否则输出乱码)
+inline void initConsoleUtf8() {
+#ifdef _WIN32
+    SetConsoleOutputCP(CP_UTF8);
+#endif
+}
+
+// 按 UTF-8 路径读整个文件(Windows 走宽字符 ifstream, 绕开 ANSI 代码页)
+inline std::vector<char> readFileBytes(const std::string& utf8) {
+    std::vector<char> data;
+#ifdef _WIN32
+    std::ifstream f(toWide(utf8), std::ios::binary);
+#else
+    std::ifstream f(utf8, std::ios::binary);
+#endif
+    if (!f) return data;
+    f.seekg(0, std::ios::end);
+    data.resize((size_t)f.tellg());
+    f.seekg(0, std::ios::beg);
+    if (!data.empty()) f.read(data.data(), (std::streamsize)data.size());
+    return data;
+}
+
+// 读图: 先取字节再 imdecode, 等价于 OpenCV 官方推荐的中文路径解法
+inline cv::Mat imreadUtf8(const std::string& utf8) {
+    std::vector<char> buf = readFileBytes(utf8);
+    if (buf.empty()) return cv::Mat();
+    return cv::imdecode(buf, cv::IMREAD_COLOR);
+}
+
+inline bool writeFileBytes(const std::string& utf8, const std::vector<uchar>& data) {
+    if (data.empty()) return false;
+#ifdef _WIN32
+    std::ofstream f(toWide(utf8), std::ios::binary);
+#else
+    std::ofstream f(utf8, std::ios::binary);
+#endif
+    if (!f) return false;
+    f.write((const char*)data.data(), (std::streamsize)data.size());
+    return true;
+}
+
+// 写图同理: 工作目录是中文时 cv::imwrite 一样会失败
+inline bool imwriteUtf8(const std::string& utf8, const cv::Mat& img) {
+    std::string ext = ".jpg";
+    size_t dot = utf8.rfind('.');
+    if (dot != std::string::npos) ext = utf8.substr(dot);
+    std::vector<uchar> buf;
+    if (!cv::imencode(ext, img, buf)) return false;
+    return writeFileBytes(utf8, buf);
 }
 
 // 模型输入尺寸是静态的, 必须按模型实际的 H 缩放(训练尺寸不一定是 640/224)
@@ -108,7 +197,9 @@ inline Ort::Value makeInput(std::vector<float>& data,
 // classes.txt: 每行 "id name" 或只有 name, 行号即类别 id
 inline std::vector<std::string> loadClasses(const std::string& path) {
     std::vector<std::string> names;
-    std::ifstream f(path);
+    // 走字节流解析, 中文路径和内容(UTF-8)都能正常读
+    std::vector<char> buf = readFileBytes(path);
+    std::istringstream f(std::string(buf.begin(), buf.end()));
     std::string line;
     while (std::getline(f, line)) {
         if (line.empty()) continue;

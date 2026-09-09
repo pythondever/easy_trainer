@@ -15,7 +15,7 @@ namespace EasyTrainerOnnx
         public int Query;   // 候选下标, 分割按它取对应掩码
     }
 
-    /// 预处理 / 后处理, 与 Python、C++ 示例完全一致
+    /// 预处理 / 后处理, 与 Python、C++ 示例一致
     public static class OnnxModel
     {
         public static readonly float[] Mean = { 0.485f, 0.456f, 0.406f };
@@ -120,6 +120,15 @@ namespace EasyTrainerOnnx
             // OpenCvSharp 直接 ImRead 对中文路径会失败, 走 MemoryStream
             var bytes = File.ReadAllBytes(path);
             return Cv2.ImDecode(bytes, ImreadModes.Color);
+        }
+
+        public static void ImWrite(string path, Mat img)
+        {
+            // 同理: 工作目录是中文时 Cv2.ImWrite 也写不出来, 自己编码后落盘
+            var ext = Path.GetExtension(path);
+            if (string.IsNullOrEmpty(ext)) ext = ".jpg";
+            Cv2.ImEncode(ext, img, out var bytes);
+            File.WriteAllBytes(path, bytes);
         }
 
         public static NamedOnnxValue ToInput(DenseTensor<float> tensor, string name)

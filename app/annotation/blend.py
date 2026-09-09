@@ -110,7 +110,7 @@ def blend_patch(dst_bgr, src_bgra, strength=0.7, feather_px=None):
         # 对比度只跟一部分: 全跟会改变缺陷自身的明暗幅度
         ratio = (float(d_s.std()) / max(float(s.std()), 1e-3)) ** (
             CONTRAST_MATCH * strength)
-        # 护栏: 缺陷明暗幅度最多改 30%
+        # 缺陷明暗幅度最多改 30%
         ratio = min(1.3, max(0.8, ratio))
         src_lab[:, 0] = np.clip((s - s_mean) * ratio + s_mean + offset,
                                 0.0, 100.0)

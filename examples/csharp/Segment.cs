@@ -68,7 +68,7 @@ namespace EasyTrainerOnnx
                 Cv2.Rectangle(img, new Point((int)d.X1, (int)d.Y1),
                               new Point((int)d.X2, (int)d.Y2), Scalar.Green, 2);
             }
-            Cv2.ImWrite("segment_result.jpg", img);
+            OnnxModel.ImWrite("segment_result.jpg", img);
         }
     }
 }

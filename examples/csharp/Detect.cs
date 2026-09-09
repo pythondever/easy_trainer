@@ -40,7 +40,7 @@ namespace EasyTrainerOnnx
                 Cv2.PutText(img, $"{label} {d.Score:F2}", new Point((int)d.X1, (int)d.Y1 - 6),
                             HersheyFonts.HersheySimplex, 0.6, Scalar.Green, 2);
             }
-            Cv2.ImWrite("detect_result.jpg", img);
+            OnnxModel.ImWrite("detect_result.jpg", img);
         }
     }
 }

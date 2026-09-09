@@ -50,6 +50,14 @@ ONNX 模型做 **目标检测 / 实例分割 / 图像分类** 推理的完整示
 
 > 300 个候选已经是端到端去重结果，**不需要再做 NMS**。
 
+## 中文路径
+
+三种语言的示例都支持**中文的模型路径、图像路径、classes.txt 路径，以及中文工作目录**，无需额外设置。
+
+Windows 下代码已经绕过两个坑：OpenCV 的 `imread/imwrite` 走 ANSI 代码页（中文路径打不开，
+改为「读字节 + `imdecode` / `imencode` + 字节落盘」），C++ 的 `main(argv)` 已被 CRT 转成 GBK
+（改用 `GetCommandLineW` 直接取宽字符命令行）。Python 侧读图同样没用 `cv2.imread`。
+
 ## 各语言依赖
 
 | 语言 | 依赖 | 安装 |
