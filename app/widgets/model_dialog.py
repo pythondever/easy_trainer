@@ -21,6 +21,7 @@ import traceback
 from PySide6.QtCore import QTimer
 
 from app.core.db import load_train_metrics
+from app.core.log import write_log
 from app.widgets.message_box import MessageBox, ProgressDialog
 from app.widgets.metrics_dialog import MetricsDialog
 from app.widgets.test_dialog import TestDialog
@@ -682,6 +683,9 @@ class ModelDialog(QDialog):
                     "确定删除该条模型记录？\n项目={}\n数据集={}\n开始时间={}\n".format(
                         record.get("project", ""), ds, st)):
                 return
+            write_log("删除模型记录: 项目={} 数据集={} 任务={} 开始时间={}".format(
+                record.get("project", ""), ds,
+                TASK_TEXT.get(record.get("task", ""), record.get("task", "")), st))
             self.app.db.delete_model_record(record.get("id"))
             # 模型列表同时展示训练记录: 联动删除对应训练记录(train_id)
             tid = record.get("train_id")
@@ -693,6 +697,7 @@ class ModelDialog(QDialog):
             QTimer.singleShot(0, self._load_records)
         except Exception as e:
             trace = traceback.format_exc()
+            write_log("删除模型记录失败: {} | {}".format(record.get("project", ""), e))
             print("[model_dialog] 删除失败: {}\n{}".format(e, trace), flush=True)
 
     def _retrain(self, record):
@@ -746,9 +751,10 @@ class ModelDialog(QDialog):
                 if os.path.exists(p):
                     model_path = p
                     break
-            if not model_path or not os.path.exists(model_path):
-                MessageBox.warning(self, "导出模型", "模型文件不存在：\n{}".format(model_path))
-                return
+        if not model_path or not os.path.exists(model_path):
+            MessageBox.warning(self, "导出模型", "模型文件不存在：\n{}".format(model_path))
+            write_log("导出模型失败: 模型文件不存在 {}".format(model_path))
+            return
         d = QFileDialog.getExistingDirectory(self, "选择导出目录")
         if not d:
             return
@@ -764,6 +770,7 @@ class ModelDialog(QDialog):
             os.makedirs(out_dir, exist_ok=True)
         except OSError as e:
             MessageBox.warning(self, "导出模型", "创建目录失败：{}".format(e))
+            write_log("导出模型失败: 创建目录失败 {} | {}".format(out_dir, e))
             return
         base = "_".join([p for p in (project, TASK_TEXT.get(task, "模型"),
                                      img_size, model_size) if p])
@@ -773,6 +780,9 @@ class ModelDialog(QDialog):
             "onnx": os.path.join(out_dir, base + ".onnx"),
             "copied": [], "report": "", "note": "",
         }
+        write_log("开始导出模型: 项目={} 任务={} 架构={} 尺寸={} | {}".format(
+            project, TASK_TEXT.get(task, task) or "未知", model_size, img_size,
+            model_path))
         # maximum=0 → 忙碌进度条(不确定时长); 统一深色样式见 message_box.ProgressDialog
         self._exp_dlg = ProgressDialog("导出模型", "正在导出 ONNX…", self,
                                        maximum=0, cancellable=False)
@@ -791,6 +801,9 @@ class ModelDialog(QDialog):
 
     def _export_after_onnx(self, onnx_path):
         self._exp["copied"].append(os.path.basename(onnx_path))
+        size_mb = os.path.getsize(onnx_path) / 1048576.0 if os.path.exists(onnx_path) else 0
+        write_log("ONNX 导出完成: {} ({:.1f} MB)".format(
+            os.path.basename(onnx_path), size_mb))
         self._write_export_classes()
         self._export_start_eval()
 
@@ -841,16 +854,19 @@ class ModelDialog(QDialog):
                     f.write("{} {}\n".format(i, name))
             self._exp["copied"].append("classes.txt")
         except Exception as e:
+            write_log("生成 classes.txt 失败: {}".format(e))
             print("[export] 生成 classes.txt 失败: {}".format(e), flush=True)
 
     def _export_start_eval(self):
         """用验证集跑一次评估, 结果交给 build_report 出 PDF。"""
         if self._exp["task"] == "classify":
             # test_report 是检测/分割的漏检误检报告, 分类任务不适用
+            write_log("导出模型报告跳过: 分类任务不出评估报告")
             self._export_finish("分类任务不生成评估报告")
             return
         cfg = self._build_eval_cfg()
         if not cfg:
+            write_log("导出模型报告跳过: 未找到验证集")
             self._export_finish("未找到验证集，已跳过评估报告")
             return
         self._exp_dlg.set_text("正在生成模型报告…")
@@ -860,8 +876,10 @@ class ModelDialog(QDialog):
                 "正在生成模型报告 {}/{}".format(done, total)))
         self._eval_worker.finished_ok.connect(self._export_on_eval_done)
         self._eval_worker.failed.connect(
-            lambda msg: self._export_finish(
-                "评估失败，已跳过报告：{}".format((msg or "").splitlines()[0])))
+            lambda msg: (write_log("导出模型评估失败: {}".format(
+                             (msg or "").strip().splitlines()[0] if msg else "未知")),
+                         self._export_finish(
+                             "评估失败，已跳过报告：{}".format((msg or "").splitlines()[0]))))
         self._eval_worker.start()
 
     def _build_eval_cfg(self):
@@ -928,11 +946,13 @@ class ModelDialog(QDialog):
                     self._exp["out_dir"],
                     self._exp["base"] + "_评估报告.pdf"))
         except Exception:
-            print("[export] 生成评估报告失败:\n{}".format(
-                traceback.format_exc()), flush=True)
+            trace = traceback.format_exc()
+            print("[export] 生成评估报告失败:\n{}".format(trace), flush=True)
+            write_log("生成评估报告失败: {}".format(trace.strip().splitlines()[-1]))
         if pdf:
             self._exp["report"] = os.path.basename(pdf)
             self._exp["copied"].append(os.path.basename(pdf))
+            write_log("导出模型报告完成: {}".format(os.path.basename(pdf)))
         self._export_finish("" if pdf else "评估完成，但报告生成失败")
 
     def _inject_label_stats(self, res):
@@ -967,6 +987,8 @@ class ModelDialog(QDialog):
             self._exp_dlg.close()
             self._exp_dlg = None
         files = "、".join(self._exp["copied"]) or "（空）"
+        write_log("导出模型完成: {} | 包含：{}".format(
+            self._exp["out_dir"], files))
         msg = "已导出到：\n{}\n\n包含：{}".format(self._exp["out_dir"], files)
         if note:
             msg += "\n\n{}".format(note)
@@ -978,6 +1000,7 @@ class ModelDialog(QDialog):
             self._exp_dlg = None
         head = (msg or "").strip().splitlines()
         tip = head[0] if head else "未知错误"
+        write_log("导出模型失败: {}".format(msg or "未知错误"))
         print("[export] ONNX 导出失败: {}".format(msg), flush=True)
         MessageBox.warning(
             self, "导出模型",
@@ -996,4 +1019,5 @@ class ModelDialog(QDialog):
                             ignore=shutil.ignore_patterns("__pycache__"))
             self._exp["copied"].append("examples/")
         except OSError as e:
+            write_log("复制导出示例失败: {}".format(e))
             print("[export] 复制示例失败: {}".format(e), flush=True)

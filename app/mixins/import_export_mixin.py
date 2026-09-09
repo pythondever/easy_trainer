@@ -3,6 +3,7 @@ import sys
 import os
 import json
 import shutil
+import traceback
 CURRENT_DIRECTORY = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WORKSPACE_DIRECTORY = os.path.dirname(CURRENT_DIRECTORY)
 sys.path.append(WORKSPACE_DIRECTORY)
@@ -373,6 +374,8 @@ class ImportExportMixin(object):
                     self._export_labels(project_name, [(project_name, dataset_name)]),
                     fmt, os.path.join(save_dir, dataset_name)))
         except Exception as e:
+            self._log("导出失败: 项目={} 数据集={} | {}".format(
+                project, dataset or "(整个项目)", traceback.format_exc()))
             MessageBox.critical(self, "导出失败", str(e))
 
     def _pick_export_path(self, dlg, ui):

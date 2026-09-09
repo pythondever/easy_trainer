@@ -52,11 +52,13 @@ class ProjectMixin(object):
             MessageBox.warning(self, "修改名称", "项目名称已存在！")
             return
         self.db.rename_project(old_name, new_name)
+        self._log("重命名项目: {} → {}".format(old_name, new_name))
         self.refresh_project_list()
 
     def _delete_project(self, name):
         if MessageBox.question(self, "删除项目", "确定删除项目「{}」吗?\n".format(name),
                                default_yes=True):
+            self._log("删除项目: {}".format(name))
             self.db.delete_project(name)
             self.db.delete_project_info(name)
             self.db.delete_project_records(name)
