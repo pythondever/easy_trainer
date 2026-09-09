@@ -13,7 +13,7 @@ import onnxruntime as ort
 
 from common import input_size, load_classes, preprocess
 
-INPUT_SIZE = 224          # 分类模型固定 224（导出时若指定过别的尺寸就改这里）
+INPUT_SIZE = 224          # 分类模型固定 224(导出时指定过别的尺寸就改这里)
 TOP_K = 5
 
 
