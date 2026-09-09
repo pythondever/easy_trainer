@@ -93,11 +93,36 @@ class Ui_annotationDialog(object):
 
         self.horizontalLayout.addWidget(self.fill_value_label)
 
-        self.fill_value_lineEdit = QLineEdit(annotationDialog)
-        self.fill_value_lineEdit.setObjectName(u"fill_value_lineEdit")
-        self.fill_value_lineEdit.setMinimumSize(QSize(65, 0))
+        self.fill_r_lineEdit = QLineEdit(annotationDialog)
+        self.fill_r_lineEdit.setObjectName(u"fill_r_lineEdit")
+        self.fill_r_lineEdit.setMinimumSize(QSize(36, 0))
+        self.fill_r_lineEdit.setMaximumSize(QSize(36, 16777215))
 
-        self.horizontalLayout.addWidget(self.fill_value_lineEdit)
+        self.horizontalLayout.addWidget(self.fill_r_lineEdit)
+
+        self.fill_sep1 = QLabel(annotationDialog)
+        self.fill_sep1.setObjectName(u"fill_sep1")
+
+        self.horizontalLayout.addWidget(self.fill_sep1)
+
+        self.fill_g_lineEdit = QLineEdit(annotationDialog)
+        self.fill_g_lineEdit.setObjectName(u"fill_g_lineEdit")
+        self.fill_g_lineEdit.setMinimumSize(QSize(36, 0))
+        self.fill_g_lineEdit.setMaximumSize(QSize(36, 16777215))
+
+        self.horizontalLayout.addWidget(self.fill_g_lineEdit)
+
+        self.fill_sep2 = QLabel(annotationDialog)
+        self.fill_sep2.setObjectName(u"fill_sep2")
+
+        self.horizontalLayout.addWidget(self.fill_sep2)
+
+        self.fill_b_lineEdit = QLineEdit(annotationDialog)
+        self.fill_b_lineEdit.setObjectName(u"fill_b_lineEdit")
+        self.fill_b_lineEdit.setMinimumSize(QSize(36, 0))
+        self.fill_b_lineEdit.setMaximumSize(QSize(36, 16777215))
+
+        self.horizontalLayout.addWidget(self.fill_b_lineEdit)
 
         self.horizontalSpacer_3 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
@@ -274,6 +299,8 @@ class Ui_annotationDialog(object):
         self.label.setText(QCoreApplication.translate("annotationDialog", u"-", None))
         self.blend_strength_label.setText(QCoreApplication.translate("annotationDialog", u"\u878d\u5408\u5f3a\u5ea6", None))
         self.fill_value_label.setText(QCoreApplication.translate("annotationDialog", u"\u586b\u5145\u503c", None))
+        self.fill_sep1.setText(QCoreApplication.translate("annotationDialog", u"-", None))
+        self.fill_sep2.setText(QCoreApplication.translate("annotationDialog", u"-", None))
         self.label_list.setText(QCoreApplication.translate("annotationDialog", u"\u6807\u7b7e\u5217\u8868", None))
 #if QT_CONFIG(tooltip)
         self.add_label.setToolTip(QCoreApplication.translate("annotationDialog", u"\u6dfb\u52a0\u6807\u7b7e", None))

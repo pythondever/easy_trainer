@@ -35,7 +35,7 @@ from PySide6.QtWidgets import QGraphicsView
 
 
 BLEND_STRENGTH_DEFAULT = "0.7"   # 粘贴融合力度: 0=原始硬贴, 1=完全融合
-FILL_VALUE_DEFAULT = "255"       # 多边形填充灰度: 0=黑, 255=白
+FILL_VALUE_DEFAULT = "255"       # 多边形填充色默认值: 每通道 0~255
 
 # 全局粘贴剪切板: 软件重启才清空。
 # 元素即 scene.fp_template 的结构(points/patch/w/h/label), 最新的在下标 0。
@@ -195,7 +195,7 @@ def _upgrade_graphics_view(view):
         _scene._paste_template(_pos)
 
     def _do_fill(_scene, _item):
-        """多边形填充: 把区域内像素改成"填充值"输入框的灰度, 可 Ctrl+Z 撤销。"""
+        """多边形填充: 把区域内像素改成"填充值"输入框的 RGB 颜色, 可 Ctrl+Z 撤销。"""
         dialog = view.window()
         if _scene.fill_polygon(_item, dialog._fill_value()):
             dialog._dirty = True
@@ -618,6 +618,8 @@ class AnnotationDialog(QDialog):
         # 图像 format 缓存(path→QImage.Format), 避免 _load_current 显示通道数时
         # pix.toImage() 整图拷贝(只为拿 format)
         self._pix_fmt_cache = {}
+        # 当前图像的像素改动尚未写回磁盘(粘贴/填充/撤销后置位)
+        self._pix_unsaved = False
         self._closing = False
         self._prefetch_worker = _PrefetchWorker(self.image_list, self)
         self._prefetch_worker.decoded.connect(self._on_prefetch_decoded)
@@ -677,12 +679,13 @@ class AnnotationDialog(QDialog):
         u.blend_strength_lineEdit.setFixedWidth(65)
         u.blend_strength_lineEdit.editingFinished.connect(self._normalize_blend_strength)
         self._normalize_blend_strength()
-        # 填充值: 多边形右键"填充"写入的灰度(0~255, 仅整数)
-        u.fill_value_lineEdit.setText(FILL_VALUE_DEFAULT)
-        u.fill_value_lineEdit.setAlignment(Qt.AlignCenter)
-        u.fill_value_lineEdit.setValidator(QIntValidator(0, 255, self))
-        u.fill_value_lineEdit.setFixedWidth(65)
-        u.fill_value_lineEdit.editingFinished.connect(self._normalize_fill_value)
+        # 填充值: 多边形右键"填充"写入的 RGB(每通道 0~255, 仅整数), 三框用 - 分隔
+        for name in ("fill_r_lineEdit", "fill_g_lineEdit", "fill_b_lineEdit"):
+            edit = getattr(u, name)
+            edit.setText(FILL_VALUE_DEFAULT)
+            edit.setAlignment(Qt.AlignCenter)
+            edit.setValidator(QIntValidator(0, 255, self))
+            edit.editingFinished.connect(self._normalize_fill_value)
         u.fill_value_label.setText("填充值")
         u.switchButton = SwitchButton(self)
         u.switchButton.setObjectName("switchButton")
@@ -691,7 +694,7 @@ class AnnotationDialog(QDialog):
         u.show_boxes_label = QLabel("显示标注", self)
         u.show_boxes_label.setObjectName("show_boxes_label")
         # "显示标注"开关放在"填充值"输入框后面(工具栏参数排完再给开关)
-        idx = u.horizontalLayout.indexOf(u.fill_value_lineEdit)
+        idx = u.horizontalLayout.indexOf(u.fill_b_lineEdit)
         u.horizontalLayout.insertWidget(idx + 1, u.switchButton)
         u.horizontalLayout.insertWidget(idx + 2, u.show_boxes_label)
         u.add_label.clicked.connect(self._add_label_clicked)
@@ -710,6 +713,8 @@ class AnnotationDialog(QDialog):
         self._autosave_timer.timeout.connect(self._save_current)
         self.scene.boxes_changed.connect(self._on_boxes_changed)
         self.scene.label_change_requested.connect(self._on_label_change_requested)
+        # 像素级改动(粘贴/填充/撤销)不走 boxes_changed, 单独接: 同步缓存 + 落盘
+        self.scene.image_pixels_changed.connect(self._on_image_pixels_changed)
         self.scene.selection_changed.connect(self._sync_labeled_selection)
         # 图像分类数据集:只读看图,禁用一切标注/绘制控件
         if self.cls_mode:
@@ -731,21 +736,45 @@ class AnnotationDialog(QDialog):
             scene.blend_strength = v
 
     def _normalize_fill_value(self):
-        """失焦时把填充值收敛到 [0,255]; 空值/非法值回到默认。"""
-        edit = self.ui.fill_value_lineEdit
-        try:
-            v = int(float(edit.text().strip()))
-        except ValueError:
-            v = int(FILL_VALUE_DEFAULT)
-        edit.setText(str(min(255, max(0, v))))
+        """失焦时把 RGB 每通道收敛到 [0,255]; 空值/非法值回到默认。"""
+        u = self.ui
+        for name in ("fill_r_lineEdit", "fill_g_lineEdit", "fill_b_lineEdit"):
+            edit = getattr(u, name)
+            try:
+                v = int(float(edit.text().strip()))
+            except ValueError:
+                v = int(FILL_VALUE_DEFAULT)
+            edit.setText(str(min(255, max(0, v))))
 
     def _fill_value(self):
-        """当前填充灰度(0~255); 输入框异常时回退默认。"""
-        try:
-            v = int(float(self.ui.fill_value_lineEdit.text().strip()))
-        except ValueError:
-            v = int(FILL_VALUE_DEFAULT)
-        return min(255, max(0, v))
+        """当前填充颜色 (r, g, b); 输入框异常时该通道回退默认。"""
+        rgb = []
+        for name in ("fill_r_lineEdit", "fill_g_lineEdit", "fill_b_lineEdit"):
+            try:
+                v = int(float(getattr(self.ui, name).text().strip()))
+            except ValueError:
+                v = int(FILL_VALUE_DEFAULT)
+            rgb.append(min(255, max(0, v)))
+        return tuple(rgb)
+
+    def _on_image_pixels_changed(self):
+        """
+        图像像素被改写(粘贴/填充/撤销) → 刷新缓存 + 标记落盘。
+        QPixmap 是写时复制: 场景里 QPainter 画的是副本, _pix_cache 里那份原地不动,
+        不换掉的话 A/D 翻走再翻回来会命中旧图(看起来"图像没改, 只剩多边形")。
+        """
+        if not (0 <= self.index < len(self.image_list)):
+            return
+        item = getattr(self.scene, "image_item", None)
+        if item is None:
+            return
+        pix = item.pixmap()
+        if pix is None or pix.isNull():
+            return
+        self._pix_cache[self.image_list[self.index]] = pix
+        self._pix_unsaved = True
+        self._dirty = True
+        self._autosave_timer.start()
 
     def _on_boxes_changed(self):
         """
@@ -885,6 +914,8 @@ class AnnotationDialog(QDialog):
                 "    类别: {}".format(cls) if self.cls_mode else ""))
         self._refresh_labeled_list()
         self._dirty = False
+        # 新载入的图以磁盘内容为准, 清掉上一张遗留的待写标记
+        self._pix_unsaved = False
 
     def _switch(self, offset):
         if not self.image_list:
@@ -1684,12 +1715,16 @@ class AnnotationDialog(QDialog):
         if not (0 <= self.index < len(self.image_list)):
             return
         image_path = self.image_list[self.index]
-        # 格式刷改过图像像素覆盖写回磁盘(QPixmap.save 按扩展名决定格式)
-        if getattr(self.scene, "image_modified", False):
-            try:
-                self.scene.image_item.pixmap().save(image_path)
-            except Exception:
-                pass
+        # 缓存里那份是改写前的拷贝, 必须换成刚写盘的内容, 否则翻回来看到旧图
+        if self._pix_unsaved:
+            item = getattr(self.scene, "image_item", None)
+            item_pix = item.pixmap() if item is not None else None
+            if item_pix is not None and not item_pix.isNull():
+                if item_pix.save(image_path):
+                    self._pix_unsaved = False
+                else:
+                    # 写失败保留标记, 下次再试, 避免静默丢改动
+                    write_log("图像写盘失败(像素改动未保存): {}".format(image_path))
         base, _ = os.path.splitext(image_path)
         json_path = base + ".json"
         shapes = []

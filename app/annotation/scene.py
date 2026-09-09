@@ -369,12 +369,15 @@ class AnnotationScene(QGraphicsScene):
                 {"before": before, "ox": ox, "oy": oy, "item": item})
 
     def fill_polygon(self, item, value):
-        """把多边形区域内像素填成灰度 value(0~255), 入同一撤销栈供 Ctrl+Z 恢复。"""
+        """把多边形区域内像素填成 value 颜色, value 可为 (r,g,b) 或单通道灰度, 入同一撤销栈供 Ctrl+Z 恢复。"""
         pix = self.image_item.pixmap() if self.image_item is not None else None
         poly = item.polygon() if item is not None else None
         if pix is None or poly is None or poly.isEmpty():
             return False
-        v = min(255, max(0, int(value)))
+        if isinstance(value, (tuple, list)):
+            r, g, b = (min(255, max(0, int(c))) for c in value)
+        else:
+            r = g = b = min(255, max(0, int(value)))
         box = poly.boundingRect()
         ox = max(0, int(box.x()))
         oy = max(0, int(box.y()))
@@ -389,7 +392,7 @@ class AnnotationScene(QGraphicsScene):
         p.setRenderHint(QPainter.Antialiasing)
         path = QPainterPath()
         path.addPolygon(poly)
-        p.fillPath(path, QColor(v, v, v))
+        p.fillPath(path, QColor(r, g, b))
         p.end()
         self.image_item.setPixmap(pix)
         self.image_modified = True
@@ -405,16 +408,19 @@ class AnnotationScene(QGraphicsScene):
         rec = self._fp_undo_stack.pop()
         before = rec.get("before")
         pix = self.image_item.pixmap()
+        restored = False
         if before is not None and not before.isNull() and pix is not None:
             p = QPainter(pix)
             p.drawPixmap(rec["ox"], rec["oy"], before)
             p.end()
             self.image_item.setPixmap(pix)
+            restored = True
         item = rec.get("item")
         if item is not None and item.scene() is self:
             self.removeItem(item)
         self.image_modified = bool(self._fp_undo_stack)
-        if not self.image_modified:
+        # 每次真的改了像素都要通知(含撤销), 上层据此刷新缓存并写回磁盘
+        if restored:
             self.image_pixels_changed.emit()
         self.boxes_changed.emit()
         return True

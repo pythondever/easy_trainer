@@ -101,9 +101,46 @@
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="fill_value_lineEdit">
+        <widget class="QLineEdit" name="fill_r_lineEdit">
          <property name="minimumSize">
-          <size><width>65</width><height>0</height></size>
+          <size><width>36</width><height>0</height></size>
+         </property>
+         <property name="maximumSize">
+          <size><width>36</width><height>16777215</height></size>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="fill_sep1">
+         <property name="text">
+          <string>-</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="fill_g_lineEdit">
+         <property name="minimumSize">
+          <size><width>36</width><height>0</height></size>
+         </property>
+         <property name="maximumSize">
+          <size><width>36</width><height>16777215</height></size>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="fill_sep2">
+         <property name="text">
+          <string>-</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="fill_b_lineEdit">
+         <property name="minimumSize">
+          <size><width>36</width><height>0</height></size>
+         </property>
+         <property name="maximumSize">
+          <size><width>36</width><height>16777215</height></size>
          </property>
         </widget>
        </item>
