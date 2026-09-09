@@ -26,9 +26,9 @@ except ImportError:
 
 WORKSPACE = os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__))))
-TRAIN_RUNNER = os.path.join(WORKSPACE, "app", "train", "train_runner.py")
-CLASSIFY_TRAIN_RUNNER = os.path.join(WORKSPACE, "app", "train",
-                                     "classify_train_runner.py")
+# 打包后 runner 是 .pyd（脚本文件不存在），统一用 python -m <模块> 调用
+TRAIN_RUNNER = "app.train.train_runner"
+CLASSIFY_TRAIN_RUNNER = "app.train.classify_train_runner"
 # 判定一个 epoch 是否已产出指标(val 有了、或 train 行到了)的列
 _EPOCH_KEYS = ("val/mAP_50", "val/segm_mAP_50", "val/loss", "train/loss")
 
@@ -295,13 +295,14 @@ class TrainWorker(QThread):
     def run(self):
         cfg_path = self._config["_cfg_path"]
         python = sys.executable
-        runner = (CLASSIFY_TRAIN_RUNNER
+        module = (CLASSIFY_TRAIN_RUNNER
                   if self._config.get("task") == "classify" else TRAIN_RUNNER)
         env = dict(os.environ)
-        env.pop("PYTHONPATH", None)
+        # 打包后子进程无 PYTHONPATH 可继承，显式指向项目根才能 -m 导入 app 包
+        env["PYTHONPATH"] = WORKSPACE
         env["PYTHONUNBUFFERED"] = "1"
         self._proc = subprocess.Popen(
-            [python, runner, cfg_path],
+            [python, "-m", module, cfg_path],
             cwd=WORKSPACE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
             text=True, encoding="utf-8", errors="replace", env=env)
         out_q = queue.Queue()

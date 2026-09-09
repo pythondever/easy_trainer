@@ -62,8 +62,9 @@ class LabelMixin(object):
         for name, color in current.items():
             merged[normalize_label(name)] = color
         used = set(merged.values())
+        labels = labels or {}
         # sorted 保证同一批标签名无论遍历顺序如何都分到同样的颜色
-        for name in sorted(labels or {}):
+        for name in sorted(labels):
             key = normalize_label(name)
             if key and key not in merged:
                 color = assign_label_color(key, used)

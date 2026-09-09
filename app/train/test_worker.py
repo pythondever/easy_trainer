@@ -16,9 +16,9 @@ from PySide6.QtCore import QThread, Signal
 
 WORKSPACE = os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__))))
-TEST_RUNNER = os.path.join(WORKSPACE, "app", "train", "test_runner.py")
-CLASSIFY_TEST_RUNNER = os.path.join(WORKSPACE, "app", "train",
-                                    "classify_test_runner.py")
+# 打包后 runner 是 .pyd（脚本文件不存在），统一用 python -m <模块> 调用
+TEST_RUNNER = "app.train.test_runner"
+CLASSIFY_TEST_RUNNER = "app.train.classify_test_runner"
 
 
 class TestWorker(QThread):
@@ -62,19 +62,20 @@ class TestWorker(QThread):
 
         _trace("run 开始")
         env = dict(os.environ)
-        env.pop("PYTHONPATH", None)
+        # 打包后子进程无 PYTHONPATH 可继承，显式指向项目根才能 -m 导入 app 包
+        env["PYTHONPATH"] = WORKSPACE
         env["PYTHONUNBUFFERED"] = "1"
         env["CUDA_MODULE_LOADING"] = "LAZY"
-        runner = (CLASSIFY_TEST_RUNNER
+        module = (CLASSIFY_TEST_RUNNER
                   if self._config.get("task") == "classify" else TEST_RUNNER)
-        self.log.emit("[test-worker] 启动子进程: {} {} {}".format(
-            python, runner, cfg_path))
+        self.log.emit("[test-worker] 启动子进程: {} -m {} {}".format(
+            python, module, cfg_path))
         out_fd, out_path = tempfile.mkstemp(suffix=".testout")
         os.close(out_fd)
         out_file = open(out_path, "w", encoding="utf-8", errors="replace")
         try:
             self._proc = subprocess.Popen(
-                [python, runner, cfg_path],
+                [python, "-m", module, cfg_path],
                 cwd=WORKSPACE, stdout=out_file, stderr=subprocess.STDOUT,
                 text=True, encoding="utf-8", errors="replace", env=env)
         except Exception as e:
