@@ -55,11 +55,6 @@ class Ui_annotationDialog(object):
 
         self.horizontalLayout.addWidget(self.delete_image_btn)
 
-        self.vert_sep_label = QLabel(annotationDialog)
-        self.vert_sep_label.setObjectName(u"vert_sep_label")
-
-        self.horizontalLayout.addWidget(self.vert_sep_label)
-
         self.angle_range_label = QLabel(annotationDialog)
         self.angle_range_label.setObjectName(u"angle_range_label")
 
@@ -275,7 +270,6 @@ class Ui_annotationDialog(object):
         self.draw_rect_btn.setText(QCoreApplication.translate("annotationDialog", u"\u77e9\u5f62", None))
         self.poly_btn.setText(QCoreApplication.translate("annotationDialog", u"\u591a\u8fb9\u5f62", None))
         self.delete_image_btn.setText(QCoreApplication.translate("annotationDialog", u"\u5220\u9664\u56fe\u50cf", None))
-        self.vert_sep_label.setText(QCoreApplication.translate("annotationDialog", u"|", None))
         self.angle_range_label.setText(QCoreApplication.translate("annotationDialog", u"\u89d2\u5ea6:", None))
         self.label.setText(QCoreApplication.translate("annotationDialog", u"-", None))
         self.blend_strength_label.setText(QCoreApplication.translate("annotationDialog", u"\u878d\u5408\u5f3a\u5ea6", None))

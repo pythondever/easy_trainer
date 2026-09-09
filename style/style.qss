@@ -663,6 +663,15 @@ QPushButton#done_btn:pressed {
     color: #e8eaf0;
     selection-background-color: #2c3a5e;
 }
+/* 工具栏 4 个输入框高度锁成和按钮一致: QSS 尺寸按内容盒算(22+padding12+边框2=36,
+   与 QPushButton 的 min-height:22 同一套盒模型), 代码里不再 setFixedSize 高度 */
+#AnnotationDialog QLineEdit#min_ange_lineEdit,
+#AnnotationDialog QLineEdit#max_ange_lineEdit,
+#AnnotationDialog QLineEdit#blend_strength_lineEdit,
+#AnnotationDialog QLineEdit#fill_value_lineEdit {
+    min-height: 22px;
+    max-height: 22px;
+}
 #AnnotationDialog QPushButton {
     background-color: #2a2e3a;
     border: 1px solid #3a3f4e;

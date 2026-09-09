@@ -423,19 +423,27 @@ class AddLabelDialog(QDialog):
 
     def _setup(self):
         BTN_H = 36
+        # 色块/自定义按钮统一 30px 圆形。尺寸必须写进按钮自身的 QSS:
+        # 全局 QDialog QPushButton{min-height:22} 会架空 setFixedSize 的下限,
+        # 而 QSS 尺寸按内容盒算, 26 + 边框4 = 30
+        CIRCLE_CSS = (" padding: 0; min-width: 26px; max-width: 26px;"
+                      " min-height: 26px; max-height: 26px;"
+                      " border-radius: 15px;")
         self._color_btns = [getattr(self.ui, "color{}_btn".format(i)) for i in range(1, 11)]
         for btn, color in zip(self._color_btns, LABEL_COLORS[:10]):
-            btn.setFixedHeight(BTN_H)
+            btn.setFixedSize(30, 30)
             btn.setStyleSheet(
-                "QPushButton {{ background-color: {0}; border: 2px solid transparent;"
-                " border-radius: 6px; }}".format(color))
+                "QPushButton {{ background-color: {0}; border: 2px solid transparent;{1} }}".format(
+                    color, CIRCLE_CSS))
             btn.clicked.connect(lambda _=False, c=color, b=btn: self._select_color(c, b))
-        self.ui.custom_color.setText("自定义")
-        self.ui.custom_color.setFixedHeight(BTN_H)
+        self.ui.custom_color.setFixedSize(30, 30)
+        self.ui.custom_color.setStyleSheet(
+            "QPushButton {{ background-color: #2a2e3a; border: 2px solid #3a3f4e;{0} }}"
+            "QPushButton:hover {{ border-color: #4f7dff; }}".format(CIRCLE_CSS))
         icon_path = _resource_path("颜色选择器.png")
         if icon_path:
             self.ui.custom_color.setIcon(QIcon(icon_path))
-            self.ui.custom_color.setIconSize(QSize(20, 20))
+            self.ui.custom_color.setIconSize(QSize(18, 18))
             self.ui.custom_color.clicked.connect(self._pick_custom_color)
         apply_icon(self.ui.add_label_done_btn, "确定")
         self.ui.add_label_done_btn.clicked.connect(self.accept)
@@ -496,7 +504,9 @@ class AddLabelDialog(QDialog):
             b = getattr(self.ui, "color{}_btn".format(i))
             border = "2px solid #ffffff" if (btn is not None and b is btn) else "2px solid transparent"
             b.setStyleSheet(
-                "QPushButton {{ background-color: {0}; border: {1}; border-radius: 6px; }}".format(
+                "QPushButton {{ background-color: {0}; border: {1};"
+                " padding: 0; min-width: 26px; max-width: 26px;"
+                " min-height: 26px; max-height: 26px; border-radius: 15px; }}".format(
                     color if (btn is not None and b is btn) else LABEL_COLORS[i - 1], border))
         if btn is None:
             # 预设色:高亮对应按钮
@@ -650,26 +660,28 @@ class AnnotationDialog(QDialog):
         u.draw_rect_btn.clicked.connect(lambda: self._start_draw("rect"))
         u.poly_btn.clicked.connect(lambda: self._start_draw("polygon"))
         # 角度范围输入框: 粘贴时随机旋转的角度范围(默认 -180 ~ 180, 居中, 仅整数)
+        # 高度不在这里定: __init__ 时按钮还没被 QSS 定高(36), 此时取值会偏大,
+        # 统一由 #AnnotationDialog QLineEdit 的 min/max-height 与按钮对齐
         for edit, default in ((u.min_ange_lineEdit, -180), (u.max_ange_lineEdit, 180)):
             edit.setText(str(default))
             edit.setAlignment(Qt.AlignCenter)
             edit.setMaxLength(100)
             edit.setValidator(QIntValidator(-3600, 3600, self))
-            edit.setFixedSize(65, u.draw_rect_btn.height())
+            edit.setFixedWidth(65)
         u.angle_range_label.setText("角度范围")
         u.label.setText("~")
         # 融合强度: 粘贴时的像素融合力度(0=原始硬贴, 1=完全融合)
         u.blend_strength_lineEdit.setText(BLEND_STRENGTH_DEFAULT)
         u.blend_strength_lineEdit.setAlignment(Qt.AlignCenter)
         u.blend_strength_lineEdit.setValidator(QDoubleValidator(0.0, 1.0, 2, self))
-        u.blend_strength_lineEdit.setFixedSize(65, u.draw_rect_btn.height())
+        u.blend_strength_lineEdit.setFixedWidth(65)
         u.blend_strength_lineEdit.editingFinished.connect(self._normalize_blend_strength)
         self._normalize_blend_strength()
         # 填充值: 多边形右键"填充"写入的灰度(0~255, 仅整数)
         u.fill_value_lineEdit.setText(FILL_VALUE_DEFAULT)
         u.fill_value_lineEdit.setAlignment(Qt.AlignCenter)
         u.fill_value_lineEdit.setValidator(QIntValidator(0, 255, self))
-        u.fill_value_lineEdit.setFixedSize(65, u.draw_rect_btn.height())
+        u.fill_value_lineEdit.setFixedWidth(65)
         u.fill_value_lineEdit.editingFinished.connect(self._normalize_fill_value)
         u.fill_value_label.setText("填充值")
         u.switchButton = SwitchButton(self)
@@ -678,8 +690,8 @@ class AnnotationDialog(QDialog):
         u.switchButton.toggled.connect(self._toggle_show_boxes)
         u.show_boxes_label = QLabel("显示标注", self)
         u.show_boxes_label.setObjectName("show_boxes_label")
-        # "显示标注"开关放在"删除图像"按钮后面(原来是格式刷后, 视觉更紧凑)
-        idx = u.horizontalLayout.indexOf(u.delete_image_btn)
+        # "显示标注"开关放在"填充值"输入框后面(工具栏参数排完再给开关)
+        idx = u.horizontalLayout.indexOf(u.fill_value_lineEdit)
         u.horizontalLayout.insertWidget(idx + 1, u.switchButton)
         u.horizontalLayout.insertWidget(idx + 2, u.show_boxes_label)
         u.add_label.clicked.connect(self._add_label_clicked)

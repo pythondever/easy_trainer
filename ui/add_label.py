@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'add_label.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.3
+## Created by: Qt User Interface Compiler version 6.11.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -35,12 +35,6 @@ class Ui_addLabelDialog(object):
 
         self.horizontalLayout_5.addWidget(self.input_label_name_txt)
 
-        self.horizontalSpacer_3 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_5.addItem(self.horizontalSpacer_3)
-
-        self.horizontalLayout_5.setStretch(0, 8)
-        self.horizontalLayout_5.setStretch(1, 2)
 
         self.verticalLayout_2.addLayout(self.horizontalLayout_5)
 
@@ -72,72 +66,98 @@ class Ui_addLabelDialog(object):
 
         self.horizontalLayout.addWidget(self.color1_btn)
 
+        self.hs_c0 = QSpacerItem(4, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout.addItem(self.hs_c0)
+
         self.color2_btn = QPushButton(addLabelDialog)
         self.color2_btn.setObjectName(u"color2_btn")
 
         self.horizontalLayout.addWidget(self.color2_btn)
+
+        self.hs_c1 = QSpacerItem(4, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout.addItem(self.hs_c1)
 
         self.color3_btn = QPushButton(addLabelDialog)
         self.color3_btn.setObjectName(u"color3_btn")
 
         self.horizontalLayout.addWidget(self.color3_btn)
 
+        self.hs_c2 = QSpacerItem(4, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout.addItem(self.hs_c2)
+
         self.color4_btn = QPushButton(addLabelDialog)
         self.color4_btn.setObjectName(u"color4_btn")
 
         self.horizontalLayout.addWidget(self.color4_btn)
+
+        self.hs_c3 = QSpacerItem(4, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout.addItem(self.hs_c3)
 
         self.color5_btn = QPushButton(addLabelDialog)
         self.color5_btn.setObjectName(u"color5_btn")
 
         self.horizontalLayout.addWidget(self.color5_btn)
 
+        self.hs_c4 = QSpacerItem(4, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout.addItem(self.hs_c4)
+
         self.color7_btn = QPushButton(addLabelDialog)
         self.color7_btn.setObjectName(u"color7_btn")
 
         self.horizontalLayout.addWidget(self.color7_btn)
+
+        self.hs_c5 = QSpacerItem(4, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout.addItem(self.hs_c5)
 
         self.color6_btn = QPushButton(addLabelDialog)
         self.color6_btn.setObjectName(u"color6_btn")
 
         self.horizontalLayout.addWidget(self.color6_btn)
 
+        self.hs_c6 = QSpacerItem(4, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout.addItem(self.hs_c6)
+
         self.color10_btn = QPushButton(addLabelDialog)
         self.color10_btn.setObjectName(u"color10_btn")
 
         self.horizontalLayout.addWidget(self.color10_btn)
+
+        self.hs_c7 = QSpacerItem(4, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout.addItem(self.hs_c7)
 
         self.color9_btn = QPushButton(addLabelDialog)
         self.color9_btn.setObjectName(u"color9_btn")
 
         self.horizontalLayout.addWidget(self.color9_btn)
 
+        self.hs_c8 = QSpacerItem(4, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout.addItem(self.hs_c8)
+
         self.color8_btn = QPushButton(addLabelDialog)
         self.color8_btn.setObjectName(u"color8_btn")
 
         self.horizontalLayout.addWidget(self.color8_btn)
 
+        self.hs_c9 = QSpacerItem(4, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
-        self.verticalLayout.addLayout(self.horizontalLayout)
+        self.horizontalLayout.addItem(self.hs_c9)
 
-        self.horizontalLayout_2 = QHBoxLayout()
-        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
-
-        self.verticalLayout.addLayout(self.horizontalLayout_2)
-
-        self.horizontalLayout_3 = QHBoxLayout()
-        self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
         self.custom_color = QPushButton(addLabelDialog)
         self.custom_color.setObjectName(u"custom_color")
 
-        self.horizontalLayout_3.addWidget(self.custom_color)
-
-        self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_3.addItem(self.horizontalSpacer_2)
+        self.horizontalLayout.addWidget(self.custom_color)
 
 
-        self.verticalLayout.addLayout(self.horizontalLayout_3)
+        self.verticalLayout.addLayout(self.horizontalLayout)
 
         self.horizontalLayout_4 = QHBoxLayout()
         self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
@@ -182,7 +202,7 @@ class Ui_addLabelDialog(object):
         self.color10_btn.setText("")
         self.color9_btn.setText("")
         self.color8_btn.setText("")
-        self.custom_color.setText(QCoreApplication.translate("addLabelDialog", u"\u81ea\u5b9a\u4e49\u989c\u8272", None))
+        self.custom_color.setText("")
         self.add_label_done_btn.setText(QCoreApplication.translate("addLabelDialog", u"\u786e\u5b9a", None))
     # retranslateUi
 
