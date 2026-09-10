@@ -148,7 +148,8 @@ python app/easy_trainer.py
 ```
 easy_trainer/
 ├── app/                    # 主程序
-│   ├── easy_trainer.py     # 主窗口入口：项目/数据集管理、标注渲染、训练/测试入口
+│   ├── easy_trainer.py     # 启动引导（设好 sys.path/RF_HOME 后转交 main_window，发布时保留明文）
+│   ├── main_window.py      # 主窗口：项目/数据集管理、标注渲染、训练/测试入口
 │   ├── core/               # 数据访问层与通用工具
 │   │   ├── db.py           # LMDB 数据访问层（YOLO label_ids、重命名合并等）
 │   │   ├── utils.py        # 通用工具（matplotlib 中文字体、QSS 加载、项目根定位）

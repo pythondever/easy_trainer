@@ -155,7 +155,8 @@ python app/easy_trainer.py
 ```
 easy_trainer/
 ├── app/                    # Application
-│   ├── easy_trainer.py     # Entry point: projects/datasets, annotation, training/testing
+│   ├── easy_trainer.py     # Bootstrap: sets sys.path/RF_HOME then hands over to main_window
+│   ├── main_window.py      # Main window: projects/datasets, annotation, training/testing
 │   ├── core/               # Data layer & common utilities
 │   │   ├── db.py           # LMDB data access (YOLO label_ids, rename/merge, ...)
 │   │   ├── utils.py        # matplotlib CJK font, QSS loading, project-root lookup
