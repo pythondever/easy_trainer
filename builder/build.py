@@ -28,12 +28,12 @@ from setuptools import Extension, setup
 try:
     from Cython.Build import cythonize
 except ImportError:
-    sys.exit("缺少 Cython，请先安装：pip install cython")
+    sys.exit("缺少 Cython,请先安装：pip install cython")
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-# 保留明文：包结构文件 + 入口脚本
+HERE = os.path.dirname(os.path.abspath(__file__))
+BUILD_DIR = os.path.join(ROOT, "build")
 ALWAYS_PLAIN = {"__init__.py", "easy_trainer.py"}
-# 随发布拷走的数据目录
 DATA_DIRS = ("style", "resources", "examples")
 
 
@@ -74,9 +74,7 @@ def copy_data(target):
 
 def publish_installer():
     """
-    dotnet publish 安装器：csproj 构建期把 program.zip 与 requirements-release.txt
-    嵌进 exe，所以必须在 program.zip 就绪后执行。失败中断 —— 缺内嵌资源的
-    安装器发布出去是不完整的。
+    windows 发布 installer.exe
     """
     dotnet = shutil.which("dotnet")
     if dotnet is None:
@@ -98,6 +96,28 @@ def publish_installer():
         print("installer.exe 就绪: {} ({:.1f}MB)".format(exe, os.path.getsize(exe) / 1048576))
     else:
         sys.exit("dotnet publish 结束但未找到 {}".format(exe))
+
+
+def publish_linux(program_zip):
+    """
+    Linux 发布 dist/release-linux（installer.sh + program.zip + requirements-release.txt）。
+    """
+    out_dir = os.path.join(ROOT, "dist", "release-linux")
+    os.makedirs(out_dir, exist_ok=True)
+    items = [
+        (program_zip, "program.zip"),
+        (os.path.join(HERE, "requirements-release.txt"), "requirements-release.txt"),
+        (os.path.join(ROOT, "installer", "installer.sh"), "installer.sh"),
+    ]
+    total = 0
+    for src, name in items:
+        if not os.path.isfile(src):
+            sys.exit("发布 Linux 缺少文件: {}".format(src))
+        shutil.copy2(src, os.path.join(out_dir, name))
+        total += os.path.getsize(src)
+        print("  打包:", name)
+    os.chmod(os.path.join(out_dir, "installer.sh"), 0o755)
+    print("Linux 发布就绪: {} ({:.1f}MB)".format(out_dir, total / 1048576))
 
 
 def main():
@@ -132,7 +152,7 @@ def main():
     cy_modules = cythonize(
         exts,
         nthreads=max(4, os.cpu_count() or 4),
-        build_dir=os.path.join(ROOT, "build"),
+        build_dir=BUILD_DIR,
         quiet=False,
         compiler_directives={
             "language_level": 3,
@@ -144,17 +164,17 @@ def main():
           script_args=["build_ext"],
           options={
               "build_ext": {"inplace": False},
-              "build": {"build_base": os.path.join(ROOT, "build")},
+              "build": {"build_base": BUILD_DIR},
           })
 
-    built = [p for p in glob.glob(os.path.join(ROOT, "build", "lib.*"))
+    built = [p for p in glob.glob(os.path.join(BUILD_DIR, "lib.*"))
              if os.path.isdir(p)]
     if not built:
-        built = [p for p in glob.glob(os.path.join(ROOT, "build", "lib"))
+        built = [p for p in glob.glob(os.path.join(BUILD_DIR, "lib"))
                  if os.path.isdir(p)]
     if not built:
-        listing = "\n".join(sorted(os.listdir(os.path.join(ROOT, "build")))) \
-            if os.path.isdir(os.path.join(ROOT, "build")) else "(build/ 不存在)"
+        listing = "\n".join(sorted(os.listdir(BUILD_DIR))) \
+            if os.path.isdir(BUILD_DIR) else "(build/ 不存在)"
         sys.exit("编译完成但找不到 build/lib* build/ 内容:\n" + listing)
     lib_root = built[0]
     for dirpath, dirnames, filenames in os.walk(lib_root):
@@ -168,15 +188,7 @@ def main():
             print("  pyd:", os.path.relpath(dst, target))
 
     if not args.keep_build:
-        _bdir = os.path.join(ROOT, "build")
-        for _name in os.listdir(_bdir):
-            if _name in ("build.py", "requirements-release.txt"):
-                continue
-            _p = os.path.join(_bdir, _name)
-            if os.path.isdir(_p):
-                shutil.rmtree(_p, ignore_errors=True)
-            else:
-                os.remove(_p)
+        shutil.rmtree(BUILD_DIR, ignore_errors=True)
     print("program 根目录就绪: {}".format(target))
     zip_out = os.path.join(os.path.dirname(target), "program.zip")
     count = 0
@@ -191,16 +203,19 @@ def main():
     print("program.zip 就绪: {} ({} 个文件, {:.1f}MB)".format(
         zip_out, count, os.path.getsize(zip_out) / 1048576))
 
-    if not args.no_publish:
-        publish_installer()
+    if args.no_publish:
+        print("已跳过 installer 发布(--no-publish),保留 program/ 与 program.zip 供检查")
+    else:
+        if platform.system() == "Windows":
+            publish_installer()
+        else:
+            publish_linux(zip_out)
         for _p in (target, zip_out):
             if os.path.isdir(_p):
                 shutil.rmtree(_p, ignore_errors=True)
             elif os.path.isfile(_p):
                 os.remove(_p)
-        print("已清理: dist/program/ dist/program.zip")
-    else:
-        print("已跳过 dotnet publish(--no-publish),保留 program/ 与 program.zip 供检查")
+        print("已清理中间产物: dist/program/ dist/program.zip")
 
 
 if __name__ == "__main__":

@@ -221,7 +221,12 @@ public static class InstallEngine
                     throw new InvalidOperationException($"Python 安装失败（退出码 {p.ExitCode}，日志: {logFile}）");
             }
             if (!File.Exists(python))
-                throw new InvalidOperationException("Python 安装成功但找不到 python.exe: " + python);
+                // MSI 对"同版本已 per-user 注册"的机器会静默走 Modify 模式、exit 0 但啥也不装
+                // → 提示用户先卸载旧 Python 3.10，否则装到任何新目录都无效
+                throw new InvalidOperationException(
+                    "Python 未安装到目标目录: " + python + Environment.NewLine +
+                    "若本机已装过 Python 3.10.11（per-user），请先在「设置 → 应用 → 已安装的应用」" +
+                    "卸载旧 Python 3.10.11 后重新运行本安装程序。");
         }
 
         // 3) pip 安装依赖（内嵌 requirements.txt，清华镜像）

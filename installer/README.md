@@ -35,22 +35,22 @@ Python、pip 依赖是国内可直连的公开地址，**无需自建服务器/O
 ## 构建步骤（Windows）
 
 1. **一键构建**（需要 cl.exe：开始菜单 → VS 2022 → Developer PowerShell；
-   以及 .NET SDK 10）。`build.py` 依次完成：Cython 全量编译 pyd →
+   以及 .NET SDK 10）。`builder\build.py` 依次完成：Cython 全量编译 pyd →
    组装 `dist\program` → 打 `dist\program.zip` → 自动 `dotnet publish` 安装器
-   （csproj 构建期把 `program.zip` 与 `build\requirements-release.txt` 嵌进 exe）：
+   （csproj 构建期把 `program.zip` 与 `builder\requirements-release.txt` 嵌进 exe）：
 
    ```powershell
    cd D:\code\easy_trainer
    pip install cython
-   python build\build.py -t dist\program        # 完整发布
-   python build\build.py -t dist\program --no-publish   # 只编 pyd，跳过安装器
+   python builder\build.py -t dist\program        # 完整发布
+   python builder\build.py -t dist\program --no-publish   # 只编 pyd，跳过安装器
    ```
 
    产物：`dist\release\installer.exe`（发布成功后自动清理 `dist\program\` 与
    `dist\program.zip` 中间产物；`--no-publish` 时保留供检查）。
 
 2. **requirements-release.txt**（内嵌，pip 现场安装用）已随仓库维护在
-   `build\requirements-release.txt`——版本锁定自 rf-detr 开发环境；注意国内 PyPI
+   `builder\requirements-release.txt`——版本锁定自 rf-detr 开发环境；注意国内 PyPI
    镜像对 PySide6 只同步到 6.9.1。
 
 3. **分发**：在线版只发 `dist\release\installer.exe`——勾选运行时从
@@ -96,3 +96,38 @@ installer.exe --install D:\EasyTrainer runtime
 - 中文安装路径可用（cv2/PyTorch 均按 UTF-8 处理）；安装器 per-user 安装免 UAC，
   不写系统注册表（Python 本体按用户级安装到安装目录内）。
 - 卸载：运行 `installer.exe` → 「卸载…」选择安装根即可。
+
+## Linux 发布
+
+`build.py` 的编译段与组包段跨平台（Cython 产物后缀随系统：Windows → `.pyd`，
+Linux → `.so`），因此**在 Linux 机器上跑同一脚本**即可产出 Linux 程序包；
+`build.py` 末尾按平台分派发布器：
+
+| 平台 | 发布动作 | 产物目录 |
+|---|---|---|
+| Windows | `dotnet publish`（现状，program.zip 内嵌 exe） | `dist/release/installer.exe` |
+| Linux | 组三件套：`installer.sh` + `program.zip` + `requirements-release.txt` | `dist/release-linux/` |
+
+```bash
+# Linux 构建机（需 gcc + python3.10-dev + cython + setuptools）
+python3 builder/build.py -t dist/program
+```
+
+**Linux 端客户机安装**（把 `dist/release-linux/` 三个文件拷过去后）：
+
+```bash
+./installer.sh            # 默认装到 ~/EasyTrainer
+./installer.sh -d /opt/easy_trainer -p   # 换目录 + 在线装预训练权重(~880MB)
+./installer.sh -c         # NVIDIA 机器：torch 改用 cu121 轮子（pytorch 官方源）
+```
+
+脚本与 Windows 安装器职责对应：校验 python3.10 → 建 venv → 解压 program.zip →
+pip 清华源装依赖 → （可选）权重 → 生成桌面启动项 `.desktop`；日志/`installed.json`
+同样落在安装根。预训练权重与 Windows 版共用同一张 GCS URL/SHA256 表
+（`InstallerCore.cs` 与 `installer.sh` 两处写死，改动需同步）。
+
+**Linux 特有注意**：
+- `.so` 按 cp310 编译，要求客户机 python 恰为 **3.10.x**（Ubuntu 22.04+ 自带）；
+  系统为其它版本时用 `PY=/path/to/python3.10 ./installer.sh` 指定。
+- 清华源给的是 **CPU 版 torch**；GPU 训练需 `-c`（cu121 wheel 在大陆下载较慢）。
+- 预训练权重无国内镜像，大陆网络下不动时同目录放 `pretrained.zip` 走离线。

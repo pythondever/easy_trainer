@@ -20,6 +20,9 @@ lock.mdb
 dist/
 *.spec.bak
 
+# Cython 编译中间产物（源码脚本在 builder/，此目录可随时整删）
+/build/
+
 # .NET
 **/bin/
 **/obj/
