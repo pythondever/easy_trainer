@@ -13,9 +13,7 @@ static class Program
         Application.Run(new MainForm());
     }
 
-    /// <summary>无人值守安装：--install &lt;root&gt; &lt;runtime[,pretrained]&gt;。
-    /// 组件信息内置（python 下载地址写死在 InstallEngine）；program 内嵌自动装。
-    /// 不建快捷方式；日志写 root/install.log，返回码 0=成功。</summary>
+
     static int SilentInstall(string[] args)
     {
         var root = args[1];
@@ -31,7 +29,7 @@ static class Program
         {
             Directory.CreateDirectory(root);
             var mf = InstallEngine.BuiltinManifest(srcDir);
-            Log($"组件清单（内置）版本: {mf.Version}；组件: {string.Join(",", comps)}");
+            Log($"组件清单（内置）版本: {mf.Version};组件: {string.Join(",", comps)}");
             Log("程序本体内置: " + InstallEngine.HasEmbedded("program.zip"));
             var progress = new Progress<InstallReport>(r => Log($"[{r.Stage}] {r.Detail}"));
             InstallEngine.InstallAsync(root, srcDir, mf, comps, progress).GetAwaiter().GetResult();

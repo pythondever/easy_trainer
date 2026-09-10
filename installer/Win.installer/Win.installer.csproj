@@ -19,6 +19,14 @@
     <EmbeddedResource Include="..\..\dist\program.zip"
                       Condition="Exists('..\..\dist\program.zip')"
                       LogicalName="program.zip" />
+    <!-- pip 引导脚本：embeddable Python 不带 pip，内置它可免装时也免联网 -->
+    <EmbeddedResource Include="..\..\builder\get-pip.py"
+                      Condition="Exists('..\..\builder\get-pip.py')"
+                      LogicalName="get-pip.py" />
+    <!-- 预训练权重清单（C# / installer.sh / build.py 三端共享；改这里即可换源或加国内镜像） -->
+    <EmbeddedResource Include="..\..\builder\pretrained-assets.txt"
+                      Condition="Exists('..\..\builder\pretrained-assets.txt')"
+                      LogicalName="pretrained-assets.txt" />
     <!-- pip 现场安装依赖清单（runtime 组件用），随仓库维护在 builder/ -->
     <EmbeddedResource Include="..\..\builder\requirements-release.txt"
                       Condition="Exists('..\..\builder\requirements-release.txt')"

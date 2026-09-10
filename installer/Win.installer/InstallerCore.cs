@@ -23,9 +23,7 @@ public sealed class Component
 
     [JsonIgnore] public bool LocalReady { get; set; }
     [JsonIgnore] public long LocalSize { get; set; }
-    [JsonIgnore] public bool OnlineAvailable { get; set; }   // 有在线下载源；无源且本地无文件时 UI 禁止勾选
-
-    // CheckedListBox 渲染时调用 ToString()，没重写就会打印类全名
+    [JsonIgnore] public bool OnlineAvailable { get; set; }
     public override string ToString() => Title;
 }
 
@@ -43,7 +41,6 @@ public sealed class InstallReport
     public int Pct { get; init; }
 }
 
-/// <summary>组件 → 安装目录下的目标位置（program 内嵌解压到根，pretrained 到独立目录）。</summary>
 public static class Layout
 {
     public static string DestDir(string root, string compId) => compId switch
@@ -56,46 +53,27 @@ public static class Layout
     };
 }
 
-/// <summary>下载 + SHA256 校验 + Python 静默安装 + pip 装依赖 + 内嵌解压 + 快捷方式 + 卸载。</summary>
 public static class InstallEngine
 {
     private static readonly HttpClient Http = new() { Timeout = Timeout.InfiniteTimeSpan };
-    // 固定安装顺序：运行时先落地（含 pip 依赖），程序其次，预训练最后
+    // 固定安装顺序：运行时先落地(含 pip 依赖),程序其次,预训练最后
     private static readonly string[] Order = { "runtime", "program", "pretrained" };
-    // runtime 阶段含 pip 下载约 2.5GB（torch 为主），进度权重按此估算而非安装器体积
+    // runtime 阶段含 pip 下载约 2.5GB(torch 为主),进度权重按此估算而非安装器体积
     private const long RuntimeWeight = 2_600L * 1024 * 1024;
     private const string PipIndex = "https://pypi.tuna.tsinghua.edu.cn/simple";
-    // Python 运行时下载信息写死（唯一在线源：华为云镜像）。换版本/换源改这里。
-    private const string PythonFile = "python-3.10.11-amd64.exe";
+    private const string PythonFile = "python-3.10.11-embed-amd64.zip";
     private const string PythonUrl =
-        "https://mirrors.huaweicloud.com/python/3.10.11/python-3.10.11-amd64.exe";
+        "https://mirrors.huaweicloud.com/python/3.10.11/python-3.10.11-embed-amd64.zip";
     private const string PythonSha256 =
-        "D8DEDE5005564B408BA50317108B765ED9C3C510342A598F9FD42681CBE0648B";
-
-    // 预训练权重：rfdetr 按文件名在 RF_HOME(=pretrained/) 根目录精确查找（不分子目录），
-    // 文件名必须与 rfdetr 1.9.x 注册名一致。官方 .pth/.pt 仅存 GCS，无国内镜像；
-    // 大陆网络若下不动，可改走同目录 pretrained.zip 离线分发。
-    private static readonly (string File, string Url, string Sha256)[] PretrainedAssets =
+        "608619F8619075629C9C69F361352A0DA6ED7E62F83A0E19C63E0EA32EB7629D";
+    private const string PipBootstrapUrl = "https://bootstrap.pypa.io/get-pip.py";
+    private static readonly string[] TorchIndexUrls =
     {
-        ("rf-detr-nano.pth",
-         "https://storage.googleapis.com/rfdetr/nano_coco/checkpoint_best_regular.pth",
-         "D8D6B9EE57D4D0ED2B1F305163624712A0532CB7BCE0C747317984FC5457440D"),
-        ("rf-detr-seg-nano.pt",
-         "https://storage.googleapis.com/rfdetr/rf-detr-seg-n-ft.pth",
-         "A44613A4ECD6B5BA61A62002C600B0B6CB7A9DA2936A45317EC4B62C635FB99B"),
-        ("rf-detr-seg-small.pt",
-         "https://storage.googleapis.com/rfdetr/rf-detr-seg-s-ft.pth",
-         "6DE3DA31B2572CAC214A1C76CCE4A92A13966D56390AC2B3A3DE9A8DC2B2BCA3"),
-        ("rf-detr-seg-medium.pt",
-         "https://storage.googleapis.com/rfdetr/rf-detr-seg-m-ft.pth",
-         "3AD325094735F431AEE9962A8D204D68EB5BFC393D53E7E836E70998FEF5EA58"),
-        ("rf-detr-seg-large.pt",
-         "https://storage.googleapis.com/rfdetr/rf-detr-seg-l-ft.pth",
-         "CA7B7C630BA22496067CC4F034C4E70C8E47FD7ADCEA04C3A49AA8C1755CBE6B"),
+        "https://mirror.sjtu.edu.cn/pytorch-wheels/cu121/",   // 上海交大
+        "https://download.pytorch.org/whl/cu121",             // 官方兜底
     };
-
-    /// <summary>内置组件清单（下载信息写死在代码里，不再依赖外部 manifest.json）。
-    /// srcDir 用于探测"离线就绪"：同目录有同名文件则跳过下载直接用。</summary>
+    private const long RuntimeInstalledBytes = 9L * 1024 * 1024 * 1024;
+    private const int DownloadAttempts = 3;
     public static Manifest BuiltinManifest(string srcDir)
     {
         var mf = new Manifest
@@ -107,17 +85,17 @@ public static class InstallEngine
                 new()
                 {
                     Id = "runtime", Title = "运行时",
-                    Desc = "Python 3.10 + torch 等依赖（pip 现场安装）",
+                    Desc = "运行时 + torch 等依赖",
                     File = PythonFile, Url = PythonUrl, Sha256 = PythonSha256,
-                    Size = 29_037_240, Required = true, Default = true,
+                    Size = 8_629_277, Required = true, Default = true,
                     OnlineAvailable = true,
                 },
                 new()
                 {
                     Id = "pretrained", Title = "预训练权重",
-                    Desc = "检测/分割初始权重（在线下载官方源约 880MB；同目录有 pretrained.zip 则离线优先）",
+                    Desc = "检测/分割初始权重(在线下载官方源约 880MB;同目录有 pretrained.zip 则离线优先)",
                     File = "pretrained.zip", Required = false,
-                    Default = false, OnlineAvailable = true,
+                    Size = 922_746_880, Default = false, OnlineAvailable = true,
                 },
             },
         };
@@ -130,18 +108,23 @@ public static class InstallEngine
         return mf;
     }
 
-    /// <summary>按固定顺序安装勾选的组件。report.Pct 为全局 0-100。</summary>
     public static async Task InstallAsync(string root, string srcDir, Manifest mf,
         IReadOnlyCollection<string> selectedIds, IProgress<InstallReport> report)
     {
         Directory.CreateDirectory(root);
         var sel = selectedIds.ToHashSet();
-        // 程序本体内嵌在安装器里 → 固定必装
         if (HasEmbedded("program.zip"))
             sel.Add("program");
         var todo = Order.Where(sel.Contains).ToList();
         long totalBytes = todo.Sum(id => WeightOf(mf, id));
         if (totalBytes <= 0) totalBytes = todo.Count;
+        var needBytes = todo.Sum(id => Math.Max(ResolveComponent(mf, id).Size, 0))
+                      + (todo.Contains("runtime") ? RuntimeInstalledBytes : 0);
+        var freeBytes = FreeBytesOf(root);
+        if (freeBytes >= 0 && freeBytes < needBytes)
+            throw new InvalidOperationException(
+                $"磁盘空间不足:本次安装需要约 {Gb(needBytes)},安装盘当前可用 {Gb(freeBytes)}。" +
+                Environment.NewLine + "请更换空间充足的目录,或清理磁盘后重试。");
 
         long doneBytes = 0;
         for (var i = 0; i < todo.Count; i++)
@@ -162,10 +145,10 @@ public static class InstallEngine
                     break;
                 case "program" when HasEmbedded("program.zip"):
                     var dest = Layout.DestDir(root, id);
-                    report.Report(new InstallReport { Stage = comp.Title, Detail = "解压程序本体…", Pct = stageBase + (int)(45 * w / totalBytes) });
-                    var entries = await Task.Run(() => ExtractEmbeddedZip("program.zip", dest,
-                        s => report.Report(new InstallReport { Stage = comp.Title, Detail = s, Pct = stageBase + 45 + (int)(50 * w / totalBytes) })));
-                    report.Report(new InstallReport { Stage = comp.Title, Detail = $"完成（{entries} 个文件）", Pct = stageBase + (int)(100 * w / totalBytes) });
+                    report.Report(new InstallReport { Stage = comp.Title, Detail = "正在安装…", Pct = stageBase + (int)(45 * w / totalBytes) });
+                    await Task.Run(() => ExtractEmbeddedZip("program.zip", dest,
+                        s => report.Report(new InstallReport { Stage = comp.Title, Pct = stageBase + 45 + (int)(50 * w / totalBytes) })));
+                    report.Report(new InstallReport { Stage = comp.Title, Detail = "完成", Pct = stageBase + (int)(100 * w / totalBytes) });
                     break;
                 default:
                     await InstallZipComponentAsync(srcDir, comp, root, report, stageBase, w, totalBytes);
@@ -176,115 +159,218 @@ public static class InstallEngine
 
     private static long WeightOf(Manifest mf, string id)
         => id == "runtime" ? RuntimeWeight : Math.Max(ResolveComponent(mf, id).Size, 1);
-
-    /// <summary>runtime 组件：下载 python 安装器 → 静默装到 runtime\python310 → pip 装依赖。</summary>
     private static async Task InstallRuntimeAsync(string srcDir, Component comp, string root,
         IProgress<InstallReport> report, int stageBase, long w, long totalBytes)
     {
-        // 1) 下载 python 安装器（同目录离线包优先，否则 url）
-        var exe = await EnsureFileAsync(srcDir, comp, report, stageBase, w);
-        if (exe is null)
-            throw new InvalidOperationException("Python 安装包缺失: " + comp.Title);
+        var zip = await EnsureFileAsync(srcDir, comp, report, stageBase, w);
+        if (zip is null)
+            throw new InvalidOperationException("运行包缺失: " + comp.Title);
         if (!string.IsNullOrEmpty(comp.Sha256))
         {
             report.Report(new InstallReport { Stage = comp.Title, Detail = "校验文件完整性…", Pct = stageBase + (int)(8 * w / totalBytes) });
-            var got = await Task.Run(() => Sha256Of(exe));
+            var got = await Task.Run(() => Sha256Of(zip));
             if (!got.Equals(comp.Sha256, StringComparison.OrdinalIgnoreCase))
                 throw new InvalidOperationException("SHA256 校验失败: " + comp.File);
         }
 
-        // 2) per-user 静默安装（免 UAC）；已装过则跳过（幂等，重跑安装器只补 pip）
         var pyDir = Path.Combine(root, "runtime", "python310");
         var python = Path.Combine(pyDir, "python.exe");
-        if (!File.Exists(python))
+        if (!File.Exists(Path.Combine(pyDir, "python310._pth")) && Directory.Exists(pyDir))
+            Directory.Delete(pyDir, recursive: true);
+        Directory.CreateDirectory(pyDir);
+        report.Report(new InstallReport { Stage = comp.Title, Detail = "正在安装…", Pct = stageBase + (int)(10 * w / totalBytes) });
+        await Task.Run(() =>
         {
-            if (Directory.Exists(pyDir))
-                Directory.Delete(pyDir, recursive: true);
-            Directory.CreateDirectory(pyDir);
-            report.Report(new InstallReport { Stage = comp.Title, Detail = "正在安装运行时…", Pct = stageBase + (int)(10 * w / totalBytes) });
-            var logFile = Path.Combine(pyDir, "python-install.log");
-            var psi = new ProcessStartInfo
-            {
-                FileName = exe,
-                UseShellExecute = false,
-                CreateNoWindow = true,   // MSI bootstrapper 默认会闪个 cmd 窗口
-                Arguments = $"/quiet InstallAllUsers=0 TargetDir=\"{pyDir}\" " +
-                            "Include_launcher=0 Include_test=0 Include_doc=0 Include_tcltk=0 " +
-                            $"AssociateFiles=0 Shortcuts=0 PrependPath=0 Include_pip=1 /log \"{logFile}\"",
-            };
-            using (var p = Process.Start(psi))
-            {
-                if (p is null)
-                    throw new InvalidOperationException("无法启动 Python 安装器");
-                await p.WaitForExitAsync();
-                if (p.ExitCode != 0 && p.ExitCode != 3010)
-                    throw new InvalidOperationException($"Python 安装失败（退出码 {p.ExitCode}，日志: {logFile}）");
-            }
-            if (!File.Exists(python))
-                // MSI 对"同版本已 per-user 注册"的机器会静默走 Modify 模式、exit 0 但啥也不装
-                // → 提示用户先卸载旧 Python 3.10，否则装到任何新目录都无效
-                throw new InvalidOperationException(
-                    "Python 未安装到目标目录: " + python + Environment.NewLine +
-                    "若本机已装过 Python 3.10.11（per-user），请先在「设置 → 应用 → 已安装的应用」" +
-                    "卸载旧 Python 3.10.11 后重新运行本安装程序。");
-        }
+            using var za = ZipFile.OpenRead(zip);
+            ExtractZipArchive(za, pyDir, _ => { });
+        });
+        if (!File.Exists(python))
+            throw new InvalidOperationException("解压后未找到运行时: " + python);
 
-        // 3) pip 安装依赖（内嵌 requirements.txt，清华镜像）
+        var pthContent = string.Join(Environment.NewLine,
+            "python310.zip", ".", @"Lib\site-packages", "", "import site");
+        await File.WriteAllTextAsync(Path.Combine(pyDir, "python310._pth"), pthContent);
+
+        if (!await EnsurePipAsync(python, comp.Title, report, stageBase, w, totalBytes))
+            throw new InvalidOperationException("Python 环境缺少 pip，且自动安装失败。");
+
+        await InstallRequirementsAsync(python, comp.Title, report, stageBase, w, totalBytes,
+            Path.Combine(pyDir, "pip-install.log"));
+        report.Report(new InstallReport { Stage = comp.Title, Detail = "完成", Pct = stageBase + (int)(100 * w / totalBytes) });
+    }
+
+    private static async Task InstallRequirementsAsync(string python, string stage,
+        IProgress<InstallReport> report, int stageBase, long w, long totalBytes, string logPath)
+    {
         var reqPath = Path.Combine(Path.GetTempPath(), "installer", "requirements.txt");
         using (var rs = OpenEmbedded("requirements.txt"))
         {
             if (rs is null)
-                throw new InvalidOperationException("安装程序内置缺少 requirements.txt（发布不完整）");
+                throw new InvalidOperationException("安装程序内置缺少 requirements.txt(发布不完整)");
             Directory.CreateDirectory(Path.GetDirectoryName(reqPath)!);
             using var rfs = File.Create(reqPath);
+            await rfs.WriteAsync(Encoding.UTF8.GetPreamble());
             await rs.CopyToAsync(rfs);
         }
 
-        report.Report(new InstallReport { Stage = comp.Title, Detail = "正在下载安装 Python 依赖（torch 约 2.4GB，视网速 5~30 分钟）…", Pct = stageBase + (int)(12 * w / totalBytes) });
-        var logPath = Path.Combine(pyDir, "pip-install.log");
-        var sb = new StringBuilder();
-        var pip = new ProcessStartInfo
+        const string pipMsg = "正在下载安装所需组件,请勿断网…";
+        report.Report(new InstallReport { Stage = stage, Detail = pipMsg, Pct = stageBase + (int)(12 * w / totalBytes) });
+
+        string? lastErr = null;
+        foreach (var torchIdx in TorchIndexUrls)
         {
-            FileName = python,
-            UseShellExecute = false,
-            CreateNoWindow = true,   // 不弹黑色控制台窗口（pip 约 30 分钟，让人看到会以为卡住）
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            Arguments = $"-m pip install --disable-pip-version-check -r \"{reqPath}\" -i {PipIndex}",
-        };
-        using (var p2 = Process.Start(pip))
-        {
-            if (p2 is null)
-                throw new InvalidOperationException("无法启动 pip");
-            p2.OutputDataReceived += (_, e) => { if (e.Data is not null) sb.AppendLine(e.Data); };
-            p2.ErrorDataReceived += (_, e) => { if (e.Data is not null) sb.AppendLine(e.Data); };
-            p2.BeginOutputReadLine();
-            p2.BeginErrorReadLine();
-            // pip 下载进度不产生整行输出，UI 用心跳推进
-            var tick = 12;
-            while (!p2.HasExited)
-            {
-                await Task.Delay(3000);
-                if (tick < 85)
-                {
-                    tick += 1;
-                    report.Report(new InstallReport { Stage = comp.Title, Detail = "正在下载安装 Python 依赖…（保持网络连接，请耐心等待）", Pct = stageBase + (int)(tick * w / totalBytes) });
-                }
-            }
-            await p2.WaitForExitAsync();
-            if (p2.ExitCode != 0)
-            {
-                try { File.WriteAllText(logPath, sb.ToString(), Encoding.UTF8); } catch { }
-                throw new InvalidOperationException($"pip 安装依赖失败（退出码 {p2.ExitCode}），日志: {logPath}");
-            }
+            var args = $"-m pip install --disable-pip-version-check --timeout 60 --retries 10 "
+                     + $"-r \"{reqPath}\" -i {PipIndex} --extra-index-url {torchIdx}";
+            var (ok, err) = await RunPipAsync(python, args, stage, pipMsg, logPath, report, stageBase, w, totalBytes);
+            if (ok) return;
+            lastErr = err;
         }
-        try { File.WriteAllText(logPath, sb.ToString(), Encoding.UTF8); } catch { }
-        report.Report(new InstallReport { Stage = comp.Title, Detail = "完成（Python + 依赖已就绪）", Pct = stageBase + (int)(100 * w / totalBytes) });
+        throw new InvalidOperationException("pip 安装依赖失败：" + lastErr);
     }
 
-    /// <summary>pretrained 组件：同目录 pretrained.zip 存在则走通用 zip 解压（离线分发）；
-    /// 否则逐个在线下载 5 个权重到 pretrained/（官方 GCS，独立断点续传 + SHA256）。
-    /// 单个文件失败只记警告不中断——可选组件，训练时 rfdetr 也能自行补下缺失权重。</summary>
+    private static async Task<(bool Ok, string? Error)> RunPipAsync(string python, string args, string stage, string pipMsg,
+        string logPath, IProgress<InstallReport> report, int stageBase, long w, long totalBytes)
+    {
+        var sb = new StringBuilder();
+        var psi = new ProcessStartInfo
+        {
+            FileName = python,
+            Arguments = args,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+        };
+        using var p = Process.Start(psi);
+        if (p is null)
+            return (false, "无法启动 pip");
+        p.OutputDataReceived += (_, e) => { if (e.Data is not null) sb.AppendLine(e.Data); };
+        p.ErrorDataReceived += (_, e) => { if (e.Data is not null) sb.AppendLine(e.Data); };
+        p.BeginOutputReadLine();
+        p.BeginErrorReadLine();
+        var tick = 12;
+        while (!p.HasExited)
+        {
+            await Task.Delay(3000);
+            if (tick < 85)
+            {
+                tick += 1;
+                report.Report(new InstallReport { Stage = stage, Detail = pipMsg, Pct = stageBase + (int)(tick * w / totalBytes) });
+            }
+        }
+        await p.WaitForExitAsync();
+        try { await File.WriteAllTextAsync(logPath, sb.ToString(), Encoding.UTF8); } catch { }
+        if (p.ExitCode == 0)
+            return (true, null);
+        return (false, $"退出码 {p.ExitCode}，日志: {logPath}");
+    }
+
+    private static async Task<bool> EnsurePipAsync(string python, string stage,
+        IProgress<InstallReport> report, int stageBase, long w, long totalBytes)
+    {
+        if (await RunOk(python, "-m pip --version")) return true;
+
+        report.Report(new InstallReport { Stage = stage, Detail = "正在安装 pip…", Pct = stageBase + (int)(11 * w / totalBytes) });
+        var script = Path.Combine(Path.GetTempPath(), "installer", "get-pip.py");
+        Directory.CreateDirectory(Path.GetDirectoryName(script)!);
+        bool ready;
+        await using (var res = OpenEmbedded("get-pip.py"))
+        {
+            if (res is not null)
+            {
+                await using var fs = File.Create(script);
+                await res.CopyToAsync(fs);
+                ready = true;
+            }
+            else
+            {
+                ready = await TryDownloadAsync(PipBootstrapUrl, script);
+            }
+        }
+        if (!ready)
+            throw new InvalidOperationException("获取 pip 安装脚本失败：网络不可达,且本安装程序未内置该脚本.");
+        return await RunOk(python, $"\"{script}\" --no-warn-script-location -i {PipIndex}");
+    }
+    private static async Task<bool> TryDownloadAsync(string url, string path)
+    {
+        for (var attempt = 1; attempt <= DownloadAttempts; attempt++)
+        {
+            try
+            {
+                await using (var s = await Http.GetStreamAsync(url))
+                await using (var fs = File.Create(path))
+                    await s.CopyToAsync(fs);
+                return true;
+            }
+            catch (Exception) when (attempt < DownloadAttempts)
+            {
+                await Task.Delay(3000 * attempt);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+        return false;
+    }
+
+
+    private static long FreeBytesOf(string path)
+    {
+        try
+        {
+            var full = Path.GetFullPath(path);
+            if (full.StartsWith(@"\\")) return -1;
+            foreach (var d in DriveInfo.GetDrives())
+                if (d.IsReady && full.StartsWith(d.Name, StringComparison.OrdinalIgnoreCase))
+                    return d.AvailableFreeSpace;
+        }
+        catch { }
+        return -1;
+    }
+
+    private static string Gb(long bytes) => (bytes / 1073741824.0).ToString("0.0") + " GB";
+
+    private static async Task<bool> RunOk(string file, string args)
+    {
+        try
+        {
+            using var p = Process.Start(new ProcessStartInfo
+            {
+                FileName = file,
+                Arguments = args,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+            });
+            if (p is null) return false;
+            await p.WaitForExitAsync();
+            return p.ExitCode == 0;
+        }
+        catch { return false; }
+    }
+
+
+    private static List<(string File, string Url, string Sha256)> LoadAssets()
+    {
+        using var s = OpenEmbedded("pretrained-assets.txt")
+            ?? throw new InvalidOperationException("安装程序内置缺少 pretrained-assets.txt(发布不完整)");
+        using var r = new StreamReader(s);
+        var list = new List<(string, string, string)>();
+        while (r.ReadLine() is { } line)
+        {
+            if (line.Length == 0 || line[0] == '#') continue;
+            var f = line.Split('\t');
+            if (f.Length < 3) continue;
+            list.Add((f[0].Trim(), f[1].Trim(), f[2].Trim()));
+        }
+        if (list.Count == 0)
+            throw new InvalidOperationException("pretrained-assets.txt 里没有可用的权重条目（发布不完整）");
+        return list;
+    }
+
+
     private static async Task InstallPretrainedAsync(string srcDir, Component comp, string root,
         IProgress<InstallReport> report, int stageBase, long w, long totalBytes)
     {
@@ -296,42 +382,93 @@ public static class InstallEngine
 
         var dest = Layout.DestDir(root, comp.Id);
         Directory.CreateDirectory(dest);
-        var n = PretrainedAssets.Length;
+
+        var groups = LoadAssets().GroupBy(a => a.File, StringComparer.OrdinalIgnoreCase).ToList();
+        var n = groups.Count;
         var failed = new List<string>();
         for (var i = 0; i < n; i++)
         {
-            var (file, url, sha) = PretrainedAssets[i];
+            var grp = groups[i];
+            var file = grp.Key;
             var target = Path.Combine(dest, file);
             var segPct = 100.0 / n * w / totalBytes;
             var segBase = stageBase + (int)(segPct * i);
-            try
+            var no = $"第 {i + 1}/{n} 个文件";
+            if (File.Exists(target))
             {
-                if (File.Exists(target) && Sha256Of(target).Equals(sha, StringComparison.OrdinalIgnoreCase))
+                var local = Sha256Of(target);
+                if (grp.Any(a => local.Equals(a.Sha256, StringComparison.OrdinalIgnoreCase)))
                 {
-                    report.Report(new InstallReport { Stage = comp.Title, Detail = file + " 已就绪，跳过", Pct = (int)(segBase + segPct) });
+                    report.Report(new InstallReport { Stage = comp.Title, Detail = no + "已就绪，跳过", Pct = (int)(segBase + segPct) });
                     continue;
                 }
-                report.Report(new InstallReport { Stage = comp.Title, Detail = "正在下载 " + file + "…", Pct = segBase });
-                await DownloadFileAsync(url, target, sha,
-                    (got, total) => report.Report(new InstallReport { Stage = comp.Title,
-                        Detail = file + "… " + got / 1_048_576 + "MB", Pct = segBase + (int)(segPct * 0.9 * got / Math.Max(total, 1)) }));
-                report.Report(new InstallReport { Stage = comp.Title, Detail = file + " 完成", Pct = (int)(segBase + segPct) });
             }
-            catch (Exception ex)
+            report.Report(new InstallReport { Stage = comp.Title, Detail = "正在下载" + no + "…", Pct = segBase });
+            Exception? firstErr = null;
+            var step = -1;
+            foreach (var (_, url, sha) in grp)
             {
-                failed.Add(file + "（" + ex.Message + "）");
+                try
+                {
+                    await DownloadFileAsync(url, target, sha, (got, total) =>
+                    {
+
+                        var pct = Math.Min(100, (int)(100 * got / Math.Max(total, 1)));
+                        var seg = pct / 5;
+                        var bar = segBase + (int)(segPct * 0.9 * pct / 100);
+                        if (seg == step)
+                            report.Report(new InstallReport { Stage = comp.Title, Pct = bar });
+                        else
+                        {
+                            step = seg;
+                            report.Report(new InstallReport { Stage = comp.Title, Detail = no + " " + pct + "%", Pct = bar });
+                        }
+                    });
+                    firstErr = null;
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    firstErr ??= ex;
+                    step = -1;   // 换源重下,进度条从头再走
+                }
             }
+            if (firstErr is null)
+                report.Report(new InstallReport { Stage = comp.Title, Detail = no + "下载完成", Pct = (int)(segBase + segPct) });
+            else
+                failed.Add(no + "（" + firstErr.Message + "）");
         }
         if (failed.Count > 0)
             report.Report(new InstallReport { Stage = comp.Title,
-                Detail = "完成，但部分文件下载失败：" + string.Join("；", failed) + "。重跑安装器可续传，或在软件内导入权重目录",
+                Detail = "部分文件下载失败：" + string.Join("；", failed) + "。重新运行本安装器可续传，或在软件内导入权重目录",
                 Pct = stageBase + (int)(100 * w / totalBytes) });
         else
-            report.Report(new InstallReport { Stage = comp.Title, Detail = "完成（" + n + " 个权重）", Pct = stageBase + (int)(100 * w / totalBytes) });
+            report.Report(new InstallReport { Stage = comp.Title, Detail = "完成", Pct = stageBase + (int)(100 * w / totalBytes) });
     }
 
-    /// <summary>下载到目标文件：.part 断点续传 → SHA256 校验 → 改名就位。校验失败删 .part（避免续传死循环）并抛错。</summary>
     private static async Task DownloadFileAsync(string url, string target, string expectedSha256,
+        Action<long, long>? onProgress = null)
+    {
+        Exception? last = null;
+        for (var attempt = 1; attempt <= DownloadAttempts; attempt++)
+        {
+            try
+            {
+                await DownloadOnceAsync(url, target, expectedSha256, onProgress);
+                return;
+            }
+            catch (Exception ex) when (attempt < DownloadAttempts)
+            {
+
+                last = ex;
+                await Task.Delay(3000 * attempt);
+            }
+        }
+        throw last ?? new IOException("下载失败: " + url);
+    }
+
+
+    private static async Task DownloadOnceAsync(string url, string target, string expectedSha256,
         Action<long, long>? onProgress = null)
     {
         var part = target + ".part";
@@ -364,16 +501,16 @@ public static class InstallEngine
         File.Move(part, target);
     }
 
-    /// <summary>通用 zip 组件（如离线 pretrained）：下载 → 校验 → 解压。</summary>
+
     private static async Task InstallZipComponentAsync(string srcDir, Component comp, string root,
         IProgress<InstallReport> report, int stageBase, long w, long totalBytes)
     {
         var zip = await EnsureFileAsync(srcDir, comp, report, stageBase, w);
         if (zip is null)
         {
-            // 可选 zip 组件本地缺文件 → 跳过而非抛错：它不该让整个安装失败
+
             report.Report(new InstallReport { Stage = comp.Title,
-                Detail = "跳过：未找到 " + comp.File + "（可选，不影响使用，之后可在软件内导入权重目录）",
+                Detail = "跳过：该组件非必需，不影响使用，之后可在软件内导入权重目录",
                 Pct = stageBase + (int)(100 * w / totalBytes) });
             return;
         }
@@ -388,12 +525,12 @@ public static class InstallEngine
 
         var dest = Layout.DestDir(root, comp.Id);
         report.Report(new InstallReport { Stage = comp.Title, Detail = "解压中…", Pct = stageBase + (int)(45 * w / totalBytes) });
-        var entries = await Task.Run(() => ExtractAll(zip, dest,
-            s => report.Report(new InstallReport { Stage = comp.Title, Detail = s, Pct = stageBase + 45 + (int)(50 * w / totalBytes) })));
-        report.Report(new InstallReport { Stage = comp.Title, Detail = $"完成（{entries} 个文件）", Pct = stageBase + (int)(100 * w / totalBytes) });
+        await Task.Run(() => ExtractAll(zip, dest,
+            s => report.Report(new InstallReport { Stage = comp.Title, Pct = stageBase + 45 + (int)(50 * w / totalBytes) })));
+        report.Report(new InstallReport { Stage = comp.Title, Detail = "完成", Pct = stageBase + (int)(100 * w / totalBytes) });
     }
 
-    /// <summary>按 id 取组件；内置清单无 program 条目时用内嵌资源长度构造占位。</summary>
+
     private static Component ResolveComponent(Manifest mf, string id)
     {
         var c = mf.Components.FirstOrDefault(x => x.Id == id);
@@ -412,7 +549,7 @@ public static class InstallEngine
         throw new InvalidOperationException("清单缺少组件: " + id);
     }
 
-    /// <summary>按资源名取内嵌资源流（csproj LogicalName 嵌入，名可能是短名或全限定名）。</summary>
+
     private static Stream? OpenEmbedded(string name)
     {
         var asm = Assembly.GetExecutingAssembly();
@@ -423,7 +560,7 @@ public static class InstallEngine
 
     public static bool HasEmbedded(string name) => OpenEmbedded(name) is not null;
 
-    /// <summary>本地文件不在安装器同目录时，按组件 url 下载到 %TEMP% 缓存（断点续传）。</summary>
+
     private static async Task<string?> EnsureFileAsync(string srcDir, Component comp,
         IProgress<InstallReport> report, int stageBase, long weightTotal)
     {
@@ -439,7 +576,7 @@ public static class InstallEngine
         var target = Path.Combine(cacheDir, comp.File);
         var part = target + ".part";
 
-        report.Report(new InstallReport { Stage = comp.Title, Detail = "下载中…", Pct = stageBase + (int)(30 * weightTotal / 100) });
+        report.Report(new InstallReport { Stage = comp.Title, Detail = "正在下载…", Pct = stageBase + (int)(30 * weightTotal / 100) });
 
         var existing = File.Exists(part) ? new FileInfo(part).Length : 0;
         using var req = new HttpRequestMessage(HttpMethod.Get, comp.Url);
@@ -455,11 +592,20 @@ public static class InstallEngine
             var buf = new byte[1 << 20];
             long got = existing;
             int n;
+            var step = -1;
             while ((n = await stream.ReadAsync(buf)) > 0)
             {
                 await fs.WriteAsync(buf.AsMemory(0, n));
                 got += n;
-                report.Report(new InstallReport { Stage = comp.Title, Detail = $"下载中… {got / 1_048_576}MB", Pct = stageBase + (int)(30 * weightTotal / 100) });
+                var pct = Math.Min(100, (int)(100 * got / Math.Max(total, 1)));
+                var bar = stageBase + (int)((30L + 40L * pct / 100) * weightTotal / 100);
+                if (pct / 5 == step)
+                {
+                    report.Report(new InstallReport { Stage = comp.Title, Pct = bar });
+                    continue;
+                }
+                step = pct / 5;
+                report.Report(new InstallReport { Stage = comp.Title, Detail = $"正在下载… {pct}%", Pct = bar });
             }
         }
         if (File.Exists(target)) File.Delete(target);
@@ -467,14 +613,14 @@ public static class InstallEngine
         return target;
     }
 
-    /// <summary>逐条解压本地 zip（覆盖旧文件），返回解压条目数。</summary>
+
     private static int ExtractAll(string zip, string destDir, Action<string> progress)
     {
         using var za = ZipFile.OpenRead(zip);
         return ExtractZipArchive(za, destDir, progress);
     }
 
-    /// <summary>解压程序集内嵌的 zip（program.zip），同上语义。</summary>
+
     private static int ExtractEmbeddedZip(string name, string destDir, Action<string> progress)
     {
         using var s = OpenEmbedded(name) ??
@@ -483,7 +629,7 @@ public static class InstallEngine
         return ExtractZipArchive(za, destDir, progress);
     }
 
-    /// <summary>逐条解压（覆盖旧文件），防 zip slip。</summary>
+
     private static int ExtractZipArchive(ZipArchive za, string destDir, Action<string> progress)
     {
         Directory.CreateDirectory(destDir);
@@ -499,14 +645,12 @@ public static class InstallEngine
             Directory.CreateDirectory(Path.GetDirectoryName(target)!);
             e.ExtractToFile(target, overwrite: true);
             if (++count % 500 == 0)
-                progress($"已解压 {count} 项…");
+                progress?.Invoke($"已解压 {count} 项…");
         }
         return count;
     }
 
-    /// <summary>桌面 + 开始菜单各建一个 EasyTrainer 快捷方式，直接指向 pythonw 跑入口脚本
-    /// （无需中间 launcher；PYTHONPATH 由 easy_trainer.py 文件头自行 append，
-    /// RF_HOME 由其在 pretrained 存在时 setdefault）。</summary>
+
     public static void CreateShortcuts(string root)
     {
         var pyDir = Path.Combine(root, "runtime", "python310");
@@ -514,7 +658,7 @@ public static class InstallEngine
         if (!File.Exists(pythonw))
             pythonw = Path.Combine(pyDir, "python.exe");
         if (!File.Exists(pythonw))
-            return; // 没装 runtime（如只装了 program 的调试场景）就不建快捷方式
+            return; // 没装 runtime(如只装了 program 的调试场景)就不建快捷方式
         var script = Path.Combine(root, "app", "easy_trainer.py");
         var icon = Path.Combine(root, "resources", "favicon.ico");
         var iconLoc = File.Exists(icon) ? $"{icon},0" : "";
@@ -562,18 +706,114 @@ public static class InstallEngine
     public static bool IsInstalledRoot(string root)
         => File.Exists(Path.Combine(root, "installed.json"));
 
-    /// <summary>删除安装目录与两个快捷方式（先确认目录确实是安装根）。</summary>
-    public static void Uninstall(string root)
+
+    private static string FriendlyName(string name) => name switch
+    {
+        "runtime" => "运行时",
+        "pretrained" => "预训练权重",
+        "app" => "程序本体",
+        "program" => "程序本体",
+        "installed.json" => "安装信息",
+        "unins000.exe" => "卸载程序",
+        _ => name,
+    };
+
+
+    public static async Task UninstallAsync(string root, IProgress<InstallReport> report)
+    {
+        const string stage = "卸载";
+        report.Report(new InstallReport { Stage = stage, Detail = "正在移除快捷方式…", Pct = 5 });
+        await Task.Run(RemoveShortcuts);
+        report.Report(new InstallReport { Stage = stage, Detail = "快捷方式已移除", Pct = 10 });
+
+        if (!Directory.Exists(root))
+        {
+            report.Report(new InstallReport { Stage = stage, Detail = "安装目录已不存在", Pct = 100 });
+            return;
+        }
+
+        var entries = await Task.Run(() => Directory.EnumerateFileSystemEntries(root)
+            .Select(Path.GetFileName).Where(n => n is not null).ToList());
+        var failed = new List<string>();
+        for (var i = 0; i < entries.Count; i++)
+        {
+            var name = entries[i]!;
+            report.Report(new InstallReport
+            {
+                Stage = stage,
+                Detail = "正在删除 " + FriendlyName(name) + "…",
+                Pct = 10 + (int)(85.0 * i / entries.Count),
+            });
+            if (!await Task.Run(() => TryDelete(Path.Combine(root, name))))
+                failed.Add(FriendlyName(name));
+        }
+        TryDelete(root);
+
+        if (failed.Count > 0)
+            report.Report(new InstallReport
+            {
+                Stage = stage,
+                Detail = "部分内容未能删除(可能被占用):" + string.Join("、", failed) + ",可关闭相关程序后手动删除",
+                Pct = 100,
+            });
+        else
+            report.Report(new InstallReport { Stage = stage, Detail = "完成", Pct = 100 });
+    }
+
+    private static void RemoveShortcuts()
     {
         var desktop = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "EasyTrainer.lnk");
-        var startMenu = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Programs), "EasyTrainer", "EasyTrainer.lnk");
+        var startDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Programs), "EasyTrainer");
+        var startMenu = Path.Combine(startDir, "EasyTrainer.lnk");
         foreach (var f in new[] { desktop, startMenu })
         {
             try { if (File.Exists(f)) File.Delete(f); } catch { }
         }
-        var startDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Programs), "EasyTrainer");
         try { if (Directory.Exists(startDir) && !Directory.EnumerateFileSystemEntries(startDir).Any()) Directory.Delete(startDir); } catch { }
-        try { if (Directory.Exists(root)) Directory.Delete(root, recursive: true); } catch { }
+    }
+
+
+    private static bool TryDelete(string path)
+    {
+        try
+        {
+            Delete(path);
+            return true;
+        }
+        catch { }
+        try
+        {
+            ClearReadOnly(path);
+            Delete(path);
+            return true;
+        }
+        catch { return false; }
+    }
+
+    private static void Delete(string path)
+    {
+        if (Directory.Exists(path)) Directory.Delete(path, true);
+        else if (File.Exists(path)) File.Delete(path);
+    }
+
+    private static void ClearReadOnly(string path)
+    {
+        if (File.Exists(path))
+        {
+            var fi = new FileInfo(path);
+            if (fi.IsReadOnly) fi.IsReadOnly = false;
+            return;
+        }
+        if (!Directory.Exists(path)) return;
+        foreach (var f in Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories))
+        {
+            try
+            {
+                var fi = new FileInfo(f);
+                if (fi.IsReadOnly) fi.IsReadOnly = false;
+            }
+            catch { }
+        }
     }
 
     private static string Sha256Of(string path)

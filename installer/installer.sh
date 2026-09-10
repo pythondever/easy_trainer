@@ -1,25 +1,25 @@
 #!/usr/bin/env bash
 # EasyTrainer Linux 安装脚本（对应 Windows 端 Win.installer 的组件流程）
 #
-# 用法: ./installer.sh [-d 安装目录] [-p] [-c] [-h]
+# 用法: ./installer.sh [-d 安装目录] [-p] [-h]
 #   -d  安装根目录（默认 ~/EasyTrainer）
 #   -p  同时安装预训练权重（默认跳过；官方 GCS 约 880MB，大陆网络可能失败，失败仅警告）
-#   -c  CUDA 机器（存在 nvidia-smi 时）→ torch/torchvision 改用 cu121 轮子重装（pytorch 官方源）
 #   -h  显示帮助
 #
-# 需与本脚本同目录放置 program.zip、requirements-release.txt（build.py 的 Linux 发布产物）。
+# 需与本脚本同目录放置 program.zip、requirements-release.txt、pretrained-assets.txt
+# （build.py 的 Linux 发布产物）。默认锁定 CUDA 版 torch，可用 TORCH_INDEX 环境变量换 pytorch 源。
 # .so 按 Python 3.10(cp310) 编译，本脚本要求系统 python 恰为 3.10.x，否则拒绝安装。
 set -u
 
 PIP_INDEX="https://pypi.tuna.tsinghua.edu.cn/simple"
+# requirements 锁了 torch==2.5.1+cu121，该版本只在 pytorch 源有，用 extra-index-url 叠进来
 CUDA_INDEX="https://download.pytorch.org/whl/cu121"
 VERSION="1.0.0"
 SELF_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$HOME/EasyTrainer"
 WITH_PRETRAINED=0
-WITH_CUDA=0
 
-# 预训练权重表：文件名 / GCS URL / SHA256 —— 与 Win.installer/InstallerCore.cs 的 PretrainedAssets 保持一致
+# 预训练权重表（无共享清单时的兜底）：优先读三端共用的 pretrained-assets.txt（build.py 会一起打包）
 declare -a PRETRAINED=( \
   "rf-detr-nano.pth|https://storage.googleapis.com/rfdetr/nano_coco/checkpoint_best_regular.pth|D8D6B9EE57D4D0ED2B1F305163624712A0532CB7BCE0C747317984FC5457440D" \
   "rf-detr-seg-nano.pt|https://storage.googleapis.com/rfdetr/rf-detr-seg-n-ft.pth|A44613A4ECD6B5BA61A62002C600B0B6CB7A9DA2936A45317EC4B62C635FB99B" \
@@ -28,16 +28,27 @@ declare -a PRETRAINED=( \
   "rf-detr-seg-large.pt|https://storage.googleapis.com/rfdetr/rf-detr-seg-l-ft.pth|CA7B7C630BA22496067CC4F034C4E70C8E47FD7ADCEA04C3A49AA8C1755CBE6B" \
 )
 
+ASSETS_FILE="$SELF_DIR/pretrained-assets.txt"
+if [ -f "$ASSETS_FILE" ]; then
+  PRETRAINED=()
+  while IFS=$'\t' read -r fname url sha _rest; do
+    fname="${fname%$'\r'}"; url="${url%$'\r'}"; sha="${sha%$'\r'}"
+    case "$fname" in ''|\#*) continue ;; esac
+    if [ -n "$url" ] && [ -n "$sha" ]; then
+      PRETRAINED+=("$fname|$url|$sha")
+    fi
+  done < "$ASSETS_FILE"
+fi
+
 LOG_FILE=""
 log()  { local l="[$(date '+%H:%M:%S')] $*"; echo "$l"; [ -n "$LOG_FILE" ] && echo "$l" >> "$LOG_FILE" 2>/dev/null || true; }
 die()  { log "错误: $*"; exit 1; }
 usage(){ sed -n '2,10p' "$0" | sed 's/^# \{0,1\}//'; exit 0; }
 
-while getopts "d:pch" opt; do
+while getopts "d:ph" opt; do
   case "$opt" in
     d) ROOT="$OPTARG" ;;
     p) WITH_PRETRAINED=1 ;;
-    c) WITH_CUDA=1 ;;
     h) usage ;;
     *) usage ;;
   esac
@@ -89,21 +100,14 @@ log "解压程序本体（program.zip）…"
 [ -f "$REQ" ] || die "同目录缺少 requirements-release.txt：$REQ"
 PIP_LOG="$ROOT/pip-install.log"
 log "正在安装 Python 依赖（torch 较大，可能 5~30 分钟，进度见 $PIP_LOG）…"
-if ! "$VPIP" install --disable-pip-version-check -r "$REQ" -i "$PIP_INDEX" >> "$PIP_LOG" 2>&1; then
+# requirements 锁的是 torch==2.5.1+cu121（Windows 默认源只有 CPU 版），该版本只在 pytorch 源有，
+# 故叠一个 torch 专用 index；其余包仍走国内源。TORCH_INDEX 可从外部覆盖换源。
+if ! "$VPIP" install --disable-pip-version-check --timeout 60 --retries 10 -r "$REQ" \
+     -i "$PIP_INDEX" --extra-index-url "${TORCH_INDEX:-$CUDA_INDEX}" >> "$PIP_LOG" 2>&1; then
   die "pip 安装依赖失败，详见: $PIP_LOG"
 fi
-
-# 可选：CUDA 环境重装 cu121 torch（默认源给的是 CPU 版）
-if [ "$WITH_CUDA" = "1" ]; then
-  if command -v nvidia-smi >/dev/null 2>&1; then
-    log "检测到 NVIDIA 显卡，改用 cu121 轮子重装 torch/torchvision …"
-    "$VPIP" install --force-reinstall "torch==2.5.1+cu121" "torchvision==0.20.1+cu121" \
-      -i "$CUDA_INDEX" >> "$PIP_LOG" 2>&1 || log "警告: cu121 torch 重装失败（可能网络不通），已保留 CPU 版"
-  else
-    log "警告: 指定了 -c 但未检测到 nvidia-smi，跳过 cu121 重装"
-  fi
-fi
 log "Python 依赖安装完成"
+command -v nvidia-smi >/dev/null 2>&1 || log "提示: 未检测到 NVIDIA 显卡，CUDA 版 torch 将只以 CPU 模式运行"
 
 # ── 6. 预训练权重（可选）──────────────────────────────────────────────
 PRETRAIN_DIR="$ROOT/pretrained"

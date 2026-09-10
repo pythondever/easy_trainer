@@ -1,17 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-把 app/ 与 ui/ 编译成 .pyd，输出可发布的 program 根目录。
-
-产物布局（program.zip 由 installer 解压到安装根）:
-    app/  ui/           编译后的 .pyd + 保留的 __init__.py / easy_trainer.py
-    style/ resources/   素材原样拷贝
-    examples/           参考代码原样拷贝（导出 ONNX 时会复制给用户）
-
-保留明文：所有 __init__.py（包结构需要）、app/easy_trainer.py（桌面快捷方式用 pythonw 直接执行它，sys.path[0] 在 app/ 下，
-靠文件头 append 到项目根）。其余模块含 train_runner/test_runner 全部编译 —— worker 已改 python -m 调用。
-
-Windows 需要 cl.exe 可用（在 VS Developer Prompt / vcvars64 里执行），否则
-setuptools 找不到编译器。Linux 同理需要 gcc。
+程序发布
+windows 输出installer.exe(dotnet实现)
+windows 需要 cl.exe 否则 setuptools 找不到编译器。Linux 同理需要 gcc。
+linux 输出release-linux(installer.sh + program.zip + requirements-release.txt)
 """
 
 import argparse
@@ -78,7 +70,7 @@ def publish_installer():
     """
     dotnet = shutil.which("dotnet")
     if dotnet is None:
-        sys.exit("找不到 dotnet，无法发布安装器。请先安装 .NET SDK：https://dotnet.microsoft.com/download")
+        sys.exit("找不到 dotnet,无法发布安装器. 请先安装 .NET SDK：https://dotnet.microsoft.com/download")
     proj_dir = os.path.join(ROOT, "installer", "Win.installer")
     proj = os.path.join(proj_dir, "Win.installer.csproj")
     out_dir = os.path.join(ROOT, "dist", "release")
@@ -100,13 +92,14 @@ def publish_installer():
 
 def publish_linux(program_zip):
     """
-    Linux 发布 dist/release-linux（installer.sh + program.zip + requirements-release.txt）。
+    Linux 发布 dist/release-linux（installer.sh + program.zip + requirements + 权重清单）。
     """
     out_dir = os.path.join(ROOT, "dist", "release-linux")
     os.makedirs(out_dir, exist_ok=True)
     items = [
         (program_zip, "program.zip"),
         (os.path.join(HERE, "requirements-release.txt"), "requirements-release.txt"),
+        (os.path.join(HERE, "pretrained-assets.txt"), "pretrained-assets.txt"),
         (os.path.join(ROOT, "installer", "installer.sh"), "installer.sh"),
     ]
     total = 0
@@ -124,10 +117,6 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("-t", "--target", default=os.path.join(ROOT, "dist", "program"),
                     help="输出目录(默认 dist/program)")
-    ap.add_argument("--keep-build", action="store_true",
-                    help="编译后保留 build/ 与生成的 .c")
-    ap.add_argument("--no-publish", action="store_true",
-                    help="跳过 dotnet publish(仅编译 pyd 调试用)")
     args = ap.parse_args()
 
     target = os.path.abspath(args.target)
@@ -187,8 +176,7 @@ def main():
             shutil.copy2(src, dst)
             print("  pyd:", os.path.relpath(dst, target))
 
-    if not args.keep_build:
-        shutil.rmtree(BUILD_DIR, ignore_errors=True)
+    shutil.rmtree(BUILD_DIR, ignore_errors=True)
     print("program 根目录就绪: {}".format(target))
     zip_out = os.path.join(os.path.dirname(target), "program.zip")
     count = 0
@@ -203,19 +191,16 @@ def main():
     print("program.zip 就绪: {} ({} 个文件, {:.1f}MB)".format(
         zip_out, count, os.path.getsize(zip_out) / 1048576))
 
-    if args.no_publish:
-        print("已跳过 installer 发布(--no-publish),保留 program/ 与 program.zip 供检查")
+    if platform.system() == "Windows":
+        publish_installer()
     else:
-        if platform.system() == "Windows":
-            publish_installer()
-        else:
-            publish_linux(zip_out)
-        for _p in (target, zip_out):
-            if os.path.isdir(_p):
-                shutil.rmtree(_p, ignore_errors=True)
-            elif os.path.isfile(_p):
-                os.remove(_p)
-        print("已清理中间产物: dist/program/ dist/program.zip")
+        publish_linux(zip_out)
+    for _p in (target, zip_out):
+        if os.path.isdir(_p):
+            shutil.rmtree(_p, ignore_errors=True)
+        elif os.path.isfile(_p):
+            os.remove(_p)
+    print("已清理: dist/program/ dist/program.zip")
 
 
 if __name__ == "__main__":

@@ -5,7 +5,7 @@ using System.Windows.Forms;
 
 namespace Win.installer;
 
-/// <summary>圆角按钮（主色实心 / 描边 outline 两种，带 hover/按下/禁用态）。纯 GDI+ 自绘。</summary>
+/// <summary>圆角按钮（主色实心 / 灰底 secondary 两种，带 hover/按下/禁用态）。纯 GDI+ 自绘。</summary>
 public sealed class RoundedButton : Button
 {
     private bool _hover;
@@ -20,7 +20,7 @@ public sealed class RoundedButton : Button
     public RoundedButton()
     {
         FlatStyle = FlatStyle.Flat;
-        FlatAppearance.BorderSize = 0;
+        FlatAppearance.BorderSize = 0; // ButtonBase 不允许 BorderColor=Transparent，只能靠 BorderSize=0
         // 关键：把系统主题色全部覆盖成白，避免深色主题下按钮背景透出黑/灰色
         FlatAppearance.MouseOverBackColor = Color.White;
         FlatAppearance.MouseDownBackColor = Color.White;
@@ -30,8 +30,12 @@ public sealed class RoundedButton : Button
         Cursor = Cursors.Hand;
         SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint
             | ControlStyles.OptimizedDoubleBuffer | ControlStyles.ResizeRedraw
-            | ControlStyles.SupportsTransparentBackColor, true);
+            | ControlStyles.SupportsTransparentBackColor
+            | ControlStyles.Opaque, true);
     }
+
+    // 擦底交给 OnPaint 统一处理（真机系统擦底颜色不可控，曾致圆角外四角发黑）
+    protected override void OnPaintBackground(PaintEventArgs e) { }
 
     protected override void OnMouseEnter(EventArgs e) { _hover = true; Invalidate(); base.OnMouseEnter(e); }
     protected override void OnMouseLeave(EventArgs e) { _hover = false; _down = false; Invalidate(); base.OnMouseLeave(e); }
@@ -43,7 +47,13 @@ public sealed class RoundedButton : Button
         var g = e.Graphics;
         g.SmoothingMode = SmoothingMode.AntiAlias;
         g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
-        var rc = new RectangleF(0.5f, 0.5f, Width - 1f, Height - 1f);
+
+        // 先铺满父底色再画圆角：圆角外的四角由这里保证，不依赖系统擦底
+        using (var bg = new SolidBrush(Parent?.BackColor ?? BackColor))
+            g.FillRectangle(bg, ClientRectangle);
+
+        // 铺满整个控件：留 0.5px 外圈会半覆盖，边缘会露出一圈像边框的残影
+        var rc = new RectangleF(0f, 0f, Width, Height);
 
         Color fill, text;
         if (!Enabled)
@@ -53,7 +63,8 @@ public sealed class RoundedButton : Button
         }
         else if (Outline)
         {
-            fill = _hover ? Color.FromArgb(0xED, 0xF3, 0xFE) : Color.White;
+            // 无边框灰底：白底上靠边框区分的样式在 hover 时对比度不稳，弃用
+            fill = _hover ? Color.FromArgb(0xDC, 0xE3, 0xEC) : Color.FromArgb(0xEA, 0xEE, 0xF3);
             text = Accent;
         }
         else
@@ -68,12 +79,6 @@ public sealed class RoundedButton : Button
         using (var path = RoundedRect(rc, 6f))
         using (var b = new SolidBrush(fill))
             g.FillPath(b, path);
-        if (Outline && Enabled)
-        {
-            using var pen = new Pen(Accent, 1f);
-            using var path = RoundedRect(rc, 6f);
-            g.DrawPath(pen, path);
-        }
 
         TextRenderer.DrawText(g, Text, Font, Rectangle.Round(rc), text,
             TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
@@ -147,15 +152,6 @@ public sealed class ComponentCard : Panel
     private static readonly Color CheckBoxBorder = Color.FromArgb(0xC4, 0xC9, 0xD0);
     private static readonly Color MutedBorder = Color.FromArgb(0xE7, 0xE9, 0xED);
 
-    private static readonly Color[] IconPalette =
-    {
-        Color.FromArgb(0x2F, 0x6F, 0xED),  // blue   - runtime
-        Color.FromArgb(0x8B, 0x5C, 0xF6),  // purple - pretrained
-        Color.FromArgb(0x10, 0xB9, 0x81),  // green
-        Color.FromArgb(0xF5, 0x9E, 0x0B),  // amber
-        Color.FromArgb(0xEF, 0x44, 0x44),  // red
-    };
-
     private static readonly Font TitleFont =
         new("Microsoft YaHei UI", 10.5f, FontStyle.Bold, GraphicsUnit.Point);
     private static readonly Font DescFont =
@@ -186,7 +182,7 @@ public sealed class ComponentCard : Panel
         BackColor = Color.Transparent;
         Cursor = Cursors.Hand;
         Margin = new Padding(0, 0, 14, 14);
-        Size = new Size(360, 92);
+        Size = new Size(360, 100);
     }
 
     public void SetCheckedSilent(bool value)
@@ -242,19 +238,8 @@ public sealed class ComponentCard : Panel
             g.DrawLine(pen, 4, 12, 4, Height - 12);
         }
 
-        // 左侧彩色图标块（48×48 圆角方块 + 类别首字母）
-        var iconColor = IconPalette[Math.Abs(Model.Id.GetHashCode()) % IconPalette.Length];
-        var iconRect = new Rectangle(16, (Height - 48) / 2, 48, 48);
-        using (var path = RoundedRect(iconRect, 10f))
-        using (var b = new SolidBrush(iconColor))
-            g.FillPath(b, path);
-        var letter = (Model.Title.Length > 0 ? Model.Title[0] : '?').ToString();
-        var letterFont = new Font("Microsoft YaHei UI", 18f, FontStyle.Bold, GraphicsUnit.Point);
-        TextRenderer.DrawText(g, letter, letterFont, iconRect, Color.White,
-            TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
-
         // 标题 + 描述
-        var textX = 76;
+        var textX = 16;
         var textW = _checkBoxRect.Left - textX - 12;
         var titleRect = new Rectangle(textX, 20, textW, 22);
         var descRect = new Rectangle(textX, 44, textW, Height - 50);

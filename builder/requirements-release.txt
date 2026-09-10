@@ -1,6 +1,6 @@
 
-torch==2.5.1
-torchvision==0.20.1
+torch==2.5.1+cu121
+torchvision==0.20.1+cu121
 PySide6-Essentials==6.9.1
 opencv-python-headless==4.10.0.84
 matplotlib==3.10.9

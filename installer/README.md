@@ -17,20 +17,44 @@ installer.exe   双击打开 → 勾选 → 联网下载安装
 | 组件 | 来源 | 方式 |
 |---|---|---|
 | 程序本体 program | 构建期 csproj 嵌入 exe | 直接解压，**不联网** |
-| 运行时 | 官方 python 3.10 安装器（国内镜像） | 下载 → 静默安装 |
-| torch 等依赖 | PyPI 国内镜像（清华） | pip 现场安装（约 2.5GB） |
+| 运行时 | 官方 python 3.10 embeddable zip（国内镜像） | 下载 → 解压即用（绿色，不写注册表） |
+| torch 等依赖 | PyPI 国内镜像（清华）+ torch 专用源 | pip 现场安装（约 2.5GB 下载） |
 | 预训练权重 | 官方源（storage.googleapis.com，rfdetr 分发通道） | 下载 5 个 .pth/.pt 到 `pretrained\`（约 880MB） |
 
 Python、pip 依赖是国内可直连的公开地址，**无需自建服务器/OSS**：
-- Python：`https://mirrors.huaweicloud.com/python/3.10.11/python-3.10.11-amd64.exe`
+- Python：`https://mirrors.huaweicloud.com/python/3.10.11/python-3.10.11-embed-amd64.zip`
+- pip 引导：**已内嵌**在 exe 里（`builder\get-pip.py`），不再依赖 bootstrap.pypa.io
 - pip 依赖：`https://pypi.tuna.tsinghua.edu.cn/simple`
+- torch/torchvision：**上海交大 pytorch 镜像** `https://mirror.sjtu.edu.cn/pytorch-wheels/cu121/`，
+  失败自动换官方 `https://download.pytorch.org/whl/cu121`
 
-**注意**：预训练权重没有国内镜像（rfdetr 官方仅发布在 Google 存储），大陆网络
-下不动时改用离线兜底（见下），或在软件内"导入权重目录"。
+> **为什么必须额外指定 torch 源**：Windows 上 PyPI 的 `torch` 是 **CPU-only**（wheel 仅 203MB，
+> 12 个 `nvidia-*` 依赖全带 `platform_system == "Linux"` 条件，Windows 一条都不装）。要拿到
+> CUDA 版必须装 `torch==2.5.1+cu121`，而带 local version 的 wheel 只存在于 pytorch 自己的源里，
+> 所以 requirements 锁定 `+cu121` 并用 `--extra-index-url` 叠源。装完后请确认：
+> `runtime\python310\python.exe -c "import torch;print(torch.cuda.is_available())"` 应为 True。
 
-**离线兜底**：把 `python-3.10.11-amd64.exe`（或可选 `pretrained.zip`）放安装器同目录，
-安装器检测到同名文件即跳过下载、直接使用。组件下载信息（地址/SHA256）写死在
-`InstallerCore.cs` 常量里，没有外部 manifest.json。
+Python 走 **embeddable 绿色包**（不装 MSI、不写注册表、不需要卸载）：解压到
+`runtime\python310` 后改写 `python310._pth`（开 `import site` 并把 `Lib\site-packages`
+加进 sys.path），pip 装的所有包就在这个目录里，卸载即删除目录。老版本 MSI 装的
+运行时会在安装时自动识别（`python310._pth` 缺失）并整套换成绿色包。
+
+**磁盘要求**：装"运行时"需要约 **10GB**（torch cu121 下载 2.4GB + 落地约 9GB），
+仅装"程序本体"只要几百 MB。安装器会在开始前按所选组件估算并校验，空间不足直接报错、
+不会装一半才发现。
+
+**注意**：预训练权重没有国内镜像（rfdetr 官方仅发布在 Google 存储；HuggingFace 上只有
+transformers 格式的 safetensors，rfdetr 包不认），大陆网络下不动时改用离线兜底（见下），
+或在软件内"导入权重目录"。
+
+**离线兜底**：把 `python-3.10.11-embed-amd64.zip`（或可选 `pretrained.zip`）放安装器同目录，
+安装器检测到同名文件即跳过下载、直接使用。
+
+## 权重清单（唯一数据源）
+
+`builder\pretrained-assets.txt`：`文件名 \t URL \t SHA256`，**C# 安装器、installer.sh、
+builder\build.py 三端共用**，改这一处即可换源或添加国内镜像（同一文件名写多行 = 多个候选源，
+安装器按顺序尝试）。Python 运行时本身的下载信息仍写死在 `InstallerCore.cs` 常量里。
 
 ## 构建步骤（Windows）
 
@@ -42,22 +66,24 @@ Python、pip 依赖是国内可直连的公开地址，**无需自建服务器/O
    ```powershell
    cd D:\code\easy_trainer
    pip install cython
-   python builder\build.py -t dist\program        # 完整发布
-   python builder\build.py -t dist\program --no-publish   # 只编 pyd，跳过安装器
+   python builder\build.py -t dist\program
    ```
 
-   产物：`dist\release\installer.exe`（发布成功后自动清理 `dist\program\` 与
-   `dist\program.zip` 中间产物；`--no-publish` 时保留供检查）。
+   产物：`dist\release\installer.exe`（发布成功后自动清理 `dist\program\`、
+   `dist\program.zip` 与 `build\` 中间产物）。构建只做编译与发布，不碰网络下载——
+   权重与 Python 运行时的获取全部交给安装器。
 
 2. **requirements-release.txt**（内嵌，pip 现场安装用）已随仓库维护在
    `builder\requirements-release.txt`——版本锁定自 rf-detr 开发环境；注意国内 PyPI
    镜像对 PySide6 只同步到 6.9.1。
 
 3. **分发**：在线版只发 `dist\release\installer.exe`——勾选运行时从
-   华为云下载 Python、从清华源 pip 装依赖；勾选预训练权重则从官方源下载 5 个权重
-   （约 880MB，大陆网络受限时可能失败，见上文注意）。离线/U盘版把以下文件放同一目录：
-   `python-3.10.11-amd64.exe`（运行时离线包，与安装器同目录自动跳过下载）、
-   `pretrained.zip`（可选，预训练权重，把 `~\.roboflow\models` 目录内容压成 zip 即可）。
+   华为云下载 Python、从清华源 pip 装依赖，中途网络中断会自动重试（下载 3 次、
+   pip 失败则换备用源整体重试一次）。
+   权重默认在线拉（官方源在大陆常不可达）；若已自行备好，把 `pretrained.zip`
+   与 `installer.exe` 放同目录，安装器会优先用本地 zip 完全不走网络。
+   离线/U盘版还可加 `python-3.10.11-embed-amd64.zip`（运行时离线包，
+   同目录自动跳过下载）。
 
 ## 安装后的目录
 
@@ -106,28 +132,29 @@ Linux → `.so`），因此**在 Linux 机器上跑同一脚本**即可产出 Li
 | 平台 | 发布动作 | 产物目录 |
 |---|---|---|
 | Windows | `dotnet publish`（现状，program.zip 内嵌 exe） | `dist/release/installer.exe` |
-| Linux | 组三件套：`installer.sh` + `program.zip` + `requirements-release.txt` | `dist/release-linux/` |
+| Linux | 组四件套：`installer.sh` + `program.zip` + `requirements-release.txt` + `pretrained-assets.txt` | `dist/release-linux/` |
 
 ```bash
 # Linux 构建机（需 gcc + python3.10-dev + cython + setuptools）
 python3 builder/build.py -t dist/program
 ```
 
-**Linux 端客户机安装**（把 `dist/release-linux/` 三个文件拷过去后）：
+**Linux 端客户机安装**（把 `dist/release-linux/` 的文件拷过去后）：
 
 ```bash
 ./installer.sh            # 默认装到 ~/EasyTrainer
-./installer.sh -d /opt/easy_trainer -p   # 换目录 + 在线装预训练权重(~880MB)
-./installer.sh -c         # NVIDIA 机器：torch 改用 cu121 轮子（pytorch 官方源）
+./installer.sh -d /opt/easy_trainer -p   # 换目录 + 安装预训练权重(~880MB)
+TORCH_INDEX=https://download.pytorch.org/whl/cu121 ./installer.sh   # torch 换源
 ```
 
 脚本与 Windows 安装器职责对应：校验 python3.10 → 建 venv → 解压 program.zip →
 pip 清华源装依赖 → （可选）权重 → 生成桌面启动项 `.desktop`；日志/`installed.json`
-同样落在安装根。预训练权重与 Windows 版共用同一张 GCS URL/SHA256 表
-（`InstallerCore.cs` 与 `installer.sh` 两处写死，改动需同步）。
+同样落在安装根。权重清单与 Windows 端共用 `builder/pretrained-assets.txt`（installer.sh
+内置同名表仅作无该文件时的兜底）。
 
 **Linux 特有注意**：
 - `.so` 按 cp310 编译，要求客户机 python 恰为 **3.10.x**（Ubuntu 22.04+ 自带）；
   系统为其它版本时用 `PY=/path/to/python3.10 ./installer.sh` 指定。
-- 清华源给的是 **CPU 版 torch**；GPU 训练需 `-c`（cu121 wheel 在大陆下载较慢）。
+- requirements 锁的是 `torch==2.5.1+cu121`（与 Windows 一致），该版本只存在于 pytorch 源，
+  脚本用 `--extra-index-url` 叠源，默认走上海交大等国内镜像可由 `TORCH_INDEX` 覆盖。
 - 预训练权重无国内镜像，大陆网络下不动时同目录放 `pretrained.zip` 走离线。

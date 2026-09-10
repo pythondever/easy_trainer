@@ -18,6 +18,7 @@ public sealed class MainForm : Form
     private readonly RoundedButton _install = new();
     private readonly RoundedButton _uninstall = new();
     private Manifest _mf = new();
+    private string _lastLog = "";
     private string _srcDir = "";
     private bool _busy;
     private bool _finished;
@@ -25,22 +26,21 @@ public sealed class MainForm : Form
 
     public MainForm()
     {
-        Text = "EasyTrainer 安装程序";
+        Text = "安装程序";
         Font = new Font("Microsoft YaHei UI", 9f);
         BackColor = PageBg;
-        ClientSize = new Size(820, 720);
-        MinimumSize = new Size(760, 640);
+        ClientSize = new Size(820, 764); // 高度须 ≥ 固定行总需求 + header 72 + padding 44，否则按钮行被挤出
+        MinimumSize = new Size(760, 734);
         StartPosition = FormStartPosition.CenterScreen;
         try { Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath) ?? Icon; } catch { }
 
         var header = new HeaderPanel
         {
             Dock = DockStyle.Top,
-            Title = "EasyTrainer",
-            SubTitle = "检测 / 分割 / 分类 模型训练工具 · 安装向导",
+            Title = "安装向导",
+            SubTitle = "检测 / 分割 / 分类 模型训练工具",
         };
 
-        // ── 控件初始化 ────────────────────────────────────────────────
         _dirBox.BorderStyle = BorderStyle.FixedSingle;
         _dirBox.Font = new Font("Microsoft YaHei UI", 9.5f);
         _dirBox.Height = 36;
@@ -49,9 +49,9 @@ public sealed class MainForm : Form
         {
             Text = "浏览…",
             Outline = true,
-            Accent = Color.FromArgb(0x33, 0x3B, 0x4A),
+            Accent = Color.FromArgb(0x6B, 0x72, 0x80),
             Size = new Size(96, 36),
-            MinimumSize = new Size(96, 36),
+            Margin = new Padding(0),
         };
 
         _cardBox.BackColor = Color.Transparent;
@@ -59,6 +59,10 @@ public sealed class MainForm : Form
         _cardBox.AutoScroll = true;
         _cardBox.Padding = new Padding(0);
         _cardBox.Margin = new Padding(0);
+
+        _cardBox.Dock = DockStyle.Top;
+        _cardBox.AutoSize = true;
+        _cardBox.AutoSizeMode = AutoSizeMode.GrowAndShrink;
 
         _needLabel.ForeColor = MutedColor;
         _needLabel.AutoSize = true;
@@ -84,9 +88,9 @@ public sealed class MainForm : Form
 
         _install.Text = "安装";
         _install.Size = new Size(140, 42);
-        _install.MinimumSize = new Size(140, 42);
         _install.Font = new Font("Microsoft YaHei UI", 10.5f, FontStyle.Bold, GraphicsUnit.Point);
         _install.Accent = Color.FromArgb(0x2F, 0x6F, 0xED);
+        _install.Margin = new Padding(0);
         _install.Click += async (_, _) =>
         {
             if (_finished) Close();
@@ -95,35 +99,37 @@ public sealed class MainForm : Form
 
         _uninstall.Text = "卸载…";
         _uninstall.Size = new Size(110, 42);
-        _uninstall.MinimumSize = new Size(110, 42);
         _uninstall.Outline = true;
         _uninstall.Accent = Color.FromArgb(0x6B, 0x72, 0x80);
         _uninstall.Click += (_, _) => UninstallDialog();
 
-        // ── 目录行（嵌套 TableLayoutPanel：Percent 100 + Absolute 100） ──
+
         var dirRow = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
             ColumnCount = 2,
             RowCount = 1,
             Margin = new Padding(0),
+            BackColor = PageBg,
         };
         dirRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         dirRow.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 96));
         dirRow.RowStyles.Add(new RowStyle(SizeType.Absolute, 36));
         _dirBox.Dock = DockStyle.Fill;
-        _dirBox.Margin = new Padding(0, 0, 8, 0);
+
+        _dirBox.Margin = new Padding(0, 6, 8, 6);
         browse.Dock = DockStyle.Fill;
         dirRow.Controls.Add(_dirBox, 0, 0);
         dirRow.Controls.Add(browse, 1, 0);
 
-        // ── 按钮行 ───────────────────────────────────────────────────
+
         var btnRow = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
             ColumnCount = 3,
             RowCount = 1,
             Margin = new Padding(0, 16, 0, 0),
+            BackColor = PageBg, // 同上
         };
         btnRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         btnRow.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 110));
@@ -132,11 +138,11 @@ public sealed class MainForm : Form
         _uninstall.Dock = DockStyle.Fill;
         _uninstall.Margin = new Padding(0, 0, 10, 0);
         _install.Dock = DockStyle.Fill;
-        btnRow.Controls.Add(new Panel { BackColor = Color.Transparent }, 0, 0);
+        btnRow.Controls.Add(new Panel { BackColor = Color.Transparent, Margin = new Padding(0) }, 0, 0);
         btnRow.Controls.Add(_uninstall, 1, 0);
         btnRow.Controls.Add(_install, 2, 0);
 
-        // ── 主内容 TableLayoutPanel（列 Percent 100 + 行混排） ─────────
+
         var content = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
@@ -145,18 +151,18 @@ public sealed class MainForm : Form
             BackColor = PageBg,
         };
         content.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-        // 行样式：前几个 AutoSize，中间卡片 Absolute 高度，日志 Percent 100
+
         content.RowCount = 10;
         content.RowStyles.Add(new RowStyle(SizeType.AutoSize));                                  // 0 提示
         content.RowStyles.Add(new RowStyle(SizeType.AutoSize));                                  // 1 Caption 安装目录
-        content.RowStyles.Add(new RowStyle(SizeType.AutoSize));                                  // 2 dirRow
+        content.RowStyles.Add(new RowStyle(SizeType.Absolute, 36));                              // 2 dirRow（Absolute 锁死：AutoSize 会被按钮 PreferredSize 撑到 ~100）
         content.RowStyles.Add(new RowStyle(SizeType.AutoSize));                                  // 3 Caption 组件
-        content.RowStyles.Add(new RowStyle(SizeType.Absolute, 224));                             // 4 cardContainer
+        content.RowStyles.Add(new RowStyle(SizeType.AutoSize));                                  // 4 cardContainer（高度随卡片数量自适应）
         content.RowStyles.Add(new RowStyle(SizeType.AutoSize));                                  // 5 needLabel
         content.RowStyles.Add(new RowStyle(SizeType.AutoSize));                                  // 6 Caption 日志
         content.RowStyles.Add(new RowStyle(SizeType.Percent, 100));                              // 7 logPanel
         content.RowStyles.Add(new RowStyle(SizeType.AutoSize));                                  // 8 _bar
-        content.RowStyles.Add(new RowStyle(SizeType.Absolute, 42));                              // 9 btnRow
+        content.RowStyles.Add(new RowStyle(SizeType.Absolute, 58));                              // 9 btnRow（42 按钮 + 16 上 margin；margin 会从行高里扣）
 
         var sub = new Label
         {
@@ -189,16 +195,21 @@ public sealed class MainForm : Form
                 _dirBox.Text = fbd.SelectedPath;
         };
 
-        // 卡片容器尺寸变化时重排卡片宽度为两列
+
         _cardBox.Resize += (_, _) => RecalcCardWidths();
         this.Resize += (_, _) => RecalcCardWidths();
 
         _srcDir = AppContext.BaseDirectory;
         _dirBox.Text = DefaultInstallDir();
-        Load += (_, _) => PopulateComponents();
+
+        Load += (_, _) =>
+        {
+            PopulateComponents();
+            BeginInvoke(Refresh);
+        };
     }
 
-    /// <summary>分组标题 Label（可选上边距）。</summary>
+
     private static Label Caption(string text, int marginTop = 0)
         => new()
         {
@@ -209,7 +220,6 @@ public sealed class MainForm : Form
             Margin = new Padding(0, marginTop, 0, 8),
         };
 
-    /// <summary>用内置组件清单填充卡片容器与合计文案。</summary>
     private void PopulateComponents()
     {
         _mf = InstallEngine.BuiltinManifest(_srcDir);
@@ -227,22 +237,15 @@ public sealed class MainForm : Form
         }
         RecalcCardWidths();
         UpdateNeedLabel();
-
-        AppendLog("组件清单(内置)版本: " + (_mf.Version.Length > 0 ? _mf.Version : "(未标注)"));
-        foreach (var c in _mf.Components)
-            AppendLog($"  [{c.Id}] {c.Title}  {(c.LocalReady ? "本目录已就绪" : c.Url.Length > 0 || c.OnlineAvailable ? "在线下载" : "无可用来源（需同目录 zip 或软件内导入）")}");
     }
 
-    /// <summary>让卡片始终保持两列（VS Installer 网格）。</summary>
     private void RecalcCardWidths()
     {
         if (_cardBox.Width <= 0 || _cards.Count == 0) return;
-        // 容器内可用宽（减 padding/margin），单列 = 一半再减间距
-        var gap = 14;
-        var w = (_cardBox.ClientSize.Width - gap) / 2;
+        var w = (_cardBox.ClientSize.Width - 14 * 2) / 2;
         if (w < 200) return;
         foreach (var c in _cards)
-            c.Size = new Size(w, 92);
+            c.Size = new Size(w, 100);
     }
 
     private void UpdateNeedLabel()
@@ -291,16 +294,11 @@ public sealed class MainForm : Form
         _install.Enabled = _uninstall.Enabled = false;
         _bar.Value = 0;
         AppendLog($"安装目录: {root}");
-        AppendLog(InstallEngine.HasEmbedded("program.zip")
-            ? "程序本体:已内置,随安装解压"
-            : "警告:程序本体未内置本安装程序(发布不完整)");
+        if (!InstallEngine.HasEmbedded("program.zip"))
+            AppendLog("警告:程序本体未内置本安装程序(发布不完整)");
         try
         {
-            var progress = new Progress<InstallReport>(r =>
-            {
-                _bar.Value = Math.Clamp(r.Pct, 0, 100);
-                if (r.Detail.Length > 0) AppendLog($"[{r.Stage}] {r.Detail}");
-            });
+            var progress = new Progress<InstallReport>(ReportProgress);
             await InstallEngine.InstallAsync(root, _srcDir, _mf, selected, progress);
 
             InstallEngine.WriteInstalled(root, _mf, selected);
@@ -310,7 +308,7 @@ public sealed class MainForm : Form
             _finished = true;
             _install.Text = "关闭";
             MessageBox.Show(this,
-                "安装完成。\n已创建桌面与开始菜单快捷方式「EasyTrainer」。",
+                "安装完成。\n已创建桌面与开始菜单快捷方式。",
                 "installer", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
         catch (Exception ex)
@@ -328,7 +326,7 @@ public sealed class MainForm : Form
         }
     }
 
-    private void UninstallDialog()
+    private async void UninstallDialog()
     {
         using var fbd = new FolderBrowserDialog { Description = "选择已安装的目录(须含 installed.json)" };
         if (fbd.ShowDialog(this) != DialogResult.OK) return;
@@ -341,15 +339,41 @@ public sealed class MainForm : Form
         if (MessageBox.Show(this, $"确定删除 {dir} 及其桌面/开始菜单快捷方式?", "卸载确认",
                 MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
             return;
+        _busy = true;
+        _install.Enabled = _uninstall.Enabled = false;
+        _bar.Value = 0;
+        _lastLog = "";
+        AppendLog($"卸载目录: {dir}");
         try
         {
-            InstallEngine.Uninstall(dir);
+            await InstallEngine.UninstallAsync(dir, new Progress<InstallReport>(ReportProgress));
+            _bar.Value = 100;
+            AppendLog("卸载完成。");
             MessageBox.Show(this, "已卸载。", "installer", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
         catch (Exception ex)
         {
+            _bar.Value = 0;
+            AppendLog("卸载失败: " + ex.Message);
             MessageBox.Show(this, "卸载失败：" + ex.Message, "installer", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
+        finally
+        {
+            _busy = false;
+            _install.Enabled = true;
+            _uninstall.Enabled = true;
+        }
+    }
+
+    // 安装/卸载共用：Detail 为空表示只推进度条，重复行不刷屏
+    private void ReportProgress(InstallReport r)
+    {
+        _bar.Value = Math.Clamp(r.Pct, 0, 100);
+        if (r.Detail.Length == 0) return;
+        var line = $"[{r.Stage}] {r.Detail}";
+        if (line == _lastLog) return;
+        _lastLog = line;
+        AppendLog(line);
     }
 
     private void AppendLog(string line)
