@@ -1,0 +1,6 @@
+# 预训练权重清单:文件名 <TAB> URL <TAB> SHA256
+rf-detr-nano.pth	https://storage.googleapis.com/rfdetr/nano_coco/checkpoint_best_regular.pth	D8D6B9EE57D4D0ED2B1F305163624712A0532CB7BCE0C747317984FC5457440D
+rf-detr-seg-nano.pt	https://storage.googleapis.com/rfdetr/rf-detr-seg-n-ft.pth	A44613A4ECD6B5BA61A62002C600B0B6CB7A9DA2936A45317EC4B62C635FB99B
+rf-detr-seg-small.pt	https://storage.googleapis.com/rfdetr/rf-detr-seg-s-ft.pth	6DE3DA31B2572CAC214A1C76CCE4A92A13966D56390AC2B3A3DE9A8DC2B2BCA3
+rf-detr-seg-medium.pt	https://storage.googleapis.com/rfdetr/rf-detr-seg-m-ft.pth	3AD325094735F431AEE9962A8D204D68EB5BFC393D53E7E836E70998FEF5EA58
+rf-detr-seg-large.pt	https://storage.googleapis.com/rfdetr/rf-detr-seg-l-ft.pth	CA7B7C630BA22496067CC4F034C4E70C8E47FD7ADCEA04C3A49AA8C1755CBE6B

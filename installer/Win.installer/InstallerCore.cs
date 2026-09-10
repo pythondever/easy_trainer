@@ -85,7 +85,7 @@ public static class InstallEngine
                 new()
                 {
                     Id = "runtime", Title = "运行时",
-                    Desc = "运行时 + torch 等依赖",
+                    Desc = "运行时 + 深度学习 等依赖",
                     File = PythonFile, Url = PythonUrl, Sha256 = PythonSha256,
                     Size = 8_629_277, Required = true, Default = true,
                     OnlineAvailable = true,
@@ -93,7 +93,7 @@ public static class InstallEngine
                 new()
                 {
                     Id = "pretrained", Title = "预训练权重",
-                    Desc = "检测/分割初始权重(在线下载官方源约 880MB;同目录有 pretrained.zip 则离线优先)",
+                    Desc = "检测/分割初始权重(同目录有 pretrained.zip 则离线优先)",
                     File = "pretrained.zip", Required = false,
                     Size = 922_746_880, Default = false, OnlineAvailable = true,
                 },
