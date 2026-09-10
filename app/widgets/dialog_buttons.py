@@ -32,6 +32,13 @@ def _icon_path(name):
     return p if os.path.exists(p) else ""
 
 
+def resource_icon(name):
+    """绝对路径取 resources 图标。uic 从 .ui 生成的 ../resources 相对路径
+    按 cwd 解析, 安装版 cwd 是安装根, 上一级没有 resources, 图标必空白。"""
+    path = _icon_path(name)
+    return QIcon(path) if path else QIcon()
+
+
 def _tinted(path, color, size=ICON_SIZE):
     src = QPixmap(path)
     if src.isNull():

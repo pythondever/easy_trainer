@@ -655,6 +655,14 @@ class AnnotationDialog(QDialog):
         u = self.ui
         u.draw_rect_btn.setText("矩形")
         u.poly_btn.setText("多边形")
+        # uic 给的是 ../resources 相对路径, 安装版 cwd 变了就取不到, 这里用绝对路径重设
+        for btn, icon_file in ((u.draw_rect_btn, "矩形.png"),
+                               (u.poly_btn, "多边形.png"),
+                               (u.delete_image_btn, "删除.png")):
+            ipath = _icon_path(icon_file)
+            if ipath:
+                btn.setIcon(_tinted(ipath, "#b8c0d0"))
+                btn.setIconSize(QSize(18, 18))
         u.label_list.setText("标签列表")
         u.labeled_list.setText("标注信息")
         u.pre_page_btn.setText("上一张")

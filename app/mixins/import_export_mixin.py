@@ -14,8 +14,8 @@ from ui.export_data import Ui_Dialog as ExportDataUI
 from app.core.label_utils import (label_sort_key, load_json_shapes,
                              load_yolo_shapes, looks_like_labelme,
                              shapes_to_yolo_text, shapes_to_labelme_json)
-from app.widgets.dialog_buttons import (apply_icon, ICON_SIZE, BTN_WIDTH,
-                                        BTN_HEIGHT)
+from app.widgets.dialog_buttons import (apply_icon, resource_icon, ICON_SIZE,
+                                        BTN_WIDTH, BTN_HEIGHT)
 from app.widgets.message_box import MessageBox, ProgressDialog
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtWidgets import QDialog, QFileDialog, QButtonGroup
@@ -187,6 +187,7 @@ class ImportExportMixin(object):
                 btn.setFixedHeight(40)
                 btn.setStyleSheet(
                     "QPushButton{padding:0px;border:1px solid #353a48;border-radius:6px;}")
+                btn.setIcon(resource_icon("打开.png"))
                 btn.setIconSize(QSize(28, 28))
 
         def _on_fmt_toggled(on):
@@ -310,6 +311,7 @@ class ImportExportMixin(object):
             btn.setStyleSheet(
                 "QPushButton{padding:0px;border:1px solid #353a48;"
                 "border-radius:6px;}")
+        ui.select_path_btn.setIcon(resource_icon("打开.png"))
         apply_icon(ui.do_export_btn, "导出")
         ui.select_path_btn.clicked.connect(
             lambda: self._pick_export_path(dlg, ui))
