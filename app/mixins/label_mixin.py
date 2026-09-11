@@ -6,7 +6,7 @@ from app.core.db import get_paths
 from ui.edit_label import Ui_Dialog as EditLabelUI
 from app.core.label_utils import (normalize_label, label_sort_key,
                                   rec_is_labeled)
-from app.annotation.box_item import assign_label_color, label_color
+from app.annotation.box_item import assign_label_color
 from app.widgets.dialog_buttons import apply_icon
 from app.widgets.message_box import MessageBox, ProgressDialog
 from app.tasks.merge_task import MergeLabelsTask

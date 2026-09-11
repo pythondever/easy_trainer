@@ -95,8 +95,10 @@ def _set_row_background(row, selected):
 
 def _upgrade_graphics_view(view):
     """
-    把image_label_show(QGraphicsView)提升为 AnnotationView 行为;
-    挂 AnnotationScene + 安装滚轮缩放/中键平移/快捷键/右键删除等方法，
+    给 uic 生成的 image_label_show(QGraphicsView) 挂上标注视图行为:
+    挂 AnnotationScene + 安装滚轮缩放/中键平移/快捷键/右键菜单(复制·填充·粘贴)等方法。
+    这里用实例补丁而非子类, 是因为 .ui 里 image_label_show 是原生 QGraphicsView,
+    要在 Designer 里改成提升控件才能换成子类。
     """
     scene = AnnotationScene(view)
     view.setScene(scene)
@@ -110,7 +112,6 @@ def _upgrade_graphics_view(view):
     view.setBackgroundBrush(QColor("#0e0f13"))
     view._panning = False
     view._last_pan_pos = None
-    view._space_down = False
     view._scene = scene
     view.scene_ = scene
 
@@ -180,7 +181,6 @@ def _upgrade_graphics_view(view):
 
     def _key_press(ev, _v=view):
         if ev.key() == Qt.Key_Space:
-            _v._space_down = True
             _v.setDragMode(QGraphicsView.ScrollHandDrag)
             ev.accept()
             return
@@ -189,7 +189,6 @@ def _upgrade_graphics_view(view):
 
     def _key_release(ev, _v=view):
         if ev.key() == Qt.Key_Space:
-            _v._space_down = False
             _v.setDragMode(QGraphicsView.NoDrag)
             ev.accept()
             return
@@ -1245,10 +1244,6 @@ class AnnotationDialog(QDialog):
         if self.scene.undo_last_paste():
             self._refresh_labeled_list()
 
-    def _style_off(self):
-        return ("QPushButton { background: #2a2e3a; color: #cfd6e4;"
-                " border: 1px solid #3a3f4e; border-radius: 6px; padding: 6px 14px; }")
-
     @staticmethod
     def _pen_cursor():
         """画笔光标 28px, 热点=笔尖(3,25)。"""
@@ -1256,36 +1251,6 @@ class AnnotationDialog(QDialog):
         if not pm.isNull() and pm.width() > 28:
             pm = pm.scaled(28, 28, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         return QCursor(pm, 3, 25) if not pm.isNull() else Qt.CrossCursor
-
-    @staticmethod
-    def _fp_circle_cursor():
-        """轨迹绘制光标:直径 20px 的蓝色圆圈(屏幕像素,热点居中)。"""
-        pm = QPixmap(20, 20)
-        pm.fill(Qt.transparent)
-        p = QPainter(pm)
-        p.setRenderHint(QPainter.Antialiasing)
-        p.setPen(QPen(QColor("#4f7dff"), 2))
-        p.setBrush(Qt.NoBrush)
-        p.drawEllipse(1, 1, 17, 17)
-        p.end()
-        return QCursor(pm, 10, 10)
-
-    @staticmethod
-    def _fp_brush_cursor():
-        """刷子粘贴光标：蓝色刷头 + 手柄。"""
-        pm = QPixmap(24, 24)
-        pm.fill(Qt.transparent)
-        p = QPainter(pm)
-        p.setRenderHint(QPainter.Antialiasing)
-        p.setPen(QPen(QColor("#4f7dff"), 1.5))
-        p.setBrush(QColor(91, 140, 255, 90))
-        p.drawEllipse(2, 3, 12, 10)          # 刷头
-        p.drawLine(12, 12, 19, 19)           # 手柄
-        p.setPen(Qt.NoPen)
-        p.setBrush(QColor("#4f7dff"))
-        p.drawRect(15, 17, 8, 6)             # 刷毛底座
-        p.end()
-        return QCursor(pm, 6, 6)
 
     def _label_icon(self, color):
         """标签颜色圆点图标(下拉菜单/右侧列表用)。归一成色值字符串后走模块级缓存。"""

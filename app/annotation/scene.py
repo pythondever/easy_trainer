@@ -425,14 +425,6 @@ class AnnotationScene(QGraphicsScene):
         self.boxes_changed.emit()
         return True
 
-    def set_draw_shape(self, shape):
-        self.draw_shape = shape
-        self._cancel_polygon()
-
-    def toggle_draw_mode(self):
-        self.set_draw_mode(not self.draw_mode)
-        return self.draw_mode
-
     def all_items(self):
         items = []
         for item in self.items():
@@ -525,12 +517,6 @@ class AnnotationScene(QGraphicsScene):
             if isinstance(item, (AnnotationBoxItem, AnnotationPolygonItem)):
                 return item
         return None
-
-    def set_label_of_selected(self, label):
-        item = self.selected_item()
-        if item is not None:
-            item.set_label(label)
-            self.boxes_changed.emit()
 
     def _force_full_redraw(self, rect=None):
         """

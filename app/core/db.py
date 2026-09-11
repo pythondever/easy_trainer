@@ -279,10 +279,6 @@ class DataBase:
                 txn.put(key, json.dumps(maps, ensure_ascii=False).encode())
         return added
 
-    def add_deleted_image(self, project_name, dataset_name, image_path):
-        """记录一张被删除/不加载的图像(单张, 内部走批量实现)。"""
-        return self.add_deleted_images(project_name, dataset_name, [image_path])
-
     def get_deleted_images(self, project_name, dataset_name):
         """返回该数据集的已删除/不加载图像路径集合（归一化）。"""
         maps = self._get_deleted_maps()
@@ -699,21 +695,6 @@ class DataBase:
             new_recs = [r for r in recs if r.get("id") != record_id]
             if len(new_recs) != len(recs):
                 txn.put(key, json.dumps(new_recs, ensure_ascii=False).encode())
-
-    def update_model_record(self, record):
-        """按 id 覆盖一条模型记录。"""
-        key = keys.model_history
-        with self.mdb.begin(write=True) as txn:
-            data = txn.get(key)
-            recs = json.loads(data.decode()) if data else []
-            rid = record.get("id")
-            for i, r in enumerate(recs):
-                if r.get("id") == rid:
-                    recs[i] = record
-                    break
-            else:
-                recs.append(record)
-            txn.put(key, json.dumps(recs, ensure_ascii=False).encode())
 
     # ---------- 训练队列 ----------
     def get_train_queue(self):

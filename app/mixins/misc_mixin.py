@@ -244,7 +244,7 @@ class MiscMixin(object):
         """
         删除图像核心逻辑(被首页多选删除 + 标注界面单张删除共用):
         - delete_local=True: 删磁盘文件(图像 + 同名 .json/.txt 标注)
-        - delete_local=False: 仅 db 记录 add_deleted_image(下次加载跳过)
+        - delete_local=False: 仅 db 记录 add_deleted_images(下次加载跳过)
         - 同步更新: 缓存 index、label_counts、db total/labeled, 刷新显示与进度
         """
         norm = lambda p: os.path.normcase(os.path.normpath(p))

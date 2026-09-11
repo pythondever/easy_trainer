@@ -258,14 +258,6 @@ class ImportExportMixin(object):
         ui.done_import_btn.clicked.connect(do_import)
         dlg.exec()
 
-    def _on_toolbar_import(self):
-        """工具栏「导入」按钮: 为当前选中的数据集触发导入流程。"""
-        if not self._current_dataset:
-            MessageBox.warning(self, "导入", "请先在左侧选中一个数据集")
-            return
-        project, dataset = self._current_dataset
-        self._import_dataset(project, dataset)
-
     def _on_export_clicked(self, project=None, dataset=None):
         """
         「导出」入口：工具栏按钮导出当前选中的数据集；

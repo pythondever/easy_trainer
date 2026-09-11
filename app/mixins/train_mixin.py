@@ -185,11 +185,6 @@ class TrainMixin(object):
     def _on_train_log(self, line):
         self._log("[train] " + line)
 
-    def on_train_progress(self, project, datasets, epoch, total):
-        self._show_train_task("{} / {} 训练中 {}/{}".format(
-            project, datasets, epoch, total),
-            epoch * 100.0 / total if total else 0)
-
     def update_train_metrics(self, record_id, metrics, force=False):
         """指标写入 metrics/<id>.json, 记录里只留文件名 + 摘要, 不存全量曲线。"""
         if not force and time.time() - self._metrics_saved_ts < self.METRICS_SAVE_INTERVAL:
@@ -290,10 +285,6 @@ class TrainMixin(object):
             self._gpu_timer.start()
         if not self._eta_timer.isActive():
             self._eta_timer.start()
-
-    def _set_train_progress(self, value):
-        """更新训练进度(0-100)。"""
-        self.train_progress.setValue(max(0, min(100, int(value))))
 
     def _apply_progress_format(self):
         """进度条文本:`30% | 0.556` 进度 | 当前最好精度 """

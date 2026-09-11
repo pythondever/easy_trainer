@@ -906,6 +906,3 @@ class TrainDialog(QDialog):
             return float(edit.text().strip())
         except (ValueError, AttributeError):
             return default
-
-    def param(self, combo):
-        return combo.currentText().strip()
