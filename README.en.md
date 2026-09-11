@@ -64,7 +64,7 @@ Shows dataset paths and a label-distribution bar chart (descending by count; Top
 </p>
 
 ### 🚀 Training
-Runs in a **child process without blocking the UI**: live progress bar, ETA, GPU memory usage, manual stop (5-second countdown). Detection/segmentation use RF-DETR; classification uses ResNet (18/34/50/101). All network sizes map from a dropdown.
+Runs in a **child process without blocking the UI**: live progress bar, ETA, GPU memory usage, manual stop (5-second countdown). Detection/segmentation use RF-DETR; classification uses ResNet (18/34/50/101). All network sizes map from a dropdown. A **training queue** is supported: several configurations run back to back, and it can be paused / resumed / stopped, with one-click re-queue after an interruption or failure.
 
 <p align="center">
   <img src="docs/images/训练参数设置.png" width="48%" />
@@ -143,12 +143,51 @@ pip install onnx onnxsim onnxruntime
 python app/easy_trainer.py
 ```
 
-> **Ubuntu (Linux)** — PySide6 needs a few system libraries:
-> ```bash
-> sudo apt install libxcb-cursor0 libxkbcommon-x11-0 libegl1 libgl1 \
->                  libdbus-1-3 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render-util0
-> sudo apt install fonts-noto-cjk   # Chinese fonts
-> ```
+> 💡 Don't want to set up an environment, or need to hand this to a colleague/client? See the installer section below — one `installer.exe` and it's ready to use.
+
+**Ubuntu (Linux) — source run** needs a few system libraries:
+
+```bash
+sudo apt install libxcb-cursor0 libxkbcommon-x11-0 libegl1 libgl1 \
+                 libdbus-1-3 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render-util0
+sudo apt install fonts-noto-cjk   # Chinese fonts
+```
+
+## 📦 Packaging & Installation
+
+Running from source is for development; to ship a ready-to-use package, use `builder/` + `installer/`.
+
+### Build the package
+
+| Platform | Command | Output |
+|---|---|---|
+| Windows | `python builder\build.py -t dist\program` | `dist\release\installer.exe` |
+| Linux | `python3 builder/build.py -t dist/program` | `dist/release-linux/` (`installer.sh` + `program.zip` + requirements + asset list) |
+
+`build.py` compiles all of `app/` and `ui/` into `.pyd` with Cython (`.so` on Linux), assembles `dist/program` (keeping `__init__.py`, `easy_trainer.py`, `style/`, `resources/` and `examples/` as plain files), zips it into `program.zip`, then calls the platform publisher and cleans up. Windows needs `cl.exe` (VS 2022 Developer PowerShell) and the .NET SDK 10; Linux needs `gcc` and `python3.10-dev`.
+
+Building is purely local and **never touches the network**: the Python runtime and pretrained weights are fetched by the installer on the target machine. The `.pyd` / `.so` files are locked to the cp310 ABI, so **changing the Python version requires a rebuild and a re-release**; the same applies to any code change (`program.zip` is embedded into the exe at build time).
+
+### Installing on a target machine
+
+- **Windows**: just one `installer.exe` — double-click and tick the components. Silent install is also supported:
+  ```powershell
+  installer.exe --install D:\EasyTrainer runtime     # components: runtime / program / pretrained, comma-separated
+  ```
+- **Linux**: `./installer.sh [-d install_dir] [-p]` (`-p` also installs the pretrained weights, ~880MB)
+
+| Component | Source | How |
+|---|---|---|
+| Application | Embedded into installer.exe at build time | Unzipped, no network |
+| Runtime | Official Python 3.10 embeddable zip (Huawei Cloud mirror) | Unzip and use (green, no registry writes) |
+| Dependencies (torch, ...) | Tsinghua PyPI + a dedicated torch index | Installed on the spot by pip (~2.5GB download) |
+| Pretrained weights | Official rfdetr source (storage.googleapis.com) | Downloaded into `pretrained\` (~880MB) |
+
+Disk space is estimated and validated up front for the selected components (~10GB with the runtime); downloads retry automatically on failure and pip falls back to a backup index. **Offline fallback**: drop `python-3.10.11-embed-amd64.zip` / `pretrained.zip` next to the installer and it is used preferentially, with no network access at all.
+
+> On Windows, PyPI's `torch` is CPU-only; a GPU build requires `torch==2.5.1+cu121`, which only exists on the pytorch index — the requirements already pin it and layer the index with `--extra-index-url`.
+
+Installed layout, startup chain and Linux-specific notes: see [installer/README.md](installer/README.md).
 
 ## 📂 Directory Structure
 
@@ -159,42 +198,70 @@ easy_trainer/
 │   ├── main_window.py      # Main window: projects/datasets, annotation, training/testing
 │   ├── core/               # Data layer & common utilities
 │   │   ├── db.py           # LMDB data access (YOLO label_ids, rename/merge, ...)
-│   │   ├── utils.py        # matplotlib CJK font, QSS loading, project-root lookup
+│   │   ├── utils.py        # CJK fonts, QSS loading, project-root lookup, text decoding
+│   │   ├── constants.py    # Global constants (image extensions, page size, cache limits)
+│   │   ├── metrics.py      # Metric reading (metrics.csv parsing, best mAP lookup)
 │   │   ├── image_utils.py  # Image loading / thumbnails / format conversion
-│   │   ├── label_utils.py  # Label normalization / sorting / colors
+│   │   ├── label_utils.py  # Label normalization / sorting / colors, labelme ↔ YOLO
 │   │   ├── log.py          # Rotating daily logs
 │   │   └── keys.py         # LMDB key constants
 │   ├── tasks/              # Background tasks (import / merge)
 │   │   ├── import_task.py  # Dataset scan & import (detect/segment/classify)
 │   │   └── merge_task.py   # Label merging
-│   ├── annotation/         # Annotation canvas scene + annotation dialog
-│   │   ├── scene.py        # Annotation scene (rect/polygon/format painter)
-│   │   ├── view.py         # Canvas view (zoom/pan)
-│   │   ├── box_item.py     # Annotation items (boxes + label chips)
-│   │   ├── annotation_dialog.py  # Annotation dialog
+│   ├── annotation/         # Annotation canvas & annotation dialog
+│   │   ├── scene.py        # Annotation scene (drag-to-draw, hit testing, undo stack)
+│   │   ├── box_item.py     # Annotation items (boxes / polygons + label chips)
+│   │   ├── annotation_dialog.py  # Annotation dialog (zoom/pan, rect/polygon/format painter/class/color)
+│   │   ├── blend.py        # Format-painter paste blending (Lab luminance match + feathering)
 │   │   └── scene_items.py  # Auxiliary scene items
 │   ├── widgets/            # Shared UI widgets
 │   │   ├── message_box.py  # Message & progress dialogs
+│   │   ├── dialog_buttons.py     # Unified dialog buttons & icons
+│   │   ├── name_input_dialog.py  # Name input dialog
 │   │   ├── paginator.py    # Pagination control
+│   │   ├── project_sidebar.py    # Home project/dataset sidebar (card tree)
+│   │   ├── charts.py       # Custom charts (label distribution bars)
+│   │   ├── status_style.py # Task status text & colors
+│   │   ├── queue_dialog.py # Training queue dialog
 │   │   ├── log_dialog.py   # Log viewer dialog
 │   │   ├── model_dialog.py # Model management (history, metrics, test, export)
 │   │   ├── test_dialog.py  # Test parameter dialog
 │   │   └── metrics_dialog.py   # Training metric charts
-│   ├── mixins/             # Main-window mixins (projects/datasets/annotation/training/import-export)
+│   ├── mixins/             # Main-window mixins (projects/datasets/annotation/training/queue/import-export)
 │   └── train/              # Training & testing execution
 │       ├── train_worker.py # Training subprocess thread (progress/metrics/result signals)
 │       ├── train_runner.py # Detect/segment training script (RF-DETR)
 │       ├── classify_train_runner.py  # Classification training script (ResNet + per-class accuracy)
+│       ├── data_prep.py    # Training data prep (YOLO conversion, class collection)
 │       ├── test_worker.py  # Test subprocess thread
 │       ├── test_runner.py  # Detect/segment test script
 │       ├── classify_test_runner.py   # Classification test script
+│       ├── test_errors.py  # Missed/false-positive analysis
+│       ├── test_report.py  # Evaluation report (PDF)
+│       ├── test_result_dialog.py  # Evaluation result dialog
+│       ├── onnx_export.py  # ONNX export (rfdetr for detect/segment, torch.onnx for classify)
+│       ├── export_worker.py  # Export background thread
 │       └── dialogs.py      # Training/testing dialogs
+├── examples/               # ONNX usage examples (copied to the export directory on export)
+│   ├── cpp/                # C++ (ONNX Runtime + OpenCV)
+│   ├── csharp/             # C# (Microsoft.ML.OnnxRuntime + OpenCvSharp4)
+│   └── python/             # Python (onnxruntime + opencv)
+├── builder/                # Packaging & release (Windows / Linux)
+│   ├── build.py            # One-shot release: Cython compile → program.zip → platform publisher
+│   ├── requirements-release.txt  # Pinned release dependencies (embedded in the installer)
+│   ├── pretrained-assets.txt     # Pretrained weight manifest (single source for all three ends)
+│   └── get-pip.py          # pip bootstrap (embedded in installer.exe)
+├── installer/              # Installers
+│   ├── Win.installer/      # C# installer (dotnet publish → installer.exe)
+│   ├── installer.sh        # Linux install script (venv + unzip + pip + .desktop entry)
+│   └── README.md           # Installer & release pipeline details
 ├── ui/                     # PySide6 UI classes (generated from .ui)
 ├── docs/                   # Design docs + README screenshots
 ├── resources/              # Icons & resources
 ├── style/                  # QSS stylesheet
 ├── requirements.txt
-└── README.en.md
+├── README.md               # Chinese README
+└── README.en.md            # English README (this file)
 ```
 
 ## 🧭 Workflow
@@ -219,3 +286,4 @@ easy_trainer/
 
 - [Migration plan / design doc](docs/migration_plan.md)
 - [User guide](docs/使用教程.pdf)
+- [Installer & release pipeline](installer/README.md)
