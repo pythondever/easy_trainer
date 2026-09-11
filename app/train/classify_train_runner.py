@@ -37,7 +37,9 @@ except Exception as e:
     print("[train] 缺少训练依赖: {}".format(e), flush=True)
     sys.exit(1)
 
-_IMG_EXTS = (".jpg", ".jpeg", ".png", ".bmp", ".webp")
+from app.core.constants import IMAGE_EXTS as _IMG_EXTS
+from app.core.db import get_paths
+
 
 
 def _scan_classes(root):
@@ -104,23 +106,23 @@ def _collect_images(datasets, split, dest):
     for ds in datasets:
         if ds.get("split") != split:
             continue
-        img_root = ds.get("image_path", "")
-        if not img_root or not os.path.isdir(img_root):
-            continue
-        for entry in sorted(os.listdir(img_root)):
-            sub = os.path.join(img_root, entry)
-            if not os.path.isdir(sub):
+        for img_root in get_paths(ds, "image"):
+            if not img_root or not os.path.isdir(img_root):
                 continue
-            d = os.path.join(dest, entry)
-            os.makedirs(d, exist_ok=True)
-            for fn in sorted(os.listdir(sub)):
-                if not fn.lower().endswith(_IMG_EXTS):
+            for entry in sorted(os.listdir(img_root)):
+                sub = os.path.join(img_root, entry)
+                if not os.path.isdir(sub):
                     continue
-                src = os.path.join(sub, fn)
-                dst = os.path.join(d, fn)
-                if not os.path.exists(dst):
-                    shutil.copy2(src, dst)
-                    n_total += 1
+                d = os.path.join(dest, entry)
+                os.makedirs(d, exist_ok=True)
+                for fn in sorted(os.listdir(sub)):
+                    if not fn.lower().endswith(_IMG_EXTS):
+                        continue
+                    src = os.path.join(sub, fn)
+                    dst = os.path.join(d, fn)
+                    if not os.path.exists(dst):
+                        shutil.copy2(src, dst)
+                        n_total += 1
     # 删除空类别目录
     if os.path.isdir(dest):
         for entry in os.listdir(dest):

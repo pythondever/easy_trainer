@@ -5,7 +5,7 @@ import random
 import numpy as np
 from PySide6.QtCore import QRectF, QPointF, Qt, Signal
 from PySide6.QtGui import (QPen, QColor, QBrush, QPolygonF, QPainterPath,
-                           QPixmap, QPainter, QImage)
+                           QPainter, QImage)
 from PySide6.QtWidgets import (QGraphicsScene, QGraphicsPixmapItem, QGraphicsItem,
                                QGraphicsPathItem, QGraphicsPolygonItem)
 from app.annotation.blend import blend_patch

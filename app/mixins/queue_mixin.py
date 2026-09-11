@@ -4,7 +4,6 @@
 依赖 TrainMixin 提供 is_training / start_training / on_train_finished / db / _log。
 """
 
-import os
 import uuid
 from datetime import datetime
 
@@ -19,19 +18,10 @@ try:
 except ImportError:
     pynvml = None
 
-# 任务切换的冷却：等显存真正释放后再起下一个，避免 CUDA OOM
+# 任务切换的冷却：等显存真正释放后再起下一个,避免 CUDA OOM
 COOLDOWN_MS = 5000
 COOLDOWN_MAX_MS = 30000
 
-STATUS_TEXT = {
-    "waiting": "等待中",
-    "running": "训练中",
-    "done": "已完成",
-    "failed": "失败",
-    "skipped": "已跳过",
-    "stopped": "已停止",
-    "interrupted": "已中断",
-}
 _DONE_STATUS = ("done", "failed", "skipped", "stopped", "interrupted")
 
 

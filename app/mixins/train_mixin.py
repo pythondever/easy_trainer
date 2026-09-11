@@ -1,55 +1,19 @@
 # -*- coding: utf-8 -*-
-import sys
-import os
 import time
 
-CURRENT_DIRECTORY = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-WORKSPACE_DIRECTORY = os.path.dirname(CURRENT_DIRECTORY)
-sys.path.append(WORKSPACE_DIRECTORY)
-sys.path.append(os.path.join(WORKSPACE_DIRECTORY, 'ui'))
 import uuid
 from datetime import datetime
 from app.train.train_worker import TrainWorker
 from app.widgets.message_box import MessageBox
 from app.core.log import write_log
+from app.core.metrics import best_map50, best_value
 from app.core.utils import fmt_duration
 from PySide6.QtCore import QTimer, QTime
-
-try:
-    from shiboken6 import isValid as _is_valid
-except ImportError:
-    _is_valid = lambda obj: obj is not None
-
-try:
-    import PIL.Image as PILImage
-except ImportError:
-    PILImage = None
 
 try:
     import pynvml
 except ImportError:
     pynvml = None
-
-
-def _series_best(series, key):
-    """全空返回 None: 序列尾部常有补齐的 None 占位。"""
-    vals = [float(v) for v in (series.get(key) or []) if v is not None]
-    return max(vals) if vals else None
-
-
-def _main_map50(series):
-    """优先 ema 列: rf-detr 按 ema 的 mAP@50-95 选 best checkpoint,
-    界面数字必须和交付的模型同源, 否则对不上。
-    """
-    # 按有无 mask 系列判定, 不能按键存在性回退: 旧分割记录没有 mask_ema 列
-    is_seg = bool(series.get("mask_mAP@50") or series.get("mask_ema_mAP@50"))
-    keys = ("mask_ema_mAP@50", "mask_mAP@50") if is_seg else ("ema_mAP@50",
-                                                              "mAP@50")
-    for key in keys:
-        v = _series_best(series, key)
-        if v is not None:
-            return v
-    return None
 
 
 class TrainMixin(object):
@@ -168,8 +132,8 @@ class TrainMixin(object):
     def _on_train_metrics(self, metrics):
         # 分类看准确率, 检测/分割看 mAP@50
         s = metrics.get("series", {})
-        acc = _series_best(s, "accuracy")
-        m = _main_map50(s)
+        acc = best_value(s, "accuracy")
+        m = best_map50(s)
         if acc is not None:
             self._best_map50 = acc
             self._progress_tip = "进度 | 当前最好准确率"
@@ -236,10 +200,10 @@ class TrainMixin(object):
                 r.pop("metrics", None)
                 r["metrics_file"] = self.db.save_train_metrics(record_id, metrics)
                 s = metrics.get("series", {})
-                m = _main_map50(s)
+                m = best_map50(s)
                 if m is not None:
                     r["map50"] = "{:.3f}".format(m)
-                acc = _series_best(s, "accuracy")
+                acc = best_value(s, "accuracy")
                 if acc is not None:
                     r["accuracy"] = "{:.4f}".format(acc)
                 r["metrics_epochs"] = len(metrics.get("epochs") or [])

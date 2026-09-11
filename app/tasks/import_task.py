@@ -3,8 +3,10 @@
 import os
 import json
 from PySide6.QtCore import QThread, Signal
+from app.core.constants import IMAGE_EXTS
 from app.core.image_utils import pil_open
-from app.core.label_utils import normalize_label
+from app.core.label_utils import (label_file_has_content, normalize_label,
+                                  same_dir_json)
 
 
 class ImportTask(QThread):
@@ -17,8 +19,6 @@ class ImportTask(QThread):
     """
     progress_updated = Signal(int)
     finished_signal = Signal(list)
-
-    IMAGE_EXTS = (".jpg", ".jpeg", ".png", ".bmp", ".webp")
 
     def __init__(self, image_path, label_path="", fmt="", parent=None,
                  excluded=None, label_ids=None):
@@ -56,7 +56,7 @@ class ImportTask(QThread):
                 if self._cancel:
                     break
                 for fn in sorted(files):
-                    if fn.lower().endswith(self.IMAGE_EXTS):
+                    if fn.lower().endswith(IMAGE_EXTS):
                         p = os.path.join(root, fn)
                         if self._norm(p) in self.excluded:
                             continue
@@ -89,8 +89,10 @@ class ImportTask(QThread):
                 else:
                     label_path = self._label_of(img_path)
                     from_same = False
+                    has_label_file = False
                     try:
-                        boxes, labels, from_same = self._read_boxes(img_path, label_path)
+                        boxes, labels, from_same, has_label_file = \
+                            self._read_boxes(img_path, label_path)
                     except Exception:
                         boxes, labels = None, []
                     thumb = None
@@ -102,6 +104,7 @@ class ImportTask(QThread):
                         "thumb": thumb,
                         "rois": {},
                         "_has_annotation_json": from_same,
+                        "_has_label_file": has_label_file,
                     })
             except Exception:
                 pass
@@ -128,17 +131,19 @@ class ImportTask(QThread):
 
     def _read_boxes(self, img_path, label_path=""):
         """
-        读取标签，返回 (boxes, labels, from_same_json):
+        读取标签，返回 (boxes, labels, from_same_json, has_label_file):
         boxes = 像素坐标 [(x, y, w, h, label)]; labels = 对应类别列表
-        无标签返回(None, [], False)。
+        无标签返回 (None, [], False, False)。
+        has_label_file = 标签文件存在且非空；图像解码失败时仍可能为 True，
+        供「已标注」统计使用（见 label_utils.rec_is_labeled）。
         from_same_json 表示取自图像同路径 json，调用方据此落
         _has_annotation_json 标记，主线程就不必为判断来源再探一次磁盘。
         优先读图像同路径 labelme json，与标注界面 _load_current
         一致；没有才回退 label_paths 的导入标签(txt/json)。否则重启后首页
         缩略图会显示标注界面修改前的旧标签。
         """
-        same_path_json = os.path.splitext(img_path)[0] + ".json"
-        if os.path.exists(same_path_json):
+        same_path_json = same_dir_json(img_path)
+        if same_path_json:
             label_file = same_path_json
             fmt = ".json"
             from_same = True
@@ -147,9 +152,9 @@ class ImportTask(QThread):
             fmt = self.fmt
             from_same = False
         else:
-            return None, [], False
+            return None, [], False, False
         if not os.path.exists(label_file):
-            return None, [], False
+            return None, [], False, False
         boxes = []
         labels = []
         if fmt == ".txt":
@@ -157,7 +162,8 @@ class ImportTask(QThread):
                 with pil_open(img_path) as im:
                     iw, ih = im.size
             except Exception:
-                return None, [], False
+                return None, [], False, label_file_has_content(
+                    label_file, fmt)
             with open(label_file, "r", encoding="utf-8") as f:
                 for line in f:
                     parts = line.split()
@@ -203,4 +209,5 @@ class ImportTask(QThread):
                 lbl = normalize_label(shape.get("label", "unknown"))
                 boxes.append((max(0, x), max(0, y), max(1, w), max(1, h), lbl))
                 labels.append(lbl)
-        return boxes, labels, from_same
+        return (boxes, labels, from_same,
+                bool(boxes) or label_file_has_content(label_file, fmt))

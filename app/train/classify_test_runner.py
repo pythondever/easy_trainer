@@ -29,7 +29,8 @@ except Exception as e:
     print("[test] 缺少测试依赖: {}".format(e), flush=True)
     sys.exit(1)
 
-_IMG_EXTS = (".jpg", ".jpeg", ".png", ".bmp", ".webp")
+from app.core.constants import IMAGE_EXTS as _IMG_EXTS
+
 
 
 def _make_model(arch, num_classes):

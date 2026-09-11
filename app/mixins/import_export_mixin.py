@@ -1,29 +1,21 @@
 # -*- coding: utf-8 -*-
-import sys
 import os
 import json
 import shutil
 import traceback
-CURRENT_DIRECTORY = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-WORKSPACE_DIRECTORY = os.path.dirname(CURRENT_DIRECTORY)
-sys.path.append(WORKSPACE_DIRECTORY)
-sys.path.append(os.path.join(WORKSPACE_DIRECTORY, 'ui'))
 from PySide6.QtGui import QFontMetrics
+from app.core.db import get_paths
+from app.core.constants import IMAGE_EXTS
 from ui.import_data import Ui_ImportData
 from ui.export_data import Ui_Dialog as ExportDataUI
-from app.core.label_utils import (label_sort_key, load_json_shapes,
-                             load_yolo_shapes, looks_like_labelme,
+from app.core.label_utils import (image_has_label, label_sort_key,
+                             load_json_shapes, load_yolo_shapes, same_dir_json,
                              shapes_to_yolo_text, shapes_to_labelme_json)
 from app.widgets.dialog_buttons import (apply_icon, resource_icon, ICON_SIZE,
                                         BTN_WIDTH, BTN_HEIGHT)
 from app.widgets.message_box import MessageBox, ProgressDialog
-from PySide6.QtCore import Qt, QSize
+from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QDialog, QFileDialog, QButtonGroup
-
-try:
-    from shiboken6 import isValid as _is_valid
-except ImportError:
-    _is_valid = lambda obj: obj is not None
 
 try:
     import PIL.Image as PILImage
@@ -37,30 +29,25 @@ class ImportExportMixin(object):
         """
         扫描导入信息：图像总数 + 已标注数。
         - total = 图像目录下图像数（jpg/jpeg/png/bmp/webp，含子目录）
-        - labeled = label_path 里有同名标签文件（按 fmt 后缀）的图像数
-        - 无 label_path 或目录不存在时 labeled=0
+        - labeled = 有非空标签文件的图像数：图像同路径权威 json 优先，其次
+          label_path 里的同名标签文件；空文件、空 shapes 都不算已标注
+        label_path 支持 str 或 list（多路径导入）。
         返回 (total, labeled)；目录不存在返回 None。
         """
         if not image_path or not os.path.isdir(image_path):
             return None
-        IMAGE_EXTS = (".jpg", ".jpeg", ".png", ".bmp", ".webp")
+        label_dirs = ([label_path] if isinstance(label_path, str)
+                      else list(label_path or []))
+        label_dirs = [p for p in label_dirs if p and os.path.isdir(p)]
         total = 0
-        names = set()
+        labeled = 0
         for root, _, files in os.walk(image_path):
             for fn in files:
-                if fn.lower().endswith(IMAGE_EXTS):
-                    total += 1
-                    names.add(os.path.splitext(fn)[0])
-        labeled = 0
-        if label_path and os.path.isdir(label_path) and fmt:
-            ext = ".txt" if fmt == ".txt" else ".json"
-            try:
-                label_names = {os.path.splitext(fn)[0]
-                               for fn in os.listdir(label_path)
-                               if fn.lower().endswith(ext)}
-            except OSError:
-                label_names = set()
-            labeled = len(names & label_names)
+                if not fn.lower().endswith(IMAGE_EXTS):
+                    continue
+                total += 1
+                if image_has_label(os.path.join(root, fn), label_dirs, fmt):
+                    labeled += 1
         return total, labeled
 
     @staticmethod
@@ -78,7 +65,6 @@ class ImportExportMixin(object):
             return 0
         if not label_names:
             return 0
-        IMAGE_EXTS = (".jpg", ".jpeg", ".png", ".bmp", ".webp")
         image_names = set()
         for root, _, files in os.walk(image_path):
             for fn in files:
@@ -115,7 +101,6 @@ class ImportExportMixin(object):
                     ui.tips_lbl.setText("请选择分类根目录（子文件夹名=类别）")
                     return
                 classes = {}
-                IMAGE_EXTS = (".jpg", ".jpeg", ".png", ".bmp", ".webp")
                 for entry in os.listdir(img_path):
                     sub = os.path.join(img_path, entry)
                     if os.path.isdir(sub):
@@ -223,7 +208,6 @@ class ImportExportMixin(object):
         ui.cls_fmt.setAutoExclusive(False)
 
         def do_import():
-            IMAGE_EXTS = (".jpg", ".jpeg", ".png", ".bmp", ".webp")
             cls_mode = ui.cls_fmt.isChecked()
             image_path = ui.image_path_txt.text().strip()
             label_path = "" if cls_mode else ui.label_path_txt.text().strip()
@@ -249,11 +233,9 @@ class ImportExportMixin(object):
                 _labeled = _scanned[1] if _scanned else 0
             # 合并历史路径 + 本次新路径(去重保序), 保证多次导入不同文件夹都能累计
             binding = self.db.get_dataset_import(project_name, dataset_name)
-            old_imgs = binding.get("image_paths") or (
-                [binding.get("image_path")] if binding.get("image_path") else [])
+            old_imgs = get_paths(binding, "image")
             merged_imgs = list(dict.fromkeys(old_imgs + [image_path]))
-            old_lbls = binding.get("label_paths") or (
-                [binding.get("label_path")] if binding.get("label_path") else [])
+            old_lbls = get_paths(binding, "label")
             if label_path:
                 merged_lbls = list(dict.fromkeys(old_lbls + [label_path]))
             else:
@@ -392,9 +374,7 @@ class ImportExportMixin(object):
             return list(index.get("all", []))
         recs = []
         binding = self.db.get_dataset_import(project_name, dataset_name) or {}
-        image_paths = binding.get("image_paths") or (
-            [binding.get("image_path")] if binding.get("image_path") else [])
-        IMAGE_EXTS = (".jpg", ".jpeg", ".png", ".bmp", ".webp")
+        image_paths = get_paths(binding, "image")
         for img_root in image_paths:
             if not img_root or not os.path.isdir(img_root):
                 continue
@@ -407,10 +387,8 @@ class ImportExportMixin(object):
     def _export_source(self, project_name, dataset_name):
         """数据集导入源路径摘要（图像目录 + 标签目录），供导出日志用。"""
         binding = self.db.get_dataset_import(project_name, dataset_name) or {}
-        img = binding.get("image_paths") or (
-            [binding.get("image_path")] if binding.get("image_path") else [])
-        lbl = binding.get("label_paths") or (
-            [binding.get("label_path")] if binding.get("label_path") else [])
+        img = get_paths(binding, "image")
+        lbl = get_paths(binding, "label")
         return "{} => 标签:{}".format(";".join(img or ["(无)"]),
                                       ";".join(lbl or ["(无)"]))
 
@@ -496,22 +474,19 @@ class ImportExportMixin(object):
     def _read_export_shapes(self, img_src, binding, iw=0, ih=0):
         """
         读取一张图的标注, 返回 ([(label, points)], 是否有权威来源).
-
         points 保留多边形顶点(不只是外接框), 否则分割标注导出后只剩个框。
         优先同路径 labelme json(标注产物),否则 label_paths 同名标签。
         has_source 用于区分"标注为空"和"压根没标过": 前者要写空文件, 后者不写。
         """
-        base_wo_ext, _ = os.path.splitext(img_src)
-        same_json = base_wo_ext + ".json"
-        if os.path.exists(same_json) and looks_like_labelme(same_json):
+        same_json = same_dir_json(img_src)
+        if same_json:
             return load_json_shapes(same_json), True
         label_fmt = binding.get("label_fmt", "")
         if not label_fmt:
             return [], False
         ext = ".txt" if label_fmt == ".txt" else ".json"
         stem = os.path.splitext(os.path.basename(img_src))[0]
-        for lp in (binding.get("label_paths") or
-                   ([binding.get("label_path")] if binding.get("label_path") else [])):
+        for lp in get_paths(binding, "label"):
             if not lp or not os.path.isdir(lp):
                 continue
             cand = os.path.join(lp, stem + ext)

@@ -1,31 +1,14 @@
 # -*- coding: utf-8 -*-
-import sys
 import os
 
-CURRENT_DIRECTORY = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-WORKSPACE_DIRECTORY = os.path.dirname(CURRENT_DIRECTORY)
-sys.path.append(WORKSPACE_DIRECTORY)
-sys.path.append(os.path.join(WORKSPACE_DIRECTORY, 'ui'))
-from app.core.label_utils import label_sort_key
-from app.widgets.dialog_buttons import apply_icon, add_ok_cancel
+from app.core.db import get_paths
+from app.core.label_utils import label_sort_key, rec_is_labeled
+from app.widgets.dialog_buttons import add_ok_cancel
 from app.widgets.message_box import MessageBox
 from app.widgets.name_input_dialog import NameInputDialog
 from app.widgets.project_sidebar import ProjectSidebar
-from PySide6.QtGui import QIcon, QFont, QPixmap, QColor
-from PySide6.QtCore import Qt, QSize
-from PySide6.QtWidgets import QWidget, QDialog, QMenu, \
-    QVBoxLayout, QHBoxLayout, QSizePolicy, QLabel, QTreeWidget, QTreeWidgetItem, \
-    QHeaderView, QAbstractItemView, QComboBox, QPushButton
-
-try:
-    from shiboken6 import isValid as _is_valid
-except ImportError:
-    _is_valid = lambda obj: obj is not None
-
-try:
-    import PIL.Image as PILImage
-except ImportError:
-    PILImage = None
+from PySide6.QtWidgets import (QDialog, QMenu, QVBoxLayout, QHBoxLayout,
+                               QLabel, QComboBox)
 
 
 class ProjectMixin(object):
@@ -268,15 +251,14 @@ class ProjectMixin(object):
         # ---- 2. db：目标合并导入绑定 + 重算统计 ----
         src_binding = self.db.get_dataset_import(src_proj, src_ds) or {}
         dst_binding = self.db.get_dataset_import(dst_proj, dst_ds) or {}
-        dst_img = list(dst_binding.get("image_paths") or [])
-        src_img = list(src_binding.get("image_paths") or [])
-        dst_lbl = list(dst_binding.get("label_paths") or [])
-        src_lbl = list(src_binding.get("label_paths") or [])
+        dst_img = get_paths(dst_binding, "image")
+        src_img = get_paths(src_binding, "image")
+        dst_lbl = get_paths(dst_binding, "label")
+        src_lbl = get_paths(src_binding, "label")
         img_paths = dst_img + [p for p in src_img if p not in dst_img]
         lbl_paths = dst_lbl + [p for p in src_lbl if p not in dst_lbl]
         total_new = len(dst_recs)
-        labeled_new = sum(
-            1 for r in dst_recs if r.get("boxes"))
+        labeled_new = sum(1 for r in dst_recs if rec_is_labeled(r))
         self.db.update_dataset_import(
             dst_proj, dst_ds, img_paths, lbl_paths,
             dst_binding.get("label_fmt", ""),

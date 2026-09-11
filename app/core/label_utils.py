@@ -53,6 +53,13 @@ def looks_like_labelme(json_path):
     return isinstance(data, dict) and isinstance(data.get("shapes"), list)
 
 
+def same_dir_json(image_path):
+    p = os.path.splitext(image_path)[0] + ".json"
+    if os.path.isfile(p) and looks_like_labelme(p):
+        return p
+    return ""
+
+
 def load_yolo_shapes(txt_path, iw, ih, label_ids=None):
     """读 yolo txt → [(label, points)] 像素坐标，支持 bbox(5 字段) 与 yolo-seg 多边形。
 
@@ -89,6 +96,49 @@ def load_yolo_shapes(txt_path, iw, ih, label_ids=None):
     except Exception:
         return []
     return shapes
+
+
+def label_file_has_content(path, fmt):
+    """
+    标签文件是否存在且含至少一个有效目标（空文件、空 shapes 都算没有）。
+    直接复用解析器判断，避免再长出"第五套"字段规则；不看图像，
+    所以图像损坏但标签完好的图仍会被认成已标注。
+    """
+    if not path or not os.path.isfile(path):
+        return False
+    if fmt == ".txt":
+        return bool(load_yolo_shapes(path, 1, 1))
+    return bool(load_json_shapes(path))
+
+
+def image_has_label(image_path, label_dirs, fmt):
+    """
+    该图是否已有标注：图像同路径权威 json 优先，其次查 label_dirs 里的同名标签文件。
+    同路径 json 存在即权威（哪怕 shapes 是空的）—— 那表示用户在标注界面把框
+    删空了，不能再回退导入目录的旧标签，否则删空的框会"复活"。
+    """
+    js = same_dir_json(image_path)
+    if js:
+        return bool(load_json_shapes(js))
+    if not fmt or fmt == "cls":
+        return False
+    ext = ".txt" if fmt == ".txt" else ".json"
+    stem = os.path.splitext(os.path.basename(image_path))[0]
+    for d in label_dirs or []:
+        if d and os.path.isdir(d) and label_file_has_content(
+                os.path.join(d, stem + ext), ext):
+            return True
+    return False
+
+
+def rec_is_labeled(rec):
+    """内存记录是否算"已标注"：有框、或标签文件非空、或分类数据集有类别。
+
+    前两条覆盖检测/分割：前者是正常路径，后者覆盖"图像解码失败但标签完好"，
+    否则同一数据集在导入框（看文件）和首页（看 boxes）会显示两个数。
+    分类数据集按子文件夹定类别，没有标签文件，靠 cls 字段判定。
+    """
+    return bool(rec.get("boxes") or rec.get("_has_label_file") or rec.get("cls"))
 
 
 def _rect_corners(pts):

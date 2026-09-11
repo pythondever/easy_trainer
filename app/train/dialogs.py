@@ -15,6 +15,7 @@ from PySide6.QtGui import QStandardItem
 
 from app.widgets.dialog_buttons import apply_icon
 from app.widgets.message_box import MessageBox
+from app.core.db import get_paths
 from app.core.log import write_log
 from app.train.data_prep import timestamp_dir
 from ui.train import Ui_TrainDialog
@@ -24,7 +25,6 @@ try:
 except ImportError:
     torch = None
 
-# 弹窗输入类控件统一高度，与 style.qss 的 QDialog 规则（36）保持一致
 CONTROL_H = 36
 TASK_CN = {"detect": "检测", "segment": "分割", "classify": "分类"}
 
@@ -180,6 +180,8 @@ def make_train_config(db, params):
                 "dataset_name": name, "project": proj, "split": split,
                 "image_path": info.get("image_path", ""),
                 "label_path": info.get("label_path", ""),
+                "image_paths": get_paths(info, "image"),
+                "label_paths": get_paths(info, "label"),
                 "fmt": fmt,
                 "label_ids": db.get_dataset_label_ids(proj, name),
             })
@@ -188,7 +190,6 @@ def make_train_config(db, params):
     if not any(d["split"] == "val" for d in datasets):
         raise ValueError("请至少选择一个验证集数据集")
     ts_dir = _unique_ts_dir(out_root, timestamp_dir())
-    # model_size 保留界面可见值(nano/small),architecture 是 runner 实际用的名字
     architecture = params.get("architecture") or "nano"
     if task == "classify":
         architecture = {

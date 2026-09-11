@@ -13,6 +13,8 @@ import os
 import shutil
 from datetime import datetime
 from PIL import Image
+from app.core.constants import IMAGE_EXTS
+from app.core.db import get_paths
 from app.core.label_utils import (normalize_label, load_json_shapes,
                                   load_yolo_shapes, looks_like_labelme,
                                   shapes_to_yolo_text)
@@ -23,14 +25,13 @@ def timestamp_dir():
 
 
 _img_size_cache = {}
-_IMAGE_EXTS = (".jpg", ".jpeg", ".png", ".bmp", ".webp", ".tif", ".tiff")
 
 
 def _img_size_of_stem(img_dir, stem):
     """按文件名主干在多种扩展名中找图并取尺寸, 找不到返回 (0, 0)。"""
     if not img_dir:
         return 0, 0
-    for ext in _IMAGE_EXTS:
+    for ext in IMAGE_EXTS:
         p = os.path.join(img_dir, stem + ext)
         if os.path.exists(p):
             return _img_size(p)
@@ -72,26 +73,55 @@ def _write_yolo_txt(dst_labels, base, shapes, iw, ih, label_to_id, as_polygon):
         f.write(txt)
 
 
-def _copy_dataset_labels(src_label_path, fmt, dst_labels, label_to_id, img_dir,
+def _copy_dataset_labels(src_label_path, fmt, dst_labels, label_to_id, img_dirs,
                          as_polygon=False, label_ids=None):
-    """复制单个导入标签目录到 yolo txt 目录（labelme json / yolo txt 都转 txt）。"""
+    """
+    复制单个导入标签目录到 yolo txt 目录（labelme json / yolo txt 都转 txt）。
+    img_dirs 是候选图像目录（配对目录排第一）。标签要按图像尺寸做坐标换算，
+    尺寸查不到就整条跳过，所以目录配错不会写错数据，只会静默丢标签；
+    "先只导图像、后导图像+标签"这类历史记录里配不成对的情况靠多候选兜住。
+    """
     if not src_label_path or not os.path.isdir(src_label_path):
         return
     for fn in os.listdir(src_label_path):
         stem, ext = os.path.splitext(fn)
-        if fmt == "json" and ext.lower() == ".json":
-            iw, ih = _img_size_of_stem(img_dir, stem)
+        if not ((fmt == "json" and ext.lower() == ".json")
+                or (fmt == "txt" and ext.lower() == ".txt")):
+            continue
+        iw = ih = 0
+        for d in img_dirs:
+            iw, ih = _img_size_of_stem(d, stem)
             if iw and ih:
-                shapes = load_json_shapes(os.path.join(src_label_path, fn))
-                _write_yolo_txt(dst_labels, stem + ".txt", shapes, iw, ih,
-                                label_to_id, as_polygon)
-        elif fmt == "txt" and ext.lower() == ".txt":
-            iw, ih = _img_size_of_stem(img_dir, stem)
-            if iw and ih:
-                shapes = load_yolo_shapes(os.path.join(src_label_path, fn),
-                                          iw, ih, label_ids)
-                _write_yolo_txt(dst_labels, stem + ".txt", shapes, iw, ih,
-                                label_to_id, as_polygon)
+                break
+        if not (iw and ih):
+            continue
+        if fmt == "json":
+            shapes = load_json_shapes(os.path.join(src_label_path, fn))
+        else:
+            shapes = load_yolo_shapes(os.path.join(src_label_path, fn),
+                                      iw, ih, label_ids)
+        _write_yolo_txt(dst_labels, stem + ".txt", shapes, iw, ih,
+                        label_to_id, as_polygon)
+
+
+def _paired_dirs(info):
+    """
+    多路径导入的图像/标签目录配对 [(图像目录, 标签目录), ...]。
+    每次导入往 image_paths / label_paths 各追加一项，按下标成对。
+    只读 image_path / label_path 单值的话，多次导入后训练只吃得到最后
+    一次导入的那个目录，之前的全被静默丢掉。
+    """
+    imgs = get_paths(info, "image")
+    lbls = get_paths(info, "label")
+    n = max(len(imgs), len(lbls))
+    return [(imgs[i] if i < len(imgs) else "",
+             lbls[i] if i < len(lbls) else "") for i in range(n)]
+
+
+def _label_img_dirs(img_dir, all_img_dirs):
+    """标签转换时的候选图像目录: 配对目录优先, 其余目录兜底。"""
+    return ([img_dir] if img_dir else []) + [d for d in all_img_dirs
+                                             if d and d != img_dir]
 
 
 def _collect_labels(datasets):
@@ -104,7 +134,6 @@ def _collect_labels(datasets):
     labels = []
     seen = set()
     for info in datasets:
-        label_path = info.get("label_path")
         fmt = str(info.get("fmt", "txt")).lstrip(".")
         label_ids = info.get("label_ids") or {}
 
@@ -113,32 +142,33 @@ def _collect_labels(datasets):
                 seen.add(lb)
                 labels.append(lb)
 
-        if label_path and os.path.isdir(label_path):
-            for fn in sorted(os.listdir(label_path)):
-                stem, ext = os.path.splitext(fn)
-                if fmt == "json" and ext.lower() == ".json":
-                    for lb, _ in load_json_shapes(os.path.join(label_path, fn)):
-                        _add(lb)
-                elif fmt == "txt" and ext.lower() == ".txt":
-                    try:
-                        with open(os.path.join(label_path, fn), "r",
-                                  encoding="utf-8") as f:
-                            for line in f:
-                                p = line.split()
-                                if len(p) >= 5:
-                                    _add(_map_class_id(p[0], label_ids))
-                    except Exception:
+        for img_dir, label_path in _paired_dirs(info):
+            if label_path and os.path.isdir(label_path):
+                for fn in sorted(os.listdir(label_path)):
+                    stem, ext = os.path.splitext(fn)
+                    if fmt == "json" and ext.lower() == ".json":
+                        for lb, _ in load_json_shapes(
+                                os.path.join(label_path, fn)):
+                            _add(lb)
+                    elif fmt == "txt" and ext.lower() == ".txt":
+                        try:
+                            with open(os.path.join(label_path, fn), "r",
+                                      encoding="utf-8") as f:
+                                for line in f:
+                                    p = line.split()
+                                    if len(p) >= 5:
+                                        _add(_map_class_id(p[0], label_ids))
+                        except Exception:
+                            continue
+            if img_dir and os.path.isdir(img_dir):
+                for fn in sorted(os.listdir(img_dir)):
+                    if not fn.lower().endswith(".json"):
                         continue
-        img_dir = info.get("image_path")
-        if img_dir and os.path.isdir(img_dir):
-            for fn in sorted(os.listdir(img_dir)):
-                if not fn.lower().endswith(".json"):
-                    continue
-                jp = os.path.join(img_dir, fn)
-                if not looks_like_labelme(jp):
-                    continue
-                for lb, _ in load_json_shapes(jp):
-                    _add(lb)
+                    jp = os.path.join(img_dir, fn)
+                    if not looks_like_labelme(jp):
+                        continue
+                    for lb, _ in load_json_shapes(jp):
+                        _add(lb)
     return labels
 
 
@@ -148,7 +178,7 @@ def _copy_images(src_img_path, dst_images):
     if not src_img_path or not os.path.isdir(src_img_path):
         return copied
     for fn in os.listdir(src_img_path):
-        if fn.lower().endswith((".jpg", ".jpeg", ".png", ".bmp", ".webp", ".tif", ".tiff")):
+        if fn.lower().endswith(IMAGE_EXTS):
             shutil.copy2(os.path.join(src_img_path, fn), os.path.join(dst_images, fn))
             copied.add(fn)
     return copied
@@ -162,8 +192,8 @@ def _sort_labels(labels):
 
 
 def copy_datasets(out_root, project, datasets, task="detect"):
-    """把勾选数据集复制到 <out_root>/<项目>/<数据集>/images|labels（json/txt→yolo txt）。
-
+    """
+    把勾选数据集复制到 <out_root>/<项目>/<数据集>/images|labels（json/txt→yolo txt）。
     task=segment 时写 yolo-seg 多边形顶点，检测写 cx cy w h。
     每张图的标签来源以图像同路径 json 为准（存在即覆盖，空的也算：表示这张图没有目标）。
     """
@@ -178,36 +208,43 @@ def copy_datasets(out_root, project, datasets, task="detect"):
         dst_labels = os.path.join(dst, "labels")
         os.makedirs(dst_images, exist_ok=True)
         os.makedirs(dst_labels, exist_ok=True)
-        img_dir = info.get("image_path")
-        imgs = _copy_images(img_dir, dst_images)
         fmt = str(info.get("fmt", "txt")).lstrip(".")
-        _copy_dataset_labels(
-            info.get("label_path"), fmt, dst_labels, label_to_id, img_dir,
-            as_polygon, info.get("label_ids"))
+        imgs = set()
+        all_img_dirs = get_paths(info, "image")
+        for img_dir, label_dir in _paired_dirs(info):
+            imgs |= _copy_images(img_dir, dst_images)
+            _copy_dataset_labels(label_dir, fmt, dst_labels, label_to_id,
+                                 _label_img_dirs(img_dir, all_img_dirs),
+                                 as_polygon, info.get("label_ids"))
+            _override_by_same_dir_json(img_dir, dst_labels, label_to_id,
+                                       as_polygon)
         n_lab = len([f for f in os.listdir(dst_labels)
                      if f.lower().endswith(".txt")])
         print("[train] 复制数据集 {}: 图像 {} 张, 标签 {} 个 → {}".format(
             ds_name, len(imgs), n_lab, dst), flush=True)
-        # 图像同路径的 labelme json(标注界面产物)是权威来源, 覆盖导入标签目录的结果
-        if img_dir and os.path.isdir(img_dir):
-            for fn in sorted(os.listdir(img_dir)):
-                if not fn.lower().endswith(".json"):
-                    continue
-                stem = os.path.splitext(fn)[0]
-                iw, ih = _img_size_of_stem(img_dir, stem)
-                if not (iw and ih):
-                    continue
-                jp = os.path.join(img_dir, fn)
-                if not looks_like_labelme(jp):
-                    continue
-                shapes = load_json_shapes(jp)
-                txt = shapes_to_yolo_text(shapes, iw, ih, label_to_id,
-                                          as_polygon)
-                # 空 shapes 也要写(清空), 否则界面删掉的框会在训练里复活
-                with open(os.path.join(dst_labels, stem + ".txt"), "w",
-                          encoding="utf-8") as f:
-                    f.write(txt)
     return labels, label_to_id
+
+
+def _override_by_same_dir_json(img_dir, dst_labels, label_to_id, as_polygon):
+    """图像同路径的 labelme json(标注界面产物)是权威来源, 覆盖导入标签目录的结果。"""
+    if not img_dir or not os.path.isdir(img_dir):
+        return
+    for fn in sorted(os.listdir(img_dir)):
+        if not fn.lower().endswith(".json"):
+            continue
+        stem = os.path.splitext(fn)[0]
+        iw, ih = _img_size_of_stem(img_dir, stem)
+        if not (iw and ih):
+            continue
+        jp = os.path.join(img_dir, fn)
+        if not looks_like_labelme(jp):
+            continue
+        shapes = load_json_shapes(jp)
+        txt = shapes_to_yolo_text(shapes, iw, ih, label_to_id, as_polygon)
+        # 空 shapes 也要写(清空), 否则界面删掉的框会在训练里复活
+        with open(os.path.join(dst_labels, stem + ".txt"), "w",
+                  encoding="utf-8") as f:
+            f.write(txt)
 
 
 def clean_split(out_root):

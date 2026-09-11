@@ -1,11 +1,8 @@
 # -*- coding: utf-8 -*-
-import sys
 import os
-CURRENT_DIRECTORY = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-WORKSPACE_DIRECTORY = os.path.dirname(CURRENT_DIRECTORY)
-sys.path.append(WORKSPACE_DIRECTORY)
-sys.path.append(os.path.join(WORKSPACE_DIRECTORY, 'ui'))
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
+from app.core.db import get_paths
+from app.core.label_utils import rec_is_labeled
 from app.widgets.charts import render_label_chart
 from app.widgets.log_dialog import LogDialog
 from app.widgets.model_dialog import ModelDialog
@@ -17,17 +14,7 @@ from app.widgets.dialog_buttons import apply_icon
 from app.core.log import write_log
 from PySide6.QtGui import QPixmap, QImage, QStandardItem
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QDialog, QMessageBox, QLabel, QGraphicsScene
-
-try:
-    from shiboken6 import isValid as _is_valid
-except ImportError:
-    _is_valid = lambda obj: obj is not None
-
-try:
-    import PIL.Image as PILImage
-except ImportError:
-    PILImage = None
+from PySide6.QtWidgets import QDialog, QMessageBox, QGraphicsScene
 
 
 class MiscMixin(object):
@@ -177,13 +164,9 @@ class MiscMixin(object):
         for proj, ds in checked:
             binding = self.db.get_dataset_import(proj, ds) or {}
             if kind == "image":
-                paths = binding.get("image_paths") or (
-                    [binding.get("image_path")]
-                    if binding.get("image_path") else [])
+                paths = get_paths(binding, "image")
             else:
-                paths = binding.get("label_paths") or (
-                    [binding.get("label_path")]
-                    if binding.get("label_path") else [])
+                paths = get_paths(binding, "label")
             paths = [p for p in paths if p]
             if not paths:
                 blocks.append("[{}/{}](未设置)".format(proj, ds))
@@ -226,10 +209,9 @@ class MiscMixin(object):
         counts = {}
         labeled = 0
         for rec in recs:
-            boxes = rec.get("boxes") or []
-            if boxes:
+            if rec_is_labeled(rec):
                 labeled += 1
-            for b in boxes:
+            for b in (rec.get("boxes") or []):
                 lbl = b[-1]
                 counts[lbl] = counts.get(lbl, 0) + 1
         if not counts:
@@ -251,35 +233,12 @@ class MiscMixin(object):
         """刷新项目树该数据集行的进度数值。"""
         self.project_tree.set_row_progress(project_name, dataset_name, labeled, total)
 
-    def _calc_label_counts(self, project, dataset):
-        """统计数据集各标签数量：内存缓存有(已载入)用实时数据并回写 db；未载入用 db 旧值。"""
-        cache = self.dataset_cache.get(project, {}).get(dataset, {})
-        if cache.get("all") or cache.get("labels"):
-            counts = {}
-            for rec in cache.get("all", []):
-                for b in (rec.get("boxes") or []):
-                    lbl = b[-1]
-                    counts[lbl] = counts.get(lbl, 0) + 1
-            if not counts:
-                labels_index = cache.get("labels") or {}
-                counts = {label: len(recs) for label, recs in labels_index.items()}
-            if counts:
-                self.db.save_dataset_label_counts(project, dataset, counts)
-            return counts
-        return self.db.get_dataset_label_counts(project, dataset)
-
     def _refresh_dataset_row_progress(self, project_name, dataset_name):
         """根据 db 当前 binding 刷新项目树该数据集行的进度数值。"""
         binding = self.db.get_dataset_import(project_name, dataset_name)
         total = binding.get("total", 0) or 0
         labeled = binding.get("labeled", 0) or 0
         self.project_tree.set_row_progress(project_name, dataset_name, labeled, total)
-
-    @staticmethod
-    def _has_label_file(image_path):
-        """判断图像同路径是否存在同名 labelme json。"""
-        base, _ = os.path.splitext(image_path)
-        return os.path.exists(base + ".json")
 
     def _delete_images_core(self, project, dataset, paths, delete_local, log_msg=None):
         """

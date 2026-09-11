@@ -1,23 +1,16 @@
 import sys
 import os
 
-WORKSPACE_DIRECTORY = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
 from app.widgets.log_dialog import LogDialog
 from ui.app import Ui_AppUI as MainUI
-from app.core.utils import setup_matplotlib_chinese, load_style_sheet
+from app.core.constants import PAGE_SIZE
+from app.core.utils import (setup_matplotlib_chinese, load_style_sheet,
+                            project_root)
 from app.core.db import DataBase
 from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtCore import Qt, QTimer, QEvent
 from PySide6.QtWidgets import QWidget, QApplication, QTimeEdit, QFrame, QHBoxLayout
 
-
-try:
-    from shiboken6 import isValid as _is_valid
-    import PIL.Image as PILImage
-except ImportError:
-    _is_valid = lambda obj: obj is not None
-    PILImage = None
 
 from app.mixins import (LabelMixin, ProjectMixin, ImportExportMixin,
                         DatasetViewMixin, TrainMixin, QueueMixin, MiscMixin)
@@ -34,7 +27,7 @@ class App(QWidget, MainUI, LabelMixin, ProjectMixin, ImportExportMixin,
             pass
         self.dataset_cache = {}
         self._loading_tasks = {}
-        self.page_size = 50
+        self.page_size = PAGE_SIZE
         self.current_page = 0
         self.current_label = "__unlabeled__"
         self.init_widget()
@@ -112,11 +105,11 @@ class App(QWidget, MainUI, LabelMixin, ProjectMixin, ImportExportMixin,
         self._refresh_gpu_memory()
         self._train_worker = None
         self._training_record_id = None
-        icon_path = os.path.join(WORKSPACE_DIRECTORY, "resources", "favicon.ico")
+        icon_path = os.path.join(project_root(), "resources", "favicon.ico")
         if os.path.exists(icon_path):
             self.setWindowIcon(QIcon(icon_path))
 
-        logo_path = os.path.join(WORKSPACE_DIRECTORY, "resources", "icon.png")
+        logo_path = os.path.join(project_root(), "resources", "icon.png")
         if os.path.exists(logo_path):
             pix = QPixmap(logo_path).scaled(28, 28, Qt.KeepAspectRatio, Qt.SmoothTransformation)
             self.appLogoLabel.setPixmap(pix)

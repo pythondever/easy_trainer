@@ -4,19 +4,9 @@
 统计界面与测试报告 PDF
 """
 import numpy as np
-from matplotlib import font_manager, rcParams
 from matplotlib.figure import Figure
 
-_FONT_CANDIDATES = (
-    "Microsoft YaHei", "SimHei", "SimSun", "PingFang SC",
-    "Noto Sans CJK SC", "WenQuanYi Micro Hei", "Source Han Sans SC",
-)
-_installed = {f.name for f in font_manager.fontManager.ttflist}
-for _f in _FONT_CANDIDATES:
-    if _f in _installed:
-        rcParams["font.sans-serif"] = [_f] + list(rcParams.get("font.sans-serif", []))
-        rcParams["axes.unicode_minus"] = False
-        break
+from app.core.utils import setup_matplotlib_chinese
 
 
 def _short(text, n):
@@ -27,6 +17,7 @@ def _short(text, n):
 def render_label_chart(label_counts, label_colors=None, dark=True,
                        figsize=None):
     """返回已画好的 Figure。label_counts: {标签: 数量}。"""
+    setup_matplotlib_chinese()
     num_bars = max(1, len(label_counts))
     if figsize is None:
         figsize = (max(4.0, num_bars * 0.3), 6.0)

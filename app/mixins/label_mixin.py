@@ -1,31 +1,17 @@
 # -*- coding: utf-8 -*-
-import sys
 import os
 import json
 
-CURRENT_DIRECTORY = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-WORKSPACE_DIRECTORY = os.path.dirname(CURRENT_DIRECTORY)
-sys.path.append(WORKSPACE_DIRECTORY)
-sys.path.append(os.path.join(WORKSPACE_DIRECTORY, 'ui'))
+from app.core.db import get_paths
 from ui.edit_label import Ui_Dialog as EditLabelUI
-from app.core.label_utils import (normalize_label, label_sort_key)
+from app.core.label_utils import (normalize_label, label_sort_key,
+                                  rec_is_labeled)
 from app.annotation.box_item import assign_label_color, label_color
 from app.widgets.dialog_buttons import apply_icon
 from app.widgets.message_box import MessageBox, ProgressDialog
 from app.tasks.merge_task import MergeLabelsTask
 from PySide6.QtGui import QIcon, QPixmap, QColor
-from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QDialog, QComboBox
-
-try:
-    from shiboken6 import isValid as _is_valid
-except ImportError:
-    _is_valid = lambda obj: obj is not None
-
-try:
-    import PIL.Image as PILImage
-except ImportError:
-    PILImage = None
 
 
 class LabelMixin(object):
@@ -260,9 +246,7 @@ class LabelMixin(object):
         """合并模式的文件层: 后台改 txt(行首旧 id → 新 id), 项目树行内进度条。"""
         binding = self.db.get_dataset_import(project_name, dataset_name) or {}
         label_fmt = binding.get("label_fmt", "") or ""
-        label_paths = binding.get("label_paths") or (
-            [binding.get("label_path")]
-            if binding.get("label_path") else [])
+        label_paths = get_paths(binding, "label")
         ids = self.db.get_dataset_label_ids(project_name, dataset_name)
         old_ids = [k for k, v in ids.items() if v == old_name]
         new_ids = [k for k, v in ids.items() if v == new_name]
@@ -285,7 +269,7 @@ class LabelMixin(object):
                 project_name, {}).get(dataset_name) or {}
             total = len(index.get("all", []))
             labeled = sum(1 for r in index.get("all", [])
-                          if r.get("boxes"))
+                          if rec_is_labeled(r))
             self.project_tree.set_row_progress(project_name, dataset_name,
                                                labeled, total)
             self._after_merge_refresh(project_name, dataset_name,
@@ -458,9 +442,7 @@ class LabelMixin(object):
         # YOLO txt 文件层删除: 后台删行首==旧 id 的行(否则重新导入标签复活)
         binding = self.db.get_dataset_import(project_name, dataset_name) or {}
         label_fmt = binding.get("label_fmt", "") or ""
-        label_paths = binding.get("label_paths") or (
-            [binding.get("label_path")]
-            if binding.get("label_path") else [])
+        label_paths = get_paths(binding, "label")
         if label_fmt == ".txt" and old_ids and label_paths:
             self._remove_label_files(project_name, dataset_name,
                                      label_name, old_ids)
@@ -472,9 +454,7 @@ class LabelMixin(object):
                             label_name, old_ids):
         """删除模式的 YOLO txt 文件层: 后台删行(项目树行内进度条)。"""
         binding = self.db.get_dataset_import(project_name, dataset_name) or {}
-        label_paths = binding.get("label_paths") or (
-            [binding.get("label_path")]
-            if binding.get("label_path") else [])
+        label_paths = get_paths(binding, "label")
         task = MergeLabelsTask(label_paths, old_ids, "", parent=self,
                                remove=True)
         self.project_tree.set_row_task(project_name, dataset_name, 0)
@@ -490,7 +470,7 @@ class LabelMixin(object):
                 project_name, {}).get(dataset_name) or {}
             total = len(index.get("all", []))
             labeled = sum(1 for r in index.get("all", [])
-                          if r.get("boxes"))
+                          if rec_is_labeled(r))
             self.project_tree.set_row_progress(project_name, dataset_name,
                                                labeled, total)
             self._after_merge_refresh(project_name, dataset_name,

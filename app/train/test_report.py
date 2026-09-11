@@ -12,16 +12,15 @@ import numpy as np
 import matplotlib
 matplotlib.use("Agg")          # 无显示设备的子进程里也要能出图
 
-from matplotlib import font_manager
 from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon as MplPolygon, Rectangle
 from PIL import Image, ImageDraw, ImageFont
 
+from app.core.utils import cjk_font_choice, setup_matplotlib_chinese
 from app.train.test_errors import CONFUSE_IOU, pair_confusions
 
-# 漏检=红(该抓没抓, 最危险) 误检=橙(过杀) 正确检出=绿(仅作位置参照)
-# 类别认错=紫(位置对但判错类别, 是分类问题不是定位问题)
+
 C_MISSING = "#e03131"
 C_SPURIOUS = "#f08c00"
 C_HIT = "#2f9e44"
@@ -31,7 +30,7 @@ _A4_W_PT, _A4_H_PT = 595, 842      # A4 pt (1pt=1/72 英寸, 矢量 PDF 用)
 _A4_W_IN, _A4_H_IN = 8.27, 11.69   # matplotlib figsize 用英寸
 _GRID_COLS, _GRID_ROWS = 2, 3
 
-# 首页/建议页都是 PIL 位图，统一这个 dpi 才能和 A4 英寸对上
+
 _DPI = 150
 _PAGE_W = int(round(_A4_W_IN * _DPI))
 _PAGE_H = int(round(_A4_H_IN * _DPI))
@@ -41,53 +40,14 @@ _CHART_H = 240                     # 标注分布柱状图占位高度
 
 PER_CLASS_LIMIT = 10
 
-_CJK_FONTS = ("Microsoft YaHei", "SimHei", "DengXian", "Noto Sans CJK SC",
-              "WenQuanYi Zen Hei", "Source Han Sans CN", "DejaVu Sans")
-_WIN_FONTS = (r"C:\Windows\Fonts\msyh.ttc",
-              r"C:\Windows\Fonts\simhei.ttf",
-              r"C:\Windows\Fonts\simsun.ttc")
-
-
-def _setup_font():
-    avail = {f.name for f in font_manager.fontManager.ttflist}
-    for name in _CJK_FONTS:
-        if name in avail:
-            plt.rcParams["font.sans-serif"] = [name]
-            break
-    plt.rcParams["axes.unicode_minus"] = False
-
-
-def _pil_font(size):
-    for p in _WIN_FONTS:
-        if os.path.exists(p):
-            try:
-                return ImageFont.truetype(p, size)
-            except Exception:
-                continue
-    avail = {f.name for f in font_manager.fontManager.ttflist}
-    for name in _CJK_FONTS:
-        if name in avail:
-            fpath = font_manager.findfont(name, fallback_to_default=False)
-            try:
-                return ImageFont.truetype(fpath, size)
-            except Exception:
-                continue
-    return ImageFont.load_default()
-
-
 def _pick_image_font():
-    avail = {f.name for f in font_manager.fontManager.ttflist}
-    for name in _CJK_FONTS:
-        if name in avail:
-            try:
-                fpath = font_manager.findfont(name, fallback_to_default=False)
-                return fpath
-            except Exception:
-                continue
-    for p in _WIN_FONTS:
-        if os.path.exists(p):
-            return p
-    return None
+    """
+    PIL 绘制用的字体文件路径；找不到中文字体返回 None。
+    字体探测统一在 core.utils（与 matplotlib 图表同源），否则 PDF 里
+    PIL 画的标题和 matplotlib 画的坐标轴可能用了两个字体。
+    """
+    _, path = cjk_font_choice()
+    return path or None
 
 
 def load_details(detail_path):
@@ -779,7 +739,7 @@ def build_report(res, out_pdf=None, thumb_w=480, summary_png=None,
     advice_png = os.path.join(tmp_dir.name, "advice.png")
     chart_png = os.path.join(tmp_dir.name, "label_chart.png")
 
-    _setup_font()
+    setup_matplotlib_chinese()
     try:
         confuse_iou = float(res.get("iou") or CONFUSE_IOU)
     except (TypeError, ValueError):

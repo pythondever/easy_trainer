@@ -7,14 +7,23 @@ import matplotlib.pyplot as plt
 from matplotlib import font_manager
 
 
-_CJK_FONT_CANDIDATES = [
-    "Microsoft YaHei UI", "Microsoft YaHei", "微软雅黑",   # Windows
-    "SimHei", "黑体", "SimSun", "宋体",                      # Windows
-    "PingFang SC", "Hiragino Sans GB", "STHeiti",            # macOS
-    "Noto Sans CJK SC", "Noto Sans SC", "WenQuanYi Micro Hei",  # Linux
+CJK_FONT_CANDIDATES = (
+    "Microsoft YaHei UI", "Microsoft YaHei", "微软雅黑",        # Windows
+    "SimHei", "黑体", "SimSun", "宋体", "DengXian", "等线",   # Windows
+    "PingFang SC", "Hiragino Sans GB", "STHeiti",           # macOS
+    "Noto Sans CJK SC", "Noto Sans SC",                       # Linux
+    "WenQuanYi Micro Hei", "WenQuanYi Zen Hei",
     "Source Han Sans CN", "Source Han Sans SC",
     "AR PL UMing CN", "AR PL UKai CN",
-]
+)
+
+_CJK_FONT_FILES = (
+    r"C:\Windows\Fonts\msyh.ttc",
+    r"C:\Windows\Fonts\simhei.ttf",
+    r"C:\Windows\Fonts\simsun.ttc",
+)
+
+_font_choice_cache = None
 
 
 def fmt_duration(secs):
@@ -46,29 +55,63 @@ def ui_font_family():
     return "Noto Sans CJK SC"
 
 
-def setup_matplotlib_chinese():
+def cjk_font_choice():
+    global _font_choice_cache
+    if _font_choice_cache is not None:
+        return _font_choice_cache
+    family, path = "", ""
     try:
-        available = {f.name for f in font_manager.fontManager.ttflist}
+        installed = {f.name for f in font_manager.fontManager.ttflist}
     except Exception:
-        available = set()
-    chosen = next((f for f in _CJK_FONT_CANDIDATES if f in available), None)
-    if chosen is None:
-        for f in font_manager.fontManager.ttflist:
-            n = f.name.lower()
-            if any(kw in n for kw in ("cjk", "chinese", "yahei", "simhei",
-                                       "pingfang", "heiti", "songti", "han")):
-                chosen = f.name
+        installed = set()
+    for name in CJK_FONT_CANDIDATES:
+        if name in installed:
+            family = name
+            break
+    if not family:
+        # 候选表没命中时按关键字扫：各发行版的字体名很杂
+        try:
+            for f in font_manager.fontManager.ttflist:
+                n = f.name.lower()
+                if any(kw in n for kw in ("cjk", "chinese", "yahei", "simhei",
+                                          "pingfang", "heiti", "songti", "han")):
+                    family = f.name
+                    break
+        except Exception:
+            pass
+    if family:
+        try:
+            path = font_manager.findfont(family, fallback_to_default=False)
+        except Exception:
+            path = ""
+    if not path:
+        for p in _CJK_FONT_FILES:
+            if os.path.exists(p):
+                path = p
                 break
-    if chosen is None:
-        chosen = "DejaVu Sans"
-    plt.rcParams["font.sans-serif"] = [chosen, "DejaVu Sans"]
+    _font_choice_cache = (family or "DejaVu Sans", path)
+    return _font_choice_cache
+
+
+def setup_matplotlib_chinese():
+    """
+    把中文字体写进全局 rcParams；幂等（探测结果有缓存，重复调用无开销）。
+    之前 charts / metrics_dialog / test_report 各写一份 rcParams，候选表互不
+    相同又都改全局，后执行的会盖掉前面的，同一进程里不同图表可能用不同字体
+    （一个正常一个方框）。统一走这里。
+    """
+    family, _ = cjk_font_choice()
+    plt.rcParams["font.sans-serif"] = [family, "DejaVu Sans"]
     plt.rcParams["font.family"] = "sans-serif"
     plt.rcParams["axes.unicode_minus"] = False
+    return family
 
 
 def project_root():
-    """项目根目录: 向上搜索含 style/ 或 resources/ 的目录。
-    不依赖固定层级(__file__ 深度), 目录整理后仍能正确定位。"""
+    """
+    项目根目录: 向上搜索含 style/ 或 resources/ 的目录。
+    不依赖固定层级(__file__ 深度), 目录整理后仍能正确定位。
+    """
     d = os.path.dirname(os.path.abspath(__file__))
     while True:
         if (os.path.isdir(os.path.join(d, "style"))

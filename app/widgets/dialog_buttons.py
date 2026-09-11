@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-"""弹窗确认/取消按钮：统一用 resources 图标，不再各写各的文字。
-
+"""
+弹窗确认/取消按钮：统一用 resources 图标，不再各写各的文字。
 纯图标按钮一律补 tooltip，否则用户只能靠猜。
 """
 
 import os
+from functools import lru_cache
 
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QIcon, QPainter, QPixmap, QColor
@@ -24,9 +25,10 @@ REJECT_TEXTS = ("取消", "否", "关闭", "no", "cancel", "退出")
 
 # 深色底上的图标色
 REJECT_COLOR = "#9aa3b5"
-CONFIRM_COLOR = "#ffffff"  # 确认按钮一律蓝底，绿勾在上面对比度不够
+CONFIRM_COLOR = "#ffffff"
 
 
+@lru_cache(maxsize=64)
 def _icon_path(name):
     p = os.path.join(project_root(), "resources", name)
     return p if os.path.exists(p) else ""
@@ -39,7 +41,12 @@ def resource_icon(name):
     return QIcon(path) if path else QIcon()
 
 
-def _tinted(path, color, size=ICON_SIZE):
+@lru_cache(maxsize=128)
+def _tinted(path, color):
+    """
+    按颜色染色的图标。缓存: 列表/菜单里同一图标会反复取(每行都新建
+    QPixmap+QPainter 很贵), 图标本身是只读资源, 复用安全。
+    """
     src = QPixmap(path)
     if src.isNull():
         return QIcon()

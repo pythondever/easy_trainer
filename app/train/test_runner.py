@@ -31,6 +31,7 @@ for _p in (_WORKSPACE, os.path.join(_WORKSPACE, "app")):
 from PIL import Image
 
 from app.train.test_errors import pair_confusions
+from app.core.constants import IMAGE_EXTS as _IMG_EXTS
 
 try:
     import cv2
@@ -58,7 +59,6 @@ except Exception:
     def _normalize_label(name):
         return str(name).strip()
 
-_IMG_EXTS = (".jpg", ".jpeg", ".png", ".bmp")
 _MAX_POLY_PTS = 60
 
 

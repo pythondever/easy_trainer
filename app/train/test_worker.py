@@ -4,19 +4,17 @@
 import collections
 import json
 import os
-import queue
 import re
 import subprocess
 import sys
 import tempfile
-import threading
 import time
 
 from PySide6.QtCore import QThread, Signal
 
 WORKSPACE = os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__))))
-# 打包后 runner 是 .pyd（脚本文件不存在），统一用 python -m <模块> 调用
+
 TEST_RUNNER = "app.train.test_runner"
 CLASSIFY_TEST_RUNNER = "app.train.classify_test_runner"
 

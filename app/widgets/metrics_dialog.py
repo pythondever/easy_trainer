@@ -3,8 +3,6 @@
 
 import re
 
-import matplotlib.pyplot as plt
-from matplotlib import font_manager
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 from PySide6.QtCore import Qt, QEvent, QObject, QTimer
@@ -12,32 +10,12 @@ from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel,
                                QComboBox)
 
 from app.core.db import load_train_metrics
+from app.core.utils import setup_matplotlib_chinese
 
 
 def _muted_style(size=13):
     """辅助说明文字: 中性灰 + 指定字号。"""
     return "color: #8b93a5; font-size: {}px;".format(size)
-
-
-def _setup_matplotlib_chinese():
-    """设置中文字体（与 app.easy_trainer 同逻辑，避免循环导入）。"""
-    try:
-        available = {f.name for f in font_manager.fontManager.ttflist}
-    except Exception:
-        available = set()
-    candidates = ["Microsoft YaHei UI", "Microsoft YaHei", "SimHei",
-                  "SimSun", "PingFang SC", "Noto Sans CJK SC", "Noto Sans SC"]
-    chosen = next((f for f in candidates if f in available), None)
-    if chosen is None:
-        for f in font_manager.fontManager.ttflist:
-            n = f.name.lower()
-            if any(kw in n for kw in ("cjk", "chinese", "yahei", "simhei",
-                                      "pingfang", "heiti", "songti", "han")):
-                chosen = f.name
-                break
-    plt.rcParams["font.sans-serif"] = [chosen or "DejaVu Sans", "DejaVu Sans"]
-    plt.rcParams["font.family"] = "sans-serif"
-    plt.rcParams["axes.unicode_minus"] = False
 
 
 class _ClickToPopupFilter(QObject):
@@ -165,7 +143,7 @@ class MetricsDialog(QDialog):
         loss_items = {k: v for k, v in series.items() if "loss" in k.lower()}
         score_items = {k: v for k, v in series.items() if "loss" not in k.lower()}
         groups = [g for g in (loss_items, score_items) if g]
-        _setup_matplotlib_chinese()
+        setup_matplotlib_chinese()
         fig = Figure(figsize=(8, 3.6 * len(groups)), dpi=100,
                      facecolor="#1c1e25")
         for idx, g in enumerate(groups):

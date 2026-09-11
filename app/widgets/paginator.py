@@ -46,13 +46,3 @@ class Items:
         if self.index >= len(self.items): raise StopIteration
         self.index = self.index + 1
         return self.items[self.index - 1]
-
-
-def test():
-    paginator = Paginator(range(100), 4)
-    for i in paginator[0]:
-        print(i)
-
-
-if __name__ == "__main__":
-    test()

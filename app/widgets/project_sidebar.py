@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
-"""首页左侧项目/数据集导航：卡片式，替代原 QTreeWidget。
-
+"""
+首页左侧项目/数据集导航：卡片式，替代原 QTreeWidget。
 行内图标/数值/选中态全部由 DatasetRowDelegate 手绘，QSS 只管卡片容器；
 导入/合并标签的任务进度也走 delegate(QStyleOptionProgressBar)，不再往行里塞控件。
 """
 from PySide6.QtCore import Qt, QRectF, QPointF, QSize, Signal
 from PySide6.QtGui import (QColor, QFont, QFontMetrics, QPainter, QPainterPath,
                            QPen, QWheelEvent)
-from PySide6.QtWidgets import (QApplication, QWidget, QFrame, QLabel, QHBoxLayout,
+from PySide6.QtWidgets import (QApplication, QWidget, QFrame, QLabel,
                                QVBoxLayout, QListWidget, QListWidgetItem,
                                QStyledItemDelegate, QStyle, QSizePolicy,
                                QScrollArea)

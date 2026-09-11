@@ -15,6 +15,7 @@ from PySide6.QtGui import (QDoubleValidator, QStandardItem,
                            QStandardItemModel, QValidator)
 from PySide6.QtWidgets import QDialog, QFormLayout, QComboBox
 
+from app.core.db import get_paths
 from app.core.log import write_log
 from app.widgets.dialog_buttons import apply_icon
 from app.widgets.message_box import MessageBox
@@ -366,14 +367,12 @@ class TestDialog(QDialog):
         base_labeled = None
         for proj, ds_name in checked:
             binding = self.app.db.get_dataset_import(proj, ds_name) or {}
-            image_paths = binding.get("image_paths") or (
-                [binding.get("image_path")] if binding.get("image_path") else [])
+            image_paths = get_paths(binding, "image")
             if not image_paths:
                 MessageBox.warning(
                     self, "测试", "数据集 {}/{} 未导入图像".format(proj, ds_name))
                 return
-            label_paths = binding.get("label_paths") or (
-                [binding.get("label_path")] if binding.get("label_path") else [])
+            label_paths = get_paths(binding, "label")
             this_cls = binding.get("label_fmt", "") == "cls"
             this_labeled = int(binding.get("labeled") or 0) > 0
             if base_cls is None:

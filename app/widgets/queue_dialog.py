@@ -10,18 +10,9 @@ from PySide6.QtWidgets import (QDialog, QTableWidgetItem, QAbstractItemView,
 
 from app.widgets.message_box import MessageBox
 from app.train.dialogs import TrainDialog, params_to_record
-from app.mixins.queue_mixin import STATUS_TEXT
+from app.widgets.status_style import status_color, status_text
 from ui.train_queue import Ui_TrainQueueDialog
 
-STATUS_COLOR = {
-    "waiting": "#8b93a5",
-    "running": "#4f7dff",
-    "done": "#7be39a",
-    "failed": "#ff9aa2",
-    "skipped": "#ffd166",
-    "stopped": "#ffd166",
-    "interrupted": "#ffd166",
-}
 TASK_TEXT = {"detect": "检测", "segment": "分割", "classify": "分类"}
 
 
@@ -93,13 +84,13 @@ class TrainQueueDialog(QDialog):
                 ", ".join(names),
                 params.get("architecture", ""),
                 str(params.get("epochs", "")),
-                STATUS_TEXT.get(it.get("status", ""), it.get("status", "")),
+                status_text(it.get("status", "")),
             ]
             for col, text in enumerate(vals):
                 cell = QTableWidgetItem(text)
                 if col == 6:
                     cell.setForeground(QColor(
-                        STATUS_COLOR.get(it.get("status", ""), "#e8eaf0")))
+                        status_color(it.get("status", ""))))
                 if col == 1 and it.get("error"):
                     cell.setToolTip(it["error"])
                 t.setItem(row, col, cell)

@@ -37,6 +37,21 @@ def _ds_of(item):
     return item.rsplit("/", 1)[-1] if "/" in item else item
 
 
+def get_paths(binding, kind):
+    """
+    取导入绑定的路径列表，kind = "image" / "label"。
+    老记录只有单值 image_path/label_path，多路径导入后才有复数列表；
+    调用方一律走这里，别再各处手写 `or []` 兜底——漏掉复数分支的地方
+    多路径导入只会吃到最后一个目录。
+    """
+    key = "image" if kind == "image" else "label"
+    paths = binding.get(key + "_paths")
+    if paths:
+        return [p for p in paths if p]
+    single = binding.get(key + "_path")
+    return [single] if single else []
+
+
 class DataBase:
     def __init__(self, db_path, db_size=DEFAULT_MAP_SIZE):
         self.db_path = db_path
@@ -825,9 +840,4 @@ class DataBase:
                     txn.put(key, json.dumps(new_recs, ensure_ascii=False).encode())
         for tid in dropped:
             self.delete_train_metrics(tid)
-
-
-if __name__ == '__main__':
-    db = DataBase(r'C:/Users/admin/.easy2yolo')
-    print(db.get_project_info())
 

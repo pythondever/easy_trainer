@@ -9,6 +9,7 @@ import os
 import json
 import re
 import shutil
+from functools import lru_cache
 from PIL import Image
 from PySide6.QtCore import (Qt, Signal, QPointF, QTimer, QSize, QThread,
                             QMutex, QMutexLocker)
@@ -26,7 +27,8 @@ from ui.add_label import Ui_addLabelDialog as AddLabelUI
 from app.annotation.scene import AnnotationScene
 from app.annotation.box_item import (AnnotationBoxItem, AnnotationPolygonItem,
                                      LABEL_COLORS, assign_label_color, label_color)
-from app.core.label_utils import normalize_label, label_sort_key
+from app.core.label_utils import (normalize_label, label_sort_key,
+                                  same_dir_json)
 from app.core.utils import project_root, ui_font_family
 from app.widgets.dialog_buttons import (apply_icon, add_ok_cancel,
                                         _icon_path, _tinted)
@@ -49,6 +51,46 @@ def _resource_path(name):
     root = project_root()
     p = os.path.join(root, "resources", name)
     return p if os.path.exists(p) else ""
+
+
+# 左右两个列表行的高亮底色(左侧标签列表 / 右侧标注列表同款)
+ROW_BG_SELECTED = "#2a3f6b"
+ROW_BG_NORMAL = "#23262f"
+_ROW_QSS = "QFrame {{ background: {0}; border-radius: 6px; }}"
+
+
+@lru_cache(maxsize=128)
+def _dot_icon(color):
+    """
+    标签颜色圆点图标。按颜色缓存: 右侧标注列表每行取一次, 不缓存时
+    每次刷新都要 new QPixmap + QPainter + QIcon, 框多时是卡顿主因之一。
+    """
+    pm = QPixmap(16, 16)
+    pm.fill(Qt.transparent)
+    p = QPainter(pm)
+    p.setRenderHint(QPainter.Antialiasing)
+    p.setPen(Qt.NoPen)
+    p.setBrush(QColor(color))
+    p.drawEllipse(2, 2, 12, 12)
+    p.end()
+    return QIcon(pm)
+
+
+def _set_row_background(row, selected):
+    """
+    列表行高亮。已是目标底色就跳过 —— setStyleSheet 会触发整行
+    unpolish/polish 重绘, 上千行全量重设是标注卡顿的主因。
+    """
+    if row is None:
+        return
+    want = ROW_BG_SELECTED if selected else ROW_BG_NORMAL
+    try:
+        if getattr(row, "_row_bg", None) == want:
+            return
+        row._row_bg = want
+        row.setStyleSheet(_ROW_QSS.format(want))
+    except RuntimeError:
+        pass    # 行已被 deleteLater 回收, 忽略
 
 
 def _upgrade_graphics_view(view):
@@ -226,9 +268,6 @@ def _upgrade_graphics_view(view):
     QShortcut(QKeySequence.ZoomOut, view, activated=view.zoom_out)
     QShortcut(QKeySequence("Ctrl+0"), view, activated=view.fit_window)
     return view
-
-
-IMAGE_EXTS = (".jpg", ".jpeg", ".png", ".bmp", ".webp")
 
 
 class _ClsLabelItem(QGraphicsTextItem):
@@ -605,21 +644,17 @@ class AnnotationDialog(QDialog):
         self.dataset = dataset
         self.label_path = label_path
         self.label_fmt = label_fmt
-        # YOLO txt 数字 id, 显示名映射(db 持久化,跨重启生效)
         self.label_ids = (db.get_dataset_label_ids(project, dataset)
                           if db else {})
         self.cls_mode = cls_mode
         self._cls_changes = []
-        self._deleted_labels = []   # 本次会话删除的标签（供主界面清理缓存）
+        self._deleted_labels = []
         self.image_list = list(image_list) if image_list else []
         self.index = current_index
-        # 全尺寸 QPixmap LRU 缓存 + 后台预加载(相邻图), 缓解大图 D 切换卡顿
         self._pix_cache = {}
         self._pix_cache_max = 16
-        # 图像 format 缓存(path→QImage.Format), 避免 _load_current 显示通道数时
-        # pix.toImage() 整图拷贝(只为拿 format)
+        self._pix_cache_bytes_max = 768 * 1024 * 1024
         self._pix_fmt_cache = {}
-        # 当前图像的像素改动尚未写回磁盘(粘贴/填充/撤销后置位)
         self._pix_unsaved = False
         self._closing = False
         self._prefetch_worker = _PrefetchWorker(self.image_list, self)
@@ -628,14 +663,15 @@ class AnnotationDialog(QDialog):
         self.view = None
         self.scene = None
         self._label_buttons = {}
+        self._labeled_rows = {}
+        self._labeled_sel_row = None
         self._dirty = False
-        self._modified_paths = set()   # 本次会话真正写过 json 的图路径(主界面据此增量重扫)
+        self._modified_paths = set()
         self.label_colors = dict(self.db.get_dataset_labels(project, dataset))
 
         self.ui = AnnotationUI()
         self.ui.setupUi(self)
         self.setWindowTitle("标注 - {} / {}".format(project, dataset))
-        # 标题栏补上最小化/最大化按钮(默认 QDialog 只有关闭)
         self.setWindowFlags(self.windowFlags()
                             | Qt.WindowMinimizeButtonHint | Qt.WindowMaximizeButtonHint)
         self._replace_view()
@@ -780,7 +816,7 @@ class AnnotationDialog(QDialog):
         pix = item.pixmap()
         if pix is None or pix.isNull():
             return
-        self._pix_cache[self.image_list[self.index]] = pix
+        self._put_pix_cache(self.image_list[self.index], pix)
         self._pix_unsaved = True
         self._dirty = True
         self._autosave_timer.start()
@@ -831,17 +867,42 @@ class AnnotationDialog(QDialog):
             if qimg is None or qimg.isNull():
                 return None
             pix = QPixmap.fromImage(qimg)
-            self._pix_cache[image_path] = pix
-            self._pix_fmt_cache[image_path] = qimg.format()
-            self._trim_pix_cache()
+            self._put_pix_cache(image_path, pix, qimg.format())
+            return pix
+
+        self._put_pix_cache(image_path, pix)
         return pix
 
+    def _put_pix_cache(self, image_path, pix, fmt=None):
+        """入缓存并刷新访问顺序(dict 末尾 = 最近使用), 超出上限按 LRU 淘汰。"""
+        self._pix_cache.pop(image_path, None)
+        self._pix_cache[image_path] = pix
+        if fmt is not None:
+            self._pix_fmt_cache[image_path] = fmt
+        self._trim_pix_cache()
+
     def _trim_pix_cache(self):
-        """LRU 淘汰: 超出上限时移除最久未用的(有序 dict 首项), 同步清理 format 缓存。"""
+        """
+        LRU 淘汰: 从 dict 首项(最久未用)开始丢弃, 同步清理 format 缓存。
+        先按张数, 再按估算字节数; 字节循环保留最后一项, 保证当前图不被挤掉。
+        """
         while len(self._pix_cache) > self._pix_cache_max:
-            k = next(iter(self._pix_cache))
-            self._pix_cache.pop(k)
-            self._pix_fmt_cache.pop(k, None)
+            self._drop_oldest_pix()
+        while (len(self._pix_cache) > 1
+               and self._pix_cache_bytes() > self._pix_cache_bytes_max):
+            self._drop_oldest_pix()
+
+    def _drop_oldest_pix(self):
+        k = next(iter(self._pix_cache), None)
+        if k is None:
+            return
+        self._pix_cache.pop(k, None)
+        self._pix_fmt_cache.pop(k, None)
+
+    def _pix_cache_bytes(self):
+        """按 depth 估算位图占用(灰度图用 4 字节/像素会高估, 导致过度淘汰)。"""
+        return sum(p.width() * p.height() * p.depth() // 8
+                   for p in self._pix_cache.values())
 
     def _on_prefetch_decoded(self, path, qimg):
         """后台解码完成: 转 QPixmap 入缓存(按 image_path 作 key), 同步记录 format。"""
@@ -851,9 +912,7 @@ class AnnotationDialog(QDialog):
             return
         if path in self._pix_cache:
             return
-        self._pix_cache[path] = QPixmap.fromImage(qimg)
-        self._pix_fmt_cache[path] = qimg.format()
-        self._trim_pix_cache()
+        self._put_pix_cache(path, QPixmap.fromImage(qimg), qimg.format())
 
     def _load_current(self):
         if not (0 <= self.index < len(self.image_list)):
@@ -869,7 +928,6 @@ class AnnotationDialog(QDialog):
             if (0 <= nxt < len(self.image_list)
                     and self.image_list[nxt] not in self._pix_cache):
                 self._prefetch_worker.request(nxt)
-        base, _ = os.path.splitext(image_path)
         if self.cls_mode:
             # 图像分类：只读看图,无框可标注;类别 = 父文件夹名
             boxes = []
@@ -889,8 +947,8 @@ class AnnotationDialog(QDialog):
                         pix.height() / 2 - r.height() / 2)
             item.setZValue(10)
         else:
-            json_path = base + ".json"
-            if os.path.exists(json_path):
+            json_path = same_dir_json(image_path)
+            if json_path:
                 boxes = _load_labelme(json_path)
             else:
                 boxes = _load_import_label(image_path, self.label_path,
@@ -907,7 +965,6 @@ class AnnotationDialog(QDialog):
                 item.setVisible(False)
         self._ensure_label_colors(boxes)
         QTimer.singleShot(0, self.view.fit_window)
-        # 通道数从解码时缓存的 format 拿(避免 pix.toImage() 整图拷贝只为 format)
         channels = {
             QImage.Format_Grayscale8: 1,
             QImage.Format_Grayscale16: 1,
@@ -1231,16 +1288,8 @@ class AnnotationDialog(QDialog):
         return QCursor(pm, 6, 6)
 
     def _label_icon(self, color):
-        """标签颜色圆点图标(下拉菜单用)。"""
-        pm = QPixmap(16, 16)
-        pm.fill(Qt.transparent)
-        p = QPainter(pm)
-        p.setRenderHint(QPainter.Antialiasing)
-        p.setPen(Qt.NoPen)
-        p.setBrush(QColor(color))
-        p.drawEllipse(2, 2, 12, 12)
-        p.end()
-        return QIcon(pm)
+        """标签颜色圆点图标(下拉菜单/右侧列表用)。归一成色值字符串后走模块级缓存。"""
+        return _dot_icon(QColor(color).name())
 
     def _on_label_change_requested(self, item):
         """点击标注框上的标签 chip → 弹出所有标签下拉，选择后修改该框类别。"""
@@ -1413,9 +1462,8 @@ class AnnotationDialog(QDialog):
             for i, img_path in enumerate(paths):
                 if progress is not None:
                     progress.set_progress(i)
-                base, _ = os.path.splitext(img_path)
-                jp = base + ".json"
-                if not os.path.exists(jp):
+                jp = same_dir_json(img_path)
+                if not jp:
                     continue
                 try:
                     with open(jp, "r", encoding="utf-8") as f:
@@ -1488,9 +1536,8 @@ class AnnotationDialog(QDialog):
             for i, img_path in enumerate(paths):
                 if progress is not None:
                     progress.set_progress(i)
-                base, _ = os.path.splitext(img_path)
-                jp = base + ".json"
-                if not os.path.exists(jp):
+                jp = same_dir_json(img_path)
+                if not jp:
                     continue
                 try:
                     with open(jp, "r", encoding="utf-8") as f:
@@ -1529,9 +1576,7 @@ class AnnotationDialog(QDialog):
         self.scene.current_label = name
         self._update_draw_buttons()
         for n, r in self._label_buttons.items():
-            bg = "#2a3f6b" if n == name else "#23262f"
-            r.setStyleSheet(
-                "QFrame {{ background: {0}; border-radius: 6px; }}".format(bg))
+            _set_row_background(r, n == name)
 
     def _add_label_clicked(self):
         dlg = AddLabelDialog(self, db=self.db, project=self.project,
@@ -1616,7 +1661,6 @@ class AnnotationDialog(QDialog):
             layout.removeWidget(row)
             row.deleteLater()
         self._labeled_rows = new_map
-        self._labeled_rev = {row: item for item, row in new_map.items()}
         layout.addStretch(1)
         self._sync_labeled_selection()
 
@@ -1692,12 +1736,18 @@ class AnnotationDialog(QDialog):
         self.view.ensureVisible(scene_rect, 60, 60)
 
     def _sync_labeled_selection(self, _sel=None):
-        """场景选中 → 同步右侧行高亮（与左侧标签列表同款 #2a3f6b）。"""
+        """
+        场景选中 → 同步右侧行高亮（与左侧标签列表同款底色）。
+        只改"状态变化的那两行": 右侧列表可能有上千行, 每次全量 setStyleSheet
+        会触发整行 unpolish/polish, 是框多时卡顿的主因之一。
+        """
         sel = _sel if _sel is not None else self.scene.selected_item()
-        for it, row in self._labeled_rows.items():
-            bg = "#2a3f6b" if it is sel else "#23262f"
-            row.setStyleSheet(
-                "QFrame {{ background: {0}; border-radius: 6px; }}".format(bg))
+        row = self._labeled_rows.get(sel)
+        if row is self._labeled_sel_row:
+            return
+        _set_row_background(self._labeled_sel_row, False)
+        _set_row_background(row, True)
+        self._labeled_sel_row = row
 
     @staticmethod
     def _polygon_area(points):

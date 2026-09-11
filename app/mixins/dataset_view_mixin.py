@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
-import sys
 import os
 import json
-CURRENT_DIRECTORY = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-WORKSPACE_DIRECTORY = os.path.dirname(CURRENT_DIRECTORY)
-sys.path.append(WORKSPACE_DIRECTORY)
-sys.path.append(os.path.join(WORKSPACE_DIRECTORY, 'ui'))
+from app.core.db import get_paths
 from app.annotation.annotation_dialog import AnnotationDialog
 from app.widgets.paginator import Paginator
-from app.core.label_utils import (normalize_label, label_sort_key)
+from app.core.constants import (PAGE_SIZE, THUMB_CACHE_MAX,
+                                ROI_CACHE_MAX)
+from app.core.label_utils import (normalize_label, label_sort_key,
+                                  rec_is_labeled, same_dir_json)
 from app.core.image_utils import pil_to_qimage, make_uniform_thumb
 from app.annotation.scene_items import SelectablePixmapItem
 from app.tasks.import_task import ImportTask
@@ -101,12 +100,6 @@ class _ThumbDecodeWorker(QThread):
             self.batch_done.emit(results)
 
 
-# QImage 图像缓存(整图缩略图/ROI)总量上限: 超过后按 LRU 淘汰非当前页缓存,
-# 淘汰后置 None 渲染时懒重建, 避免 2 万+ 张规模下翻页内存持续增长。
-_THUMB_CACHE_MAX = 2000   # 整图缩略图缓存张数上限(~160KB/张)
-_ROI_CACHE_MAX = 2000     # ROI 缓存张数上限(按 rec 粒度计数)
-
-
 _THUMB_PLACEHOLDER = None
 
 
@@ -118,11 +111,6 @@ def _thumb_placeholder():
         _THUMB_PLACEHOLDER.fill(QColor(56, 58, 66))
     return _THUMB_PLACEHOLDER
 
-
-try:
-    from shiboken6 import isValid as _is_valid
-except ImportError:
-    _is_valid = lambda obj: obj is not None
 
 try:
     import PIL.Image as PILImage
@@ -293,8 +281,7 @@ class DatasetViewMixin(object):
             cur = 0
 
         binding = self.db.get_dataset_import(proj, ds)
-        label_paths = binding.get("label_paths") or (
-            [binding.get("label_path")] if binding.get("label_path") else [])
+        label_paths = get_paths(binding, "label")
         cls_mode = binding.get("label_fmt", "") == "cls"
         dlg = AnnotationDialog(image_list, cur, self.db, proj, ds,
                                label_path=label_paths,
@@ -330,10 +317,8 @@ class DatasetViewMixin(object):
         binding = self.db.get_dataset_import(project_name, dataset_name)
         if not binding or binding.get("label_fmt", "") != ".json":
             return
-        img_paths = binding.get("image_paths") or (
-            [binding.get("image_path")] if binding.get("image_path") else [])
-        old_lbls = binding.get("label_paths") or (
-            [binding.get("label_path")] if binding.get("label_path") else [])
+        img_paths = get_paths(binding, "image")
+        old_lbls = get_paths(binding, "label")
         new_lbls = list(old_lbls)
         added = False
         for ip in img_paths:
@@ -379,7 +364,7 @@ class DatasetViewMixin(object):
         if cur == "__unlabeled__":
             if any(r.get("cls") for r in all_records):
                 return []
-            return [r for r in all_records if not r.get("boxes")]
+            return [r for r in all_records if not rec_is_labeled(r)]
         if cur in data.get("labels", {}):
             return data["labels"][cur]
         return []
@@ -424,10 +409,8 @@ class DatasetViewMixin(object):
             return
         binding = self.db.get_dataset_import(project_name, dataset_name)
         if binding:
-            image_paths = binding.get("image_paths") or (
-                [binding.get("image_path")] if binding.get("image_path") else [])
-            label_paths = binding.get("label_paths") or (
-                [binding.get("label_path")] if binding.get("label_path") else [])
+            image_paths = get_paths(binding, "image")
+            label_paths = get_paths(binding, "label")
             valid_images = [p for p in image_paths if p and os.path.isdir(p)]
             if valid_images:
                 excluded = self.db.get_deleted_images(project_name, dataset_name)
@@ -481,9 +464,8 @@ class DatasetViewMixin(object):
                 img_path = rec.get("image_path", "")
                 if only_paths is not None and img_path not in only_paths:
                     continue
-                base, _ = os.path.splitext(img_path)
-                json_path = base + ".json"
-                if os.path.exists(json_path):
+                json_path = same_dir_json(img_path)
+                if json_path:
                     try:
                         with open(json_path, "r", encoding="utf-8") as f:
                             data = json.load(f)
@@ -711,8 +693,8 @@ class DatasetViewMixin(object):
         index = self.dataset_cache.get(cur[0], {}).get(cur[1])
         if not index:
             return
-        t_max = getattr(self, "_thumb_cache_max", _THUMB_CACHE_MAX)
-        r_max = getattr(self, "_roi_cache_max", _ROI_CACHE_MAX)
+        t_max = getattr(self, "_thumb_cache_max", THUMB_CACHE_MAX)
+        r_max = getattr(self, "_roi_cache_max", ROI_CACHE_MAX)
         protected = getattr(self, "_current_page_paths", None) or set()
         thumbs = []
         rois = []
@@ -720,13 +702,12 @@ class DatasetViewMixin(object):
             if rec.get("image_path", "") in protected:
                 continue
             th = rec.get("thumb")
-            # 占位图是模块级共享单例, 不占独立内存, 跳过保留(防失败图重复解码)
             if th is not None and th is not _thumb_placeholder():
                 thumbs.append((rec.get("_thumb_t", 0), rec))
             if rec.get("rois_by_idx"):
                 rois.append((rec.get("_roi_t", 0), rec))
-        thumbs.sort(reverse=True)
-        rois.sort(reverse=True)
+        thumbs.sort(key=lambda t: t[0], reverse=True)
+        rois.sort(key=lambda t: t[0], reverse=True)
         for _, rec in thumbs[t_max:]:
             rec["thumb"] = None
         for _, rec in rois[r_max:]:
@@ -739,13 +720,12 @@ class DatasetViewMixin(object):
         """
         scene = self.graphics_view.scene()
         scene.clear()
-        page_size = getattr(self, "page_size", 50)
+        page_size = getattr(self, "page_size", PAGE_SIZE)
         cur_label = getattr(self, "current_label", None)
         view_data = self._expand_by_label(data)
         total_pages = max(1, (len(view_data) + page_size - 1) // page_size)
         self.current_page = max(0, min(getattr(self, "current_page", 0), total_pages - 1))
         page_data = list(Paginator(view_data, page_size)[self.current_page])
-        # 当前页 path 集合: LRU 淘汰时保护正在看的页, 翻回不闪灰块
         self._current_page_paths = set()
         for entry in page_data:
             rec = entry[0] if isinstance(entry, tuple) else entry
@@ -857,20 +837,18 @@ class DatasetViewMixin(object):
                 self.db.save_dataset_label_ids(
                     project_name, dataset_name, merged)
             labeled = total if cls_mode else sum(
-                1 for r in result if r.get("boxes"))
+                1 for r in result if rec_is_labeled(r))
             if update_stats:
                 new_label_path = label_path
                 new_fmt = fmt
                 if labeled > 0 and not cls_mode:
                     binding = self.db.get_dataset_import(
                         project_name, dataset_name)
-                    old_label = binding.get("label_paths") or (
-                        [binding.get("label_path")]
-                        if binding.get("label_path") else [])
+                    old_label = get_paths(binding, "label")
                     if not old_label:
                         new_label_path = image_path
                         new_fmt = ".json"
-                # write_db=False 时跳过 db 写入(do_import 已预写), 只更新内存/UI
+
                 if write_db:
                     self.db.update_dataset_import(project_name, dataset_name,
                                                   image_path, new_label_path,

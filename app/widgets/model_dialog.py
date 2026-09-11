@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import csv
 import json
 import os
 import re
@@ -20,9 +19,11 @@ import traceback
 
 from PySide6.QtCore import QTimer
 
-from app.core.db import load_train_metrics
+from app.core.db import get_paths, load_train_metrics
 from app.core.log import write_log
+from app.core.metrics import (best_map50, metric_key, series_from_csv)
 from app.widgets.message_box import MessageBox, ProgressDialog
+from app.widgets.status_style import status_color
 from app.widgets.metrics_dialog import MetricsDialog
 from app.widgets.test_dialog import TestDialog
 from app.train.dialogs import TrainDialog
@@ -76,64 +77,13 @@ def _status(rec):
     return "已完成"
 
 
-STATUS_COLOR = {
-    "失败": "#ff6b6b",
-    "已停止": "#ffd166",
-    "失败/已停止": "#ff9f6b",   # 旧记录: 无法判定
-    "训练中": "#6bb8ff",
-}
-
-
-# 训练 metrics.csv 列名 -> 指标文件 series 键名, 与 train_worker._write_row 保持一致
-_CSV_KEYS = (
-    ("mAP@50-95", "val/mAP_50_95"), ("mAP@50", "val/mAP_50"),
-    ("precision", "val/precision"), ("recall", "val/recall"),
-    ("F1", "val/F1"), ("mAR", "val/mAR"),
-    ("ema_mAP@50", "val/ema_mAP_50"), ("ema_mAP@50-95", "val/ema_mAP_50_95"),
-    ("mask_mAP@50", "val/segm_mAP_50"), ("mask_mAP@50-95", "val/segm_mAP_50_95"),
-    ("mask_ema_mAP@50", "val/ema_segm_mAP_50"),
-    ("mask_ema_mAP@50-95", "val/ema_segm_mAP_50_95"),
-    ("train_loss", "train/loss"), ("val_loss", "val/loss"),
-)
-
-
-def _series_from_csv(csv_path):
-    """全量解析训练的 metrics.csv; 同一 epoch 多行时后写的值覆盖先写的。"""
-    try:
-        with open(csv_path, "r", encoding="utf-8", errors="replace") as f:
-            rows = list(csv.DictReader(f))
-    except OSError:
-        return {}
-    by_epoch = {}
-    for r in rows:
-        try:
-            ep = int(float(r.get("epoch", 0)))
-        except (TypeError, ValueError):
-            continue
-        merged = by_epoch.setdefault(ep, {})
-        for k, v in r.items():
-            if v not in (None, ""):
-                merged[k] = v
-    series = {"epochs": sorted(by_epoch)}
-    for key, csv_key in _CSV_KEYS:
-        vals = []
-        for ep in series["epochs"]:
-            try:
-                vals.append(float(by_epoch[ep].get(csv_key)))
-            except (TypeError, ValueError):
-                vals.append(None)
-        if any(v is not None for v in vals):
-            series[key] = vals
-    return series
-
-
 def _load_series(rec, db_path):
     """显示用曲线数据: 优先训练目录的 metrics.csv(rf-detr 真源);
     指标 json 只是训练中的节流快照, 可能缺列或缺尾轮。分类无 csv, 走 json。"""
     model_path = rec.get("model_path") or ""
     csv_path = os.path.join(os.path.dirname(model_path), "metrics.csv") if model_path else ""
     if csv_path and os.path.isfile(csv_path):
-        s = _series_from_csv(csv_path)
+        s = series_from_csv(csv_path)
         if s.get("epochs"):
             return s
     try:
@@ -143,14 +93,8 @@ def _load_series(rec, db_path):
 
 
 def _curve_series(series):
-    """曲线数据与精度列同源: 优先 ema 列(交付模型按 ema 选 best checkpoint)。"""
-    if "accuracy" in series:
-        key = "accuracy"
-    else:
-        is_seg = bool(series.get("mask_mAP@50") or series.get("mask_ema_mAP@50"))
-        key = next((k for k in (("mask_ema_mAP@50", "mask_mAP@50") if is_seg
-                                else ("ema_mAP@50", "mAP@50"))
-                    if series.get(k)), "")
+    """曲线数据与精度列同源（优先 ema 列，见 core.metrics.metric_key）。"""
+    key = metric_key(series, "accuracy" if "accuracy" in series else "mAP@50")
     ys = [v for v in (series.get(key) or []) if isinstance(v, (int, float))]
     return key, ys
 
@@ -221,16 +165,26 @@ class ModelDialog(QDialog):
         if self._page_size != old:
             self._resize_timer.start()
 
+    def _clear_cell_widgets(self, rows):
+        """
+        清掉指定行的 cellWidget(含 deleteLater)。
+        clearContents 只清 item, 不移除 setCellWidget 注册的控件, 所以页码切换时
+        多余行会留着上一页的"测试/导出/删除"按钮 —— 其闭包绑定的是上一页的记录,
+        误点就会操作错记录。关闭前也走这里, 避免 PySide6 对话框 GC 时按钮
+        lambda 循环引用导致 0xC0000005。
+        """
+        t = self.ui.tableWidget
+        for r in rows:
+            for c in range(t.columnCount()):
+                w = t.cellWidget(r, c)
+                if w is not None:
+                    t.removeCellWidget(r, c)
+                    w.deleteLater()
+
     def done(self, result):
         """关闭前清理 cellWidget：避免 PySide6 对话框 GC 时按钮 lambda 循环引用导致 0xC0000005。"""
         try:
-            t = self.ui.tableWidget
-            for r in range(t.rowCount()):
-                for c in range(t.columnCount()):
-                    w = t.cellWidget(r, c)
-                    if w is not None:
-                        t.removeCellWidget(r, c)
-                        w.deleteLater()
+            self._clear_cell_widgets(range(self.ui.tableWidget.rowCount()))
         except Exception:
             pass
         super().done(result)
@@ -329,15 +283,14 @@ class ModelDialog(QDialog):
         self._all_records = recs
         self._apply_filters()
 
-    # 库里的 map50/accuracy 可能是训练中途的快照(result.json 也不带 map50),
-    # 显示一律以训练目录的 csv(或指标 json)全程最佳为准
     def _refresh_metric_from_file(self, rec):
         if not (rec.get("metrics_file") or rec.get("model_path")):
             return
         series = _load_series(rec, getattr(self.app.db, "db_path", None))
-        key, ys = _curve_series(series)
-        if ys:
-            rec["map50" if key != "accuracy" else "accuracy"] = "{:.3f}".format(max(ys))
+        key = metric_key(series, "accuracy" if "accuracy" in series else "mAP@50")
+        v = best_map50(series)
+        if v is not None:
+            rec["map50" if key != "accuracy" else "accuracy"] = "{:.3f}".format(v)
 
     def _record_match(self, r):
         if self._project and r.get("project") != self._project:
@@ -427,6 +380,8 @@ class ModelDialog(QDialog):
         self._page_recs = page_recs
         t.clearContents()
         t.setRowCount(self._page_size)
+        # 上一页在多余行残留的 cellWidget 必须先清, 否则按钮还指向上一页记录
+        self._clear_cell_widgets(range(len(page_recs), t.rowCount()))
         for i, r in enumerate(page_recs):
             st = _status(r)
             m = _metric_value(r)
@@ -451,7 +406,7 @@ class ModelDialog(QDialog):
             if m is None:
                 item = QTableWidgetItem(st)
                 item.setTextAlignment(Qt.AlignCenter)
-                item.setForeground(QColor(STATUS_COLOR.get(st, "#ffd166")))
+                item.setForeground(QColor(status_color(st, "#ffd166")))
                 err = str(r.get("error") or "").strip()
                 item.setToolTip(err or st)
                 t.setItem(i, COL_METRIC, item)
@@ -503,7 +458,7 @@ class ModelDialog(QDialog):
             s = QLabel(status)
             s.setAlignment(Qt.AlignCenter)
             s.setStyleSheet("font-size:10px;color:%s;"
-                            % STATUS_COLOR.get(status, METRIC_MID))
+                            % status_color(status, METRIC_MID))
             v.addWidget(s)
             if error:
                 wrap.setToolTip(error)
@@ -583,7 +538,7 @@ class ModelDialog(QDialog):
             val = _esc(v)
             if k == "状态":
                 val = "<span style='color:{}'>{}</span>".format(
-                    STATUS_COLOR.get(v, "#e8eaf0"), val)
+                    status_color(v), val)
             html += ("<tr><td style='color:#8b8b8b;padding-right:6px;"
                      "white-space:nowrap'>{}</td><td>{}</td></tr>".format(
                          _esc(k), val))
@@ -592,8 +547,8 @@ class ModelDialog(QDialog):
             html += ("<tr><td style='color:#8b8b8b;padding-right:6px;"
                      "vertical-align:top;white-space:nowrap'>失败原因</td>"
                      "<td><pre style='margin:0;white-space:pre-wrap;"
-                     "font-family:inherit;color:#ff9aa2'>{}</pre></td></tr>"
-                     .format(_esc(err[:800])))
+                     "font-family:inherit;color:{}'>{{}}</pre></td></tr>"
+                     .format(status_color("失败")).format(_esc(err[:800])))
         u.detail_info.setText(
             "<table style='font-size:12px;line-height:150%'>{}</table>".format(html))
         self._draw_curve(rec)
@@ -905,18 +860,20 @@ class ModelDialog(QDialog):
         has_label, cls_mode = False, False
         for i, (proj, ds_name) in enumerate(pairs):
             binding = db.get_dataset_import(proj, ds_name) or {}
-            image_paths = binding.get("image_paths") or (
-                [binding["image_path"]] if binding.get("image_path") else [])
+            image_paths = get_paths(binding, "image")
             if not image_paths:
                 continue
-            label_paths = binding.get("label_paths") or (
-                [binding["label_path"]] if binding.get("label_path") else [])
+            label_paths = get_paths(binding, "label")
             if i == 0:
                 has_label = int(binding.get("labeled") or 0) > 0
                 cls_mode = binding.get("label_fmt", "") == "cls"
-            items.append({"project": proj, "dataset": ds_name,
-                          "image_path": image_paths[0],
-                          "label_path": label_paths[0] if label_paths else ""})
+            for i, image_path in enumerate(image_paths):
+                items.append({
+                    "project": proj, "dataset": ds_name,
+                    "image_path": image_path,
+                    "label_path": (label_paths[i] if i < len(label_paths)
+                                   else (label_paths[0] if label_paths else "")),
+                })
             total += int(binding.get("total") or 0)
         if not items:
             return None

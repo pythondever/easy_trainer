@@ -2,7 +2,6 @@
 """统一消息框 + 进度对话框（深色主题，自绘无边框窗口，与 app QSS 一致）。"""
 
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QFont
 from PySide6.QtWidgets import (QApplication, QDialog, QFrame, QVBoxLayout,
                                QHBoxLayout, QLabel, QPushButton, QProgressBar)
 from PySide6.QtWidgets import QGraphicsDropShadowEffect
