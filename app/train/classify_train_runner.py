@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """图像分类训练执行脚本（由 UI 以子进程方式启动）。
 
-用法: python -m app.train.classify_train_runner <config.json>
+用法: main()，由 train_worker 以 -c 导入后调用（打包后是 pyd，不能 python -m 启动）
 config 字段见 dialogs.py ClassifyDialog._build_train_config：
   task=classify, architecture=resnet18/34/50/101, num_classes, epochs,
   batch_size, lr, img_size, device, datasets[{split,image_path,label_fmt}]

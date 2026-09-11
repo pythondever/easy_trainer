@@ -226,7 +226,7 @@
           <item>
             <widget class="QPushButton" name="clear_done_btn">
               <property name="text">
-                <string>清理已完成</string>
+                <string>清理已结束</string>
               </property>
               <property name="class" stdset="0">
                 <string>ghost</string>

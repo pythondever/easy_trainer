@@ -35,8 +35,8 @@ Python、pip 依赖是国内可直连的公开地址，**无需自建服务器/O
 > `runtime\python310\python.exe -c "import torch;print(torch.cuda.is_available())"` 应为 True。
 
 Python 走 **embeddable 绿色包**（不装 MSI、不写注册表、不需要卸载）：解压到
-`runtime\python310` 后改写 `python310._pth`（开 `import site` 并把 `Lib\site-packages`
-加进 sys.path），pip 装的所有包就在这个目录里，卸载即删除目录。老版本 MSI 装的
+`runtime\python310` 后改写 `python310._pth`（开 `import site`，把 `Lib\site-packages`
+与安装根 `..\..` 加进 sys.path），pip 装的所有包就在这个目录里，卸载即删除目录。老版本 MSI 装的
 运行时会在安装时自动识别（`python310._pth` 缺失）并整套换成绿色包。
 
 **磁盘要求**：装"运行时"需要约 **10GB**（torch cu121 下载 2.4GB + 落地约 9GB），
@@ -99,8 +99,11 @@ builder\build.py 三端共用**，改这一处即可换源或添加国内镜像�
 启动链：桌面/开始菜单快捷方式 → `runtime\python310\pythonw.exe "安装根\app\easy_trainer.py"`。
 `PYTHONPATH` 由 easy_trainer.py 文件头自行 append 安装根；`RF_HOME` 在
 `安装根\pretrained` 存在时由程序启动早期 setdefault（用户显式设过环境变量则不覆盖）。
-训练/测试子进程走 `pythonw.exe -m app.train.*_runner`（worker 已按模块名调用，
-cwd=安装根，因此 pyd 化后不受影响）。
+训练/测试子进程走 `pythonw.exe -c "…from app.train.*_runner import main; main()"`。
+**不能用 `-m`**：打包后 runner 是 pyd，runpy 取不到 code object，会直接报
+`No code object available`。安装根由 `-c` 里的 `sys.path.insert` 兜底，另在
+`python310._pth` 里也写了 `..\..`（覆盖 DataLoader 派生的孙进程——它们同样是
+embeddable 解释器，同样忽略 `PYTHONPATH`）。
 
 ## 静默安装（无人值守/CI 验证）
 

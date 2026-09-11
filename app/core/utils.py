@@ -126,16 +126,29 @@ def project_root():
 _TRAIN_TEXT_ENCODINGS = ("utf-8-sig", "utf-8", "gbk")
 
 
-def read_text_any(path):
-    """读子进程产物文本, 按 utf-8 → gbk 降级, 避免编码不符时整条通道静默失效。"""
-    with open(path, "rb") as f:
-        raw = f.read()
+def decode_text_bytes(raw):
+    """
+    解码子进程产出的 bytes, 按 utf-8 → gbk 降级。
+    训练子进程的文本编码由它自己的环境决定，不能假设是 utf-8：Windows 上当
+    stdout 是管道(不是控制台)时 Python 取 ANSI 码页(中文=gbk)，从 PyCharm
+    之类注入过 PYTHONIOENCODING 的环境启动才是 utf-8；而且 C 层库(torch 等)
+    会绕过 Python 编码器直接写 fd，同一份输出里可能两种编码混排。固定按
+    utf-8 + errors="replace" 解会把中文和表格字符全变成替换符。
+    """
+    if isinstance(raw, str):
+        return raw
     for enc in _TRAIN_TEXT_ENCODINGS:
         try:
             return raw.decode(enc)
         except UnicodeDecodeError:
             continue
     return raw.decode("gbk", errors="replace")
+
+
+def read_text_any(path):
+    """读子进程产物文本, 按 utf-8 → gbk 降级, 避免编码不符时整条通道静默失效。"""
+    with open(path, "rb") as f:
+        return decode_text_bytes(f.read())
 
 
 def load_style_sheet():

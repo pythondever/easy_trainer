@@ -12,11 +12,39 @@ import time
 
 from PySide6.QtCore import QThread, Signal
 
+from app.core.utils import decode_text_bytes
+
 WORKSPACE = os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__))))
 
 TEST_RUNNER = "app.train.test_runner"
 CLASSIFY_TEST_RUNNER = "app.train.classify_test_runner"
+
+
+def _read_new_lines(path, start, final=False):
+    """
+    读子进程输出文件的新增行，返回 (行列表, 新偏移)。
+    按字节读再逐行降级解码：子进程 stdout 的编码由它自己的环境决定（安装版从
+    快捷方式启动时 Windows 上是 ANSI 码页 gbk），固定按 utf-8 解会把中文和表格
+    字符全变成替换符。非 final 时只消费到最后一个换行，避免把写到一半的行当成
+    完整行（那会让后续几个字节被当成新的一行）。
+    """
+    try:
+        with open(path, "rb") as f:
+            f.seek(start)
+            chunk = f.read()
+    except OSError:
+        return [], start
+    if not chunk:
+        return [], start
+    cut = len(chunk)
+    if not final:
+        nl = chunk.rfind(b"\n")
+        if nl < 0:
+            return [], start
+        cut = nl + 1
+    lines = [decode_text_bytes(part) for part in chunk[:cut].split(b"\n")]
+    return lines, start + cut
 
 
 class TestWorker(QThread):
@@ -60,22 +88,28 @@ class TestWorker(QThread):
 
         _trace("run 开始")
         env = dict(os.environ)
-        # 打包后子进程无 PYTHONPATH 可继承，显式指向项目根才能 -m 导入 app 包
+        # PYTHONPATH 只对 Linux(venv) 生效; Windows embeddable 有 _pth 会忽略它,
+        # 那边的安装根由 installer 写进 _pth
         env["PYTHONPATH"] = WORKSPACE
         env["PYTHONUNBUFFERED"] = "1"
         env["CUDA_MODULE_LOADING"] = "LAZY"
         module = (CLASSIFY_TEST_RUNNER
                   if self._config.get("task") == "classify" else TEST_RUNNER)
-        self.log.emit("[test-worker] 启动子进程: {} -m {} {}".format(
-            python, module, cfg_path))
+        # 不能用 -m: Cython 编出的 pyd 没有 code object, runpy 直接报
+        # "No code object available", 只能 -c 显式导入再调 main()
+        bootstrap = ("import sys; sys.path.insert(0, {!r});"
+                     "from {} import main; main()").format(WORKSPACE, module)
+        self.log.emit("[test-worker] 启动子进程: {} {}".format(
+            python, module))
         out_fd, out_path = tempfile.mkstemp(suffix=".testout")
         os.close(out_fd)
-        out_file = open(out_path, "w", encoding="utf-8", errors="replace")
+        # 只把 fd 交给子进程, 读写都不经过这个文件对象, 编码无关
+        out_file = open(out_path, "wb")
         try:
             self._proc = subprocess.Popen(
-                [python, "-m", module, cfg_path],
+                [python, "-c", bootstrap, cfg_path],
                 cwd=WORKSPACE, stdout=out_file, stderr=subprocess.STDOUT,
-                text=True, encoding="utf-8", errors="replace", env=env)
+                env=env)
         except Exception as e:
             self.log.emit("[test-worker] 启动子进程失败: {}".format(e))
             out_file.close()
@@ -131,29 +165,18 @@ class TestWorker(QThread):
                         fsz = -1
                     _trace("轮询中: 文件={}B 已读{}行 子进程={}".format(
                         fsz, _bytes_read[0], self._proc.poll()))
-                try:
-                    with open(out_path, "r", encoding="utf-8",
-                              errors="replace") as f:
-                        f.seek(pos)
-                        new = f.readlines()
-                        pos = f.tell()
-                except Exception:
-                    new = []
-                if new:
-                    _consume(new)
+                lines, pos = _read_new_lines(out_path, pos)
+                if lines:
+                    _consume(lines)
                 if self._proc.poll() is not None:
                     break
                 time.sleep(0.1)
         except Exception:
             import traceback
             _trace("轮询异常:\n" + traceback.format_exc())
-        try:
-            with open(out_path, "r", encoding="utf-8",
-                      errors="replace") as f:
-                f.seek(pos)
-                _consume(f.readlines())
-        except Exception:
-            pass
+        tail, pos = _read_new_lines(out_path, pos, final=True)
+        if tail:
+            _consume(tail)
         _trace("轮询结束 rc={}".format(self._proc.poll()))
         self.log.emit("[test-worker] 子进程退出 rc={}".format(
             self._proc.poll()))

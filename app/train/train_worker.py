@@ -17,7 +17,7 @@ import traceback
 
 from PySide6.QtCore import QThread, Signal
 
-from app.core.utils import read_text_any
+from app.core.utils import decode_text_bytes, read_text_any
 
 try:
     import psutil
@@ -26,7 +26,7 @@ except ImportError:
 
 WORKSPACE = os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__))))
-# 打包后 runner 是 .pyd（脚本文件不存在），统一用 python -m <模块> 调用
+# 打包后 runner 是 .pyd（脚本文件不存在），子进程只能 -c 导入本模块再调 main()
 TRAIN_RUNNER = "app.train.train_runner"
 CLASSIFY_TRAIN_RUNNER = "app.train.classify_train_runner"
 # 判定一个 epoch 是否已产出指标(val 有了、或 train 行到了)的列
@@ -298,21 +298,25 @@ class TrainWorker(QThread):
         module = (CLASSIFY_TRAIN_RUNNER
                   if self._config.get("task") == "classify" else TRAIN_RUNNER)
         env = dict(os.environ)
-        # 打包后子进程无 PYTHONPATH 可继承，显式指向项目根才能 -m 导入 app 包
         env["PYTHONPATH"] = WORKSPACE
         env["PYTHONUNBUFFERED"] = "1"
+        env["PYTHONIOENCODING"] = "utf-8"
+        # 不能用 -m: Cython 编出的 pyd 没有 code object, runpy 直接报
+        # "No code object available", 只能 -c 显式导入再调 main()
+        bootstrap = ("import sys; sys.path.insert(0, {!r});"
+                     "from {} import main; main()").format(WORKSPACE, module)
         self._proc = subprocess.Popen(
-            [python, "-m", module, cfg_path],
+            [python, "-c", bootstrap, cfg_path],
             cwd=WORKSPACE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-            text=True, encoding="utf-8", errors="replace", env=env)
+            env=env)
         out_q = queue.Queue()
         last_lines = collections.deque(maxlen=200)
         _ansi_re = re.compile(r"\x1b\[[0-9;]*[a-zA-Z]")
 
         def _reader():
             try:
-                for line in self._proc.stdout:
-                    out_q.put(line)
+                for raw in self._proc.stdout:      # bytes: 逐行降级解码
+                    out_q.put(decode_text_bytes(raw))
             except Exception:
                 pass
         threading.Thread(target=_reader, daemon=True).start()

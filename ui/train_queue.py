@@ -196,7 +196,7 @@ class Ui_TrainQueueDialog(object):
         self.move_down_btn.setProperty(u"class", QCoreApplication.translate("TrainQueueDialog", u"ghost", None))
         self.remove_btn.setText(QCoreApplication.translate("TrainQueueDialog", u"\u79fb\u9664", None))
         self.remove_btn.setProperty(u"class", QCoreApplication.translate("TrainQueueDialog", u"ghost", None))
-        self.clear_done_btn.setText(QCoreApplication.translate("TrainQueueDialog", u"\u6e05\u7406\u5df2\u5b8c\u6210", None))
+        self.clear_done_btn.setText(QCoreApplication.translate("TrainQueueDialog", u"\u6e05\u7406\u5df2\u7ed3\u675f", None))
         self.clear_done_btn.setProperty(u"class", QCoreApplication.translate("TrainQueueDialog", u"ghost", None))
         self.edit_btn.setText(QCoreApplication.translate("TrainQueueDialog", u"\u7f16\u8f91", None))
         self.close_btn.setText(QCoreApplication.translate("TrainQueueDialog", u"\u5173\u95ed", None))

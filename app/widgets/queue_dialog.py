@@ -8,6 +8,7 @@ from PySide6.QtGui import QColor, QDesktopServices
 from PySide6.QtWidgets import (QDialog, QTableWidgetItem, QAbstractItemView,
                                QHeaderView, QMenu)
 
+from app.mixins.queue_mixin import DONE_STATUS
 from app.widgets.message_box import MessageBox
 from app.train.dialogs import TrainDialog, params_to_record
 from app.widgets.status_style import status_color, status_text
@@ -110,6 +111,8 @@ class TrainQueueDialog(QDialog):
             badge, tip = "待启动", "有 {} 个任务等待启动".format(len(waiting))
         elif running:
             badge, tip = "训练中", "当前有训练在进行（非队列启动）"
+        elif items:
+            badge, tip = "已结束", "没有待执行的任务，点「重新开始队列」可重跑"
         else:
             badge, tip = "空闲", "队列为空，可在训练界面点「加入队列」添加任务"
         self.ui.queue_badge.setText(badge)
@@ -130,16 +133,22 @@ class TrainQueueDialog(QDialog):
 
     def _update_buttons(self, items):
         paused = self.app.queue_is_running() and self.app.queue_is_paused()
-        self.ui.start_btn.setText("继续队列" if paused else "开始队列")
         has_waiting = any(i.get("status") == "waiting" for i in items)
+        finished = [i for i in items if i.get("status") in DONE_STATUS]
+        if paused:
+            self.ui.start_btn.setText("继续队列")
+        elif has_waiting or not items:
+            self.ui.start_btn.setText("开始队列")
+        else:
+            self.ui.start_btn.setText("重新开始队列")
+        # 队列全跑完(含全部失败)时按钮也得可用,点击即批量重新入队后启动，
         self.ui.start_btn.setEnabled(
-            not self.app.is_training() and (has_waiting or paused))
+            not self.app.is_training()
+            and (has_waiting or paused or bool(finished)))
         for btn in (self.ui.move_up_btn, self.ui.move_down_btn,
                     self.ui.remove_btn, self.ui.edit_btn):
             btn.setEnabled(bool(self._current_item()))
-        self.ui.clear_done_btn.setEnabled(
-            any(i.get("status") in ("done", "failed", "skipped",
-                                    "stopped", "interrupted") for i in items))
+        self.ui.clear_done_btn.setEnabled(bool(finished))
 
     # ---------- 交互 ----------
     def _current_item(self):
@@ -157,6 +166,24 @@ class TrainQueueDialog(QDialog):
             self.app.resume_train_queue()
             self.refresh()
             return
+        items = self.app.queue_items()
+        if not any(i.get("status") == "waiting" for i in items):
+            counts = {}
+            for it in items:
+                st = it.get("status")
+                if st in DONE_STATUS:
+                    counts[st] = counts.get(st, 0) + 1
+            detail = "、".join("{} 个{}".format(v, status_text(k))
+                               for k, v in counts.items())
+            if not detail:
+                return
+            if not MessageBox.question(
+                    self, "重新开始队列",
+                    "队列中没有等待中的任务。\n\n"
+                    "待重跑：{}\n\n是否重新入队并开始训练？".format(detail)):
+                return
+            if not self.app.queue_requeue_all():
+                return
         if not self.app.start_train_queue():
             MessageBox.warning(self, "队列", "队列启动失败，请查看日志")
         self.refresh()
@@ -184,7 +211,7 @@ class TrainQueueDialog(QDialog):
     def _on_clear_done(self):
         n = self.app.queue_clear_done()
         if not n:
-            MessageBox.information(self, "清理", "没有已完成的任务")
+            MessageBox.information(self, "清理", "没有已结束的任务")
             return
         self.app._log("[队列] 已清理 {} 个已结束任务".format(n))
 

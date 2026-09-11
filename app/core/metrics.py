@@ -3,6 +3,9 @@
 训练指标读取：metrics.csv 解析
 """
 import csv
+import io
+
+from app.core.utils import read_text_any
 
 
 CSV_KEYS = (
@@ -23,8 +26,8 @@ def series_from_csv(csv_path):
     返回 {"epochs": [...], "ema_mAP@50": [...], ...}，只有出现过值的列才会出现。
     """
     try:
-        with open(csv_path, "r", encoding="utf-8", errors="replace") as f:
-            rows = list(csv.DictReader(f))
+        # lightning 用系统 ANSI 码页写 CSV(中文类别名下是 gbk), 不能固定按 utf-8 解
+        rows = list(csv.DictReader(io.StringIO(read_text_any(csv_path))))
     except OSError:
         return {}
     by_epoch = {}

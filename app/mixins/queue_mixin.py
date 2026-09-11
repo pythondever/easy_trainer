@@ -22,7 +22,21 @@ except ImportError:
 COOLDOWN_MS = 5000
 COOLDOWN_MAX_MS = 30000
 
-_DONE_STATUS = ("done", "failed", "skipped", "stopped", "interrupted")
+DONE_STATUS = ("done", "failed", "skipped", "stopped", "interrupted")
+
+
+def _next_order(items):
+    return max([int(it.get("order") or 0) for it in items], default=-1) + 1
+
+
+def _reset_queue_item(item, order):
+    """把队列项还原成从未执行过的样子（重新入队共用）。"""
+    item["status"] = "waiting"
+    item["error"] = ""
+    item["record_id"] = ""
+    item["started_at"] = ""
+    item["finished_at"] = ""
+    item["order"] = order
 
 
 class QueueMixin(object):
@@ -40,7 +54,7 @@ class QueueMixin(object):
     def queue_pending_count(self):
         """未完成的任务数（工具栏角标用）。"""
         return len([it for it in self.queue_items()
-                    if it.get("status") not in _DONE_STATUS])
+                    if it.get("status") not in DONE_STATUS])
 
     def queue_is_running(self):
         return bool(self._queue_running)
@@ -52,7 +66,7 @@ class QueueMixin(object):
     def enqueue_train(self, params):
         """把参数快照追加到队尾。不建目录、不落配置，一切推迟到出队。"""
         items = self.queue_items()
-        order = max([int(it.get("order") or 0) for it in items], default=-1) + 1
+        order = _next_order(items)
         item = {
             "qid": str(uuid.uuid4()),
             "name": params_summary(params),
@@ -137,7 +151,7 @@ class QueueMixin(object):
     def queue_clear_done(self):
         """清掉已结束的任务（保留 waiting）。"""
         items = self.queue_items()
-        kept = [it for it in items if it.get("status") not in _DONE_STATUS]
+        kept = [it for it in items if it.get("status") not in DONE_STATUS]
         if len(kept) == len(items):
             return 0
         self.db.save_train_queue(kept)
@@ -150,16 +164,26 @@ class QueueMixin(object):
         item = next((it for it in items if it.get("qid") == qid), None)
         if item is None or item.get("status") == "running":
             return False
-        item["status"] = "waiting"
-        item["error"] = ""
-        item["record_id"] = ""
-        item["started_at"] = ""
-        item["finished_at"] = ""
-        item["order"] = max([int(it.get("order") or 0) for it in items],
-                            default=-1) + 1
+        _reset_queue_item(item, _next_order(items))
         self.db.save_train_queue(items)
         self._refresh_queue_ui()
         return True
+
+    def queue_requeue_all(self):
+        """
+        把队列里所有已结束的任务批量重新入队
+        """
+        items = self.queue_items()
+        targets = [it for it in items if it.get("status") in DONE_STATUS]
+        if not targets:
+            return 0
+        order = _next_order(items)
+        for it in targets:
+            _reset_queue_item(it, order)
+            order += 1
+        self.db.save_train_queue(items)
+        self._refresh_queue_ui()
+        return len(targets)
 
     def queue_update_params(self, qid, params):
         """「编辑」保存：只改参数快照与名称，等待中的任务可改。"""
@@ -232,7 +256,7 @@ class QueueMixin(object):
             if it.get("qid") == qid:
                 it["status"] = status
                 it.update(fields)
-                if status in _DONE_STATUS:
+                if status in DONE_STATUS:
                     it["finished_at"] = datetime.now().strftime(
                         "%Y-%m-%d %H:%M:%S")
                 break

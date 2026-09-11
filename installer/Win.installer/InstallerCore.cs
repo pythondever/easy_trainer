@@ -187,8 +187,10 @@ public static class InstallEngine
         if (!File.Exists(python))
             throw new InvalidOperationException("解压后未找到运行时: " + python);
 
+        // ..\.. 是安装根: embeddable python 有 _pth 时会忽略 PYTHONPATH 与 cwd,
+        // 不加这行训练/测试子进程(含 DataLoader 派生子进程)都 import 不到 app 包
         var pthContent = string.Join(Environment.NewLine,
-            "python310.zip", ".", @"Lib\site-packages", "", "import site");
+            "python310.zip", ".", @"Lib\site-packages", @"..\..", "", "import site");
         await File.WriteAllTextAsync(Path.Combine(pyDir, "python310._pth"), pthContent);
 
         if (!await EnsurePipAsync(python, comp.Title, report, stageBase, w, totalBytes))
@@ -399,7 +401,7 @@ public static class InstallEngine
                 var local = Sha256Of(target);
                 if (grp.Any(a => local.Equals(a.Sha256, StringComparison.OrdinalIgnoreCase)))
                 {
-                    report.Report(new InstallReport { Stage = comp.Title, Detail = no + "已就绪，跳过", Pct = (int)(segBase + segPct) });
+                    report.Report(new InstallReport { Stage = comp.Title, Detail = no + "已就绪,跳过", Pct = (int)(segBase + segPct) });
                     continue;
                 }
             }
@@ -440,7 +442,7 @@ public static class InstallEngine
         }
         if (failed.Count > 0)
             report.Report(new InstallReport { Stage = comp.Title,
-                Detail = "部分文件下载失败：" + string.Join("；", failed) + "。重新运行本安装器可续传，或在软件内导入权重目录",
+                Detail = "部分文件下载失败：" + string.Join(";", failed) + "重新运行本安装器可续传,或在软件内导入权重目录",
                 Pct = stageBase + (int)(100 * w / totalBytes) });
         else
             report.Report(new InstallReport { Stage = comp.Title, Detail = "完成", Pct = stageBase + (int)(100 * w / totalBytes) });
@@ -495,7 +497,7 @@ public static class InstallEngine
         if (!Sha256Of(part).Equals(expectedSha256, StringComparison.OrdinalIgnoreCase))
         {
             try { File.Delete(part); } catch { }
-            throw new InvalidDataException("SHA256 校验失败（官方源文件可能已更新，或下载被篡改）");
+            throw new InvalidDataException("SHA256 校验失败(官方源文件可能已更新,或下载被篡改)");
         }
         if (File.Exists(target)) File.Delete(target);
         File.Move(part, target);
@@ -510,7 +512,7 @@ public static class InstallEngine
         {
 
             report.Report(new InstallReport { Stage = comp.Title,
-                Detail = "跳过：该组件非必需，不影响使用，之后可在软件内导入权重目录",
+                Detail = "跳过:该组件非必需,不影响使用,之后可在软件内导入权重目录",
                 Pct = stageBase + (int)(100 * w / totalBytes) });
             return;
         }

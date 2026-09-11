@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """测试执行脚本（由 UI 以子进程方式启动）。
 
-用法: python -m app.train.test_runner <config.json>
+用法: main()，由 test_worker 以 -c 导入后调用（打包后是 pyd，不能 python -m 启动）
 config 字段（dialogs.py _on_start_test 组装）：
   model_path   训练输出的 best total checkpoint（.pth）
   image_path   测试数据集图片目录

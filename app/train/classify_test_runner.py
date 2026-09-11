@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """图像分类测试执行脚本（由 UI 以子进程方式启动）。
 
-用法: python -m app.train.classify_test_runner <config.json>
+用法: main()，由 test_worker 以 -c 导入后调用（打包后是 pyd，不能 python -m 启动）
 config: model_path(分类 checkpoint), image_path, has_label, device, total, task=classify
 输出:
   - [test] 进度 N/M
