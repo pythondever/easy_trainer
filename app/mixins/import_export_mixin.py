@@ -397,7 +397,8 @@ class ImportExportMixin(object):
         导出单个数据集到 base_dir/<数据集名>/images|labels。
         图像直接复制:标签按 fmt 转换导出;
         - labelme:同路径 json优先复制,否则从源标签转成 json
-        - yolo:从标注 boxes 转成 yolo txt(类别ID 按 db 标签排序映射)
+        - yolo:从标注 boxes 转成 yolo txt(类别ID 按实际写出的类别排序映射，
+          并写出 classes.txt 作为类名锚点)
         progress：ProgressDialog（set_progress + is_cancelled）；中断返回已复制数。
         """
         ds_dir = os.path.join(base_dir, dataset_name)
@@ -410,12 +411,17 @@ class ImportExportMixin(object):
         binding = dict(binding,
                        label_ids=self.db.get_dataset_label_ids(
                            project_name, dataset_name))
-        # yolo 类别 ID 映射:db 标签按 label_sort_key 排序后的序号
-        labels = self.db.get_dataset_labels(project_name, dataset_name)
+        recs = self._collect_export_recs(project_name, dataset_name)
+        labels = set(self.db.get_dataset_labels(project_name, dataset_name))
+        for rec in recs:
+            src_path = rec.get("image_path", "")
+            if src_path and os.path.exists(src_path):
+                labels.update(
+                    lb for lb, _pts in
+                    self._read_export_shapes(src_path, binding, 1, 1)[0])
         label_to_id = {name: i for i, name in
                        enumerate(sorted(labels, key=label_sort_key))}
 
-        recs = self._collect_export_recs(project_name, dataset_name)
         copied = 0
         for i, rec in enumerate(recs):
             src = rec.get("image_path", "")
@@ -432,7 +438,20 @@ class ImportExportMixin(object):
                 shutil.copy2(src, dst)
             copied += 1
             self._export_label_file(src, fmt, label_to_id, binding, lbl_dir)
+        if fmt != "labelme":
+            # yolo txt 里只有数字 id，不给 classes.txt 的话类名锚点就丢了，
+            # 导出物交给别的框架或再导回本工具都只能看到数字
+            self._write_classes_txt(ds_dir, label_to_id)
         return copied
+
+    def _write_classes_txt(self, ds_dir, label_to_id):
+        """导出 yolo 数据集时在数据集根写 classes.txt，每行 "id 类名"。"""
+        if not label_to_id:
+            return
+        with open(os.path.join(ds_dir, "classes.txt"), "w",
+                  encoding="utf-8") as f:
+            for name, cid in sorted(label_to_id.items(), key=lambda kv: kv[1]):
+                f.write("{} {}\n".format(cid, name))
 
     def _export_label_file(self, img_src, fmt, label_to_id, binding, lbl_dir):
         """按目标格式把一张图的标注写入 lbl_dir(同名文件)."""

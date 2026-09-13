@@ -7,7 +7,7 @@ import traceback
 import uuid
 from datetime import datetime
 
-from PySide6.QtCore import Qt, QTimer, QEvent, QObject
+from PySide6.QtCore import Qt, QTimer, QEvent, QObject, QThread, Signal
 from PySide6.QtGui import QIntValidator, QDoubleValidator
 from PySide6.QtWidgets import (QDialog, QLabel, QFileDialog, QComboBox,
                                QPushButton, QVBoxLayout)
@@ -19,11 +19,6 @@ from app.core.db import get_paths
 from app.core.log import write_log
 from app.train.data_prep import timestamp_dir
 from ui.train import Ui_TrainDialog
-
-try:
-    import torch
-except ImportError:
-    torch = None
 
 CONTROL_H = 36
 TASK_CN = {"detect": "检测", "segment": "分割", "classify": "分类"}
@@ -286,21 +281,93 @@ class _ClickToPopupFilter(QObject):
         return False
 
 
-def _available_devices():
-    """[(显示名, 设备串)]：列表显示 GPU 型号，实际下发的是 cuda:0 这类设备串。"""
-    if torch is None or not torch.cuda.is_available():
-        return [("CPU", "CPU")]
-    out = []
-    for i in range(torch.cuda.device_count()):
+_DEVICES = None
+
+
+def collect_devices():
+    """
+    [(显示名, 设备串)]：列表显示 GPU 型号，实际下发的是 cuda:0 这类设备串。
+    torch 延迟到这里导入：本模块被 queue_mixin 在启动时引入，带着 torch 会让
+    GUI 启动多花约 2s（耗时全在 import 本身）。结果缓存，同一进程只探测一次。
+    """
+    global _DEVICES
+    if _DEVICES is None:
         try:
-            name = torch.cuda.get_device_name(i)
-            total = torch.cuda.get_device_properties(i).total_memory
-            text = "{} ({:.0f} GB)".format(name, total / 1024 ** 3)
+            import torch
+        except ImportError:
+            torch = None
+        if torch is None or not torch.cuda.is_available():
+            _DEVICES = [("CPU", "CPU")]
+        else:
+            _DEVICES = []
+            for i in range(torch.cuda.device_count()):
+                try:
+                    name = torch.cuda.get_device_name(i)
+                    total = torch.cuda.get_device_properties(i).total_memory
+                    text = "{} ({:.0f} GB)".format(name, total / 1024 ** 3)
+                except Exception:
+                    text = "GPU {}".format(i)
+                _DEVICES.append((text, "cuda:{}".format(i)))
+            _DEVICES.append(("CPU", "CPU"))
+    return list(_DEVICES)
+
+
+class _DeviceProbe(QThread):
+    """后台探测显卡。同步探测要等 import torch（约 2s），弹窗会晚 2s 才出现。"""
+
+    ready = Signal(list)
+
+    def run(self):
+        try:
+            self.ready.emit(collect_devices())
         except Exception:
-            text = "GPU {}".format(i)
-        out.append((text, "cuda:{}".format(i)))
-    out.append(("CPU", "CPU"))
-    return out
+            self.ready.emit([("CPU", "CPU")])
+
+
+_PROBES = []                    # 运行中的探测线程，防止被 GC
+PROBING_TEXT = "正在检测显卡…"
+
+
+def fill_device_items(combo, devices):
+    combo.clear()
+    for text, value in devices:
+        combo.addItem(text, value)
+        combo.setItemData(combo.count() - 1, text, Qt.ToolTipRole)
+
+
+def fill_device_combo_async(dialog, combo, start_button):
+    """设备下拉先填占位值，后台探测完回调 dialog._on_devices_ready(devices)。
+
+    就绪前禁掉下拉与开始按钮，免得占位值 CPU 被当成用户选择跑出去。
+    """
+    combo.clear()
+    combo.addItem(PROBING_TEXT, "CPU")
+    if _DEVICES is not None:        # 本进程已探测过，不用再起线程
+        dialog._on_devices_ready(_DEVICES)
+        return
+    combo.setEnabled(False)
+    start_button.setEnabled(False)
+    # 前一个弹窗关掉后探测可能还在跑，搭它的车，免得再导一次 torch
+    probe = next((p for p in _PROBES if p.isRunning()), None)
+    if probe is None:
+        probe = _DeviceProbe()
+        _PROBES.append(probe)
+        probe.finished.connect(
+            lambda: _PROBES.remove(probe) if probe in _PROBES else None)
+        probe.start()
+    probe.ready.connect(dialog._on_devices_ready)
+    dialog._device_probe = probe
+
+
+def detach_device_probe(dialog):
+    """关窗时摘掉探测回调。线程让它自己跑完，关窗不该等它那 2s。"""
+    probe = getattr(dialog, "_device_probe", None)
+    if probe is None or not probe.isRunning():
+        return
+    try:
+        probe.ready.disconnect(dialog._on_devices_ready)
+    except (RuntimeError, TypeError):
+        pass
 
 
 class TrainDialog(QDialog):
@@ -337,9 +404,11 @@ class TrainDialog(QDialog):
         self._last_epochs_default = None
         self._last_lr_default = None
         self._last_img_default = None
+        self._pending_device = None   # 设备列表探测期间没回填上的设备串
         self._build()
 
     def closeEvent(self, event):
+        detach_device_probe(self)
         super().closeEvent(event)
 
     # ---------- 初始化 ----------
@@ -574,12 +643,8 @@ class TrainDialog(QDialog):
         self.ui.task_badge.setText(self._task_text())
         self._setup_img_size_tip()
         self._update_summary()
-        # 有训练在进行时禁用开始训练
-        if hasattr(self.app, "is_training") and self.app.is_training():
-            btn = getattr(self.ui, "start_train", None)
-            if btn is not None:
-                btn.setEnabled(False)
-                btn.setToolTip("已有训练在进行中，请先停止")
+        # 还没探测完设备、或已有训练在跑，都先别让点开始
+        self._sync_start_enabled()
 
     def _set_device(self, value):
         """设备下拉显示的是 GPU 型号，回填得按 itemData 里的 cuda:0 找；
@@ -596,6 +661,9 @@ class TrainDialog(QDialog):
                     break
         if idx >= 0:
             combo.setCurrentIndex(idx)
+        else:
+            # 设备列表还在后台探测，等就绪后再回填一次
+            self._pending_device = str(value)
 
     def _device(self):
         data = self.ui.device_combo.currentData()
@@ -604,13 +672,32 @@ class TrainDialog(QDialog):
         return self.ui.device_combo.currentText() or "cpu"
 
     def _fill_device_combo(self):
+        fill_device_combo_async(self, self.ui.device_combo, self.ui.start_train)
+
+    def _on_devices_ready(self, devices):
+        """后台探测完成：填列表、解禁、把探测期间没铺上的设备回填上。"""
         combo = self.ui.device_combo
-        combo.clear()
-        for text, value in _available_devices():
-            combo.addItem(text, value)
-            combo.setItemData(combo.count() - 1, text, Qt.ToolTipRole)
+        fill_device_items(combo, devices)
+        combo.setEnabled(True)
         combo.setCurrentIndex(0)
         self._center_combo_items(combo)
+        self._sync_start_enabled()
+        if self._pending_device:
+            pending, self._pending_device = self._pending_device, None
+            self._set_device(pending)
+
+    def _sync_start_enabled(self):
+        """设备列表就绪且没有训练在跑，才允许点开始。"""
+        btn = getattr(self.ui, "start_train", None)
+        if btn is None:
+            return
+        busy = hasattr(self.app, "is_training") and self.app.is_training()
+        ready = _DEVICES is not None
+        btn.setEnabled(ready and not busy)
+        if not ready:
+            btn.setToolTip(PROBING_TEXT)
+        else:
+            btn.setToolTip("已有训练在进行中，请先停止" if busy else "")
 
     def _fill_optimizer(self):
         """优化器下拉:检测/分割(detr 推荐 adamw) vs 分类(resnet 推荐 sgd)。"""

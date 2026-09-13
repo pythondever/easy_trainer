@@ -114,6 +114,10 @@ def publish_linux(program_zip):
 
 
 def main():
+    if sys.version_info[:2] != (3, 10):
+        sys.exit("构建需要 Python 3.10 当前是 {}.{}"
+                 .format(*sys.version_info[:2]))
+
     ap = argparse.ArgumentParser()
     ap.add_argument("-t", "--target", default=os.path.join(ROOT, "dist", "program"),
                     help="输出目录(默认 dist/program)")

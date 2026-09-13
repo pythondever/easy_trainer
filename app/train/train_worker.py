@@ -18,6 +18,7 @@ import traceback
 from PySide6.QtCore import QThread, Signal
 
 from app.core.utils import decode_text_bytes, read_text_any
+from app.train.proc_utils import kill_process_tree, runner_bootstrap
 
 try:
     import psutil
@@ -65,40 +66,13 @@ class TrainWorker(QThread):
         self._stop_flag = False
 
     def stop(self):
-        """请求停止：终止子进程及其孙进程。
-
-        只 kill 直接子进程不够：rf-detr 的 dataloader(num_workers>0) 会 fork
-        孙进程，主进程被杀后它们变孤儿继续占显存，下一个训练会直接 OOM。
-        """
+        """请求停止：置标志并终止子进程及其孙进程。"""
         self._stop_flag = True
-        proc = self._proc
-        if proc is None or proc.poll() is not None:
-            return
-        if psutil is not None:
-            try:
-                parent = psutil.Process(proc.pid)
-                children = parent.children(recursive=True)
-                for child in children:
-                    try:
-                        child.kill()
-                    except Exception:
-                        pass
-                try:
-                    parent.kill()
-                except Exception:
-                    pass
-                gone, _alive = psutil.wait_procs(children + [parent], timeout=5)
-                return
-            except Exception:
-                pass
-        try:
-            proc.terminate()
-        except Exception:
-            pass
-        try:
-            proc.kill()
-        except Exception:
-            pass
+        self._kill_proc()
+
+    def _kill_proc(self):
+        """终止子进程及其孙进程；不动 _stop_flag（监控循环收尾也要用）。"""
+        kill_process_tree(self._proc)
 
     def proc_exited(self):
         """子进程是否已退出（队列据此判断显存是否可回收）。"""
@@ -301,10 +275,11 @@ class TrainWorker(QThread):
         env["PYTHONPATH"] = WORKSPACE
         env["PYTHONUNBUFFERED"] = "1"
         env["PYTHONIOENCODING"] = "utf-8"
-        # 不能用 -m: Cython 编出的 pyd 没有 code object, runpy 直接报
-        # "No code object available", 只能 -c 显式导入再调 main()
-        bootstrap = ("import sys; sys.path.insert(0, {!r});"
-                     "from {} import main; main()").format(WORKSPACE, module)
+        bootstrap = runner_bootstrap(module)
+        if self._stop_flag:
+            # 用户在 Popen 之前就点了停止：这里再起进程会立刻脱管
+            # （循环条件马上为假，rc 拿到 None，既不报错也不杀）
+            return
         self._proc = subprocess.Popen(
             [python, "-c", bootstrap, cfg_path],
             cwd=WORKSPACE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
@@ -496,6 +471,9 @@ class TrainWorker(QThread):
                     break
             except Exception:
                 poll_error = traceback.format_exc()
+                # 必须在这里收尾：UI 收到 failed 就把 worker 句柄丢了，
+                # 之后没人能再杀这个子进程，它和 dataloader 孙进程会一直占显存
+                self._kill_proc()
                 break
         _flush_log(force=True)
         last_poll = 0.0

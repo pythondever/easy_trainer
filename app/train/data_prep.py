@@ -15,9 +15,8 @@ from datetime import datetime
 from PIL import Image
 from app.core.constants import IMAGE_EXTS
 from app.core.db import get_paths
-from app.core.label_utils import (normalize_label, load_json_shapes,
-                                  load_yolo_shapes, looks_like_labelme,
-                                  shapes_to_yolo_text)
+from app.core.label_utils import (load_json_shapes, load_yolo_shapes,
+                                  looks_like_labelme, shapes_to_yolo_text)
 
 
 def timestamp_dir():
@@ -54,14 +53,6 @@ def _img_size(path):
         size = (0, 0)
     _img_size_cache[path] = size
     return size
-
-
-def _map_class_id(raw, label_ids):
-    """txt 里的数字 id → 显示名(与标注 json 里的类别名对齐)，无映射则原样。"""
-    raw = str(raw).strip()
-    if label_ids and raw in label_ids:
-        return normalize_label(label_ids[raw])
-    return normalize_label(raw)
 
 
 def _write_yolo_txt(dst_labels, base, shapes, iw, ih, label_to_id, as_polygon):
@@ -151,15 +142,9 @@ def _collect_labels(datasets):
                                 os.path.join(label_path, fn)):
                             _add(lb)
                     elif fmt == "txt" and ext.lower() == ".txt":
-                        try:
-                            with open(os.path.join(label_path, fn), "r",
-                                      encoding="utf-8") as f:
-                                for line in f:
-                                    p = line.split()
-                                    if len(p) >= 5:
-                                        _add(_map_class_id(p[0], label_ids))
-                        except Exception:
-                            continue
+                        for lb, _pts in load_yolo_shapes(
+                                os.path.join(label_path, fn), 1, 1, label_ids):
+                            _add(lb)
             if img_dir and os.path.isdir(img_dir):
                 for fn in sorted(os.listdir(img_dir)):
                     if not fn.lower().endswith(".json"):

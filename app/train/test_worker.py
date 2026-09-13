@@ -9,10 +9,12 @@ import subprocess
 import sys
 import tempfile
 import time
+import traceback
 
 from PySide6.QtCore import QThread, Signal
 
 from app.core.utils import decode_text_bytes
+from app.train.proc_utils import kill_process_tree, runner_bootstrap
 
 WORKSPACE = os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__))))
@@ -62,16 +64,9 @@ class TestWorker(QThread):
         self._stop_flag = False
 
     def stop(self):
+        """请求停止：置标志并终止子进程及其孙进程。"""
         self._stop_flag = True
-        if self._proc is not None and self._proc.poll() is None:
-            try:
-                self._proc.terminate()
-            except Exception:
-                pass
-            try:
-                self._proc.kill()
-            except Exception:
-                pass
+        kill_process_tree(self._proc)
 
     def run(self):
         cfg_path = self._config["_cfg_path"]
@@ -95,10 +90,11 @@ class TestWorker(QThread):
         env["CUDA_MODULE_LOADING"] = "LAZY"
         module = (CLASSIFY_TEST_RUNNER
                   if self._config.get("task") == "classify" else TEST_RUNNER)
-        # 不能用 -m: Cython 编出的 pyd 没有 code object, runpy 直接报
-        # "No code object available", 只能 -c 显式导入再调 main()
-        bootstrap = ("import sys; sys.path.insert(0, {!r});"
-                     "from {} import main; main()").format(WORKSPACE, module)
+        bootstrap = runner_bootstrap(module)
+        if self._stop_flag:
+            # 用户在 Popen 之前就点了停止：再起进程会立刻脱管
+            # （循环条件马上为假，下面按 rc=None 报"异常退出"，进程却还活着）
+            return
         self.log.emit("[test-worker] 启动子进程: {} {}".format(
             python, module))
         out_fd, out_path = tempfile.mkstemp(suffix=".testout")
@@ -172,8 +168,10 @@ class TestWorker(QThread):
                     break
                 time.sleep(0.1)
         except Exception:
-            import traceback
             _trace("轮询异常:\n" + traceback.format_exc())
+            # 异常跳出也要收尾，否则下面按 rc 报"异常退出"，进程其实还在跑，
+            # 而 UI 收到 failed 就把 worker 句柄丢了，再没人能杀它
+            kill_process_tree(self._proc)
         tail, pos = _read_new_lines(out_path, pos, final=True)
         if tail:
             _consume(tail)

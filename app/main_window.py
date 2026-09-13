@@ -21,10 +21,6 @@ class App(QWidget, MainUI, LabelMixin, ProjectMixin, ImportExportMixin,
     def __init__(self):
         super().__init__()
         self.db = DataBase(os.path.join(os.path.expanduser("~"), ".easy_trainer"))
-        try:
-            self.db.migrate_model_records()
-        except Exception:
-            pass
         self.dataset_cache = {}
         self._loading_tasks = {}
         self.page_size = PAGE_SIZE

@@ -27,8 +27,9 @@ from ui.add_label import Ui_addLabelDialog as AddLabelUI
 from app.annotation.scene import AnnotationScene
 from app.annotation.box_item import (AnnotationBoxItem, AnnotationPolygonItem,
                                      LABEL_COLORS, assign_label_color, label_color)
-from app.core.label_utils import (normalize_label, label_sort_key,
-                                  same_dir_json)
+from app.core.label_utils import (label_sort_key, load_json_shapes,
+                                  load_yolo_shapes, normalize_label,
+                                  same_dir_json, shapes_to_boxes)
 from app.core.utils import project_root, ui_font_family
 from app.widgets.dialog_buttons import (apply_icon, add_ok_cancel,
                                         _icon_path, _tinted)
@@ -290,27 +291,11 @@ class _ClsLabelItem(QGraphicsTextItem):
 
 
 def _load_labelme(json_path):
-    """读取 labelme json → [{label, x1,y1,x2,y2} 或 {label, points, shape_type}]。"""
-    if not os.path.exists(json_path):
-        return []
-    try:
-        with open(json_path, "r", encoding="utf-8") as f:
-            data = json.load(f)
-    except Exception:
-        return []
-    boxes = []
-    for shape in data.get("shapes", []):
-        label = normalize_label(shape.get("label", "object"))
-        pts = shape.get("points") or []
-        if shape.get("shape_type") == "polygon":
-            boxes.append({"label": label, "points": [[float(p[0]), float(p[1])] for p in pts],
-                          "shape_type": "polygon"})
-        elif len(pts) >= 2:
-            xs = [p[0] for p in pts]
-            ys = [p[1] for p in pts]
-            boxes.append({"label": label, "x1": min(xs), "y1": min(ys),
-                          "x2": max(xs), "y2": max(ys)})
-    return boxes
+    """
+    读取 labelme json → [{label, x1,y1,x2,y2} 或 {label, points, shape_type}]。
+    解析统一走 label_utils.load_json_shapes，这里只转成场景要的字典形态。
+    """
+    return shapes_to_boxes(load_json_shapes(json_path))
 
 
 def _load_import_label(image_path, label_path, fmt, label_ids=None):
@@ -337,67 +322,16 @@ def _load_import_label(image_path, label_path, fmt, label_ids=None):
             break
     if not label_file:
         return []
-    iw = ih = 0
-    try:
-        with Image.open(image_path) as im:
-            iw, ih = im.size
-    except Exception:
-        pass
-    boxes = []
-    try:
-        if fmt == ".txt":
-            with open(label_file, "r", encoding="utf-8") as f:
-                for line in f:
-                    parts = line.split()
-                    if len(parts) < 5:
-                        continue
-                    try:
-                        vals = [float(x) for x in parts]
-                    except ValueError:
-                        continue
-                    raw = parts[0].strip()
-                    label = (label_ids.get(raw) if label_ids and raw in label_ids
-                             else raw)
-                    label = normalize_label(label)
-                    if len(vals) == 5:
-                        # 检测格式:cls cx cy w h
-                        _, cx, cy, w, h = vals
-                        boxes.append({"label": label, "x1": (cx - w / 2) * iw,
-                                      "y1": (cy - h / 2) * ih,
-                                      "x2": (cx + w / 2) * iw,
-                                      "y2": (cy + h / 2) * ih})
-                    elif (len(vals) - 1) % 2 == 0:
-                        # 分割格式: cls x1 y1 x2 y2 ... xn yn(点数偶数)
-                        pts = [(vals[1 + 2 * i] * iw, vals[2 + 2 * i] * ih)
-                               for i in range((len(vals) - 1) // 2)]
-                        boxes.append({"label": label, "points": pts,
-                                      "shape_type": "polygon"})
-                    else:
-                        x_coords = [vals[1 + 2 * i] for i in range(len(vals) // 2)]
-                        y_coords = [vals[2 + 2 * i] for i in range(len(vals) // 2)]
-                        boxes.append({"label": label, "x1": min(x_coords) * iw,
-                                      "y1": min(y_coords) * ih,
-                                      "x2": max(x_coords) * iw,
-                                      "y2": max(y_coords) * ih})
-        else:
-            # labelme json(在标签目录)
-            with open(label_file, "r", encoding="utf-8") as f:
-                data = json.load(f)
-            for shape in data.get("shapes", []):
-                label = normalize_label(shape.get("label", "object"))
-                pts = shape.get("points") or []
-                if shape.get("shape_type") == "polygon":
-                    boxes.append({"label": label,
-                                  "points": [[float(p[0]), float(p[1])] for p in pts],
-                                  "shape_type": "polygon"})
-                elif len(pts) >= 2:
-                    xs = [p[0] for p in pts]
-                    ys = [p[1] for p in pts]
-                    boxes.append({"label": label, "x1": min(xs), "y1": min(ys),
-                                  "x2": max(xs), "y2": max(ys)})
-    except Exception:
-        return []
-    return boxes
+    if fmt == ".txt":
+        # 尺寸读不到就给 0，load_yolo_shapes 会直接返回空（归一化坐标还原不了）
+        iw = ih = 0
+        try:
+            with Image.open(image_path) as im:
+                iw, ih = im.size
+        except Exception:
+            pass
+        return shapes_to_boxes(load_yolo_shapes(label_file, iw, ih, label_ids))
+    return shapes_to_boxes(load_json_shapes(label_file))
 
 
 def save_labelme(image_path, shapes, width=None, height=None, version="5.0.1"):

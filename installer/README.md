@@ -120,6 +120,9 @@ installer.exe --install D:\EasyTrainer runtime
 - **pyd 版本锁死**：Python 3.10 cp310 ABI；升级解释器必须重编 pyd。
 - **改程序代码要重发安装器**：program.zip 构建期嵌入；程序更新 = 重跑
   `build.py` + `dotnet publish`，重新分发 exe。
+- **重复安装 = 覆盖升级**：装"程序本体"前会清掉 `app/`、`ui/` 下上一版遗留的 `.pyd`/`.so`/`.pyc`
+  与旧明文 `.py`（保留 `__init__.py`、`easy_trainer.py`）——扩展模块导入优先级高于源码，不清会把
+  新版已删除的模块"复活"（改了代码没生效/幽灵模块）。`runtime`、`pretrained` 与 Linux 端行为一致。
 - pip 现场安装无断点续传，中途断网重跑安装器即可（已装部分 pip 会跳过/缓存）。
 - torch 装完约占 4.3GB + 权重可选 882MB，安装前确认目标盘空间。
 - 中文安装路径可用（cv2/PyTorch 均按 UTF-8 处理）；安装器 per-user 安装免 UAC，
@@ -150,8 +153,8 @@ python3 builder/build.py -t dist/program
 TORCH_INDEX=https://download.pytorch.org/whl/cu121 ./installer.sh   # torch 换源
 ```
 
-脚本与 Windows 安装器职责对应：校验 python3.10 → 建 venv → 解压 program.zip →
-pip 清华源装依赖 → （可选）权重 → 生成桌面启动项 `.desktop`；日志/`installed.json`
+脚本与 Windows 安装器职责对应：校验 python3.10 → 空间预检 → 建 venv → 清旧产物 →
+解压 program.zip → pip 清华源装依赖 → （可选）权重 → 生成桌面启动项 `.desktop`；日志/`installed.json`
 同样落在安装根。权重清单与 Windows 端共用 `builder/pretrained-assets.txt`（installer.sh
 内置同名表仅作无该文件时的兜底）。
 
@@ -161,3 +164,8 @@ pip 清华源装依赖 → （可选）权重 → 生成桌面启动项 `.deskto
 - requirements 锁的是 `torch==2.5.1+cu121`（与 Windows 一致），该版本只存在于 pytorch 源，
   脚本用 `--extra-index-url` 叠源，默认走上海交大等国内镜像可由 `TORCH_INDEX` 覆盖。
 - 预训练权重无国内镜像，大陆网络下不动时同目录放 `pretrained.zip` 走离线。
+- **重复安装 = 覆盖升级**：解压前会清掉 `app/`、`ui/` 下上一版遗留的 `.so`/`.pyd`/`.pyc` 与旧明文 `.py`
+  （保留 `__init__.py`、`easy_trainer.py`）——扩展模块导入优先级高于源码，不清会把新版已删除的模块"复活"。
+  venv 与已装依赖保留复用（pip 走"已满足即跳过"，秒过）。Windows 安装器行为一致。
+- 装前按 `所需 ≈ 9GB(runtime) + program.zip 解压后大小 + 权重(可选)` 与 `df` 可用量比对，不足直接退出；
+  安装根为 `/`、`$HOME` 本身时拒绝执行（避免误清用户目录）。

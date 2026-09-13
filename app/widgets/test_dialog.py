@@ -19,7 +19,8 @@ from app.core.db import get_paths
 from app.core.log import write_log
 from app.widgets.dialog_buttons import apply_icon
 from app.widgets.message_box import MessageBox
-from app.train.dialogs import CONTROL_H, _TrainStartDialog, _available_devices
+from app.train.dialogs import (CONTROL_H, _TrainStartDialog, detach_device_probe,
+                               fill_device_combo_async, fill_device_items)
 from app.train.test_result_dialog import TestResultDialog
 from app.train.test_worker import TestWorker
 from ui.test_dialog import Ui_TestDialog
@@ -74,6 +75,10 @@ class TestDialog(QDialog):
         self.ui.start_test_btn.clicked.connect(self._on_start)
         self.ui.cancel_btn.clicked.connect(self.reject)
         self._on_data_changed()
+
+    def closeEvent(self, event):
+        detach_device_probe(self)
+        super().closeEvent(event)
 
     # ---------- 样式：点击任意位置展开 + 控件对齐 ----------
     def _init_style(self):
@@ -221,12 +226,16 @@ class TestDialog(QDialog):
             combo.setCurrentIndex(-1)
 
     def _fill_device_combo(self):
+        fill_device_combo_async(self, self.ui.test_device_combo,
+                                self.ui.start_test_btn)
+
+    def _on_devices_ready(self, devices):
+        """后台探测完成：填列表、解禁。"""
         combo = self.ui.test_device_combo
-        combo.clear()
-        for text, value in _available_devices():
-            combo.addItem(text, value)
-            combo.setItemData(combo.count() - 1, text, Qt.ToolTipRole)
+        fill_device_items(combo, devices)
+        combo.setEnabled(True)
         combo.setCurrentIndex(0)
+        self.ui.start_test_btn.setEnabled(True)
 
     def _fill_model_card(self):
         """取代原来的模型下拉：一次只填一个模型，点开没得选，信息直接摆出来更清楚。"""
@@ -328,13 +337,16 @@ class TestDialog(QDialog):
         labeled = int(info.get("labeled") or 0)
         has_label = labeled > 0
         self.ui.iou_treshold_txt.setEnabled(has_label)
+        box = self.ui.output_label_file_checkBox
+        box.setToolTip("为每张图写 <同名>.json 到图像目录，标注工具可直接打开；"
+                       "该处已有人工标注会被覆盖")
         if not has_label:
             # 推理模式：强制输出标注文件
-            self.ui.output_label_file_checkBox.setChecked(True)
-            self.ui.output_label_file_checkBox.setEnabled(False)
+            box.setChecked(True)
+            box.setEnabled(False)
         else:
-            self.ui.output_label_file_checkBox.setEnabled(True)
-            self.ui.output_label_file_checkBox.setChecked(False)
+            box.setEnabled(True)
+            box.setChecked(False)
 
     # ---------- 开始测试 ----------
     def _on_start(self):

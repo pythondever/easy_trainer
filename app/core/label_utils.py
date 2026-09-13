@@ -60,11 +60,16 @@ def same_dir_json(image_path):
     return ""
 
 
-def load_yolo_shapes(txt_path, iw, ih, label_ids=None):
+def load_yolo_shapes(txt_path, iw, ih, label_ids=None, seen_ids=None):
     """读 yolo txt → [(label, points)] 像素坐标，支持 bbox(5 字段) 与 yolo-seg 多边形。
+
+    全仓 YOLO txt 的唯一解析入口。字段数异常的行一律丢弃，不猜格式：
+    多一列置信度(6 字段)之类的外部 txt 很常见，按"奇数坐标"硬凑外接框会
+    凭空造出不存在的目标，而越界取值又会被外层 except 吞成"整图无标注"。
 
     label_ids: {数字 id 字符串: 显示名}，把 txt 里的数字 id 换成标注界面显示的名字，
     否则同一类在导入标签里叫 "0"、在标注 json 里叫 "cat"，会被当成两类。
+    seen_ids: 传入 dict 时把本次遇到的 原始id→显示名 写进去，供导入后持久化映射。
     """
     shapes = []
     if not iw or not ih:
@@ -92,10 +97,68 @@ def load_yolo_shapes(txt_path, iw, ih, label_ids=None):
                            for i in range(0, len(vals), 2)]
                 else:
                     continue
+                if seen_ids is not None:
+                    seen_ids[raw] = label
                 shapes.append((label, pts))
     except Exception:
         return []
     return shapes
+
+
+def points_bbox(pts):
+    """像素点集 → (x1, y1, x2, y2) 外接框。"""
+    xs = [p[0] for p in pts]
+    ys = [p[1] for p in pts]
+    return min(xs), min(ys), max(xs), max(ys)
+
+
+def shapes_to_boxes(shapes):
+    """[(label, points)] → 标注界面/场景用的 box 字典列表。
+
+    3 点以上保留多边形顶点（压成外接框会让分割的 mask 消失），
+    否则按两点对角的矩形，与 shapes_to_yolo_text("auto") 用同一判据。
+    """
+    boxes = []
+    for label, pts in shapes:
+        if len(pts) >= 3:
+            boxes.append({"label": label, "points": [list(p) for p in pts],
+                          "shape_type": "polygon"})
+        elif len(pts) >= 2:
+            x1, y1, x2, y2 = points_bbox(pts)
+            boxes.append({"label": label, "x1": x1, "y1": y1,
+                          "x2": x2, "y2": y2})
+    return boxes
+
+
+def shapes_to_xywh(shapes):
+    """[(label, points)] → LMDB 记录用的 (x, y, w, h, label)，整数像素。
+
+    宽高至少 1 像素：退化成一个点的框会让缩略图绘制与 IoU 计算除零。
+    """
+    out = []
+    for label, pts in shapes:
+        if len(pts) < 2:
+            continue
+        x1, y1, x2, y2 = points_bbox(pts)
+        x, y = int(x1), int(y1)
+        w, h = int(x2 - x1), int(y2 - y1)
+        out.append((max(0, x), max(0, y), max(1, w), max(1, h), label))
+    return out
+
+
+def shapes_to_detections(shapes):
+    """[(label, points)] → [(label, [x1,y1,x2,y2], poly)]，测试/评估口径。
+
+    poly 是像素顶点列表（3 点以上），检测标注为 None。
+    """
+    out = []
+    for label, pts in shapes:
+        if len(pts) < 2:
+            continue
+        x1, y1, x2, y2 = points_bbox(pts)
+        poly = [list(p) for p in pts] if len(pts) >= 3 else None
+        out.append((label, [x1, y1, x2, y2], poly))
+    return out
 
 
 def label_file_has_content(path, fmt):

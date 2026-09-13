@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 """后台导入线程：扫描图像目录，可选读取标签(yolo txt / labelme json)。"""
 import os
-import json
 from PySide6.QtCore import QThread, Signal
 from app.core.constants import IMAGE_EXTS
 from app.core.image_utils import pil_open
-from app.core.label_utils import (label_file_has_content, normalize_label,
-                                  same_dir_json)
+from app.core.label_utils import (label_file_has_content, load_json_shapes,
+                                  load_yolo_shapes, same_dir_json,
+                                  shapes_to_xywh)
+from app.core.log import write_log
 
 
 class ImportTask(QThread):
@@ -106,8 +107,9 @@ class ImportTask(QThread):
                         "_has_annotation_json": from_same,
                         "_has_label_file": has_label_file,
                     })
-            except Exception:
-                pass
+            except Exception as e:
+                # 整条记录跳过且不留痕的话，用户不知道哪张图没导进来
+                write_log("导入跳过 {}: {}".format(img_path, e))
             if total > 0:
                 pct = int((i + 1) / total * 100)
                 if pct != last_pct:
@@ -164,50 +166,13 @@ class ImportTask(QThread):
             except Exception:
                 return None, [], False, label_file_has_content(
                     label_file, fmt)
-            with open(label_file, "r", encoding="utf-8") as f:
-                for line in f:
-                    parts = line.split()
-                    if len(parts) < 5:
-                        continue
-                    try:
-                        vals = [float(x) for x in parts[1:]]
-                    except ValueError:
-                        continue
-                    if len(vals) == 4:
-                        cx, cy, w, h = vals
-                        x = int((cx - w / 2) * iw)
-                        y = int((cy - h / 2) * ih)
-                        bw = int(w * iw)
-                        bh = int(h * ih)
-                    else:
-                        xs = vals[0::2]
-                        ys = vals[1::2]
-                        if not xs or not ys:
-                            continue
-                        x = int(min(xs) * iw)
-                        y = int(min(ys) * ih)
-                        bw = int((max(xs) - min(xs)) * iw)
-                        bh = int((max(ys) - min(ys)) * ih)
-                    lbl = normalize_label(parts[0].strip())
-                    # 映射数字 id
-                    if parts[0].strip() in self._id_names:
-                        lbl = normalize_label(self._id_names[parts[0].strip()])
-                    self._seen_ids[parts[0].strip()] = lbl
-                    boxes.append((max(0, x), max(0, y), max(1, bw), max(1, bh), lbl))
-                    labels.append(lbl)
+            # 解析统一走 label_utils，id→名 的映射同时被记进 _seen_ids
+            shapes = load_yolo_shapes(label_file, iw, ih, self._id_names,
+                                      self._seen_ids)
         else:
-            with open(label_file, "r", encoding="utf-8") as f:
-                data = json.load(f)
-            for shape in data.get("shapes", []):
-                pts = shape.get("points", [])
-                if len(pts) < 2:
-                    continue
-                xs = [p[0] for p in pts]
-                ys = [p[1] for p in pts]
-                x, y = int(min(xs)), int(min(ys))
-                w, h = int(max(xs) - min(xs)), int(max(ys) - min(ys))
-                lbl = normalize_label(shape.get("label", "unknown"))
-                boxes.append((max(0, x), max(0, y), max(1, w), max(1, h), lbl))
-                labels.append(lbl)
+            shapes = load_json_shapes(label_file)
+        for x, y, w, h, lbl in shapes_to_xywh(shapes):
+            boxes.append((x, y, w, h, lbl))
+            labels.append(lbl)
         return (boxes, labels, from_same,
                 bool(boxes) or label_file_has_content(label_file, fmt))

@@ -54,10 +54,17 @@ except ImportError:
     RFDETR = None
 
 try:
-    from app.core.label_utils import normalize_label as _normalize_label
-except Exception:
-    def _normalize_label(name):
-        return str(name).strip()
+    from app.core.label_utils import (load_json_shapes, load_yolo_shapes,
+                                      shapes_to_detections)
+except Exception:                  # runner 被单独调试时可能没有 app 包
+    def load_json_shapes(*a, **k):
+        return []
+
+    def load_yolo_shapes(*a, **k):
+        return []
+
+    def shapes_to_detections(shapes):
+        return []
 
 _MAX_POLY_PTS = 60
 
@@ -143,73 +150,32 @@ def _mask_to_rings(mask, max_rings=6):
 
 def _read_yolo_label(txt_path, img_w, img_h):
     """
-    YOLO txt → [(cls, 像素[x1,y1,x2,y2], poly)] 列表。
-    兼容两种格式：检测 `cls cx cy w h`（5 个数，中心点+宽高），poly 为 None；
-    分割 `cls x1 y1 x2 y2 ...`（偶数个坐标且 >=6）→ 外接框 + 多边形顶点。
-    cls 为标注类别（str）。
+    YOLO txt → [(cls, 像素[x1,y1,x2,y2], poly)] 列表，poly 为 None 表示检测框。
+    解析统一走 label_utils.load_yolo_shapes（与导入/标注/训练同一套脏行规则：
+    字段数异常的行直接丢弃，不猜格式），这里只转成评估口径并抽稀轮廓。
     """
-    boxes = []
-    if not os.path.exists(txt_path):
-        return boxes
-    with open(txt_path, "r", encoding="utf-8") as f:
-        for line in f:
-            p = line.split()
-            if len(p) < 5:
-                continue
-            try:
-                vals = [float(x) for x in p[1:]]
-            except ValueError:
-                continue
-            poly = None
-            if len(vals) == 4:
-                # YOLO 检测：cx cy w h（归一化）
-                cx, cy, w, h = vals
-                x1 = (cx - w / 2) * img_w
-                y1 = (cy - h / 2) * img_h
-                x2 = (cx + w / 2) * img_w
-                y2 = (cy + h / 2) * img_h
-            elif len(vals) >= 6 and len(vals) % 2 == 0:
-                # YOLO 分割：多边形顶点(归一化)
-                xs = [vals[i] * img_w for i in range(0, len(vals), 2)]
-                ys = [vals[i] * img_h for i in range(1, len(vals), 2)]
-                x1, x2 = min(xs), max(xs)
-                y1, y2 = min(ys), max(ys)
-                poly = [_decimate([[round(x, 1), round(y, 1)]
-                                   for x, y in zip(xs, ys)], _MAX_POLY_PTS)]
-            else:
-                continue
-            boxes.append((p[0].strip(), [x1, y1, x2, y2], poly))
-    return boxes
+    out = []
+    for cls, box, poly in shapes_to_detections(
+            load_yolo_shapes(txt_path, img_w, img_h)):
+        if poly is not None:
+            poly = [_decimate([[round(x, 1), round(y, 1)] for x, y in poly],
+                              _MAX_POLY_PTS)]
+        out.append((cls, box, poly))
+    return out
 
 
 def _read_labelme_label(js_path):
     """
     labelme json → [(cls, box, poly)]，poly 是像素坐标顶点或 None。
-    自己解析而不是只取外接框：框的读取函数拿不到 polygon 顶点，
-    而两次读文件再按序号对齐的做法在数据有脏 shape 时会错位。
+    保留 polygon 顶点而不是只取外接框：分割验证要靠轮廓算 IoU，
+    只取框会把 mask 丢掉。解析统一走 label_utils.load_json_shapes。
     """
     out = []
-    try:
-        with open(js_path, "r", encoding="utf-8") as f:
-            data = json.load(f)
-    except Exception:
-        return out
-    for shape in data.get("shapes") or []:
-        pts = shape.get("points") or []
-        if len(pts) < 2:
-            continue
-        try:
-            xs = [float(p[0]) for p in pts]
-            ys = [float(p[1]) for p in pts]
-        except (TypeError, ValueError, IndexError):
-            continue
-        # labelme 的 rectangle 也存成 2 个点，>=3 个点的才是多边形
-        poly = None
-        if len(pts) >= 3:
-            poly = [_decimate([[round(x, 1), round(y, 1)]
-                               for x, y in zip(xs, ys)], _MAX_POLY_PTS)]
-        out.append((_normalize_label(shape.get("label", "unknown")),
-                    [min(xs), min(ys), max(xs), max(ys)], poly))
+    for cls, box, poly in shapes_to_detections(load_json_shapes(js_path)):
+        if poly is not None:
+            poly = [_decimate([[round(x, 1), round(y, 1)] for x, y in poly],
+                              _MAX_POLY_PTS)]
+        out.append((cls, box, poly))
     return out
 
 
@@ -268,7 +234,8 @@ def _largest_ring(poly):
 
 def _write_labelme_json(img_path, items):
     """
-    写 labelme JSON 到图片同目录，同名 .json 覆盖。
+    写 labelme JSON 到图像同目录、与图片同名——标注工具(含本程序标注界面)只会
+    按 <图名>.json 找标签，改名就没人读得到。
     items: [([x1,y1,x2,y2], cls, poly)]，poly 非空时写 polygon，否则 rectangle。
     分割模型导成矩形会把 mask 轮廓丢掉，回到标注工具里只剩个框没法用。
     labelme 一个 shape 只能带一个多边形，多连通的 mask 取面积最大的那块。
@@ -303,6 +270,11 @@ def _write_labelme_json(img_path, items):
         "imageWidth": iw,
     }
     out = os.path.splitext(img_path)[0] + ".json"
+    # 同名覆盖是刻意的：勾了"输出标注"就代表要这份结果，改名的后果是打不开。
+    # 有标注的数据集默认不勾该开关, 只有用户主动勾选才会走到这里。
+    if load_json_shapes(out):
+        print("[test] 覆盖已有标注 {}".format(os.path.basename(out)),
+              flush=True)
     with open(out, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 

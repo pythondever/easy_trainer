@@ -146,6 +146,9 @@ public static class InstallEngine
                 case "program" when HasEmbedded("program.zip"):
                     var dest = Layout.DestDir(root, id);
                     report.Report(new InstallReport { Stage = comp.Title, Detail = "正在安装…", Pct = stageBase + (int)(45 * w / totalBytes) });
+                    var staleCnt = await Task.Run(() => CleanStaleProgram(dest));
+                    if (staleCnt > 0)
+                        report.Report(new InstallReport { Stage = comp.Title, Detail = $"已清理上一版残留 {staleCnt} 个文件" });
                     await Task.Run(() => ExtractEmbeddedZip("program.zip", dest,
                         s => report.Report(new InstallReport { Stage = comp.Title, Pct = stageBase + 45 + (int)(50 * w / totalBytes) })));
                     report.Report(new InstallReport { Stage = comp.Title, Detail = "完成", Pct = stageBase + (int)(100 * w / totalBytes) });
@@ -613,6 +616,36 @@ public static class InstallEngine
         if (File.Exists(target)) File.Delete(target);
         File.Move(part, target);
         return target;
+    }
+
+
+    /// <summary>
+    /// 程序本体是覆盖式解压，上一版遗留的 .pyd 不会被清掉；而扩展模块的导入优先级高于明文 .py，
+    /// 于是新版已删除的模块会被旧产物"复活"（改了代码没生效 / 幽灵模块）。只清 app、ui 两棵子树，
+    /// 与 installer.sh 的 clean_old_build 保持一致：保留 __init__.py 与 easy_trainer.py。
+    /// </summary>
+    private static int CleanStaleProgram(string root)
+    {
+        var removed = 0;
+        foreach (var sub in new[] { "app", "ui" })
+        {
+            var dir = Path.Combine(root, sub);
+            if (!Directory.Exists(dir)) continue;
+            foreach (var f in Directory.GetFiles(dir, "*", SearchOption.AllDirectories))
+            {
+                var ext = Path.GetExtension(f).ToLowerInvariant();
+                var name = Path.GetFileName(f);
+                var stale = ext is ".pyd" or ".so" or ".pyc"
+                            || (ext == ".py" && name is not "__init__.py" and not "easy_trainer.py");
+                if (!stale) continue;
+                try { File.Delete(f); removed++; } catch { /* 被占用则留给覆盖解压 */ }
+            }
+            foreach (var d in Directory.GetDirectories(dir, "__pycache__", SearchOption.AllDirectories))
+            {
+                try { Directory.Delete(d, true); } catch { }
+            }
+        }
+        return removed;
     }
 
 

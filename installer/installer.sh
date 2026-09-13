@@ -9,6 +9,8 @@
 # 需与本脚本同目录放置 program.zip、requirements-release.txt、pretrained-assets.txt
 # （build.py 的 Linux 发布产物）。默认锁定 CUDA 版 torch，可用 TORCH_INDEX 环境变量换 pytorch 源。
 # .so 按 Python 3.10(cp310) 编译，本脚本要求系统 python 恰为 3.10.x，否则拒绝安装。
+# 重复安装 = 覆盖升级：开始前先清掉 app/ ui/ 下的旧 .so 与明文 .py（否则上一版已删除的模块会被继续 import），
+# 并在解压前做磁盘空间预检（装运行时约需 10GB）。venv 与已装依赖保留复用。
 set -u
 
 PIP_INDEX="https://pypi.tuna.tsinghua.edu.cn/simple"
@@ -42,8 +44,23 @@ fi
 
 LOG_FILE=""
 log()  { local l="[$(date '+%H:%M:%S')] $*"; echo "$l"; [ -n "$LOG_FILE" ] && echo "$l" >> "$LOG_FILE" 2>/dev/null || true; }
-die()  { log "错误: $*"; exit 1; }
-usage(){ sed -n '2,10p' "$0" | sed 's/^# \{0,1\}//'; exit 0; }
+# 消息里的 \n 要真展开成换行：bash 的 echo 不带 -e 不解释转义，直接 log 会把 \n 打成字面量
+die()  { while IFS= read -r _l; do log "$_l"; done <<< "$(printf '%b' "错误: $*")"; exit 1; }
+# 帮助文本直接取头部注释块（读到 set -u 为止），不写死行号，增删注释行也不会错位
+usage(){
+  local n=0 line
+  while IFS= read -r line; do
+    n=$((n + 1)); [ "$n" -eq 1 ] && continue
+    [ "$line" = "set -u" ] && break
+    # case 的 pattern 是整串匹配，剥前缀要带通配符（写成 '# ' 只会匹配恰好两字符的那行）
+    case "$line" in
+      '# '*) line="${line#'# '}" ;;
+      '#')   line="" ;;
+    esac
+    printf '%s\n' "$line"
+  done < "$0"
+  exit 0
+}
 
 while getopts "d:ph" opt; do
   case "$opt" in
@@ -57,6 +74,26 @@ done
 need_cmd() { command -v "$1" >/dev/null 2>&1 || die "缺少命令: $1（请先安装）"; }
 need_cmd python3
 need_cmd curl
+
+human_kb() { awk -v k="${1:-0}" 'BEGIN{ if (k >= 1048576) printf "%.1fGB", k/1048576; else printf "%.0fMB", k/1024 }'; }
+
+# 解压是覆盖式的，上一版遗留的 .so / 明文 .py 不会被清掉，但导入优先级是 扩展模块 > 源码，
+# 于是新版已删除的模块会被旧产物"复活"（改了代码没生效 / 幽灵模块）。只清 app、ui 两棵子树。
+clean_old_build() {
+  local dirs=() nso npy
+  [ -d "$ROOT/app" ] && dirs+=("$ROOT/app")
+  [ -d "$ROOT/ui" ] && dirs+=("$ROOT/ui")
+  [ "${#dirs[@]}" -eq 0 ] && return 0
+  nso=$(find "${dirs[@]}" \( -name '*.so' -o -name '*.pyd' \) 2>/dev/null | wc -l)
+  npy=$(find "${dirs[@]}" -name '*.py' ! -name '__init__.py' ! -name 'easy_trainer.py' 2>/dev/null | wc -l)
+  if [ "$((nso + npy))" -gt 0 ]; then
+    find "${dirs[@]}" \( -name '*.so' -o -name '*.pyd' -o -name '*.pyc' \) -delete 2>/dev/null
+    find "${dirs[@]}" -name '*.py' ! -name '__init__.py' ! -name 'easy_trainer.py' -delete 2>/dev/null
+    find "${dirs[@]}" -type d -name '__pycache__' -exec rm -rf {} + 2>/dev/null
+    log "已清理上一版残留: $nso 个 .so/.pyd, $npy 个旧 .py"
+  fi
+  return 0
+}
 
 # ── 1. 定位 Python 3.10 ───────────────────────────────────────────────
 find_python310() {
@@ -73,6 +110,12 @@ find_python310() {
 PY="$(find_python310)" || die "需要 Python 3.10（编译产物 .so 按 cp310 ABI）。\n   Ubuntu 22.04+ 可安装: sudo apt install python3.10 python3.10-venv\n   也可用 PY=/path/to/python3.10 ./installer.sh 指定"
 
 # ── 2. 基础准备 ───────────────────────────────────────────────────────
+# 后面 clean_old_build 会按 ROOT 清旧产物，先把指到根目录/家目录本身的写法挡住。
+# 先去掉尾斜杠，否则 -d /root/ 会绕过等值判断（"//" 这类要反复剥，剥空即命中）
+while [ "${ROOT%/}" != "$ROOT" ]; do ROOT="${ROOT%/}"; done
+if [ -z "$ROOT" ] || [ "$ROOT" = "${HOME%/}" ]; then
+  die "安装目录不合理: ${ROOT:-<空>}\n   请用 -d 指定一个专用子目录（默认 $HOME/EasyTrainer）"
+fi
 mkdir -p "$ROOT" || die "无法创建安装目录: $ROOT"
 LOG_FILE="$ROOT/install.log"
 log "EasyTrainer $VERSION 安装开始，目标: $ROOT"
@@ -81,6 +124,19 @@ log "Python: $($PY --version 2>&1)"
 ZIP="$SELF_DIR/program.zip"
 REQ="$SELF_DIR/requirements-release.txt"
 [ -f "$ZIP" ] || die "同目录缺少 program.zip（发布不完整）：$ZIP"
+
+# 空间预检：装到一半才发现磁盘满，会留下一个半残的 venv。口径与 Windows 安装器一致
+# （RuntimeInstalledBytes=9GB + 各组件体积；程序本体按 zip 解压后的实际大小）
+prog_kb=$("$PY" -c 'import sys,zipfile;print(sum(i.file_size for i in zipfile.ZipFile(sys.argv[1]).infolist())//1024)' "$ZIP" 2>/dev/null) || prog_kb=0
+case "$prog_kb" in ''|*[!0-9]*) prog_kb=0 ;; esac
+need_kb=$((prog_kb + 9 * 1024 * 1024))
+[ "$WITH_PRETRAINED" = "1" ] && need_kb=$((need_kb + 880 * 1024))
+free_kb=$(df -Pk "$ROOT" 2>/dev/null | awk 'NR==2 {print $4}')
+case "$free_kb" in ''|*[!0-9]*) free_kb="" ;; esac
+if [ -n "$free_kb" ] && [ "$free_kb" -lt "$need_kb" ]; then
+  die "磁盘空间不足: 本次安装约需 $(human_kb "$need_kb")，$ROOT 所在分区当前可用 $(human_kb "$free_kb")。\n   请用 -d 换一个空间充足的目录，或清理磁盘后重试"
+fi
+log "空间检查通过: 需约 $(human_kb "$need_kb")${free_kb:+，可用 $(human_kb "$free_kb")}"
 
 # ── 3. 虚拟环境 ───────────────────────────────────────────────────────
 VENV_DIR="$ROOT/runtime/venv"
@@ -92,6 +148,7 @@ VPY="$VENV_DIR/bin/python"
 VPIP="$VENV_DIR/bin/pip"
 
 # ── 4. 解压程序本体 ───────────────────────────────────────────────────
+clean_old_build
 log "解压程序本体（program.zip）…"
 "$VPY" -m zipfile -e "$ZIP" "$ROOT" || die "解压 program.zip 失败"
 [ -f "$ROOT/app/easy_trainer.py" ] || die "program.zip 内容异常：缺少 app/easy_trainer.py"
