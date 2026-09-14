@@ -7,7 +7,8 @@ from app.widgets.charts import render_label_chart
 from app.widgets.log_dialog import LogDialog
 from app.widgets.model_dialog import ModelDialog
 from app.widgets.queue_dialog import TrainQueueDialog
-from app.train.dialogs import TrainDialog, _ClickToPopupFilter
+from app.widgets.multi_combo import install_multi_combo
+from app.train.dialogs import TrainDialog
 from ui.dataset_properties import Ui_Dialog as DatasetPropertiesUI
 from app.widgets.message_box import MessageBox
 from app.widgets.dialog_buttons import apply_icon
@@ -76,20 +77,7 @@ class MiscMixin(object):
         dlg.exec()
 
     def _setup_stats_multi_combo(self, combo):
-        """把下拉框配置成多选模式(文本居中+点击任意位置展开)."""
-        combo.setEditable(True)
-        combo.setFocusPolicy(Qt.StrongFocus)
-        le = combo.lineEdit()
-        le.setObjectName("multiComboLineEdit")
-        le.setReadOnly(True)
-        le.setAlignment(Qt.AlignHCenter)
-        f = _ClickToPopupFilter(combo)
-        # 保持引用防 GC(否则事件过滤器失效, 点击 lineEdit 不再展开)
-        if not hasattr(self, "_stats_combo_filters"):
-            self._stats_combo_filters = []
-        self._stats_combo_filters.append(f)
-        combo.installEventFilter(f)
-        le.installEventFilter(f)
+        install_multi_combo(combo)
         combo.model().itemChanged.connect(
             lambda *_: self._update_stats_combo_text(combo))
         combo.activated.connect(lambda _i: self._update_stats_combo_text(combo))

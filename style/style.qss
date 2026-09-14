@@ -1092,7 +1092,13 @@ QProgressBar#miniProgressBar::chunk {
 }
 
 /* ---------------- 多选下拉框只读 lineEdit（统计/训练界面） ---------------- */
-QLineEdit#multiComboLineEdit {
+/* 多选下拉: 收起态是一排自绘标签, 内边距收窄给标签让位 */
+QComboBox[multiCombo="true"] {
+    padding: 4px 8px;
+}
+
+QComboBox[multiCombo="true"] QLineEdit#multiComboLineEdit,
+QComboBox[multiCombo="true"] QLineEdit#multiComboLineEdit:focus {
     background: transparent;
     border: none;
     padding: 0;

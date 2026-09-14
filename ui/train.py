@@ -117,6 +117,7 @@ class Ui_TrainDialog(object):
 
         self.dataset_combo = QComboBox(TrainDialog)
         self.dataset_combo.setObjectName(u"dataset_combo")
+        self.dataset_combo.setMinimumSize(QSize(230, 0))
 
         self.grid_data.addWidget(self.dataset_combo, 1, 1, 1, 1)
 
@@ -128,6 +129,7 @@ class Ui_TrainDialog(object):
 
         self.val_combo = QComboBox(TrainDialog)
         self.val_combo.setObjectName(u"val_combo")
+        self.val_combo.setMinimumSize(QSize(230, 0))
 
         self.grid_data.addWidget(self.val_combo, 1, 3, 1, 1)
 

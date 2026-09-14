@@ -187,7 +187,14 @@
             </widget>
           </item>
           <item row="1" column="1">
-            <widget class="QComboBox" name="dataset_combo" />
+            <widget class="QComboBox" name="dataset_combo">
+              <property name="minimumSize">
+                <size>
+                  <width>230</width>
+                  <height>0</height>
+                </size>
+              </property>
+            </widget>
           </item>
           <item row="1" column="2">
             <widget class="QLabel" name="val_label">
@@ -200,7 +207,14 @@
             </widget>
           </item>
           <item row="1" column="3">
-            <widget class="QComboBox" name="val_combo" />
+            <widget class="QComboBox" name="val_combo">
+              <property name="minimumSize">
+                <size>
+                  <width>230</width>
+                  <height>0</height>
+                </size>
+              </property>
+            </widget>
           </item>
           <item row="2" column="0">
             <widget class="QLabel" name="device_label">

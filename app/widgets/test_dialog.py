@@ -19,6 +19,7 @@ from app.core.db import get_paths
 from app.core.log import write_log
 from app.widgets.dialog_buttons import apply_icon
 from app.widgets.message_box import MessageBox
+from app.widgets.multi_combo import install_multi_combo
 from app.train.dialogs import (CONTROL_H, _TrainStartDialog, detach_device_probe,
                                fill_device_combo_async, fill_device_items)
 from app.train.test_result_dialog import TestResultDialog
@@ -159,17 +160,7 @@ class TestDialog(QDialog):
 
     # ---------- 填充 ----------
     def _setup_multi_combo(self, combo):
-        """配置成多选下拉(可编辑+只读+居中+点任意位置展开),与统计/训练一致."""
-        combo.setEditable(True)
-        combo.setFocusPolicy(Qt.StrongFocus)
-        le = combo.lineEdit()
-        le.setObjectName("multiComboLineEdit")
-        le.setReadOnly(True)
-        le.setAlignment(Qt.AlignHCenter)
-        f = _ClickToPopupFilter(combo)
-        combo.installEventFilter(f)
-        le.installEventFilter(f)
-        self._combo_filters.append(f)
+        install_multi_combo(combo)
 
     def _fill_data_combo(self):
         """

@@ -15,6 +15,7 @@ from PySide6.QtGui import QStandardItem
 
 from app.widgets.dialog_buttons import apply_icon
 from app.widgets.message_box import MessageBox
+from app.widgets.multi_combo import install_multi_combo
 from app.widgets.model_manager_dialog import ensure_weight, open_model_manager
 from app.core import model_assets
 from app.core.db import get_paths
@@ -522,16 +523,15 @@ class TrainDialog(QDialog):
         self._combo_filters.append(f)
 
     def _style_all_combos(self):
-        for name in ("task_combo", "dataset_combo", "val_combo", "network_combo",
-                     "device_combo", "img_size_comboBox", "optimizer_comboBox"):
+        # 多选下拉的编辑区自己画标签(见 _setup_multi_combo), 不套这里的居中和点击展开
+        for name in ("task_combo", "network_combo", "device_combo",
+                     "img_size_comboBox", "optimizer_comboBox"):
             combo = getattr(self.ui, name, None)
             if combo is not None:
                 self._style_combo(combo)
 
     def _setup_multi_combo(self, combo, placeholder="请选择数据集"):
-        """
-        多选下拉
-        """
+        install_multi_combo(combo, placeholder)
         combo.model().itemChanged.connect(lambda *_: self._update_multi_label(combo))
         combo.activated.connect(lambda _i: self._update_multi_label(combo))
         return combo
