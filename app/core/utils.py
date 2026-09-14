@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""通用工具函数：时长格式化、matplotlib 中文字体、样式表加载、跨平台字体。"""
+"""通用工具函数: 时长格式化, matplotlib 中文字体, 样式表加载, 跨平台字体."""
 import os
 import sys
 
@@ -27,7 +27,7 @@ _font_choice_cache = None
 
 
 def fmt_duration(secs):
-    """可读时长(不足1分钟显示秒;长训练显示天/时/分)。"""
+    """可读时长(不足1分钟显示秒;长训练显示天/时/分)."""
     if secs < 60:
         return "{}秒".format(secs)
     d, rem = divmod(secs, 86400)
@@ -46,8 +46,8 @@ def fmt_duration(secs):
 
 
 def ui_font_family():
-    """界面推荐中文字体(跨平台): Windows 用雅黑, Linux/macOS 用 Noto Sans CJK。
-    返回字体名; 该字体缺失时 Qt 会自动 fallback 到系统默认。"""
+    """界面推荐中文字体(跨平台): Windows 用雅黑, Linux/macOS 用 Noto Sans CJK.
+    返回字体名; 该字体缺失时 Qt 会自动 fallback 到系统默认."""
     if sys.platform == "win32":
         return "Microsoft YaHei"
     if sys.platform == "darwin":
@@ -69,7 +69,7 @@ def cjk_font_choice():
             family = name
             break
     if not family:
-        # 候选表没命中时按关键字扫：各发行版的字体名很杂
+        # 候选表没命中时按关键字扫: 各发行版的字体名很杂
         try:
             for f in font_manager.fontManager.ttflist:
                 n = f.name.lower()
@@ -95,10 +95,10 @@ def cjk_font_choice():
 
 def setup_matplotlib_chinese():
     """
-    把中文字体写进全局 rcParams；幂等（探测结果有缓存，重复调用无开销）。
-    之前 charts / metrics_dialog / test_report 各写一份 rcParams，候选表互不
-    相同又都改全局，后执行的会盖掉前面的，同一进程里不同图表可能用不同字体
-    （一个正常一个方框）。统一走这里。
+    把中文字体写进全局 rcParams; 幂等(探测结果有缓存, 重复调用无开销).
+    之前 charts / metrics_dialog / test_report 各写一份 rcParams, 候选表互不
+    相同又都改全局, 后执行的会盖掉前面的, 同一进程里不同图表可能用不同字体
+    (一个正常一个方框). 统一走这里.
     """
     family, _ = cjk_font_choice()
     plt.rcParams["font.sans-serif"] = [family, "DejaVu Sans"]
@@ -109,8 +109,8 @@ def setup_matplotlib_chinese():
 
 def project_root():
     """
-    项目根目录: 向上搜索含 style/ 或 resources/ 的目录。
-    不依赖固定层级(__file__ 深度), 目录整理后仍能正确定位。
+    项目根目录: 向上搜索含 style/ 或 resources/ 的目录.
+    不依赖固定层级(__file__ 深度), 目录整理后仍能正确定位.
     """
     d = os.path.dirname(os.path.abspath(__file__))
     while True:
@@ -128,12 +128,12 @@ _TRAIN_TEXT_ENCODINGS = ("utf-8-sig", "utf-8", "gbk")
 
 def decode_text_bytes(raw):
     """
-    解码子进程产出的 bytes, 按 utf-8 → gbk 降级。
-    训练子进程的文本编码由它自己的环境决定，不能假设是 utf-8：Windows 上当
-    stdout 是管道(不是控制台)时 Python 取 ANSI 码页(中文=gbk)，从 PyCharm
-    之类注入过 PYTHONIOENCODING 的环境启动才是 utf-8；而且 C 层库(torch 等)
-    会绕过 Python 编码器直接写 fd，同一份输出里可能两种编码混排。固定按
-    utf-8 + errors="replace" 解会把中文和表格字符全变成替换符。
+    解码子进程产出的 bytes, 按 utf-8 → gbk 降级.
+    训练子进程的文本编码由它自己的环境决定, 不能假设是 utf-8: Windows 上当
+    stdout 是管道(不是控制台)时 Python 取 ANSI 码页(中文=gbk), 从 PyCharm
+    之类注入过 PYTHONIOENCODING 的环境启动才是 utf-8; 而且 C 层库(torch 等)
+    会绕过 Python 编码器直接写 fd, 同一份输出里可能两种编码混排. 固定按
+    utf-8 + errors="replace" 解会把中文和表格字符全变成替换符.
     """
     if isinstance(raw, str):
         return raw
@@ -146,7 +146,7 @@ def decode_text_bytes(raw):
 
 
 def read_text_any(path):
-    """读子进程产物文本, 按 utf-8 → gbk 降级, 避免编码不符时整条通道静默失效。"""
+    """读子进程产物文本, 按 utf-8 → gbk 降级, 避免编码不符时整条通道静默失效."""
     with open(path, "rb") as f:
         return decode_text_bytes(f.read())
 

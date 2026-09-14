@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-弹窗确认/取消按钮：统一用 resources 图标，不再各写各的文字。
-纯图标按钮一律补 tooltip，否则用户只能靠猜。
+弹窗确认/取消按钮: 统一用 resources 图标, 不再各写各的文字.
+纯图标按钮一律补 tooltip, 否则用户只能靠猜.
 """
 
 import os
@@ -18,7 +18,7 @@ REJECT_ICON = "取消.png"
 
 ICON_SIZE = 26
 BTN_WIDTH = 56
-BTN_HEIGHT = 36  # 与 style.qss 的 QDialog 控件统一高度一致（CONTROL_H）
+BTN_HEIGHT = 36  # 与 style.qss 的 QDialog 控件统一高度一致(CONTROL_H)
 
 CONFIRM_TEXTS = ("确定", "确认", "是", "好", "ok", "yes", "导出", "保存", "应用")
 REJECT_TEXTS = ("取消", "否", "关闭", "no", "cancel", "退出")
@@ -35,8 +35,8 @@ def _icon_path(name):
 
 
 def resource_icon(name):
-    """绝对路径取 resources 图标。uic 从 .ui 生成的 ../resources 相对路径
-    按 cwd 解析, 安装版 cwd 是安装根, 上一级没有 resources, 图标必空白。"""
+    """绝对路径取 resources 图标. uic 从 .ui 生成的 ../resources 相对路径
+    按 cwd 解析, 安装版 cwd 是安装根, 上一级没有 resources, 图标必空白."""
     path = _icon_path(name)
     return QIcon(path) if path else QIcon()
 
@@ -44,8 +44,8 @@ def resource_icon(name):
 @lru_cache(maxsize=128)
 def _tinted(path, color):
     """
-    按颜色染色的图标。缓存: 列表/菜单里同一图标会反复取(每行都新建
-    QPixmap+QPainter 很贵), 图标本身是只读资源, 复用安全。
+    按颜色染色的图标. 缓存: 列表/菜单里同一图标会反复取(每行都新建
+    QPixmap+QPainter 很贵), 图标本身是只读资源, 复用安全.
     """
     src = QPixmap(path)
     if src.isNull():
@@ -61,7 +61,7 @@ def _tinted(path, color):
 
 
 def classify(text):
-    """返回 confirm / reject / ''，最后一种表示保持原样。"""
+    """返回 confirm / reject / '', 最后一种表示保持原样."""
     t = (text or "").strip().lower()
     if t in CONFIRM_TEXTS:
         return "confirm"
@@ -71,7 +71,7 @@ def classify(text):
 
 
 def apply_icon(btn, text, tooltip=None):
-    """归不了类的按钮（如"覆盖"）保持文字，不动它。"""
+    """归不了类的按钮(如"覆盖")保持文字, 不动它."""
     kind = classify(text)
     if not kind:
         return btn
@@ -108,7 +108,7 @@ def reject_button(text="取消", parent=None):
 
 def add_ok_cancel(button_row, on_accept, on_reject=None,
                   ok_text="确定", cancel_text="取消"):
-    """Windows 习惯：确定在左。"""
+    """Windows 习惯: 确定在左."""
     ok = confirm_button(ok_text)
     ok.setDefault(True)
     ok.clicked.connect(on_accept)

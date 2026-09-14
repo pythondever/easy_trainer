@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-模型导出为 ONNX。
+模型导出为 ONNX.
 
-检测/分割（RF-DETR）走 rfdetr 自带的 export，分类（resnet）走 torch.onnx.export。
-两者产物统一由调用方命名，导出目录里不再出现 .pth。
+检测/分割(RF-DETR)走 rfdetr 自带的 export, 分类(resnet)走 torch.onnx.export.
+两者产物统一由调用方命名, 导出目录里不再出现 .pth.
 """
 
 import os
@@ -17,13 +17,13 @@ def _torch():
 
 
 def export_detr_onnx(model_path, out_file, log=print):
-    """RF-DETR 检测/分割 → ONNX。返回写好的 onnx 路径。"""
+    """RF-DETR 检测/分割 → ONNX. 返回写好的 onnx 路径."""
     from rfdetr import RFDETR
 
     model = RFDETR.from_checkpoint(model_path)
     tmp_dir = tempfile.mkdtemp(prefix="et_onnx_")
     try:
-        log("[export] 正在导出 ONNX（可能需要 1~2 分钟）...")
+        log("[export] 正在导出 ONNX(可能需要 1~2 分钟)...")
         produced = model.export(output_dir=tmp_dir, format="onnx")
         src = str(produced) if produced else ""
         if not src or not os.path.exists(src):
@@ -40,7 +40,7 @@ def export_detr_onnx(model_path, out_file, log=print):
 
 
 def export_classify_onnx(model_path, out_file, img_size=224, log=print):
-    """分类模型（resnet 系列）→ ONNX。返回写好的 onnx 路径。"""
+    """分类模型(resnet 系列)→ ONNX. 返回写好的 onnx 路径."""
     torch = _torch()
     import torch.nn as nn
     from torchvision import models
@@ -59,7 +59,7 @@ def export_classify_onnx(model_path, out_file, img_size=224, log=print):
 
     size = int(img_size or 224)
     dummy = torch.zeros(1, 3, size, size)
-    log("[export] 正在导出分类模型 ONNX（输入 {}x{}）...".format(size, size))
+    log("[export] 正在导出分类模型 ONNX(输入 {}x{})...".format(size, size))
     # 边长为动态轴: 部署侧不必强行缩放到训练尺寸
     torch.onnx.export(
         model, dummy, out_file,
@@ -72,7 +72,7 @@ def export_classify_onnx(model_path, out_file, img_size=224, log=print):
 
 
 def export_onnx(model_path, task, out_file, img_size=0, log=print):
-    """按任务类型分派；返回 onnx 路径。"""
+    """按任务类型分派; 返回 onnx 路径."""
     if task == "classify":
         return export_classify_onnx(model_path, out_file,
                                     img_size=img_size or 224, log=log)

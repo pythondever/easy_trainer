@@ -19,9 +19,9 @@ from PySide6.QtWidgets import QMenu, QGraphicsView, QGraphicsScene
 
 class _RoiDecodeWorker(QThread):
     """
-    按类筛选的 ROI 后台解码: 避免首页 UI 线程同步 PIL 全尺寸解码卡顿。
+    按类筛选的 ROI 后台解码: 避免首页 UI 线程同步 PIL 全尺寸解码卡顿.
     提交 (image_path, label, box_idx, box) 任务, 后台逐张解码+crop,
-    整批完成后 emit (path, label, box_idx, qimg) 列表到主线程。
+    整批完成后 emit (path, label, box_idx, qimg) 列表到主线程.
     """
 
     batch_done = Signal(object)
@@ -58,7 +58,7 @@ class _RoiDecodeWorker(QThread):
 
 
 class _ThumbDecodeWorker(QThread):
-    """整图缩略图后台解码: 首页/全部/未标注筛选不阻塞 UI。"""
+    """整图缩略图后台解码: 首页/全部/未标注筛选不阻塞 UI."""
 
     batch_done = Signal(object)
 
@@ -104,7 +104,7 @@ _THUMB_PLACEHOLDER = None
 
 
 def _thumb_placeholder():
-    """统一的缩略图占位(灰块), 后台解码完成前先垫底。"""
+    """统一的缩略图占位(灰块), 后台解码完成前先垫底."""
     global _THUMB_PLACEHOLDER
     if _THUMB_PLACEHOLDER is None:
         _THUMB_PLACEHOLDER = QImage(200, 200, QImage.Format_RGB32)
@@ -243,11 +243,11 @@ class DatasetViewMixin(object):
                              if cur_ds else {})
                     unlabeled = _self._view_data_by_label(index)
                     all_paths = [r.get("image_path", "") for r in unlabeled if r.get("image_path")]
-                    act = menu.addAction("删除全部未标注图像（{} 张）".format(len(all_paths)))
+                    act = menu.addAction("删除全部未标注图像({} 张)".format(len(all_paths)))
                     act.triggered.connect(
                         lambda: _self._delete_paths_with_confirm(all_paths))
                 else:
-                    act = menu.addAction("删除所选图像（{} 张）".format(len(selected)))
+                    act = menu.addAction("删除所选图像({} 张)".format(len(selected)))
                     act.triggered.connect(lambda: _self._delete_selected_images(selected))
                 menu.exec(ev.globalPos())
                 ev.accept()
@@ -267,7 +267,6 @@ class DatasetViewMixin(object):
         self._open_annotation(image_path)
 
     def _open_annotation(self, image_path):
-        """打开标注对话框"""
         cur_ds = getattr(self, "_current_dataset", None)
         if not cur_ds:
             return
@@ -300,7 +299,7 @@ class DatasetViewMixin(object):
             # 会话无任何改动: 缓存/db/文件均未变化, 收尾全跳过(9w 图省一次全量重建)
             return
         # 只重读本会话真正写过 json 的图(框增删改); 整标签删除/类别修改已由
-        # _apply_* 就地同步, 无框改动时无需读 json, 仅统一重建分组与 db 计数。
+        # _apply_* 就地同步, 无框改动时无需读 json, 仅统一重建分组与 db 计数.
         self._refresh_dataset_labels(proj, ds, rescan=bool(modified),
                                      only_paths=modified or None)
         self._refresh_label_filter(proj, ds)
@@ -311,8 +310,8 @@ class DatasetViewMixin(object):
 
     def _sync_label_paths_from_json(self, project_name, dataset_name):
         """
-        标注后扫描: 哪些 image_path 目录含 labelme json, 把这些目录追加到 db label_paths。
-        仅 labelme 模式(.json)有效; yolo/cls 模式不扫描。
+        标注后扫描: 哪些 image_path 目录含 labelme json, 把这些目录追加到 db label_paths.
+        仅 labelme 模式(.json)有效; yolo/cls 模式不扫描.
         """
         binding = self.db.get_dataset_import(project_name, dataset_name)
         if not binding or binding.get("label_fmt", "") != ".json":
@@ -340,8 +339,8 @@ class DatasetViewMixin(object):
 
     def _load_dataset_view(self, project, dataset):
         """
-        右键「载入」: 强制重扫并显示数据集图像。
-        丢弃旧缓存强制重扫,否则推理/标注界面新写的 labelme json 不会被读入。
+        右键"载入": 强制重扫并显示数据集图像.
+        丢弃旧缓存强制重扫,否则推理/标注界面新写的 labelme json 不会被读入.
         """
         self._current_dataset = (project, dataset)
         self.current_label = "__unlabeled__"
@@ -354,8 +353,8 @@ class DatasetViewMixin(object):
 
     def _view_data_by_label(self, data):
         """
-        按当前筛选 current_label 取 view_data(未标注 / 具体标签 / 全部)。
-        用于分页和渲染:分页按筛选后 view_data 计算(不再是全量)。
+        按当前筛选 current_label 取 view_data(未标注 / 具体标签 / 全部).
+        用于分页和渲染:分页按筛选后 view_data 计算(不再是全量).
         """
         cur = self.current_label
         all_records = data.get("all", [])
@@ -370,7 +369,7 @@ class DatasetViewMixin(object):
         return []
 
     def _expand_by_label(self, data):
-        """按标签把图像列表按 box 展开为 (rec, box_idx);未标注/全部/分类原样返回。"""
+        """按标签把图像列表按 box 展开为 (rec, box_idx);未标注/全部/分类原样返回."""
         cur = self.current_label
         if not cur or cur == "__unlabeled__":
             return data
@@ -390,9 +389,9 @@ class DatasetViewMixin(object):
 
     def show_dataset_images(self, project_name, dataset_name, update_stats=False):
         """
-        从内存缓存取该数据集图像显示;无缓存则尝试后台加载（多路径合并）。
-        update_stats=True 时重扫完成会把 labeled/total 写回 db(右键「载入」场景,
-        推理/标注新写的标签 json 重扫后同步统计)。
+        从内存缓存取该数据集图像显示;无缓存则尝试后台加载(多路径合并).
+        update_stats=True 时重扫完成会把 labeled/total 写回 db(右键"载入"场景,
+        推理/标注新写的标签 json 重扫后同步统计).
         """
         self._select_all_mode = False
         proj_cache = self.dataset_cache.get(project_name, {})
@@ -425,11 +424,11 @@ class DatasetViewMixin(object):
     @staticmethod
     def _build_dataset_index(result):
         """
-        把导入结果构造成 项目-数据集-标签 索引：
+        把导入结果构造成 项目-数据集-标签 索引:
         {"all": [全部图像记录...], "labels": {标签名: [图像记录...]}}
-        一张图可出现在多个标签下（一图多缺陷）。
-        统一归一化 rec.labels / rec.boxes 的标签名（class_N → N），
-        保证缓存索引与筛选下拉/重命名/删除使用的标签名一致。
+        一张图可出现在多个标签下(一图多缺陷).
+        统一归一化 rec.labels / rec.boxes 的标签名(class_N → N),
+        保证缓存索引与筛选下拉/重命名/删除使用的标签名一致.
         """
         index = {"all": [], "labels": {}}
         for rec in result:
@@ -446,14 +445,14 @@ class DatasetViewMixin(object):
     def _refresh_dataset_labels(self, project_name, dataset_name, rescan=False,
                                 only_paths=None):
         """
-        重建缓存中的 labels 索引。
+        重建缓存中的 labels 索引.
         rescan=False(导入/载入完成): 缓存 rec 刚由后台扫描生成, labels/boxes
-          已是最新, 跳过逐图 json 重读, 只做归一化与索引重建(纯内存, 万级图不卡)。
+          已是最新, 跳过逐图 json 重读, 只做归一化与索引重建(纯内存, 万级图不卡).
         rescan=True(标注后): 逐图读同路径 labelme json 获取最新标注标签
-          (无 json 保留导入时的 labels), 再重建 labels 分组索引写回 dataset_cache。
+          (无 json 保留导入时的 labels), 再重建 labels 分组索引写回 dataset_cache.
           only_paths 提供时只重读这些图(标注会话真正改过的 json), 避免 9w 图
-          每次关标注全量重扫; 不提供时保持全量语义。
-          轻量操作: 只读 json, 不重新生成缩略图, 不扫描目录树。
+          每次关标注全量重扫; 不提供时保持全量语义.
+          轻量操作: 只读 json, 不重新生成缩略图, 不扫描目录树.
         """
         proj_cache = self.dataset_cache.get(project_name, {})
         index = proj_cache.get(dataset_name)
@@ -507,7 +506,7 @@ class DatasetViewMixin(object):
                 index["labels"].setdefault(label, []).append(rec)
         proj_cache[dataset_name] = index
         # 构建/刷新 path->rec 索引(一次性 O(N), 供缩略图/ROI 回调 O(1) 定位,
-        # 避免每个批次全量重建 dict); 带数据集标识, 切换数据集时自动失效。
+        # 避免每个批次全量重建 dict); 带数据集标识, 切换数据集时自动失效.
         self._by_path_index = {
             "ds": (project_name, dataset_name),
             "map": {r.get("image_path"): r for r in index.get("all", [])},
@@ -522,9 +521,9 @@ class DatasetViewMixin(object):
     def _reset_image_area(self):
         """
         切到非数据集状态(点项目级别 / 删除数据集)时统一清空图像区
-        及所有相关 UI 状态: 分页信息, 当前页码, 标签筛选下拉框、
-        标注统计 labelStatsLabel。
-        与图像显示区(_clear_scene)一起重置,避免显示残留的旧数据集状态。
+        及所有相关 UI 状态: 分页信息, 当前页码, 标签筛选下拉框,
+        标注统计 labelStatsLabel.
+        与图像显示区(_clear_scene)一起重置,避免显示残留的旧数据集状态.
         """
         self._clear_scene()
         self.pageInfoLabel.setText("0 / 0")
@@ -540,7 +539,7 @@ class DatasetViewMixin(object):
             self.labelStatsLabel.setVisible(False)
 
     def _get_thumb(self, rec):
-        """整图缩略图: 命中缓存直接返回, 未命中提交后台解码并先返回占位图。"""
+        """整图缩略图: 命中缓存直接返回, 未命中提交后台解码并先返回占位图."""
         thumb = rec.get("thumb")
         if thumb is not None:
             rec["_thumb_t"] = self._img_clock_now()
@@ -554,7 +553,7 @@ class DatasetViewMixin(object):
         return _thumb_placeholder()
 
     def _ensure_thumb_worker(self):
-        """懒创建缩略图后台解码 worker(首页/翻页不卡顿)。"""
+        """懒创建缩略图后台解码 worker(首页/翻页不卡顿)."""
         if getattr(self, "_thumb_worker", None) is None:
             self._thumb_worker = _ThumbDecodeWorker(self)
             self._thumb_worker.batch_done.connect(self._on_thumb_batch_done)
@@ -568,9 +567,9 @@ class DatasetViewMixin(object):
         return self._thumb_worker
 
     def _on_thumb_batch_done(self, results):
-        """缩略图解码完成: 回写 rec 缓存, 有变化则防抖重渲当前页。
+        """缩略图解码完成: 回写 rec 缓存, 有变化则防抖重渲当前页.
         复用 _by_path_index 做 O(1) 定位, 不再每次全量重建 by_path dict;
-        内存淘汰走 _throttled_evict 节流(翻页/切筛选仍有 _render_scene 全量兜底)。"""
+        内存淘汰走 _throttled_evict 节流(翻页/切筛选仍有 _render_scene 全量兜底)."""
         if getattr(self, "_closing", False):
             return
         cur_ds = getattr(self, "_current_dataset", None)
@@ -596,7 +595,7 @@ class DatasetViewMixin(object):
         self._throttled_evict()
 
     def _ensure_roi_worker(self):
-        """懒创建 ROI 后台解码 worker(首页按类筛选首屏不卡顿)。"""
+        """懒创建 ROI 后台解码 worker(首页按类筛选首屏不卡顿)."""
         if getattr(self, "_roi_worker", None) is None:
             self._roi_worker = _RoiDecodeWorker(self)
             self._roi_worker.batch_done.connect(self._on_roi_batch_done)
@@ -612,7 +611,7 @@ class DatasetViewMixin(object):
     def _roi_for_render(self, rec, label, box_idx):
         """按类筛选渲染取 ROI: 缓存命中直接返回; 未命中直接返回灰块占位
         (不显示/不触发整图缩略图, 避免"灰块→整图闪现→ROI"三段式),
-        后台解码完成后自动重渲当前页。"""
+        后台解码完成后自动重渲当前页."""
         cache = rec.setdefault("rois_by_idx", {}).setdefault(label, {})
         if box_idx in cache:
             rec["_roi_t"] = self._img_clock_now()
@@ -630,8 +629,8 @@ class DatasetViewMixin(object):
 
     def _on_roi_batch_done(self, results):
         """后台 ROI 解码完成: 回写 rec 缓存(成功/失败都缓存, 防重复请求),
-        有变化则防抖重渲当前页。复用 _by_path_index O(1) 定位;
-        内存淘汰走 _throttled_evict 节流(翻页/切筛选仍有 _render_scene 全量兜底)。"""
+        有变化则防抖重渲当前页. 复用 _by_path_index O(1) 定位;
+        内存淘汰走 _throttled_evict 节流(翻页/切筛选仍有 _render_scene 全量兜底)."""
         if getattr(self, "_closing", False):
             return
         cur_ds = getattr(self, "_current_dataset", None)
@@ -661,20 +660,20 @@ class DatasetViewMixin(object):
 
     def _throttled_evict(self):
         """节流 LRU 淘汰: 后台批次回调高频触发, 全量 O(N log N) 淘汰每 ~30 批次一次;
-        翻页/切筛选走 _render_scene 的全量淘汰, 不依赖本方法。"""
+        翻页/切筛选走 _render_scene 的全量淘汰, 不依赖本方法."""
         self._batch_evict_count = getattr(self, "_batch_evict_count", 0) + 1
         if self._batch_evict_count >= 30:
             self._batch_evict_count = 0
             self._evict_img_cache()
 
     def _roi_redraw(self):
-        """防抖重渲当前页(ROI 后台解码完成)。"""
+        """防抖重渲当前页(ROI 后台解码完成)."""
         cur_ds = getattr(self, "_current_dataset", None)
         if cur_ds:
             self.show_dataset_images(cur_ds[0], cur_ds[1])
 
     def _img_clock_now(self):
-        """单调递增访问时钟(无 time 精度问题)。"""
+        """单调递增访问时钟(无 time 精度问题)."""
         c = getattr(self, "_img_clock", 0) + 1
         self._img_clock = c
         return c
@@ -682,10 +681,10 @@ class DatasetViewMixin(object):
     def _evict_img_cache(self):
         """
         QImage 图像缓存 LRU 淘汰: thumb/ROI 超过各自上限时,
-        释放最久未访问且不在当前页的缓存(置 None / 清空 rois_by_idx)。
+        释放最久未访问且不在当前页的缓存(置 None / 清空 rois_by_idx).
         淘汰后渲染时懒重建(与 label_mixin 主动失效 rec["thumb"]=None 同机制),
-        保证大图集翻页/按类筛选下内存有界、不持续增长。
-        只动 QImage 缓存, 不碰 rec 元数据与 labels 索引, 分页/统计/标注不受影响。
+        保证大图集翻页/按类筛选下内存有界, 不持续增长.
+        只动 QImage 缓存, 不碰 rec 元数据与 labels 索引, 分页/统计/标注不受影响.
         """
         cur = getattr(self, "_current_dataset", None)
         if not cur:
@@ -715,8 +714,8 @@ class DatasetViewMixin(object):
 
     def _render_scene(self, data):
         """
-        渲染当前页图像网格。按具体标签筛选时每个 cell 一个 ROI(box 计数),
-        未标注/全部按整图缩略(图像计数)。
+        渲染当前页图像网格. 按具体标签筛选时每个 cell 一个 ROI(box 计数),
+        未标注/全部按整图缩略(图像计数).
         """
         scene = self.graphics_view.scene()
         scene.clear()
@@ -782,7 +781,7 @@ class DatasetViewMixin(object):
         self.next_page_btn.setEnabled(self.current_page < total_pages - 1)
 
     def _show_page(self, offset):
-        """当前数据集翻页(offset: +1/-1)。分页数据与显示时一致（应用标签筛选）。"""
+        """当前数据集翻页(offset: +1/-1). 分页数据与显示时一致(应用标签筛选)."""
         cur_ds = getattr(self, "_current_dataset", None)
         if not cur_ds:
             return
@@ -876,7 +875,7 @@ class DatasetViewMixin(object):
             counts_str = ", ".join(
                 "{}: {}个".format(k, v) for k, v in
                 sorted(label_counts.items(), key=lambda kv: label_sort_key(kv[0])))
-            self._log("数据集导入完成: {}/{} | 图像 {} 张，已标注 {} 张"
+            self._log("数据集导入完成: {}/{} | 图像 {} 张, 已标注 {} 张"
                       " | 标签({}类): {}".format(
                 project_name, dataset_name, total, labeled,
                 len(label_counts), counts_str or "(无)"))
@@ -897,9 +896,9 @@ class DatasetViewMixin(object):
 
     def _on_sidebar_dataset_clicked(self, project, dataset):
         """
-        点击数据集行：仅记录选中；已缓存的数据集切换显示，未缓存不触发加载。
-        不强制覆盖 current_label —— 由 _refresh_label_filter 根据新数据集的实际
-        labels 决定保留/回退,避免 100% 标注数据集被强制选"未标注"导致视图空白。
+        点击数据集行: 仅记录选中; 已缓存的数据集切换显示, 未缓存不触发加载.
+        不强制覆盖 current_label - 由 _refresh_label_filter 根据新数据集的实际
+        labels 决定保留/回退,避免 100% 标注数据集被强制选"未标注"导致视图空白.
         """
         self._current_dataset = (project, dataset)
         if self.dataset_cache.get(project, {}).get(dataset):

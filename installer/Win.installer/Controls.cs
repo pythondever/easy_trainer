@@ -5,7 +5,7 @@ using System.Windows.Forms;
 
 namespace Win.installer;
 
-/// <summary>圆角按钮（主色实心 / 灰底 secondary 两种，带 hover/按下/禁用态）。纯 GDI+ 自绘。</summary>
+/// <summary>圆角按钮(主色实心 / 灰底 secondary 两种, 带 hover/按下/禁用态). 纯 GDI+ 自绘.</summary>
 public sealed class RoundedButton : Button
 {
     private bool _hover;
@@ -20,8 +20,8 @@ public sealed class RoundedButton : Button
     public RoundedButton()
     {
         FlatStyle = FlatStyle.Flat;
-        FlatAppearance.BorderSize = 0; // ButtonBase 不允许 BorderColor=Transparent，只能靠 BorderSize=0
-        // 关键：把系统主题色全部覆盖成白，避免深色主题下按钮背景透出黑/灰色
+        FlatAppearance.BorderSize = 0; // ButtonBase 不允许 BorderColor=Transparent, 只能靠 BorderSize=0
+        // 关键: 把系统主题色全部覆盖成白, 避免深色主题下按钮背景透出黑/灰色
         FlatAppearance.MouseOverBackColor = Color.White;
         FlatAppearance.MouseDownBackColor = Color.White;
         FlatAppearance.CheckedBackColor = Color.White;
@@ -34,7 +34,7 @@ public sealed class RoundedButton : Button
             | ControlStyles.Opaque, true);
     }
 
-    // 擦底交给 OnPaint 统一处理（真机系统擦底颜色不可控，曾致圆角外四角发黑）
+    // 擦底交给 OnPaint 统一处理(真机系统擦底颜色不可控, 曾致圆角外四角发黑)
     protected override void OnPaintBackground(PaintEventArgs e) { }
 
     protected override void OnMouseEnter(EventArgs e) { _hover = true; Invalidate(); base.OnMouseEnter(e); }
@@ -48,11 +48,11 @@ public sealed class RoundedButton : Button
         g.SmoothingMode = SmoothingMode.AntiAlias;
         g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
 
-        // 先铺满父底色再画圆角：圆角外的四角由这里保证，不依赖系统擦底
+        // 先铺满父底色再画圆角: 圆角外的四角由这里保证, 不依赖系统擦底
         using (var bg = new SolidBrush(Parent?.BackColor ?? BackColor))
             g.FillRectangle(bg, ClientRectangle);
 
-        // 铺满整个控件：留 0.5px 外圈会半覆盖，边缘会露出一圈像边框的残影
+        // 铺满整个控件: 留 0.5px 外圈会半覆盖, 边缘会露出一圈像边框的残影
         var rc = new RectangleF(0f, 0f, Width, Height);
 
         Color fill, text;
@@ -63,7 +63,7 @@ public sealed class RoundedButton : Button
         }
         else if (Outline)
         {
-            // 无边框灰底：白底上靠边框区分的样式在 hover 时对比度不稳，弃用
+            // 无边框灰底: 白底上靠边框区分的样式在 hover 时对比度不稳, 弃用
             fill = _hover ? Color.FromArgb(0xDC, 0xE3, 0xEC) : Color.FromArgb(0xEA, 0xEE, 0xF3);
             text = Accent;
         }
@@ -97,7 +97,7 @@ public sealed class RoundedButton : Button
     }
 }
 
-/// <summary>顶部渐变横幅：深蓝渐变 + 右侧装饰圆环，标题/副题直接画在面板上。</summary>
+/// <summary>顶部渐变横幅: 深蓝渐变 + 右侧装饰圆环, 标题/副题直接画在面板上.</summary>
 public sealed class HeaderPanel : Panel
 {
     private static readonly Font TitleFont =
@@ -139,8 +139,8 @@ public sealed class HeaderPanel : Panel
     }
 }
 
-/// <summary>VS Installer 风格组件卡片：左侧彩色图标块 + 标题/描述 + 右侧自定义 checkbox。
-/// 整张卡可点击切换勾选；hover 浅蓝底、勾选时左侧 3px 蓝色竖条。</summary>
+/// <summary>VS Installer 风格组件卡片: 左侧彩色图标块 + 标题/描述 + 右侧自定义 checkbox.
+/// 整张卡可点击切换勾选; hover 浅蓝底, 勾选时左侧 3px 蓝色竖条.</summary>
 public sealed class ComponentCard : Panel
 {
     private static readonly Color CardBg = Color.White;
@@ -207,7 +207,7 @@ public sealed class ComponentCard : Panel
 
     protected override void OnResize(EventArgs e)
     {
-        // 重新计算 checkbox 区域（卡片右上角）
+        // 重新计算 checkbox 区域(卡片右上角)
         var box = 20;
         _checkBoxRect = new Rectangle(Width - box - 16, (Height - box) / 2, box, box);
         base.OnResize(e);
@@ -221,7 +221,7 @@ public sealed class ComponentCard : Panel
 
         var rc = new Rectangle(0, 0, Width - 1, Height - 1);
 
-        // 背景：白底，hover 时浅蓝
+        // 背景: 白底, hover 时浅蓝
         var bg = _hover && !IsRequired ? HoverBg : CardBg;
         var border = IsRequired ? MutedBorder : CardBorder;
         using (var path = RoundedRect(rc, 8f))
@@ -231,7 +231,7 @@ public sealed class ComponentCard : Panel
         using (var path = RoundedRect(rc, 8f))
             g.DrawPath(pen, path);
 
-        // 勾选状态：左侧 3px 蓝色竖条 + 卡片轻微阴影感（用边线加重）
+        // 勾选状态: 左侧 3px 蓝色竖条 + 卡片轻微阴影感(用边线加重)
         if (IsChecked)
         {
             using var pen = new Pen(AccentBlue, 3f);

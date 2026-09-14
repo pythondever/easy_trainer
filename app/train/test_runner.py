@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
-"""测试执行脚本（由 UI 以子进程方式启动）。
+"""测试执行脚本(由 UI 以子进程方式启动).
 
-用法: main()，由 test_worker 以 -c 导入后调用（打包后是 pyd，不能 python -m 启动）
-config 字段（dialogs.py _on_start_test 组装）：
-  model_path   训练输出的 best total checkpoint（.pth）
+用法: main(), 由 test_worker 以 -c 导入后调用(打包后是 pyd, 不能 python -m 启动)
+config 字段(dialogs.py _on_start_test 组装):
+  model_path   训练输出的 best total checkpoint(.pth)
   image_path   测试数据集图片目录
-  label_path   标注目录（可选；为空即推理模式）
-  iou_threshold IoU 阈值（评估模式用）
-  confidence   置信度阈值（predict 过滤低置信框）
+  label_path   标注目录(可选; 为空即推理模式)
+  iou_threshold IoU 阈值(评估模式用)
+  confidence   置信度阈值(predict 过滤低置信框)
   has_label    是否有标注
 """
 
@@ -70,7 +70,7 @@ _MAX_POLY_PTS = 60
 
 
 def _list_images(img_dir):
-    """返回图片文件绝对路径列表（按名称排序，稳定复现）。"""
+    """返回图片文件绝对路径列表(按名称排序, 稳定复现)."""
     if not os.path.isdir(img_dir):
         return []
     names = [n for n in os.listdir(img_dir)
@@ -80,10 +80,10 @@ def _list_images(img_dir):
 
 def _collect_pairs(cfg):
     """
-    展开成 [(图片路径, 标签目录), ...]，支持一次测多个数据集。
-    标签按文件名在"该图片所属数据集的"标签目录里找，不同数据集的同名图片
-    不会串，所以必须逐目录配对而不是共用一个 label_dir。
-    兼容旧 cfg：没有 items 时退回单条 image_path/label_path。
+    展开成 [(图片路径, 标签目录), ...], 支持一次测多个数据集.
+    标签按文件名在"该图片所属数据集的"标签目录里找, 不同数据集的同名图片
+    不会串, 所以必须逐目录配对而不是共用一个 label_dir.
+    兼容旧 cfg: 没有 items 时退回单条 image_path/label_path.
     """
     items = cfg.get("items") or [
         {"image_path": cfg.get("image_path", ""),
@@ -105,9 +105,9 @@ def _decimate(pts, max_pts):
 
 def _mask_to_rings(mask, max_rings=6):
     """
-    分割 mask → 轮廓环列表 [[[x,y],...], ...]（原图像素坐标），失败返回 None。
-    一个实例被遮挡时 mask 会断成好几块，只留最大的那块画出来会比框小一大圈，
-    看着像模型只分割出了一部分；所以按面积保留主要连通块，太小的碎片丢掉。
+    分割 mask → 轮廓环列表 [[[x,y],...], ...](原图像素坐标), 失败返回 None.
+    一个实例被遮挡时 mask 会断成好几块, 只留最大的那块画出来会比框小一大圈,
+    看着像模型只分割出了一部分; 所以按面积保留主要连通块, 太小的碎片丢掉.
     """
     if cv2 is None or np is None or mask is None:
         return None
@@ -129,7 +129,7 @@ def _mask_to_rings(mask, max_rings=6):
             return None
         kept = []
         for cnt in cnts[:max_rings]:
-            # 面积不到最大的 3% 就是噪声碎片，画出来只会糊
+            # 面积不到最大的 3% 就是噪声碎片, 画出来只会糊
             if cv2.contourArea(cnt) < top * 0.03:
                 break
             peri = cv2.arcLength(cnt, True)
@@ -141,7 +141,7 @@ def _mask_to_rings(mask, max_rings=6):
             kept.append([[float(p[0][0]), float(p[0][1])] for p in approx])
         if not kept:
             return None
-        # 总点数按环数分摊，避免多连通目标把明细撑大好几倍
+        # 总点数按环数分摊, 避免多连通目标把明细撑大好几倍
         budget = max(8, _MAX_POLY_PTS // len(kept))
         return [_decimate(ring, budget) for ring in kept]
     except Exception:
@@ -150,9 +150,9 @@ def _mask_to_rings(mask, max_rings=6):
 
 def _read_yolo_label(txt_path, img_w, img_h):
     """
-    YOLO txt → [(cls, 像素[x1,y1,x2,y2], poly)] 列表，poly 为 None 表示检测框。
-    解析统一走 label_utils.load_yolo_shapes（与导入/标注/训练同一套脏行规则：
-    字段数异常的行直接丢弃，不猜格式），这里只转成评估口径并抽稀轮廓。
+    YOLO txt → [(cls, 像素[x1,y1,x2,y2], poly)] 列表, poly 为 None 表示检测框.
+    解析统一走 label_utils.load_yolo_shapes(与导入/标注/训练同一套脏行规则:
+    字段数异常的行直接丢弃, 不猜格式), 这里只转成评估口径并抽稀轮廓.
     """
     out = []
     for cls, box, poly in shapes_to_detections(
@@ -166,9 +166,9 @@ def _read_yolo_label(txt_path, img_w, img_h):
 
 def _read_labelme_label(js_path):
     """
-    labelme json → [(cls, box, poly)]，poly 是像素坐标顶点或 None。
-    保留 polygon 顶点而不是只取外接框：分割验证要靠轮廓算 IoU，
-    只取框会把 mask 丢掉。解析统一走 label_utils.load_json_shapes。
+    labelme json → [(cls, box, poly)], poly 是像素坐标顶点或 None.
+    保留 polygon 顶点而不是只取外接框: 分割验证要靠轮廓算 IoU,
+    只取框会把 mask 丢掉. 解析统一走 label_utils.load_json_shapes.
     """
     out = []
     for cls, box, poly in shapes_to_detections(load_json_shapes(js_path)):
@@ -181,11 +181,11 @@ def _read_labelme_label(js_path):
 
 def _read_label_label(label_dir, img_path):
     """
-    按图片同名找标签，优先 .txt (YOLO) 其次 .json (labelme)。
-    返回 (gts, from_yolo)：gts 为 [(cls, 像素[x1,y1,x2,y2], poly)]，poly 是
-    分割轮廓（环的列表，检测标注为 None），from_yolo 表示 cls 是类别 id 而不是名字。
-    两种格式都覆盖，否则纯 labelme 的验证集会读到 0 个 GT，所有预测都被判成
-    误检，看着像模型崩了其实是读不到标注。
+    按图片同名找标签, 优先 .txt (YOLO) 其次 .json (labelme).
+    返回 (gts, from_yolo): gts 为 [(cls, 像素[x1,y1,x2,y2], poly)], poly 是
+    分割轮廓(环的列表, 检测标注为 None), from_yolo 表示 cls 是类别 id 而不是名字.
+    两种格式都覆盖, 否则纯 labelme 的验证集会读到 0 个 GT, 所有预测都被判成
+    误检, 看着像模型崩了其实是读不到标注.
     """
     base = os.path.splitext(os.path.basename(img_path))[0]
     with Image.open(img_path) as im:
@@ -200,7 +200,7 @@ def _read_label_label(label_dir, img_path):
 
 
 def _iou(a, b):
-    """两个 [x1,y1,x2,y2] 框的 IoU。"""
+    """两个 [x1,y1,x2,y2] 框的 IoU."""
     ix1, iy1 = max(a[0], b[0]), max(a[1], b[1])
     ix2, iy2 = min(a[2], b[2]), min(a[3], b[3])
     iw, ih = max(0.0, ix2 - ix1), max(0.0, iy2 - iy1)
@@ -213,7 +213,7 @@ def _iou(a, b):
 
 
 def _ring_area(ring):
-    """算多边形面积（绝对值），用来在多连通 mask 里挑最大的那块。"""
+    """算多边形面积(绝对值), 用来在多连通 mask 里挑最大的那块."""
     s = 0.0
     n = len(ring)
     for i in range(n):
@@ -234,11 +234,10 @@ def _largest_ring(poly):
 
 def _write_labelme_json(img_path, items):
     """
-    写 labelme JSON 到图像同目录、与图片同名——标注工具(含本程序标注界面)只会
-    按 <图名>.json 找标签，改名就没人读得到。
-    items: [([x1,y1,x2,y2], cls, poly)]，poly 非空时写 polygon，否则 rectangle。
-    分割模型导成矩形会把 mask 轮廓丢掉，回到标注工具里只剩个框没法用。
-    labelme 一个 shape 只能带一个多边形，多连通的 mask 取面积最大的那块。
+    写 labelme JSON 到图像同目录, 文件名与图片同名.
+    items: [([x1,y1,x2,y2], cls, poly)], poly 非空时写 polygon, 否则 rectangle.
+    分割模型导成矩形会把 mask 轮廓丢掉, 回到标注工具里只剩个框没法用.
+    labelme 一个 shape 只能带一个多边形, 多连通的 mask 取面积最大的那块.
     """
     with Image.open(img_path) as im:
         iw, ih = im.size
@@ -270,8 +269,6 @@ def _write_labelme_json(img_path, items):
         "imageWidth": iw,
     }
     out = os.path.splitext(img_path)[0] + ".json"
-    # 同名覆盖是刻意的：勾了"输出标注"就代表要这份结果，改名的后果是打不开。
-    # 有标注的数据集默认不勾该开关, 只有用户主动勾选才会走到这里。
     if load_json_shapes(out):
         print("[test] 覆盖已有标注 {}".format(os.path.basename(out)),
               flush=True)
@@ -280,7 +277,7 @@ def _write_labelme_json(img_path, items):
 
 
 def _tally(pc, key, cls):
-    """按类别累加统计：pc[cls] = {gt, tp, fp, fn, det}。"""
+    """按类别累加统计: pc[cls] = {gt, tp, fp, fn, det}."""
     d = pc.setdefault(str(cls), {"gt": 0, "tp": 0, "fp": 0, "fn": 0, "det": 0})
     d[key] += 1
 
@@ -292,9 +289,9 @@ def _open_detail(cfg):
     try:
         os.makedirs(out_dir, exist_ok=True)
         path = os.path.join(out_dir, "details.jsonl")
-        # 往同一目录重跑时先清空：写入是逐图追加的，留着旧数据明细会翻倍。
-        # 删失败(例如被 hook 拦截到回收站)时降级 truncate，
-        # truncate 也失败才放弃，否则 append 模式会把新旧数据拼在一起
+        # 往同一目录重跑时先清空: 写入是逐图追加的, 留着旧数据明细会翻倍.
+        # 删失败(例如被 hook 拦截到回收站)时降级 truncate,
+        # truncate 也失败才放弃, 否则 append 模式会把新旧数据拼在一起
         if os.path.exists(path):
             try:
                 os.remove(path)
@@ -323,7 +320,7 @@ def _detail_item(cls, box, poly, conf=None):
 
 
 def _write_detail(path, img_path, missing, spurious, hits):
-    """只写有漏检或误检的图，正确检出的图不落盘。"""
+    """只写有漏检或误检的图, 正确检出的图不落盘."""
     row = {
         "img": img_path,
         "missing": [_detail_item(c, b, p) for c, b, p in missing],
@@ -338,7 +335,7 @@ def _write_detail(path, img_path, missing, spurious, hits):
 
 
 def _dataset_list(cfg):
-    """cfg 里去重后的 [(项目, 数据集)]，报告首页要显示「测的是哪个数据集」。"""
+    """cfg 里去重后的 [(项目, 数据集)], 报告首页要显示"测的是哪个数据集"."""
     out, seen = [], set()
     for it in cfg.get("items") or []:
         key = (str(it.get("project") or ""), str(it.get("dataset") or ""))
@@ -350,20 +347,20 @@ def _dataset_list(cfg):
 
 def _decide_use_cls(gts_are_ids, preds_are_ids):
     """
-    能不能按类别匹配：GT 与预测的类别体系必须一致。
-    YOLO 标注只存类别 id（"0"/"1"），预测的 cls 来自 class_name（「溢锡」），
-    对不上就没法比，只能退回不看类别。两侧都是名字时才比——这样模型把 A 类认成
-    B 类才会被记成一次 FP + 一次 FN，而不是当正确检出藏起来。
-    体系由来源直接给出，不去猜「类别名是不是数字」：类别名本身可能就是数字
-    （产品型号之类），猜会把它们全误判成 id。也不敢用「两侧有没有交集」判，
-    因为模型认错类别时交集同样为空，恰好放过最该抓出来的错误。
+    能不能按类别匹配: GT 与预测的类别体系必须一致.
+    YOLO 标注只存类别 id("0"/"1"), 预测的 cls 来自 class_name("溢锡"),
+    对不上就没法比, 只能退回不看类别. 两侧都是名字时才比 - 这样模型把 A 类认成
+    B 类才会被记成一次 FP + 一次 FN, 而不是当正确检出藏起来.
+    体系由来源直接给出, 不去猜"类别名是不是数字": 类别名本身可能就是数字
+    (产品型号之类), 猜会把它们全误判成 id. 也不敢用"两侧有没有交集"判,
+    因为模型认错类别时交集同样为空, 恰好放过最该抓出来的错误.
     """
     return not gts_are_ids and not preds_are_ids
 
 
 def _match(preds, gts, iou_th, per_class, use_cls=None):
     """
-    贪心匹配：每个 GT 只吃一个 IoU 最大的预测框，IoU≥阈值即算检出。
+    贪心匹配: 每个 GT 只吃一个 IoU 最大的预测框, IoU≥阈值即算检出.
     """
     if use_cls is None:
         use_cls = False
@@ -409,7 +406,7 @@ def main():
         cfg = json.load(f)
 
     if RFDETR is None:
-        raise RuntimeError("rfdetr 未安装，无法执行测试")
+        raise RuntimeError("rfdetr 未安装, 无法执行测试")
     print("[test] 加载模型: {}".format(os.path.basename(cfg["model_path"])),
           flush=True)
     model = RFDETR.from_checkpoint(cfg["model_path"])
@@ -503,7 +500,7 @@ def main():
             tp += t
             fp += f_p
             fn += f_n
-            # 图级口径: 一张图只要检出 1 个就算「已检出」，不要求把标注全检出
+            # 图级口径: 一张图只要检出 1 个就算"已检出", 不要求把标注全检出
             if gts:
                 img_gt += 1
                 if t:

@@ -34,13 +34,13 @@ def get_logger():
 
 
 def register_log_dialog(dlg):
-    """注册常驻日志对话框(app 启动时创建，隐藏也接收日志)。"""
+    """注册常驻日志对话框(app 启动时创建, 隐藏也接收日志)."""
     global _log_dialog
     _log_dialog = dlg
 
 
 def write_log(msg):
-    """写文件 + 写入常驻日志界面(无论是否显示)。"""
+    """写文件 + 写入常驻日志界面(无论是否显示)."""
     line = "[{}] {}".format(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), msg)
     get_logger().info(msg)
     dlg = _log_dialog

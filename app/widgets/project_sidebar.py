@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-首页左侧项目/数据集导航：卡片式，替代原 QTreeWidget。
-行内图标/数值/选中态全部由 DatasetRowDelegate 手绘，QSS 只管卡片容器；
-导入/合并标签的任务进度也走 delegate(QStyleOptionProgressBar)，不再往行里塞控件。
+首页左侧项目/数据集导航: 卡片式, 替代原 QTreeWidget.
+行内图标/数值/选中态全部由 DatasetRowDelegate 手绘, QSS 只管卡片容器;
+导入/合并标签的任务进度也走 delegate(QStyleOptionProgressBar), 不再往行里塞控件.
 """
 from PySide6.QtCore import Qt, QRectF, QPointF, QSize, Signal
 from PySide6.QtGui import (QColor, QFont, QFontMetrics, QPainter, QPainterPath,
@@ -36,7 +36,7 @@ def _alpha_color(hex_color, alpha):
 
 
 def _draw_photo_icon(p, x, y, color):
-    """13x13 单色线条照片图标。"""
+    """13x13 单色线条照片图标."""
     p.save()
     p.setPen(QPen(color, 1.1))
     p.setBrush(Qt.NoBrush)
@@ -49,7 +49,7 @@ def _draw_photo_icon(p, x, y, color):
 
 
 def _draw_chevron(p, cx, cy, expanded, color):
-    """9x5 细线三角。"""
+    """9x5 细线三角."""
     p.save()
     p.setPen(QPen(color, 1.2))
     p.setBrush(Qt.NoBrush)
@@ -272,7 +272,7 @@ class ProjectCardHeader(QWidget):
         p.setFont(f)
         p.setPen(QColor("#e8eaf0"))
         fm = QFontMetrics(f)
-        # 数据集计数徽标：宽度按文字自适应，固定 20px 放不下两位数
+        # 数据集计数徽标: 宽度按文字自适应, 固定 20px 放不下两位数
         fs = QFont()
         fs.setPixelSize(11)
         fms = QFontMetrics(fs)
@@ -419,7 +419,7 @@ class ProjectSidebar(QWidget):
         self.datasetClicked.emit(d["project"], d["dataset"])
 
     def _on_header_clicked(self, project):
-        """点卡头 = 选中项目(取消数据集选中), 由外部清空右侧图像区。"""
+        """点卡头 = 选中项目(取消数据集选中), 由外部清空右侧图像区."""
         self.clear_selection()
         self.projectClicked.emit(project)
 
@@ -459,7 +459,7 @@ class ProjectSidebar(QWidget):
         self._repaint_row(item)
 
     def set_row_loaded(self, project, dataset, loaded):
-        """同步数据集缓存状态圆点; 行未建(列表未刷新)时只记集合, rebuild 时带上。"""
+        """同步数据集缓存状态圆点; 行未建(列表未刷新)时只记集合, rebuild 时带上."""
         if loaded:
             self._loaded.add((project, dataset))
         else:
@@ -473,7 +473,7 @@ class ProjectSidebar(QWidget):
         self._repaint_row(item)
 
     def set_row_task(self, project, dataset, value):
-        """value 为 0-100 显示任务进度条，None 结束任务显示。"""
+        """value 为 0-100 显示任务进度条, None 结束任务显示."""
         item = self._find(project, dataset)
         if item is None:
             return

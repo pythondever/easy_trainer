@@ -29,7 +29,7 @@ static class Program
         {
             Directory.CreateDirectory(root);
             var mf = InstallEngine.BuiltinManifest(srcDir);
-            Log($"组件清单（内置）版本: {mf.Version};组件: {string.Join(",", comps)}");
+            Log($"组件清单(内置)版本: {mf.Version}; 组件: {string.Join(",", comps)}");
             Log("程序本体内置: " + InstallEngine.HasEmbedded("program.zip"));
             var progress = new Progress<InstallReport>(r => Log($"[{r.Stage}] {r.Detail}"));
             InstallEngine.InstallAsync(root, srcDir, mf, comps, progress).GetAwaiter().GetResult();

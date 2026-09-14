@@ -26,7 +26,7 @@ class MiscMixin(object):
         self._write_log(msg)
 
     def _on_log_clicked(self):
-        """显示常驻日志对话框(启动时已创建并注册，隐藏也接收日志)。"""
+        """显示常驻日志对话框(启动时已创建并注册, 隐藏也接收日志)."""
         dlg = getattr(self, "_log_dialog", None)
         if dlg is None:
             self._log_dialog = LogDialog(self)
@@ -41,7 +41,7 @@ class MiscMixin(object):
         md.deleteLater()
 
     def _on_queue_clicked(self):
-        """非模态队列面板：关闭只是隐藏，队列继续在后台跑。"""
+        """非模态队列面板: 关闭只是隐藏, 队列继续在后台跑."""
         dlg = getattr(self, "_queue_dialog", None)
         if dlg is None:
             dlg = TrainQueueDialog(self, parent=self)
@@ -56,7 +56,7 @@ class MiscMixin(object):
         dlg.exec()
 
     def _on_dataset_properties(self):
-        """工具栏「统计」按钮:全局对话框，多选数据集查看标注统计与路径。"""
+        """工具栏"统计"按钮:全局对话框, 多选数据集查看标注统计与路径."""
         dlg = QDialog(self)
         dlg.setWindowTitle("数据集统计")
         dlg.setWindowFlags(
@@ -76,7 +76,7 @@ class MiscMixin(object):
         dlg.exec()
 
     def _setup_stats_multi_combo(self, combo):
-        """把下拉框配置成多选模式(文本居中+点击任意位置展开)。"""
+        """把下拉框配置成多选模式(文本居中+点击任意位置展开)."""
         combo.setEditable(True)
         combo.setFocusPolicy(Qt.StrongFocus)
         le = combo.lineEdit()
@@ -95,7 +95,7 @@ class MiscMixin(object):
         combo.activated.connect(lambda _i: self._update_stats_combo_text(combo))
 
     def _fill_stats_dataset_multi(self, combo, checked_names):
-        """列出全部项目/数据集(文本"项目/数据集",data=(项目,数据集)),勾选项默认选中。"""
+        """列出全部项目/数据集(文本"项目/数据集",data=(项目,数据集)),勾选项默认选中."""
         model = combo.model()
         model.clear()
         for proj in self.db.get_projects():
@@ -113,7 +113,7 @@ class MiscMixin(object):
         self._update_stats_combo_text(combo)
 
     def _update_stats_combo_text(self, combo):
-        """把勾选的数据集显示到下拉框编辑区(居中文本)。"""
+        """把勾选的数据集显示到下拉框编辑区(居中文本)."""
         model = combo.model()
         checked = []
         for i in range(model.rowCount()):
@@ -129,7 +129,7 @@ class MiscMixin(object):
             combo.setCurrentIndex(-1)
 
     def _selected_stats_datasets(self, combo):
-        """返回勾选的数据集列表 [(项目, 数据集), ...]。"""
+        """返回勾选的数据集列表 [(项目, 数据集), ...]."""
         out = []
         model = combo.model()
         for i in range(model.rowCount()):
@@ -141,7 +141,7 @@ class MiscMixin(object):
         return out
 
     def _apply_stats_selection(self, ui):
-        """点击「确定」:刷新路径框 + 合并多个数据集的标签统计画柱状图。"""
+        """点击"确定":刷新路径框 + 合并多个数据集的标签统计画柱状图."""
         checked = self._selected_stats_datasets(ui.dataset_comboBox)
         ui.image_path_line_txt.setText(self._format_stats_paths(checked, "image"))
         ui.label_path_line_txt.setText(self._format_stats_paths(checked, "label"))
@@ -158,7 +158,7 @@ class MiscMixin(object):
     def _format_stats_paths(self, checked, kind):
         """
         按数据集拼接路径文本:[项目/数据集]路径1;路径2 | [项目/数据集]路径3
-        同一数据集多路径只显示一次前缀,路径全跟在后面;换下一个数据集再拼前缀。
+        同一数据集多路径只显示一次前缀,路径全跟在后面;换下一个数据集再拼前缀.
         """
         blocks = []
         for proj, ds in checked:
@@ -198,7 +198,7 @@ class MiscMixin(object):
 
     def _refresh_dataset_stats(self, project_name, dataset_name):
         """
-        一次遍历同时刷新「已标注/总数」进度与「每类框数」统计。
+        一次遍历同时刷新"已标注/总数"进度与"每类框数"统计.
         """
         cache = self.dataset_cache.get(project_name, {}).get(dataset_name)
         if not cache:
@@ -230,11 +230,10 @@ class MiscMixin(object):
         self._update_dataset_row_progress(project_name, dataset_name, labeled, total)
 
     def _update_dataset_row_progress(self, project_name, dataset_name, labeled, total):
-        """刷新项目树该数据集行的进度数值。"""
         self.project_tree.set_row_progress(project_name, dataset_name, labeled, total)
 
     def _refresh_dataset_row_progress(self, project_name, dataset_name):
-        """根据 db 当前 binding 刷新项目树该数据集行的进度数值。"""
+        """根据 db 当前 binding 刷新项目树该数据集行的进度数值."""
         binding = self.db.get_dataset_import(project_name, dataset_name)
         total = binding.get("total", 0) or 0
         labeled = binding.get("labeled", 0) or 0
@@ -245,7 +244,7 @@ class MiscMixin(object):
         删除图像核心逻辑(被首页多选删除 + 标注界面单张删除共用):
         - delete_local=True: 删磁盘文件(图像 + 同名 .json/.txt 标注)
         - delete_local=False: 仅 db 记录 add_deleted_images(下次加载跳过)
-        - 同步更新: 缓存 index、label_counts、db total/labeled, 刷新显示与进度
+        - 同步更新: 缓存 index, label_counts, db total/labeled, 刷新显示与进度
         """
         norm = lambda p: os.path.normcase(os.path.normpath(p))
         norm_set = {norm(p) for p in paths}
@@ -312,7 +311,7 @@ class MiscMixin(object):
 
     @staticmethod
     def _label_exts_for_fmt(fmt):
-        """数据集标注格式对应的文件扩展名列表(用于删除同名标注)。"""
+        """数据集标注格式对应的文件扩展名列表(用于删除同名标注)."""
         if fmt == ".txt":
             return [".txt"]
         if fmt == ".json":
@@ -324,7 +323,7 @@ class MiscMixin(object):
     def _delete_selected_images(self, items):
         """
         首页缩略图多选删除(仅"未标注"筛选下可入口):
-        items 是当前页选中的缩略图项, 提取 paths 后走 _delete_paths_with_confirm。
+        items 是当前页选中的缩略图项, 提取 paths 后走 _delete_paths_with_confirm.
         """
         cur_ds = getattr(self, "_current_dataset", None)
         if not cur_ds or not items:
@@ -335,17 +334,17 @@ class MiscMixin(object):
     def _delete_paths_with_confirm(self, paths):
         """
         删除路径列表(首页多选/跨页全选共用):
-        弹窗仅确认"从系统删除,不可恢复", 确认后真删(不走"仅标记")。
+        弹窗仅确认"从系统删除,不可恢复", 确认后真删(不走"仅标记").
         """
         cur_ds = getattr(self, "_current_dataset", None)
         if not cur_ds or not paths:
             return
         proj, ds = cur_ds
         clicked = MessageBox.choose(
-            self, "删除图像", "将从系统删除所选 {} 张图像？\n\n（图像与同名标注文件不可恢复）".format(len(paths)),
+            self, "删除图像", "将从系统删除所选 {} 张图像?\n\n(图像与同名标注文件不可恢复)".format(len(paths)),
             [("删除", QMessageBox.YesRole),
              ("取消", QMessageBox.RejectRole)],
-            informative="图像与同名标注文件将从磁盘删除，不可恢复")
+            informative="图像与同名标注文件将从磁盘删除, 不可恢复")
         if clicked is None or clicked != "删除":
             return
         self._delete_images_core(proj, ds, paths, delete_local=True)

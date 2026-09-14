@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""训练对话框(统一):任务类型下拉 检测/分割/分类,数据集跨项目选择。"""
+"""训练对话框(统一):任务类型下拉 检测/分割/分类,数据集跨项目选择."""
 
 import os
 import json
@@ -25,7 +25,7 @@ TASK_CN = {"detect": "检测", "segment": "分割", "classify": "分类"}
 
 
 def collect_dataset_labels(db, ds_pairs):
-    """勾选数据集的标签并集(跨项目,训练启动时已知,指标界面下拉无需等验证)。"""
+    """勾选数据集的标签并集(跨项目,训练启动时已知,指标界面下拉无需等验证)."""
     labels = set()
     for proj, name in ds_pairs:
         try:
@@ -42,9 +42,9 @@ BEST_CKPT_DEFAULT = "checkpoint_best_ema.pth"
 
 
 def make_train_record(config, db, project_fallback=""):
-    """按 config 组装训练记录(供训练界面回填)；不落库，调用方在启动成功后写入。
+    """按 config 组装训练记录(供训练界面回填); 不落库, 调用方在启动成功后写入.
 
-    与 TrainDialog 解耦：队列出队时没有对话框实例，也走这个函数。
+    与 TrainDialog 解耦: 队列出队时没有对话框实例, 也走这个函数.
     """
     ds_pairs = [(d["project"], d["dataset_name"]) for d in config["datasets"]
                 if d.get("split") == "train"]
@@ -88,7 +88,7 @@ def make_train_record(config, db, project_fallback=""):
 
 
 def params_to_record(params):
-    """队列项参数快照 → 训练对话框 preset_record 的字段格式(用于「编辑」回填)。"""
+    """队列项参数快照 → 训练对话框 preset_record 的字段格式(用于"编辑"回填)."""
     def _names(pairs):
         return ", ".join("{}/{}".format(p[0], p[1]) for p in (pairs or []))
     return {
@@ -111,25 +111,25 @@ def params_to_record(params):
 
 def check_dataset_imported(name, info):
     """
-    校验数据集已导入且路径有效（防止未导入/加载中的数据集直接训练）。
-    分类数据集（fmt=="cls"）标签即子文件夹名,无需单独 label_path 目录，
-    所以跳过标签目录存在性检查。
+    校验数据集已导入且路径有效(防止未导入/加载中的数据集直接训练).
+    分类数据集(fmt=="cls")标签即子文件夹名,无需单独 label_path 目录,
+    所以跳过标签目录存在性检查.
     """
     img = info.get("image_path", "")
     lab = info.get("label_path", "")
     fmt = info.get("label_fmt", "")
     if not img or not os.path.isdir(img):
         raise ValueError(
-            "数据集「{}」尚未导入图像或路径无效，请先导入该数据集再训练".format(name))
+            "数据集\"{}\"尚未导入图像或路径无效, 请先导入该数据集再训练".format(name))
     if fmt == "cls":
         return
     if not lab or not os.path.isdir(lab):
         raise ValueError(
-            "数据集「{}」尚未导入标签或路径无效，请先导入该数据集再训练".format(name))
+            "数据集\"{}\"尚未导入标签或路径无效, 请先导入该数据集再训练".format(name))
 
 
 def _unique_ts_dir(out_root, ts):
-    """时间戳只到秒: 队列里上一个任务秒退时下一个会撞名, 两个训练的输出会互相覆盖。"""
+    """时间戳只到秒: 队列里上一个任务秒退时下一个会撞名, 两个训练的输出会互相覆盖."""
     path = os.path.join(out_root, ts)
     if not os.path.isdir(path):
         os.makedirs(path, exist_ok=True)
@@ -143,10 +143,10 @@ def _unique_ts_dir(out_root, ts):
 
 
 def make_train_config(db, params):
-    """把参数快照落盘成子进程配置。队列出队与开始训练共用同一条路径。
+    """把参数快照落盘成子进程配置. 队列出队与开始训练共用同一条路径.
 
-    timestamp_dir 只在这里算一次：训练记录的 model_path 必须复用它，
-    否则两次调用跨秒会指向一个不存在的目录。
+    timestamp_dir 只在这里算一次: 训练记录的 model_path 必须复用它,
+    否则两次调用跨秒会指向一个不存在的目录.
     """
     task = params.get("task") or "detect"
     out_root = (params.get("out_root") or "").strip()
@@ -165,11 +165,11 @@ def make_train_config(db, params):
             # (队列可能挂着几个小时, 中间改了数据集这里才发现)
             if task == "classify" and fmt != "cls":
                 raise ValueError(
-                    "数据集「{}/{}」不是分类数据集(标签格式={})，无法训练图像分类"
+                    "数据集\"{}/{}\"不是分类数据集(标签格式={}), 无法训练图像分类"
                     .format(proj, name, fmt or "未知"))
             if task != "classify" and fmt == "cls":
                 raise ValueError(
-                    "数据集「{}/{}」是分类数据集，无法训练{}任务".format(
+                    "数据集\"{}/{}\"是分类数据集, 无法训练{}任务".format(
                         proj, name, TASK_CN.get(task, task)))
             datasets.append({
                 "dataset_name": name, "project": proj, "split": split,
@@ -203,7 +203,7 @@ def make_train_config(db, params):
         "batch_size": params.get("batch_size", 8),
         "num_workers": params.get("num_workers", 8),
         "optimizer": params.get("optimizer") or "adamw",
-        # 早停：>0 启用（值即 patience），<=0 禁用
+        # 早停: >0 启用(值即 patience), <=0 禁用
         "early_stop": params.get("early_stop", 20),
         "lr": params.get("lr", 1e-4),
         "img_size": params.get("img_size", 640),
@@ -220,17 +220,17 @@ def make_train_config(db, params):
 
 
 def params_summary(params):
-    """队列项的一行摘要文本(任务/网络/数据集)。"""
+    """队列项的一行摘要文本(任务/网络/数据集)."""
     task = params.get("task", "")
     task_text = TASK_CN.get(task, task)
-    # 带项目名:不同项目下常有同名数据集(如 test1/train、test2/train)
+    # 带项目名:不同项目下常有同名数据集(如 test1/train, test2/train)
     names = ["{}/{}".format(p[0], p[1]) for p in (params.get("train_ds") or [])]
     ds = ", ".join(names) if names else "未选数据集"
     return "{} · {} · {}".format(task_text, params.get("architecture", ""), ds)
 
 
 class _TrainStartDialog(QDialog):
-    """训练/测试启动提示：确认按钮带倒计时，5s 后自动确认；手动点击立即确认并停止计时。"""
+    """训练/测试启动提示: 确认按钮带倒计时, 5s 后自动确认; 手动点击立即确认并停止计时."""
 
     def __init__(self, seconds=5, parent=None, title="训练即将开始",
                  message="训练即将开始"):
@@ -268,7 +268,7 @@ class _TrainStartDialog(QDialog):
 
 
 class _ClickToPopupFilter(QObject):
-    """事件过滤器：点击下拉框（或其 lineEdit）任意位置 → 展开下拉。"""
+    """事件过滤器: 点击下拉框(或其 lineEdit)任意位置 → 展开下拉."""
 
     def __init__(self, combo, parent=None):
         super().__init__(parent)
@@ -286,9 +286,9 @@ _DEVICES = None
 
 def collect_devices():
     """
-    [(显示名, 设备串)]：列表显示 GPU 型号，实际下发的是 cuda:0 这类设备串。
-    torch 延迟到这里导入：本模块被 queue_mixin 在启动时引入，带着 torch 会让
-    GUI 启动多花约 2s（耗时全在 import 本身）。结果缓存，同一进程只探测一次。
+    [(显示名, 设备串)]: 列表显示 GPU 型号, 实际下发的是 cuda:0 这类设备串.
+    torch 延迟到这里导入: 本模块被 queue_mixin 在启动时引入, 带着 torch 会让
+    GUI 启动多花约 2s(耗时全在 import 本身). 结果缓存, 同一进程只探测一次.
     """
     global _DEVICES
     if _DEVICES is None:
@@ -313,7 +313,7 @@ def collect_devices():
 
 
 class _DeviceProbe(QThread):
-    """后台探测显卡。同步探测要等 import torch（约 2s），弹窗会晚 2s 才出现。"""
+    """后台探测显卡. 同步探测要等 import torch(约 2s), 弹窗会晚 2s 才出现."""
 
     ready = Signal(list)
 
@@ -324,8 +324,8 @@ class _DeviceProbe(QThread):
             self.ready.emit([("CPU", "CPU")])
 
 
-_PROBES = []                    # 运行中的探测线程，防止被 GC
-PROBING_TEXT = "正在检测显卡…"
+_PROBES = []                    # 运行中的探测线程, 防止被 GC
+PROBING_TEXT = "正在检测显卡..."
 
 
 def fill_device_items(combo, devices):
@@ -336,18 +336,18 @@ def fill_device_items(combo, devices):
 
 
 def fill_device_combo_async(dialog, combo, start_button):
-    """设备下拉先填占位值，后台探测完回调 dialog._on_devices_ready(devices)。
+    """设备下拉先填占位值, 后台探测完回调 dialog._on_devices_ready(devices).
 
-    就绪前禁掉下拉与开始按钮，免得占位值 CPU 被当成用户选择跑出去。
+    就绪前禁掉下拉与开始按钮, 免得占位值 CPU 被当成用户选择跑出去.
     """
     combo.clear()
     combo.addItem(PROBING_TEXT, "CPU")
-    if _DEVICES is not None:        # 本进程已探测过，不用再起线程
+    if _DEVICES is not None:        # 本进程已探测过, 不用再起线程
         dialog._on_devices_ready(_DEVICES)
         return
     combo.setEnabled(False)
     start_button.setEnabled(False)
-    # 前一个弹窗关掉后探测可能还在跑，搭它的车，免得再导一次 torch
+    # 前一个弹窗关掉后探测可能还在跑, 搭它的车, 免得再导一次 torch
     probe = next((p for p in _PROBES if p.isRunning()), None)
     if probe is None:
         probe = _DeviceProbe()
@@ -360,7 +360,7 @@ def fill_device_combo_async(dialog, combo, start_button):
 
 
 def detach_device_probe(dialog):
-    """关窗时摘掉探测回调。线程让它自己跑完，关窗不该等它那 2s。"""
+    """关窗时摘掉探测回调. 线程让它自己跑完, 关窗不该等它那 2s."""
     probe = getattr(dialog, "_device_probe", None)
     if probe is None or not probe.isRunning():
         return
@@ -371,7 +371,7 @@ def detach_device_probe(dialog):
 
 
 class TrainDialog(QDialog):
-    """统一训练对话框：任务类型(检测/分割/分类) + 跨项目数据集选择。"""
+    """统一训练对话框: 任务类型(检测/分割/分类) + 跨项目数据集选择."""
 
     TASK_TEXT = {"检测": "detect", "分割": "segment", "分类": "classify"}
     # 各任务默认参数:epochs / lr / img_size / grad_accum(分类禁用)
@@ -381,16 +381,16 @@ class TrainDialog(QDialog):
         "classify": (30, 0.001, 224, 4),
     }
     TASK_TIPS = {
-        "detect": "目标检测推荐图像尺寸：640（可设为 32 的倍数如 640/672）",
-        "segment": "图像分割推荐尺寸：636（必须为 12 的倍数，如 636/648/660）",
-        "classify": "图像分类推荐尺寸：224（小图用 224，较大图可到 256）",
+        "detect": "目标检测推荐图像尺寸: 640(可设为 32 的倍数如 640/672)",
+        "segment": "图像分割推荐尺寸: 636(必须为 12 的倍数, 如 636/648/660)",
+        "classify": "图像分类推荐尺寸: 224(小图用 224, 较大图可到 256)",
     }
-    # 输入框右侧的倍数约束，写不下整句 tooltip 就靠这几个字
+    # 输入框右侧的倍数约束, 写不下整句 tooltip 就靠这几个字
     IMG_NOTE = {"detect": "32 的倍数", "segment": "12 的倍数",
                 "classify": "建议 224"}
 
     def __init__(self, app, project="", dataset="", preset_record=None):
-        """project/dataset 可为空(独立入口);preset_record 传入时按记录回填(模型界面训练按钮)。"""
+        """project/dataset 可为空(独立入口);preset_record 传入时按记录回填(模型界面训练按钮)."""
         super().__init__(app)
         self.app = app
         self.project = project
@@ -400,7 +400,7 @@ class TrainDialog(QDialog):
         self._float_fields = []    # [(控件, 名称, 默认值, 是否必填)]
         self._combo_filters = []
         self._preset_record = preset_record
-        self.queue_edit_qid = None   # 队列面板「编辑」时回填用：保存即更新该队列项
+        self.queue_edit_qid = None   # 队列面板"编辑"时回填用: 保存即更新该队列项
         self._last_epochs_default = None
         self._last_lr_default = None
         self._last_img_default = None
@@ -424,14 +424,14 @@ class TrainDialog(QDialog):
         self.resize(740, max(560, self.sizeHint().height()))
 
     def _task(self):
-        """当前任务类型文本:detect/segment/classify。"""
+        """当前任务类型文本:detect/segment/classify."""
         return self.TASK_TEXT.get(self.ui.task_combo.currentText(), "detect")
 
     def _task_text(self):
         return self.ui.task_combo.currentText()
 
     def _fix_heights(self):
-        """统一控件高度（宽度交给网格拉伸），数值输入框文字居中。"""
+        """统一控件高度(宽度交给网格拉伸), 数值输入框文字居中."""
         for edit, _n, _d, _r in self._int_fields + self._float_fields:
             try:
                 edit.setFixedHeight(CONTROL_H)
@@ -453,7 +453,7 @@ class TrainDialog(QDialog):
             combo = getattr(self.ui, combo_name, None)
             if combo is not None:
                 combo.setFixedHeight(CONTROL_H)
-        # 下拉的 sizeHint 按最长条目算，GPU 全名会把整列撑宽，改成按固定字符数估宽
+        # 下拉的 sizeHint 按最长条目算, GPU 全名会把整列撑宽, 改成按固定字符数估宽
         for name in ("dataset_combo", "val_combo", "device_combo"):
             combo = getattr(self.ui, name, None)
             if combo is not None:
@@ -464,7 +464,7 @@ class TrainDialog(QDialog):
         self._align_grid_labels()
 
     def _align_grid_labels(self):
-        """网格的左右两组标签列各自同宽，否则两侧输入框左边界对不齐。"""
+        """网格的左右两组标签列各自同宽, 否则两侧输入框左边界对不齐."""
         for grid_name in ("grid_data", "grid_hyper"):
             grid = getattr(self.ui, grid_name, None)
             if grid is None:
@@ -505,7 +505,7 @@ class TrainDialog(QDialog):
     # ---------- 填充 ----------
     def _style_combo(self, combo):
         """
-        下拉框文本居中 + 点击框内任意位置打开下拉。
+        下拉框文本居中 + 点击框内任意位置打开下拉.
         """
         combo.setEditable(True)
         combo.setFocusPolicy(Qt.StrongFocus)
@@ -535,9 +535,9 @@ class TrainDialog(QDialog):
 
     def _fill_dataset_multi(self, combo, checked_names):
         """
-        跨项目列出所有数据集(文本"项目/数据集",data=(项目,数据集)),checked_names 内默认勾选。
+        跨项目列出所有数据集(文本"项目/数据集",data=(项目,数据集)),checked_names 内默认勾选.
         数据源与首页项目树一致:先 get_projects() 拿项目名,再 get_datasets(name)
-        拿该项目下数据集——不会列出已删除项目残留的孤儿数据集记录。
+        拿该项目下数据集 - 不会列出已删除项目残留的孤儿数据集记录.
         """
         model = combo.model()
         model.clear()
@@ -583,7 +583,7 @@ class TrainDialog(QDialog):
         self._update_summary()
 
     def _update_summary(self):
-        """底部概要条：勾了几个训练集/验证集、总共多少张图、能不能直接开训。"""
+        """底部概要条: 勾了几个训练集/验证集, 总共多少张图, 能不能直接开训."""
         train = self._selected_datasets()
         val = self._selected_val_datasets()
         if not train:
@@ -602,17 +602,17 @@ class TrainDialog(QDialog):
         if not val:
             tail = "未选择验证集"
         elif labeled == picked:
-            tail = "已标注，可直接训练"
+            tail = "已标注, 可直接训练"
         else:
             tail = "有 {} 个数据集尚未标注".format(picked - labeled)
         self.ui.summary_text.setText("{} · {}".format(text, tail))
 
     def _selected_datasets(self):
-        """训练集（勾选的数据集）。"""
+        """训练集(勾选的数据集)."""
         return self._selected_checked(self.ui.dataset_combo)
 
     def _selected_val_datasets(self):
-        """验证集（勾选的数据集）。"""
+        """验证集(勾选的数据集)."""
         return self._selected_checked(self.ui.val_combo)
 
     def _fill_defaults(self):
@@ -643,12 +643,12 @@ class TrainDialog(QDialog):
         self.ui.task_badge.setText(self._task_text())
         self._setup_img_size_tip()
         self._update_summary()
-        # 还没探测完设备、或已有训练在跑，都先别让点开始
+        # 还没探测完设备, 或已有训练在跑, 都先别让点开始
         self._sync_start_enabled()
 
     def _set_device(self, value):
-        """设备下拉显示的是 GPU 型号，回填得按 itemData 里的 cuda:0 找；
-        历史记录存的是小写 cpu，下拉数据是大写 CPU，按忽略大小写兜底。"""
+        """设备下拉显示的是 GPU 型号, 回填得按 itemData 里的 cuda:0 找;
+        历史记录存的是小写 cpu, 下拉数据是大写 CPU, 按忽略大小写兜底."""
         if not value:
             return
         combo = self.ui.device_combo
@@ -662,7 +662,7 @@ class TrainDialog(QDialog):
         if idx >= 0:
             combo.setCurrentIndex(idx)
         else:
-            # 设备列表还在后台探测，等就绪后再回填一次
+            # 设备列表还在后台探测, 等就绪后再回填一次
             self._pending_device = str(value)
 
     def _device(self):
@@ -675,7 +675,7 @@ class TrainDialog(QDialog):
         fill_device_combo_async(self, self.ui.device_combo, self.ui.start_train)
 
     def _on_devices_ready(self, devices):
-        """后台探测完成：填列表、解禁、把探测期间没铺上的设备回填上。"""
+        """后台探测完成: 填列表, 解禁, 把探测期间没铺上的设备回填上."""
         combo = self.ui.device_combo
         fill_device_items(combo, devices)
         combo.setEnabled(True)
@@ -687,7 +687,7 @@ class TrainDialog(QDialog):
             self._set_device(pending)
 
     def _sync_start_enabled(self):
-        """设备列表就绪且没有训练在跑，才允许点开始。"""
+        """设备列表就绪且没有训练在跑, 才允许点开始."""
         btn = getattr(self.ui, "start_train", None)
         if btn is None:
             return
@@ -697,10 +697,10 @@ class TrainDialog(QDialog):
         if not ready:
             btn.setToolTip(PROBING_TEXT)
         else:
-            btn.setToolTip("已有训练在进行中，请先停止" if busy else "")
+            btn.setToolTip("已有训练在进行中, 请先停止" if busy else "")
 
     def _fill_optimizer(self):
-        """优化器下拉:检测/分割(detr 推荐 adamw) vs 分类(resnet 推荐 sgd)。"""
+        """优化器下拉:检测/分割(detr 推荐 adamw) vs 分类(resnet 推荐 sgd)."""
         combo = self.ui.optimizer_comboBox
         combo.clear()
         if self._task() == "classify":
@@ -716,7 +716,7 @@ class TrainDialog(QDialog):
 
     @staticmethod
     def _center_combo_items(combo):
-        """下拉列表项文字居中(单选下拉:任务类型/网络/设备/优化器)。"""
+        """下拉列表项文字居中(单选下拉:任务类型/网络/设备/优化器)."""
         model = combo.model()
         for i in range(model.rowCount()):
             it = model.item(i)
@@ -730,10 +730,10 @@ class TrainDialog(QDialog):
         self._setup_img_size_tip()
 
     def _apply_task_ui(self):
-        """任务类型切换:按任务推荐填充参数、grad_accum 可用性、网络项。
+        """任务类型切换:按任务推荐填充参数, grad_accum 可用性, 网络项.
 
         首页进入是空表单,用户选择任务类型后由这里给出推荐值;
-        模型界面回填(preset_record)时 _apply_record_params 会在其后覆盖为记录值。
+        模型界面回填(preset_record)时 _apply_record_params 会在其后覆盖为记录值.
         """
         task = self._task()
         epochs, lr, img, _ = self.TASK_DEFAULTS.get(task, (100, 1e-4, 640, 4))
@@ -756,7 +756,7 @@ class TrainDialog(QDialog):
         self._fill_network_combo()
 
     def _restore_record(self, rec):
-        """按指定训练记录回填全部字段(模型界面训练按钮)。"""
+        """按指定训练记录回填全部字段(模型界面训练按钮)."""
         task = str(rec.get("task", "") or "")
         if task in self.TASK_TEXT.values():
             for k, v in self.TASK_TEXT.items():
@@ -775,7 +775,7 @@ class TrainDialog(QDialog):
         self._apply_record_params(rec)
 
     def _apply_record_params(self, rec):
-        """把训练记录参数回填到界面(控件按存在性防护)。"""
+        """把训练记录参数回填到界面(控件按存在性防护)."""
 
         def _set_int(name, val):
             edit = getattr(self.ui, name, None)
@@ -851,31 +851,31 @@ class TrainDialog(QDialog):
         for edit, name, _default, required in self._int_fields:
             txt = edit.text().strip()
             if not txt and required:
-                return False, "「{}」不能为空".format(name)
+                return False, "\"{}\"不能为空".format(name)
             if txt:
                 try:
                     int(txt)
                 except ValueError:
-                    return False, "「{}」必须是整数（当前: {}）".format(name, txt)
+                    return False, "\"{}\"必须是整数(当前: {})".format(name, txt)
         for edit, name, _default, required in self._float_fields:
             txt = edit.text().strip()
             if not txt and required:
-                return False, "「{}」不能为空".format(name)
+                return False, "\"{}\"不能为空".format(name)
             if txt:
                 try:
                     float(txt)
                 except ValueError:
-                    return False, "「{}」必须是数字（当前: {}）".format(name, txt)
+                    return False, "\"{}\"必须是数字(当前: {})".format(name, txt)
         # 任务类型与数据集格式匹配校验(按导入时的 label_fmt 判断:cls=分类,其余=检测/分割)
         task = self._task()
         task_text = self._task_text()
         for proj, name in self._selected_datasets() + self._selected_val_datasets():
             fmt = self.app.db.get_dataset_import(proj, name).get("label_fmt", "")
             if task != "classify" and fmt == "cls":
-                return False, "数据集「{}/{}」是分类数据集,无法训练{}任务".format(
+                return False, "数据集\"{}/{}\"是分类数据集,无法训练{}任务".format(
                     proj, name, task_text)
             if task == "classify" and fmt != "cls":
-                return False, "数据集「{}/{}」不是分类数据集(标签格式={}),无法训练图像分类".format(
+                return False, "数据集\"{}/{}\"不是分类数据集(标签格式={}),无法训练图像分类".format(
                     proj, name, fmt or "未知")
         return True, ""
 
@@ -888,7 +888,7 @@ class TrainDialog(QDialog):
     def _on_start_train(self):
         if self.app.is_training():
             MessageBox.warning(
-                self, "开始训练","当前已有训练在进行中，请先停止!")
+                self, "开始训练","当前已有训练在进行中, 请先停止!")
             return
         ok, msg = self._validate()
         if not ok:
@@ -909,7 +909,7 @@ class TrainDialog(QDialog):
         self.app.db.add_train_record(record)
         if not self.app.start_training(config, record["id"]):
             self.app.db.delete_train_record(record["id"])
-            MessageBox.warning(self, "开始训练", "已有训练在进行中，请先停止!")
+            MessageBox.warning(self, "开始训练", "已有训练在进行中, 请先停止!")
             return
         write_log("开始训练: 任务类型={} 训练集={} 验证集={}".format(
             self._task_text(), record["dataset"], record["val_dataset"]))
@@ -918,7 +918,7 @@ class TrainDialog(QDialog):
         _TrainStartDialog(parent=self).exec()
 
     def _on_add_to_queue(self):
-        """把当前参数快照存入队列(不建目录、不启动训练)。"""
+        """把当前参数快照存入队列(不建目录, 不启动训练)."""
         ok, msg = self._validate()
         if not ok:
             MessageBox.warning(self, "参数校验", msg)
@@ -935,7 +935,7 @@ class TrainDialog(QDialog):
                 MessageBox.warning(self, "加入队列", str(exc))
                 return
         if self.queue_edit_qid:
-            # 队列面板的「编辑」：保存即覆盖原队列项，不新增
+            # 队列面板的"编辑": 保存即覆盖原队列项, 不新增
             if self.app.queue_update_params(self.queue_edit_qid, params):
                 MessageBox.information(self, "队列", "已更新该队列任务的参数")
                 self.accept()
@@ -948,12 +948,12 @@ class TrainDialog(QDialog):
         write_log("加入训练队列: {} | {}".format(item["name"], item["qid"]))
         MessageBox.information(
             self, "加入队列",
-            "已加入队列（第 {} 个），可在首页「队列」中查看或启动。".format(
+            "已加入队列(第 {} 个), 可在首页\"队列\"中查看或启动.".format(
                 item["order"] + 1))
         self.accept()
 
     def collect_train_params(self):
-        """纯收集：只读 UI 与 db，不建目录、不落盘（入队与开始训练共用）。"""
+        """纯收集: 只读 UI 与 db, 不建目录, 不落盘(入队与开始训练共用)."""
         return {
             "task": self._task(),
             "architecture": self.ui.network_combo.currentText() or "nano",

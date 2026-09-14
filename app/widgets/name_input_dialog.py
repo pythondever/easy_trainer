@@ -4,7 +4,7 @@ from ui.input_name import Ui_NameInputDialog
 
 
 class NameInputDialog(QDialog):
-    """通用「输入名称」弹窗：项目/数据集的新建与改名共用一套样式。"""
+    """通用"输入名称"弹窗: 项目/数据集的新建与改名共用一套样式."""
 
     def __init__(self, parent=None, title="输入名称", preset="", placeholder="请输入名称"):
         super().__init__(parent)
@@ -24,7 +24,7 @@ class NameInputDialog(QDialog):
 
     @staticmethod
     def get_name(parent=None, title="输入名称", preset="", placeholder="请输入名称"):
-        """弹出并返回 (name, ok);ok=False 表示用户取消。"""
+        """弹出并返回 (name, ok);ok=False 表示用户取消."""
         dlg = NameInputDialog(parent, title, preset, placeholder)
         dlg.exec()
         return dlg.ui.name_edit.text().strip(), dlg.result() == QDialog.Accepted

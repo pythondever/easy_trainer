@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-"""RF-DETR 训练执行脚本（由 UI 以子进程方式启动）。
+"""RF-DETR 训练执行脚本(由 UI 以子进程方式启动).
 
-用法: main()，由 train_worker 以 -c 导入后调用（打包后是 pyd，不能 python -m 启动）
-config 字段见 dialogs.py _build_train_config。
+用法: main(), 由 train_worker 以 -c 导入后调用(打包后是 pyd, 不能 python -m 启动)
+config 字段见 dialogs.py _build_train_config.
 """
 
 import json
@@ -70,7 +70,7 @@ def main():
     labels, _ = copy_datasets(out_root, project, datasets,
                               cfg.get("task", "detect"))
     if not labels:
-        raise RuntimeError("未从数据集中解析到任何标签类别，请检查标签文件")
+        raise RuntimeError("未从数据集中解析到任何标签类别, 请检查标签文件")
     clean_split(out_root)
     merge_split(out_root, [d for d in datasets if d["split"] == "train"])
     merge_split(out_root, [d for d in datasets if d["split"] == "val"])
@@ -156,7 +156,7 @@ def main():
         resolution=resolution,
         use_ema=cfg.get("use_ema", True),
         checkpoint_interval=cfg.get("checkpoint_interval", 10),
-        # 早停：UI 填 0 禁用，>0 启用且值为 patience
+        # 早停: UI 填 0 禁用, >0 启用且值为 patience
         early_stopping=cfg.get("early_stop", 0) > 0,
         early_stopping_patience=max(cfg.get("early_stop", 0), 1),
         log_per_class_metrics=True,

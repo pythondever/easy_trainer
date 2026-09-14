@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-训练指标读取：metrics.csv 解析
+训练指标读取: metrics.csv 解析
 """
 import csv
 import io
@@ -22,8 +22,8 @@ CSV_KEYS = (
 
 def series_from_csv(csv_path):
     """
-    全量解析训练的 metrics.csv; 同一 epoch 多行时后写的值覆盖先写的。
-    返回 {"epochs": [...], "ema_mAP@50": [...], ...}，只有出现过值的列才会出现。
+    全量解析训练的 metrics.csv; 同一 epoch 多行时后写的值覆盖先写的.
+    返回 {"epochs": [...], "ema_mAP@50": [...], ...}, 只有出现过值的列才会出现.
     """
     try:
         # lightning 用系统 ANSI 码页写 CSV(中文类别名下是 gbk), 不能固定按 utf-8 解
@@ -55,9 +55,9 @@ def series_from_csv(csv_path):
 
 def metric_key(series, base):
     """
-    series 里 base 指标实际用哪个键，优先 ema；没有返回 ''。
-    分割任务看 mask_* 列（按有无 mask 系列判定，不能按键存在性回退：
-    旧分割记录没有 mask_ema 列）。
+    series 里 base 指标实际用哪个键, 优先 ema; 没有返回 ''.
+    分割任务看 mask_* 列(按有无 mask 系列判定, 不能按键存在性回退:
+    旧分割记录没有 mask_ema 列).
     """
     is_seg = bool(series.get("mask_" + base)) or bool(series.get("mask_ema_" + base))
     pfx = "mask_" if is_seg else ""
@@ -68,7 +68,7 @@ def metric_key(series, base):
 
 
 def best_value(series, base):
-    """该指标的全序列最大值；无数据返回 None（序列尾部常有补齐的 None 占位）。"""
+    """该指标的全序列最大值; 无数据返回 None(序列尾部常有补齐的 None 占位)."""
     key = metric_key(series, base)
     if not key:
         return None
@@ -77,14 +77,14 @@ def best_value(series, base):
 
 
 def best_map50(series):
-    """交付精度：分类看 accuracy，检测/分割看 mAP@50 全序列最大。"""
+    """交付精度: 分类看 accuracy, 检测/分割看 mAP@50 全序列最大."""
     if "accuracy" in series:
         return best_value(series, "accuracy")
     return best_value(series, "mAP@50")
 
 
 def best_map50_from_csv(csv_path):
-    """metrics.csv → 交付精度与 mAP@50-95；读不到返回 {}。"""
+    """metrics.csv → 交付精度与 mAP@50-95; 读不到返回 {}."""
     series = series_from_csv(csv_path)
     out = {}
     for key, base in (("map50", "mAP@50"), ("map50_95", "mAP@50-95")):

@@ -59,10 +59,10 @@ class TrainMixin(object):
         return True
 
     def kill_training_worker(self, timeout_ms=10000):
-        """杀掉训练进程树并等它真正退出，返回是否已退出。
+        """杀掉训练进程树并等它真正退出, 返回是否已退出.
 
-        孙进程(dataloader)没退干净就启动下一个任务会直接 OOM，
-        所以这里必须等，等不到就返回 False 让调用方放弃推进。
+        孙进程(dataloader)没退干净就启动下一个任务会直接 OOM,
+        所以这里必须等, 等不到就返回 False 让调用方放弃推进.
         """
         w = self._train_worker
         if w is None:
@@ -74,7 +74,7 @@ class TrainMixin(object):
         return True
 
     def _on_worker_thread_finished(self):
-        """线程结束但没收到任何结果信号时的兜底收尾。"""
+        """线程结束但没收到任何结果信号时的兜底收尾."""
         # 旧 worker 的 finished 可能在新任务启动后才送达(信号排队晚于冷却
         # 定时器), 此时 _training_record_id 已被换掉, 收尾会误杀新任务
         if self.sender() is not self._train_worker:
@@ -82,19 +82,19 @@ class TrainMixin(object):
         if getattr(self, "_train_settled", True):
             return
         rid = self._training_record_id
-        self._log("[train] 训练线程已结束但未返回结果，按失败收尾")
+        self._log("[train] 训练线程已结束但未返回结果, 按失败收尾")
         if rid:
             self.on_train_finished(rid, None)
 
     def stop_training(self, confirm=True):
-        """停止训练。队列激活时先问清范围，避免一次误操作停掉整夜的队列。"""
+        """停止训练. 队列激活时先问清范围, 避免一次误操作停掉整夜的队列."""
         if not self.is_training():
             self._hide_train_task()
             return
         queued = self.queue_is_running() and self.queue_pending_count() > 0
         if queued:
             choice = MessageBox.choose(
-                self, "停止训练", "当前正在跑训练队列，要停止到什么范围？",
+                self, "停止训练", "当前正在跑训练队列, 要停止到什么范围?",
                 [("仅停止当前", "primary"), ("停止队列", "danger"),
                  ("取消", "normal")])
             if choice is None or choice == "取消":
@@ -103,7 +103,7 @@ class TrainMixin(object):
                 self.stop_train_queue()
         else:
             if confirm and not MessageBox.question(
-                    self, "停止训练", "确定要停止当前训练吗？"):
+                    self, "停止训练", "确定要停止当前训练吗?"):
                 return
         self._train_stopped = True
         exited = self.kill_training_worker()
@@ -113,11 +113,11 @@ class TrainMixin(object):
         self._train_worker = None
         self._log("手动停止训练: {}".format(rid))
         if not exited:
-            self._log("[train] 训练进程 10 秒内未退出，可能有子进程残留占用显存")
+            self._log("[train] 训练进程 10 秒内未退出, 可能有子进程残留占用显存")
             MessageBox.warning(
                 self, "停止训练",
-                "训练进程未能完全退出，可能仍有子进程占用显存。\n"
-                "建议稍等片刻再启动下一个任务。")
+                "训练进程未能完全退出, 可能仍有子进程占用显存.\n"
+                "建议稍等片刻再启动下一个任务.")
         if rid:
             self.on_train_finished(rid, None)
 
@@ -176,17 +176,17 @@ class TrainMixin(object):
             self._log("[train] " + line)
         if rid:
             self.on_train_finished(rid, None, error=detail)
-        # 队列运行时不弹模态框：无人值守时会一直等点击，整个队列停摆
+        # 队列运行时不弹模态框: 无人值守时会一直等点击, 整个队列停摆
         if self.queue_is_running():
-            write_log("训练失败(队列模式，已跳过弹窗): {}".format(detail[:2000]))
+            write_log("训练失败(队列模式, 已跳过弹窗): {}".format(detail[:2000]))
             return
-        MessageBox.critical(self, "训练失败", "训练过程中发生错误，Err：\n\n{}".format(detail))
+        MessageBox.critical(self, "训练失败", "训练过程中发生错误, Err:\n\n{}".format(detail))
 
     def _on_train_log(self, line):
         self._log("[train] " + line)
 
     def update_train_metrics(self, record_id, metrics, force=False):
-        """指标写入 metrics/<id>.json, 记录里只留文件名 + 摘要, 不存全量曲线。"""
+        """指标写入 metrics/<id>.json, 记录里只留文件名 + 摘要, 不存全量曲线."""
         if not force and time.time() - self._metrics_saved_ts < self.METRICS_SAVE_INTERVAL:
             return
         self._metrics_saved_ts = time.time()
@@ -210,7 +210,7 @@ class TrainMixin(object):
                 return
 
     def _flush_train_metrics(self, record_id):
-        """训练结束/失败时补写最后一次指标(节流可能吞掉它)。"""
+        """训练结束/失败时补写最后一次指标(节流可能吞掉它)."""
         if self._pending_metrics is None:
             return
         metrics = self._pending_metrics
@@ -255,7 +255,7 @@ class TrainMixin(object):
             self.on_queue_train_finished(record_id, result, stopped=stopped)
 
     def _save_model_record(self, train_record):
-        """把训练记录副本写入 model_history(独立 id,幂等,删除不影响训练参数)。"""
+        """把训练记录副本写入 model_history(独立 id,幂等,删除不影响训练参数)."""
         rid = train_record.get("id")
         for m in self.db.get_model_records():
             if m.get("train_id") == rid:
@@ -294,7 +294,7 @@ class TrainMixin(object):
         self.train_progress.setToolTip(self._progress_tip)
 
     def _hide_train_task(self):
-        """训练结束/无训练任务时隐藏。"""
+        """训练结束/无训练任务时隐藏."""
         self.task_name_label.hide()
         self.train_progress.hide()
         self.stop_train_btn.hide()
@@ -305,7 +305,7 @@ class TrainMixin(object):
         self._eta_total_epochs = 0
 
     def _update_eta(self, epoch, total):
-        """progress到达时按已用时长外推剩余秒数(epoch 从 1 起,首 epoch 内无数据跳过)。"""
+        """progress到达时按已用时长外推剩余秒数(epoch 从 1 起,首 epoch 内无数据跳过)."""
         if not total or epoch <= 0 or not self._train_start_ts:
             return
         elapsed = time.time() - self._train_start_ts
@@ -316,7 +316,7 @@ class TrainMixin(object):
         self._show_eta()
 
     def _update_test_eta(self, done, total):
-        """测试进度推进时按已用时长外推剩余秒数（首次调用记录开始时间）。"""
+        """测试进度推进时按已用时长外推剩余秒数(首次调用记录开始时间)."""
         if not total:
             return
         if not self._test_start_ts:
@@ -331,7 +331,7 @@ class TrainMixin(object):
         self._show_eta()
 
     def _eta_tick(self):
-        """每秒递减剩余秒数,实现持续倒计时(训练推进时由 _update_eta 重估校准)。"""
+        """每秒递减剩余秒数,实现持续倒计时(训练推进时由 _update_eta 重估校准)."""
         if self._eta_remain > 0:
             self._eta_remain -= 1
         self._show_eta()
@@ -342,7 +342,7 @@ class TrainMixin(object):
         self.time_count_edit.setTime(QTime(h, m, s))
 
     def _refresh_gpu_memory(self):
-        """2s定时:查询显存使用率,>55% 显示红色。用 pynvml 避免每 2s 拉起子进程。"""
+        """2s定时:查询显存使用率,>55% 显示红色. 用 pynvml 避免每 2s 拉起子进程."""
         usage = None
         if pynvml is not None:
             if TrainMixin._nvml_state is None:
@@ -368,7 +368,7 @@ class TrainMixin(object):
 
     @staticmethod
     def _gpu_btn_style(high):
-        """显存 chip 配色:超 55% 深红发黑,否则深绿(胶囊形)。"""
+        """显存 chip 配色:超 55% 深红发黑,否则深绿(胶囊形)."""
         color = "#8a2424" if high else "#1f6b45"
         hover = "#a03131" if high else "#278a5a"
         return (

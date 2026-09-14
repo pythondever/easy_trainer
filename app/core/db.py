@@ -12,7 +12,7 @@ DEFAULT_DB_ROOT = os.path.join(os.path.expanduser("~"), ".easy_trainer")
 
 
 def load_train_metrics(record, db_path=None):
-    """取一条记录的指标: 优先外置文件, 文件缺失时退回记录内嵌字段(旧数据兼容)。"""
+    """取一条记录的指标: 优先外置文件, 文件缺失时退回记录内嵌字段(旧数据兼容)."""
     fname = record.get("metrics_file")
     if fname:
         path = os.path.join(db_path or DEFAULT_DB_ROOT, METRICS_DIR_NAME, fname)
@@ -25,7 +25,7 @@ def load_train_metrics(record, db_path=None):
 
 
 def _rename_item(item, old_name, new_name):
-    """数据集项("项目/数据集"或纯名)中匹配 old_name 的数据集部分替换为新名。"""
+    """数据集项("项目/数据集"或纯名)中匹配 old_name 的数据集部分替换为新名."""
     if "/" in item:
         proj, ds = item.rsplit("/", 1)
         return "{}/{}".format(proj, new_name) if ds == old_name else item
@@ -33,16 +33,16 @@ def _rename_item(item, old_name, new_name):
 
 
 def _ds_of(item):
-    """数据集项("项目/数据集"或纯名)取数据集名部分。"""
+    """数据集项("项目/数据集"或纯名)取数据集名部分."""
     return item.rsplit("/", 1)[-1] if "/" in item else item
 
 
 def get_paths(binding, kind):
     """
-    取导入绑定的路径列表，kind = "image" / "label"。
-    老记录只有单值 image_path/label_path，多路径导入后才有复数列表；
-    调用方一律走这里，别再各处手写 `or []` 兜底——漏掉复数分支的地方
-    多路径导入只会吃到最后一个目录。
+    取导入绑定的路径列表, kind = "image" / "label".
+    老记录只有单值 image_path/label_path, 多路径导入后才有复数列表;
+    调用方一律走这里, 别再各处手写 `or []` 兜底 - 漏掉复数分支的地方
+    多路径导入只会吃到最后一个目录.
     """
     key = "image" if kind == "image" else "label"
     paths = binding.get(key + "_paths")
@@ -62,7 +62,7 @@ class DataBase:
         self.create_db()
 
     def _invalidate_info_cache(self):
-        """项目信息缓存与其索引一并失效(任何写操作后调用)。"""
+        """项目信息缓存与其索引一并失效(任何写操作后调用)."""
         self._project_info_cache = None
         self._info_index = None
 
@@ -80,9 +80,9 @@ class DataBase:
         return os.path.join(self.metrics_dir, "{}.json".format(train_id))
 
     def save_train_metrics(self, train_id, metrics):
-        """把指标写到 metrics/<train_id>.json, 返回文件名(存进记录)而非指标本身。
+        """把指标写到 metrics/<train_id>.json, 返回文件名(存进记录)而非指标本身.
 
-        先写 .tmp 再 os.replace: 训练中途被强杀不会留下半个损坏的 json。
+        先写 .tmp 再 os.replace: 训练中途被强杀不会留下半个损坏的 json.
         """
         if not train_id:
             return ""
@@ -95,7 +95,7 @@ class DataBase:
         return os.path.basename(target)
 
     def delete_train_metrics(self, train_id):
-        """删除记录时级联清理外置指标文件(文件不存在不报错)。"""
+        """删除记录时级联清理外置指标文件(文件不存在不报错)."""
         if not train_id:
             return
         try:
@@ -135,7 +135,7 @@ class DataBase:
         self._rename_deleted_project(old_name, new_name)
 
     def _rename_records_project(self, old_name, new_name):
-        """训练/模型记录中项目名替换(含 dataset/val_dataset/dataset_info 的"项目/"前缀)。"""
+        """训练/模型记录中项目名替换(含 dataset/val_dataset/dataset_info 的"项目/"前缀)."""
         with self.mdb.begin(write=True) as txn:
             for key in (keys.train_history, keys.model_history):
                 data = txn.get(key)
@@ -184,7 +184,7 @@ class DataBase:
 
     def add_project_info(self, info):
         # 保存项目的详细信息(列表存储,每条 = 一个项目下的数据集记录)
-        # 字段：project_name / dataset_name / dataset_type / image_path /
+        # 字段: project_name / dataset_name / dataset_type / image_path /
         #       label_path / label_fmt / labeled / total / labels
         key = keys.project_info_list
         with self.mdb.begin(write=True) as txn:
@@ -216,8 +216,8 @@ class DataBase:
 
     def _find_info(self, project_name, dataset_name):
         """
-        按 (项目, 数据集) 取 info: O(1) 命中索引, 替代逐条线性扫描全表。
-        返回 info 本身(非副本); 调用方就地改字段后仍需 update_project_info 落盘。
+        按 (项目, 数据集) 取 info: O(1) 命中索引, 替代逐条线性扫描全表.
+        返回 info 本身(非副本); 调用方就地改字段后仍需 update_project_info 落盘.
         """
         if self._project_info_cache is None:
             self.get_project_info()
@@ -280,13 +280,13 @@ class DataBase:
         return added
 
     def get_deleted_images(self, project_name, dataset_name):
-        """返回该数据集的已删除/不加载图像路径集合（归一化）。"""
+        """返回该数据集的已删除/不加载图像路径集合(归一化)."""
         maps = self._get_deleted_maps()
         project_data = maps.get(project_name, {})
         return set(project_data.get(dataset_name, []))
 
     def get_datasets(self, project_name):
-        """返回某项目的数据集列表 [{'dataset_name','dataset_type','labeled','total'}, ...]。"""
+        """返回某项目的数据集列表 [{'dataset_name','dataset_type','labeled','total'}, ...]."""
         result = []
         for info in self.get_project_info():
             if info.get('project_name') == project_name:
@@ -299,7 +299,7 @@ class DataBase:
         return result
 
     def add_dataset(self, project_name, dataset_name, dataset_type=''):
-        """在项目下新增一个数据集记录。返回 True 成功 / False 名称已存在。"""
+        """在项目下新增一个数据集记录. 返回 True 成功 / False 名称已存在."""
         if not project_name or not dataset_name:
             return False
         if self._find_info(project_name, dataset_name) is not None:
@@ -312,7 +312,7 @@ class DataBase:
         return True
 
     def rename_dataset(self, project_name, old_name, new_name, dataset_type=None):
-        """修改数据集名称/类型。返回 True 成功 / False 重名或不存在。"""
+        """修改数据集名称/类型. 返回 True 成功 / False 重名或不存在."""
         if not new_name:
             return False
         info_list = self.get_project_info()
@@ -339,8 +339,8 @@ class DataBase:
 
     def _rename_records_dataset(self, project_name, old_name, new_name):
         """
-        训练/模型记录中该数据集名替换(训练集/验证集/dataset_info)。
-        dataset 字段为 "项目/数据集" 格式,匹配后半段数据集名。
+        训练/模型记录中该数据集名替换(训练集/验证集/dataset_info).
+        dataset 字段为 "项目/数据集" 格式,匹配后半段数据集名.
         """
         with self.mdb.begin(write=True) as txn:
             for key in (keys.train_history, keys.model_history):
@@ -367,7 +367,7 @@ class DataBase:
                     txn.put(key, json.dumps(recs, ensure_ascii=False).encode())
 
     def delete_dataset(self, project_name, dataset_name):
-        """删除项目下的一个数据集记录。"""
+        """删除项目下的一个数据集记录."""
         info_list = self.get_project_info()
         keep = []
         for info in info_list:
@@ -379,7 +379,7 @@ class DataBase:
         self.delete_dataset_deleted(project_name, dataset_name)
 
     def delete_dataset_deleted(self, project_name, dataset_name):
-        """删除数据集时清理其已删除图像记录。"""
+        """删除数据集时清理其已删除图像记录."""
         key = keys.deleted_images
         with self.mdb.begin(write=True) as txn:
             maps = txn.get(key)
@@ -395,12 +395,12 @@ class DataBase:
     def update_dataset_import(self, project_name, dataset_name, image_path, label_path='',
                               label_fmt='', labeled=None, total=None, append=False):
         """
-        保存（或更新）某数据集的导入路径绑定；labeled/total 为标注/总数统计。
-        支持多次导入：image_paths / label_paths 为历史路径列表（去重保留），
-        单值字段 image_path/label_path 保持最新（向后兼容）。
-        参数兼容 str 或 list（多路径合并导入）
-        append=False（默认）: labeled/total 直接覆盖（适合全量重算）
-        append=True: labeled/total 累加到原值（适合追加新图, 不覆盖已有统计）
+        保存(或更新)某数据集的导入路径绑定; labeled/total 为标注/总数统计.
+        支持多次导入: image_paths / label_paths 为历史路径列表(去重保留),
+        单值字段 image_path/label_path 保持最新(向后兼容).
+        参数兼容 str 或 list(多路径合并导入)
+        append=False(默认): labeled/total 直接覆盖(适合全量重算)
+        append=True: labeled/total 累加到原值(适合追加新图, 不覆盖已有统计)
         """
         img_list = ([image_path] if isinstance(image_path, str) else list(image_path or []))
         lbl_list = ([label_path] if isinstance(label_path, str) else list(label_path or []))
@@ -449,7 +449,7 @@ class DataBase:
         return True
 
     def clear_dataset_import(self, project_name, dataset_name):
-        """清空数据集的导入绑定与统计（数据集移动后源数据集无数据）。"""
+        """清空数据集的导入绑定与统计(数据集移动后源数据集无数据)."""
         info_list = self.get_project_info()
         for info in info_list:
             if (info.get('project_name') == project_name
@@ -466,10 +466,10 @@ class DataBase:
         return False
 
     def _read_deleted_maps(self):
-        """读 deleted_images 全表。损坏时返回 None（调用方须放弃写入）。
+        """读 deleted_images 全表. 损坏时返回 None(调用方须放弃写入).
 
         只读事务取数据: 有了这份副本就能在开写事务前判断是否需要放弃,
-        不必在写事务里 abort 后再 return。
+        不必在写事务里 abort 后再 return.
         """
         with self.mdb.begin(write=False) as txn:
             data = txn.get(keys.deleted_images)
@@ -478,12 +478,12 @@ class DataBase:
         try:
             return json.loads(data.decode())
         except Exception as e:
-            write_log("已删除图像记录解析失败，跳过迁移以免覆盖丢失 "
+            write_log("已删除图像记录解析失败, 跳过迁移以免覆盖丢失 "
                       "({}): {}".format(keys.deleted_images, e))
             return None
 
     def _rename_deleted_project(self, old_name, new_name):
-        """项目改名时迁移排除记录, 否则重命名后这些图会全部重新出现。"""
+        """项目改名时迁移排除记录, 否则重命名后这些图会全部重新出现."""
         maps = self._read_deleted_maps()
         if maps is None or old_name not in maps:
             return
@@ -498,7 +498,7 @@ class DataBase:
                     json.dumps(maps, ensure_ascii=False).encode())
 
     def _rename_deleted_dataset(self, project_name, old_name, new_name):
-        """数据集改名时迁移排除记录, 否则重命名后这些图会全部重新出现。"""
+        """数据集改名时迁移排除记录, 否则重命名后这些图会全部重新出现."""
         maps = self._read_deleted_maps()
         if maps is None or old_name not in maps.get(project_name, {}):
             return
@@ -513,7 +513,7 @@ class DataBase:
 
     def move_deleted_images(self, src_project, src_dataset,
                             dst_project, dst_dataset):
-        """迁移"已删除/不加载"图像记录：src → dst（dst 追加，src 清空）。"""
+        """迁移"已删除/不加载"图像记录: src → dst(dst 追加, src 清空)."""
         key = keys.deleted_images
         with self.mdb.begin(write=True) as txn:
             maps = txn.get(key)
@@ -534,7 +534,7 @@ class DataBase:
 
     def get_dataset_import(self, project_name, dataset_name):
         """
-        返回该数据集导入绑定：
+        返回该数据集导入绑定:
         {'image_path','label_path','label_fmt','labeled','total',
          'image_paths': [...], 'label_paths': [...]}
          """
@@ -554,12 +554,12 @@ class DataBase:
         }
 
     def get_dataset_labels(self, project_name, dataset_name):
-        """返回该数据集标签映射 {标签名: 颜色#hex}。"""
+        """返回该数据集标签映射 {标签名: 颜色#hex}."""
         info = self._find_info(project_name, dataset_name)
         return dict(info.get('labels') or {}) if info is not None else {}
 
     def save_dataset_label_counts(self, project_name, dataset_name, counts):
-        """持久化数据集标签数量统计 {标签名: 数量},供属性页无缓存时展示。"""
+        """持久化数据集标签数量统计 {标签名: 数量},供属性页无缓存时展示."""
         info = self._find_info(project_name, dataset_name)
         if info is None:
             return False
@@ -568,12 +568,12 @@ class DataBase:
         return True
 
     def get_dataset_label_counts(self, project_name, dataset_name):
-        """返回该数据集标签数量统计 {标签名: 数量},无则 {}。"""
+        """返回该数据集标签数量统计 {标签名: 数量},无则 {}."""
         info = self._find_info(project_name, dataset_name)
         return dict(info.get('label_counts') or {}) if info is not None else {}
 
     def save_dataset_labels(self, project_name, dataset_name, labels):
-        """整体保存该数据集标签映射 {标签名: 颜色#hex}。"""
+        """整体保存该数据集标签映射 {标签名: 颜色#hex}."""
         info = self._find_info(project_name, dataset_name)
         if info is None:
             return False
@@ -582,12 +582,12 @@ class DataBase:
         return True
 
     def get_dataset_label_ids(self, project_name, dataset_name):
-        """返回该数据集 class_id→标签名 映射 {str_id: 标签名}(YOLO txt 数字 id 的显示名)。"""
+        """返回该数据集 class_id→标签名 映射 {str_id: 标签名}(YOLO txt 数字 id 的显示名)."""
         info = self._find_info(project_name, dataset_name)
         return dict(info.get('label_ids') or {}) if info is not None else {}
 
     def save_dataset_label_ids(self, project_name, dataset_name, ids):
-        """整体保存 {str_id: 标签名}。"""
+        """整体保存 {str_id: 标签名}."""
         info = self._find_info(project_name, dataset_name)
         if info is None:
             return False
@@ -596,13 +596,13 @@ class DataBase:
         return True
 
     def add_dataset_label(self, project_name, dataset_name, label_name, color):
-        """添加/更新单个标签及其颜色。"""
+        """添加/更新单个标签及其颜色."""
         labels = self.get_dataset_labels(project_name, dataset_name)
         labels[label_name] = color
         return self.save_dataset_labels(project_name, dataset_name, labels)
 
     def remove_dataset_label(self, project_name, dataset_name, label_name):
-        """删除该数据集的单个标签（不存在返回 False）。"""
+        """删除该数据集的单个标签(不存在返回 False)."""
         labels = self.get_dataset_labels(project_name, dataset_name)
         if label_name in labels:
             del labels[label_name]
@@ -611,7 +611,7 @@ class DataBase:
 
     # ---------- 训练记录 ----------
     def add_train_record(self, record):
-        """追加一条训练记录（record 为 dict，见 main 训练启动处）。"""
+        """追加一条训练记录(record 为 dict, 见 main 训练启动处)."""
         key = keys.train_history
         with self.mdb.begin(write=True) as txn:
             recs = txn.get(key)
@@ -631,7 +631,7 @@ class DataBase:
             return []
 
     def delete_train_record(self, record_id):
-        """按 id 删除一条训练记录(级联删除其外置指标文件)。"""
+        """按 id 删除一条训练记录(级联删除其外置指标文件)."""
         key = keys.train_history
         with self.mdb.begin(write=True) as txn:
             data = txn.get(key)
@@ -643,9 +643,9 @@ class DataBase:
 
     def update_train_record(self, record):
         """
-        按 id 覆盖一条训练记录（训练中实时更新 metrics 等字段）。
+        按 id 覆盖一条训练记录(训练中实时更新 metrics 等字段).
         序列化在写事务外完成: LMDB 同一时刻只允许一个写事务, 在事务内
-        loads/dumps 会把导入、保存标注等其他写操作一起堵住。
+        loads/dumps 会把导入, 保存标注等其他写操作一起堵住.
         """
         key = keys.train_history
         with self.mdb.begin(write=False) as txn:
@@ -664,7 +664,7 @@ class DataBase:
 
     # ---------- 模型记录(独立于训练记录存储) ----------
     def add_model_record(self, record):
-        """追加一条模型记录(有模型文件的训练)。"""
+        """追加一条模型记录(有模型文件的训练)."""
         key = keys.model_history
         with self.mdb.begin(write=True) as txn:
             recs = txn.get(key)
@@ -685,8 +685,8 @@ class DataBase:
 
     def delete_model_record(self, record_id):
         """
-        按 id 删除一条模型记录(不影响训练记录)。
-        不删外置指标文件: 文件按 train_id 命名, 训练记录仍可能引用它。
+        按 id 删除一条模型记录(不影响训练记录).
+        不删外置指标文件: 文件按 train_id 命名, 训练记录仍可能引用它.
         """
         key = keys.model_history
         with self.mdb.begin(write=True) as txn:
@@ -698,7 +698,7 @@ class DataBase:
 
     # ---------- 训练队列 ----------
     def get_train_queue(self):
-        """队列项列表(按 order 升序)。损坏时返回空列表,不抛异常。"""
+        """队列项列表(按 order 升序). 损坏时返回空列表,不抛异常."""
         key = keys.train_queue
         with self.mdb.begin(write=False) as txn:
             data = txn.get(key)
@@ -713,14 +713,14 @@ class DataBase:
         return items
 
     def save_train_queue(self, items):
-        """整体覆盖队列(序列化在事务外,避免堵住其他写操作)。"""
+        """整体覆盖队列(序列化在事务外,避免堵住其他写操作)."""
         blob = json.dumps(list(items), ensure_ascii=False).encode()
         with self.mdb.begin(write=True) as txn:
             txn.put(keys.train_queue, blob)
 
     # ---------- 训练/模型记录级联删除 ----------
     def migrate_model_records(self):
-        """一次性迁移:train_history 中带模型的历史记录补录到 model_history(幂等)。"""
+        """一次性迁移:train_history 中带模型的历史记录补录到 model_history(幂等)."""
         with self.mdb.begin(write=False) as txn:
             existing = txn.get(keys.model_history)
             train_raw = txn.get(keys.train_history)
@@ -742,7 +742,7 @@ class DataBase:
                         json.dumps(existing, ensure_ascii=False).encode())
 
     def delete_project_records(self, project_name):
-        """删除项目下所有训练记录与模型记录(级联清理外置指标文件)。"""
+        """删除项目下所有训练记录与模型记录(级联清理外置指标文件)."""
         with self.mdb.begin(write=False) as txn:
             raw = txn.get(keys.train_history)
         recs = json.loads(raw.decode()) if raw else []
@@ -758,9 +758,9 @@ class DataBase:
             self.delete_train_metrics(tid)
 
     def dataset_in_records(self, project_name, dataset_name):
-        """该数据集是否被训练记录引用(训练集或验证集任一出现)。
+        """该数据集是否被训练记录引用(训练集或验证集任一出现).
 
-        model_history 是 train_history 的子集(训练完成时浅拷贝),无需重复检查。
+        model_history 是 train_history 的子集(训练完成时浅拷贝),无需重复检查.
         """
         key = keys.train_history
         with self.mdb.begin(write=False) as txn:
@@ -776,7 +776,7 @@ class DataBase:
         return False
 
     def _strip_dataset_from_record(self, record, ds_name):
-        """从记录中移除 ds_name,返回 (record, 是否仍被其他数据集引用)。"""
+        """从记录中移除 ds_name,返回 (record, 是否仍被其他数据集引用)."""
         def _strip(field):
             names = [x.strip() for x in str(record.get(field, "")).split(",") if x.strip()]
             return [n for n in names if _ds_of(n) != ds_name]
@@ -794,7 +794,7 @@ class DataBase:
         return record, bool(train or val)
 
     def remove_dataset_from_records(self, project_name, ds_name):
-        """数据集删除时从训练/模型记录中移除该数据集;记录无任何引用则删除。"""
+        """数据集删除时从训练/模型记录中移除该数据集;记录无任何引用则删除."""
         dropped = []
         with self.mdb.begin(write=True) as txn:
             for key in (keys.train_history, keys.model_history):

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-标注对话框：封装 ui/annotation.py + annotation 引擎。
-- 矩形/多边形标注（颜色 = 标签颜色，支持中文标签）
-- 左侧标签列表（点击切换当前标签），添加标签弹窗（10 默认色 + 自定义色 + 跨数据集导入）
-- A/D 切换上一张/下一张，切换/关闭时保存 labelme json（图像同路径）
+标注对话框: 封装 ui/annotation.py + annotation 引擎.
+- 矩形/多边形标注(颜色 = 标签颜色, 支持中文标签)
+- 左侧标签列表(点击切换当前标签), 添加标签弹窗(10 默认色 + 自定义色 + 跨数据集导入)
+- A/D 切换上一张/下一张, 切换/关闭时保存 labelme json(图像同路径)
 """
 import os
 import json
@@ -41,14 +41,14 @@ from PySide6.QtWidgets import QGraphicsView
 BLEND_STRENGTH_DEFAULT = "0.7"   # 粘贴融合力度: 0=原始硬贴, 1=完全融合
 FILL_VALUE_DEFAULT = "255"       # 多边形填充色默认值: 每通道 0~255
 
-# 全局粘贴剪切板: 软件重启才清空。
-# 元素即 scene.fp_template 的结构(points/patch/w/h/label), 最新的在下标 0。
+# 全局粘贴剪切板: 软件重启才清空.
+# 元素即 scene.fp_template 的结构(points/patch/w/h/label), 最新的在下标 0.
 CLIP_MAX = 15
 _clip_templates = []
 
 
 def _resource_path(name):
-    """resources/ 目录下资源绝对路径（不存在返回空串）。"""
+    """resources/ 目录下资源绝对路径(不存在返回空串)."""
     root = project_root()
     p = os.path.join(root, "resources", name)
     return p if os.path.exists(p) else ""
@@ -63,8 +63,8 @@ _ROW_QSS = "QFrame {{ background: {0}; border-radius: 6px; }}"
 @lru_cache(maxsize=128)
 def _dot_icon(color):
     """
-    标签颜色圆点图标。按颜色缓存: 右侧标注列表每行取一次, 不缓存时
-    每次刷新都要 new QPixmap + QPainter + QIcon, 框多时是卡顿主因之一。
+    标签颜色圆点图标. 按颜色缓存: 右侧标注列表每行取一次, 不缓存时
+    每次刷新都要 new QPixmap + QPainter + QIcon, 框多时是卡顿主因之一.
     """
     pm = QPixmap(16, 16)
     pm.fill(Qt.transparent)
@@ -79,8 +79,8 @@ def _dot_icon(color):
 
 def _set_row_background(row, selected):
     """
-    列表行高亮。已是目标底色就跳过 —— setStyleSheet 会触发整行
-    unpolish/polish 重绘, 上千行全量重设是标注卡顿的主因。
+    列表行高亮. 已是目标底色就跳过 - setStyleSheet 会触发整行
+    unpolish/polish 重绘, 上千行全量重设是标注卡顿的主因.
     """
     if row is None:
         return
@@ -97,9 +97,9 @@ def _set_row_background(row, selected):
 def _upgrade_graphics_view(view):
     """
     给 uic 生成的 image_label_show(QGraphicsView) 挂上标注视图行为:
-    挂 AnnotationScene + 安装滚轮缩放/中键平移/快捷键/右键菜单(复制·填充·粘贴)等方法。
+    挂 AnnotationScene + 安装滚轮缩放/中键平移/快捷键/右键菜单(复制·填充·粘贴)等方法.
     这里用实例补丁而非子类, 是因为 .ui 里 image_label_show 是原生 QGraphicsView,
-    要在 Designer 里改成提升控件才能换成子类。
+    要在 Designer 里改成提升控件才能换成子类.
     """
     scene = AnnotationScene(view)
     view.setScene(scene)
@@ -224,7 +224,7 @@ def _upgrade_graphics_view(view):
     view.contextMenuEvent = _ctx_menu
 
     def _do_paste(_scene, _pos):
-        """粘贴前读取角度范围输入框(容错: 空/非整数用默认 ±180), 再执行粘贴。"""
+        """粘贴前读取角度范围输入框(容错: 空/非整数用默认 ±180), 再执行粘贴."""
         dialog = view.window()   # 顶层窗口 = AnnotationDialog
         try:
             lo = int(dialog.ui.min_ange_lineEdit.text())
@@ -238,7 +238,7 @@ def _upgrade_graphics_view(view):
         _scene._paste_template(_pos)
 
     def _do_fill(_scene, _item):
-        """多边形填充: 把区域内像素改成"填充值"输入框的 RGB 颜色, 可 Ctrl+Z 撤销。"""
+        """多边形填充: 把区域内像素改成"填充值"输入框的 RGB 颜色, 可 Ctrl+Z 撤销."""
         dialog = view.window()
         if _scene.fill_polygon(_item, dialog._fill_value()):
             dialog._dirty = True
@@ -271,7 +271,7 @@ def _upgrade_graphics_view(view):
 
 
 class _ClsLabelItem(QGraphicsTextItem):
-    """图像分类数据集：图像中央显示类别名，点击弹出菜单修改类别(复用 label_change_requested)。"""
+    """图像分类数据集: 图像中央显示类别名, 点击弹出菜单修改类别(复用 label_change_requested)."""
 
     def __init__(self, text, color, font_size=15):
         super().__init__(text)
@@ -292,21 +292,21 @@ class _ClsLabelItem(QGraphicsTextItem):
 
 def _load_labelme(json_path):
     """
-    读取 labelme json → [{label, x1,y1,x2,y2} 或 {label, points, shape_type}]。
-    解析统一走 label_utils.load_json_shapes，这里只转成场景要的字典形态。
+    读取 labelme json → [{label, x1,y1,x2,y2} 或 {label, points, shape_type}].
+    解析统一走 label_utils.load_json_shapes, 这里只转成场景要的字典形态.
     """
     return shapes_to_boxes(load_json_shapes(json_path))
 
 
 def _load_import_label(image_path, label_path, fmt, label_ids=None):
     """
-    从导入绑定的标签目录读取标签框（yolo txt / labelme json）。
-    label_path 可为 str 或 list（多路径导入：依次查找同名标签文件）。
-    与 _load_labelme 返回相同格式的 boxes 列表；无标签/目录无效返回 []。
-    label_ids: {txt 数字 id 字符串: 显示名} 映射（YOLO 专用），
-    有映射时优先用显示名，无映射退回数字本身。
+    从导入绑定的标签目录读取标签框(yolo txt / labelme json).
+    label_path 可为 str 或 list(多路径导入: 依次查找同名标签文件).
+    与 _load_labelme 返回相同格式的 boxes 列表; 无标签/目录无效返回 [].
+    label_ids: {txt 数字 id 字符串: 显示名} 映射(YOLO 专用),
+    有映射时优先用显示名, 无映射退回数字本身.
     用于: 导入带标注的图像进入标注界面时显示导入的标注框
-    （标注系统的 labelme json 保存在图像同路径，而导入标签在 label_path 目录）。
+    (标注系统的 labelme json 保存在图像同路径, 而导入标签在 label_path 目录).
     """
     label_dirs = [label_path] if isinstance(label_path, (str,)) else list(label_path or [])
     label_dirs = [p for p in label_dirs if p and os.path.isdir(p)]
@@ -323,7 +323,7 @@ def _load_import_label(image_path, label_path, fmt, label_ids=None):
     if not label_file:
         return []
     if fmt == ".txt":
-        # 尺寸读不到就给 0，load_yolo_shapes 会直接返回空（归一化坐标还原不了）
+        # 尺寸读不到就给 0, load_yolo_shapes 会直接返回空(归一化坐标还原不了)
         iw = ih = 0
         try:
             with Image.open(image_path) as im:
@@ -336,8 +336,8 @@ def _load_import_label(image_path, label_path, fmt, label_ids=None):
 
 def save_labelme(image_path, shapes, width=None, height=None, version="5.0.1"):
     """
-    保存 labelme json 到图像同路径（*.json）。
-    width/height 可传入已解码的宽高, 避免每次保存重复整图解码(QImage(image_path))。
+    保存 labelme json 到图像同路径(*.json).
+    width/height 可传入已解码的宽高, 避免每次保存重复整图解码(QImage(image_path)).
     """
     if width is not None and height is not None:
         w, h = int(width), int(height)
@@ -365,9 +365,9 @@ def save_labelme(image_path, shapes, width=None, height=None, version="5.0.1"):
 
 class AddLabelDialog(QDialog):
     """
-    添加标签弹窗:名称输入 + 10 个默认色按钮 + 自定义颜色 + 同项目标签导入。
-    通过 load_project_label_combo 选择同项目其他数据集，点击 load_label_btn
-    导入该数据集已有标签（逗号分隔填入输入框），确定后批量入库并沿用源颜色。
+    添加标签弹窗:名称输入 + 10 个默认色按钮 + 自定义颜色 + 同项目标签导入.
+    通过 load_project_label_combo 选择同项目其他数据集, 点击 load_label_btn
+    导入该数据集已有标签(逗号分隔填入输入框), 确定后批量入库并沿用源颜色.
     """
 
     def __init__(self, parent=None, preset_name="", preset_color="",
@@ -388,7 +388,7 @@ class AddLabelDialog(QDialog):
         if preset_color:
             self._select_color(preset_color)
         if edit_mode:
-            # 编辑已有标签：名称/数据集/导入全部锁定，只允许改颜色
+            # 编辑已有标签: 名称/数据集/导入全部锁定, 只允许改颜色
             self.setWindowTitle("编辑标签")
             self.ui.input_label_name_txt.setEnabled(False)
             self.ui.load_project_label_combo.setEnabled(False)
@@ -396,7 +396,7 @@ class AddLabelDialog(QDialog):
 
     def _setup(self):
         BTN_H = 36
-        # 色块/自定义按钮统一 30px 圆形。尺寸必须写进按钮自身的 QSS:
+        # 色块/自定义按钮统一 30px 圆形. 尺寸必须写进按钮自身的 QSS:
         # 全局 QDialog QPushButton{min-height:22} 会架空 setFixedSize 的下限,
         # 而 QSS 尺寸按内容盒算, 26 + 边框4 = 30
         CIRCLE_CSS = (" padding: 0; min-width: 26px; max-width: 26px;"
@@ -421,16 +421,16 @@ class AddLabelDialog(QDialog):
         apply_icon(self.ui.add_label_done_btn, "确定")
         self.ui.add_label_done_btn.clicked.connect(self.accept)
         self.ui.input_label_name_txt.setPlaceholderText(
-            "标签名称，多个用逗号分隔")
+            "标签名称, 多个用逗号分隔")
         self._fill_project_label_combo()
         self.ui.load_label_btn.setText("导入")
         self.ui.load_label_btn.clicked.connect(self._load_labels_from_project)
 
     def _fill_project_label_combo(self):
-        """填充同项目其他数据集的标签（单选）：排除当前数据集，只列有标签的。"""
+        """填充同项目其他数据集的标签(单选): 排除当前数据集, 只列有标签的."""
         combo = self.ui.load_project_label_combo
         combo.clear()
-        combo.addItem("选择数据集…", None)
+        combo.addItem("选择数据集...", None)
         if not self._db or not self._project:
             combo.setEnabled(False)
             return
@@ -446,9 +446,9 @@ class AddLabelDialog(QDialog):
 
     def _load_labels_from_project(self):
         """
-        把所选数据集的标签以逗号分隔填入输入框，并记住其颜色。
-        导入后输入框置为只读（导入的标签以源数据集为准，不允许手动改动），
-        数据仅在用户点「确定」后才写入当前数据集。
+        把所选数据集的标签以逗号分隔填入输入框, 并记住其颜色.
+        导入后输入框置为只读(导入的标签以源数据集为准, 不允许手动改动),
+        数据仅在用户点"确定"后才写入当前数据集.
         """
         combo = self.ui.load_project_label_combo
         src = combo.currentData()
@@ -458,7 +458,7 @@ class AddLabelDialog(QDialog):
         labels = self._db.get_dataset_labels(self._project, src)
         if not labels:
             MessageBox.warning(self, "导入标签",
-                               "数据集「{}」还没有标签".format(src))
+                               "数据集\"{}\"还没有标签".format(src))
             return
         self._source_colors = dict(labels)
         names = sorted(labels.keys(), key=label_sort_key)
@@ -498,9 +498,9 @@ class AddLabelDialog(QDialog):
 
     def result_data(self):
         """
-        返回 [(name, color), ...]。多个标签以逗号分隔。
-        颜色优先取导入数据集的源颜色（_source_colors），
-        否则用当前选中颜色，再否则按 label_color 哈希确定性分配。
+        返回 [(name, color), ...]. 多个标签以逗号分隔.
+        颜色优先取导入数据集的源颜色(_source_colors),
+        否则用当前选中颜色, 再否则按 label_color 哈希确定性分配.
         """
         text = self.ui.input_label_name_txt.text().strip()
         if not text:
@@ -524,10 +524,10 @@ class AddLabelDialog(QDialog):
 
 class _PrefetchWorker(QThread):
     """
-    后台解码图像到 QImage(主线程再转 QPixmap 入缓存), 避免 D 切换时同步解码大图卡顿。
+    后台解码图像到 QImage(主线程再转 QPixmap 入缓存), 避免 D 切换时同步解码大图卡顿.
     请求队列 + 停止标志; 解码保持全尺寸
     """
-    decoded = Signal(str, QImage)   # (image_path, qimg) — 用路径作缓存 key, 避免删除/切页后 index 错位
+    decoded = Signal(str, QImage)   # (image_path, qimg) - 用路径作缓存 key, 避免删除/切页后 index 错位
 
     def __init__(self, image_list, parent=None):
         super().__init__(parent)
@@ -563,7 +563,7 @@ class _PrefetchWorker(QThread):
 
 
 class AnnotationDialog(QDialog):
-    """标注主对话框：加载图像 + 已有标注，支持矩形/多边形绘制、标签管理、A/D 切换保存。"""
+    """标注主对话框: 加载图像 + 已有标注, 支持矩形/多边形绘制, 标签管理, A/D 切换保存."""
 
     def __init__(self, image_list, current_index, db, project, dataset, parent=None,
                  label_path="", label_fmt="", cls_mode=False):
@@ -616,7 +616,7 @@ class AnnotationDialog(QDialog):
         self._load_current()
 
     def _replace_view(self):
-        """在用户设计的 image_label_show 控件上启用标注能力（不新增控件）。"""
+        """在用户设计的 image_label_show 控件上启用标注能力(不新增控件)."""
         self.view = _upgrade_graphics_view(self.ui.image_label_show)
         self.scene = self.view.scene_
 
@@ -701,7 +701,7 @@ class AnnotationDialog(QDialog):
                 w.setEnabled(False)
 
     def _normalize_blend_strength(self):
-        """失焦时把融合强度收敛到 [0,1]; 空值/非法值回到默认。"""
+        """失焦时把融合强度收敛到 [0,1]; 空值/非法值回到默认."""
         edit = self.ui.blend_strength_lineEdit
         try:
             v = float(edit.text().strip())
@@ -714,7 +714,7 @@ class AnnotationDialog(QDialog):
             scene.blend_strength = v
 
     def _normalize_fill_value(self):
-        """失焦时把 RGB 每通道收敛到 [0,255]; 空值/非法值回到默认。"""
+        """失焦时把 RGB 每通道收敛到 [0,255]; 空值/非法值回到默认."""
         u = self.ui
         for name in ("fill_r_lineEdit", "fill_g_lineEdit", "fill_b_lineEdit"):
             edit = getattr(u, name)
@@ -725,7 +725,7 @@ class AnnotationDialog(QDialog):
             edit.setText(str(min(255, max(0, v))))
 
     def _fill_value(self):
-        """当前填充颜色 (r, g, b); 输入框异常时该通道回退默认。"""
+        """当前填充颜色 (r, g, b); 输入框异常时该通道回退默认."""
         rgb = []
         for name in ("fill_r_lineEdit", "fill_g_lineEdit", "fill_b_lineEdit"):
             try:
@@ -737,9 +737,9 @@ class AnnotationDialog(QDialog):
 
     def _on_image_pixels_changed(self):
         """
-        图像像素被改写(粘贴/填充/撤销) → 刷新缓存 + 标记落盘。
+        图像像素被改写(粘贴/填充/撤销) → 刷新缓存 + 标记落盘.
         QPixmap 是写时复制: 场景里 QPainter 画的是副本, _pix_cache 里那份原地不动,
-        不换掉的话 A/D 翻走再翻回来会命中旧图(看起来"图像没改, 只剩多边形")。
+        不换掉的话 A/D 翻走再翻回来会命中旧图(看起来"图像没改, 只剩多边形").
         """
         if not (0 <= self.index < len(self.image_list)):
             return
@@ -756,8 +756,8 @@ class AnnotationDialog(QDialog):
 
     def _on_boxes_changed(self):
         """
-        标注内容变化(画/删/改类别/拖动缩放)→ 标记 dirty + 刷新右侧列表。
-        load_boxes 加载时也会 emit boxes_changed，但 _loading=True 期间不标记。
+        标注内容变化(画/删/改类别/拖动缩放)→ 标记 dirty + 刷新右侧列表.
+        load_boxes 加载时也会 emit boxes_changed, 但 _loading=True 期间不标记.
         """
         if not getattr(self, "_loading", False):
             self._dirty = True
@@ -772,7 +772,7 @@ class AnnotationDialog(QDialog):
         QShortcut(QKeySequence(Qt.Key_Escape), self, activated=self._cancel_draw_mode)
 
     def _apply_draw_mode_cursor(self):
-        """按当前画模式状态同步 view 光标(多边形画笔/矩形十字 / 编辑模式恢复)。"""
+        """按当前画模式状态同步 view 光标(多边形画笔/矩形十字 / 编辑模式恢复)."""
         # 先清空全局 override 光标栈残留, 再按状态 push, 保证不泄漏(否则 ESC 退不出)
         self._clear_override_cursor()
         if self.scene.draw_mode:
@@ -782,16 +782,16 @@ class AnnotationDialog(QDialog):
 
     def _clear_override_cursor(self):
         """
-        清空全局 override 光标栈(画模式/格式刷期间可能多次 push 未配对)。
-        栈空时 restoreOverrideCursor 是无副作用的 no-op, 循环调用安全。
+        清空全局 override 光标栈(画模式/格式刷期间可能多次 push 未配对).
+        栈空时 restoreOverrideCursor 是无副作用的 no-op, 循环调用安全.
         """
         for _ in range(8):
             QApplication.restoreOverrideCursor()
 
     def _load_pixmap(self, image_path):
-        """全尺寸加载图像(缓存命中直接返回; 未命中 QImageReader 解码后入 LRU)。
-        缓存 key 用 image_path(不用 self.index)——删除图像后列表前移, index 会指向别的图,
-        若按 index 缓存会把"已删图/错位图"显示出来。"""
+        """全尺寸加载图像(缓存命中直接返回; 未命中 QImageReader 解码后入 LRU).
+        缓存 key 用 image_path(不用 self.index) - 删除图像后列表前移, index 会指向别的图,
+        若按 index 缓存会把"已删图/错位图"显示出来."""
         pix = self._pix_cache.get(image_path)
         if pix is None:
             reader = QImageReader(image_path)
@@ -807,7 +807,7 @@ class AnnotationDialog(QDialog):
         return pix
 
     def _put_pix_cache(self, image_path, pix, fmt=None):
-        """入缓存并刷新访问顺序(dict 末尾 = 最近使用), 超出上限按 LRU 淘汰。"""
+        """入缓存并刷新访问顺序(dict 末尾 = 最近使用), 超出上限按 LRU 淘汰."""
         self._pix_cache.pop(image_path, None)
         self._pix_cache[image_path] = pix
         if fmt is not None:
@@ -816,8 +816,8 @@ class AnnotationDialog(QDialog):
 
     def _trim_pix_cache(self):
         """
-        LRU 淘汰: 从 dict 首项(最久未用)开始丢弃, 同步清理 format 缓存。
-        先按张数, 再按估算字节数; 字节循环保留最后一项, 保证当前图不被挤掉。
+        LRU 淘汰: 从 dict 首项(最久未用)开始丢弃, 同步清理 format 缓存.
+        先按张数, 再按估算字节数; 字节循环保留最后一项, 保证当前图不被挤掉.
         """
         while len(self._pix_cache) > self._pix_cache_max:
             self._drop_oldest_pix()
@@ -833,12 +833,12 @@ class AnnotationDialog(QDialog):
         self._pix_fmt_cache.pop(k, None)
 
     def _pix_cache_bytes(self):
-        """按 depth 估算位图占用(灰度图用 4 字节/像素会高估, 导致过度淘汰)。"""
+        """按 depth 估算位图占用(灰度图用 4 字节/像素会高估, 导致过度淘汰)."""
         return sum(p.width() * p.height() * p.depth() // 8
                    for p in self._pix_cache.values())
 
     def _on_prefetch_decoded(self, path, qimg):
-        """后台解码完成: 转 QPixmap 入缓存(按 image_path 作 key), 同步记录 format。"""
+        """后台解码完成: 转 QPixmap 入缓存(按 image_path 作 key), 同步记录 format."""
         if getattr(self, "_closing", False):
             return
         if qimg.isNull():
@@ -862,7 +862,7 @@ class AnnotationDialog(QDialog):
                     and self.image_list[nxt] not in self._pix_cache):
                 self._prefetch_worker.request(nxt)
         if self.cls_mode:
-            # 图像分类：只读看图,无框可标注;类别 = 父文件夹名
+            # 图像分类: 只读看图,无框可标注;类别 = 父文件夹名
             boxes = []
             cls = os.path.basename(os.path.dirname(image_path))
             color = self.label_colors.get(cls)
@@ -937,10 +937,10 @@ class AnnotationDialog(QDialog):
         # 先保存当前未提交的标注(避免画了框没保存就被删, 导致标注明文丢失)
         self._save_current()
         clicked = MessageBox.choose(
-            self, "删除图像", "是否删除当前图像？\n\n{}".format(os.path.basename(cur_path)),
+            self, "删除图像", "是否删除当前图像?\n\n{}".format(os.path.basename(cur_path)),
             [("删除本地文件", QMessageBox.YesRole),
              ("取消", QMessageBox.RejectRole)],
-            informative="图像与同名标注文件将从磁盘删除，不可恢复")
+            informative="图像与同名标注文件将从磁盘删除, 不可恢复")
         if clicked is None or clicked == "取消":
             return
         main = getattr(self, "_main", None)
@@ -968,9 +968,9 @@ class AnnotationDialog(QDialog):
 
     def _ensure_label_colors(self, boxes):
         """
-        确保 boxes 中所有标签都在 db / label_colors 中。
-        缺失的标签（如手动创建 labelme json 里的新标签）用确定性哈希色
-        label_color() 入库，保证：同一标签在 A/D 翻页时颜色一致，
+        确保 boxes 中所有标签都在 db / label_colors 中.
+        缺失的标签(如手动创建 labelme json 里的新标签)用确定性哈希色
+        label_color() 入库, 保证: 同一标签在 A/D 翻页时颜色一致,
         且首页标签下拉框/下次启动都能看到
         """
         missing = {}
@@ -1000,7 +1000,7 @@ class AnnotationDialog(QDialog):
         super().closeEvent(event)
 
     def _update_draw_buttons(self):
-        """无标签或未选中标签时禁用矩形/多边形/格式刷按钮。"""
+        """无标签或未选中标签时禁用矩形/多边形/格式刷按钮."""
         if self.cls_mode:
             # 图像分类只读,始终禁用绘制
             for w in (self.ui.draw_rect_btn, self.ui.poly_btn):
@@ -1019,10 +1019,10 @@ class AnnotationDialog(QDialog):
         self._apply_draw_cursor()
         self._set_draw_button_states(True)
         if not self.label_colors:
-            MessageBox.information(self, "添加标签", "请先添加标签(点击「+」)")
+            MessageBox.information(self, "添加标签", "请先添加标签(点击\"+\")")
 
     def _apply_draw_cursor(self):
-        """多边形=画笔光标, 矩形=十字; override 保证不被 item 光标覆盖。"""
+        """多边形=画笔光标, 矩形=十字; override 保证不被 item 光标覆盖."""
         QApplication.restoreOverrideCursor()
         if self.scene.draw_shape == "polygon":
             cur = self._pen_cursor()
@@ -1031,7 +1031,7 @@ class AnnotationDialog(QDialog):
         QApplication.setOverrideCursor(cur)
 
     def _set_draw_button_states(self, drawing):
-        """激活态用 QSS 动态属性控制，对应 QSS 内 [drawActive="true"] 规则。"""
+        """激活态用 QSS 动态属性控制, 对应 QSS 内 [drawActive="true"] 规则."""
         draw_shape = self.scene.draw_shape if drawing else None
         for btn, name in ((self.ui.draw_rect_btn, "rect"),
                           (self.ui.poly_btn, "polygon")):
@@ -1041,12 +1041,12 @@ class AnnotationDialog(QDialog):
             btn.style().polish(btn)
 
     def _on_box_drawn(self):
-        """画完一个框：保持画模式（需求：只有 ESC 才退出），维持对应光标与按钮高亮。"""
+        """画完一个框: 保持画模式(需求: 只有 ESC 才退出), 维持对应光标与按钮高亮."""
         self._apply_draw_cursor()
         self._set_draw_button_states(True)
 
     def _cancel_draw_mode(self):
-        """主动退出画模式（不创建标注）：恢复光标 + 按钮样式。"""
+        """主动退出画模式(不创建标注): 恢复光标 + 按钮样式."""
         if self.scene.fp_mode is not None:
             self.scene.set_format_painter(False)
         self.scene.set_draw_mode(False)
@@ -1057,7 +1057,7 @@ class AnnotationDialog(QDialog):
 
     # ---------------- 复制/粘贴(格式刷改造: 右键复制多边形 + 随机旋转粘贴) ----------------
     def _toggle_show_boxes(self, checked):
-        """"显示标注"开关：关闭时隐藏图像上的标注框，右侧列表信息保留。"""
+        """"显示标注"开关: 关闭时隐藏图像上的标注框, 右侧列表信息保留."""
         for item in self.scene.all_items():
             item.setVisible(checked)
         self.scene.invalidate()
@@ -1080,7 +1080,7 @@ class AnnotationDialog(QDialog):
                 " background: #1d2735; }}").format(w=w, h=h)
 
     def _copy_template(self, item):
-        """右键"复制"入口: 抠模板入全局剪切板并选中最新缩略图。"""
+        """右键"复制"入口: 抠模板入全局剪切板并选中最新缩略图."""
         if not self.scene.copy_template_from_item(item):
             return
         _clip_templates.insert(0, dict(self.scene.fp_template))
@@ -1103,7 +1103,7 @@ class AnnotationDialog(QDialog):
         self._rebuild_clipboard(select=0 if _clip_templates else None)
 
     def _rebuild_clipboard(self, select=None):
-        """按全局剪切板重建缩略图; select=选中下标(None=无选中)。"""
+        """按全局剪切板重建缩略图; select=选中下标(None=无选中)."""
         layout = self.ui.clipboard_layout
         while layout.count():
             w = layout.takeAt(0).widget()
@@ -1146,7 +1146,7 @@ class AnnotationDialog(QDialog):
         self.scene.fp_template = t
 
     def _clip_menu(self, btn):
-        """缩略图右键: 删除该张 / 清空全部。"""
+        """缩略图右键: 删除该张 / 清空全部."""
         menu = QMenu(self)
         act_del = menu.addAction("删除")
         act_clr = menu.addAction("清空")
@@ -1174,24 +1174,24 @@ class AnnotationDialog(QDialog):
             self.setWindowState(Qt.WindowMaximized)
 
     def _undo_fp_paste(self):
-        """Ctrl+Z：撤销最后一次像素改动（粘贴/填充，恢复图像像素 + 删标注）。"""
+        """Ctrl+Z: 撤销最后一次像素改动(粘贴/填充, 恢复图像像素 + 删标注)."""
         if self.scene.undo_last_paste():
             self._refresh_labeled_list()
 
     @staticmethod
     def _pen_cursor():
-        """画笔光标 28px, 热点=笔尖(3,25)。"""
+        """画笔光标 28px, 热点=笔尖(3,25)."""
         pm = QPixmap(_resource_path("画笔.png"))
         if not pm.isNull() and pm.width() > 28:
             pm = pm.scaled(28, 28, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         return QCursor(pm, 3, 25) if not pm.isNull() else Qt.CrossCursor
 
     def _label_icon(self, color):
-        """标签颜色圆点图标(下拉菜单/右侧列表用)。归一成色值字符串后走模块级缓存。"""
+        """标签颜色圆点图标(下拉菜单/右侧列表用). 归一成色值字符串后走模块级缓存."""
         return _dot_icon(QColor(color).name())
 
     def _on_label_change_requested(self, item):
-        """点击标注框上的标签 chip → 弹出所有标签下拉，选择后修改该框类别。"""
+        """点击标注框上的标签 chip → 弹出所有标签下拉, 选择后修改该框类别."""
         if not self.label_colors:
             return
         menu = QMenu(self)
@@ -1215,7 +1215,7 @@ class AnnotationDialog(QDialog):
                 self.scene.set_item_label(item, chosen.text())
 
     def _change_cls(self, new_cls):
-        """分类数据集：把当前图像移动到新类别文件夹，记录改动供首页刷新缓存。"""
+        """分类数据集: 把当前图像移动到新类别文件夹, 记录改动供首页刷新缓存."""
         if not (0 <= self.index < len(self.image_list)):
             return
         old_path = self.image_list[self.index]
@@ -1238,7 +1238,7 @@ class AnnotationDialog(QDialog):
             try:
                 shutil.move(old_path, new_path)
             except Exception:
-                MessageBox.warning(self, "修改类别", "移动图像文件失败：\n{}".format(old_path))
+                MessageBox.warning(self, "修改类别", "移动图像文件失败:\n{}".format(old_path))
                 return
         self.image_list[self.index] = new_path
         self._cls_changes.append((old_path, new_path, new_cls))
@@ -1247,7 +1247,7 @@ class AnnotationDialog(QDialog):
         self._load_current()
 
     def _refresh_labels(self):
-        """刷新左侧标签列表（颜色块 + 名称），点击切换当前标签。"""
+        """刷新左侧标签列表(颜色块 + 名称), 点击切换当前标签."""
         self.label_colors = dict(self.db.get_dataset_labels(self.project, self.dataset))
         if not self.label_colors:
             self.scene.current_label = ""
@@ -1264,7 +1264,7 @@ class AnnotationDialog(QDialog):
         layout.setContentsMargins(4, 4, 4, 4)
         layout.setSpacing(6)
         self._label_buttons = {}
-        # 按 label_sort_key 排序:纯数字按数值,其他按字符串——与首页下拉框一致
+        # 按 label_sort_key 排序:纯数字按数值,其他按字符串 - 与首页下拉框一致
         for name, color in sorted(self.label_colors.items(),
                                   key=lambda kv: label_sort_key(kv[0])):
             row = QFrame(container)
@@ -1315,7 +1315,7 @@ class AnnotationDialog(QDialog):
         layout.addStretch(1)
 
     def _edit_label(self, name):
-        """编辑标签颜色：弹编辑标签窗(名称/导入锁定)，确定后写库并即时刷新。"""
+        """编辑标签颜色: 弹编辑标签窗(名称/导入锁定), 确定后写库并即时刷新."""
         dlg = AddLabelDialog(self, preset_name=name,
                              preset_color=self.label_colors.get(name, ""),
                              db=self.db, project=self.project,
@@ -1339,7 +1339,7 @@ class AnnotationDialog(QDialog):
             name, new_color, self.project, self.dataset))
 
     def _dataset_image_paths(self):
-        """全数据集图像路径：优先主窗口索引(不受当前筛选视图影响)，退回当前列表。"""
+        """全数据集图像路径: 优先主窗口索引(不受当前筛选视图影响), 退回当前列表."""
         cache = getattr(self._main, "dataset_cache", None) if self._main else None
         recs = {}
         if cache:
@@ -1349,11 +1349,11 @@ class AnnotationDialog(QDialog):
         return paths or list(self.image_list)
 
     def _count_label_in_jsons(self, needle):
-        """无索引时退回统计：扫图像同路径 json 计数该标签的 shapes。"""
+        """无索引时退回统计: 扫图像同路径 json 计数该标签的 shapes."""
         paths = self._dataset_image_paths()
         progress = None
         if len(paths) > 50:
-            progress = ProgressDialog("删除标签", "正在统计标注文件…", self,
+            progress = ProgressDialog("删除标签", "正在统计标注文件...", self,
                                       maximum=len(paths),
                                       cancellable=False)
         try:
@@ -1381,10 +1381,10 @@ class AnnotationDialog(QDialog):
 
     def _delete_label_from_list(self, name):
         """
-        删除标签并同步清理其标注：db / 本地 labelme json / 当前场景。
-        统计口径与数据集统计一致：优先数主窗口内存索引的 boxes/labels
-        (统计页 label_counts 同源、即时)；无索引时退回扫描图像同路径 json。
-        先统计,用户确认后才写文件(取消不落盘)。
+        删除标签并同步清理其标注: db / 本地 labelme json / 当前场景.
+        统计口径与数据集统计一致: 优先数主窗口内存索引的 boxes/labels
+        (统计页 label_counts 同源, 即时); 无索引时退回扫描图像同路径 json.
+        先统计,用户确认后才写文件(取消不落盘).
         """
         needle = normalize_label(name)
         cur_img = (self.image_list[self.index]
@@ -1414,21 +1414,21 @@ class AnnotationDialog(QDialog):
         if total > 0:
             if not MessageBox.question(
                     self, "删除标签",
-                    "标签「{}」已有 {} 处标注，删除后这些标注将被一并删除"
-                    "且不可恢复。\n确定删除吗？".format(name, total),
+                    "标签\"{}\"已有 {} 处标注, 删除后这些标注将被一并删除"
+                    "且不可恢复.\n确定删除吗?".format(name, total),
                     default_yes=True):
                 return
         else:
             if not MessageBox.question(
                     self, "删除标签",
-                    "确定删除标签「{}」吗？".format(name),
+                    "确定删除标签\"{}\"吗?".format(name),
                     default_yes=True):
                 return
         # 确认后清理图像同路径 json(外部标签目录文件由主窗口关闭后统一清理)
         paths = self._dataset_image_paths()
         progress = None
         if len(paths) > 50:
-            progress = ProgressDialog("删除标签", "正在清理标注文件…", self,
+            progress = ProgressDialog("删除标签", "正在清理标注文件...", self,
                                       maximum=len(paths),
                                       cancellable=False)
         try:
@@ -1486,7 +1486,7 @@ class AnnotationDialog(QDialog):
         if not items:
             MessageBox.warning(self, "添加标签", "标签名称不能为空")
             return
-        # 导入路径：重复标签跳过(不覆盖已有颜色/标注);手动输入仍按原逻辑
+        # 导入路径: 重复标签跳过(不覆盖已有颜色/标注);手动输入仍按原逻辑
         existing = set(self.label_colors)
         imported = getattr(dlg, "_imported_mode", False)
         added = []
@@ -1507,9 +1507,9 @@ class AnnotationDialog(QDialog):
 
     def _refresh_labeled_list(self):
         """
-        右侧"标注信息"列表：每行与场景框双向联动，显示宽×高/顶点数 + 面积 px²。
+        右侧"标注信息"列表: 每行与场景框双向联动, 显示宽×高/顶点数 + 面积 px².
         行复用优化: 已有行只更新内容(不 deleteLater 重建), 仅数量变化时增删,
-        避免框多时每次操作(拖动/缩放触发 boxes_changed)重建数百控件。
+        避免框多时每次操作(拖动/缩放触发 boxes_changed)重建数百控件.
         """
         container = self.ui.scrollAreaWidgetContents_2
         layout = container.layout() if container.layout() else QVBoxLayout(container)
@@ -1540,7 +1540,7 @@ class AnnotationDialog(QDialog):
                 pts = item.points()
                 kind = "多边形"
                 size_text = "{} 个顶点".format(len(pts))
-                area_text = "{:,} px²".format(int(round(area))) if area else "—"
+                area_text = "{:,} px²".format(int(round(area))) if area else "-"
             color = self._resolve_item_color(item)
             rows_data.append((item, kind, size_text, area_text, color))
         old_rows = list(getattr(self, "_labeled_rows", {}).values())
@@ -1564,7 +1564,7 @@ class AnnotationDialog(QDialog):
         self._sync_labeled_selection()
 
     def _create_labeled_row(self, item, kind, size_text, area_text, color):
-        """新建一行标注列表项; 子控件引用挂到 row._payload 供复用更新。"""
+        """新建一行标注列表项; 子控件引用挂到 row._payload 供复用更新."""
         container = self.ui.scrollAreaWidgetContents_2
         row = QFrame(container)
         row.setFrameShape(QFrame.NoFrame)
@@ -1600,7 +1600,7 @@ class AnnotationDialog(QDialog):
         return row
 
     def _update_labeled_row(self, row, item, kind, size_text, area_text, color):
-        """行复用: 只更新内容 + 重绑点击闭包(当前行可能对应别的 item)。"""
+        """行复用: 只更新内容 + 重绑点击闭包(当前行可能对应别的 item)."""
         p = row._payload
         p["dot"].setPixmap(self._label_icon(color).pixmap(12, 12))
         p["name"].setText(item.label)
@@ -1636,9 +1636,9 @@ class AnnotationDialog(QDialog):
 
     def _sync_labeled_selection(self, _sel=None):
         """
-        场景选中 → 同步右侧行高亮（与左侧标签列表同款底色）。
+        场景选中 → 同步右侧行高亮(与左侧标签列表同款底色).
         只改"状态变化的那两行": 右侧列表可能有上千行, 每次全量 setStyleSheet
-        会触发整行 unpolish/polish, 是框多时卡顿的主因之一。
+        会触发整行 unpolish/polish, 是框多时卡顿的主因之一.
         """
         sel = _sel if _sel is not None else self.scene.selected_item()
         row = self._labeled_rows.get(sel)
@@ -1650,7 +1650,7 @@ class AnnotationDialog(QDialog):
 
     @staticmethod
     def _polygon_area(points):
-        """shoelace 公式计算多边形面积（像素²），顶点数 <3 返回 0。"""
+        """shoelace 公式计算多边形面积(像素²), 顶点数 <3 返回 0."""
         n = len(points)
         if n < 3:
             return 0.0
@@ -1663,9 +1663,9 @@ class AnnotationDialog(QDialog):
 
     def _save_current(self):
         """
-        仅在用户改动过标注（_dirty）时保存；未改动不写文件。
-        保存内容包括：画/删/改标签/拖动缩放等触发的 boxes_changed；
-        格式刷粘贴修改过图像像素时，一并把图像写盘。
+        仅在用户改动过标注(_dirty)时保存; 未改动不写文件.
+        保存内容包括: 画/删/改标签/拖动缩放等触发的 boxes_changed;
+        格式刷粘贴修改过图像像素时, 一并把图像写盘.
         """
         if not self._dirty:
             return
@@ -1710,7 +1710,6 @@ class AnnotationDialog(QDialog):
 
 
 class _HueSatPicker(QWidget):
-    """HSV 取色面板"""
 
     def __init__(self, value=255, on_change=None):
         super().__init__()
@@ -1770,7 +1769,6 @@ class _HueSatPicker(QWidget):
 
 
 class SwitchButton(QWidget):
-    """自定义开关按钮"""
 
     toggled = Signal(bool)
 
@@ -1811,7 +1809,7 @@ class SwitchButton(QWidget):
 
 
 class ColorPickerDialog(QDialog):
-    """自定义全中文颜色选择对话框。"""
+    """自定义全中文颜色选择对话框."""
 
     BASIC_COLORS = [
         "#FF0000", "#00FF00", "#0000FF", "#FFFF00",

@@ -171,11 +171,11 @@ class App(QWidget, MainUI, LabelMixin, ProjectMixin, ImportExportMixin,
         self.queue_btn.clicked.connect(self._on_queue_clicked)
 
     def fill_setting(self):
-        """启动时从 db 查询项目数据，显示到界面。"""
+        """启动时从 db 查询项目数据, 显示到界面."""
         self.refresh_project_list()
 
     def eventFilter(self, obj, event):
-        """拦截 graphics_view 双击事件(双击小图进入标注)。"""
+        """拦截 graphics_view 双击事件(双击小图进入标注)."""
         if (obj is self.graphics_view.viewport()
                 and event.type() == QEvent.MouseButtonDblClick):
             self._on_graphics_double_click(event.position().toPoint())

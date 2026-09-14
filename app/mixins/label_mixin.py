@@ -17,8 +17,8 @@ from PySide6.QtWidgets import QDialog, QComboBox
 class LabelMixin(object):
     def _init_label_filter(self):
         """
-        绑定首页设计器已有的标签筛选下拉框（label_comboBox）。
-        第一项固定"未标注"。
+        绑定首页设计器已有的标签筛选下拉框(label_comboBox).
+        第一项固定"未标注".
         """
         self.label_filter_combo = self.label_comboBox
         self.label_filter_combo.clear()
@@ -28,7 +28,7 @@ class LabelMixin(object):
         self.label_filter_combo.currentIndexChanged.connect(self._on_label_filter_changed)
 
     def _on_label_filter_changed(self, idx):
-        """标签下拉框变更:重新渲染场景(按标签筛选)。"""
+        """标签下拉框变更:重新渲染场景(按标签筛选)."""
         self.current_label = self.label_filter_combo.itemData(idx) or "__unlabeled__"
         self.current_page = 0   # 切换筛选后从第一页开始
         cur_ds = getattr(self, "_current_dataset", None)
@@ -39,9 +39,9 @@ class LabelMixin(object):
     def _sync_labels_to_db(self, project_name, dataset_name, labels=None):
         """
         把实际使用的标签合并回写 db.labels: 已有标签保留原颜色, 新标签用
-        label_color 确定性配色入库。无变化不写库。
+        label_color 确定性配色入库. 无变化不写库.
         手工标注产生的新标签只落在 cache.index["labels"], 不回写 db 会导致
-        切换数据集时下拉缺项、全标注数据集被误判为"未标注"而视图空白。
+        切换数据集时下拉缺项, 全标注数据集被误判为"未标注"而视图空白.
         """
         current = self.db.get_dataset_labels(project_name, dataset_name) or {}
         merged = {}
@@ -62,10 +62,10 @@ class LabelMixin(object):
 
     def _refresh_label_filter(self, project_name, dataset_name):
         """
-        切换数据集时刷新首页标签下拉框选项。
-        "未标注"固定排最后; 数据集全标注时默认选中第一个标签, 否则默认"未标注"。
+        切换数据集时刷新首页标签下拉框选项.
+        "未标注"固定排最后; 数据集全标注时默认选中第一个标签, 否则默认"未标注".
         db.labels 可能比 cache 滞后(用户标新图后没同步), 合并 cache 实际标签
-        补全下拉,避免下拉只剩"未标注"。
+        补全下拉,避免下拉只剩"未标注".
         """
         if not hasattr(self, "label_filter_combo"):
             return
@@ -109,9 +109,9 @@ class LabelMixin(object):
 
     def _set_label_filter_default(self, project_name, dataset_name, labels):
         """
-        数据集全标注 → 默认选第一个标签; 否则默认"未标注"(在下拉最后)。
+        数据集全标注 → 默认选第一个标签; 否则默认"未标注"(在下拉最后).
         labels 来自 db; 再并上 cache 的 index["labels"] keys 兜底, 防止 db
-        写入失败时全标注数据集被误判为"未标注"而视图空白。
+        写入失败时全标注数据集被误判为"未标注"而视图空白.
         """
         binding = self.db.get_dataset_import(project_name, dataset_name)
         total = binding.get("total", 0) or 0
@@ -133,7 +133,7 @@ class LabelMixin(object):
                 self.label_filter_combo.count() - 1)
 
     def _rebuild_index_labels(self, project_name, dataset_name):
-        """按 rec.labels 重建 dataset_cache 的 labels 分组索引。"""
+        """按 rec.labels 重建 dataset_cache 的 labels 分组索引."""
         index = self.dataset_cache.get(project_name, {}).get(dataset_name)
         if not index:
             return
@@ -144,8 +144,8 @@ class LabelMixin(object):
 
     def _on_rename_label(self):
         """
-        首页「编辑」按钮: 重命名当前筛选下拉选中的标签。
-        弹 ui/edit_label.py 对话框(类别 + 批量修改为 + 确定)。
+        首页"编辑"按钮: 重命名当前筛选下拉选中的标签.
+        弹 ui/edit_label.py 对话框(类别 + 批量修改为 + 确定).
         """
         if not self._current_dataset:
             MessageBox.warning(self, "重命名", "请先在左侧选中一个数据集")
@@ -178,9 +178,9 @@ class LabelMixin(object):
         if new_name in exists:
             if not MessageBox.question(
                     self, "合并标签",
-                    "标签「{}」已存在。\n"
-                    "确定把「{}」的所有标注合并到「{}」吗？\n"
-                    "此操作会改写数据集源标签文件，且不可恢复。".format(
+                    "标签\"{}\"已存在.\n"
+                    "确定把\"{}\"的所有标注合并到\"{}\"吗?\n"
+                    "此操作会改写数据集源标签文件, 且不可恢复.".format(
                         new_name, old, new_name),
                     default_yes=False):
                 return
@@ -188,10 +188,10 @@ class LabelMixin(object):
 
     def _apply_rename_label(self, project_name, dataset_name, old_name, new_name):
         """
-        重命名标签: 内存索引 / 本地 json / db 同步改, 支持合并（新名已存在）。
+        重命名标签: 内存索引 / 本地 json / db 同步改, 支持合并(新名已存在).
         合并模式(新名已存在)除了 UI 显示层合并, 还做文件层合并:
         后台线程把标签目录所有 txt 行首 == 旧 id 的行改成新 id,
-        使训练也按合并后的类别进行(带项目树进度条)。
+        使训练也按合并后的类别进行(带项目树进度条).
         """
         index = self.dataset_cache.get(project_name, {}).get(dataset_name)
         if index:
@@ -243,7 +243,7 @@ class LabelMixin(object):
         self.show_dataset_images(project_name, dataset_name)
 
     def _merge_label_files(self, project_name, dataset_name, old_name, new_name):
-        """合并模式的文件层: 后台改 txt(行首旧 id → 新 id), 项目树行内进度条。"""
+        """合并模式的文件层: 后台改 txt(行首旧 id → 新 id), 项目树行内进度条."""
         binding = self.db.get_dataset_import(project_name, dataset_name) or {}
         label_fmt = binding.get("label_fmt", "") or ""
         label_paths = get_paths(binding, "label")
@@ -285,7 +285,7 @@ class LabelMixin(object):
 
     def _after_merge_refresh(self, project_name, dataset_name,
                              old_name, new_name, changed, op="merge"):
-        """合并/删除完成: 清理 id 映射旧项 + 重算统计 + 刷新缓存/筛选/分页。"""
+        """合并/删除完成: 清理 id 映射旧项 + 重算统计 + 刷新缓存/筛选/分页."""
         # 文件合并后旧 id 已不存在, 从映射移除
         ids = self.db.get_dataset_label_ids(project_name, dataset_name)
         old_ids = {k for k, v in ids.items() if v == old_name}
@@ -332,7 +332,7 @@ class LabelMixin(object):
     def _sync_db_labels_from_cache(self, project_name, dataset_name):
         """
         合并/删除/重命名后清理 db labels dict: 移除 cache 里不再出现的 key,
-        新出现的 key 保持缺失(保留旧颜色), 防止下拉残留死标签导致筛选显示异常。
+        新出现的 key 保持缺失(保留旧颜色), 防止下拉残留死标签导致筛选显示异常.
         """
         index = self.dataset_cache.get(project_name, {}).get(dataset_name) or {}
         all_recs = index.get("all", [])
@@ -354,7 +354,7 @@ class LabelMixin(object):
 
     def _rename_label_in_files(self, project_name, dataset_name, old_name, new_name):
         """
-        本地 labelme json：把 shape.label == old_name 改成 new_name。
+        本地 labelme json: 把 shape.label == old_name 改成 new_name.
         """
         index = self.dataset_cache.get(project_name, {}).get(dataset_name)
         if not index:
@@ -362,7 +362,7 @@ class LabelMixin(object):
         recs = index.get("all", [])
         progress = None
         if len(recs) > 50:
-            progress = ProgressDialog("重命名标签", "正在更新标注文件…", self,
+            progress = ProgressDialog("重命名标签", "正在更新标注文件...", self,
                                       maximum=len(recs), cancellable=False)
         try:
             for i, rec in enumerate(recs):
@@ -394,7 +394,7 @@ class LabelMixin(object):
                 progress.close()
 
     def _on_delete_label(self):
-        """首页「删除」按钮：删除当前筛选下拉选中的标签(含确认弹窗)。"""
+        """首页"删除"按钮: 删除当前筛选下拉选中的标签(含确认弹窗)."""
         if not self._current_dataset:
             MessageBox.warning(self, "删除标签", "请先在左侧选中一个数据集")
             return
@@ -403,14 +403,14 @@ class LabelMixin(object):
             MessageBox.warning(self, "删除标签", "请先在筛选下拉框中选择要删除的标签")
             return
         if not MessageBox.question(
-                self, "删除标签", "确定删除标签「{}」吗？\n该标签的所有标注将被删除，且不可恢复。".format(old),
+                self, "删除标签", "确定删除标签\"{}\"吗?\n该标签的所有标注将被删除, 且不可恢复.".format(old),
                 default_yes=True):
             return
         proj, ds = self._current_dataset
         self._apply_delete_label(proj, ds, old)
 
     def _apply_delete_label(self, project_name, dataset_name, label_name):
-        """删除标签: 内存索引 / 本地 json / db / YOLO txt 同步移除。"""
+        """删除标签: 内存索引 / 本地 json / db / YOLO txt 同步移除."""
         index = self.dataset_cache.get(project_name, {}).get(dataset_name)
         if index:
             for rec in index.get("all", []):
@@ -452,7 +452,7 @@ class LabelMixin(object):
 
     def _remove_label_files(self, project_name, dataset_name,
                             label_name, old_ids):
-        """删除模式的 YOLO txt 文件层: 后台删行(项目树行内进度条)。"""
+        """删除模式的 YOLO txt 文件层: 后台删行(项目树行内进度条)."""
         binding = self.db.get_dataset_import(project_name, dataset_name) or {}
         label_paths = get_paths(binding, "label")
         task = MergeLabelsTask(label_paths, old_ids, "", parent=self,
@@ -492,7 +492,7 @@ class LabelMixin(object):
 
     def _delete_labels_in_files(self, project_name, dataset_name, label_names):
         """
-        批量删除标签的文件层清理: 一次遍历同时过滤全部标签。
+        批量删除标签的文件层清理: 一次遍历同时过滤全部标签.
         """
         names = {n for n in (label_names or []) if n}
         if not names:
@@ -503,7 +503,7 @@ class LabelMixin(object):
         recs = index.get("all", [])
         progress = None
         if len(recs) > 50:
-            progress = ProgressDialog("删除标签", "正在清理标注文件…", self,
+            progress = ProgressDialog("删除标签", "正在清理标注文件...", self,
                                       maximum=len(recs), cancellable=False)
         try:
             for i, rec in enumerate(recs):
@@ -534,7 +534,7 @@ class LabelMixin(object):
 
     def _apply_deleted_labels(self, project_name, dataset_name, label_names):
         """
-        清理缓存中的 labels/boxes/派生缓存、重建分组。
+        清理缓存中的 labels/boxes/派生缓存, 重建分组.
         """
         names = {n for n in (label_names or []) if n}
         if not names:
@@ -560,7 +560,7 @@ class LabelMixin(object):
         self._rebuild_index_labels(project_name, dataset_name)
 
     def _apply_cls_changes(self, project_name, dataset_name, changes):
-        """分类数据集修改了类别：同步缓存中的 image_path/cls/labels，重建标签分组。"""
+        """分类数据集修改了类别: 同步缓存中的 image_path/cls/labels, 重建标签分组."""
         index = self.dataset_cache.get(project_name, {}).get(dataset_name)
         if not index:
             return

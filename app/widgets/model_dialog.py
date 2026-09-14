@@ -35,7 +35,7 @@ TASK_TEXT = {"detect": "检测", "segment": "分割", "classify": "分类"}
 COL_TASK, COL_DATA, COL_METRIC, COL_TIME, COL_DUR, COL_IMG, COL_OPS = range(7)
 METRIC_GOOD, METRIC_MID, METRIC_BAD = "#7be39a", "#ffd166", "#ff6b6b"
 
-# 操作列按钮配色: 测试/导出绿, 删除红。行内样式会盖掉全局, 故 disabled 态要自己补
+# 操作列按钮配色: 测试/导出绿, 删除红. 行内样式会盖掉全局, 故 disabled 态要自己补
 _OPS_BTN = "QPushButton{font-size:12px;padding:2px 4px;background-color:%s;" \
            "border:1px solid %s;color:%s;}" \
            "QPushButton:hover{background-color:%s;border-color:%s;}" \
@@ -52,7 +52,7 @@ CURVE_BG, CURVE_LINE = QColor("#181a20"), QColor("#4f7dff")
 
 
 def _metric_value(rec):
-    """精度统一取成 float: 检测/分割用 map50, 分类用 accuracy。"""
+    """精度统一取成 float: 检测/分割用 map50, 分类用 accuracy."""
     for key in ("map50", "accuracy"):
         v = rec.get(key)
         if v in (None, ""):
@@ -79,7 +79,7 @@ def _status(rec):
 
 def _load_series(rec, db_path):
     """显示用曲线数据: 优先训练目录的 metrics.csv(rf-detr 真源);
-    指标 json 只是训练中的节流快照, 可能缺列或缺尾轮。分类无 csv, 走 json。"""
+    指标 json 只是训练中的节流快照, 可能缺列或缺尾轮. 分类无 csv, 走 json."""
     model_path = rec.get("model_path") or ""
     csv_path = os.path.join(os.path.dirname(model_path), "metrics.csv") if model_path else ""
     if csv_path and os.path.isfile(csv_path):
@@ -93,7 +93,7 @@ def _load_series(rec, db_path):
 
 
 def _curve_series(series):
-    """曲线数据与精度列同源（优先 ema 列，见 core.metrics.metric_key）。"""
+    """曲线数据与精度列同源(优先 ema 列, 见 core.metrics.metric_key)."""
     key = metric_key(series, "accuracy" if "accuracy" in series else "mAP@50")
     ys = [v for v in (series.get(key) or []) if isinstance(v, (int, float))]
     return key, ys
@@ -115,7 +115,7 @@ def _esc(text):
 
 
 class ModelDialog(QDialog):
-    """模型管理：筛选 + 排序的分页表格，选中行在右侧显示详情与精度曲线。"""
+    """模型管理: 筛选 + 排序的分页表格, 选中行在右侧显示详情与精度曲线."""
 
     def __init__(self, app, project="", dataset="", parent=None):
         super().__init__(parent)
@@ -167,11 +167,11 @@ class ModelDialog(QDialog):
 
     def _clear_cell_widgets(self, rows):
         """
-        清掉指定行的 cellWidget(含 deleteLater)。
+        清掉指定行的 cellWidget(含 deleteLater).
         clearContents 只清 item, 不移除 setCellWidget 注册的控件, 所以页码切换时
-        多余行会留着上一页的"测试/导出/删除"按钮 —— 其闭包绑定的是上一页的记录,
-        误点就会操作错记录。关闭前也走这里, 避免 PySide6 对话框 GC 时按钮
-        lambda 循环引用导致 0xC0000005。
+        多余行会留着上一页的"测试/导出/删除"按钮 - 其闭包绑定的是上一页的记录,
+        误点就会操作错记录. 关闭前也走这里, 避免 PySide6 对话框 GC 时按钮
+        lambda 循环引用导致 0xC0000005.
         """
         t = self.ui.tableWidget
         for r in rows:
@@ -182,7 +182,7 @@ class ModelDialog(QDialog):
                     w.deleteLater()
 
     def done(self, result):
-        """关闭前清理 cellWidget：避免 PySide6 对话框 GC 时按钮 lambda 循环引用导致 0xC0000005。"""
+        """关闭前清理 cellWidget: 避免 PySide6 对话框 GC 时按钮 lambda 循环引用导致 0xC0000005."""
         try:
             self._clear_cell_widgets(range(self.ui.tableWidget.rowCount()))
         except Exception:
@@ -249,7 +249,7 @@ class ModelDialog(QDialog):
         self._apply_filters()
 
     def _calc_page_size(self):
-        """每页行数 = 视口能容纳的行数，尽量铺满窗口。"""
+        """每页行数 = 视口能容纳的行数, 尽量铺满窗口."""
         t = self.ui.tableWidget
         row_h = t.verticalHeader().defaultSectionSize()
         if row_h <= 0:
@@ -261,7 +261,7 @@ class ModelDialog(QDialog):
     def _load_records(self):
         """
         合并显示:已完成的优先从 model_history 取(完整字段),
-        未完成/训练中/无模型输出的用 train_history 补充(实时更新 metrics)。
+        未完成/训练中/无模型输出的用 train_history 补充(实时更新 metrics).
         """
         train_recs = self.app.db.get_train_records()
         model_recs = self.app.db.get_model_records()
@@ -308,7 +308,7 @@ class ModelDialog(QDialog):
         status = self.ui.status_combo.currentText()
         recs = []
         for r in self._all_records:
-            if task != "全部任务" and TASK_TEXT.get(r.get("task", ""), "—") != task:
+            if task != "全部任务" and TASK_TEXT.get(r.get("task", ""), "-") != task:
                 continue
             if status != "全部状态":
                 st = _status(r)
@@ -363,7 +363,7 @@ class ModelDialog(QDialog):
             elif self._sort_col == COL_DATA:
                 v = str(r.get("dataset_info") or r.get("dataset") or "")
             else:
-                v = TASK_TEXT.get(r.get("task", ""), "—")
+                v = TASK_TEXT.get(r.get("task", ""), "-")
             return v
 
         return sorted(recs, key=key, reverse=self._sort_desc)
@@ -394,7 +394,7 @@ class ModelDialog(QDialog):
             data_text = str(r.get("dataset_info") or r.get("dataset") or "")
             if label_text:
                 data_text += "\n{}".format(label_text)
-            vals = [TASK_TEXT.get(r.get("task", ""), "—"), data_text,
+            vals = [TASK_TEXT.get(r.get("task", ""), "-"), data_text,
                     "", r.get("start_time", ""), r.get("duration", ""),
                     r.get("img_size", "")]
             for j, v in enumerate(vals):
@@ -514,24 +514,24 @@ class ModelDialog(QDialog):
         if batch and str(rec.get("grad_accum", "")) not in ("", "1"):
             batch = "{} × {} 累积".format(batch, rec.get("grad_accum"))
         rows = [
-            ("任务", "{} · {}".format(TASK_TEXT.get(rec.get("task", ""), "—"),
-                                     rec.get("model_size", "—"))),
+            ("任务", "{} · {}".format(TASK_TEXT.get(rec.get("task", ""), "-"),
+                                     rec.get("model_size", "-"))),
             ("状态", _status(rec)),
-            ("精度", "{:.3f}".format(m) if m is not None else "—"),
-            ("训练集", rec.get("dataset", "—")),
-            ("验证集", rec.get("val_dataset", "—")),
-            ("图像尺寸", rec.get("img_size", "—")),
-            ("轮数 / 早停", "{} / {}".format(rec.get("epochs", "—"),
-                                            rec.get("early_stop", "—"))),
-            ("批大小", batch or "—"),
-            ("学习率", rec.get("lr", "—")),
-            ("优化器", rec.get("optimizer", "—")),
-            ("设备", rec.get("device", "—")),
-            ("标签", " · ".join(str(x) for x in labels) or "—"),
-            ("训练时间", "{} ~ {}".format(rec.get("start_time", "—"),
-                                         rec.get("end_time", "—"))),
-            ("耗时", rec.get("duration", "—")),
-            ("模型路径", rec.get("model_path", "—")),
+            ("精度", "{:.3f}".format(m) if m is not None else "-"),
+            ("训练集", rec.get("dataset", "-")),
+            ("验证集", rec.get("val_dataset", "-")),
+            ("图像尺寸", rec.get("img_size", "-")),
+            ("轮数 / 早停", "{} / {}".format(rec.get("epochs", "-"),
+                                            rec.get("early_stop", "-"))),
+            ("批大小", batch or "-"),
+            ("学习率", rec.get("lr", "-")),
+            ("优化器", rec.get("optimizer", "-")),
+            ("设备", rec.get("device", "-")),
+            ("标签", " · ".join(str(x) for x in labels) or "-"),
+            ("训练时间", "{} ~ {}".format(rec.get("start_time", "-"),
+                                         rec.get("end_time", "-"))),
+            ("耗时", rec.get("duration", "-")),
+            ("模型路径", rec.get("model_path", "-")),
         ]
         html = ""
         for k, v in rows:
@@ -597,7 +597,7 @@ class ModelDialog(QDialog):
         path = (self._current or {}).get("model_path", "")
         d = os.path.dirname(path) if path else ""
         if not d or not os.path.isdir(d):
-            MessageBox.warning(self, "打开目录", "模型目录不存在：\n{}".format(d))
+            MessageBox.warning(self, "打开目录", "模型目录不存在:\n{}".format(d))
             return
         try:
             if sys.platform.startswith("win"):
@@ -635,7 +635,7 @@ class ModelDialog(QDialog):
         try:
             if not MessageBox.question(
                     self, "删除模型记录",
-                    "确定删除该条模型记录？\n项目={}\n数据集={}\n开始时间={}\n".format(
+                    "确定删除该条模型记录?\n项目={}\n数据集={}\n开始时间={}\n".format(
                         record.get("project", ""), ds, st)):
                 return
             write_log("删除模型记录: 项目={} 数据集={} 任务={} 开始时间={}".format(
@@ -656,7 +656,7 @@ class ModelDialog(QDialog):
             print("[model_dialog] 删除失败: {}\n{}".format(e, trace), flush=True)
 
     def _retrain(self, record):
-        """按该记录回填参数打开训练界面(任务类型/数据集/参数)。"""
+        """按该记录回填参数打开训练界面(任务类型/数据集/参数)."""
         try:
             dlg = TrainDialog(self.app, preset_record=record)
             dlg.exec()
@@ -667,9 +667,9 @@ class ModelDialog(QDialog):
 
     def _test(self, record):
         """
-        点击测试 → 弹 TestDialog，默认选中当前行的模型。
+        点击测试 → 弹 TestDialog, 默认选中当前行的模型.
         模型界面是独立入口(显示全部项目),传 record 自己的 project/dataset
-        才能让 TestDialog 正确填充数据/模型下拉。
+        才能让 TestDialog 正确填充数据/模型下拉.
         """
         try:
             first_pair = ""
@@ -695,7 +695,7 @@ class ModelDialog(QDialog):
     # ---------------- 导出 ----------------
     def _export(self, rec):
         """
-        导出模型到时间戳文件夹: onnx + classes.txt + 验证集评估报告 PDF + 调用示例。
+        导出模型到时间戳文件夹: onnx + classes.txt + 验证集评估报告 PDF + 调用示例.
         """
         model_path = rec.get("model_path", "") if isinstance(rec, dict) else rec
         if not model_path or not os.path.exists(model_path):
@@ -707,7 +707,7 @@ class ModelDialog(QDialog):
                     model_path = p
                     break
         if not model_path or not os.path.exists(model_path):
-            MessageBox.warning(self, "导出模型", "模型文件不存在：\n{}".format(model_path))
+            MessageBox.warning(self, "导出模型", "模型文件不存在:\n{}".format(model_path))
             write_log("导出模型失败: 模型文件不存在 {}".format(model_path))
             return
         d = QFileDialog.getExistingDirectory(self, "选择导出目录")
@@ -724,7 +724,7 @@ class ModelDialog(QDialog):
         try:
             os.makedirs(out_dir, exist_ok=True)
         except OSError as e:
-            MessageBox.warning(self, "导出模型", "创建目录失败：{}".format(e))
+            MessageBox.warning(self, "导出模型", "创建目录失败: {}".format(e))
             write_log("导出模型失败: 创建目录失败 {} | {}".format(out_dir, e))
             return
         base = "_".join([p for p in (project, TASK_TEXT.get(task, "模型"),
@@ -739,7 +739,7 @@ class ModelDialog(QDialog):
             project, TASK_TEXT.get(task, task) or "未知", model_size, img_size,
             model_path))
         # maximum=0 → 忙碌进度条(不确定时长); 统一深色样式见 message_box.ProgressDialog
-        self._exp_dlg = ProgressDialog("导出模型", "正在导出 ONNX…", self,
+        self._exp_dlg = ProgressDialog("导出模型", "正在导出 ONNX...", self,
                                        maximum=0, cancellable=False)
         try:
             size = int(rec.get("img_size") or 0)
@@ -763,7 +763,7 @@ class ModelDialog(QDialog):
         self._export_start_eval()
 
     def _write_export_classes(self):
-        """classes.txt: 模型目录已有则复制, 否则从 data.yaml(检测/分割)或 ckpt(分类)生成。"""
+        """classes.txt: 模型目录已有则复制, 否则从 data.yaml(检测/分割)或 ckpt(分类)生成."""
         out_dir = self._exp["out_dir"]
         model_dir = self._exp["model_dir"]
         model_path = self._exp["model_path"]
@@ -813,7 +813,7 @@ class ModelDialog(QDialog):
             print("[export] 生成 classes.txt 失败: {}".format(e), flush=True)
 
     def _export_start_eval(self):
-        """用验证集跑一次评估, 结果交给 build_report 出 PDF。"""
+        """用验证集跑一次评估, 结果交给 build_report 出 PDF."""
         if self._exp["task"] == "classify":
             # test_report 是检测/分割的漏检误检报告, 分类任务不适用
             write_log("导出模型报告跳过: 分类任务不出评估报告")
@@ -822,9 +822,9 @@ class ModelDialog(QDialog):
         cfg = self._build_eval_cfg()
         if not cfg:
             write_log("导出模型报告跳过: 未找到验证集")
-            self._export_finish("未找到验证集，已跳过评估报告")
+            self._export_finish("未找到验证集, 已跳过评估报告")
             return
-        self._exp_dlg.set_text("正在生成模型报告…")
+        self._exp_dlg.set_text("正在生成模型报告...")
         self._eval_worker = TestWorker(cfg, parent=self)
         self._eval_worker.progress.connect(
             lambda done, total: self._exp_dlg.set_text(
@@ -834,11 +834,11 @@ class ModelDialog(QDialog):
             lambda msg: (write_log("导出模型评估失败: {}".format(
                              (msg or "").strip().splitlines()[0] if msg else "未知")),
                          self._export_finish(
-                             "评估失败，已跳过报告：{}".format((msg or "").splitlines()[0]))))
+                             "评估失败, 已跳过报告: {}".format((msg or "").splitlines()[0]))))
         self._eval_worker.start()
 
     def _build_eval_cfg(self):
-        """按记录的 val_dataset 组装测试配置(与测试界面同一套 runner)。"""
+        """按记录的 val_dataset 组装测试配置(与测试界面同一套 runner)."""
         rec = self._exp["rec"]
         db = getattr(self.app, "db", None)
         if db is None:
@@ -910,10 +910,10 @@ class ModelDialog(QDialog):
             self._exp["report"] = os.path.basename(pdf)
             self._exp["copied"].append(os.path.basename(pdf))
             write_log("导出模型报告完成: {}".format(os.path.basename(pdf)))
-        self._export_finish("" if pdf else "评估完成，但报告生成失败")
+        self._export_finish("" if pdf else "评估完成, 但报告生成失败")
 
     def _inject_label_stats(self, res):
-        """把验证集的标注分布塞进 res, PDF 首页才有类别分布图。"""
+        """把验证集的标注分布塞进 res, PDF 首页才有类别分布图."""
         db = getattr(self.app, "db", None)
         if db is None:
             return
@@ -943,10 +943,10 @@ class ModelDialog(QDialog):
         if self._exp_dlg is not None:
             self._exp_dlg.close()
             self._exp_dlg = None
-        files = "、".join(self._exp["copied"]) or "（空）"
-        write_log("导出模型完成: {} | 包含：{}".format(
+        files = ",".join(self._exp["copied"]) or "(空)"
+        write_log("导出模型完成: {} | 包含: {}".format(
             self._exp["out_dir"], files))
-        msg = "已导出到：\n{}\n\n包含：{}".format(self._exp["out_dir"], files)
+        msg = "已导出到:\n{}\n\n包含: {}".format(self._exp["out_dir"], files)
         if note:
             msg += "\n\n{}".format(note)
         MessageBox.information(self, "导出模型", msg)
@@ -961,7 +961,7 @@ class ModelDialog(QDialog):
         print("[export] ONNX 导出失败: {}".format(msg), flush=True)
         MessageBox.warning(
             self, "导出模型",
-            "ONNX 导出失败：{}\n\n若提示缺少 onnx / onnxsim，请先安装：\n"
+            "ONNX 导出失败: {}\n\n若提示缺少 onnx / onnxsim, 请先安装:\n"
             "pip install onnx onnxsim".format(tip))
 
     def _copy_examples(self):

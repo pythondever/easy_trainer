@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""训练指标折线图对话框：指标来自 metrics/<train_id>.json，旧记录退回内嵌字段。"""
+"""训练指标折线图对话框: 指标来自 metrics/<train_id>.json, 旧记录退回内嵌字段."""
 
 import re
 
@@ -14,12 +14,12 @@ from app.core.utils import setup_matplotlib_chinese
 
 
 def _muted_style(size=13):
-    """辅助说明文字: 中性灰 + 指定字号。"""
+    """辅助说明文字: 中性灰 + 指定字号."""
     return "color: #8b93a5; font-size: {}px;".format(size)
 
 
 class _ClickToPopupFilter(QObject):
-    """点击下拉框任意位置展开(与训练界面行为一致)。"""
+    """点击下拉框任意位置展开(与训练界面行为一致)."""
 
     def __init__(self, combo, parent=None):
         super().__init__(parent)
@@ -35,10 +35,10 @@ class _ClickToPopupFilter(QObject):
 
 class MetricsDialog(QDialog):
     """
-    展示一次训练的指标曲线。
+    展示一次训练的指标曲线.
     metrics 结构: {"epochs": [...], "series": {名称: [...]},
                    "per_class": {标签名: {AP50-95/AR/F1/Precision/Recall: [...]}}}
-    下拉默认"全部指标"(overall series),选标签后显示该标签的 per-class 曲线。
+    下拉默认"全部指标"(overall series),选标签后显示该标签的 per-class 曲线.
     """
 
     def __init__(self, record, db=None, parent=None):
@@ -94,7 +94,7 @@ class MetricsDialog(QDialog):
         self._body.addLayout(row)
 
     def _style_combo(self, combo):
-        """与训练界面下拉一致：文本居中 + 点击任意位置展开下拉。"""
+        """与训练界面下拉一致: 文本居中 + 点击任意位置展开下拉."""
         combo.setEditable(True)
         combo.setFocusPolicy(Qt.StrongFocus)
         le = combo.lineEdit()
@@ -102,7 +102,7 @@ class MetricsDialog(QDialog):
         le.setReadOnly(True)
         le.setAlignment(Qt.AlignHCenter)
         # parent=self: dialog 设了 WA_DeleteOnClose, 过滤器必须随之销毁,
-        # 否则延时弹出的 singleShot 会打到已删除的 combo 上。
+        # 否则延时弹出的 singleShot 会打到已删除的 combo 上.
         f = _ClickToPopupFilter(combo, self)
         combo.installEventFilter(f)
         combo.lineEdit().installEventFilter(f)
@@ -129,7 +129,7 @@ class MetricsDialog(QDialog):
         series = {k: v for k, v in series.items()
                   if isinstance(v, list) and v}
         if not epochs or not series:
-            tip = QLabel("暂无该标签的指标数据（训练完成后可查看）")
+            tip = QLabel("暂无该标签的指标数据(训练完成后可查看)")
             tip.setStyleSheet(_muted_style())
             tip.setAlignment(Qt.AlignCenter)
             self._chart = tip
@@ -152,7 +152,7 @@ class MetricsDialog(QDialog):
             for name, values in g.items():
                 n = min(len(epochs), len(values))
                 # 缺值在 worker 侧补了 None 占位以保持与 epochs 对齐,
-                # 绘图前必须过滤, 否则 min/max 与 format 会拿到 None 崩溃。
+                # 绘图前必须过滤, 否则 min/max 与 format 会拿到 None 崩溃.
                 pairs = [(e, v) for e, v in zip(epochs[:n], values[:n])
                          if v is not None]
                 if not pairs:
@@ -190,9 +190,9 @@ class MetricsDialog(QDialog):
                     axes.set_ylim(lo - pad, hi + pad)
             if epochs:
                 # 刻度钉死全部 epoch 会在 300 点时建 300 个 Text 对象, 每次
-                # 重绘全量重建; 限制最多 10 档均匀刻度, 交互读值以线为准。
+                # 重绘全量重建; 限制最多 10 档均匀刻度, 交互读值以线为准.
                 # 向上取整: 保证 step 均匀覆盖到最后一个 epoch, 否则
-                # 双重截断(::step 后再 [:10])会让 x 轴右半段没有刻度。
+                # 双重截断(::step 后再 [:10])会让 x 轴右半段没有刻度.
                 step = max(1, (len(epochs) + 9) // 10)
                 axes.set_xticks(epochs[::step])
         fig.tight_layout()

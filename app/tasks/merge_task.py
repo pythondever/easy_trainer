@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""后台合并/删除标注类别线程。"""
+"""后台合并/删除标注类别线程."""
 import os
 from PySide6.QtCore import QThread, Signal
 
@@ -7,9 +7,9 @@ from PySide6.QtCore import QThread, Signal
 class MergeLabelsTask(QThread):
     """
     后台合并/删除标注类别:
-    合并: 把标签目录所有 txt 行首 ∈ old_ids 的行改成 new_id。
-    删除(remove=True): 整行删除行首 ∈ old_ids 的行。
-    使训练也按合并/删除后的类别进行。
+    合并: 把标签目录所有 txt 行首 ∈ old_ids 的行改成 new_id.
+    删除(remove=True): 整行删除行首 ∈ old_ids 的行.
+    使训练也按合并/删除后的类别进行.
     """
 
     progress_updated = Signal(int)
@@ -24,7 +24,7 @@ class MergeLabelsTask(QThread):
         self._cancel = False
 
     def cancel(self):
-        """请求停止: 置取消标志, run 循环内检查后退出。"""
+        """请求停止: 置取消标志, run 循环内检查后退出."""
         self._cancel = True
 
     def run(self):

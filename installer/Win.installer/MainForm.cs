@@ -29,7 +29,7 @@ public sealed class MainForm : Form
         Text = "安装程序";
         Font = new Font("Microsoft YaHei UI", 9f);
         BackColor = PageBg;
-        ClientSize = new Size(820, 764); // 高度须 ≥ 固定行总需求 + header 72 + padding 44，否则按钮行被挤出
+        ClientSize = new Size(820, 764); // 高度须 ≥ 固定行总需求 + header 72 + padding 44, 否则按钮行被挤出
         MinimumSize = new Size(760, 734);
         StartPosition = FormStartPosition.CenterScreen;
         try { Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath) ?? Icon; } catch { }
@@ -47,7 +47,7 @@ public sealed class MainForm : Form
 
         var browse = new RoundedButton
         {
-            Text = "浏览…",
+            Text = "浏览...",
             Outline = true,
             Accent = Color.FromArgb(0x6B, 0x72, 0x80),
             Size = new Size(96, 36),
@@ -97,7 +97,7 @@ public sealed class MainForm : Form
             else await InstallAsync();
         };
 
-        _uninstall.Text = "卸载…";
+        _uninstall.Text = "卸载...";
         _uninstall.Size = new Size(110, 42);
         _uninstall.Outline = true;
         _uninstall.Accent = Color.FromArgb(0x6B, 0x72, 0x80);
@@ -155,18 +155,18 @@ public sealed class MainForm : Form
         content.RowCount = 10;
         content.RowStyles.Add(new RowStyle(SizeType.AutoSize));                                  // 0 提示
         content.RowStyles.Add(new RowStyle(SizeType.AutoSize));                                  // 1 Caption 安装目录
-        content.RowStyles.Add(new RowStyle(SizeType.Absolute, 36));                              // 2 dirRow（Absolute 锁死：AutoSize 会被按钮 PreferredSize 撑到 ~100）
+        content.RowStyles.Add(new RowStyle(SizeType.Absolute, 36));                              // 2 dirRow(Absolute 锁死: AutoSize 会被按钮 PreferredSize 撑到 ~100)
         content.RowStyles.Add(new RowStyle(SizeType.AutoSize));                                  // 3 Caption 组件
-        content.RowStyles.Add(new RowStyle(SizeType.AutoSize));                                  // 4 cardContainer（高度随卡片数量自适应）
+        content.RowStyles.Add(new RowStyle(SizeType.AutoSize));                                  // 4 cardContainer(高度随卡片数量自适应)
         content.RowStyles.Add(new RowStyle(SizeType.AutoSize));                                  // 5 needLabel
         content.RowStyles.Add(new RowStyle(SizeType.AutoSize));                                  // 6 Caption 日志
         content.RowStyles.Add(new RowStyle(SizeType.Percent, 100));                              // 7 logPanel
         content.RowStyles.Add(new RowStyle(SizeType.AutoSize));                                  // 8 _bar
-        content.RowStyles.Add(new RowStyle(SizeType.Absolute, 58));                              // 9 btnRow（42 按钮 + 16 上 margin；margin 会从行高里扣）
+        content.RowStyles.Add(new RowStyle(SizeType.Absolute, 58));                              // 9 btnRow(42 按钮 + 16 上 margin; margin 会从行高里扣)
 
         var sub = new Label
         {
-            Text = "程序安装运行时和预训练权重需要连接网络;文件放本目录则跳过下载.",
+            Text = "程序安装运行时和预训练权重需要连接网络; 文件放本目录则跳过下载.",
             ForeColor = MutedColor,
             AutoSize = true,
             Font = new Font("Microsoft YaHei UI", 9f),
@@ -261,8 +261,8 @@ public sealed class MainForm : Form
             }
         }
         _needLabel.Text = cnt > 0
-            ? $"已选 {cnt} 项,需下载 {FormatSize(total)},以及相关依赖约 2.5GB"
-            : "请至少勾选一个组件。";
+            ? $"已选 {cnt} 项, 需下载 {FormatSize(total)}, 以及相关依赖约 2.5GB"
+            : "请至少勾选一个组件.";
     }
 
     private async Task InstallAsync()
@@ -271,7 +271,7 @@ public sealed class MainForm : Form
         var root = _dirBox.Text.Trim();
         if (string.IsNullOrEmpty(root) || !Path.IsPathRooted(root))
         {
-            MessageBox.Show(this, "请先填写有效的安装目录。", "installer", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            MessageBox.Show(this, "请先填写有效的安装目录.", "installer", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return;
         }
 
@@ -286,7 +286,7 @@ public sealed class MainForm : Form
             selected.Add(c.Id); // 必选兜底
         if (selected.Count == 0)
         {
-            MessageBox.Show(this, "至少选择一个组件。", "installer", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            MessageBox.Show(this, "至少选择一个组件.", "installer", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return;
         }
 
@@ -295,7 +295,7 @@ public sealed class MainForm : Form
         _bar.Value = 0;
         AppendLog($"安装目录: {root}");
         if (!InstallEngine.HasEmbedded("program.zip"))
-            AppendLog("警告:程序本体未内置本安装程序(发布不完整)");
+            AppendLog("警告: 程序本体未内置本安装程序(发布不完整)");
         try
         {
             var progress = new Progress<InstallReport>(ReportProgress);
@@ -303,19 +303,19 @@ public sealed class MainForm : Form
 
             InstallEngine.WriteInstalled(root, _mf, selected);
             InstallEngine.CreateShortcuts(root);
-            AppendLog("全部完成。");
+            AppendLog("全部完成.");
             _bar.Value = 100;
             _finished = true;
             _install.Text = "关闭";
             MessageBox.Show(this,
-                "安装完成。\n已创建桌面与开始菜单快捷方式。",
+                "安装完成.\n已创建桌面与开始菜单快捷方式.",
                 "installer", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
         catch (Exception ex)
         {
             AppendLog("安装失败: " + ex.Message);
             _bar.Value = 0;
-            MessageBox.Show(this, "安装失败：\n" + ex.Message, "installer", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show(this, "安装失败:\n" + ex.Message, "installer", MessageBoxButtons.OK, MessageBoxIcon.Error);
             _install.Text = "安装";
         }
         finally
@@ -348,14 +348,14 @@ public sealed class MainForm : Form
         {
             await InstallEngine.UninstallAsync(dir, new Progress<InstallReport>(ReportProgress));
             _bar.Value = 100;
-            AppendLog("卸载完成。");
-            MessageBox.Show(this, "已卸载。", "installer", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            AppendLog("卸载完成.");
+            MessageBox.Show(this, "已卸载.", "installer", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
         catch (Exception ex)
         {
             _bar.Value = 0;
             AppendLog("卸载失败: " + ex.Message);
-            MessageBox.Show(this, "卸载失败：" + ex.Message, "installer", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show(this, "卸载失败:" + ex.Message, "installer", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
         finally
         {
@@ -365,7 +365,7 @@ public sealed class MainForm : Form
         }
     }
 
-    // 安装/卸载共用：Detail 为空表示只推进度条，重复行不刷屏
+    // 安装/卸载共用: Detail 为空表示只推进度条, 重复行不刷屏
     private void ReportProgress(InstallReport r)
     {
         _bar.Value = Math.Clamp(r.Pct, 0, 100);

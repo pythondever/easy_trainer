@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-标签分布柱状图的共用渲染实现。
+标签分布柱状图的共用渲染实现.
 统计界面与测试报告 PDF
 """
 import numpy as np
@@ -11,12 +11,12 @@ from app.core.utils import setup_matplotlib_chinese
 
 def _short(text, n):
     text = str(text)
-    return text if len(text) <= n else text[:n - 1] + "…"
+    return text if len(text) <= n else text[:n - 1] + "..."
 
 
 def render_label_chart(label_counts, label_colors=None, dark=True,
                        figsize=None):
-    """返回已画好的 Figure。label_counts: {标签: 数量}。"""
+    """返回已画好的 Figure. label_counts: {标签: 数量}."""
     setup_matplotlib_chinese()
     num_bars = max(1, len(label_counts))
     if figsize is None:

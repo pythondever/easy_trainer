@@ -2,7 +2,7 @@
 """
 程序发布
 windows 输出installer.exe(dotnet实现)
-windows 需要 cl.exe 否则 setuptools 找不到编译器。Linux 同理需要 gcc。
+windows 需要 cl.exe 否则 setuptools 找不到编译器. Linux 同理需要 gcc.
 linux 输出release-linux(installer.sh + program.zip + requirements-release.txt)
 """
 
@@ -20,7 +20,7 @@ from setuptools import Extension, setup
 try:
     from Cython.Build import cythonize
 except ImportError:
-    sys.exit("缺少 Cython,请先安装：pip install cython")
+    sys.exit("缺少 Cython,请先安装: pip install cython")
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -45,7 +45,7 @@ def collect_py(root_dir, base_pkg):
 
 
 def copy_plain(root_dir, target):
-    """把保留明文的 .py 拷到目标（含 __init__.py 与 easy_trainer.py）。"""
+    """把保留明文的 .py 拷到目标(含 __init__.py 与 easy_trainer.py)."""
     for dirpath, dirnames, filenames in os.walk(root_dir):
         dirnames[:] = [d for d in dirnames if d != "__pycache__"]
         for fn in sorted(filenames):
@@ -70,7 +70,7 @@ def publish_installer():
     """
     dotnet = shutil.which("dotnet")
     if dotnet is None:
-        sys.exit("找不到 dotnet,无法发布安装器. 请先安装 .NET SDK：https://dotnet.microsoft.com/download")
+        sys.exit("找不到 dotnet,无法发布安装器. 请先安装 .NET SDK: https://dotnet.microsoft.com/download")
     proj_dir = os.path.join(ROOT, "installer", "Win.installer")
     proj = os.path.join(proj_dir, "Win.installer.csproj")
     out_dir = os.path.join(ROOT, "dist", "release")
@@ -82,7 +82,7 @@ def publish_installer():
     print("发布安装器: " + " ".join(cmd))
     ret = subprocess.run(cmd, cwd=proj_dir)
     if ret.returncode != 0:
-        sys.exit("dotnet publish 失败 (exit={})，请查看上方错误".format(ret.returncode))
+        sys.exit("dotnet publish 失败 (exit={}), 请查看上方错误".format(ret.returncode))
     exe = os.path.join(out_dir, "installer.exe")
     if os.path.isfile(exe):
         print("installer.exe 就绪: {} ({:.1f}MB)".format(exe, os.path.getsize(exe) / 1048576))
@@ -92,7 +92,7 @@ def publish_installer():
 
 def publish_linux(program_zip):
     """
-    Linux 发布 dist/release-linux（installer.sh + program.zip + requirements + 权重清单）。
+    Linux 发布 dist/release-linux(installer.sh + program.zip + requirements + 权重清单).
     """
     out_dir = os.path.join(ROOT, "dist", "release-linux")
     os.makedirs(out_dir, exist_ok=True)

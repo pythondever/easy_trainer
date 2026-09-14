@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""标注场景：负责画框/画多边形、删除、与列表同步。"""
+"""标注场景: 负责画框/画多边形, 删除, 与列表同步."""
 import math
 import random
 import numpy as np
@@ -13,7 +13,7 @@ from app.annotation.box_item import AnnotationBoxItem, AnnotationPolygonItem, la
 
 
 def _simplify_track(pts, max_pts=32):
-    """轨迹点抽稀为均匀采样的多边形顶点（首尾必保），避免顶点过多。"""
+    """轨迹点抽稀为均匀采样的多边形顶点(首尾必保), 避免顶点过多."""
     if len(pts) <= max_pts:
         return pts
     step = (len(pts) - 1) / (max_pts - 1)
@@ -29,7 +29,7 @@ def _simplify_track(pts, max_pts=32):
 def _bgra_view(img):
     """
     QImage(ARGB32 系) → HxWx4 BGRA 视图(小端内存序), 不拷贝;
-    img 必须在结果使用期间存活, 否则段错误。
+    img 必须在结果使用期间存活, 否则段错误.
     """
     w, h = img.width(), img.height()
     arr = np.frombuffer(img.bits(), dtype=np.uint8)
@@ -133,7 +133,7 @@ class AnnotationScene(QGraphicsScene):
         self.fp_preview_item.setPath(path)
 
     def _extract_patch(self, pts):
-        """从当前图像抠取多边形区域像素:包围盒裁剪 + 多边形 mask(外部透明)。"""
+        """从当前图像抠取多边形区域像素:包围盒裁剪 + 多边形 mask(外部透明)."""
         pix = self.image_item.pixmap()
         if pix is None:
             return None
@@ -161,7 +161,7 @@ class AnnotationScene(QGraphicsScene):
         return patch
 
     def _finish_fp_trace(self):
-        """松开左键：轨迹闭环成功 → 抠图生成模板并进入刷子模式；否则清空重画。"""
+        """松开左键: 轨迹闭环成功 → 抠图生成模板并进入刷子模式; 否则清空重画."""
         pts = self.fp_track
         self.fp_track = []
         self._clear_fp_items()
@@ -180,7 +180,7 @@ class AnnotationScene(QGraphicsScene):
         self.fp_mode_changed.emit("paint")
 
     def _shift_template(self, pos):
-        """把模板平移到以 pos 为中心，并整体夹在图像边界内（保持形状）。"""
+        """把模板平移到以 pos 为中心, 并整体夹在图像边界内(保持形状)."""
         pts = self.fp_template["points"]
         xs = [p[0] for p in pts]
         ys = [p[1] for p in pts]
@@ -218,8 +218,8 @@ class AnnotationScene(QGraphicsScene):
 
     def copy_template_from_item(self, item):
         """
-        把选中的标注项复制为格式刷模板(区域像素 + 多边形 + 标签)。
-        只支持多边形; 成功返回 True。跨图保留(A/D 切换后仍可粘贴)。
+        把选中的标注项复制为格式刷模板(区域像素 + 多边形 + 标签).
+        只支持多边形; 成功返回 True. 跨图保留(A/D 切换后仍可粘贴).
         """
         if isinstance(item, AnnotationPolygonItem):
             pts = [[p.x(), p.y()] for p in item.mapToScene(item.polygon())]
@@ -241,8 +241,8 @@ class AnnotationScene(QGraphicsScene):
     @staticmethod
     def _rotate_points(pts, center, angle):
         """
-        多边形点绕 center 旋转 angle 度。Qt 屏幕坐标 y 向下:
-        正角度=视觉顺时针, 负角度=视觉逆时针(与 QPainter.rotate 方向一致)。
+        多边形点绕 center 旋转 angle 度. Qt 屏幕坐标 y 向下:
+        正角度=视觉顺时针, 负角度=视觉逆时针(与 QPainter.rotate 方向一致).
         """
         rad = math.radians(angle)
         c, s = math.cos(rad), math.sin(rad)
@@ -254,7 +254,7 @@ class AnnotationScene(QGraphicsScene):
         return out
 
     def _clamp_points_in_image(self, pts):
-        """把多边形整体平移回图像内(保持形状, 不旋转): 保证完全在图内。"""
+        """把多边形整体平移回图像内(保持形状, 不旋转): 保证完全在图内."""
         img = self.image_rect
         if img is None:
             return pts
@@ -276,8 +276,8 @@ class AnnotationScene(QGraphicsScene):
     def _render_blend_layer(self, pix, patch, center, angle, rx, ry, side,
                             ox, oy, w, h, strength):
         """
-        离屏渲染旋转后的 patch 并与图像 ROI 融合, 返回可绘制的 QImage。
-        rx/ry/side = 离屏方框在图像中的位置和边长, ox/oy/w/h = 与图像重叠的有效区。
+        离屏渲染旋转后的 patch 并与图像 ROI 融合, 返回可绘制的 QImage.
+        rx/ry/side = 离屏方框在图像中的位置和边长, ox/oy/w/h = 与图像重叠的有效区.
         """
         rot = QImage(side, side, QImage.Format_ARGB32_Premultiplied)
         rot.fill(Qt.transparent)
@@ -308,9 +308,9 @@ class AnnotationScene(QGraphicsScene):
 
     def _paste_template(self, pos):
         """
-        把模板（抠图 patch + 多边形）粘贴到 pos 为中心, 随机旋转 0~180°(正负)。
-        旋转后整体夹紧回图像内(保证多边形完全在图内, 像素越界部分由 QPainter clip)。
-        记录粘贴前区域像素 + 标注 item 到撤销栈（Ctrl+Z 可撤销）。
+        把模板(抠图 patch + 多边形)粘贴到 pos 为中心, 随机旋转 0~180°(正负).
+        旋转后整体夹紧回图像内(保证多边形完全在图内, 像素越界部分由 QPainter clip).
+        记录粘贴前区域像素 + 标注 item 到撤销栈(Ctrl+Z 可撤销).
         """
         t = self.fp_template
         if not t:
@@ -330,7 +330,7 @@ class AnnotationScene(QGraphicsScene):
         radius = math.sqrt(pw * pw + ph * ph) / 2.0
         pix = self.image_item.pixmap()
         if pix is not None and t.get("patch") is not None:
-            # 旋转后的 patch 一定落在以 center 为中心、边长 2*radius 的方框内
+            # 旋转后的 patch 一定落在以 center 为中心, 边长 2*radius 的方框内
             rx = int(center.x() - radius)
             ry = int(center.y() - radius)
             side = int(2 * radius) + 1
@@ -369,7 +369,7 @@ class AnnotationScene(QGraphicsScene):
                 {"before": before, "ox": ox, "oy": oy, "item": item})
 
     def fill_polygon(self, item, value):
-        """把多边形区域内像素填成 value 颜色, value 可为 (r,g,b) 或单通道灰度, 入同一撤销栈供 Ctrl+Z 恢复。"""
+        """把多边形区域内像素填成 value 颜色, value 可为 (r,g,b) 或单通道灰度, 入同一撤销栈供 Ctrl+Z 恢复."""
         pix = self.image_item.pixmap() if self.image_item is not None else None
         poly = item.polygon() if item is not None else None
         if pix is None or poly is None or poly.isEmpty():
@@ -402,7 +402,7 @@ class AnnotationScene(QGraphicsScene):
         return True
 
     def undo_last_paste(self):
-        """撤销最后一次像素改动(粘贴/填充): 恢复图像区域像素 + 删除随粘贴新增的标注。"""
+        """撤销最后一次像素改动(粘贴/填充): 恢复图像区域像素 + 删除随粘贴新增的标注."""
         if not self._fp_undo_stack:
             return False
         rec = self._fp_undo_stack.pop()
@@ -466,7 +466,7 @@ class AnnotationScene(QGraphicsScene):
         return item
 
     def add_polygon(self, points, label):
-        """添加多边形标注。points: [[x, y], ...]（像素坐标），至少 3 个顶点。"""
+        """添加多边形标注. points: [[x, y], ...](像素坐标), 至少 3 个顶点."""
         if len(points) < 3:
             return None
         color = self._resolve_color(label)
@@ -478,7 +478,7 @@ class AnnotationScene(QGraphicsScene):
         return item
 
     def boxes(self):
-        """返回标注列表：矩形 {label,x1,y1,x2,y2} / 多边形 {label,points,shape_type}（像素坐标）。"""
+        """返回标注列表: 矩形 {label,x1,y1,x2,y2} / 多边形 {label,points,shape_type}(像素坐标)."""
         result = []
         for item in self.box_items():
             x1, y1, x2, y2 = item.boxes()
@@ -498,8 +498,8 @@ class AnnotationScene(QGraphicsScene):
 
     def _reset_draw_state(self):
         """
-        丢弃绘制中间态。切换图片/清空标注时 item 已被 scene 销毁,
-        这些 Python 引用若不一起清掉, 后续事件会打到已删除的 C++ 对象上。
+        丢弃绘制中间态. 切换图片/清空标注时 item 已被 scene 销毁,
+        这些 Python 引用若不一起清掉, 后续事件会打到已删除的 C++ 对象上.
         """
         self._preview_item = None
         self._draw_start = None
@@ -520,7 +520,7 @@ class AnnotationScene(QGraphicsScene):
 
     def _force_full_redraw(self, rect=None):
         """
-        删除 item 后重绘受影响区域, 避免视图缓存残留。
+        删除 item 后重绘受影响区域, 避免视图缓存残留.
         """
         if rect is not None and not rect.isEmpty():
             self.update(rect)
@@ -531,7 +531,7 @@ class AnnotationScene(QGraphicsScene):
             v.viewport().update()
 
     def _dispose_item(self, item):
-        """彻底释放 item: 隐藏 + 取消缓存, 防视图缓存残留。"""
+        """彻底释放 item: 隐藏 + 取消缓存, 防视图缓存残留."""
         try:
             item.hide()
             item.setCacheMode(QGraphicsItem.NoCache)
@@ -554,7 +554,7 @@ class AnnotationScene(QGraphicsScene):
         return False
 
     def delete_item(self, item):
-        """删除指定 item（右键菜单直接传 item，不依赖选中态）。"""
+        """删除指定 item(右键菜单直接传 item, 不依赖选中态)."""
         if item is None or item.scene() is not self:
             return False
         self._cancel_polygon()
@@ -568,7 +568,7 @@ class AnnotationScene(QGraphicsScene):
         return True
 
     def set_item_label(self, item, label):
-        """修改指定标注 item 的类别（矩形/多边形通用）。"""
+        """修改指定标注 item 的类别(矩形/多边形通用)."""
         if item is None or item.scene() is not self:
             return
         item.set_label(label)
@@ -583,7 +583,7 @@ class AnnotationScene(QGraphicsScene):
         self.selection_changed.emit(self.selected_item())
 
     def _cancel_polygon(self):
-        """取消未完成的多边形(清轨迹+预览)。"""
+        """取消未完成的多边形(清轨迹+预览)."""
         self._free_track = []
         if self._preview_item is not None:
             self.removeItem(self._preview_item)
@@ -643,11 +643,11 @@ class AnnotationScene(QGraphicsScene):
         self._preview_item.setZValue(20)
 
     def _polygon_trace_color(self):
-        """绘制轨迹颜色 = 当前标注标签颜色（跟随用户所选标签）。"""
+        """绘制轨迹颜色 = 当前标注标签颜色(跟随用户所选标签)."""
         return QColor(self._resolve_color(self.current_label))
 
     def _polygon_press(self, pos):
-        """画笔模式: 按下开始采集轨迹。"""
+        """画笔模式: 按下开始采集轨迹."""
         self._free_track = [[pos.x(), pos.y()]]
         c = self._polygon_trace_color()
         self._preview_item = QGraphicsPathItem()
@@ -662,7 +662,7 @@ class AnnotationScene(QGraphicsScene):
         self._update_polygon_preview()
 
     def _sample_gap_sq(self, pos, last):
-        """屏幕 10px 换算 scene 间距(考虑缩放), 放大时保持恒定屏幕密度。"""
+        """屏幕 10px 换算 scene 间距(考虑缩放), 放大时保持恒定屏幕密度."""
         scale = 1.0
         views = self.views()
         if views:
@@ -673,7 +673,7 @@ class AnnotationScene(QGraphicsScene):
 
     @staticmethod
     def _rdp(points, epsilon):
-        """Douglas-Peucker 抽稀: 保形且顶点数合理。"""
+        """Douglas-Peucker 抽稀: 保形且顶点数合理."""
         if len(points) < 3:
             return list(points)
         p1, p2 = points[0], points[-1]
@@ -696,7 +696,7 @@ class AnnotationScene(QGraphicsScene):
 
     @staticmethod
     def _simplify_track(points, min_gap=5.0, max_angle=150.0):
-        """轨迹抽稀: 间隔采样 + RDP 保形, 返回多边形顶点。"""
+        """轨迹抽稀: 间隔采样 + RDP 保形, 返回多边形顶点."""
         pts = []
         for p in points:
             if pts and (p[0]-pts[-1][0])**2 + (p[1]-pts[-1][1])**2 < min_gap**2:
@@ -707,7 +707,7 @@ class AnnotationScene(QGraphicsScene):
         return AnnotationScene._rdp(pts, 0.8)
 
     def _preview_pen_width(self):
-        """轨迹粗细自适应: 屏幕恒定 ~2.5px(scene 宽 = 2.5/scale)。"""
+        """轨迹粗细自适应: 屏幕恒定 ~2.5px(scene 宽 = 2.5/scale)."""
         scale = 1.0
         views = self.views()
         if views:
@@ -811,7 +811,7 @@ class AnnotationScene(QGraphicsScene):
         super().mouseReleaseEvent(event)
 
     def mouseDoubleClickEvent(self, event):
-        """多边形模式：双击闭合（>=3 顶点）。"""
+        """多边形模式: 双击闭合(>=3 顶点)."""
         if self.draw_mode and self.draw_shape == "polygon" and event.button() == Qt.LeftButton:
             if len(self._free_track) >= 3:
                 self._finish_polygon()
@@ -820,7 +820,7 @@ class AnnotationScene(QGraphicsScene):
         super().mouseDoubleClickEvent(event)
 
     def keyPressEvent(self, event):
-        """绘制模式 Esc 退出; 多边形 Enter 闭合; 格式刷 Esc 退出。"""
+        """绘制模式 Esc 退出; 多边形 Enter 闭合; 格式刷 Esc 退出."""
         if self.fp_mode is not None and event.key() == Qt.Key_Escape:
             self.set_format_painter(False)
             event.accept()

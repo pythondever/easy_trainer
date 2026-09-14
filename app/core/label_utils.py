@@ -19,10 +19,10 @@ def label_sort_key(name):
 
 
 def load_json_shapes(json_path):
-    """读 labelme json → [(label, points)]，points = [[x, y], ...] 像素坐标。
+    """读 labelme json → [(label, points)], points = [[x, y], ...] 像素坐标.
 
-    保留多边形顶点而不是只取外接框：分割训练要拿顶点写 yolo-seg，
-    压成框之后 mask 就没了。
+    保留多边形顶点而不是只取外接框: 分割训练要拿顶点写 yolo-seg,
+    压成框之后 mask 就没了.
     """
     shapes = []
     try:
@@ -40,10 +40,10 @@ def load_json_shapes(json_path):
 
 
 def looks_like_labelme(json_path):
-    """是否 labelme 标注文件（含 shapes 列表）。
+    """是否 labelme 标注文件(含 shapes 列表).
 
-    图像目录里可能有别的 json(导出清单、类别表等), 它们不是标注,
-    不能被当成"这张图没有目标"把有效标签清空。
+    图像目录里可能有别的 json(导出清单, 类别表等), 它们不是标注,
+    不能被当成"这张图没有目标"把有效标签清空.
     """
     try:
         with open(json_path, "r", encoding="utf-8") as f:
@@ -61,15 +61,15 @@ def same_dir_json(image_path):
 
 
 def load_yolo_shapes(txt_path, iw, ih, label_ids=None, seen_ids=None):
-    """读 yolo txt → [(label, points)] 像素坐标，支持 bbox(5 字段) 与 yolo-seg 多边形。
+    """读 yolo txt → [(label, points)] 像素坐标, 支持 bbox(5 字段) 与 yolo-seg 多边形.
 
-    全仓 YOLO txt 的唯一解析入口。字段数异常的行一律丢弃，不猜格式：
-    多一列置信度(6 字段)之类的外部 txt 很常见，按"奇数坐标"硬凑外接框会
-    凭空造出不存在的目标，而越界取值又会被外层 except 吞成"整图无标注"。
+    全仓 YOLO txt 的唯一解析入口. 字段数异常的行一律丢弃, 不猜格式:
+    多一列置信度(6 字段)之类的外部 txt 很常见, 按"奇数坐标"硬凑外接框会
+    凭空造出不存在的目标, 而越界取值又会被外层 except 吞成"整图无标注".
 
-    label_ids: {数字 id 字符串: 显示名}，把 txt 里的数字 id 换成标注界面显示的名字，
-    否则同一类在导入标签里叫 "0"、在标注 json 里叫 "cat"，会被当成两类。
-    seen_ids: 传入 dict 时把本次遇到的 原始id→显示名 写进去，供导入后持久化映射。
+    label_ids: {数字 id 字符串: 显示名}, 把 txt 里的数字 id 换成标注界面显示的名字,
+    否则同一类在导入标签里叫 "0", 在标注 json 里叫 "cat", 会被当成两类.
+    seen_ids: 传入 dict 时把本次遇到的 原始id→显示名 写进去, 供导入后持久化映射.
     """
     shapes = []
     if not iw or not ih:
@@ -106,17 +106,17 @@ def load_yolo_shapes(txt_path, iw, ih, label_ids=None, seen_ids=None):
 
 
 def points_bbox(pts):
-    """像素点集 → (x1, y1, x2, y2) 外接框。"""
+    """像素点集 → (x1, y1, x2, y2) 外接框."""
     xs = [p[0] for p in pts]
     ys = [p[1] for p in pts]
     return min(xs), min(ys), max(xs), max(ys)
 
 
 def shapes_to_boxes(shapes):
-    """[(label, points)] → 标注界面/场景用的 box 字典列表。
+    """[(label, points)] → 标注界面/场景用的 box 字典列表.
 
-    3 点以上保留多边形顶点（压成外接框会让分割的 mask 消失），
-    否则按两点对角的矩形，与 shapes_to_yolo_text("auto") 用同一判据。
+    3 点以上保留多边形顶点(压成外接框会让分割的 mask 消失),
+    否则按两点对角的矩形, 与 shapes_to_yolo_text("auto") 用同一判据.
     """
     boxes = []
     for label, pts in shapes:
@@ -131,9 +131,9 @@ def shapes_to_boxes(shapes):
 
 
 def shapes_to_xywh(shapes):
-    """[(label, points)] → LMDB 记录用的 (x, y, w, h, label)，整数像素。
+    """[(label, points)] → LMDB 记录用的 (x, y, w, h, label), 整数像素.
 
-    宽高至少 1 像素：退化成一个点的框会让缩略图绘制与 IoU 计算除零。
+    宽高至少 1 像素: 退化成一个点的框会让缩略图绘制与 IoU 计算除零.
     """
     out = []
     for label, pts in shapes:
@@ -147,9 +147,9 @@ def shapes_to_xywh(shapes):
 
 
 def shapes_to_detections(shapes):
-    """[(label, points)] → [(label, [x1,y1,x2,y2], poly)]，测试/评估口径。
+    """[(label, points)] → [(label, [x1,y1,x2,y2], poly)], 测试/评估口径.
 
-    poly 是像素顶点列表（3 点以上），检测标注为 None。
+    poly 是像素顶点列表(3 点以上), 检测标注为 None.
     """
     out = []
     for label, pts in shapes:
@@ -163,9 +163,9 @@ def shapes_to_detections(shapes):
 
 def label_file_has_content(path, fmt):
     """
-    标签文件是否存在且含至少一个有效目标（空文件、空 shapes 都算没有）。
-    直接复用解析器判断，避免再长出"第五套"字段规则；不看图像，
-    所以图像损坏但标签完好的图仍会被认成已标注。
+    标签文件是否存在且含至少一个有效目标(空文件, 空 shapes 都算没有).
+    直接复用解析器判断, 避免再长出"第五套"字段规则; 不看图像,
+    所以图像损坏但标签完好的图仍会被认成已标注.
     """
     if not path or not os.path.isfile(path):
         return False
@@ -176,9 +176,9 @@ def label_file_has_content(path, fmt):
 
 def image_has_label(image_path, label_dirs, fmt):
     """
-    该图是否已有标注：图像同路径权威 json 优先，其次查 label_dirs 里的同名标签文件。
-    同路径 json 存在即权威（哪怕 shapes 是空的）—— 那表示用户在标注界面把框
-    删空了，不能再回退导入目录的旧标签，否则删空的框会"复活"。
+    该图是否已有标注: 图像同路径权威 json 优先, 其次查 label_dirs 里的同名标签文件.
+    同路径 json 存在即权威(哪怕 shapes 是空的) - 那表示用户在标注界面把框
+    删空了, 不能再回退导入目录的旧标签, 否则删空的框会"复活".
     """
     js = same_dir_json(image_path)
     if js:
@@ -195,17 +195,17 @@ def image_has_label(image_path, label_dirs, fmt):
 
 
 def rec_is_labeled(rec):
-    """内存记录是否算"已标注"：有框、或标签文件非空、或分类数据集有类别。
+    """内存记录是否算"已标注": 有框, 或标签文件非空, 或分类数据集有类别.
 
-    前两条覆盖检测/分割：前者是正常路径，后者覆盖"图像解码失败但标签完好"，
-    否则同一数据集在导入框（看文件）和首页（看 boxes）会显示两个数。
-    分类数据集按子文件夹定类别，没有标签文件，靠 cls 字段判定。
+    前两条覆盖检测/分割: 前者是正常路径, 后者覆盖"图像解码失败但标签完好",
+    否则同一数据集在导入框(看文件)和首页(看 boxes)会显示两个数.
+    分类数据集按子文件夹定类别, 没有标签文件, 靠 cls 字段判定.
     """
     return bool(rec.get("boxes") or rec.get("_has_label_file") or rec.get("cls"))
 
 
 def _rect_corners(pts):
-    """两点对角 → 四角顶点。yolo-seg 至少要 3 个点，两点会被当成 bbox 解析。"""
+    """两点对角 → 四角顶点. yolo-seg 至少要 3 个点, 两点会被当成 bbox 解析."""
     xs = [p[0] for p in pts]
     ys = [p[1] for p in pts]
     x1, y1, x2, y2 = min(xs), min(ys), max(xs), max(ys)
@@ -213,12 +213,12 @@ def _rect_corners(pts):
 
 
 def shapes_to_yolo_text(shapes, iw, ih, label_to_id, as_polygon=False):
-    """[(label, points)] 像素坐标 → yolo txt 内容。
+    """[(label, points)] 像素坐标 → yolo txt 内容.
 
-    as_polygon: True 全部写 yolo-seg 顶点序列（RF-DETR 会栅格化成 mask）；
-    False 全部写 cx cy w h；"auto" 按 shape 自身形态来——多边形写顶点、
-    矩形写 bbox，导出的标签因此能同时喂检测和分割。
-    顶点少于 3 个时补成矩形四角（yolo-seg 至少要 3 个点）。
+    as_polygon: True 全部写 yolo-seg 顶点序列(RF-DETR 会栅格化成 mask);
+    False 全部写 cx cy w h;"auto" 按 shape 自身形态来 - 多边形写顶点,
+    矩形写 bbox, 导出的标签因此能同时喂检测和分割.
+    顶点少于 3 个时补成矩形四角(yolo-seg 至少要 3 个点).
     """
     lines = []
     for label, pts in shapes:
@@ -244,7 +244,7 @@ def shapes_to_yolo_text(shapes, iw, ih, label_to_id, as_polygon=False):
 
 
 def shapes_to_labelme_json(shapes, img_path, iw, ih):
-    """[(label, points)] → labelme json dict，多边形保留 polygon 形态。"""
+    """[(label, points)] → labelme json dict, 多边形保留 polygon 形态."""
     out = []
     for label, pts in shapes:
         out.append({

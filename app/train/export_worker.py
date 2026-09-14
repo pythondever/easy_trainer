@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""导出任务线程：ONNX 转换耗时较长，放线程里跑避免卡住界面。"""
+"""导出任务线程: ONNX 转换耗时较长, 放线程里跑避免卡住界面."""
 
 import os
 import sys
@@ -14,7 +14,7 @@ WORKSPACE = os.path.dirname(os.path.dirname(os.path.dirname(
 
 
 class OnnxExportWorker(QThread):
-    """把 .pth 转成 .onnx。"""
+    """把 .pth 转成 .onnx."""
 
     stage = Signal(str)
     finished_ok = Signal(str)      # onnx 路径
@@ -38,7 +38,7 @@ class OnnxExportWorker(QThread):
 
 
 def examples_dir():
-    """示例目录：源码运行时在项目根，PyInstaller 打包后在 _MEIPASS 下。"""
+    """示例目录: 源码运行时在项目根, PyInstaller 打包后在 _MEIPASS 下."""
     for base in (getattr(sys, "_MEIPASS", ""), WORKSPACE):
         if not base:
             continue

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""首页图像列表项：卡片式缩略图，支持 hover 高亮、选中描边、底部标签 chip。"""
+"""首页图像列表项: 卡片式缩略图, 支持 hover 高亮, 选中描边, 底部标签 chip."""
 from PySide6.QtGui import QColor, QPen, QFontMetricsF
 from PySide6.QtCore import Qt, QRectF
 from PySide6.QtWidgets import QGraphicsPixmapItem, QGraphicsItem

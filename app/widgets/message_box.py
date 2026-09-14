@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""统一消息框 + 进度对话框（深色主题，自绘无边框窗口，与 app QSS 一致）。"""
+"""统一消息框 + 进度对话框(深色主题, 自绘无边框窗口, 与 app QSS 一致)."""
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (QApplication, QDialog, QFrame, QVBoxLayout,
@@ -19,7 +19,7 @@ _ICONS = {
 
 
 class _FramelessBox(QDialog):
-    """自绘无边框弹窗: 圆角+阴影+自绘标题栏, 支持拖拽移动。"""
+    """自绘无边框弹窗: 圆角+阴影+自绘标题栏, 支持拖拽移动."""
 
     def __init__(self, title, icon_key, parent=None):
         super().__init__(parent)
@@ -127,11 +127,11 @@ class _FramelessBox(QDialog):
 
 
 class MessageBox:
-    """统一消息框静态封装：warning / information / question / critical。"""
+    """统一消息框静态封装: warning / information / question / critical."""
 
     @staticmethod
     def _show(icon, title, text, parent=None, buttons=None, default_idx=0):
-        """buttons=[(文本, 角色, default?)], 返回点击的按钮对象。"""
+        """buttons=[(文本, 角色, default?)], 返回点击的按钮对象."""
         box = _FramelessBox(title, icon, parent)
         box._text_lbl.setText(text)
         added = []
@@ -162,7 +162,7 @@ class MessageBox:
 
     @staticmethod
     def question(parent, title, text, default_yes=True):
-        """返回 True=是 / False=否；Esc 或 ✕ 关闭等同「否」，不按默认键算。"""
+        """返回 True=是 / False=否; Esc 或 ✕ 关闭等同"否", 不按默认键算."""
         box, btns = MessageBox._show(
             "question", title, text, parent,
             [("是", "primary", default_yes), ("否", "normal", not default_yes)])
@@ -173,7 +173,7 @@ class MessageBox:
 
     @staticmethod
     def choose(parent, title, text, buttons, informative=""):
-        """多按钮选择框：buttons=[(文本, 角色), ...]，返回点击按钮文本；关闭返回 None。"""
+        """多按钮选择框: buttons=[(文本, 角色), ...], 返回点击按钮文本; 关闭返回 None."""
         if informative:
             text = "{}\n\n{}".format(text, informative)
         box, btns = MessageBox._show(
@@ -189,7 +189,7 @@ class MessageBox:
 
 
 class ProgressDialog(QDialog):
-    """带进度条 + 文本 + 可选取消按钮的模态对话框（导出/批量删除长任务）。"""
+    """带进度条 + 文本 + 可选取消按钮的模态对话框(导出/批量删除长任务)."""
 
     def __init__(self, title, text, parent=None, maximum=100, cancellable=True):
         super().__init__(parent)
@@ -251,4 +251,4 @@ class ProgressDialog(QDialog):
     def _on_cancel(self):
         self._cancelled = True
         self._cancel_btn.setEnabled(False)
-        self._cancel_btn.setText("取消中…")
+        self._cancel_btn.setText("取消中...")

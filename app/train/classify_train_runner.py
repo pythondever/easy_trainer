@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-"""图像分类训练执行脚本（由 UI 以子进程方式启动）。
+"""图像分类训练执行脚本(由 UI 以子进程方式启动).
 
-用法: main()，由 train_worker 以 -c 导入后调用（打包后是 pyd，不能 python -m 启动）
-config 字段见 dialogs.py ClassifyDialog._build_train_config：
+用法: main(), 由 train_worker 以 -c 导入后调用(打包后是 pyd, 不能 python -m 启动)
+config 字段见 dialogs.py ClassifyDialog._build_train_config:
   task=classify, architecture=resnet18/34/50/101, num_classes, epochs,
   batch_size, lr, img_size, device, datasets[{split,image_path,label_fmt}]
 
-输出协议（TrainWorker 解析）:
+输出协议(TrainWorker 解析):
   - 每 epoch: [train] EPOCH N/M
               [train] METRICS {"epochs": [...], "series": {...}, "per_class": {...}}
               [train] epoch=.. train_loss=.. val_loss=.. acc=..
@@ -43,7 +43,7 @@ from app.core.db import get_paths
 
 
 def _scan_classes(root):
-    """扫描根目录下的类别子文件夹名（排序）。"""
+    """扫描根目录下的类别子文件夹名(排序)."""
     out = []
     if os.path.isdir(root):
         for entry in sorted(os.listdir(root)):
@@ -53,7 +53,7 @@ def _scan_classes(root):
 
 
 class _ImageFolderSimple(Dataset):
-    """「根目录/类别子文件夹/图像」结构的分类数据集。"""
+    """"根目录/类别子文件夹/图像"结构的分类数据集."""
 
     def __init__(self, root, transform=None, class_to_idx=None):
         self.samples = []
@@ -96,7 +96,7 @@ def _make_model(arch, num_classes):
 
 def _collect_images(datasets, split, dest):
     """
-    把某个 split 的所有分类数据集图像复制到 dest/{类别}/。
+    把某个 split 的所有分类数据集图像复制到 dest/{类别}/.
     每次训练前清空 dest 重建
     """
     if os.path.isdir(dest):
@@ -166,7 +166,7 @@ def main():
     print("[train] 分类训练: model={} classes={} device={} epochs={} batch={} lr={} img={} optimizer={}".format(
         arch, num_classes, device, epochs, batch_size, lr, img_size, optimizer_name), flush=True)
 
-    # 1) 数据准备：按 split 复制到 out_root/{project}_cls/{train,val}/{类别}/
+    # 1) 数据准备: 按 split 复制到 out_root/{project}_cls/{train,val}/{类别}/
     cls_root = os.path.join(out_root, project + "_cls")
     train_root = os.path.join(cls_root, "train")
     val_root = os.path.join(cls_root, "val")
@@ -174,9 +174,9 @@ def main():
     n_val = _collect_images(cfg.get("datasets", []), "val", val_root)
     print("[train] 数据准备: train={} 张, val={} 张".format(n_train, n_val), flush=True)
     if n_train == 0:
-        raise RuntimeError("训练集无图像，请检查数据集")
+        raise RuntimeError("训练集无图像, 请检查数据集")
     if n_val == 0:
-        raise RuntimeError("验证集无图像，请检查数据集")
+        raise RuntimeError("验证集无图像, 请检查数据集")
 
     mean = [0.485, 0.456, 0.406]
     std = [0.229, 0.224, 0.225]

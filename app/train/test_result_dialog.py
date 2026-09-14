@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""测试结果分析对话框：总览 + 按类别表格 + 结论提示（直白术语）。"""
+"""测试结果分析对话框: 总览 + 按类别表格 + 结论提示(直白术语)."""
 
 import datetime
 import os
@@ -24,7 +24,7 @@ def _ratio(a, b):
 
 
 def _rate_color(v, lower_better=False):
-    """阈值与模型评估表格保持一致。"""
+    """阈值与模型评估表格保持一致."""
     score = 1.0 - v if lower_better else v
     if score >= 0.85:
         return "#7be39a"
@@ -47,7 +47,7 @@ def _card(u, name, text, rate=None, rate_prefix="", lower_better=False):
 
 
 def _default_pdf_name(res):
-    """默认文件名：模型名_时间戳.pdf。模型名做 sanitize，避开路径分隔符与 Windows 非法字符。"""
+    """默认文件名: 模型名_时间戳.pdf. 模型名做 sanitize, 避开路径分隔符与 Windows 非法字符."""
     model = (res.get("model") or "model")
     model = model.split("/")[-1].split("\\")[-1]
     model = re.sub(r'[\\/:*?"<>|\s]+', "_", model).strip("._") or "model"
@@ -56,7 +56,7 @@ def _default_pdf_name(res):
 
 
 class _PdfExportWorker(QThread):
-    """原图可能 6500 万像素，重绘缩略图单张就要 1~3 秒，必须离开 UI 线程。"""
+    """原图可能 6500 万像素, 重绘缩略图单张就要 1~3 秒, 必须离开 UI 线程."""
 
     done = Signal(str)
     failed = Signal(str)
@@ -99,13 +99,13 @@ class TestResultDialog(QDialog):
     # ---------------- 导出 PDF ----------------
 
     def _sync_export_btn(self):
-        """没有逐图明细(纯推理无标签 / 无错误样本)时导出按钮不可用。"""
+        """没有逐图明细(纯推理无标签 / 无错误样本)时导出按钮不可用."""
         has_detail = bool(self._res.get("detail_path"))
         self._ui.export_pdf_btn.setEnabled(has_detail)
         self._ui.sample_spin.setEnabled(has_detail)
         self._ui.sample_lbl.setEnabled(has_detail)
         tip = ("把漏检/误检的图逐张画框导出成 PDF" if has_detail
-               else "本次测试没有逐图错误明细，无法导出")
+               else "本次测试没有逐图错误明细, 无法导出")
         self._ui.export_pdf_btn.setToolTip(tip)
 
     def _on_export(self):
@@ -123,7 +123,7 @@ class TestResultDialog(QDialog):
         if not path.lower().endswith(".pdf"):
             path += ".pdf"
         self._ui.export_pdf_btn.setEnabled(False)
-        self._ui.export_pdf_btn.setText("正在生成…")
+        self._ui.export_pdf_btn.setText("正在生成...")
         QApplication.setOverrideCursor(Qt.WaitCursor)
         self._worker = _PdfExportWorker(
             self._res, self._ui.sample_spin.value(), path, self)
@@ -141,17 +141,17 @@ class TestResultDialog(QDialog):
         if not path:
             MessageBox.information(
                 self, "无需导出",
-                "本次测试没有漏检也没有误检，没有内容可写。")
+                "本次测试没有漏检也没有误检, 没有内容可写.")
             return
         MessageBox.information(
-            self, "导出完成", "PDF 报告已保存到：\n{}".format(path))
+            self, "导出完成", "PDF 报告已保存到:\n{}".format(path))
 
     def _on_export_failed(self, msg):
         self._restore_btn()
         MessageBox.warning(self, "导出失败", msg)
 
     def closeEvent(self, event):
-        # 线程还在跑时不能直接销毁，否则 Qt 会崩
+        # 线程还在跑时不能直接销毁, 否则 Qt 会崩
         if self._worker is not None and self._worker.isRunning():
             self._worker.quit()
             self._worker.wait(3000)
@@ -171,8 +171,8 @@ class TestResultDialog(QDialog):
         img_ok = res.get("img_ok", 0)
         img_miss = res.get("img_miss", 0)
         img_fp = res.get("img_fp", 0)
-        # 无标注图不进检出/未检出的分母，数量对不上时把分母标出来
-        note = "按「张」统计 · 检出 1 个即算检出"
+        # 无标注图不进检出/未检出的分母, 数量对不上时把分母标出来
+        note = "按\"张\"统计 · 检出 1 个即算检出"
         if img_gt != total:
             note += " · 有标注 {} 张".format(img_gt)
         u.dim_img_note.setText(note)
@@ -188,7 +188,7 @@ class TestResultDialog(QDialog):
 
         per_class = res.get("per_class") or {}
         gt_total = sum(d.get("gt", 0) for d in per_class.values())
-        u.dim_lbl_note.setText("按「标注框」统计 · 标注总数 {}".format(gt_total))
+        u.dim_lbl_note.setText("按\"标注框\"统计 · 标注总数 {}".format(gt_total))
         u.tp_value.setText(str(tp))
         _card(u, "tp", "正确检出", _ratio(tp, tp + fn), "检出率 ")
         u.fn_value.setText(str(fn))
@@ -208,9 +208,9 @@ class TestResultDialog(QDialog):
         correct = sum(d.get("correct", 0) for d in per_class.values())
         error = sum(d.get("error", 0) for d in per_class.values())
         acc = res.get("accuracy", 0.0)
-        # 分类一张图只判一个类别，没有「标注框」这一层，只保留图像维度
+        # 分类一张图只判一个类别, 没有"标注框"这一层, 只保留图像维度
         u.section_lbl.setVisible(False)
-        u.dim_img_note.setText("按「张」统计 · 每张图判一个类别")
+        u.dim_img_note.setText("按\"张\"统计 · 每张图判一个类别")
         u.img_total_value.setText(str(total))
         u.img_total_lbl.setText("测试张数")
         u.img_total_rate.setText("")
@@ -245,7 +245,7 @@ class TestResultDialog(QDialog):
         if per_class:
             worst = max(per_class.items(), key=lambda kv: kv[1].get("error", 0))
             u.conclusion_label.setText(
-                "整体精度 {:.1f}%，「{}」类错误最多（{} 张），是拉低精度的主要原因。".format(
+                "整体精度 {:.1f}%, \"{}\"类错误最多({} 张), 是拉低精度的主要原因.".format(
                     acc * 100, worst[0], worst[1].get("error", 0)))
         else:
             u.conclusion_label.setText("")
@@ -278,18 +278,18 @@ class TestResultDialog(QDialog):
         if fn >= fp and fn > 0:
             worst = max(((c, d.get("fn", 0)) for c, d in per_class.items()),
                         key=lambda x: x[1])
-            base = ("整体漏检偏多（漏检 {} 个，多于误检 {} 个）。"
-                    "「{}」类漏检最多（{} 个），是检出率低的主要原因。"
+            base = ("整体漏检偏多(漏检 {} 个, 多于误检 {} 个)."
+                    "\"{}\"类漏检最多({} 个), 是检出率低的主要原因."
                     .format(fn, fp, worst[0], worst[1]))
         elif fp > 0:
             worst = max(((c, d.get("fp", 0)) for c, d in per_class.items()),
                         key=lambda x: x[1])
-            base = ("整体误检偏多（误检 {} 个，多于漏检 {} 个）。"
-                    "「{}」类误检最多（{} 个），是准确率低的主要原因。"
+            base = ("整体误检偏多(误检 {} 个, 多于漏检 {} 个)."
+                    "\"{}\"类误检最多({} 个), 是准确率低的主要原因."
                     .format(fp, fn, worst[0], worst[1]))
         else:
-            return "模型表现良好：无漏检、无误检。"
+            return "模型表现良好: 无漏检, 无误检."
         if conf:
-            base += ("另有 {} 处位置对但类别判错（报告里用紫框标出），"
-                     "属分类能力不足，需补易混淆类别的区分性样本。".format(conf))
+            base += ("另有 {} 处位置对但类别判错(报告里用紫框标出),"
+                     "属分类能力不足, 需补易混淆类别的区分性样本.".format(conf))
         return base

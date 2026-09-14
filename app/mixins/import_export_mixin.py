@@ -27,12 +27,12 @@ class ImportExportMixin(object):
     @staticmethod
     def _scan_import_info(image_path, label_path="", fmt=""):
         """
-        扫描导入信息：图像总数 + 已标注数。
-        - total = 图像目录下图像数（jpg/jpeg/png/bmp/webp，含子目录）
-        - labeled = 有非空标签文件的图像数：图像同路径权威 json 优先，其次
-          label_path 里的同名标签文件；空文件、空 shapes 都不算已标注
-        label_path 支持 str 或 list（多路径导入）。
-        返回 (total, labeled)；目录不存在返回 None。
+        扫描导入信息: 图像总数 + 已标注数.
+        - total = 图像目录下图像数(jpg/jpeg/png/bmp/webp, 含子目录)
+        - labeled = 有非空标签文件的图像数: 图像同路径权威 json 优先, 其次
+          label_path 里的同名标签文件; 空文件, 空 shapes 都不算已标注
+        label_path 支持 str 或 list(多路径导入).
+        返回 (total, labeled); 目录不存在返回 None.
         """
         if not image_path or not os.path.isdir(image_path):
             return None
@@ -53,7 +53,7 @@ class ImportExportMixin(object):
     @staticmethod
     def _count_labeled_in_dir(image_path, label_path, ext):
         """
-        统计图像目录与标签目录同名的标签文件数(ext: '.txt' / '.json')。
+        统计图像目录与标签目录同名的标签文件数(ext: '.txt' / '.json').
         用于格式选错时的探测: 当前格式匹配 0 张, 检查另一种格式是否
         存在同名标签文件,给用户切换格式的提示.
         """
@@ -74,8 +74,8 @@ class ImportExportMixin(object):
 
     def _import_dataset(self, project_name, dataset_name):
         """
-        数据集右键「导入」: 弹导入对话框(图像路径 + 标签路径可选 + 格式)。
-        实时显示: 共 N 张图像，已标注 M 张。
+        数据集右键"导入": 弹导入对话框(图像路径 + 标签路径可选 + 格式).
+        实时显示: 共 N 张图像, 已标注 M 张.
         """
         dlg = QDialog(self)
         dlg.setWindowTitle("导入数据 - {} / {}".format(project_name, dataset_name))
@@ -92,13 +92,13 @@ class ImportExportMixin(object):
         ui.label_path_txt.setEnabled(False)
 
         def update_tips():
-            """实时统计图像目录 + 已标注数 → 更新 tips_lbl 显示。"""
+            """实时统计图像目录 + 已标注数 → 更新 tips_lbl 显示."""
             img_path = ui.image_path_txt.text().strip()
             lbl_path = ui.label_path_txt.text().strip()
             # 分类导入:按子文件夹统计各类别图像数
             if ui.cls_fmt.isChecked():
                 if not img_path or not os.path.isdir(img_path):
-                    ui.tips_lbl.setText("请选择分类根目录（子文件夹名=类别）")
+                    ui.tips_lbl.setText("请选择分类根目录(子文件夹名=类别)")
                     return
                 classes = {}
                 for entry in os.listdir(img_path):
@@ -117,7 +117,7 @@ class ImportExportMixin(object):
                 else:
                     desc = ", ".join("{}: {}张".format(k, v)
                                      for k, v in sorted(classes.items()))
-                    ui.tips_lbl.setText("检测到 {} 类：{}".format(
+                    ui.tips_lbl.setText("检测到 {} 类: {}".format(
                         len(classes), desc))
                 return
             fmt = ".txt" if ui.yolo_fmt.isChecked() else ".json"
@@ -128,7 +128,7 @@ class ImportExportMixin(object):
             if total == 0:
                 ui.tips_lbl.setText("所选文件夹无图像")
             elif labeled > 0:
-                ui.tips_lbl.setText("共 {} 张图像，已标注 {} 张".format(total, labeled))
+                ui.tips_lbl.setText("共 {} 张图像, 已标注 {} 张".format(total, labeled))
             else:
                 alt_tip = ""
                 if lbl_path and os.path.isdir(lbl_path):
@@ -144,12 +144,12 @@ class ImportExportMixin(object):
                         alt_labeled = self._count_labeled_in_dir(
                             img_path, lbl_path, alt_ext)
                         if alt_labeled > 0:
-                            alt_tip = "（检测到 {} 张 {} 标签，请切换上方格式为「{}」）".format(
+                            alt_tip = "(检测到 {} 张 {} 标签, 请切换上方格式为\"{}\")".format(
                                 alt_labeled, alt_ext, alt_fmt_name)
                 if alt_tip:
-                    ui.tips_lbl.setText("共 {} 张图像，已标注 0 张 {}".format(total, alt_tip))
+                    ui.tips_lbl.setText("共 {} 张图像, 已标注 0 张 {}".format(total, alt_tip))
                 else:
-                    ui.tips_lbl.setText("共 {} 张图像（标签目录无匹配文件）".format(total))
+                    ui.tips_lbl.setText("共 {} 张图像(标签目录无匹配文件)".format(total))
 
         def choose_folder(operator_name):
             folder = QFileDialog.getExistingDirectory(self, "选择文件夹")
@@ -177,7 +177,7 @@ class ImportExportMixin(object):
 
         def _on_fmt_toggled(on):
             """
-            互斥单选按钮: 被取消选中的那个同样会 emit toggled(False)。
+            互斥单选按钮: 被取消选中的那个同样会 emit toggled(False).
             """
             if on:
                 update_tips()
@@ -187,12 +187,12 @@ class ImportExportMixin(object):
 
         def set_cls_mode(on):
             """
-            切换「按子文件夹分类导入」:分类模式只需根目录,标签路径不可用。
+            切换"按子文件夹分类导入":分类模式只需根目录,标签路径不可用.
             """
             ui.label_path_txt.setEnabled(not on)
             ui.choose_label_dir_btn.setEnabled(not on)
             ui.image_path_txt.setPlaceholderText(
-                "分类根目录（子文件夹名=类别）" if on else "图像路径")
+                "分类根目录(子文件夹名=类别)" if on else "图像路径")
             if on:
                 ui.label_path_txt.clear()
             ui.done_import_btn.setEnabled(bool(ui.image_path_txt.text().strip()))
@@ -260,11 +260,11 @@ class ImportExportMixin(object):
 
     def _on_export_clicked(self, project=None, dataset=None):
         """
-        「导出」入口：工具栏按钮导出当前选中的数据集；
-        项目右键菜单传 project、dataset=None 表示导出整个项目。
-        目录结构：数据集 <保存路径>/<数据集名>/images|labels;
-        项目 <保存路径>/<项目名>/<数据集名>/images|labels。
-        标签按所选格式转换导出(labelme json / yolo txt)。
+        "导出"入口: 工具栏按钮导出当前选中的数据集;
+        项目右键菜单传 project, dataset=None 表示导出整个项目.
+        目录结构: 数据集 <保存路径>/<数据集名>/images|labels;
+        项目 <保存路径>/<项目名>/<数据集名>/images|labels.
+        标签按所选格式转换导出(labelme json / yolo txt).
         """
         if project is None:
             sel = self.project_tree.current_dataset()
@@ -310,7 +310,7 @@ class ImportExportMixin(object):
                 recs_map = {ds: self._collect_export_recs(project_name, ds)
                             for _, ds in ds_list}
                 total = sum(len(v) for v in recs_map.values())
-                dlg2 = ProgressDialog("导出", "正在导出项目…", self, maximum=max(1, total))
+                dlg2 = ProgressDialog("导出", "正在导出项目...", self, maximum=max(1, total))
                 try:
                     done = 0
                     for proj, ds in ds_list:
@@ -321,7 +321,7 @@ class ImportExportMixin(object):
                     dlg2.close()
                 MessageBox.information(
                     self, "导出",
-                    "项目「{}」导出完成，共复制 {} 张图像\n位置：{}".format(
+                    "项目\"{}\"导出完成, 共复制 {} 张图像\n位置: {}".format(
                         project_name, total, root))
                 self._log("导出项目完成: {} | {} 张图像 | 标签({}) | 格式={} | → {}".format(
                     project_name, total,
@@ -332,7 +332,7 @@ class ImportExportMixin(object):
                 self._log("开始导出: 数据集={}/{} | 源路径={} | 保存路径={} | 格式={}".format(
                     project_name, dataset_name, src, save_dir, fmt))
                 recs = self._collect_export_recs(project_name, dataset_name)
-                dlg2 = ProgressDialog("导出", "正在导出数据集…", self,
+                dlg2 = ProgressDialog("导出", "正在导出数据集...", self,
                                       maximum=max(1, len(recs)))
                 try:
                     total = self._export_dataset(
@@ -342,7 +342,7 @@ class ImportExportMixin(object):
                     dlg2.close()
                 MessageBox.information(
                     self, "导出",
-                    "数据集「{}」导出完成，共复制 {} 张图像\n位置：{}".format(
+                    "数据集\"{}\"导出完成, 共复制 {} 张图像\n位置: {}".format(
                         dataset_name, total,
                         os.path.join(save_dir, dataset_name)))
                 self._log("导出数据集完成: {}/{} | {} 张图像 | 标签({}) | 格式={} | → {}".format(
@@ -360,7 +360,7 @@ class ImportExportMixin(object):
             ui.export_path_txt.setText(path)
 
     def _collect_export_recs(self, project_name, dataset_name):
-        """返回该数据集待导出的图像记录列表（缓存优先，无缓存 os.walk 扫描）。"""
+        """返回该数据集待导出的图像记录列表(缓存优先, 无缓存 os.walk 扫描)."""
         index = self.dataset_cache.get(project_name, {}).get(dataset_name)
         if index:
             return list(index.get("all", []))
@@ -377,7 +377,7 @@ class ImportExportMixin(object):
         return recs
 
     def _export_source(self, project_name, dataset_name):
-        """数据集导入源路径摘要（图像目录 + 标签目录），供导出日志用。"""
+        """数据集导入源路径摘要(图像目录 + 标签目录), 供导出日志用."""
         binding = self.db.get_dataset_import(project_name, dataset_name) or {}
         img = get_paths(binding, "image")
         lbl = get_paths(binding, "label")
@@ -385,7 +385,7 @@ class ImportExportMixin(object):
                                       ";".join(lbl or ["(无)"]))
 
     def _export_labels(self, project_name, ds_list):
-        """数据集标签列表摘要（label_sort_key 排序），供导出日志用。"""
+        """数据集标签列表摘要(label_sort_key 排序), 供导出日志用."""
         all_labels = set()
         for proj, ds in ds_list:
             all_labels.update(self.db.get_dataset_labels(proj, ds))
@@ -394,12 +394,12 @@ class ImportExportMixin(object):
     def _export_dataset(self, project_name, dataset_name, base_dir,
                         fmt="labelme", progress=None, base_done=0, total=None):
         """
-        导出单个数据集到 base_dir/<数据集名>/images|labels。
+        导出单个数据集到 base_dir/<数据集名>/images|labels.
         图像直接复制:标签按 fmt 转换导出;
         - labelme:同路径 json优先复制,否则从源标签转成 json
-        - yolo:从标注 boxes 转成 yolo txt(类别ID 按实际写出的类别排序映射，
+        - yolo:从标注 boxes 转成 yolo txt(类别ID 按实际写出的类别排序映射,
           并写出 classes.txt 作为类名锚点)
-        progress：ProgressDialog（set_progress + is_cancelled）；中断返回已复制数。
+        progress: ProgressDialog(set_progress + is_cancelled); 中断返回已复制数.
         """
         ds_dir = os.path.join(base_dir, dataset_name)
         img_dir = os.path.join(ds_dir, "images")
@@ -439,13 +439,13 @@ class ImportExportMixin(object):
             copied += 1
             self._export_label_file(src, fmt, label_to_id, binding, lbl_dir)
         if fmt != "labelme":
-            # yolo txt 里只有数字 id，不给 classes.txt 的话类名锚点就丢了，
+            # yolo txt 里只有数字 id, 不给 classes.txt 的话类名锚点就丢了,
             # 导出物交给别的框架或再导回本工具都只能看到数字
             self._write_classes_txt(ds_dir, label_to_id)
         return copied
 
     def _write_classes_txt(self, ds_dir, label_to_id):
-        """导出 yolo 数据集时在数据集根写 classes.txt，每行 "id 类名"。"""
+        """导出 yolo 数据集时在数据集根写 classes.txt, 每行 "id 类名"."""
         if not label_to_id:
             return
         with open(os.path.join(ds_dir, "classes.txt"), "w",
@@ -477,7 +477,7 @@ class ImportExportMixin(object):
             with open(target, "w", encoding="utf-8") as f:
                 json.dump(data, f, ensure_ascii=False, indent=2)
         else:
-            # auto: 多边形写顶点、矩形写 bbox, 导出的数据集检测和分割都能用
+            # auto: 多边形写顶点, 矩形写 bbox, 导出的数据集检测和分割都能用
             text = shapes_to_yolo_text(shapes, iw, ih, label_to_id, "auto")
             with open(target, "w", encoding="utf-8") as f:
                 f.write(text)
@@ -485,9 +485,9 @@ class ImportExportMixin(object):
     def _read_export_shapes(self, img_src, binding, iw=0, ih=0):
         """
         读取一张图的标注, 返回 ([(label, points)], 是否有权威来源).
-        points 保留多边形顶点(不只是外接框), 否则分割标注导出后只剩个框。
-        优先同路径 labelme json(标注产物),否则 label_paths 同名标签。
-        has_source 用于区分"标注为空"和"压根没标过": 前者要写空文件, 后者不写。
+        points 保留多边形顶点(不只是外接框), 否则分割标注导出后只剩个框.
+        优先同路径 labelme json(标注产物),否则 label_paths 同名标签.
+        has_source 用于区分"标注为空"和"压根没标过": 前者要写空文件, 后者不写.
         """
         same_json = same_dir_json(img_src)
         if same_json:

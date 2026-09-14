@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-测试结果 PDF 报告：逐图定位漏检/误检样本，数据源是 details.jsonl。
-页面顺序：汇总首页（模型 + 标注分布 + 指标 + 按类别）→ 缩略图 → 改进建议。
+测试结果 PDF 报告: 逐图定位漏检/误检样本, 数据源是 details.jsonl.
+页面顺序: 汇总首页(模型 + 标注分布 + 指标 + 按类别)→ 缩略图 → 改进建议.
 """
 
 import json
@@ -42,9 +42,9 @@ PER_CLASS_LIMIT = 10
 
 def _pick_image_font():
     """
-    PIL 绘制用的字体文件路径；找不到中文字体返回 None。
-    字体探测统一在 core.utils（与 matplotlib 图表同源），否则 PDF 里
-    PIL 画的标题和 matplotlib 画的坐标轴可能用了两个字体。
+    PIL 绘制用的字体文件路径; 找不到中文字体返回 None.
+    字体探测统一在 core.utils(与 matplotlib 图表同源), 否则 PDF 里
+    PIL 画的标题和 matplotlib 画的坐标轴可能用了两个字体.
     """
     _, path = cjk_font_choice()
     return path or None
@@ -94,11 +94,11 @@ def _pair_confusions(row, iou_th=CONFUSE_IOU):
 
 def _sample_rows(rows, limit, confuse_iou=CONFUSE_IOU, conf_stat=None):
     """
-    按「类别 × 错误类型」抽样，每格最多 limit 张。
-    排序键是 (该类错误数降序, 明细原始次序)，保证先看错得最狠的图，
-    且同一份明细重复导出得到的必然是同一批图，方便前后对比。
-    同时有漏检和误检的图归到漏检段（误检框照样画，不丢信息）。
-    conf_stat 由测试进程给出时直接用，省掉再遍历一遍明细
+    按"类别 × 错误类型"抽样, 每格最多 limit 张.
+    排序键是 (该类错误数降序, 明细原始次序), 保证先看错得最狠的图,
+    且同一份明细重复导出得到的必然是同一批图, 方便前后对比.
+    同时有漏检和误检的图归到漏检段(误检框照样画, 不丢信息).
+    conf_stat 由测试进程给出时直接用, 省掉再遍历一遍明细
     """
     miss_total = sum(1 for r in rows if r.get("missing"))
     spur_total = sum(1 for r in rows if r.get("spurious"))
@@ -156,7 +156,7 @@ def _sample_rows(rows, limit, confuse_iou=CONFUSE_IOU, conf_stat=None):
 
 
 def _any_poly(rows):
-    """明细里带不带分割轮廓，决定首页图例要不要加那条说明。"""
+    """明细里带不带分割轮廓, 决定首页图例要不要加那条说明."""
     for r in rows:
         for kind in ("missing", "spurious", "hits"):
             for b in r.get(kind) or []:
@@ -173,7 +173,7 @@ def _err_foot(n_miss, n_spur, n_conf=0):
         parts.append("误 {}".format(n_spur))
     if n_conf:
         parts.append("认错 {}".format(n_conf))
-    return "  ·  ".join(parts) or "—"
+    return "  ·  ".join(parts) or "-"
 
 
 def _cell(ax, row, thumb_w, confuse_iou=CONFUSE_IOU):
@@ -183,7 +183,7 @@ def _cell(ax, row, thumb_w, confuse_iou=CONFUSE_IOU):
     n_miss, n_spur, n_conf = len(miss_boxes), len(spur_boxes), len(pairs)
 
     if arr is None:
-        ax.text(0.5, 0.5, "（图片无法打开）", ha="center", va="center",
+        ax.text(0.5, 0.5, "(图片无法打开)", ha="center", va="center",
                 transform=ax.transAxes, color="#888888")
         ax.set_title(base + "  ·  " + _err_foot(n_miss, n_spur, n_conf),
                      fontsize=8)
@@ -196,7 +196,7 @@ def _cell(ax, row, thumb_w, confuse_iou=CONFUSE_IOU):
     ax.set_xticks([]); ax.set_yticks([])
 
     fig = ax.figure
-    # 数据单位 → 屏幕像素，用来估算标签宽度：小框上贴长标签会糊成一片
+    # 数据单位 → 屏幕像素, 用来估算标签宽度: 小框上贴长标签会糊成一片
     pos = ax.get_position()
     px_per_unit = (pos.width * fig.get_size_inches()[0] * fig.dpi / w
                    if w else 1.0)
@@ -208,9 +208,9 @@ def _cell(ax, row, thumb_w, confuse_iou=CONFUSE_IOU):
 
     def _outline(b, color):
         """
-        分割轮廓：细虚线画在框内侧，框负责标位置和归属，轮廓看贴合度。
-        poly 是环的列表——目标被遮挡时 mask 会断成几块，每块都得画出来，
-        只画最大的那块看着像模型只分割出了一部分。
+        分割轮廓: 细虚线画在框内侧, 框负责标位置和归属, 轮廓看贴合度.
+        poly 是环的列表 - 目标被遮挡时 mask 会断成几块, 每块都得画出来,
+        只画最大的那块看着像模型只分割出了一部分.
         """
         rings = b.get("poly")
         if not rings:
@@ -268,7 +268,7 @@ def _cell(ax, row, thumb_w, confuse_iou=CONFUSE_IOU):
         ax.add_patch(Rectangle((x1, y1), bw, bh, fill=False,
                                edgecolor=C_CONFUSE, linewidth=2.6, zorder=5))
         _outline(p["gt"], C_CONFUSE)
-        full = "类别认错：{} → {}".format(p["gt"].get("cls", ""),
+        full = "类别认错: {} → {}".format(p["gt"].get("cls", ""),
                                        p["pred"].get("cls", ""))
         # 框比标签还窄时退化成短文案,靠紫色和图例区分
         if len(full) * char_px > bw * px_per_unit:
@@ -295,22 +295,22 @@ def _sample_note(stat):
     mt, st = stat.get("miss_total", 0), stat.get("spur_total", 0)
     limit = stat.get("limit", 0)
     if limit and shown < total:
-        return ("明细抽样：共 {} 张有问题（漏检 {} / 误检 {}），本报告抽取 {} 张"
-                "——每个类别每种错误最多 {} 张，按错误数从多到少取"
+        return ("明细抽样: 共 {} 张有问题(漏检 {} / 误检 {}), 本报告抽取 {} 张"
+                " - 每个类别每种错误最多 {} 张, 按错误数从多到少取"
                 .format(total, mt, st, shown, limit)), "#8a5a00"
-    return ("明细：共 {} 张有问题（漏检 {} / 误检 {}），已全部列出"
+    return ("明细: 共 {} 张有问题(漏检 {} / 误检 {}), 已全部列出"
             .format(total, mt, st)), "#888888"
 
 
 def _short(text, n):
     text = str(text)
-    return text if len(text) <= n else text[:n - 1] + "…"
+    return text if len(text) <= n else text[:n - 1] + "..."
 
 
 def _render_label_chart_png(counts, colors, out_png, width_px, height_px):
     """
-    各类别标注数量柱状图，样式对齐统计界面（共用 app/charts 实现）。
-    白底：报告是打印/归档用的，深色底那一套在纸上糊成一团。
+    各类别标注数量柱状图, 样式对齐统计界面(共用 app/charts 实现).
+    白底: 报告是打印/归档用的, 深色底那一套在纸上糊成一团.
     """
     if not counts:
         return False
@@ -318,7 +318,7 @@ def _render_label_chart_png(counts, colors, out_png, width_px, height_px):
     fig = render_label_chart(
         counts, label_colors=colors, dark=False,
         figsize=(width_px / float(_DPI), height_px / float(_DPI)))
-    # 留出 x 轴标签旋转空间，防底部文字被裁
+    # 留出 x 轴标签旋转空间, 防底部文字被裁
     fig.subplots_adjust(left=0.085, right=0.985, top=0.9, bottom=0.34)
     fig.savefig(out_png, dpi=_DPI, facecolor="white")
     plt.close(fig)
@@ -326,22 +326,22 @@ def _render_label_chart_png(counts, colors, out_png, width_px, height_px):
 
 
 def _legend_items(stat):
-    items = [(C_MISSING, "solid", "漏检 GT：有标注但模型没检出"),
-             (C_SPURIOUS, "dash", "误检预测：模型检出但标注里没有"),
-             (C_HIT, "solid", "正确检出（仅作位置参照）")]
+    items = [(C_MISSING, "solid", "漏检 GT: 有标注但模型没检出"),
+             (C_SPURIOUS, "dash", "误检预测: 模型检出但标注里没有"),
+             (C_HIT, "solid", "正确检出(仅作位置参照)")]
     if stat and stat.get("conf_total"):
         items.insert(2, (C_CONFUSE, "solid",
-                         "类别认错：位置对但判错类别（GT → 预测）"))
+                         "类别认错: 位置对但判错类别(GT → 预测)"))
     if stat and stat.get("has_poly"):
         items.append((C_MISSING, "dot",
-                      "虚线轮廓：分割 mask / 标注多边形（判定按外接框 IoU）"))
+                      "虚线轮廓: 分割 mask / 标注多边形(判定按外接框 IoU)"))
     return items
 
 
 def _render_summary_png(summary, out_png, stat, chart_png=None):
     """
-    stat 里的张数一律是全量，抽样情况单独用一行说明，
-    免得总览表看起来像只测了抽出来的这几张。
+    stat 里的张数一律是全量, 抽样情况单独用一行说明,
+    免得总览表看起来像只测了抽出来的这几张.
     """
     dpi = _DPI
     W, H = _PAGE_W, _PAGE_H
@@ -378,12 +378,12 @@ def _render_summary_png(summary, out_png, stat, chart_png=None):
         if tw(txt, f) <= maxw:
             return txt
         s = txt
-        while len(s) > 1 and tw(s + "…", f) > maxw:
+        while len(s) > 1 and tw(s + "...", f) > maxw:
             s = s[:-1]
-        return s + "…"
+        return s + "..."
 
     def table(y0, head, data, weights, rh):
-        """返回表格底边 y。列宽按权重分摊 content_w，不写死宽度才能不出血。"""
+        """返回表格底边 y. 列宽按权重分摊 content_w, 不写死宽度才能不出血."""
         total_w = float(sum(weights))
         cols = [content_w * w / total_w for w in weights]
         xs = []
@@ -417,7 +417,7 @@ def _render_summary_png(summary, out_png, stat, chart_png=None):
     d.text((M, y), clip(str(summary.get("model") or "(未记录)"), f_b,
                         content_w), fill="#1f1f1f", font=f_b)
     y += int(0.26 * dpi)
-    ds_txt = "、".join("{}/{}".format(x.get("project", ""), x.get("dataset", ""))
+    ds_txt = ",".join("{}/{}".format(x.get("project", ""), x.get("dataset", ""))
                       for x in (summary.get("datasets") or []))
     sub = ["数据集 " + (ds_txt or "(未记录)")]
     if summary.get("conf") is not None:
@@ -451,7 +451,7 @@ def _render_summary_png(summary, out_png, stat, chart_png=None):
             fp, stat.get("spur_total", 0) if stat else 0)],
     ]
     if stat and stat.get("conf_total"):
-        rows.append(["类别认错 (位置对、类别错)",
+        rows.append(["类别认错 (位置对, 类别错)",
                      "{} 个 / {} 张图".format(stat["conf_total"],
                                             stat.get("conf_imgs", 0))])
     y = table(y, ["指标", "值"], rows, [1.5, 1.0], int(0.33 * dpi))
@@ -469,7 +469,7 @@ def _render_summary_png(summary, out_png, stat, chart_png=None):
         head = ["类别", "标注", "正确", "漏检", "误检", "检出率", "准确率"]
         weights = [1.4, 0.6, 0.6, 0.6, 0.6, 0.9, 0.9]
         rh2 = int(0.32 * dpi)
-        # 图例两列排布，条数会随认错/轮廓两条增减，行数得跟着算才不会出血
+        # 图例两列排布, 条数会随认错/轮廓两条增减, 行数得跟着算才不会出血
         legend_rows = (len(_legend_items(stat)) + 1) // 2
         legend_h = legend_rows * int(0.36 * dpi) + int(0.34 * dpi)
         room = H - int(0.46 * dpi) - legend_h - int(0.34 * dpi) - y
@@ -495,7 +495,7 @@ def _render_summary_png(summary, out_png, stat, chart_png=None):
             tpv, fnv, fpv, rs, ps = stats((cls, dd))
             data.append([str(cls), dd.get("gt", 0), tpv, fnv, fpv, rs, ps])
         if hidden:
-            data.append(["… 另有 {} 类未列出".format(len(hidden)),
+            data.append(["... 另有 {} 类未列出".format(len(hidden)),
                          "", "", "", "", "", ""])
         y = table(y, head, data, weights, rh2)
         y += int(0.40 * dpi)
@@ -518,14 +518,14 @@ def _render_summary_png(summary, out_png, stat, chart_png=None):
                fill="black", font=f_meta)
     y += ((len(legend) + 1) // 2) * int(0.36 * dpi)
 
-    d.text((M, y), "错误样本明细（仅列漏检 / 误检图片，正确检出不列出）",
+    d.text((M, y), "错误样本明细(仅列漏检 / 误检图片, 正确检出不列出)",
            fill="#888888", font=f_meta)
 
     img.save(out_png, "PNG", dpi=(dpi, dpi))
 
 
 def _dash_rect(d, box, color, width=3, dash=9, gap=6):
-    """PIL 没有虚线矩形，手动分段画，线型对齐缩略图页的 '--'。"""
+    """PIL 没有虚线矩形, 手动分段画, 线型对齐缩略图页的 '--'."""
     x0, y0, x1, y1 = box
     x = x0
     while x < x1:
@@ -549,11 +549,11 @@ def _advice_items(res, stat=None):
     tp, fp, fn = res.get("TP", 0), res.get("FP", 0), res.get("FN", 0)
     rec = tp / (tp + fn) if (tp + fn) else 0.0
     prec = tp / (tp + fp) if (tp + fp) else 0.0
-    parts = [[("本轮检出率 {:.0f}%、准确率 {:.0f}%。".format(
+    parts = [[("本轮检出率 {:.0f}%, 准确率 {:.0f}%.".format(
         rec * 100, prec * 100), False)]]
     if not pc:
-        parts.append([("没有逐类别统计，无法定位到具体标签，"
-                       "请先确认标签文件能正常读到。", False)])
+        parts.append([("没有逐类别统计, 无法定位到具体标签,"
+                       "请先确认标签文件能正常读到.", False)])
         return [s for p in parts for s in p]
 
     gts = {c: int(d.get("gt", 0)) for c, d in pc.items()}
@@ -567,8 +567,8 @@ def _advice_items(res, stat=None):
         out = []
         for i, (c, _) in enumerate(pairs):
             if i:
-                out.append(("、", False))
-            out.append(("「{}」".format(c), True))
+                out.append((",", False))
+            out.append(("\"{}\"".format(c), True))
         return out
 
     all_fn = len(hot_fn) >= len(gts) and len(gts) > 1
@@ -576,37 +576,37 @@ def _advice_items(res, stat=None):
     if hot_fn:
         parts.append([("漏检" + ("分布在" if all_fn else "集中在"), False)] +
                      names(hot_fn) +
-                     [("（共 {} 个），优先补这几类的姿态、光照样本，"
-                       "并复核标注是否有遗漏。".format(
+                     [("(共 {} 个), 优先补这几类的姿态, 光照样本,"
+                       "并复核标注是否有遗漏.".format(
                            sum(v for _, v in hot_fn)), False)])
     if hot_fp:
         parts.append([("误检" + ("分布在" if all_fp else "以"), False)] +
                      names(hot_fp) +
-                     [("（{} 个）{}属过杀，建议补无缺陷负样本、"
-                       "清理标注噪声。".format(sum(v for _, v in hot_fp),
-                                            "，" if all_fp else "为主，"),
+                     [("({} 个){}属过杀, 建议补无缺陷负样本,"
+                       "清理标注噪声.".format(sum(v for _, v in hot_fp),
+                                            "," if all_fp else "为主,"),
                        False)])
     n_conf = int((stat or {}).get("conf_total", 0))
     if n_conf:
         parts.append([("此外 {} 处".format(n_conf), False),
                       ("位置对但类别判错", False),
-                      ("（报告紫框），属分类能力不足而非定位问题，"
-                       "需补易混淆类别之间的区分性样本。", False)])
+                      ("(报告紫框), 属分类能力不足而非定位问题,"
+                       "需补易混淆类别之间的区分性样本.", False)])
     worst_cls, worst_gt = min(gts.items(), key=lambda kv: kv[1])
     if (hot_fn or hot_fp) and worst_gt < max(100, avg * 0.4):
-        parts.append([("其中", False), ("「{}」".format(worst_cls), True),
-                      ("仅 {} 个标注，样本不足是主要瓶颈，建议补到 "
-                       "200 个以上。".format(worst_gt), False)])
+        parts.append([("其中", False), ("\"{}\"".format(worst_cls), True),
+                      ("仅 {} 个标注, 样本不足是主要瓶颈, 建议补到 "
+                       "200 个以上.".format(worst_gt), False)])
     if len(gts) > 1 and max(gts.values()) > 5 * max(1, min(gts.values())):
-        parts.append([("各类样本量差距大（最多 {} / 最少 {}），"
-                       "训练时建议做类别均衡采样。".format(
+        parts.append([("各类样本量差距大(最多 {} / 最少 {}),"
+                       "训练时建议做类别均衡采样.".format(
                            max(gts.values()), min(gts.values())), False)])
     if hot_fn or hot_fp:
-        parts.append([("把本报告中的漏检、误检图加入训练集复训，"
-                       "再用同参数复测对比。", False)])
+        parts.append([("把本报告中的漏检, 误检图加入训练集复训,"
+                       "再用同参数复测对比.", False)])
     else:
-        parts.append([("本轮无漏检、无误检，建议用更严的阈值或更难的样本"
-                       "再压一轮，确认稳定性。", False)])
+        parts.append([("本轮无漏检, 无误检, 建议用更严的阈值或更难的样本"
+                       "再压一轮, 确认稳定性.", False)])
 
     out, used = [], 0
     for seg in parts:
@@ -651,8 +651,8 @@ def _render_advice_png(items, out_png, page_no, model=""):
     y += int(0.34 * dpi)
     lead = "基于本次测试的指标与按类别表现"
     if model:
-        lead += "（模型：{}）".format(_short(model, 28))
-    d.text((M, y), lead + "，建议如下：", fill="#666666", font=f_lead)
+        lead += "(模型: {})".format(_short(model, 28))
+    d.text((M, y), lead + ", 建议如下:", fill="#666666", font=f_lead)
     y += int(0.40 * dpi)
 
     line_h = int(0.34 * dpi)
@@ -675,7 +675,7 @@ def _render_advice_png(items, out_png, page_no, model=""):
     d.line([(M, foot_y - int(0.18 * dpi)),
             (M + content_w, foot_y - int(0.18 * dpi))],
            fill="#e4e4e4", width=1)
-    d.text((M, foot_y), "标红的标签是需要重点关注的类别。",
+    d.text((M, foot_y), "标红的标签是需要重点关注的类别.",
            fill="#888888", font=f_meta)
     page_txt = "第 {} 页".format(page_no)
     d.text((M + content_w - d.textbbox((0, 0), page_txt, font=f_meta)[2],
@@ -717,11 +717,11 @@ def _page_gallery(pdf, rows, title, thumb_w, page_no,
 def build_report(res, out_pdf=None, thumb_w=480, summary_png=None,
                  per_class_limit=PER_CLASS_LIMIT):
     """
-    生成 PDF。res 需含 detail_path；返回 pdf 路径，无明细时返回空串。
-    per_class_limit 每个「类别 × 错误类型」最多列几张，0/None 表示全列。
-    抽样只发生在出报告这一步，details.jsonl 里仍是全量，后续做难例挖掘不丢数据。
-    标注分布优先用 res["label_stats"]（统计界面那一套，带标签颜色），
-    取不到就退回 per_class 的 gt，反正都是这次真正测到的标注数。
+    生成 PDF. res 需含 detail_path; 返回 pdf 路径, 无明细时返回空串.
+    per_class_limit 每个"类别 × 错误类型"最多列几张, 0/None 表示全列.
+    抽样只发生在出报告这一步, details.jsonl 里仍是全量, 后续做难例挖掘不丢数据.
+    标注分布优先用 res["label_stats"](统计界面那一套, 带标签颜色),
+    取不到就退回 per_class 的 gt, 反正都是这次真正测到的标注数.
     """
     detail_path = res.get("detail_path") or ""
     rows = load_details(detail_path)
@@ -764,12 +764,12 @@ def build_report(res, out_pdf=None, thumb_w=480, summary_png=None,
 
     def title_of(kind, shown, total):
         if shown < total:
-            return "{}（抽取 {} / 共 {} 张）".format(kind, shown, total)
-        return "{}（共 {} 张）".format(kind, total)
+            return "{}(抽取 {} / 共 {} 张)".format(kind, shown, total)
+        return "{}(共 {} 张)".format(kind, total)
 
-    miss_title = title_of("漏检样本：有标注但模型没检出",
+    miss_title = title_of("漏检样本: 有标注但模型没检出",
                           len(miss_rows), stat["miss_total"])
-    spur_title = title_of("误检样本：模型检出但标注里没有",
+    spur_title = title_of("误检样本: 模型检出但标注里没有",
                           len(spur_rows), stat["spur_total"])
 
     with PdfPages(out_pdf) as pdf:

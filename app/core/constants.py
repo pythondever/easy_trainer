@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-公用常量。
+公用常量.
 """
 
 IMAGE_EXTS = (".jpg", ".jpeg", ".png", ".bmp", ".webp")

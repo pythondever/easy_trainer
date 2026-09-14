@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-"""图像分类测试执行脚本（由 UI 以子进程方式启动）。
+"""图像分类测试执行脚本(由 UI 以子进程方式启动).
 
-用法: main()，由 test_worker 以 -c 导入后调用（打包后是 pyd，不能 python -m 启动）
+用法: main(), 由 test_worker 以 -c 导入后调用(打包后是 pyd, 不能 python -m 启动)
 config: model_path(分类 checkpoint), image_path, has_label, device, total, task=classify
 输出:
   - [test] 进度 N/M
@@ -46,9 +46,9 @@ def _make_model(arch, num_classes):
 
 class _ImageListDS(torch.utils.data.Dataset):
     """
-    测试图像列表数据集。
-    解码失败的样本返回 (index, None), 由 _collate 过滤掉——保证单张坏图
-    不会中断整批推理(语义等价于原来 try/except 后 pred="?")。
+    测试图像列表数据集.
+    解码失败的样本返回 (index, None), 由 _collate 过滤掉 - 保证单张坏图
+    不会中断整批推理(语义等价于原来 try/except 后 pred="?").
     """
 
     def __init__(self, paths, tf):
@@ -67,7 +67,7 @@ class _ImageListDS(torch.utils.data.Dataset):
 
 
 def _collate(batch):
-    """过滤解码失败样本; 全部失败时返回 (None, None)。"""
+    """过滤解码失败样本; 全部失败时返回 (None, None)."""
     keep = [(i, x) for i, x in batch if x is not None]
     if not keep:
         return None, None

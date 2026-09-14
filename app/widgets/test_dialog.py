@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-"""模型测试弹窗：在 ModelDialog 点击「测试」按钮弹出。
+"""模型测试弹窗: 在 ModelDialog 点击"测试"按钮弹出.
 
-测试参数配置：数据/设备/模型/置信度/IoU/输出标签文件。
-模型下拉只显示文件名（os.path.basename），按当前项目+数据集类型过滤。
-测试结果走 TestWorker + TestResultDialog（评估模式）或自动载入首页（推理模式）。"""
+测试参数配置: 数据/设备/模型/置信度/IoU/输出标签文件.
+模型下拉只显示文件名(os.path.basename), 按当前项目+数据集类型过滤.
+测试结果走 TestWorker + TestResultDialog(评估模式)或自动载入首页(推理模式)."""
 
 import json
 import os
@@ -27,8 +27,8 @@ from ui.test_dialog import Ui_TestDialog
 
 
 class _RatioValidator(QDoubleValidator):
-    """0~1 校验。QDoubleValidator 会把超出上限的 "1.5" 判成中间态放行，
-    这里补一刀：数值已经超 1 的中间态直接拒绝。"""
+    """0~1 校验. QDoubleValidator 会把超出上限的 "1.5" 判成中间态放行,
+    这里补一刀: 数值已经超 1 的中间态直接拒绝."""
 
     def validate(self, text, pos):
         state, text, pos = super().validate(text, pos)
@@ -80,15 +80,15 @@ class TestDialog(QDialog):
         detach_device_probe(self)
         super().closeEvent(event)
 
-    # ---------- 样式：点击任意位置展开 + 控件对齐 ----------
+    # ---------- 样式: 点击任意位置展开 + 控件对齐 ----------
     def _init_style(self):
         for name in ("test_data_combo", "test_device_combo",
                      "confidence_txt", "iou_treshold_txt"):
             w = getattr(self.ui, name, None)
             if w is not None:
                 w.setFixedHeight(CONTROL_H)
-        # 下拉的 sizeHint 按最长条目算，GPU 全名会把弹窗撑到 680+；
-        # 改成按固定字符数估宽，实际列宽交给 minimumSize 决定
+        # 下拉的 sizeHint 按最长条目算, GPU 全名会把弹窗撑到 680+;
+        # 改成按固定字符数估宽, 实际列宽交给 minimumSize 决定
         for name in ("test_data_combo", "test_device_combo"):
             combo = getattr(self.ui, name, None)
             if combo is not None:
@@ -97,8 +97,8 @@ class TestDialog(QDialog):
                     .AdjustToMinimumContentsLengthWithIcon)
                 combo.setMinimumContentsLength(12)
         apply_icon(self.ui.cancel_btn, "取消")
-        # 提示文字排在勾选框右侧，得显式要剩余空间：
-        # 关掉 wordWrap 后 sizeHint 才是整句宽度，否则会塌成最长单词的宽度
+        # 提示文字排在勾选框右侧, 得显式要剩余空间:
+        # 关掉 wordWrap 后 sizeHint 才是整句宽度, 否则会塌成最长单词的宽度
         self.ui.out_wrap_layout.setStretch(1, 1)
         self.ui.out_note.setMinimumWidth(0)
         self.ui.out_note.setToolTip(self.ui.out_note.text())
@@ -121,8 +121,8 @@ class TestDialog(QDialog):
                 self._limit_ratio(edit)
 
     def _limit_ratio(self, edit):
-        """标签上的「（0~1）」已去掉，范围约束全靠这里。
-        校验器只管逐字符输入，残留脏值在 editingFinished 里收拾。"""
+        """标签上的"(0~1)"已去掉, 范围约束全靠这里.
+        校验器只管逐字符输入, 残留脏值在 editingFinished 里收拾."""
         v = _RatioValidator(0.0, 1.0, 3, edit)
         v.setNotation(QDoubleValidator.Notation.StandardNotation)
         v.setLocale(QLocale(QLocale.Language.C))
@@ -141,7 +141,7 @@ class TestDialog(QDialog):
             edit.setText("{:g}".format(min(1.0, max(0.0, value))))
 
     def _align_form_labels(self):
-        """两个表单的 label 列同宽,字段列左边界对齐。"""
+        """两个表单的 label 列同宽,字段列左边界对齐."""
         labels = []
         for name in ("form_source", "form_param"):
             form = getattr(self.ui, name, None)
@@ -159,7 +159,7 @@ class TestDialog(QDialog):
 
     # ---------- 填充 ----------
     def _setup_multi_combo(self, combo):
-        """配置成多选下拉(可编辑+只读+居中+点任意位置展开),与统计/训练一致。"""
+        """配置成多选下拉(可编辑+只读+居中+点任意位置展开),与统计/训练一致."""
         combo.setEditable(True)
         combo.setFocusPolicy(Qt.StrongFocus)
         le = combo.lineEdit()
@@ -173,10 +173,10 @@ class TestDialog(QDialog):
 
     def _fill_data_combo(self):
         """
-        跨项目所有数据集(文本"项目/数据集",可多选),入口传入的默认勾选。
+        跨项目所有数据集(文本"项目/数据集",可多选),入口传入的默认勾选.
         数据源与首页项目树/统计/训练一致:先 get_projects() 拿项目名,再
-        get_datasets(name) 拿该项目下数据集。直接遍历 get_project_info()
-        会把已删除项目残留的孤儿记录也列出来。
+        get_datasets(name) 拿该项目下数据集. 直接遍历 get_project_info()
+        会把已删除项目残留的孤儿记录也列出来.
         """
         combo = self.ui.test_data_combo
         self._setup_multi_combo(combo)
@@ -202,7 +202,7 @@ class TestDialog(QDialog):
         self._update_data_label()
 
     def _checked_datasets(self):
-        """勾选的数据集 [(项目, 数据集), ...]。"""
+        """勾选的数据集 [(项目, 数据集), ...]."""
         out = []
         model = self.ui.test_data_combo.model()
         if model is None:
@@ -216,7 +216,7 @@ class TestDialog(QDialog):
         return out
 
     def _update_data_label(self):
-        """把勾选的数据集拼到编辑区(居中),未选时清空。"""
+        """把勾选的数据集拼到编辑区(居中),未选时清空."""
         checked = self._checked_datasets()
         texts = ["{}/{}".format(p, d) for p, d in checked]
         combo = self.ui.test_data_combo
@@ -230,7 +230,7 @@ class TestDialog(QDialog):
                                 self.ui.start_test_btn)
 
     def _on_devices_ready(self, devices):
-        """后台探测完成：填列表、解禁。"""
+        """后台探测完成: 填列表, 解禁."""
         combo = self.ui.test_device_combo
         fill_device_items(combo, devices)
         combo.setEnabled(True)
@@ -238,11 +238,11 @@ class TestDialog(QDialog):
         self.ui.start_test_btn.setEnabled(True)
 
     def _fill_model_card(self):
-        """取代原来的模型下拉：一次只填一个模型，点开没得选，信息直接摆出来更清楚。"""
+        """取代原来的模型下拉: 一次只填一个模型, 点开没得选, 信息直接摆出来更清楚."""
         u = self.ui
         rec = self._record
         task = {"detect": "检测", "segment": "分割",
-                "classify": "分类"}.get(rec.get("task", ""), "—")
+                "classify": "分类"}.get(rec.get("task", ""), "-")
         u.task_badge.setText(task)
         path = self._model_path
         if not path:
@@ -279,7 +279,7 @@ class TestDialog(QDialog):
 
     # ---------- 联动 ----------
     def _set_form_row_visible(self, form_name, row, visible):
-        """隐藏/显示指定 QFormLayout 的某一行（label + field 一起）。"""
+        """隐藏/显示指定 QFormLayout 的某一行(label + field 一起)."""
         form = getattr(self.ui, form_name, None)
         if form is None:
             return
@@ -287,7 +287,7 @@ class TestDialog(QDialog):
             item = form.itemAt(row, role)
             if item is not None and item.widget() is not None:
                 item.widget().setVisible(visible)
-        # QFormLayout 不监听子控件隐藏，sizeHint 缓存不失效会把高度留成空白
+        # QFormLayout 不监听子控件隐藏, sizeHint 缓存不失效会把高度留成空白
         form.invalidate()
         lay = self.layout()
         if lay is not None:
@@ -309,17 +309,17 @@ class TestDialog(QDialog):
                 cls_ds += 1
         head = "{} 个数据集 · {} 张图".format(len(checked), total)
         if cls_ds == len(checked):
-            tail = "分类数据集，统计每张图的判断正确率"
+            tail = "分类数据集, 统计每张图的判断正确率"
         elif labeled_ds == len(checked):
-            tail = "已标注，评估模式：统计检出率 / 漏检 / 误检"
+            tail = "已标注, 评估模式: 统计检出率 / 漏检 / 误检"
         elif labeled_ds == 0:
-            tail = "未标注，推理模式：只输出预测标签"
+            tail = "未标注, 推理模式: 只输出预测标签"
         else:
-            tail = "部分已标注，已标注与未标注的数据集不能一起测"
+            tail = "部分已标注, 已标注与未标注的数据集不能一起测"
         self.ui.summary_text.setText("{} · {}".format(head, tail))
 
     def _on_data_changed(self):
-        """按首个勾选的数据集决定界面模式;未选任何数据集时纯展示、不联动。"""
+        """按首个勾选的数据集决定界面模式;未选任何数据集时纯展示, 不联动."""
         self._update_data_label()
         checked = self._checked_datasets()
         self._update_summary(checked)
@@ -330,7 +330,7 @@ class TestDialog(QDialog):
         info = self.app.db.get_dataset_import(self._project, self._dataset) or {}
         cls_mode = info.get("label_fmt", "") == "cls"
         self._cls_mode = cls_mode
-        # 分类模式只保留 数据/设备 两个下拉，隐藏整个「测试参数」分组
+        # 分类模式只保留 数据/设备 两个下拉, 隐藏整个"测试参数"分组
         for row in (0, 1, 2):
             self._set_form_row_visible("form_param", row, not cls_mode)
         self.ui.group_param_title.setVisible(not cls_mode)
@@ -338,10 +338,10 @@ class TestDialog(QDialog):
         has_label = labeled > 0
         self.ui.iou_treshold_txt.setEnabled(has_label)
         box = self.ui.output_label_file_checkBox
-        box.setToolTip("为每张图写 <同名>.json 到图像目录，标注工具可直接打开；"
+        box.setToolTip("为每张图写 <同名>.json 到图像目录, 标注工具可直接打开;"
                        "该处已有人工标注会被覆盖")
         if not has_label:
-            # 推理模式：强制输出标注文件
+            # 推理模式: 强制输出标注文件
             box.setChecked(True)
             box.setEnabled(False)
         else:
@@ -370,7 +370,7 @@ class TestDialog(QDialog):
             output_labels = bool(self.ui.output_label_file_checkBox.isChecked())
         model_path = self._model_path
         if not model_path or not os.path.exists(model_path):
-            MessageBox.warning(self, "测试", "模型文件不存在，请重新选择")
+            MessageBox.warning(self, "测试", "模型文件不存在, 请重新选择")
             return
         # 多个数据集一起测:图像目录逐个展开,标签目录与图像目录按索引配对
         items = []
@@ -460,7 +460,7 @@ class TestDialog(QDialog):
 
     def _fill_label_stats(self, res):
         """
-        把该模型训练时勾选的数据集（训练集+验证集）标注分布塞进 res。
+        把该模型训练时勾选的数据集(训练集+验证集)标注分布塞进 res.
         """
         pairs = []
         for field in ("dataset", "val_dataset"):

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""训练队列面板：查看/排序/编辑队列任务，控制队列的启动与暂停。"""
+"""训练队列面板: 查看/排序/编辑队列任务, 控制队列的启动与暂停."""
 
 import os
 
@@ -18,7 +18,7 @@ TASK_TEXT = {"detect": "检测", "segment": "分割", "classify": "分类"}
 
 
 class TrainQueueDialog(QDialog):
-    """非模态队列面板：关闭只是隐藏，队列继续在后台跑。"""
+    """非模态队列面板: 关闭只是隐藏, 队列继续在后台跑."""
 
     def __init__(self, app, parent=None):
         super().__init__(parent)
@@ -104,30 +104,30 @@ class TrainQueueDialog(QDialog):
         failed = [i for i in items if i.get("status") in ("failed", "skipped")]
         if self.app.queue_is_running():
             if self.app.queue_is_paused():
-                badge, tip = "已暂停", "当前任务完成后停止，可点「继续队列」恢复"
+                badge, tip = "已暂停", "当前任务完成后停止, 可点\"继续队列\"恢复"
             else:
                 badge, tip = "运行中", "队列正在串行执行"
         elif waiting:
             badge, tip = "待启动", "有 {} 个任务等待启动".format(len(waiting))
         elif running:
-            badge, tip = "训练中", "当前有训练在进行（非队列启动）"
+            badge, tip = "训练中", "当前有训练在进行(非队列启动)"
         elif items:
-            badge, tip = "已结束", "没有待执行的任务，点「重新开始队列」可重跑"
+            badge, tip = "已结束", "没有待执行的任务, 点\"重新开始队列\"可重跑"
         else:
-            badge, tip = "空闲", "队列为空，可在训练界面点「加入队列」添加任务"
+            badge, tip = "空闲", "队列为空, 可在训练界面点\"加入队列\"添加任务"
         self.ui.queue_badge.setText(badge)
         self.ui.queue_badge.setToolTip(tip)
         if items:
-            summary = "共 {} 个：等待 {} · 完成 {} · 失败 {}".format(
+            summary = "共 {} 个: 等待 {} · 完成 {} · 失败 {}".format(
                 len(items), len(waiting), len(done), len(failed))
             if running:
-                summary = "正在训练「{}」 · {}".format(
+                summary = "正在训练\"{}\" · {}".format(
                     running[0].get("name", ""), summary)
             elif waiting:
-                summary = "下一个：「{}」 · {}".format(
+                summary = "下一个: \"{}\" · {}".format(
                     waiting[0].get("name", ""), summary)
         else:
-            summary = "队列为空，可在训练界面点「加入队列」添加任务"
+            summary = "队列为空, 可在训练界面点\"加入队列\"添加任务"
         self.ui.summary_text.setText(summary)
         self._update_buttons(items)
 
@@ -141,7 +141,7 @@ class TrainQueueDialog(QDialog):
             self.ui.start_btn.setText("开始队列")
         else:
             self.ui.start_btn.setText("重新开始队列")
-        # 队列全跑完(含全部失败)时按钮也得可用,点击即批量重新入队后启动，
+        # 队列全跑完(含全部失败)时按钮也得可用,点击即批量重新入队后启动,
         self.ui.start_btn.setEnabled(
             not self.app.is_training()
             and (has_waiting or paused or bool(finished)))
@@ -160,7 +160,7 @@ class TrainQueueDialog(QDialog):
 
     def _on_start_btn(self):
         if self.app.is_training():
-            MessageBox.warning(self, "队列", "已有训练在进行中，请先停止")
+            MessageBox.warning(self, "队列", "已有训练在进行中, 请先停止")
             return
         if self.app.queue_is_paused() and self.app.queue_is_running():
             self.app.resume_train_queue()
@@ -173,19 +173,19 @@ class TrainQueueDialog(QDialog):
                 st = it.get("status")
                 if st in DONE_STATUS:
                     counts[st] = counts.get(st, 0) + 1
-            detail = "、".join("{} 个{}".format(v, status_text(k))
+            detail = ",".join("{} 个{}".format(v, status_text(k))
                                for k, v in counts.items())
             if not detail:
                 return
             if not MessageBox.question(
                     self, "重新开始队列",
-                    "队列中没有等待中的任务。\n\n"
-                    "待重跑：{}\n\n是否重新入队并开始训练？".format(detail)):
+                    "队列中没有等待中的任务.\n\n"
+                    "待重跑: {}\n\n是否重新入队并开始训练?".format(detail)):
                 return
             if not self.app.queue_requeue_all():
                 return
         if not self.app.start_train_queue():
-            MessageBox.warning(self, "队列", "队列启动失败，请查看日志")
+            MessageBox.warning(self, "队列", "队列启动失败, 请查看日志")
         self.refresh()
 
     def _on_move(self, delta):
@@ -201,10 +201,10 @@ class TrainQueueDialog(QDialog):
         if item is None:
             return
         if item.get("status") == "running":
-            MessageBox.warning(self, "移除任务", "训练中的任务不能移除，请先停止")
+            MessageBox.warning(self, "移除任务", "训练中的任务不能移除, 请先停止")
             return
         if not MessageBox.question(self, "移除任务",
-                                   "确定从队列中移除「{}」吗？".format(item["name"])):
+                                   "确定从队列中移除\"{}\"吗?".format(item["name"])):
             return
         self.app.queue_remove(item["qid"])
 
@@ -220,7 +220,7 @@ class TrainQueueDialog(QDialog):
         if item is None:
             return
         if item.get("status") == "running":
-            MessageBox.warning(self, "编辑任务", "训练中的任务不能编辑，请先停止")
+            MessageBox.warning(self, "编辑任务", "训练中的任务不能编辑, 请先停止")
             return
         dlg = TrainDialog(self.app, preset_record=params_to_record(
             item.get("params") or {}))
@@ -246,7 +246,7 @@ class TrainQueueDialog(QDialog):
         menu.exec(self.ui.queue_table.viewport().mapToGlobal(pos))
 
     def _output_dir(self, item):
-        """任务的真实输出目录：优先取训练记录里的 timestamp_dir。"""
+        """任务的真实输出目录: 优先取训练记录里的 timestamp_dir."""
         rid = item.get("record_id")
         for r in self.app.db.get_train_records():
             if r.get("id") == rid and r.get("model_path"):
@@ -256,7 +256,7 @@ class TrainQueueDialog(QDialog):
     def _open_output(self, item):
         d = self._output_dir(item)
         if not d or not os.path.isdir(d):
-            MessageBox.warning(self, "打开输出目录", "目录不存在：{}".format(d or "未设置"))
+            MessageBox.warning(self, "打开输出目录", "目录不存在: {}".format(d or "未设置"))
             return
         QDesktopServices.openUrl(QUrl.fromLocalFile(d))
 

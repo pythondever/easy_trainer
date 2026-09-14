@@ -8,8 +8,8 @@ from ui.log import Ui_LogDialog
 
 class LogDialog(QDialog):
     """
-    日志查看对话框直接写入 textEdit。
-    超过 MAX_LINES(1000)条自动删除最老的再追加最新的。
+    日志查看对话框直接写入 textEdit.
+    超过 MAX_LINES(1000)条自动删除最老的再追加最新的.
     """
 
     def __init__(self, parent=None):
@@ -33,13 +33,13 @@ class LogDialog(QDialog):
             pass
 
     def append(self, line):
-        """直接写入 textEdit；超 1000 行删除最老。"""
+        """直接写入 textEdit; 超 1000 行删除最老."""
         edit = self.ui.textEdit
         edit.append(line)
         self._trim()
 
     def _trim(self):
-        """超过 MAX_LINES 行删除最老的。"""
+        """超过 MAX_LINES 行删除最老的."""
         edit = self.ui.textEdit
         while edit.document().blockCount() > MAX_LINES:
             c = edit.textCursor()

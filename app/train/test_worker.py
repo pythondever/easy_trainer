@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""测试工作线程：以子进程方式运行 test_runner，转发日志/进度/结果。"""
+"""测试工作线程: 以子进程方式运行 test_runner, 转发日志/进度/结果."""
 
 import collections
 import json
@@ -25,11 +25,11 @@ CLASSIFY_TEST_RUNNER = "app.train.classify_test_runner"
 
 def _read_new_lines(path, start, final=False):
     """
-    读子进程输出文件的新增行，返回 (行列表, 新偏移)。
-    按字节读再逐行降级解码：子进程 stdout 的编码由它自己的环境决定（安装版从
-    快捷方式启动时 Windows 上是 ANSI 码页 gbk），固定按 utf-8 解会把中文和表格
-    字符全变成替换符。非 final 时只消费到最后一个换行，避免把写到一半的行当成
-    完整行（那会让后续几个字节被当成新的一行）。
+    读子进程输出文件的新增行, 返回 (行列表, 新偏移).
+    按字节读再逐行降级解码: 子进程 stdout 的编码由它自己的环境决定(安装版从
+    快捷方式启动时 Windows 上是 ANSI 码页 gbk), 固定按 utf-8 解会把中文和表格
+    字符全变成替换符. 非 final 时只消费到最后一个换行, 避免把写到一半的行当成
+    完整行(那会让后续几个字节被当成新的一行).
     """
     try:
         with open(path, "rb") as f:
@@ -50,7 +50,7 @@ def _read_new_lines(path, start, final=False):
 
 
 class TestWorker(QThread):
-    """运行一次测试（子进程），通过信号上报日志/进度/结果。"""
+    """运行一次测试(子进程), 通过信号上报日志/进度/结果."""
 
     log = Signal(str)
     progress = Signal(int, int)
@@ -64,7 +64,7 @@ class TestWorker(QThread):
         self._stop_flag = False
 
     def stop(self):
-        """请求停止：置标志并终止子进程及其孙进程。"""
+        """请求停止: 置标志并终止子进程及其孙进程."""
         self._stop_flag = True
         kill_process_tree(self._proc)
 
@@ -92,8 +92,8 @@ class TestWorker(QThread):
                   if self._config.get("task") == "classify" else TEST_RUNNER)
         bootstrap = runner_bootstrap(module)
         if self._stop_flag:
-            # 用户在 Popen 之前就点了停止：再起进程会立刻脱管
-            # （循环条件马上为假，下面按 rc=None 报"异常退出"，进程却还活着）
+            # 用户在 Popen 之前就点了停止: 再起进程会立刻脱管
+            # (循环条件马上为假, 下面按 rc=None 报"异常退出", 进程却还活着)
             return
         self.log.emit("[test-worker] 启动子进程: {} {}".format(
             python, module))
@@ -169,8 +169,8 @@ class TestWorker(QThread):
                 time.sleep(0.1)
         except Exception:
             _trace("轮询异常:\n" + traceback.format_exc())
-            # 异常跳出也要收尾，否则下面按 rc 报"异常退出"，进程其实还在跑，
-            # 而 UI 收到 failed 就把 worker 句柄丢了，再没人能杀它
+            # 异常跳出也要收尾, 否则下面按 rc 报"异常退出", 进程其实还在跑,
+            # 而 UI 收到 failed 就把 worker 句柄丢了, 再没人能杀它
             kill_process_tree(self._proc)
         tail, pos = _read_new_lines(out_path, pos, final=True)
         if tail:

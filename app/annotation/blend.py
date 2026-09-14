@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-粘贴融合: Lab 亮度补偿 + 边缘羽化。
+粘贴融合: Lab 亮度补偿 + 边缘羽化.
 """
 import numpy as np
 
@@ -61,7 +61,7 @@ def _dilate(m, n):
 
 
 def _inner_distance(mask, max_d):
-    """到背景的近似内距离(最外圈=1, 向内+1, 封顶 max_d), 比高斯便宜且不外扩。"""
+    """到背景的近似内距离(最外圈=1, 向内+1, 封顶 max_d), 比高斯便宜且不外扩."""
     dist = np.zeros(mask.shape, np.float32)
     cur = mask
     for _ in range(max_d):
@@ -72,8 +72,8 @@ def _inner_distance(mask, max_d):
 
 def blend_patch(dst_bgr, src_bgra, strength=0.7, feather_px=None):
     """
-    带 alpha 的 src(BGRA) 融到 dst(BGR), 返回合成 BGR。
-    strength: 0=硬贴, 1=亮度完全对齐背景; feather_px 默认随 strength 取 0~6px。
+    带 alpha 的 src(BGRA) 融到 dst(BGR), 返回合成 BGR.
+    strength: 0=硬贴, 1=亮度完全对齐背景; feather_px 默认随 strength 取 0~6px.
     """
     alpha = src_bgra[..., 3].astype(np.float32) / 255.0
     if alpha.max() <= 0.0:

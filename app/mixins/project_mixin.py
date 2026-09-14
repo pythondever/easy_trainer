@@ -21,7 +21,7 @@ class ProjectMixin(object):
         if not ok or not name:
             return
         if name in self.db.get_projects():
-            MessageBox.warning(self, "创建项目", "项目名称已存在！")
+            MessageBox.warning(self, "创建项目", "项目名称已存在!")
             return
         self.db.add_project(name)
         self._log("创建项目: {}".format(name))
@@ -32,14 +32,14 @@ class ProjectMixin(object):
         if not ok or not new_name or new_name == old_name:
             return
         if new_name in self.db.get_projects():
-            MessageBox.warning(self, "修改名称", "项目名称已存在！")
+            MessageBox.warning(self, "修改名称", "项目名称已存在!")
             return
         self.db.rename_project(old_name, new_name)
         self._log("重命名项目: {} → {}".format(old_name, new_name))
         self.refresh_project_list()
 
     def _delete_project(self, name):
-        if MessageBox.question(self, "删除项目", "确定删除项目「{}」吗?\n".format(name),
+        if MessageBox.question(self, "删除项目", "确定删除项目\"{}\"吗?\n".format(name),
                                default_yes=True):
             self._log("删除项目: {}".format(name))
             self.db.delete_project(name)
@@ -130,7 +130,7 @@ class ProjectMixin(object):
         if not ok or not name:
             return
         if not self.db.add_dataset(project_name, name):
-            MessageBox.warning(self, "添加数据集", "该项目下已存在同名数据集！")
+            MessageBox.warning(self, "添加数据集", "该项目下已存在同名数据集!")
             return
         self._log("创建数据集: {}/{}".format(project_name, name))
         self.refresh_project_list()
@@ -140,7 +140,7 @@ class ProjectMixin(object):
         if not ok or not name or name == old_name:
             return
         if not self.db.rename_dataset(project_name, old_name, name):
-            MessageBox.warning(self, "修改数据集", "该项目下已存在同名数据集！")
+            MessageBox.warning(self, "修改数据集", "该项目下已存在同名数据集!")
             return
         self._log("重命名数据集: {} → {}".format(project_name, old_name, name))
         self.refresh_project_list()
@@ -148,7 +148,7 @@ class ProjectMixin(object):
     def _delete_dataset(self, project_name, ds_name):
         if MessageBox.question(
                 self, "删除数据集",
-                "确定删除数据集「{}」吗?\n".format(ds_name),
+                "确定删除数据集\"{}\"吗?\n".format(ds_name),
                 default_yes=True):
             self.db.delete_dataset(project_name, ds_name)
             # 训练/模型记录可能被多个数据集共用,只移除该数据集,无引用才删记录
@@ -164,7 +164,7 @@ class ProjectMixin(object):
             self.refresh_project_list()
 
     def _on_dataset_move(self, project_name, ds_name):
-        """右键「移动」: 选择目标数据集 → 确认 → 移动数据。"""
+        """右键"移动": 选择目标数据集 → 确认 → 移动数据."""
         # 1. 选择目标数据集(本项目之外的其他项目数据集)
         target = self._select_move_target(project_name, ds_name)
         if target is None:
@@ -173,8 +173,8 @@ class ProjectMixin(object):
         # 2. 确认
         if not MessageBox.question(
                 self, "移动数据集",
-                "是否将「{}」的数据从\n{} / {} 移动到 {} / {}？\n"
-                "移动后源数据集将清空。".format(
+                "是否将\"{}\"的数据从\n{} / {} 移动到 {} / {}?\n"
+                "移动后源数据集将清空.".format(
                     ds_name, project_name, ds_name, dst_proj, dst_ds),
                 default_yes=True):
             return
@@ -191,17 +191,17 @@ class ProjectMixin(object):
 
     def _select_move_target(self, src_project, src_ds):
         """
-        弹目标数据集选择对话框(同项目/跨项目，排除源数据集自身)。
-        返回(项目, 数据集)或 None。
+        弹目标数据集选择对话框(同项目/跨项目, 排除源数据集自身).
+        返回(项目, 数据集)或 None.
         """
-        candidates = []  # (项目, 数据集) —— 排除源数据集自身, 同项目内其他数据集也可选
+        candidates = []  # (项目, 数据集) - 排除源数据集自身, 同项目内其他数据集也可选
         for proj in self.db.get_projects():
             for ds in self.db.get_datasets(proj):
                 if proj == src_project and ds["dataset_name"] == src_ds:
                     continue
                 candidates.append((proj, ds["dataset_name"]))
         if not candidates:
-            MessageBox.warning(self, "移动数据集", "没有可移动到的目标数据集（本项目之外无数据集）")
+            MessageBox.warning(self, "移动数据集", "没有可移动到的目标数据集(本项目之外无数据集)")
             return None
         dlg = QDialog(self)
         dlg.setObjectName("MoveTargetDialog")
@@ -209,7 +209,7 @@ class ProjectMixin(object):
         layout = QVBoxLayout(dlg)
         layout.setContentsMargins(20, 18, 20, 18)
         layout.setSpacing(14)
-        tip = QLabel("选择要将数据移动到的目标数据集：")
+        tip = QLabel("选择要将数据移动到的目标数据集:")
         layout.addWidget(tip)
         combo = QComboBox(dlg)
         for proj, ds in candidates:
@@ -226,8 +226,8 @@ class ProjectMixin(object):
     def _move_dataset_data(self, src_proj, src_ds, dst_proj, dst_ds):
         """
         核心:源数据集数据合并到目标数据集,源清空.
-        覆盖:缓存索引(按图像去重)、db 导入绑定路径列表、标签类别、
-        标注/总数统计、已删除图像记录。
+        覆盖:缓存索引(按图像去重), db 导入绑定路径列表, 标签类别,
+        标注/总数统计, 已删除图像记录.
         """
         # ---- 1. 缓存合并(image_path 归一化去重; 源中已存在于目标的跳过)----
         src_index = self.dataset_cache.get(src_proj, {}).get(src_ds) or {}
@@ -248,7 +248,7 @@ class ProjectMixin(object):
             src_index["all"] = []
             src_index["labels"] = {}
 
-        # ---- 2. db：目标合并导入绑定 + 重算统计 ----
+        # ---- 2. db: 目标合并导入绑定 + 重算统计 ----
         src_binding = self.db.get_dataset_import(src_proj, src_ds) or {}
         dst_binding = self.db.get_dataset_import(dst_proj, dst_ds) or {}
         dst_img = get_paths(dst_binding, "image")
@@ -264,14 +264,14 @@ class ProjectMixin(object):
             dst_binding.get("label_fmt", ""),
             labeled=labeled_new, total=total_new)
 
-        # ---- 3. db：目标标签合并----
+        # ---- 3. db: 目标标签合并----
         dst_labels = self.db.get_dataset_labels(dst_proj, dst_ds)
         for lbl, color in self.db.get_dataset_labels(src_proj, src_ds).items():
             if lbl not in dst_labels:
                 dst_labels[lbl] = color
         self.db.save_dataset_labels(dst_proj, dst_ds, dst_labels)
 
-        # ---- 4. db：源清空(导入绑定 + 标签)----
+        # ---- 4. db: 源清空(导入绑定 + 标签)----
         self.db.clear_dataset_import(src_proj, src_ds)
         self.db.save_dataset_labels(src_proj, src_ds, {})
         # class_id 映射合并进目标(目标优先),源清空

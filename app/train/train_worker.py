@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""训练工作线程：以子进程方式运行 RF-DETR 训练，定时轮询指标并转发信号。"""
+"""训练工作线程: 以子进程方式运行 RF-DETR 训练, 定时轮询指标并转发信号."""
 
 import collections
 import copy
@@ -27,10 +27,10 @@ except ImportError:
 
 WORKSPACE = os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__))))
-# 打包后 runner 是 .pyd（脚本文件不存在），子进程只能 -c 导入本模块再调 main()
+# 打包后 runner 是 .pyd(脚本文件不存在), 子进程只能 -c 导入本模块再调 main()
 TRAIN_RUNNER = "app.train.train_runner"
 CLASSIFY_TRAIN_RUNNER = "app.train.classify_train_runner"
-# 判定一个 epoch 是否已产出指标(val 有了、或 train 行到了)的列
+# 判定一个 epoch 是否已产出指标(val 有了, 或 train 行到了)的列
 _EPOCH_KEYS = ("val/mAP_50", "val/segm_mAP_50", "val/loss", "train/loss")
 
 CSV_POLL_INTERVAL = 5   # 定时检查 metrics.csv 修改时间的间隔(秒)
@@ -51,7 +51,7 @@ _PC_TABLE_END = re.compile(r"^\s*[\u2514\u2517\u255A\u2570][\s\u2500-\u257F]*$")
 
 
 class TrainWorker(QThread):
-    """运行一次训练(子进程),通过信号上报进度/指标/完成/错误。"""
+    """运行一次训练(子进程),通过信号上报进度/指标/完成/错误."""
 
     progress = Signal(int, int)          # epoch, total_epochs
     metrics = Signal(dict)                      # {"epochs": [...], "series": {...}}
@@ -66,16 +66,16 @@ class TrainWorker(QThread):
         self._stop_flag = False
 
     def stop(self):
-        """请求停止：置标志并终止子进程及其孙进程。"""
+        """请求停止: 置标志并终止子进程及其孙进程."""
         self._stop_flag = True
         self._kill_proc()
 
     def _kill_proc(self):
-        """终止子进程及其孙进程；不动 _stop_flag（监控循环收尾也要用）。"""
+        """终止子进程及其孙进程; 不动 _stop_flag(监控循环收尾也要用)."""
         kill_process_tree(self._proc)
 
     def proc_exited(self):
-        """子进程是否已退出（队列据此判断显存是否可回收）。"""
+        """子进程是否已退出(队列据此判断显存是否可回收)."""
         proc = self._proc
         if proc is None:
             return True
@@ -90,7 +90,7 @@ class TrainWorker(QThread):
 
     @staticmethod
     def _row_map(row):
-        """该行的主指标值(mAP@50, 分割任务无 box 时回退 segm); 无法解析记 0。"""
+        """该行的主指标值(mAP@50, 分割任务无 box 时回退 segm); 无法解析记 0."""
         for key in ("val/mAP_50", "val/segm_mAP_50"):
             try:
                 v = float(row.get(key))
@@ -101,7 +101,7 @@ class TrainWorker(QThread):
         return 0.0
 
     def _write_row(self, series, per_class, idx, row):
-        """把一行的 val 指标写到各序列的 idx 位置(不足则补 None, 已存在则覆盖)。"""
+        """把一行的 val 指标写到各序列的 idx 位置(不足则补 None, 已存在则覆盖)."""
 
         def _f(v):
             try:
@@ -137,7 +137,7 @@ class TrainWorker(QThread):
 
         present = {}
         for k, v in row.items():
-            # CSV 每类 5 列：val/{AP,AR,F1,Precision,Recall}/<类>
+            # CSV 每类 5 列: val/{AP,AR,F1,Precision,Recall}/<类>
             for prefix, field in (("val/AP/", "AP50-95"), ("val/AR/", "AR"),
                                   ("val/F1/", "F1"),
                                   ("val/Precision/", "Precision"),
@@ -158,10 +158,10 @@ class TrainWorker(QThread):
 
     def _should_apply(self, series, ep, row):
         """
-        该 epoch 是否需要写入: 尚未记录, 或已记录但值无效且本行有效。
+        该 epoch 是否需要写入: 尚未记录, 或已记录但值无效且本行有效.
 
         stdout 通道会先收到训练前的预热表(全 0), 之后才是真实值(CSV 通道同样
-        会补到)。若一律"先到为准", 全 0 的预热表会永久占位, mAP 永远显示 0。
+        会补到). 若一律"先到为准", 全 0 的预热表会永久占位, mAP 永远显示 0.
         """
         eps = series.get("epochs") or []
         if ep not in eps:
@@ -172,8 +172,8 @@ class TrainWorker(QThread):
         return (prev_v or 0) <= 0 and self._row_map(row) > 0
 
     def _accumulate(self, epochs, series, per_class, row):
-        """把一行的 val 指标累积进 GUI 需要的 series 结构。"""
-        ep = int(row.get("epoch", 0)) + 1   # CSV epoch 从 0 计，GUI 从 1 计
+        """把一行的 val 指标累积进 GUI 需要的 series 结构."""
+        ep = int(row.get("epoch", 0)) + 1   # CSV epoch 从 0 计, GUI 从 1 计
         eps = series.setdefault("epochs", [])
         if not self._should_apply(series, ep, row):
             return (epochs, series, per_class)
@@ -200,7 +200,7 @@ class TrainWorker(QThread):
 
     def _consume_stdout_line(self, line, pending, epochs, series, per_class):
         """
-        从 rf-detr stdout 的 Val 表格兜底取指标（metrics.csv 不落盘时的保险）。
+        从 rf-detr stdout 的 Val 表格兜底取指标(metrics.csv 不落盘时的保险).
         """
         line = line.rstrip("\r\n")
         if pending.get("phase") == "perclass" and _PC_TABLE_END.match(line):
@@ -277,8 +277,8 @@ class TrainWorker(QThread):
         env["PYTHONIOENCODING"] = "utf-8"
         bootstrap = runner_bootstrap(module)
         if self._stop_flag:
-            # 用户在 Popen 之前就点了停止：这里再起进程会立刻脱管
-            # （循环条件马上为假，rc 拿到 None，既不报错也不杀）
+            # 用户在 Popen 之前就点了停止: 这里再起进程会立刻脱管
+            # (循环条件马上为假, rc 拿到 None, 既不报错也不杀)
             return
         self._proc = subprocess.Popen(
             [python, "-c", bootstrap, cfg_path],
@@ -306,12 +306,12 @@ class TrainWorker(QThread):
 
         def _sync_csv():
             """
-            把 CSV 全量重解析并幂等写进 series, 返回是否有变化。
+            把 CSV 全量重解析并幂等写进 series, 返回是否有变化.
 
-            rf-detr 每个 epoch 会写多行(中间步的 lr 行、val 行、train 行), 且
-            写入时间分散。若只解析"上次之后的新增行", 同一 epoch 的行一旦跨了
-            轮询批次, 迟到的 train/loss 就再也补不进去(train_loss 隔帧为 None)。
-            全量重解析让每轮的合并结果只取决于 CSV 内容, 与批次边界无关。
+            rf-detr 每个 epoch 会写多行(中间步的 lr 行, val 行, train 行), 且
+            写入时间分散. 若只解析"上次之后的新增行", 同一 epoch 的行一旦跨了
+            轮询批次, 迟到的 train/loss 就再也补不进去(train_loss 隔帧为 None).
+            全量重解析让每轮的合并结果只取决于 CSV 内容, 与批次边界无关.
             """
             nonlocal last_mtime
             if not os.path.exists(csv_path):
@@ -349,7 +349,7 @@ class TrainWorker(QThread):
                 gui_ep = ep + 1
                 if gui_ep in csv_seen:
                     # 本 epoch 已由 CSV 写入过: 只补行内新出现的键(如迟到的
-                    # train/loss)。_write_row 只写 row 里存在的键。
+                    # train/loss). _write_row 只写 row 里存在的键.
                     idx = eps.index(gui_ep)
                     prev = series.get("train_loss") or []
                     if (row.get("train/loss") not in (None, "")
@@ -362,7 +362,7 @@ class TrainWorker(QThread):
                     continue
                 else:
                     # 新 epoch, 或该位置的值来自 stdout 的预热表: CSV 才是真值,
-                    # 直接覆盖(stdout 预热表的 mAP 非 0 时会挡住真实 val 值)。
+                    # 直接覆盖(stdout 预热表的 mAP 非 0 时会挡住真实 val 值).
                     if gui_ep in eps:
                         idx = eps.index(gui_ep)
                     else:
@@ -378,7 +378,7 @@ class TrainWorker(QThread):
             return changed
 
         def _poll_csv():
-            """每 CSV_POLL_INTERVAL 秒检查一次 metrics.csv，变了就累积新 epoch 并 emit。"""
+            """每 CSV_POLL_INTERVAL 秒检查一次 metrics.csv, 变了就累积新 epoch 并 emit."""
             nonlocal last_poll
             now = time.time()
             if now - last_poll < CSV_POLL_INTERVAL:
@@ -422,7 +422,7 @@ class TrainWorker(QThread):
         log_last_flush = 0.0
 
         def _flush_log(force=False):
-            """把攒下的日志行合并成一条发出(force=True 时立即冲刷)。"""
+            """把攒下的日志行合并成一条发出(force=True 时立即冲刷)."""
             nonlocal log_buf, log_last_flush
             if not log_buf:
                 return
@@ -471,8 +471,8 @@ class TrainWorker(QThread):
                     break
             except Exception:
                 poll_error = traceback.format_exc()
-                # 必须在这里收尾：UI 收到 failed 就把 worker 句柄丢了，
-                # 之后没人能再杀这个子进程，它和 dataloader 孙进程会一直占显存
+                # 必须在这里收尾: UI 收到 failed 就把 worker 句柄丢了,
+                # 之后没人能再杀这个子进程, 它和 dataloader 孙进程会一直占显存
                 self._kill_proc()
                 break
         _flush_log(force=True)
@@ -481,7 +481,7 @@ class TrainWorker(QThread):
         rc = self._proc.poll()
         result_path = os.path.join(self._config["timestamp_dir"], "result.json")
         if poll_error:
-            self.failed.emit("训练监控异常，已终止。\n\n{}".format(poll_error))
+            self.failed.emit("训练监控异常, 已终止.\n\n{}".format(poll_error))
         elif rc == 0 and os.path.exists(result_path) and not result_emitted:
             try:
                 with open(result_path, "r", encoding="utf-8") as f:

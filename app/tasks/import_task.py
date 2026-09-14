@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""后台导入线程：扫描图像目录，可选读取标签(yolo txt / labelme json)。"""
+"""后台导入线程: 扫描图像目录, 可选读取标签(yolo txt / labelme json)."""
 import os
 from PySide6.QtCore import QThread, Signal
 from app.core.constants import IMAGE_EXTS
@@ -13,7 +13,7 @@ from app.core.log import write_log
 class ImportTask(QThread):
     """
     后台导入线程: 扫描图像目录,可选读取标签(yolo txt / labelme json),
-    生成整图缩略图(默认大图模式);ROI 裁剪小图在筛选时懒生成。
+    生成整图缩略图(默认大图模式);ROI 裁剪小图在筛选时懒生成.
     结果以 list 通过 finished_signal 返回:
     [{"image_path", "label_path", "boxes": [(x,y,w,h,label)]或None, "labels": [...],
       "thumb": QImage或None, "rois": {label: [QImage]}}]
@@ -35,7 +35,7 @@ class ImportTask(QThread):
         self._seen_ids = {}
 
     def cancel(self):
-        """请求停止: 置取消标志, run 循环内检查后退出。"""
+        """请求停止: 置取消标志, run 循环内检查后退出."""
         self._cancel = True
 
     @staticmethod
@@ -108,7 +108,7 @@ class ImportTask(QThread):
                         "_has_label_file": has_label_file,
                     })
             except Exception as e:
-                # 整条记录跳过且不留痕的话，用户不知道哪张图没导进来
+                # 整条记录跳过且不留痕的话, 用户不知道哪张图没导进来
                 write_log("导入跳过 {}: {}".format(img_path, e))
             if total > 0:
                 pct = int((i + 1) / total * 100)
@@ -118,7 +118,7 @@ class ImportTask(QThread):
         self.finished_signal.emit(result)
 
     def _label_of(self, img_path):
-        """在多个标签目录中找同名的标签文件(txt/json)，返回存在的第一个; 无则空。"""
+        """在多个标签目录中找同名的标签文件(txt/json), 返回存在的第一个; 无则空."""
         if not self.label_paths or not self.fmt:
             return ""
         base = os.path.splitext(os.path.basename(img_path))[0]
@@ -133,16 +133,16 @@ class ImportTask(QThread):
 
     def _read_boxes(self, img_path, label_path=""):
         """
-        读取标签，返回 (boxes, labels, from_same_json, has_label_file):
+        读取标签, 返回 (boxes, labels, from_same_json, has_label_file):
         boxes = 像素坐标 [(x, y, w, h, label)]; labels = 对应类别列表
-        无标签返回 (None, [], False, False)。
-        has_label_file = 标签文件存在且非空；图像解码失败时仍可能为 True，
-        供「已标注」统计使用（见 label_utils.rec_is_labeled）。
-        from_same_json 表示取自图像同路径 json，调用方据此落
-        _has_annotation_json 标记，主线程就不必为判断来源再探一次磁盘。
-        优先读图像同路径 labelme json，与标注界面 _load_current
-        一致；没有才回退 label_paths 的导入标签(txt/json)。否则重启后首页
-        缩略图会显示标注界面修改前的旧标签。
+        无标签返回 (None, [], False, False).
+        has_label_file = 标签文件存在且非空; 图像解码失败时仍可能为 True,
+        供"已标注"统计使用(见 label_utils.rec_is_labeled).
+        from_same_json 表示取自图像同路径 json, 调用方据此落
+        _has_annotation_json 标记, 主线程就不必为判断来源再探一次磁盘.
+        优先读图像同路径 labelme json, 与标注界面 _load_current
+        一致; 没有才回退 label_paths 的导入标签(txt/json). 否则重启后首页
+        缩略图会显示标注界面修改前的旧标签.
         """
         same_path_json = same_dir_json(img_path)
         if same_path_json:
@@ -166,7 +166,7 @@ class ImportTask(QThread):
             except Exception:
                 return None, [], False, label_file_has_content(
                     label_file, fmt)
-            # 解析统一走 label_utils，id→名 的映射同时被记进 _seen_ids
+            # 解析统一走 label_utils, id→名 的映射同时被记进 _seen_ids
             shapes = load_yolo_shapes(label_file, iw, ih, self._id_names,
                                       self._seen_ids)
         else:

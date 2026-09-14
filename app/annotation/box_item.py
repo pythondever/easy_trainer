@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""标注图形项：矩形框 + 多边形，均支持选中、拖动、标签 chip 渲染。"""
+"""标注图形项: 矩形框 + 多边形, 均支持选中, 拖动, 标签 chip 渲染."""
 from PySide6.QtCore import QPointF, QRectF, Qt
 from PySide6.QtGui import (QBrush, QColor, QPen, QFont, QFontMetrics, QPainter,
                            QPolygonF, QPainterPath)
@@ -8,7 +8,7 @@ import hashlib
 from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsPolygonItem, QGraphicsItem
 from app.core.utils import ui_font_family
 
-# 深色背景下鲜艳的标签配色。
+# 深色背景下鲜艳的标签配色.
 LABEL_COLORS = [
     "#4f7dff", "#3DDC97", "#F5B942", "#F0646E", "#C08BFF",
     "#4FC3F7", "#FF8A65", "#81C784", "#F06292", "#AED581",
@@ -24,7 +24,7 @@ LABEL_COLORS = [
 @functools.lru_cache(maxsize=None)
 def label_color(label):
     """
-    标签固定颜色（确定性哈希，md5 → 调色板索引）。
+    标签固定颜色(确定性哈希, md5 → 调色板索引).
     同一标签名在任何进程/会话中颜色都一致
     lru_cache: 标注重绘热路径(paint)高频调用, 避免每次重复 md5 计算
     """
@@ -38,11 +38,11 @@ def label_color(label):
 
 def assign_label_color(label, used):
     """
-    批量分配用: 从 label_color 的哈希位开始线性探测, 取第一个未被占用的颜色。
-    used: 已分配的颜色集合(QColor.name() 小写 hex)。
+    批量分配用: 从 label_color 的哈希位开始线性探测, 取第一个未被占用的颜色.
+    used: 已分配的颜色集合(QColor.name() 小写 hex).
     纯哈希在标签数接近调色板容量时必然撞色(N=20 撞 4 对), 探测后只要
-    N <= len(LABEL_COLORS) 就能保证同批标签两两不同色。
-    调色板用尽时退化成 label_color(仍确定, 只是可能与别人同色)。
+    N <= len(LABEL_COLORS) 就能保证同批标签两两不同色.
+    调色板用尽时退化成 label_color(仍确定, 只是可能与别人同色).
     """
     try:
         digest = hashlib.md5(str(label).encode("utf-8")).hexdigest()
@@ -62,7 +62,7 @@ _CHIP_MIN_W = 30
 
 
 def _chip_font():
-    """chip 文字字体(含 CJK fallback), 全进程共享一份。"""
+    """chip 文字字体(含 CJK fallback), 全进程共享一份."""
     global _CHIP_FONT
     if _CHIP_FONT is None:
         font = QFont(ui_font_family())
@@ -75,7 +75,7 @@ def _chip_font():
 
 
 def _chip_font_metrics():
-    """chip 文字度量, 用于算 chip 宽度; 随字体一并缓存。"""
+    """chip 文字度量, 用于算 chip 宽度; 随字体一并缓存."""
     global _CHIP_FONT_METRICS
     if _CHIP_FONT_METRICS is None:
         _CHIP_FONT_METRICS = QFontMetrics(_chip_font())
@@ -84,18 +84,18 @@ def _chip_font_metrics():
 
 @functools.lru_cache(maxsize=512)
 def _chip_text_width(text):
-    """chip 精确宽度(按字体度量)。同一标签名在成百上千个标注上重复出现。"""
+    """chip 精确宽度(按字体度量). 同一标签名在成百上千个标注上重复出现."""
     return max(_CHIP_MIN_W, _chip_font_metrics().horizontalAdvance(text) + 12)
 
 
 @functools.lru_cache(maxsize=512)
 def _chip_screen_width(text):
-    """chip 屏幕宽度估算(CJK 13px / ASCII 7px), 用于点击区换算。"""
+    """chip 屏幕宽度估算(CJK 13px / ASCII 7px), 用于点击区换算."""
     return max(_CHIP_MIN_W, sum(13 if ord(c) > 127 else 7 for c in text) + 12)
 
 
 class AnnotationBoxItem(QGraphicsRectItem):
-    """场景坐标下的标注框（rect 即像素坐标）。"""
+    """场景坐标下的标注框(rect 即像素坐标)."""
 
     # 八向缩放手柄
     H_TL, H_TM, H_TR, H_ML, H_MR, H_BL, H_BM, H_BR = range(8)
@@ -133,11 +133,11 @@ class AnnotationBoxItem(QGraphicsRectItem):
     # ---------------- 几何 ---------------- 
     def shape(self):
         """
-        命中测试范围 = 框本体 + 标签 chip + 缩放手柄。
-        QGraphicsRectItem.shape() 默认只有框本体矩形，而 chip 画在框上方
-        22px（框外）、手柄一半在框外 → 场景命中测试（scene.items/itemAt）
-        根本不会把点击事件派发给本 item。必须重载 shape 包含这些区域，
-        否则点击标签名改类别、点手柄外侧调整大小都"没反应"。
+        命中测试范围 = 框本体 + 标签 chip + 缩放手柄.
+        QGraphicsRectItem.shape() 默认只有框本体矩形, 而 chip 画在框上方
+        22px(框外), 手柄一半在框外 → 场景命中测试(scene.items/itemAt)
+        根本不会把点击事件派发给本 item. 必须重载 shape 包含这些区域,
+        否则点击标签名改类别, 点手柄外侧调整大小都"没反应".
         """
         path = QPainterPath()
         path.addRect(self.rect())
@@ -148,7 +148,7 @@ class AnnotationBoxItem(QGraphicsRectItem):
         return path
 
     def _compute_handle_size(self):
-        """手柄直径 [2,10], 除以 view 缩放屏幕恒定, 上限 20 防异常。"""
+        """手柄直径 [2,10], 除以 view 缩放屏幕恒定, 上限 20 防异常."""
         r = self.rect()
         short = min(r.width(), r.height())
         s = max(2.0, min(10.0, short / 3.0))
@@ -159,11 +159,11 @@ class AnnotationBoxItem(QGraphicsRectItem):
 
     def _update_handles(self):
         """
-        每个矩形固定 6 个圆形手柄：4 个角点 + 2 个长边中点。
-        按实际方向判断长边是哪一对：
-        - w ≥ h：长边是 top/bottom 边（长 = w）→ 中点 H_TM/H_BM（分布在水平中线 cx 上）
-        - h > w：长边是 left/right 边（长 = h）→ 中点 H_ML/H_MR（分布在垂直中线 cy 上）
-        中点放长边保证手柄间距足够大，避免粘连。
+        每个矩形固定 6 个圆形手柄: 4 个角点 + 2 个长边中点.
+        按实际方向判断长边是哪一对:
+        - w ≥ h: 长边是 top/bottom 边(长 = w)→ 中点 H_TM/H_BM(分布在水平中线 cx 上)
+        - h > w: 长边是 left/right 边(长 = h)→ 中点 H_ML/H_MR(分布在垂直中线 cy 上)
+        中点放长边保证手柄间距足够大, 避免粘连.
         """
         r = self.rect()
         s = self._compute_handle_size()
@@ -190,9 +190,9 @@ class AnnotationBoxItem(QGraphicsRectItem):
 
     def set_label(self, label, color=None):
         """
-        修改类别。未显式传 color 时按新标签重新取色：
-        优先场景标签色映射（scene.label_colors，db 自定义色），
-        否则确定性哈希色——保证改类别后框和 chip 颜色跟随新标签。
+        修改类别. 未显式传 color 时按新标签重新取色:
+        优先场景标签色映射(scene.label_colors, db 自定义色),
+        否则确定性哈希色 - 保证改类别后框和 chip 颜色跟随新标签.
         """
         self.label = label
         if color is None:
@@ -226,12 +226,12 @@ class AnnotationBoxItem(QGraphicsRectItem):
                 return key
         return None
 
-    # ---------------- 标签 chip 点击（修改类别） ----------------
+    # ---------------- 标签 chip 点击(修改类别) ----------------
     def _view_scale(self):
         """
-        当前 view 的缩放系数（无 view 时 1.0）。
-        chip 绘制在屏幕坐标（恒定像素大小），点击检测在局部坐标，
-        必须把屏幕宽度按 scale 换算回局部坐标，否则缩小视图时点不中。"""
+        当前 view 的缩放系数(无 view 时 1.0).
+        chip 绘制在屏幕坐标(恒定像素大小), 点击检测在局部坐标,
+        必须把屏幕宽度按 scale 换算回局部坐标, 否则缩小视图时点不中."""
         scene = self.scene()
         if scene is None:
             return 1.0
@@ -242,8 +242,8 @@ class AnnotationBoxItem(QGraphicsRectItem):
 
     def _chip_rect_local(self):
         """
-        chip 点击区域, 锚定框右下角外侧(右对齐+底下方2px), 全部偏移/尺寸按缩放换算回局部坐标。
-        与 _draw_label 的屏幕锚定保持一致, 否则放大视图时 chip 会离框越来越远。
+        chip 点击区域, 锚定框右下角外侧(右对齐+底下方2px), 全部偏移/尺寸按缩放换算回局部坐标.
+        与 _draw_label 的屏幕锚定保持一致, 否则放大视图时 chip 会离框越来越远.
         """
         r = self.rect()
         text = self.label[:12]
@@ -259,14 +259,14 @@ class AnnotationBoxItem(QGraphicsRectItem):
         return rect
 
     def chip_scene_pos(self):
-        """chip 中心点（场景坐标），用于菜单弹出定位。"""
+        """chip 中心点(场景坐标), 用于菜单弹出定位."""
         c = self._chip_rect_local().center()
         return QPointF(self.pos().x() + c.x(), self.pos().y() + c.y())
 
     def _chip_hit_pad(self, base=3.0):
-        """chip 命中扩展: 屏幕恒定像素换算回局部坐标。
+        """chip 命中扩展: 屏幕恒定像素换算回局部坐标.
         若不除 scale, 放大视图后命中区膨胀成 base*scale 屏幕像素,
-        菜单关闭后点击外部易误中 chip 导致菜单反复弹出(一直展开)。"""
+        菜单关闭后点击外部易误中 chip 导致菜单反复弹出(一直展开)."""
         s = self._view_scale()
         return base / s if s > 1e-6 else base
 
@@ -336,7 +336,7 @@ class AnnotationBoxItem(QGraphicsRectItem):
     def itemChange(self, change, value):
         if change == QGraphicsItem.ItemPositionChange and self.scene() is not None:
             # 移动时限制在图像范围内
-            # 注意：rect 是局部坐标，场景坐标 = position + rect 偏移
+            # 注意: rect 是局部坐标, 场景坐标 = position + rect 偏移
             img_rect = self.scene().image_rect
             if img_rect is not None:
                 scene_left = value.x() + self.rect().left()
@@ -384,7 +384,7 @@ class AnnotationBoxItem(QGraphicsRectItem):
     # ---------------- 绘制 ---------------- 
     def boundingRect(self):
         """
-        重绘范围 = 框 + 缩放手柄 + 标签 chip。
+        重绘范围 = 框 + 缩放手柄 + 标签 chip.
         """
         r = self.rect()
         o = getattr(self, "_handle_size", self.HANDLE_SIZE)
@@ -435,7 +435,7 @@ class AnnotationBoxItem(QGraphicsRectItem):
 # ---------------- 多边形标注项 ----------------
 
 class AnnotationPolygonItem(QGraphicsPolygonItem):
-    """场景坐标下的多边形标注（顶点即像素坐标）。与 BoxItem 共用 chip 渲染与配色。"""
+    """场景坐标下的多边形标注(顶点即像素坐标). 与 BoxItem 共用 chip 渲染与配色."""
 
     HANDLE_SIZE = 8.0
 
@@ -444,7 +444,7 @@ class AnnotationPolygonItem(QGraphicsPolygonItem):
         self.label = label
         self.editable = editable
         self._color = color
-        # points: [[x, y], ...]（场景/像素坐标）
+        # points: [[x, y], ...](场景/像素坐标)
         poly = QPolygonF([QPointF(p[0], p[1]) for p in points])
         self.setPolygon(poly)
         pen_color = color if color is not None else label_color(label)
@@ -489,7 +489,7 @@ class AnnotationPolygonItem(QGraphicsPolygonItem):
         return "polygon"
 
     def _compute_handle_size(self):
-        """手柄直径 [2,6], 除以 view 缩放屏幕恒定, 上限 20 防异常。"""
+        """手柄直径 [2,6], 除以 view 缩放屏幕恒定, 上限 20 防异常."""
         r = self.polygon().boundingRect()
         area = max(1.0, r.width() * r.height())
         s = max(2.0, min(6.0, area ** 0.5 * 0.25))
@@ -500,9 +500,9 @@ class AnnotationPolygonItem(QGraphicsPolygonItem):
 
     def set_label(self, label, color=None):
         """
-        修改类别。未显式传 color 时按新标签重新取色：
-        优先场景标签色映射（scene.label_colors，db 自定义色），
-        否则确定性哈希色——保证改类别后框和 chip 颜色跟随新标签。
+        修改类别. 未显式传 color 时按新标签重新取色:
+        优先场景标签色映射(scene.label_colors, db 自定义色),
+        否则确定性哈希色 - 保证改类别后框和 chip 颜色跟随新标签.
         """
         self.label = label
         if color is None:
@@ -520,14 +520,14 @@ class AnnotationPolygonItem(QGraphicsPolygonItem):
         self.update()
 
     def points(self):
-        """返回 [[x, y], ...]（场景/像素坐标，含 pos 偏移）。
-        拖动后保存必须叠加 pos，否则关闭再打开位置丢失。"""
+        """返回 [[x, y], ...](场景/像素坐标, 含 pos 偏移).
+        拖动后保存必须叠加 pos, 否则关闭再打开位置丢失."""
         pos = self.pos()
         return [[p.x() + pos.x(), p.y() + pos.y()] for p in self.polygon()]
 
-    # ---------------- 标签 chip 点击（修改类别） ----------------
+    # ---------------- 标签 chip 点击(修改类别) ----------------
     def _view_scale(self):
-        """当前 view 的缩放系数（无 view 时 1.0），供 chip 点击区域换算。"""
+        """当前 view 的缩放系数(无 view 时 1.0), 供 chip 点击区域换算."""
         scene = self.scene()
         if scene is None:
             return 1.0
@@ -537,7 +537,7 @@ class AnnotationPolygonItem(QGraphicsPolygonItem):
         return views[0].transform().m11() or 1.0
 
     def _chip_rect_local(self):
-        """chip 点击区域, 锚定外接矩形中心, 尺寸按缩放换算(记忆化, 同矩形版)。"""
+        """chip 点击区域, 锚定外接矩形中心, 尺寸按缩放换算(记忆化, 同矩形版)."""
         r = self.polygon().boundingRect()
         text = self.label[:12]
         scale = self._view_scale()
@@ -559,9 +559,9 @@ class AnnotationPolygonItem(QGraphicsPolygonItem):
         c = self._chip_rect_local().center()
         return QPointF(self.pos().x() + c.x(), self.pos().y() + c.y())
 
-    # ---------------- 交互（拖动 + 图像范围限制）----------------
+    # ---------------- 交互(拖动 + 图像范围限制)----------------
     def shape(self):
-        """命中测试范围 = 多边形本体 + 标签 chip + 顶点手柄（选中时）。"""
+        """命中测试范围 = 多边形本体 + 标签 chip + 顶点手柄(选中时)."""
         path = QPainterPath()
         path.addPolygon(self.polygon())
         path.addRect(self._chip_rect_local())
@@ -571,7 +571,7 @@ class AnnotationPolygonItem(QGraphicsPolygonItem):
         return path
 
     def _chip_hit_pad(self, base=3.0):
-        """chip 命中扩展: 屏幕恒定像素换算回局部(与矩形一致, 防放大视图命中区膨胀)。"""
+        """chip 命中扩展: 屏幕恒定像素换算回局部(与矩形一致, 防放大视图命中区膨胀)."""
         s = self._view_scale()
         return base / s if s > 1e-6 else base
 
@@ -630,7 +630,7 @@ class AnnotationPolygonItem(QGraphicsPolygonItem):
                 scene.boxes_changed.emit()
 
     def _resize_vertex(self, point):
-        """把顶点拖到局部坐标 point，限制在图像范围内。"""
+        """把顶点拖到局部坐标 point, 限制在图像范围内."""
         scene = self.scene()
         if scene is None or scene.image_rect is None:
             return
