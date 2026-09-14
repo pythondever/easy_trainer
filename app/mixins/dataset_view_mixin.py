@@ -339,7 +339,7 @@ class DatasetViewMixin(object):
 
     def _load_dataset_view(self, project, dataset):
         """
-        右键"载入": 强制重扫并显示数据集图像.
+        强制重扫并显示数据集图像(推理跑完回首页时用).
         丢弃旧缓存强制重扫,否则推理/标注界面新写的 labelme json 不会被读入.
         """
         self._current_dataset = (project, dataset)
@@ -390,7 +390,7 @@ class DatasetViewMixin(object):
     def show_dataset_images(self, project_name, dataset_name, update_stats=False):
         """
         从内存缓存取该数据集图像显示;无缓存则尝试后台加载(多路径合并).
-        update_stats=True 时重扫完成会把 labeled/total 写回 db(右键"载入"场景,
+        update_stats=True 时重扫完成会把 labeled/total 写回 db(双击载入场景,
         推理/标注新写的标签 json 重扫后同步统计).
         """
         self._select_all_mode = False
@@ -906,6 +906,23 @@ class DatasetViewMixin(object):
             self.show_dataset_images(project, dataset)
         else:
             self._reset_image_area()
+
+    def _on_sidebar_dataset_double_clicked(self, project, dataset):
+        """
+        双击数据集行 = 载入: 首次扫描进内存并显示.
+        已载入的直接忽略 - 重扫代价高(整目录重新读盘解标签), 不该被误触;
+        需要重扫的只有推理回写标签那一条链(_load_dataset_view).
+        """
+        self._current_dataset = (project, dataset)
+        if self.dataset_cache.get(project, {}).get(dataset):
+            return
+        if (project, dataset) in self._loading_tasks:
+            return
+        if not self.db.get_dataset_import(project, dataset):
+            self._log("数据集 {}/{} 未导入, 右键\"导入\"选择图像与标签目录".format(
+                project, dataset))
+            return
+        self.show_dataset_images(project, dataset, update_stats=True)
 
     def _on_sidebar_project_clicked(self, project):
         self._current_dataset = None

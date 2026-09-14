@@ -338,6 +338,7 @@ class ProjectCard(QFrame):
 
 class ProjectSidebar(QWidget):
     datasetClicked = Signal(str, str)
+    datasetDoubleClicked = Signal(str, str)
     projectClicked = Signal(str)
     datasetContextMenu = Signal(str, str, object)
     projectContextMenu = Signal(str, object)
@@ -392,6 +393,7 @@ class ProjectSidebar(QWidget):
                 lambda gpos, proj=project: self.projectContextMenu.emit(proj, gpos))
             card.list.contextRequested.connect(self._on_row_context)
             card.list.itemClicked.connect(self._on_row_clicked)
+            card.list.itemDoubleClicked.connect(self._on_row_double_clicked)
             v.insertWidget(0, card)
             self.cards[project] = card
             n_ds += len(datasets)
@@ -417,6 +419,10 @@ class ProjectSidebar(QWidget):
         self.clear_selection(exclude=item.listWidget())
         d = item.data(ROLE)
         self.datasetClicked.emit(d["project"], d["dataset"])
+
+    def _on_row_double_clicked(self, item):
+        d = item.data(ROLE)
+        self.datasetDoubleClicked.emit(d["project"], d["dataset"])
 
     def _on_header_clicked(self, project):
         """点卡头 = 选中项目(取消数据集选中), 由外部清空右侧图像区."""

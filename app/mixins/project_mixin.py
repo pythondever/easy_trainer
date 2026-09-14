@@ -57,6 +57,8 @@ class ProjectMixin(object):
     def _init_project_tree(self):
         self.project_tree = ProjectSidebar()
         self.project_tree.datasetClicked.connect(self._on_sidebar_dataset_clicked)
+        self.project_tree.datasetDoubleClicked.connect(
+            self._on_sidebar_dataset_double_clicked)
         self.project_tree.projectClicked.connect(self._on_sidebar_project_clicked)
         self.project_tree.projectContextMenu.connect(self._on_sidebar_project_menu)
         self.project_tree.datasetContextMenu.connect(self._on_sidebar_dataset_menu)
@@ -98,7 +100,6 @@ class ProjectMixin(object):
 
     def _on_sidebar_dataset_menu(self, project, dataset, global_pos):
         menu = QMenu(self)
-        act_load = menu.addAction("载入")
         act_import = menu.addAction("导入")
         act_export = menu.addAction("导出")
         act_move = menu.addAction("移动")
@@ -107,9 +108,7 @@ class ProjectMixin(object):
         act = menu.exec(global_pos)
         if act is None:
             return
-        if act == act_load:
-            self._load_dataset_view(project, dataset)
-        elif act == act_import:
+        if act == act_import:
             self._import_dataset(project, dataset)
         elif act == act_export:
             self.project_tree.select_dataset(project, dataset)

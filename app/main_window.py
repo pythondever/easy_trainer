@@ -2,6 +2,7 @@ import sys
 import os
 
 from app.widgets.log_dialog import LogDialog
+from app.widgets.popup_flat import ComboPopupFlattener
 from ui.app import Ui_AppUI as MainUI
 from app.core.constants import PAGE_SIZE
 from app.core.utils import (setup_matplotlib_chinese, load_style_sheet,
@@ -26,6 +27,9 @@ class App(QWidget, MainUI, LabelMixin, ProjectMixin, ImportExportMixin,
         self.page_size = PAGE_SIZE
         self.current_page = 0
         self.current_label = "__unlabeled__"
+        # 全局装一次即可覆盖所有对话框里的下拉框; 引用要留着, 否则被回收
+        self._combo_popup_flat = ComboPopupFlattener()
+        QApplication.instance().installEventFilter(self._combo_popup_flat)
         self.init_widget()
         self.register_event()
         self.fill_setting()

@@ -13,6 +13,16 @@ from app.tasks.merge_task import MergeLabelsTask
 from PySide6.QtGui import QIcon, QPixmap, QColor
 from PySide6.QtWidgets import QDialog, QComboBox
 
+# "未标注"不是真实类别, 用黑块占位, 与真实标签的彩色块对齐
+UNLABELED_COLOR = "#000000"
+
+
+def _color_icon(color):
+    """14x14 纯色块, 下拉框里标签前的色标."""
+    pix = QPixmap(14, 14)
+    pix.fill(QColor(color))
+    return QIcon(pix)
+
 
 class LabelMixin(object):
     def _init_label_filter(self):
@@ -24,7 +34,8 @@ class LabelMixin(object):
         self.label_filter_combo.clear()
         self.label_filter_combo.setSizeAdjustPolicy(QComboBox.AdjustToMinimumContentsLengthWithIcon)
         self.label_filter_combo.setMinimumContentsLength(12)
-        self.label_filter_combo.addItem("未标注", "__unlabeled__")
+        self.label_filter_combo.addItem(_color_icon(UNLABELED_COLOR),
+                                        "未标注", "__unlabeled__")
         self.label_filter_combo.currentIndexChanged.connect(self._on_label_filter_changed)
 
     def _on_label_filter_changed(self, idx):
@@ -87,12 +98,9 @@ class LabelMixin(object):
             # 标签按排序放前面,"未标注"固定排最后
             for name, color in sorted(labels.items(),
                                       key=lambda kv: label_sort_key(kv[0])):
-                self.label_filter_combo.addItem(name, name)
-                idx = self.label_filter_combo.count() - 1
-                pix = QPixmap(14, 14)
-                pix.fill(QColor(color))
-                self.label_filter_combo.setItemIcon(idx, QIcon(pix))
-            self.label_filter_combo.addItem("未标注", "__unlabeled__")
+                self.label_filter_combo.addItem(_color_icon(color), name, name)
+            self.label_filter_combo.addItem(_color_icon(UNLABELED_COLOR),
+                                            "未标注", "__unlabeled__")
             if (self.current_label
                     and self.current_label != "__unlabeled__"
                     and self.current_label in labels):

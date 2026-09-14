@@ -230,6 +230,9 @@ QComboBox QAbstractItemView {
     background-color: #20232b;
     border: 1px solid #3a3f4e;
     border-radius: 6px;
+    /* 贴合下拉框的一边不画圆角, 由 popupOpen 抹平控件侧后拼成一整块 */
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
     selection-background-color: #2c3a5e;
     selection-color: #ffffff;
     padding: 4px;
@@ -243,6 +246,15 @@ QComboBox QAbstractItemView::item {
 
 QComboBox QAbstractItemView::item:selected {
     background-color: #2c3a5e;
+}
+
+/* 展开时抹平下拉框的下圆角, 与弹层拼成一整块(标记由 widgets/popup_flat.py 打上).
+   选择器要覆盖各处单独定义过 border-radius 的下拉框 */
+QComboBox[popupOpen="true"],
+#label_comboBox[popupOpen="true"],
+QDialog#MoveTargetDialog QComboBox[popupOpen="true"] {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
 }
 
 QHeaderView::section {
@@ -1057,6 +1069,8 @@ QFrame#headerSeparator {
     background-color: #23262f;
     border: 1px solid #353a48;
     border-radius: 8px;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
     selection-background-color: #2c3a5e;
     selection-color: #ffffff;
     padding: 4px;
