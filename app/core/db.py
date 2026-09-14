@@ -1,8 +1,6 @@
 import lmdb
 import json
 import os
-import time
-import uuid
 from . import keys
 from .log import write_log
 
@@ -80,8 +78,8 @@ class DataBase:
         return os.path.join(self.metrics_dir, "{}.json".format(train_id))
 
     def save_train_metrics(self, train_id, metrics):
-        """把指标写到 metrics/<train_id>.json, 返回文件名(存进记录)而非指标本身.
-
+        """
+        把指标写到 metrics/<train_id>.json, 返回文件名(存进记录)而非指标本身.
         先写 .tmp 再 os.replace: 训练中途被强杀不会留下半个损坏的 json.
         """
         if not train_id:
@@ -466,8 +464,8 @@ class DataBase:
         return False
 
     def _read_deleted_maps(self):
-        """读 deleted_images 全表. 损坏时返回 None(调用方须放弃写入).
-
+        """
+        读 deleted_images 全表. 损坏时返回 None(调用方须放弃写入).
         只读事务取数据: 有了这份副本就能在开写事务前判断是否需要放弃,
         不必在写事务里 abort 后再 return.
         """
@@ -718,28 +716,19 @@ class DataBase:
         with self.mdb.begin(write=True) as txn:
             txn.put(keys.train_queue, blob)
 
-    # ---------- 训练/模型记录级联删除 ----------
-    def migrate_model_records(self):
-        """一次性迁移:train_history 中带模型的历史记录补录到 model_history(幂等)."""
+    def get_models_dir(self):
         with self.mdb.begin(write=False) as txn:
-            existing = txn.get(keys.model_history)
-            train_raw = txn.get(keys.train_history)
-        existing = json.loads(existing.decode()) if existing else []
-        if existing:
-            return
-        recs = json.loads(train_raw.decode()) if train_raw else []
-        added = False
-        for r in recs:
-            if r.get("model_path") and r.get("end_time"):
-                m = dict(r)
-                m["id"] = "{}-{}".format(uuid.uuid4().hex[:12], int(time.time() * 1000) % 100000)
-                m["train_id"] = r.get("id")
-                existing.append(m)
-                added = True
-        if added:
-            with self.mdb.begin(write=True) as txn:
-                txn.put(keys.model_history,
-                        json.dumps(existing, ensure_ascii=False).encode())
+            data = txn.get(keys.models_dir)
+        return data.decode("utf-8") if data else ""
+
+    def set_models_dir(self, path):
+        with self.mdb.begin(write=True) as txn:
+            if path:
+                txn.put(keys.models_dir, str(path).encode("utf-8"))
+            else:
+                txn.delete(keys.models_dir)
+
+    # ---------- 训练/模型记录级联删除 ----------
 
     def delete_project_records(self, project_name):
         """删除项目下所有训练记录与模型记录(级联清理外置指标文件)."""
@@ -758,8 +747,8 @@ class DataBase:
             self.delete_train_metrics(tid)
 
     def dataset_in_records(self, project_name, dataset_name):
-        """该数据集是否被训练记录引用(训练集或验证集任一出现).
-
+        """
+        该数据集是否被训练记录引用(训练集或验证集任一出现).
         model_history 是 train_history 的子集(训练完成时浅拷贝),无需重复检查.
         """
         key = keys.train_history

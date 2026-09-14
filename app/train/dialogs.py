@@ -15,6 +15,8 @@ from PySide6.QtGui import QStandardItem
 
 from app.widgets.dialog_buttons import apply_icon
 from app.widgets.message_box import MessageBox
+from app.widgets.model_manager_dialog import ensure_weight, open_model_manager
+from app.core import model_assets
 from app.core.db import get_paths
 from app.core.log import write_log
 from app.train.data_prep import timestamp_dir
@@ -453,6 +455,7 @@ class TrainDialog(QDialog):
             combo = getattr(self.ui, combo_name, None)
             if combo is not None:
                 combo.setFixedHeight(CONTROL_H)
+        self.ui.weight_btn.setFixedHeight(CONTROL_H)
         # 下拉的 sizeHint 按最长条目算, GPU 全名会把整列撑宽, 改成按固定字符数估宽
         for name in ("dataset_combo", "val_combo", "device_combo"):
             combo = getattr(self.ui, name, None)
@@ -833,6 +836,14 @@ class TrainDialog(QDialog):
         self._center_combo_items(combo)
         if self._task() == "classify":
             combo.setCurrentIndex(0)
+        # 分类走 resnet 从头训练, 没有可下载的权重
+        self.ui.weight_btn.setEnabled(self._task() != "classify")
+
+    def _on_manage_weights(self):
+        asset = model_assets.find(self._task(),
+                                  self.ui.network_combo.currentText() or "nano")
+        open_model_manager(self, self.app.db,
+                           (asset.filename,) if asset else ())
 
     def _setup_img_size_tip(self):
         self.ui.img_size_line_txt.setToolTip(self.TASK_TIPS.get(self._task(), ""))
@@ -895,6 +906,10 @@ class TrainDialog(QDialog):
             write_log("参数校验未通过: {}".format(msg))
             MessageBox.warning(self, "参数校验", msg)
             return
+        # 权重缺失时先问一次: 否则训练子进程会静默下载几百 MB, 日志里还看不到进度
+        if not ensure_weight(self, self.app.db, self._task(),
+                             self.ui.network_combo.currentText() or "nano"):
+            return
         params = self.collect_train_params()
         try:
             config = make_train_config(self.app.db, params)
@@ -922,6 +937,10 @@ class TrainDialog(QDialog):
         ok, msg = self._validate()
         if not ok:
             MessageBox.warning(self, "参数校验", msg)
+            return
+        # 入队时就查权重: 队列多半无人守着, 缺权重到出队时才发现在半夜
+        if not ensure_weight(self, self.app.db, self._task(),
+                             self.ui.network_combo.currentText() or "nano"):
             return
         params = self.collect_train_params()
         if not params["out_root"]:

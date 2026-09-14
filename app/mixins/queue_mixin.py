@@ -9,6 +9,7 @@ from datetime import datetime
 
 from PySide6.QtCore import QTimer
 
+from app.core import model_assets
 from app.core.log import write_log
 from app.train.dialogs import (make_train_config, make_train_record,
                                params_summary)
@@ -229,6 +230,13 @@ class QueueMixin(object):
     def _start_queue_item(self, item):
         """出队五步: 解析 → 校验 → 落盘 → 建记录 → 启动."""
         params = item["params"]
+        # 出队时不弹窗打断队列, 只记一条: 权重可能在入队之后被删或换了目录
+        miss = model_assets.missing(params.get("task", "detect"),
+                                    params.get("architecture") or "nano",
+                                    self.db.get_models_dir())
+        if miss is not None:
+            write_log("[队列] 缺少权重 {}, 该项训练时会自行下载".format(
+                miss.filename))
         # data.yaml / 标签集合都由 make_train_config 之后的 runner 现算,
         # 这里只负责把 db 里的最新路径与 label_ids 解析进 config
         config = make_train_config(self.db, params)

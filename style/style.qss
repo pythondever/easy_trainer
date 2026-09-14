@@ -770,6 +770,7 @@ QDialog#TrainDialog QComboBox QAbstractItemView {
     border-color: #3a3f4e;
 }
 QDialog#TrainDialog QPushButton#select_output_path_btn { min-width: 90px; }
+QDialog#TrainDialog QPushButton#weight_btn { min-width: 62px; }
 QDialog#TrainDialog QPushButton#start_train {
     background-color: #4f7dff;
     color: #ffffff;
@@ -1217,4 +1218,65 @@ QPushButton#add_label:hover {
     color: #e8eaf0;
     border-color: #4a5164;
     background-color: #23262f;
+}
+
+/* ---------------- 模型权重对话框 ---------------- */
+QLabel[class~="modelGroupTitle"] {
+    color: #8b93a5;
+    font-size: 12px;
+    padding-left: 2px;
+}
+
+QFrame[class~="modelGroup"] {
+    background-color: #1f222a;
+    border: 1px solid #2e323e;
+    border-radius: 8px;
+}
+
+QFrame#modelRow {
+    border: none;
+    border-bottom: 1px solid #262a34;
+    background: transparent;
+}
+
+/* 最后一行不画分隔线, 否则和分组框下边框叠成粗线 */
+QFrame#modelRow[last="true"] {
+    border-bottom: none;
+}
+
+QLabel[class~="modelName"] { color: #e6e9f0; }
+QLabel[class~="modelSize"] { color: #7a8194; }
+QLabel[class~="modelDesc"] { color: #8b93a5; }
+QLabel[class~="modelStatus"] { color: #8b93a5; }
+QLabel[class~="modelStatus"][state="busy"] { color: #4f7dff; }
+QLabel[class~="modelStatus"][state="ready"] { color: #7be39a; }
+QLabel[class~="modelStatus"][state="failed"] { color: #ff6b6b; }
+
+QProgressBar#modelProgress {
+    background-color: #10131a;
+    border: 1px solid #2e323e;
+    border-radius: 7px;
+    text-align: center;
+    color: #ffffff;
+    font-size: 11px;
+    min-height: 0px;
+    max-height: 14px;
+}
+
+QProgressBar#modelProgress::chunk {
+    border-radius: 6px;
+}
+
+QLabel[class~="modelFootLabel"] {
+    color: #8b93a5;
+    font-size: 12px;
+}
+
+QLabel[class~="modelDir"] {
+    color: #b9c0d0;
+    font-size: 12px;
+}
+
+QDialog#ModelManagerDialog QPushButton#start_btn {
+    min-width: 96px;
 }
