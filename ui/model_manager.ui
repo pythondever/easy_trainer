@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ModelManagerDialog</class>
+ <widget class="QDialog" name="ModelManagerDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>720</width>
+    <height>470</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>模型权重</string>
+  </property>
+  <layout class="QVBoxLayout" name="root_layout">
+   <property name="spacing">
+    <number>10</number>
+   </property>
+   <property name="leftMargin">
+    <number>22</number>
+   </property>
+   <property name="topMargin">
+    <number>18</number>
+   </property>
+   <property name="rightMargin">
+    <number>22</number>
+   </property>
+   <property name="bottomMargin">
+    <number>16</number>
+   </property>
+   <item>
+    <widget class="QLabel" name="detect_title">
+     <property name="text">
+      <string>目标检测</string>
+     </property>
+     <property name="class" stdset="0">
+      <string>modelGroupTitle</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QFrame" name="detect_frame">
+     <property name="class" stdset="0">
+      <string>modelGroup</string>
+     </property>
+     <layout class="QVBoxLayout" name="detect_layout">
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <property name="leftMargin">
+       <number>1</number>
+      </property>
+      <property name="topMargin">
+       <number>1</number>
+      </property>
+      <property name="rightMargin">
+       <number>1</number>
+      </property>
+      <property name="bottomMargin">
+       <number>1</number>
+      </property>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="segment_title">
+     <property name="text">
+      <string>图像分割</string>
+     </property>
+     <property name="class" stdset="0">
+      <string>modelGroupTitle</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QFrame" name="segment_frame">
+     <property name="class" stdset="0">
+      <string>modelGroup</string>
+     </property>
+     <layout class="QVBoxLayout" name="segment_layout">
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <property name="leftMargin">
+       <number>1</number>
+      </property>
+      <property name="topMargin">
+       <number>1</number>
+      </property>
+      <property name="rightMargin">
+       <number>1</number>
+      </property>
+      <property name="bottomMargin">
+       <number>1</number>
+      </property>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <spacer name="root_spacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>10</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="foot_layout">
+     <property name="spacing">
+      <number>8</number>
+     </property>
+     <item>
+      <widget class="QLabel" name="dir_title">
+       <property name="text">
+        <string>下载目录</string>
+       </property>
+       <property name="class" stdset="0">
+        <string>modelFootLabel</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="dir_label">
+       <property name="class" stdset="0">
+        <string>modelDir</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="change_dir_btn">
+       <property name="text">
+        <string>更改</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="foot_spacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QLabel" name="total_label">
+       <property name="class" stdset="0">
+        <string>modelFootLabel</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="start_btn">
+       <property name="text">
+        <string>开始下载</string>
+       </property>
+       <property name="class" stdset="0">
+        <string>primary</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="close_btn">
+       <property name="text">
+        <string>关闭</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
