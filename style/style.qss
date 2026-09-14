@@ -216,13 +216,11 @@ QComboBox::drop-down {
     width: 24px;
 }
 
+/* Qt 不认 CSS 的 border 三角写法(会画成实心方块), 箭头只能用图片 */
 QComboBox::down-arrow {
-    image: none;
-    width: 0px;
-    height: 0px;
-    border-left: 5px solid transparent;
-    border-right: 5px solid transparent;
-    border-top: 6px solid #9aa2b2;
+    image: url({{RES_DIR}}/arrow_down.svg);
+    width: 11px;
+    height: 7px;
     margin-right: 8px;
 }
 
