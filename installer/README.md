@@ -159,8 +159,11 @@ TORCH_INDEX=https://download.pytorch.org/whl/cu121 ./installer.sh   # torch 换�
 内置同名表仅作无该文件时的兜底）。
 
 **Linux 特有注意**：
-- `.so` 按 cp310 编译，要求客户机 python 恰为 **3.10.x**（Ubuntu 22.04+ 自带）；
-  系统为其它版本时用 `PY=/path/to/python3.10 ./installer.sh` 指定。
+- `.so` 按 cp310 编译，要求客户机 python 恰为 **3.10.x**。Ubuntu **22.04** 自带该版本，装
+  venv 模块即可（`sudo apt install python3.10-venv`）；**24.04 及更新版官方源已无 python3.10**
+  （默认 python3 是 3.12，系统工具依赖它，不可替换全局版本），需经 deadsnakes PPA 装
+  （`sudo add-apt-repository ppa:deadsnakes/ppa && sudo apt install python3.10 python3.10-venv`）。
+  其它发行版或已自备 3.10 时用 `PY=/path/to/python3.10 ./installer.sh` 指定。
 - requirements 锁的是 `torch==2.5.1+cu121`（与 Windows 一致），该版本只存在于 pytorch 源，
   脚本用 `--extra-index-url` 叠源，默认走上海交大等国内镜像可由 `TORCH_INDEX` 覆盖。
 - 预训练权重无国内镜像，大陆网络下不动时同目录放 `pretrained.zip` 走离线。

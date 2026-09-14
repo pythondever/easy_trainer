@@ -19,7 +19,7 @@ SELF_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$HOME/EasyTrainer"
 WITH_PRETRAINED=0
 
-# 兜底表: 优先读三端共用的 pretrained-assets.txt(build.py 会一起打包)
+# 优先读三端共用的 pretrained-assets.txt(build.py 会一起打包)
 declare -a PRETRAINED=( \
   "rf-detr-nano.pth|https://storage.googleapis.com/rfdetr/nano_coco/checkpoint_best_regular.pth|D8D6B9EE57D4D0ED2B1F305163624712A0532CB7BCE0C747317984FC5457440D" \
   "rf-detr-seg-nano.pt|https://storage.googleapis.com/rfdetr/rf-detr-seg-n-ft.pth|A44613A4ECD6B5BA61A62002C600B0B6CB7A9DA2936A45317EC4B62C635FB99B" \
@@ -42,9 +42,7 @@ fi
 
 LOG_FILE=""
 log()  { local l="[$(date '+%H:%M:%S')] $*"; echo "$l"; [ -n "$LOG_FILE" ] && echo "$l" >> "$LOG_FILE" 2>/dev/null || true; }
-# 消息里的 \n 要真展开成换行: bash 的 echo 不带 -e 不解释转义, 直接 log 会把 \n 打成字面量
 die()  { while IFS= read -r _l; do log "$_l"; done <<< "$(printf '%b' "错误: $*")"; exit 1; }
-# 帮助文本直接取头部注释块(读到 set -u 为止), 不写死行号, 增删注释行也不会错位
 usage(){
   local n=0 line
   while IFS= read -r line; do
@@ -104,11 +102,9 @@ find_python310() {
   done
   return 1
 }
-PY="$(find_python310)" || die "需要 Python 3.10(编译产物 .so 按 cp310 ABI).\n   Ubuntu 22.04+ 可安装: sudo apt install python3.10 python3.10-venv\n   也可用 PY=/path/to/python3.10 ./installer.sh 指定"
+PY="$(find_python310)" || die "需要 Python 3.10(编译产物 .so 按 cp310 ABI).\n   Ubuntu 22.04 自带该版本, 装 venv 模块即可: sudo apt install python3.10-venv\n   Ubuntu 24.04 及更新版官方源已无 python3.10, 需自备:\n     sudo add-apt-repository ppa:deadsnakes/ppa && sudo apt update && sudo apt install python3.10 python3.10-venv\n   已有 3.10 时: PY=/path/to/python3.10 ./installer.sh"
 
 # ── 2. 基础准备 ───────────────────────────────────────────────────────
-# 先剥尾斜杠: -d /root/ 这类写法会绕过等值判断("//" 要反复剥, 剥空即命中).
-# clean_old_build 会按 ROOT 清旧产物, 所以必须挡在它前面.
 while [ "${ROOT%/}" != "$ROOT" ]; do ROOT="${ROOT%/}"; done
 if [ -z "$ROOT" ] || [ "$ROOT" = "${HOME%/}" ]; then
   die "安装目录不合理: ${ROOT:-<空>}\n   请用 -d 指定一个专用子目录(默认 $HOME/EasyTrainer)"
@@ -122,8 +118,6 @@ ZIP="$SELF_DIR/program.zip"
 REQ="$SELF_DIR/requirements-release.txt"
 [ -f "$ZIP" ] || die "同目录缺少 program.zip(发布不完整): $ZIP"
 
-# 空间预检: 装到一半才发现满会留下半残的 venv. 口径同 Windows 安装器
-# = 9GB 运行时 + 程序本体解压后大小 +(带 -p 时)880MB 预训练权重.
 prog_kb=$("$PY" -c 'import sys,zipfile;print(sum(i.file_size for i in zipfile.ZipFile(sys.argv[1]).infolist())//1024)' "$ZIP" 2>/dev/null) || prog_kb=0
 case "$prog_kb" in ''|*[!0-9]*) prog_kb=0 ;; esac
 need_kb=$((prog_kb + 9 * 1024 * 1024))
