@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """标注图形项: 矩形框 + 多边形, 均支持选中, 拖动, 标签 chip 渲染."""
-from PySide6.QtCore import QPointF, QRectF, Qt
+from PySide6.QtCore import QPointF, QRectF, QSizeF, Qt
 from PySide6.QtGui import (QBrush, QColor, QPen, QFont, QFontMetrics, QPainter,
                            QPolygonF, QPainterPath)
 import functools
@@ -463,7 +463,27 @@ class AnnotationPolygonItem(QGraphicsPolygonItem):
         self._press_geom = None
         # chip 区域记忆化缓存(见 _chip_rect_local)
         self._chip_cache = None
+        # 浮动粘贴(未落地): 预览图 + 图左上角的局部坐标 + 落地参数(见 scene.commit_pastes)
+        self.pending_img = None
+        self.pending_anchor = None
+        self.pending_meta = None
         self._update_handles()
+
+    def is_floating(self):
+        """浮动层: 图案还没写进图像像素, 这期间只能整体拖动, 不能拽顶点改形状."""
+        return self.pending_img is not None
+
+    def set_pending_stamp(self, img, anchor, meta):
+        self.pending_img = img
+        self.pending_anchor = QPointF(anchor)
+        self.pending_meta = meta
+        self.update()
+
+    def clear_pending_stamp(self):
+        self.pending_img = None
+        self.pending_anchor = None
+        self.pending_meta = None
+        self.update()
 
     def _update_handles(self):
         s = self._compute_handle_size()
@@ -561,11 +581,11 @@ class AnnotationPolygonItem(QGraphicsPolygonItem):
 
     # ---------------- 交互(拖动 + 图像范围限制)----------------
     def shape(self):
-        """命中测试范围 = 多边形本体 + 标签 chip + 顶点手柄(选中时)."""
+        """命中测试范围 = 多边形本体 + 标签 chip + 顶点手柄(选中且非浮动时)."""
         path = QPainterPath()
         path.addPolygon(self.polygon())
         path.addRect(self._chip_rect_local())
-        if self.isSelected():
+        if self.isSelected() and not self.is_floating():
             for hrect in self._handles.values():
                 path.addEllipse(hrect.adjusted(-3, -3, 3, 3))
         return path
@@ -596,7 +616,7 @@ class AnnotationPolygonItem(QGraphicsPolygonItem):
                 scene.label_change_requested.emit(self)
                 event.accept()
                 return
-            if self.isSelected():
+            if self.isSelected() and not self.is_floating():
                 idx = self.handle_at(event.pos())
                 if idx is not None:
                     self._vertex_idx = idx
@@ -667,20 +687,41 @@ class AnnotationPolygonItem(QGraphicsPolygonItem):
         r = self.polygon().boundingRect()
         o = getattr(self, "_handle_size", self.HANDLE_SIZE)
         base = r.adjusted(-o, -o - 24, o, o + 24)
+        if self.pending_img is not None and self.pending_anchor is not None:
+            base = base.united(QRectF(self.pending_anchor,
+                                      QSizeF(self.pending_img.width(),
+                                             self.pending_img.height())))
         return base.united(self._chip_rect_local().adjusted(-o, -o, o, o))
 
     def paint(self, painter, option, widget=None):
         painter.setRenderHint(QPainter.Antialiasing)
+        if self.pending_img is not None:
+            # 浮层图案只是预览, 图像像素此刻还没被改写
+            scene = self.scene()
+            clip = getattr(scene, "image_rect", None) if scene is not None else None
+            painter.save()
+            if clip is not None:
+                painter.setClipRect(clip)
+            painter.drawImage(self.pending_anchor, self.pending_img)
+            painter.restore()
         pen = QPen(self.pen())
         pen.setCosmetic(True)
         painter.setPen(pen)
         painter.setBrush(self.brush())
         painter.drawPolygon(self.polygon())
+        if self.pending_img is not None:
+            # 虚线圈出范围: 还能拖, 还没落地
+            dash = QPen(QColor(255, 255, 255, 210), 1.3)
+            dash.setCosmetic(True)
+            dash.setStyle(Qt.DashLine)
+            painter.setPen(dash)
+            painter.setBrush(Qt.NoBrush)
+            painter.drawPolygon(self.polygon())
 
         label_rect = self._chip_rect_local()
         self._draw_label(painter, label_rect)
 
-        if self.isSelected():
+        if self.isSelected() and not self.is_floating():
             painter.setPen(QPen(QColor("#4f7dff"), 1.0))
             painter.setBrush(QBrush(QColor("#ffffff")))
             s = self._compute_handle_size()

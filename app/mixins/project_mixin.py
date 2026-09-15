@@ -102,6 +102,7 @@ class ProjectMixin(object):
         menu = QMenu(self)
         act_import = menu.addAction("导入")
         act_export = menu.addAction("导出")
+        act_reload = menu.addAction("重载")
         act_move = menu.addAction("移动")
         act_rename = menu.addAction("修改")
         act_del = menu.addAction("删除")
@@ -113,6 +114,8 @@ class ProjectMixin(object):
         elif act == act_export:
             self.project_tree.select_dataset(project, dataset)
             self._on_export_clicked()
+        elif act == act_reload:
+            self._reload_dataset(project, dataset)
         elif act == act_move:
             self._on_dataset_move(project, dataset)
         elif act == act_rename:

@@ -49,7 +49,7 @@ _clip_templates = []
 
 
 def _patch_local_points(t):
-    """模板顶点(图像坐标) → patch 局部坐标: 抠图以顶点外接框左上角为原点."""
+    """转为 patch 局部坐标, 原点取顶点外接框左上角(不是 png 的 0,0)."""
     pts = t.get("points") or []
     if not pts:
         return []
@@ -60,7 +60,7 @@ def _patch_local_points(t):
 
 
 def _json_image_size(png_path):
-    """同名 json 里记的 imageWidth/Height, 读不到返回 (0, 0)."""
+    """读不到返回 (0, 0)."""
     try:
         with open(os.path.splitext(png_path)[0] + ".json", "r",
                   encoding="utf-8") as f:
@@ -71,7 +71,7 @@ def _json_image_size(png_path):
 
 
 def _fit_points_to_patch(pts, png_path, patch):
-    """json 顶点 → patch 局部坐标; json 记的尺寸和 png 不一致时按比例换算."""
+    """json 与 png 尺寸不一致时按比例换算."""
     jw, jh = _json_image_size(png_path)
     if jw > 0 and jh > 0 and (jw != patch.width() or jh != patch.height()):
         sx, sy = patch.width() / jw, patch.height() / jh
@@ -800,6 +800,8 @@ class AnnotationDialog(QDialog):
         QShortcut(QKeySequence("A"), self, activated=lambda: self._switch(-1))
         QShortcut(QKeySequence("D"), self, activated=lambda: self._switch(1))
         QShortcut(QKeySequence("Delete"), self, activated=self.scene.delete_selected)
+        QShortcut(QKeySequence("Ctrl+S"), self,
+                  activated=lambda: self._save_current(commit_pending=True))
         QShortcut(QKeySequence("Ctrl+Z"), self, activated=self._undo_fp_paste)
         QShortcut(QKeySequence(Qt.Key_Escape), self, activated=self._cancel_draw_mode)
 
@@ -952,7 +954,7 @@ class AnnotationDialog(QDialog):
     def _switch(self, offset):
         if not self.image_list:
             return
-        self._save_current()
+        self._save_current(commit_pending=True)
         new_index = self.index + offset
         if not (0 <= new_index < len(self.image_list)):
             return
@@ -968,7 +970,7 @@ class AnnotationDialog(QDialog):
             return
         cur_path = self.image_list[self.index]
         # 先保存当前未提交的标注(避免画了框没保存就被删, 导致标注明文丢失)
-        self._save_current()
+        self._save_current(commit_pending=True)
         clicked = MessageBox.choose(
             self, "删除图像", "是否删除当前图像?\n\n{}".format(os.path.basename(cur_path)),
             [("删除本地文件", QMessageBox.YesRole),
@@ -1024,7 +1026,7 @@ class AnnotationDialog(QDialog):
         self._refresh_labels()
 
     def closeEvent(self, event):
-        self._save_current()
+        self._save_current(commit_pending=True)
         self._closing = True
         if getattr(self, "_prefetch_worker", None) is not None:
             self._prefetch_worker.stop()
@@ -1138,7 +1140,6 @@ class AnnotationDialog(QDialog):
         self._rebuild_clipboard(select=0 if _clip_templates else None)
 
     def _update_clip_label(self):
-        """标题带计数: 当前选中第几个/共几个(没选中时前面记 0)."""
         cur = self._clip_current + 1 if self._clip_current is not None else 0
         self.ui.clipboard_label.setText(
             "剪切板  {}/{}".format(cur, len(_clip_templates)))
@@ -1189,7 +1190,6 @@ class AnnotationDialog(QDialog):
         self.scene.fp_template = t
 
     def _clip_menu(self, btn):
-        """缩略图/空白处右键: 删除该张 / 导入 / 导出 / 清空."""
         i = self._clip_btns.index(btn) if btn is not None else -1
         menu = QMenu(self)
         act_del = menu.addAction("删除") if i >= 0 else None
@@ -1314,7 +1314,7 @@ class AnnotationDialog(QDialog):
             self.setWindowState(Qt.WindowMaximized)
 
     def _undo_fp_paste(self):
-        """Ctrl+Z: 撤销最后一次像素改动(粘贴/填充, 恢复图像像素 + 删标注)."""
+        """Ctrl+Z: 撤浮动粘贴或最后一次像素改动(粘贴/填充)."""
         if self.scene.undo_last_paste():
             self._refresh_labeled_list()
 
@@ -1801,12 +1801,21 @@ class AnnotationDialog(QDialog):
             s += x1 * y2 - x2 * y1
         return abs(s) / 2.0
 
-    def _save_current(self):
+    def _save_current(self, commit_pending=False):
         """
         仅在用户改动过标注(_dirty)时保存; 未改动不写文件.
         保存内容包括: 画/删/改标签/拖动缩放等触发的 boxes_changed;
         格式刷粘贴修改过图像像素时, 一并把图像写盘.
+
+        commit_pending 只在用户显式要求保存时给(Ctrl+S / 切图 / 关闭 / 删图):
+        浮动粘贴挨到这一刻才写进图像像素. 自动保存(150ms 定时器)不带它 ——
+        否则刚粘上去就被烧进图里, 根本没机会拖到位.
         """
+        if commit_pending:
+            self.scene.commit_pastes()
+        elif self.scene.has_pending_pastes():
+            # 还有浮层没落地就写盘的话, json 里会有标注、图像里却没有对应图案
+            return
         if not self._dirty:
             return
         if not (0 <= self.index < len(self.image_list)):

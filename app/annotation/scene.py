@@ -71,6 +71,7 @@ class AnnotationScene(QGraphicsScene):
         self.blend_strength = 0.7        # 粘贴融合力度 0~1(由标注界面输入框设置)
         # "显示标注"开关状态(由标注界面同步): 只影响粘贴出来的框, 手绘的照常显示
         self.show_annotations = True
+        self._pending_pastes = []   # 浮动粘贴: 图案还没写进图像像素的多边形
 
     def set_image(self, pixmap):
         self.clear()
@@ -80,6 +81,7 @@ class AnnotationScene(QGraphicsScene):
         self.image_modified = False
         self.fp_ghost_item = None
         self._fp_undo_stack = []
+        self._pending_pastes = []
         self.addItem(self.image_item)
         self.image_rect = QRectF(0, 0, pixmap.width(), pixmap.height())
         self.setSceneRect(self.image_rect.adjusted(-50, -50, 50, 50))
@@ -317,11 +319,62 @@ class AnnotationScene(QGraphicsScene):
         _bgra_view(layer)[:] = out
         return layer
 
+    @staticmethod
+    def _render_stamp_layer(patch, angle):
+        """patch 按 angle 预渲染成紧凑 QImage(图心即旋转中心), 供浮动层直接绘制."""
+        pw, ph = patch.width(), patch.height()
+        rad = math.radians(angle)
+        ca, sa = abs(math.cos(rad)), abs(math.sin(rad))
+        # 减 eps 再取整: cos(90°) 不是精确 0 而是 6e-17, 不修正的话 30 会被 ceil 成 31
+        w = max(1, int(math.ceil(pw * ca + ph * sa - 1e-6)))
+        h = max(1, int(math.ceil(pw * sa + ph * ca - 1e-6)))
+        out = QImage(w, h, QImage.Format_ARGB32_Premultiplied)
+        out.fill(Qt.transparent)
+        p = QPainter(out)
+        p.setRenderHint(QPainter.Antialiasing)
+        p.translate(w / 2.0, h / 2.0)
+        p.rotate(angle)
+        p.drawImage(-pw / 2.0, -ph / 2.0, patch)
+        p.end()
+        return out
+
+    def _blend_stamp_at(self, patch, center, angle):
+        """把 patch 按 angle 围绕 center 融合进图像像素, 返回撤销所需的 (原图区域, ox, oy)."""
+        pix = self.image_item.pixmap() if self.image_item is not None else None
+        if pix is None or patch is None:
+            return None
+        pw, ph = patch.width(), patch.height()
+        radius = math.sqrt(pw * pw + ph * ph) / 2.0
+        # 旋转后的 patch 一定落在以 center 为中心, 边长 2*radius 的方框内
+        rx = int(center.x() - radius)
+        ry = int(center.y() - radius)
+        side = int(2 * radius) + 1
+        ox = max(0, rx)
+        oy = max(0, ry)
+        bw = min(rx + side, pix.width()) - ox
+        bh = min(ry + side, pix.height()) - oy
+        before = pix.copy(ox, oy, max(0, bw), max(0, bh))
+        if before.isNull():
+            before = None
+        p = QPainter(pix)
+        strength = float(getattr(self, "blend_strength", 0.0) or 0.0)
+        if strength > 0.0 and bw > 0 and bh > 0:
+            layer = self._render_blend_layer(
+                pix, patch, center, angle, rx, ry, side, ox, oy, bw, bh,
+                strength)
+            p.drawImage(ox, oy, layer)
+        else:
+            p.translate(center.x(), center.y())
+            p.rotate(angle)
+            p.drawImage(-pw / 2.0, -ph / 2.0, patch)
+        p.end()
+        self.image_item.setPixmap(pix)
+        return before, ox, oy
+
     def _paste_template(self, pos):
         """
-        把模板(抠图 patch + 多边形)粘贴到 pos 为中心, 随机旋转 0~180°(正负).
-        旋转后整体夹紧回图像内(保证多边形完全在图内, 像素越界部分由 QPainter clip).
-        记录粘贴前区域像素 + 标注 item 到撤销栈(Ctrl+Z 可撤销).
+        以 pos 为中心把模板贴成浮动层: 只放预览, 不动图像像素, 期间可整体拖动位置.
+        像素等 commit_pastes()(Ctrl+S / 切图 / 关闭)时才写进去, 可 Ctrl+Z 撤掉浮层.
         """
         t = self.fp_template
         if not t:
@@ -337,51 +390,60 @@ class AnnotationScene(QGraphicsScene):
         xs = [p[0] for p in rotated]
         ys = [p[1] for p in rotated]
         center = QPointF((min(xs) + max(xs)) / 2.0, (min(ys) + max(ys)) / 2.0)
-        pw, ph = t["patch"].width(), t["patch"].height()
-        radius = math.sqrt(pw * pw + ph * ph) / 2.0
-        pix = self.image_item.pixmap()
-        if pix is not None and t.get("patch") is not None:
-            # 旋转后的 patch 一定落在以 center 为中心, 边长 2*radius 的方框内
-            rx = int(center.x() - radius)
-            ry = int(center.y() - radius)
-            side = int(2 * radius) + 1
-            ox = max(0, rx)
-            oy = max(0, ry)
-            bw = min(rx + side, pix.width()) - ox
-            bh = min(ry + side, pix.height()) - oy
-            before = pix.copy(ox, oy, max(0, bw), max(0, bh))
-            if before.isNull():
-                before = None
-            p = QPainter(pix)
-            strength = float(getattr(self, "blend_strength", 0.0) or 0.0)
-            if strength > 0.0 and bw > 0 and bh > 0:
-                layer = self._render_blend_layer(
-                    pix, t["patch"], center, angle, rx, ry, side, ox, oy, bw, bh,
-                    strength)
-                p.drawImage(ox, oy, layer)
-            else:
-                p.translate(center.x(), center.y())
-                p.rotate(angle)
-                p.drawImage(-pw / 2.0, -ph / 2.0, t["patch"])
-            p.end()
-            self.image_item.setPixmap(pix)
-            self.image_modified = True
-            self.image_pixels_changed.emit()
-        else:
-            before = None
-            ox = oy = 0
         if self.fp_ghost_item is not None:
             self.removeItem(self.fp_ghost_item)
             self.fp_ghost_item = None
         item = self.add_polygon(rotated, t.get("label") or self.current_label)
-        if item is not None:
-            # 粘贴不享受"刚画完仍显示"的例外: 开关关着就不出框, 也不抢占选中态
-            if self.show_annotations:
-                item.setSelected(True)
-            else:
-                item.setVisible(False)
+        if item is None:
+            return
+        patch = t.get("patch")
+        if patch is not None:
+            img = self._render_stamp_layer(patch, angle)
+            anchor = QPointF(center.x() - img.width() / 2.0,
+                             center.y() - img.height() / 2.0)
+            item.set_pending_stamp(img, anchor,
+                                   {"patch": patch, "center": center,
+                                    "angle": angle})
+            self._pending_pastes.append(item)
+        # 粘贴不享受"刚画完仍显示"的例外: 开关关着就不出框, 也不抢占选中态
+        if self.show_annotations:
+            item.setSelected(True)
+        else:
+            item.setVisible(False)
+
+    def has_pending_pastes(self):
+        return any(i.scene() is self for i in self._pending_pastes)
+
+    def commit_pastes(self):
+        """
+        把浮动粘贴写进图像像素(显式保存 / 切图 / 关闭前调用), 返回落地个数.
+        拖动改的是 item.pos(), 落点要跟着平移, 否则图会落在原处、框跑别处.
+        """
+        if not self._pending_pastes:
+            return 0
+        pending = self._pending_pastes
+        self._pending_pastes = []
+        done = 0
+        for item in pending:
+            meta = getattr(item, "pending_meta", None)
+            if meta is None or item.scene() is not self:
+                continue
+            off = item.pos()
+            center = QPointF(meta["center"].x() + off.x(),
+                             meta["center"].y() + off.y())
+            res = self._blend_stamp_at(meta["patch"], center, meta["angle"])
+            item.clear_pending_stamp()
+            if res is None:
+                continue
+            before, ox, oy = res
             self._fp_undo_stack.append(
                 {"before": before, "ox": ox, "oy": oy, "item": item})
+            done += 1
+        if done:
+            self.image_modified = True
+            self.image_pixels_changed.emit()
+            self._force_full_redraw()
+        return done
 
     def fill_polygon(self, item, value):
         """把多边形区域内像素填成 value 颜色, value 可为 (r,g,b) 或单通道灰度, 入同一撤销栈供 Ctrl+Z 恢复."""
@@ -417,7 +479,18 @@ class AnnotationScene(QGraphicsScene):
         return True
 
     def undo_last_paste(self):
-        """撤销最后一次像素改动(粘贴/填充): 恢复图像区域像素 + 删除随粘贴新增的标注."""
+        """撤销最近一次粘贴/填充: 浮动层直接丢掉(像素没动过), 已落地的恢复像素 + 删标注."""
+        while self._pending_pastes:
+            item = self._pending_pastes.pop()
+            if item.scene() is not self:
+                continue
+            gone = item.sceneBoundingRect()
+            self._dispose_item(item)
+            if self._last_box is item:
+                self._last_box = None
+            self._force_full_redraw(gone)
+            self.boxes_changed.emit()
+            return True
         if not self._fp_undo_stack:
             return False
         rec = self._fp_undo_stack.pop()
@@ -532,6 +605,7 @@ class AnnotationScene(QGraphicsScene):
     def clear_boxes(self):
         for item in self.all_items():
             self.removeItem(item)
+        self._pending_pastes = []
         self._reset_draw_state()
 
     def selected_item(self):

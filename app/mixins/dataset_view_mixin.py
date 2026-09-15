@@ -11,6 +11,7 @@ from app.core.label_utils import (normalize_label, label_sort_key,
 from app.core.image_utils import pil_to_qimage, make_uniform_thumb
 from app.annotation.scene_items import SelectablePixmapItem
 from app.tasks.import_task import ImportTask
+from app.widgets.message_box import MessageBox
 from PySide6.QtGui import QPixmap, QPainter, QColor, QImage, QImageReader
 from PySide6.QtCore import (Qt, Signal, QThread, QMutex, QMutexLocker, QTimer,
                             QRect, QSize)
@@ -337,11 +338,25 @@ class DatasetViewMixin(object):
                                           binding.get("label_fmt", ""),
                                           labeled=None, total=None)
 
+    def _reload_dataset(self, project, dataset):
+        """清缓存重扫, 让推理写在图像同目录的 json 回流成标签."""
+        # 不能用 get_dataset_import 判"没导入": 数据集存在它就返回非空 dict, 永远为真;
+        # 能不能重载只看有没有真实存在的图像目录(与 show_dataset_images 同口径)
+        binding = self.db.get_dataset_import(project, dataset)
+        if not [p for p in get_paths(binding, "image") if p and os.path.isdir(p)]:
+            self._log("重载跳过: 数据集 {}/{} 无图像目录".format(project, dataset))
+            MessageBox.warning(self, "重载",
+                               "该数据集还没有图像目录, 请先右键\"导入\"")
+            return
+        if (project, dataset) in self._loading_tasks:
+            self._log("重载跳过: 数据集 {}/{} 正在载入".format(project, dataset))
+            return
+        self._log("重载数据集: {}/{}".format(project, dataset))
+        self.project_tree.select_dataset(project, dataset)
+        self._load_dataset_view(project, dataset)
+
     def _load_dataset_view(self, project, dataset):
-        """
-        强制重扫并显示数据集图像(推理跑完回首页时用).
-        丢弃旧缓存强制重扫,否则推理/标注界面新写的 labelme json 不会被读入.
-        """
+        """丢缓存强制重扫并显示, 推理/标注新写的 json 靠它读入."""
         self._current_dataset = (project, dataset)
         self.current_label = "__unlabeled__"
         self.current_page = 0
