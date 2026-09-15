@@ -69,6 +69,8 @@ class AnnotationScene(QGraphicsScene):
         self._paste_pos = None   # 复制/粘贴: 左键点击空白处记录的粘贴锚点
         self.angle_range = (-180, 180)   # 粘贴随机旋转角度范围(由标注界面输入框设置)
         self.blend_strength = 0.7        # 粘贴融合力度 0~1(由标注界面输入框设置)
+        # "显示标注"开关状态(由标注界面同步): 只影响粘贴出来的框, 手绘的照常显示
+        self.show_annotations = True
 
     def set_image(self, pixmap):
         self.clear()
@@ -132,6 +134,26 @@ class AnnotationScene(QGraphicsScene):
                 path.lineTo(x, y)
         self.fp_preview_item.setPath(path)
 
+    @staticmethod
+    def mask_polygon(patch, pts):
+        """按多边形把 patch 外部擦成透明(pts 为 patch 局部坐标), 就地修改.
+
+        从外部导入的 png 可能已经被压平成不透明白底, 不重裁一次贴上去就是整块方形.
+        """
+        w, h = patch.width(), patch.height()
+        mask = QImage(w, h, QImage.Format_ARGB32_Premultiplied)
+        mask.fill(Qt.transparent)
+        mp = QPainter(mask)
+        mp.setRenderHint(QPainter.Antialiasing)
+        mp.setPen(Qt.NoPen)
+        mp.setBrush(QColor(255, 255, 255))
+        mp.drawPolygon(QPolygonF([QPointF(px, py) for px, py in pts]))
+        mp.end()
+        p = QPainter(patch)
+        p.setCompositionMode(QPainter.CompositionMode_DestinationIn)
+        p.drawImage(0, 0, mask)
+        p.end()
+
     def _extract_patch(self, pts):
         """从当前图像抠取多边形区域像素:包围盒裁剪 + 多边形 mask(外部透明)."""
         pix = self.image_item.pixmap()
@@ -146,18 +168,7 @@ class AnnotationScene(QGraphicsScene):
             return None
         img = pix.toImage().convertToFormat(QImage.Format_ARGB32_Premultiplied)
         patch = img.copy(minx, miny, w, h)
-        mask = QImage(w, h, QImage.Format_ARGB32_Premultiplied)
-        mask.fill(Qt.transparent)
-        mp = QPainter(mask)
-        mp.setRenderHint(QPainter.Antialiasing)
-        mp.setPen(Qt.NoPen)
-        mp.setBrush(QColor(255, 255, 255))
-        mp.drawPolygon(QPolygonF([QPointF(px - minx, py - miny) for px, py in pts]))
-        mp.end()
-        p = QPainter(patch)
-        p.setCompositionMode(QPainter.CompositionMode_DestinationIn)
-        p.drawImage(0, 0, mask)
-        p.end()
+        self.mask_polygon(patch, [(px - minx, py - miny) for px, py in pts])
         return patch
 
     def _finish_fp_trace(self):
@@ -364,7 +375,11 @@ class AnnotationScene(QGraphicsScene):
             self.fp_ghost_item = None
         item = self.add_polygon(rotated, t.get("label") or self.current_label)
         if item is not None:
-            item.setSelected(True)
+            # 粘贴不享受"刚画完仍显示"的例外: 开关关着就不出框, 也不抢占选中态
+            if self.show_annotations:
+                item.setSelected(True)
+            else:
+                item.setVisible(False)
             self._fp_undo_stack.append(
                 {"before": before, "ox": ox, "oy": oy, "item": item})
 
@@ -416,8 +431,16 @@ class AnnotationScene(QGraphicsScene):
             self.image_item.setPixmap(pix)
             restored = True
         item = rec.get("item")
+        gone = None
         if item is not None and item.scene() is self:
-            self.removeItem(item)
+            # 光 removeItem 不够: 视图(SmartViewportUpdate)可能保留旧轮廓, 表现为
+            # "图案撤销了但多边形还在" → 与 delete_item 走同一套释放 + 整屏重绘
+            gone = item.sceneBoundingRect()
+            self._dispose_item(item)
+            if self._last_box is item:
+                self._last_box = None
+        if restored or gone is not None:
+            self._force_full_redraw(gone)
         self.image_modified = bool(self._fp_undo_stack)
         # 每次真的改了像素都要通知(含撤销), 上层据此刷新缓存并写回磁盘
         if restored:

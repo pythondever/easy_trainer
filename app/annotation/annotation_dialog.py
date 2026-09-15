@@ -19,7 +19,8 @@ from PySide6.QtGui import (QColor, QPixmap, QKeySequence, QShortcut, QPen,
 from PySide6.QtWidgets import (QDialog, QWidget, QApplication, QVBoxLayout,
                                QHBoxLayout, QLabel, QMessageBox,
                                QGridLayout, QLineEdit, QSpinBox, QPushButton, QFrame,
-                               QSlider, QMenu, QGraphicsTextItem, QButtonGroup)
+                               QSlider, QMenu, QGraphicsTextItem, QButtonGroup,
+                               QFileDialog)
 
 from ui.annotation import Ui_annotationDialog as AnnotationUI
 from ui.add_label import Ui_addLabelDialog as AddLabelUI
@@ -29,7 +30,8 @@ from app.annotation.box_item import (AnnotationBoxItem, AnnotationPolygonItem,
                                      LABEL_COLORS, assign_label_color, label_color)
 from app.core.label_utils import (label_sort_key, load_json_shapes,
                                   load_yolo_shapes, normalize_label,
-                                  same_dir_json, shapes_to_boxes)
+                                  same_dir_json, shapes_to_boxes,
+                                  shapes_to_labelme_json)
 from app.core.utils import project_root, ui_font_family
 from app.widgets.dialog_buttons import (apply_icon, add_ok_cancel,
                                         _icon_path, _tinted)
@@ -43,8 +45,38 @@ FILL_VALUE_DEFAULT = "255"       # 多边形填充色默认值: 每通道 0~255
 
 # 全局粘贴剪切板: 软件重启才清空.
 # 元素即 scene.fp_template 的结构(points/patch/w/h/label), 最新的在下标 0.
-CLIP_MAX = 15
 _clip_templates = []
+
+
+def _patch_local_points(t):
+    """模板顶点(图像坐标) → patch 局部坐标: 抠图以顶点外接框左上角为原点."""
+    pts = t.get("points") or []
+    if not pts:
+        return []
+    minx = min(float(p[0]) for p in pts)
+    miny = min(float(p[1]) for p in pts)
+    return [[round(float(x) - minx, 2), round(float(y) - miny, 2)]
+            for x, y in pts]
+
+
+def _json_image_size(png_path):
+    """同名 json 里记的 imageWidth/Height, 读不到返回 (0, 0)."""
+    try:
+        with open(os.path.splitext(png_path)[0] + ".json", "r",
+                  encoding="utf-8") as f:
+            data = json.load(f)
+        return int(data.get("imageWidth") or 0), int(data.get("imageHeight") or 0)
+    except Exception:
+        return 0, 0
+
+
+def _fit_points_to_patch(pts, png_path, patch):
+    """json 顶点 → patch 局部坐标; json 记的尺寸和 png 不一致时按比例换算."""
+    jw, jh = _json_image_size(png_path)
+    if jw > 0 and jh > 0 and (jw != patch.width() or jh != patch.height()):
+        sx, sy = patch.width() / jw, patch.height() / jh
+        return [[float(x) * sx, float(y) * sy] for x, y in pts]
+    return [[float(x), float(y)] for x, y in pts]
 
 
 def _resource_path(name):
@@ -893,6 +925,7 @@ class AnnotationDialog(QDialog):
             self._loading = False
         # A/D 切图保持"显示标注"开关状态(关闭时隐藏标注框)
         show = getattr(self.ui, "switchButton", None) is not None and self.ui.switchButton.isChecked()
+        self.scene.show_annotations = show
         if not show:
             for item in self.scene.all_items():
                 item.setVisible(False)
@@ -1058,6 +1091,7 @@ class AnnotationDialog(QDialog):
     # ---------------- 复制/粘贴(格式刷改造: 右键复制多边形 + 随机旋转粘贴) ----------------
     def _toggle_show_boxes(self, checked):
         """"显示标注"开关: 关闭时隐藏图像上的标注框, 右侧列表信息保留."""
+        self.scene.show_annotations = bool(checked)
         for item in self.scene.all_items():
             item.setVisible(checked)
         self.scene.invalidate()
@@ -1084,23 +1118,30 @@ class AnnotationDialog(QDialog):
         if not self.scene.copy_template_from_item(item):
             return
         _clip_templates.insert(0, dict(self.scene.fp_template))
-        if len(_clip_templates) > CLIP_MAX:
-            _clip_templates.pop()
         self._rebuild_clipboard(select=0)
 
     def _setup_clipboard(self):
         u = self.ui
-        u.clipboard_label.setText("剪切板")
         u.clipboard_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         u.clipboard_container.setStyleSheet(self._clip_qss())
         u.clipboard_scroll.setMinimumHeight(
             self.CLIP_ROWS * (self.CLIP_H + 6))
+        for w in (u.clipboard_container, u.clipboard_scroll,
+                  u.clipboard_scroll.viewport()):
+            w.setContextMenuPolicy(Qt.CustomContextMenu)
+            w.customContextMenuRequested.connect(lambda _p: self._clip_menu(None))
         self._clip_group = QButtonGroup(self)
         self._clip_group.setExclusive(True)
         self._clip_group.idClicked.connect(self._on_clip_id)
         self._clip_btns = []
         self._clip_current = None
         self._rebuild_clipboard(select=0 if _clip_templates else None)
+
+    def _update_clip_label(self):
+        """标题带计数: 当前选中第几个/共几个(没选中时前面记 0)."""
+        cur = self._clip_current + 1 if self._clip_current is not None else 0
+        self.ui.clipboard_label.setText(
+            "剪切板  {}/{}".format(cur, len(_clip_templates)))
 
     def _rebuild_clipboard(self, select=None):
         """按全局剪切板重建缩略图; select=选中下标(None=无选中)."""
@@ -1120,7 +1161,7 @@ class AnnotationDialog(QDialog):
             icon = QIcon(QPixmap.fromImage(t["patch"]))
             btn.setIcon(icon)
             btn.setIconSize(QSize(self.CLIP_W - 8, self.CLIP_H - 8))
-            btn.setToolTip("第 {} 个模板  {}x{}\n左键选中用于粘贴, 右键删除/清空"
+            btn.setToolTip("第 {} 个模板  {}x{}\n左键选中用于粘贴, 右键 删除/导入/导出/清空"
                            .format(i + 1, t["w"], t["h"]))
             btn.setContextMenuPolicy(Qt.CustomContextMenu)
             btn.customContextMenuRequested.connect(
@@ -1133,9 +1174,11 @@ class AnnotationDialog(QDialog):
             self._clip_btns[select].setChecked(True)
             self._clip_current = select
             self._apply_clip_template(select)
+        self._update_clip_label()
 
     def _on_clip_id(self, i):
         self._clip_current = i
+        self._update_clip_label()
         self._apply_clip_template(i)
 
     def _apply_clip_template(self, i):
@@ -1146,12 +1189,22 @@ class AnnotationDialog(QDialog):
         self.scene.fp_template = t
 
     def _clip_menu(self, btn):
-        """缩略图右键: 删除该张 / 清空全部."""
+        """缩略图/空白处右键: 删除该张 / 导入 / 导出 / 清空."""
+        i = self._clip_btns.index(btn) if btn is not None else -1
         menu = QMenu(self)
-        act_del = menu.addAction("删除")
+        act_del = menu.addAction("删除") if i >= 0 else None
+        if act_del is not None:
+            menu.addSeparator()
+        act_imp = menu.addAction("导入")
+        act_exp = menu.addAction("导出")
+        menu.addSeparator()
         act_clr = menu.addAction("清空")
+        if not _clip_templates:
+            act_exp.setEnabled(False)
+            act_clr.setEnabled(False)
         act = menu.exec(QCursor.pos())
-        i = self._clip_btns.index(btn)
+        if act is None:
+            return
         if act is act_del:
             was_current = self.scene.fp_template is _clip_templates[i]
             _clip_templates.pop(i)
@@ -1159,12 +1212,99 @@ class AnnotationDialog(QDialog):
             if was_current and not _clip_templates:
                 self.scene.fp_template = None
             self._rebuild_clipboard(select=0 if _clip_templates else None)
+        elif act is act_imp:
+            self._clip_import()
+        elif act is act_exp:
+            self._clip_export()
         elif act is act_clr:
             cur = self.scene.fp_template
             if cur is not None and any(cur is t for t in _clip_templates):
                 self.scene.fp_template = None
             _clip_templates.clear()
             self._rebuild_clipboard(select=None)
+
+    def _clip_export(self):
+        """导出到目录: 一张一个 png(带 alpha) + 同名 labelme json 记多边形顶点."""
+        if not _clip_templates:
+            MessageBox.warning(self, "导出剪切板", "剪切板是空的, 没有可导出的模板")
+            return
+        folder = QFileDialog.getExistingDirectory(self, "选择导出目录")
+        if not folder:
+            return
+        n = 0
+        try:
+            for i, t in enumerate(_clip_templates):
+                patch = t.get("patch")
+                if patch is None or patch.isNull():
+                    continue
+                path = os.path.join(folder, "stamp_{:02d}.png".format(i + 1))
+                if not patch.save(path, "PNG"):
+                    continue
+                # 顶点跟着存进同名 json: 只存 png 的话导回来就只剩一个外接矩形
+                local = _patch_local_points(t)
+                if len(local) >= 3:
+                    data = shapes_to_labelme_json(
+                        [(t.get("label") or "object", local)],
+                        path, patch.width(), patch.height())
+                    with open(os.path.splitext(path)[0] + ".json", "w",
+                              encoding="utf-8") as f:
+                        json.dump(data, f, ensure_ascii=False, indent=2)
+                n += 1
+        except Exception as e:
+            write_log("导出剪切板失败: {}".format(e))
+            MessageBox.warning(self, "导出剪切板",
+                               "导出中断: {}\n(已写出 {} 个)".format(e, n))
+            return
+        MessageBox.information(self, "导出剪切板",
+                               "已导出 {} 个模板(png + 同名 json)到:\n{}"
+                               .format(n, folder))
+
+    def _clip_import(self):
+        """从目录读回 png: 有同名 json 就按顶点重裁 alpha, 没有才回落成矩形."""
+        folder = QFileDialog.getExistingDirectory(self, "选择导入目录")
+        if not folder:
+            return
+        try:
+            names = sorted(f for f in os.listdir(folder)
+                           if f.lower().endswith(".png"))
+        except OSError as e:
+            MessageBox.warning(self, "导入剪切板", "读取目录失败: {}".format(e))
+            return
+        if not names:
+            MessageBox.warning(self, "导入剪切板", "这个目录里没有 png 文件")
+            return
+        new_items, rect_n, bad = [], 0, []
+        for name in names:
+            path = os.path.join(folder, name)
+            img = QImage(path)
+            if img.isNull():
+                bad.append(name)
+                continue
+            patch = img.convertToFormat(QImage.Format_ARGB32_Premultiplied)
+            label, pts = "", None
+            shapes = load_json_shapes(os.path.splitext(path)[0] + ".json")
+            if shapes:
+                label, pts = shapes[0]
+                pts = _fit_points_to_patch(pts, path, patch)
+                # 外部 png 可能是压平过的白底, 按多边形重裁一遍才只贴出形状那块
+                AnnotationScene.mask_polygon(patch, pts)
+            if not pts:
+                pts = [[0.0, 0.0], [float(patch.width()), 0.0],
+                       [float(patch.width()), float(patch.height())],
+                       [0.0, float(patch.height())]]
+                rect_n += 1
+            new_items.append({"points": pts, "patch": patch,
+                              "w": patch.width(), "h": patch.height(),
+                              "label": label or self.scene.current_label})
+        if new_items:
+            _clip_templates[:0] = new_items
+            self._rebuild_clipboard(select=0)
+        msg = "已导入 {} 个模板到剪切板".format(len(new_items))
+        if rect_n:
+            msg += "\n其中 {} 个没有同名 json, 按矩形导入".format(rect_n)
+        if bad:
+            msg += "\n{} 个文件读不出来, 已跳过".format(len(bad))
+        MessageBox.information(self, "导入剪切板", msg)
 
     def showEvent(self, event):
         super().showEvent(event)
