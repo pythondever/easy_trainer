@@ -375,30 +375,6 @@ QTabBar::tab:hover:!selected {
     color: #c3c9d6;
 }
 
-/* ---------------- 菜单 ---------------- */
-QMenu {
-    background-color: #20232b;
-    border: 1px solid #3a3f4e;
-    border-radius: 6px;
-    padding: 6px;
-}
-
-QMenu::item {
-    padding: 7px 24px 7px 12px;
-    border-radius: 4px;
-}
-
-QMenu::item:selected {
-    background-color: #2c3a5e;
-    color: #ffffff;
-}
-
-QMenu::separator {
-    height: 1px;
-    background: #333845;
-    margin: 4px 8px;
-}
-
 /* ---------------- 分组框 ---------------- */
 QGroupBox {
     background-color: #1c1e25;
@@ -732,19 +708,42 @@ QPushButton#done_btn:pressed {
 #AnnotationDialog QScrollBar::handle:vertical:hover { background: #4f7dff; }
 #AnnotationDialog QScrollBar::add-line:vertical,
 #AnnotationDialog QScrollBar::sub-line:vertical { height: 0; }
+
+/* ---------------- 菜单 ---------------- */
+/* 这段必须排在 `#AnnotationDialog QWidget`(见上) 之后: 两者的特异性都是 1 个 id + 1 个类型,
+   平手时按出现顺序决胜, 排在前面的话菜单底色会被那条刷掉 */
+QMenu,
 #AnnotationDialog QMenu {
-    background-color: #1d2028;
-    color: #e8eaf0;
+    background-color: #1b1e25;
     border: 1px solid #3a3f4e;
-    border-radius: 0;
-    padding: 4px;
+    border-radius: 6px;
+    padding: 5px;
 }
+
+QMenu::item,
 #AnnotationDialog QMenu::item {
-    padding: 6px 24px 6px 8px;
-    border-radius: 0;
+    padding: 6px 24px 6px 12px;
+    border-radius: 4px;
 }
-#AnnotationDialog QMenu::item:selected { background-color: #2c3a5e; }
-#AnnotationDialog QMenu::item:disabled { color: #555b68; }
+
+QMenu::item:selected,
+#AnnotationDialog QMenu::item:selected {
+    background-color: #33405e;
+    color: #ffffff;
+}
+
+/* QSS 下禁用项默认沿用正常文字色, 不设就分不出能不能点 */
+QMenu::item:disabled,
+#AnnotationDialog QMenu::item:disabled {
+    color: #6a7080;
+}
+
+QMenu::separator,
+#AnnotationDialog QMenu::separator {
+    height: 1px;
+    background: #2e3340;
+    margin: 4px 8px;
+}
 
 /* ================ 训练对话框 ================ */
 QDialog#TrainDialog,
