@@ -11,8 +11,8 @@ import re
 import shutil
 from functools import lru_cache
 from PIL import Image
-from PySide6.QtCore import (Qt, Signal, QPointF, QTimer, QSize, QThread,
-                            QMutex, QMutexLocker)
+from PySide6.QtCore import (Qt, Signal, QPoint, QPointF, QTimer, QSize, QThread,
+                            QMutex, QMutexLocker, QEvent)
 from PySide6.QtGui import (QColor, QPixmap, QKeySequence, QShortcut, QPen,
                            QPainter, QImage, QIcon, QCursor, QLinearGradient,
                            QFont, QImageReader, QIntValidator, QDoubleValidator)
@@ -40,8 +40,24 @@ from app.core.log import write_log
 from PySide6.QtWidgets import QGraphicsView
 
 
-BLEND_STRENGTH_DEFAULT = "0.7"   # 粘贴融合力度: 0=原始硬贴, 1=完全融合
-FILL_VALUE_DEFAULT = "255"       # 多边形填充色默认值: 每通道 0~255
+BLEND_STRENGTH_DEFAULT = "0.7"     # 粘贴融合力度: 0=原始硬贴, 1=完全融合
+FILL_COLOR_DEFAULT = "#ffffff"     # 多边形右键"填充"用的默认颜色
+ANGLE_RANGE_DEFAULT = (-180, 180)  # 粘贴时随机旋转的角度范围
+
+# 填充色点(黑 白 灰 红 橙 黄 绿 青 蓝 紫)
+FILL_COLOR_PRESETS = (
+    "#000000", "#ffffff", "#808080", "#ff0000", "#ff8c00",
+    "#ffd400", "#22c55e", "#00c2d1", "#2f6bff", "#a855f7",
+)
+# 色名写法: 用户不必记色码, 打 "白" 或 "white" 都能认
+_FILL_COLOR_ALIASES = {
+    "black": "#000000", "white": "#ffffff", "gray": "#808080", "grey": "#808080",
+    "red": "#ff0000", "orange": "#ff8c00", "yellow": "#ffd400", "green": "#22c55e",
+    "cyan": "#00c2d1", "blue": "#2f6bff", "purple": "#a855f7", "magenta": "#ff00ff",
+    "黑": "#000000", "白": "#ffffff", "灰": "#808080", "红": "#ff0000",
+    "橙": "#ff8c00", "黄": "#ffd400", "绿": "#22c55e", "青": "#00c2d1",
+    "蓝": "#2f6bff", "紫": "#a855f7",
+}
 
 # 全局粘贴剪切板: 软件重启才清空.
 # 元素即 scene.fp_template 的结构(points/patch/w/h/label), 最新的在下标 0.
@@ -77,6 +93,40 @@ def _fit_points_to_patch(pts, png_path, patch):
         sx, sy = patch.width() / jw, patch.height() / jh
         return [[float(x) * sx, float(y) * sy] for x, y in pts]
     return [[float(x), float(y)] for x, y in pts]
+
+
+def _parse_rgb(text):
+    """认色名/ #RRGGBB / RRGGBB / #RGB / R,G,B / R G B, 认不出返回 None."""
+    s = (text or "").strip()
+    if not s:
+        return None
+    alias = _FILL_COLOR_ALIASES.get(s.lower().rstrip("色"))
+    if alias:
+        s = alias
+    body = s[1:] if s.startswith("#") else s
+    if re.fullmatch(r"[0-9a-fA-F]{6}", body):
+        return tuple(int(body[i:i + 2], 16) for i in (0, 2, 4))
+    if re.fullmatch(r"[0-9a-fA-F]{3}", body):
+        return tuple(int(ch * 2, 16) for ch in body)
+    parts = [p for p in re.split(r"[,\s]+", s) if p]
+    if len(parts) != 3:
+        return None
+    try:
+        rgb = [int(p) for p in parts]
+    except ValueError:
+        return None
+    if any(v < 0 or v > 255 for v in rgb):
+        return None
+    return tuple(rgb)
+
+
+def _fill_dot_qss(color, selected):
+    # 尺寸必须写进按钮自身的 QSS: 全局 QDialog QPushButton{min-height} 会架空
+    # setFixedSize 的下限, 且 QSS 尺寸按内容盒算, 16 + 边框 4 = 20
+    return ("QPushButton {{ background-color: {0}; border: 2px solid {1};"
+            " padding: 0; min-width: 16px; max-width: 16px;"
+            " min-height: 16px; max-height: 16px; border-radius: 10px; }}"
+            .format(color, "#ffffff" if selected else "transparent"))
 
 
 def _resource_path(name):
@@ -261,11 +311,11 @@ def _upgrade_graphics_view(view):
         try:
             lo = int(dialog.ui.min_ange_lineEdit.text())
         except (ValueError, TypeError):
-            lo = -180
+            lo = ANGLE_RANGE_DEFAULT[0]
         try:
             hi = int(dialog.ui.max_ange_lineEdit.text())
         except (ValueError, TypeError):
-            hi = 180
+            hi = ANGLE_RANGE_DEFAULT[1]
         _scene.angle_range = (lo, hi)
         _scene._paste_template(_pos)
 
@@ -671,42 +721,74 @@ class AnnotationDialog(QDialog):
         u.lineEdit.hide()
         u.draw_rect_btn.clicked.connect(lambda: self._start_draw("rect"))
         u.poly_btn.clicked.connect(lambda: self._start_draw("polygon"))
+        # 行标签钉死 64 宽: QLabel 默认会把行内富余宽度吸走, 各行控件起始列就对不齐了
+        for name in ("params_angle_label", "blend_strength_label",
+                     "params_fill_label", "params_presets_label"):
+            getattr(u, name).setFixedWidth(64)
         # 角度范围输入框: 粘贴时随机旋转的角度范围(默认 -180 ~ 180, 居中, 仅整数)
         # 高度不在这里定: __init__ 时按钮还没被 QSS 定高(36), 此时取值会偏大,
         # 统一由 #AnnotationDialog QLineEdit 的 min/max-height 与按钮对齐
-        for edit, default in ((u.min_ange_lineEdit, -180), (u.max_ange_lineEdit, 180)):
+        for edit, default in zip((u.min_ange_lineEdit, u.max_ange_lineEdit),
+                                 ANGLE_RANGE_DEFAULT):
             edit.setText(str(default))
             edit.setAlignment(Qt.AlignCenter)
             edit.setMaxLength(100)
             edit.setValidator(QIntValidator(-3600, 3600, self))
-            edit.setFixedWidth(65)
-        u.angle_range_label.setText("角度范围")
+            edit.setFixedWidth(62)
         u.label.setText("~")
-        # 融合强度: 粘贴时的像素融合力度(0=原始硬贴, 1=完全融合)
+        # 融合强度: 粘贴时的像素融合力度(0=原始硬贴, 1=完全融合), 滑块与输入框互相跟随
         u.blend_strength_lineEdit.setText(BLEND_STRENGTH_DEFAULT)
         u.blend_strength_lineEdit.setAlignment(Qt.AlignCenter)
         u.blend_strength_lineEdit.setValidator(QDoubleValidator(0.0, 1.0, 2, self))
-        u.blend_strength_lineEdit.setFixedWidth(65)
         u.blend_strength_lineEdit.editingFinished.connect(self._normalize_blend_strength)
+        u.blend_slider.setRange(0, 100)
+        u.blend_slider.setFocusPolicy(Qt.NoFocus)
+        u.blend_slider.valueChanged.connect(self._on_blend_slider)
         self._normalize_blend_strength()
-        # 填充值: 多边形右键"填充"写入的 RGB(每通道 0~255, 仅整数), 三框用 - 分隔
-        for name in ("fill_r_lineEdit", "fill_g_lineEdit", "fill_b_lineEdit"):
-            edit = getattr(u, name)
-            edit.setText(FILL_VALUE_DEFAULT)
-            edit.setAlignment(Qt.AlignCenter)
-            edit.setValidator(QIntValidator(0, 255, self))
-            edit.editingFinished.connect(self._normalize_fill_value)
-        u.fill_value_label.setText("填充值")
+        # 填充颜色: 多边形右键"填充"写入的颜色, 色块(取色器)/ 常用色点 / 文本框三种改法
+        u.fill_color_lineEdit.setText(FILL_COLOR_DEFAULT)
+        u.fill_color_lineEdit.setAlignment(Qt.AlignCenter)
+        u.fill_color_lineEdit.setMaxLength(18)
+        # 不给上限的话 QLineEdit 的 sizeHint(247) 会成为弹层最宽的一行, 把面板顶宽 ~50px
+        u.fill_color_lineEdit.setMaximumWidth(130)
+        u.fill_color_lineEdit.editingFinished.connect(self._normalize_fill_color)
+        u.fill_color_btn.clicked.connect(self._pick_fill_color)
+        # 图标按钮与左侧色块同尺寸; 素材和添加标签弹窗的自定义色按钮共用
+        u.custom_color_btn.setFixedSize(28, 28)
+        u.custom_color_btn.setCursor(Qt.PointingHandCursor)
+        icon_path = _resource_path("颜色选择器.png")
+        if icon_path:
+            u.custom_color_btn.setIcon(QIcon(icon_path))
+            u.custom_color_btn.setIconSize(QSize(18, 18))
+        u.custom_color_btn.clicked.connect(self._pick_fill_color)
+        self._fill_dot_btns = []
+        for color in FILL_COLOR_PRESETS:
+            dot = QPushButton(self)
+            dot.setFixedSize(20, 20)
+            dot.setCursor(Qt.PointingHandCursor)
+            dot.setToolTip(color)
+            dot.setStyleSheet(_fill_dot_qss(color, False))
+            dot.clicked.connect(lambda _=False, c=color: self._set_fill_color(c))
+            u.params_presets_box.addWidget(dot)
+            self._fill_dot_btns.append(dot)
+        self._sync_fill_color_btn()
         u.switchButton = SwitchButton(self)
         u.switchButton.setObjectName("switchButton")
         u.switchButton.setChecked(True)
         u.switchButton.toggled.connect(self._toggle_show_boxes)
         u.show_boxes_label = QLabel("显示标注", self)
         u.show_boxes_label.setObjectName("show_boxes_label")
-        # "显示标注"开关放在"填充值"输入框后面(工具栏参数排完再给开关)
-        idx = u.horizontalLayout.indexOf(u.fill_b_lineEdit)
-        u.horizontalLayout.insertWidget(idx + 1, u.switchButton)
-        u.horizontalLayout.insertWidget(idx + 2, u.show_boxes_label)
+        # 参数收进"设置"弹层后, 工具条右侧只剩开关和设置按钮
+        idx = u.horizontalLayout.indexOf(u.settings_btn)
+        u.horizontalLayout.insertWidget(idx, u.switchButton)
+        u.horizontalLayout.insertWidget(idx + 1, u.show_boxes_label)
+        u.settings_btn.clicked.connect(self._toggle_params_panel)
+        u.close_params_btn.clicked.connect(self._hide_params_panel)
+        u.reset_params_btn.clicked.connect(self._reset_params)
+        # 参数弹层不是布局成员, 不显式收起的话窗口 show 出来就叠在右侧栏上
+        u.paramsPanel.hide()
+        # 同理它收不到"点了别处", 装个应用级过滤器自己判落点
+        QApplication.instance().installEventFilter(self)
         u.add_label.clicked.connect(self._add_label_clicked)
         u.pre_page_btn.clicked.connect(lambda: self._switch(-1))
         u.next_page_btn.clicked.connect(lambda: self._switch(1))
@@ -741,31 +823,91 @@ class AnnotationDialog(QDialog):
             v = float(BLEND_STRENGTH_DEFAULT)
         v = min(1.0, max(0.0, v))
         edit.setText("{:.2f}".format(v))
+        slider = self.ui.blend_slider
+        slider.blockSignals(True)
+        slider.setValue(int(round(v * 100)))
+        slider.blockSignals(False)
         scene = getattr(self, "scene", None)
         if scene is not None:
             scene.blend_strength = v
 
-    def _normalize_fill_value(self):
-        """失焦时把 RGB 每通道收敛到 [0,255]; 空值/非法值回到默认."""
-        u = self.ui
-        for name in ("fill_r_lineEdit", "fill_g_lineEdit", "fill_b_lineEdit"):
-            edit = getattr(u, name)
-            try:
-                v = int(float(edit.text().strip()))
-            except ValueError:
-                v = int(FILL_VALUE_DEFAULT)
-            edit.setText(str(min(255, max(0, v))))
+    def _on_blend_slider(self, value):
+        self.ui.blend_strength_lineEdit.setText("{:.2f}".format(value / 100.0))
+        self._normalize_blend_strength()
+
+    def _set_fill_color(self, value):
+        """填充色唯一入口: 色名/十六进制/三通道都从这里过, 保证文本框/色块/色点三处一致."""
+        rgb = _parse_rgb(value) or _parse_rgb(FILL_COLOR_DEFAULT)
+        self.ui.fill_color_lineEdit.setText("#{:02x}{:02x}{:02x}".format(*rgb))
+        self._sync_fill_color_btn()
+
+    def _normalize_fill_color(self):
+        """失焦时把颜色文本规范成 #rrggbb; 解析不了回默认."""
+        self._set_fill_color(self.ui.fill_color_lineEdit.text())
+
+    def _sync_fill_color_btn(self):
+        name = "#{:02x}{:02x}{:02x}".format(*self._fill_value())
+        self.ui.fill_color_btn.setStyleSheet("background-color: {0};".format(name))
+        for dot, color in zip(self._fill_dot_btns, FILL_COLOR_PRESETS):
+            dot.setStyleSheet(_fill_dot_qss(color, color.lower() == name))
+
+    def _pick_fill_color(self):
+        color = ColorPickerDialog.get_color(QColor(*self._fill_value()), self)
+        if color.isValid():
+            self._set_fill_color(color.name())
 
     def _fill_value(self):
-        """当前填充颜色 (r, g, b); 输入框异常时该通道回退默认."""
-        rgb = []
-        for name in ("fill_r_lineEdit", "fill_g_lineEdit", "fill_b_lineEdit"):
-            try:
-                v = int(float(getattr(self.ui, name).text().strip()))
-            except ValueError:
-                v = int(FILL_VALUE_DEFAULT)
-            rgb.append(min(255, max(0, v)))
-        return tuple(rgb)
+        """当前填充颜色 (r, g, b), 供 scene.fill_polygon 使用."""
+        return (_parse_rgb(self.ui.fill_color_lineEdit.text())
+                or _parse_rgb(FILL_COLOR_DEFAULT))
+
+    def _toggle_params_panel(self):
+        panel = self.ui.paramsPanel
+        # 用 isHidden 而不是 isVisible: 窗口最小化时后者也是 False, 会把"再点一次收起"变成"又展开"
+        if not panel.isHidden():
+            panel.hide()
+            return
+        panel.show()
+        self._place_params_panel()
+        panel.raise_()
+
+    def _hide_params_panel(self):
+        self.ui.paramsPanel.hide()
+
+    def eventFilter(self, obj, event):
+        # 弹层不在布局里, 收不到"点了别处"的信号, 只能全局盯鼠标按下.
+        # 按坐标判落点而不是看 obj: QLabel 不吃鼠标事件, 会一路冒泡到 dialog 再进来
+        if (event.type() == QEvent.Type.MouseButtonPress
+                and not self.ui.paramsPanel.isHidden()
+                and isinstance(obj, QWidget) and obj.window() is self
+                and not self._hit_params_area(event.globalPosition().toPoint())):
+            self._hide_params_panel()
+        return super().eventFilter(obj, event)
+
+    def _hit_params_area(self, gpos):
+        """落点在弹层或"设置"按钮上就不算点了别处."""
+        for w in (self.ui.paramsPanel, self.ui.settings_btn):
+            if w.isVisible() and w.rect().contains(w.mapFromGlobal(gpos)):
+                return True
+        return False
+
+    def _place_params_panel(self):
+        """右边缘对齐"设置"按钮, 顶边压在工具条下沿."""
+        u = self.ui
+        hint = u.paramsPanel.sizeHint()
+        at = u.settings_btn.mapTo(self, QPoint(0, 0))
+        x = at.x() + u.settings_btn.width() - hint.width()
+        u.paramsPanel.setGeometry(max(8, min(x, self.width() - hint.width() - 8)),
+                                  at.y() + u.settings_btn.height() + 6,
+                                  hint.width(), hint.height())
+
+    def _reset_params(self):
+        u = self.ui
+        u.min_ange_lineEdit.setText(str(ANGLE_RANGE_DEFAULT[0]))
+        u.max_ange_lineEdit.setText(str(ANGLE_RANGE_DEFAULT[1]))
+        u.blend_strength_lineEdit.setText(BLEND_STRENGTH_DEFAULT)
+        self._normalize_blend_strength()
+        self._set_fill_color(FILL_COLOR_DEFAULT)
 
     def _on_image_pixels_changed(self):
         """
@@ -954,6 +1096,7 @@ class AnnotationDialog(QDialog):
     def _switch(self, offset):
         if not self.image_list:
             return
+        self._hide_params_panel()
         self._save_current(commit_pending=True)
         new_index = self.index + offset
         if not (0 <= new_index < len(self.image_list)):
@@ -1028,6 +1171,7 @@ class AnnotationDialog(QDialog):
     def closeEvent(self, event):
         self._save_current(commit_pending=True)
         self._closing = True
+        QApplication.instance().removeEventFilter(self)
         if getattr(self, "_prefetch_worker", None) is not None:
             self._prefetch_worker.stop()
             self._prefetch_worker.wait(2000)
@@ -1048,6 +1192,7 @@ class AnnotationDialog(QDialog):
             self._set_draw_button_states(False)
 
     def _start_draw(self, shape):
+        self._hide_params_panel()
         if self.scene.fp_mode is not None:
             self.scene.set_format_painter(False)
         self.scene.set_draw_mode(True, shape)
@@ -1151,6 +1296,9 @@ class AnnotationDialog(QDialog):
             w = layout.takeAt(0).widget()
             if w is not None:
                 self._clip_group.removeButton(w)
+                # 先摘掉父控件: deleteLater 要等事件循环空闲才真销毁,
+                # 不摘的话旧缩略图会在原位多画一帧(重建时表现为残影)
+                w.setParent(None)
                 w.deleteLater()
         self._clip_btns = []
         self._clip_current = None

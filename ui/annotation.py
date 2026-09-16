@@ -15,16 +15,161 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QDialog, QGraphicsView, QGridLayout,
-    QHBoxLayout, QLabel, QLineEdit, QPushButton,
-    QScrollArea, QSizePolicy, QSpacerItem, QVBoxLayout,
-    QWidget)
+from PySide6.QtWidgets import (QApplication, QDialog, QFrame, QGraphicsView,
+    QGridLayout, QHBoxLayout, QLabel, QLineEdit,
+    QPushButton, QScrollArea, QSizePolicy, QSlider,
+    QSpacerItem, QVBoxLayout, QWidget)
 
 class Ui_annotationDialog(object):
     def setupUi(self, annotationDialog):
         if not annotationDialog.objectName():
             annotationDialog.setObjectName(u"annotationDialog")
         annotationDialog.resize(1068, 703)
+        self.paramsPanel = QFrame(annotationDialog)
+        self.paramsPanel.setObjectName(u"paramsPanel")
+        self.paramsPanel.setGeometry(QRect(640, 90, 360, 244))
+        self.verticalLayout_params = QVBoxLayout(self.paramsPanel)
+        self.verticalLayout_params.setSpacing(10)
+        self.verticalLayout_params.setObjectName(u"verticalLayout_params")
+        self.verticalLayout_params.setContentsMargins(14, 14, 14, 14)
+        self.params_title = QLabel(self.paramsPanel)
+        self.params_title.setObjectName(u"params_title")
+
+        self.verticalLayout_params.addWidget(self.params_title)
+
+        self.params_row_angle = QHBoxLayout()
+        self.params_row_angle.setObjectName(u"params_row_angle")
+        self.params_angle_label = QLabel(self.paramsPanel)
+        self.params_angle_label.setObjectName(u"params_angle_label")
+        self.params_angle_label.setMinimumSize(QSize(64, 0))
+
+        self.params_row_angle.addWidget(self.params_angle_label)
+
+        self.min_ange_lineEdit = QLineEdit(self.paramsPanel)
+        self.min_ange_lineEdit.setObjectName(u"min_ange_lineEdit")
+        self.min_ange_lineEdit.setMinimumSize(QSize(62, 0))
+
+        self.params_row_angle.addWidget(self.min_ange_lineEdit)
+
+        self.label = QLabel(self.paramsPanel)
+        self.label.setObjectName(u"label")
+
+        self.params_row_angle.addWidget(self.label)
+
+        self.max_ange_lineEdit = QLineEdit(self.paramsPanel)
+        self.max_ange_lineEdit.setObjectName(u"max_ange_lineEdit")
+        self.max_ange_lineEdit.setMinimumSize(QSize(62, 0))
+
+        self.params_row_angle.addWidget(self.max_ange_lineEdit)
+
+        self.params_spacer_angle = QSpacerItem(0, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.params_row_angle.addItem(self.params_spacer_angle)
+
+
+        self.verticalLayout_params.addLayout(self.params_row_angle)
+
+        self.params_row_blend = QHBoxLayout()
+        self.params_row_blend.setObjectName(u"params_row_blend")
+        self.blend_strength_label = QLabel(self.paramsPanel)
+        self.blend_strength_label.setObjectName(u"blend_strength_label")
+        self.blend_strength_label.setMinimumSize(QSize(64, 0))
+
+        self.params_row_blend.addWidget(self.blend_strength_label)
+
+        self.blend_slider = QSlider(self.paramsPanel)
+        self.blend_slider.setObjectName(u"blend_slider")
+        self.blend_slider.setMinimumSize(QSize(120, 0))
+        self.blend_slider.setOrientation(Qt.Horizontal)
+
+        self.params_row_blend.addWidget(self.blend_slider)
+
+        self.blend_strength_lineEdit = QLineEdit(self.paramsPanel)
+        self.blend_strength_lineEdit.setObjectName(u"blend_strength_lineEdit")
+        self.blend_strength_lineEdit.setMinimumSize(QSize(58, 0))
+        self.blend_strength_lineEdit.setMaximumSize(QSize(58, 16777215))
+
+        self.params_row_blend.addWidget(self.blend_strength_lineEdit)
+
+
+        self.verticalLayout_params.addLayout(self.params_row_blend)
+
+        self.params_row_fill = QHBoxLayout()
+        self.params_row_fill.setObjectName(u"params_row_fill")
+        self.params_fill_label = QLabel(self.paramsPanel)
+        self.params_fill_label.setObjectName(u"params_fill_label")
+        self.params_fill_label.setMinimumSize(QSize(64, 0))
+
+        self.params_row_fill.addWidget(self.params_fill_label)
+
+        self.fill_color_btn = QPushButton(self.paramsPanel)
+        self.fill_color_btn.setObjectName(u"fill_color_btn")
+        self.fill_color_btn.setMinimumSize(QSize(28, 28))
+        self.fill_color_btn.setMaximumSize(QSize(28, 28))
+
+        self.params_row_fill.addWidget(self.fill_color_btn)
+
+        self.fill_color_lineEdit = QLineEdit(self.paramsPanel)
+        self.fill_color_lineEdit.setObjectName(u"fill_color_lineEdit")
+
+        self.params_row_fill.addWidget(self.fill_color_lineEdit)
+
+        self.custom_color_btn = QPushButton(self.paramsPanel)
+        self.custom_color_btn.setObjectName(u"custom_color_btn")
+
+        self.params_row_fill.addWidget(self.custom_color_btn)
+
+        self.params_spacer_fill = QSpacerItem(0, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.params_row_fill.addItem(self.params_spacer_fill)
+
+
+        self.verticalLayout_params.addLayout(self.params_row_fill)
+
+        self.params_row_presets = QHBoxLayout()
+        self.params_row_presets.setObjectName(u"params_row_presets")
+        self.params_presets_label = QLabel(self.paramsPanel)
+        self.params_presets_label.setObjectName(u"params_presets_label")
+        self.params_presets_label.setMinimumSize(QSize(64, 0))
+
+        self.params_row_presets.addWidget(self.params_presets_label)
+
+        self.params_presets_box = QHBoxLayout()
+        self.params_presets_box.setSpacing(5)
+        self.params_presets_box.setObjectName(u"params_presets_box")
+
+        self.params_row_presets.addLayout(self.params_presets_box)
+
+
+        self.verticalLayout_params.addLayout(self.params_row_presets)
+
+        self.params_sep = QFrame(self.paramsPanel)
+        self.params_sep.setObjectName(u"params_sep")
+        self.params_sep.setMinimumSize(QSize(0, 1))
+        self.params_sep.setMaximumSize(QSize(16777215, 1))
+        self.params_sep.setFrameShape(QFrame.HLine)
+
+        self.verticalLayout_params.addWidget(self.params_sep)
+
+        self.params_row_btn = QHBoxLayout()
+        self.params_row_btn.setObjectName(u"params_row_btn")
+        self.reset_params_btn = QPushButton(self.paramsPanel)
+        self.reset_params_btn.setObjectName(u"reset_params_btn")
+
+        self.params_row_btn.addWidget(self.reset_params_btn)
+
+        self.params_spacer_btn = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.params_row_btn.addItem(self.params_spacer_btn)
+
+        self.close_params_btn = QPushButton(self.paramsPanel)
+        self.close_params_btn.setObjectName(u"close_params_btn")
+
+        self.params_row_btn.addWidget(self.close_params_btn)
+
+
+        self.verticalLayout_params.addLayout(self.params_row_btn)
+
         self.gridLayout = QGridLayout(annotationDialog)
         self.gridLayout.setObjectName(u"gridLayout")
         self.verticalLayout_5 = QVBoxLayout()
@@ -55,78 +200,14 @@ class Ui_annotationDialog(object):
 
         self.horizontalLayout.addWidget(self.delete_image_btn)
 
-        self.angle_range_label = QLabel(annotationDialog)
-        self.angle_range_label.setObjectName(u"angle_range_label")
-
-        self.horizontalLayout.addWidget(self.angle_range_label)
-
-        self.min_ange_lineEdit = QLineEdit(annotationDialog)
-        self.min_ange_lineEdit.setObjectName(u"min_ange_lineEdit")
-        self.min_ange_lineEdit.setMinimumSize(QSize(65, 0))
-
-        self.horizontalLayout.addWidget(self.min_ange_lineEdit)
-
-        self.label = QLabel(annotationDialog)
-        self.label.setObjectName(u"label")
-
-        self.horizontalLayout.addWidget(self.label)
-
-        self.max_ange_lineEdit = QLineEdit(annotationDialog)
-        self.max_ange_lineEdit.setObjectName(u"max_ange_lineEdit")
-        self.max_ange_lineEdit.setMinimumSize(QSize(65, 0))
-
-        self.horizontalLayout.addWidget(self.max_ange_lineEdit)
-
-        self.blend_strength_label = QLabel(annotationDialog)
-        self.blend_strength_label.setObjectName(u"blend_strength_label")
-
-        self.horizontalLayout.addWidget(self.blend_strength_label)
-
-        self.blend_strength_lineEdit = QLineEdit(annotationDialog)
-        self.blend_strength_lineEdit.setObjectName(u"blend_strength_lineEdit")
-        self.blend_strength_lineEdit.setMinimumSize(QSize(65, 0))
-
-        self.horizontalLayout.addWidget(self.blend_strength_lineEdit)
-
-        self.fill_value_label = QLabel(annotationDialog)
-        self.fill_value_label.setObjectName(u"fill_value_label")
-
-        self.horizontalLayout.addWidget(self.fill_value_label)
-
-        self.fill_r_lineEdit = QLineEdit(annotationDialog)
-        self.fill_r_lineEdit.setObjectName(u"fill_r_lineEdit")
-        self.fill_r_lineEdit.setMinimumSize(QSize(36, 0))
-        self.fill_r_lineEdit.setMaximumSize(QSize(36, 16777215))
-
-        self.horizontalLayout.addWidget(self.fill_r_lineEdit)
-
-        self.fill_sep1 = QLabel(annotationDialog)
-        self.fill_sep1.setObjectName(u"fill_sep1")
-
-        self.horizontalLayout.addWidget(self.fill_sep1)
-
-        self.fill_g_lineEdit = QLineEdit(annotationDialog)
-        self.fill_g_lineEdit.setObjectName(u"fill_g_lineEdit")
-        self.fill_g_lineEdit.setMinimumSize(QSize(36, 0))
-        self.fill_g_lineEdit.setMaximumSize(QSize(36, 16777215))
-
-        self.horizontalLayout.addWidget(self.fill_g_lineEdit)
-
-        self.fill_sep2 = QLabel(annotationDialog)
-        self.fill_sep2.setObjectName(u"fill_sep2")
-
-        self.horizontalLayout.addWidget(self.fill_sep2)
-
-        self.fill_b_lineEdit = QLineEdit(annotationDialog)
-        self.fill_b_lineEdit.setObjectName(u"fill_b_lineEdit")
-        self.fill_b_lineEdit.setMinimumSize(QSize(36, 0))
-        self.fill_b_lineEdit.setMaximumSize(QSize(36, 16777215))
-
-        self.horizontalLayout.addWidget(self.fill_b_lineEdit)
-
         self.horizontalSpacer_3 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout.addItem(self.horizontalSpacer_3)
+
+        self.settings_btn = QPushButton(annotationDialog)
+        self.settings_btn.setObjectName(u"settings_btn")
+
+        self.horizontalLayout.addWidget(self.settings_btn)
 
 
         self.verticalLayout_5.addLayout(self.horizontalLayout)
@@ -292,15 +373,28 @@ class Ui_annotationDialog(object):
 
     def retranslateUi(self, annotationDialog):
         annotationDialog.setWindowTitle(QCoreApplication.translate("annotationDialog", u"Dialog", None))
+        self.params_title.setText(QCoreApplication.translate("annotationDialog", u"\u6807\u6ce8\u53c2\u6570", None))
+        self.params_angle_label.setText(QCoreApplication.translate("annotationDialog", u"\u89d2\u5ea6\u8303\u56f4", None))
+        self.label.setText(QCoreApplication.translate("annotationDialog", u"~", None))
+        self.blend_strength_label.setText(QCoreApplication.translate("annotationDialog", u"\u878d\u5408\u5f3a\u5ea6", None))
+        self.params_fill_label.setText(QCoreApplication.translate("annotationDialog", u"\u586b\u5145\u989c\u8272", None))
+#if QT_CONFIG(tooltip)
+        self.fill_color_btn.setToolTip(QCoreApplication.translate("annotationDialog", u"\u70b9\u51fb\u6253\u5f00\u53d6\u8272\u5668, \u9009\u4efb\u610f\u989c\u8272", None))
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(tooltip)
+        self.fill_color_lineEdit.setToolTip(QCoreApplication.translate("annotationDialog", u"\u652f\u6301 #RRGGBB / #RGB / 255,255,255 / black / \u767d \u7b49\u5199\u6cd5, \u4e5f\u53ef\u4ee5\u70b9\u5de6\u8fb9\u8272\u5757\u6253\u5f00\u53d6\u8272\u5668", None))
+#endif // QT_CONFIG(tooltip)
+        self.fill_color_lineEdit.setPlaceholderText(QCoreApplication.translate("annotationDialog", u"#RRGGBB", None))
+#if QT_CONFIG(tooltip)
+        self.custom_color_btn.setToolTip(QCoreApplication.translate("annotationDialog", u"\u81ea\u5b9a\u4e49\u989c\u8272", None))
+#endif // QT_CONFIG(tooltip)
+        self.params_presets_label.setText(QCoreApplication.translate("annotationDialog", u"\u5e38\u7528\u8272", None))
+        self.reset_params_btn.setText(QCoreApplication.translate("annotationDialog", u"\u6062\u590d\u9ed8\u8ba4", None))
+        self.close_params_btn.setText(QCoreApplication.translate("annotationDialog", u"\u5b8c\u6210", None))
         self.draw_rect_btn.setText(QCoreApplication.translate("annotationDialog", u"\u77e9\u5f62", None))
         self.poly_btn.setText(QCoreApplication.translate("annotationDialog", u"\u591a\u8fb9\u5f62", None))
         self.delete_image_btn.setText(QCoreApplication.translate("annotationDialog", u"\u5220\u9664\u56fe\u50cf", None))
-        self.angle_range_label.setText(QCoreApplication.translate("annotationDialog", u"\u89d2\u5ea6:", None))
-        self.label.setText(QCoreApplication.translate("annotationDialog", u"-", None))
-        self.blend_strength_label.setText(QCoreApplication.translate("annotationDialog", u"\u878d\u5408\u5f3a\u5ea6", None))
-        self.fill_value_label.setText(QCoreApplication.translate("annotationDialog", u"\u586b\u5145\u503c", None))
-        self.fill_sep1.setText(QCoreApplication.translate("annotationDialog", u"-", None))
-        self.fill_sep2.setText(QCoreApplication.translate("annotationDialog", u"-", None))
+        self.settings_btn.setText(QCoreApplication.translate("annotationDialog", u"\u8bbe\u7f6e", None))
         self.label_list.setText(QCoreApplication.translate("annotationDialog", u"\u6807\u7b7e\u5217\u8868", None))
 #if QT_CONFIG(tooltip)
         self.add_label.setToolTip(QCoreApplication.translate("annotationDialog", u"\u6dfb\u52a0\u6807\u7b7e", None))

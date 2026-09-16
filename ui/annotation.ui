@@ -52,99 +52,6 @@
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="angle_range_label">
-         <property name="text">
-          <string>角度:</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLineEdit" name="min_ange_lineEdit">
-         <property name="minimumSize">
-          <size><width>65</width><height>0</height></size>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="label">
-         <property name="text">
-          <string>-</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLineEdit" name="max_ange_lineEdit">
-         <property name="minimumSize">
-          <size><width>65</width><height>0</height></size>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="blend_strength_label">
-         <property name="text">
-          <string>融合强度</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLineEdit" name="blend_strength_lineEdit">
-         <property name="minimumSize">
-          <size><width>65</width><height>0</height></size>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="fill_value_label">
-         <property name="text">
-          <string>填充值</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLineEdit" name="fill_r_lineEdit">
-         <property name="minimumSize">
-          <size><width>36</width><height>0</height></size>
-         </property>
-         <property name="maximumSize">
-          <size><width>36</width><height>16777215</height></size>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="fill_sep1">
-         <property name="text">
-          <string>-</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLineEdit" name="fill_g_lineEdit">
-         <property name="minimumSize">
-          <size><width>36</width><height>0</height></size>
-         </property>
-         <property name="maximumSize">
-          <size><width>36</width><height>16777215</height></size>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="fill_sep2">
-         <property name="text">
-          <string>-</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLineEdit" name="fill_b_lineEdit">
-         <property name="minimumSize">
-          <size><width>36</width><height>0</height></size>
-         </property>
-         <property name="maximumSize">
-          <size><width>36</width><height>16777215</height></size>
-         </property>
-        </widget>
-       </item>
-       <item>
         <spacer name="horizontalSpacer_3">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -156,6 +63,13 @@
           </size>
          </property>
         </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="settings_btn">
+         <property name="text">
+          <string>设置</string>
+         </property>
+        </widget>
        </item>
       </layout>
      </item>
@@ -407,6 +321,244 @@
     </layout>
    </item>
   </layout>
+  <widget class="QFrame" name="paramsPanel">
+   <property name="geometry">
+    <rect>
+     <x>640</x>
+     <y>90</y>
+     <width>360</width>
+     <height>244</height>
+    </rect>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout_params">
+    <property name="spacing">
+     <number>10</number>
+    </property>
+    <property name="leftMargin">
+     <number>14</number>
+    </property>
+    <property name="topMargin">
+     <number>14</number>
+    </property>
+    <property name="rightMargin">
+     <number>14</number>
+    </property>
+    <property name="bottomMargin">
+     <number>14</number>
+    </property>
+    <item>
+     <widget class="QLabel" name="params_title">
+      <property name="text">
+       <string>标注参数</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="params_row_angle">
+      <item>
+       <widget class="QLabel" name="params_angle_label">
+        <property name="minimumSize">
+         <size><width>64</width><height>0</height></size>
+        </property>
+        <property name="text">
+         <string>角度范围</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="min_ange_lineEdit">
+        <property name="minimumSize">
+         <size><width>62</width><height>0</height></size>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>~</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="max_ange_lineEdit">
+        <property name="minimumSize">
+         <size><width>62</width><height>0</height></size>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="params_spacer_angle">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>0</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="params_row_blend">
+      <item>
+       <widget class="QLabel" name="blend_strength_label">
+        <property name="minimumSize">
+         <size><width>64</width><height>0</height></size>
+        </property>
+        <property name="text">
+         <string>融合强度</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QSlider" name="blend_slider">
+        <property name="minimumSize">
+         <size><width>120</width><height>0</height></size>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="blend_strength_lineEdit">
+        <property name="minimumSize">
+         <size><width>58</width><height>0</height></size>
+        </property>
+        <property name="maximumSize">
+         <size><width>58</width><height>16777215</height></size>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="params_row_fill">
+      <item>
+       <widget class="QLabel" name="params_fill_label">
+        <property name="minimumSize">
+         <size><width>64</width><height>0</height></size>
+        </property>
+        <property name="text">
+         <string>填充颜色</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="fill_color_btn">
+        <property name="toolTip">
+         <string>点击打开取色器, 选任意颜色</string>
+        </property>
+        <property name="minimumSize">
+         <size><width>28</width><height>28</height></size>
+        </property>
+        <property name="maximumSize">
+         <size><width>28</width><height>28</height></size>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="fill_color_lineEdit">
+        <property name="toolTip">
+         <string>支持 #RRGGBB / #RGB / 255,255,255 / black / 白 等写法, 也可以点左边色块打开取色器</string>
+        </property>
+        <property name="placeholderText">
+         <string>#RRGGBB</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="custom_color_btn">
+        <property name="toolTip">
+         <string>自定义颜色</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="params_spacer_fill">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>0</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="params_row_presets">
+      <item>
+       <widget class="QLabel" name="params_presets_label">
+        <property name="minimumSize">
+         <size><width>64</width><height>0</height></size>
+        </property>
+        <property name="text">
+         <string>常用色</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="params_presets_box">
+        <property name="spacing">
+         <number>5</number>
+        </property>
+       </layout>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="QFrame" name="params_sep">
+      <property name="minimumSize">
+       <size><width>0</width><height>1</height></size>
+      </property>
+      <property name="maximumSize">
+       <size><width>16777215</width><height>1</height></size>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::HLine</enum>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="params_row_btn">
+      <item>
+       <widget class="QPushButton" name="reset_params_btn">
+        <property name="text">
+         <string>恢复默认</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="params_spacer_btn">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="close_params_btn">
+        <property name="text">
+         <string>完成</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
  </widget>
  <resources/>
  <connections/>

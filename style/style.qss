@@ -501,7 +501,7 @@ QToolTip {
 /* ---------------- 滑条 ---------------- */
 QSlider::groove:horizontal {
     height: 6px;
-    background: #2c303c;
+    background: #39404f;
     border-radius: 3px;
 }
 
@@ -686,6 +686,60 @@ QPushButton#done_btn:pressed {
     background-color: #2c3a5e;
     color: #ffffff;
     border: 1px solid #4f7dff;
+}
+/* ---------- 标注参数弹层 ----------
+   特异性必须高于上面的 `#AnnotationDialog QWidget`(底色 #13151a), 否则浮层和画布同色,
+   看起来就是一块没有边框的空白. */
+#AnnotationDialog QFrame#paramsPanel {
+    background-color: #1c1e25;
+    border: 1px solid #3a4152;
+    border-radius: 10px;
+}
+#AnnotationDialog QLabel#params_title {
+    color: #8b93a5;
+    font-size: 12px;
+}
+#AnnotationDialog QFrame#paramsPanel QLabel {
+    color: #c3c9d6;
+}
+#AnnotationDialog QFrame#params_sep {
+    background-color: #2c303c;
+    border: none;
+}
+/* 弹层里的输入框比工具条矮一档(工具条 36, 这里 16+6*2+2=30) */
+#AnnotationDialog QFrame#paramsPanel QLineEdit {
+    min-height: 16px;
+    max-height: 16px;
+}
+#AnnotationDialog QPushButton#fill_color_btn {
+    padding: 0;
+    border: 1px solid #4a5164;
+    border-radius: 6px;
+}
+/* 与同行色块同尺寸(28x28 = 内容盒 26 + 边框 2). 尺寸必须写进按钮自身的 QSS:
+   全局 QPushButton 的 min-height 内边距会架空 setFixedSize 的下限 */
+#AnnotationDialog QPushButton#custom_color_btn {
+    padding: 0;
+    min-width: 26px;
+    max-width: 26px;
+    min-height: 26px;
+    max-height: 26px;
+    border: 1px solid #4a5164;
+    border-radius: 6px;
+    background-color: #2a2e3a;
+}
+#AnnotationDialog QPushButton#custom_color_btn:hover {
+    border-color: #4f7dff;
+    background-color: #333846;
+}
+/* 滑块会被上面的 `#AnnotationDialog QWidget`(底色 #13151a) 刷成比弹层底
+   (#1c1e25) 更黑的一条, 这里只保留中间的 groove */
+#AnnotationDialog QFrame#paramsPanel QSlider {
+    background: transparent;
+}
+#AnnotationDialog QPushButton#reset_params_btn,
+#AnnotationDialog QPushButton#close_params_btn {
+    min-width: 72px;
 }
 #AnnotationDialog QScrollArea {
     background-color: #1d2028;
