@@ -37,6 +37,9 @@ def _bgra_view(img):
 
 
 class AnnotationScene(QGraphicsScene):
+    # 首尾距离小于该值(图像像素)认为轨迹已经圈回来, 与 StampTool Theme.CloseTolerance 一致
+    CLOSE_TOLERANCE = 15.0
+
     boxes_changed = Signal()
     box_drawn = Signal()
     selection_changed = Signal(object)
@@ -53,6 +56,7 @@ class AnnotationScene(QGraphicsScene):
         self.draw_shape = "rect"
         self.current_label = "object"
         self._preview_item = None
+        self._preview_close_item = None   # 轨迹首尾靠拢时的闭合提示虚线
         self._draw_start = None
         self._free_track = []   # 画笔轨迹(手绘多边形采样点)
         self._last_box = None
@@ -745,6 +749,7 @@ class AnnotationScene(QGraphicsScene):
         这些 Python 引用若不一起清掉, 后续事件会打到已删除的 C++ 对象上.
         """
         self._preview_item = None
+        self._preview_close_item = None
         self._draw_start = None
         self._free_track = []
         self._last_box = None
@@ -833,9 +838,11 @@ class AnnotationScene(QGraphicsScene):
     def _cancel_polygon(self):
         """取消未完成的多边形(清轨迹+预览)."""
         self._free_track = []
-        if self._preview_item is not None:
-            self.removeItem(self._preview_item)
-            self._preview_item = None
+        for attr in ("_preview_item", "_preview_close_item"):
+            it = getattr(self, attr)
+            if it is not None:
+                self.removeItem(it)
+                setattr(self, attr, None)
 
     def mousePressEvent(self, event):
         if self.fp_mode is not None and event.button() == Qt.LeftButton and self.image_rect is not None:
@@ -897,17 +904,25 @@ class AnnotationScene(QGraphicsScene):
     def _polygon_press(self, pos):
         """画笔模式: 按下开始采集轨迹."""
         self._free_track = [[pos.x(), pos.y()]]
-        c = self._polygon_trace_color()
-        self._preview_item = QGraphicsPathItem()
-        pen_c = QColor(c)
-        pen_c.setAlpha(230)
-        self._preview_item.setPen(QPen(pen_c, 1.5))
-        brush_c = QColor(c)
-        brush_c.setAlpha(40)
-        self._preview_item.setBrush(QBrush(brush_c))
-        self._preview_item.setZValue(20)
-        self.addItem(self._preview_item)
+        self._ensure_polygon_preview()
         self._update_polygon_preview()
+
+    def _ensure_polygon_preview(self):
+        """
+        轨迹实线与闭合提示虚线是两个 item: QPainterPath 共用一支 QPen,
+        同一条路径上画不出实线+虚线两种线型.
+        """
+        if self._preview_item is None:
+            self._preview_item = QGraphicsPathItem()
+            self._preview_item.setBrush(QBrush(Qt.NoBrush))
+            self._preview_item.setZValue(20)
+            self.addItem(self._preview_item)
+        if self._preview_close_item is None:
+            self._preview_close_item = QGraphicsPathItem()
+            self._preview_close_item.setBrush(QBrush(Qt.NoBrush))
+            self._preview_close_item.setZValue(20)
+            self._preview_close_item.setVisible(False)
+            self.addItem(self._preview_close_item)
 
     def _sample_gap_sq(self, pos, last):
         """屏幕 10px 换算 scene 间距(考虑缩放), 放大时保持恒定屏幕密度."""
@@ -955,13 +970,13 @@ class AnnotationScene(QGraphicsScene):
         return AnnotationScene._rdp(pts, 0.8)
 
     def _preview_pen_width(self):
-        """轨迹粗细自适应: 屏幕恒定 ~2.5px(scene 宽 = 2.5/scale)."""
+        """轨迹粗细自适应: 屏幕恒定 ~1.8px(scene 宽 = 1.8/scale), 与 StampTool 一致."""
         scale = 1.0
         views = self.views()
         if views:
             t = views[0].transform()
             scale = abs(t.m11()) or 1.0
-        return max(0.6, 2.5 / scale)
+        return max(0.5, 1.8 / scale)
 
     def _finish_polygon(self):
         # 轨迹抽稀成多边形顶点(采样间隔+共线合并),生成标注
@@ -979,25 +994,46 @@ class AnnotationScene(QGraphicsScene):
     def _update_polygon_preview(self):
         # 绘制过程只做轨迹跟随(不抽稀),抽稀延后到_finish_polygon
         pts = self._free_track
+        self._ensure_polygon_preview()
         c = self._polygon_trace_color()
         pen_c = QColor(c)
         pen_c.setAlpha(230)
-        if self._preview_item is None:
-            self._preview_item = QGraphicsPathItem()
-            self._preview_item.setPen(QPen(pen_c, self._preview_pen_width()))
-            brush_c = QColor(c)
-            brush_c.setAlpha(40)
-            self._preview_item.setBrush(QBrush(brush_c))
-            self._preview_item.setZValue(20)
-            self.addItem(self._preview_item)
-        else:
-            self._preview_item.setPen(QPen(pen_c, self._preview_pen_width()))
+        pen = QPen(pen_c, self._preview_pen_width())
+        pen.setCapStyle(Qt.RoundCap)
+        pen.setJoinStyle(Qt.RoundJoin)
+        self._preview_item.setPen(pen)
         path = QPainterPath()
         if pts:
             path.moveTo(pts[0][0], pts[0][1])
             for x, y in pts[1:]:
                 path.lineTo(x, y)
         self._preview_item.setPath(path)
+        self._preview_close_item.setVisible(self._update_close_hint(pts, c))
+
+    def _update_close_hint(self, pts, color):
+        """
+        首尾已经靠得够近(<CLOSE_TOLERANCE>px)时补一条虚线连回起点:
+        告诉用户松开鼠标就会闭合成多边形, 空白处不会再多出一截直线.
+        """
+        # StampTool 用 >3(点数太少时闭合线反而更抢眼)
+        if len(pts) <= 3:
+            return False
+        x1, y1 = pts[0]
+        x2, y2 = pts[-1]
+        tol = self.CLOSE_TOLERANCE
+        if (x2 - x1) ** 2 + (y2 - y1) ** 2 > tol * tol:
+            return False
+        pen_c = QColor(color)
+        pen_c.setAlpha(200)
+        pen = QPen(pen_c, self._preview_pen_width())
+        pen.setCapStyle(Qt.RoundCap)
+        pen.setStyle(Qt.DashLine)
+        self._preview_close_item.setPen(pen)
+        path = QPainterPath()
+        path.moveTo(x2, y2)
+        path.lineTo(x1, y1)
+        self._preview_close_item.setPath(path)
+        return True
 
     def mouseMoveEvent(self, event):
         if self.fp_mode is not None and self.image_rect is not None:
