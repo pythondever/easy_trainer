@@ -41,12 +41,12 @@ deploy.exe --convert <model.onnx> [--ir] [--out <目录>] [--fp32] [--cross]
 
 ## 交付
 
-`dotnet publish` 出来的 `deploy\release\` 就是完整交付目录，整个拷过去：
+`python deploy\build.py` 出来的 `deploy\release\` 就是完整交付目录，整个拷过去：
 
 ```
 release\
-  deploy.exe                自包含单文件 (60.4 MB)，TensorRT 桥接与 OpenVINO 运行时都在里面
-  toolchain\                742 MB，发布时自动装配
+  deploy.exe                自包含单文件 (57.6 MB)，TensorRT 桥接与 OpenVINO 运行时都在里面
+  toolchain\                708 MB，发布时自动装配
     build\nvinfer_10.dll
     build\nvinfer_plugin_10.dll
     build\nvonnxparser_10.dll
@@ -91,7 +91,7 @@ release\
 ### 换架构重新发布
 
 ```powershell
-dotnet publish deploy\Win.deploy\Win.deploy.csproj -c Release -p:PublishProfile=win-x64 -p:TrtArch=sm86
+python deploy\build.py --arch sm86
 ```
 
 各架构 builder resource 体积：sm75 150 / sm80 245 / sm86 230 / sm89 243 / sm90 631 / sm120 360 MB。
@@ -109,28 +109,53 @@ dotnet publish deploy\Win.deploy\Win.deploy.csproj -c Release -p:PublishProfile=
 
 ## 构建
 
-需要 .NET SDK 10。日常编译只出 8 个文件（与 installer 一个形态）：
+需要 .NET SDK 10。发布用 `deploy\build.py`，一条命令到底：
 
 ```powershell
-dotnet build deploy\Win.deploy\Win.deploy.csproj -c Release
+python deploy\build.py            全量发布，产物在 deploy\release\
+python deploy\build.py --probe    发布完顺带跑一次环境自检
 ```
 
-发布（自包含 / 单文件那几个参数只写在 `Properties\PublishProfiles\win-x64.pubxml`，别挪进 csproj）：
+| 需求 | 参数 |
+|---|---|
+| 换目标机架构 | `--arch sm120` |
+| 换工具链来源 | `--trt-dir D:\别处\toolchain` |
+| 不装配 TensorRT 运行时（只留 IR） | `--no-trt` |
+| 换 OpenVINO 运行时来源 | `--ov-dir D:\别处\runtime` |
+| 不打包 IR 转换 | `--no-ov` |
+| 换输出目录 | `--out D:\某处` |
+| 强制重编桥接 | `--bridge` |
+
+脚本在发布前后会自己做完这些：检查 dotnet 与两个运行时目录是否齐、`ovbridge.cpp` 有改动就重编桥接、
+先结束正在跑的 `deploy.exe`（否则发布产物被占用会失败）、清掉上次留下的其他架构 resource、
+发布完核对 `release\` 的文件数、体积并列出最终构成。
+
+它内部就是调下面这条命令，参数与上表一一对应：
 
 ```powershell
 dotnet publish deploy\Win.deploy\Win.deploy.csproj -c Release -p:PublishProfile=win-x64
 ```
 
-| 需求 | 参数 |
+| 手动发布参数 | 说明 |
 |---|---|
-| 换目标机架构 | `-p:TrtArch=sm120`（多架构逗号分隔） |
-| 换工具链来源 | `-p:TrtToolchainDir=D:\别处\toolchain` |
-| 不装配 TensorRT 运行时 | `-p:TrtSkip=1` |
-| 换 OpenVINO 运行时来源 | `-p:OvRuntimeDir=D:\别处\runtime` |
-| 不打包 IR 转换 | `-p:OvSkip=1` |
+| `-p:TrtArch=sm120` | 目标机架构 |
+| `-p:TrtToolchainDir=D:\别处\toolchain` | 换工具链来源 |
+| `-p:TrtSkip=1` | 不装配 TensorRT 运行时 |
+| `-p:OvRuntimeDir=D:\别处\runtime` | 换 OpenVINO 运行时来源 |
+| `-p:OvSkip=1` | 不打包 IR 转换 |
+
+日常编译（只出 8 个文件，与 installer 一个形态）：
+
+```powershell
+dotnet build deploy\Win.deploy\Win.deploy.csproj -c Release
+```
+
+自包含 / 单文件那几个参数只写在 `Properties\PublishProfiles\win-x64.pubxml`，别挪进 csproj。
 
 改了 `deploy\ovbridge\ovbridge.cpp` 要重跑 `deploy\ovbridge\build.cmd` 重新生成 `native\ovbridge.dll`
 （需要 VS 2022 的 C++ 生成工具，脚本会自己找 `vcvars64.bat`）。
+⚠️ 这个 `.cmd` 的行尾必须是 **CRLF**：LF 行尾时 cmd.exe 会从行中间开始解析，中文注释全被当成命令
+（实测），而编辑器默认存 LF。`build.py` 每次调用前会自己检查并改回来，手动跑之前留意一下。
 
 两个本地依赖目录，都来自 `pip install openvino` 的 `site-packages\openvino\`：
 
