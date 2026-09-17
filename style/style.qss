@@ -1342,3 +1342,34 @@ QLabel[class~="modelDir"] {
 QDialog#ModelManagerDialog QPushButton#start_btn {
     min-width: 96px;
 }
+
+/* ---------------- 底栏分页 ---------------- */
+/* 翻页做成 28x28 纯图标按钮: "上一页"三个汉字配全局 QPushButton 的
+   padding(6px 14px), 单个约 78px, 而底栏里只有这俩按钮, 比例失衡.
+   ID 选择器特异性高于类型选择器, hover/pressed/disabled 必须一起写,
+   否则全局那几条会被顶掉(add_project_btn 上踩过这个坑).
+   尺寸只在 .ui 里用 min=max 定, 这里别写 min-width —— QSS 的 min-width
+   会覆盖 widget 的 minimumSize, 把 28 压回 sizeHint(20). */
+QPushButton#pre_page_btn, QPushButton#next_page_btn {
+    padding: 0;
+}
+
+QPushButton#pre_page_btn:hover, QPushButton#next_page_btn:hover {
+    background-color: #2b2f3b;
+    border-color: #4a5164;
+}
+
+QPushButton#pre_page_btn:pressed, QPushButton#next_page_btn:pressed {
+    background-color: #1d2027;
+}
+
+QPushButton#pre_page_btn:disabled, QPushButton#next_page_btn:disabled {
+    background-color: #1c1e25;
+    border-color: #2a2d37;
+}
+
+/* 页码夹在两个箭头中间当视觉中心, 当前页数字化亮见 _set_page_info */
+#pageInfoLabel {
+    color: #8b93a5;
+    padding: 0 12px;
+}

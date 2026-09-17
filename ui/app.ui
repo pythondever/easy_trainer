@@ -534,23 +534,53 @@
               </spacer>
              </item>
              <item>
-              <widget class="QLabel" name="pageInfoLabel">
+              <widget class="QPushButton" name="pre_page_btn">
+               <property name="minimumSize">
+                <size>
+                 <width>28</width>
+                 <height>28</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>28</width>
+                 <height>28</height>
+                </size>
+               </property>
+               <property name="toolTip">
+                <string>上一页</string>
+               </property>
                <property name="text">
-                <string>0 / 0</string>
+                <string/>
                </property>
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="pre_page_btn">
+              <widget class="QLabel" name="pageInfoLabel">
                <property name="text">
-                <string>上一页</string>
+                <string/>
                </property>
               </widget>
              </item>
              <item>
               <widget class="QPushButton" name="next_page_btn">
-               <property name="text">
+               <property name="minimumSize">
+                <size>
+                 <width>28</width>
+                 <height>28</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>28</width>
+                 <height>28</height>
+                </size>
+               </property>
+               <property name="toolTip">
                 <string>下一页</string>
+               </property>
+               <property name="text">
+                <string/>
                </property>
               </widget>
              </item>

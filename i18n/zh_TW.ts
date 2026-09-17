@@ -429,17 +429,12 @@
         <translation>介面語言</translation>
     </message>
     <message>
-        <location filename="../ui/app.ui" line="539"/>
-        <source>0 / 0</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/app.ui" line="546"/>
+        <location filename="../ui/app.ui" line="551"/>
         <source>上一页</source>
         <translation>上一頁</translation>
     </message>
     <message>
-        <location filename="../ui/app.ui" line="553"/>
+        <location filename="../ui/app.ui" line="580"/>
         <source>下一页</source>
         <translation>下一頁</translation>
     </message>
@@ -508,14 +503,24 @@
         <translation>該資料集還沒有影像目錄, 請先按右鍵「匯入」</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="798"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="808"/>
+        <source>第 {} / {} 页</source>
+        <translation>第 {} / {} 頁</translation>
+    </message>
+    <message>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="812"/>
         <source>第 {}/{} 页 · 共 {} 个</source>
         <translation>第 {}/{} 頁 · 共 {} 個</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="802"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="814"/>
         <source>第 {}/{} 页 · 共 {} 张</source>
         <translation>第 {}/{} 頁 · 共 {} 張</translation>
+    </message>
+    <message>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="823"/>
+        <source>暂无数据</source>
+        <translation>暫無資料</translation>
     </message>
 </context>
 <context>
@@ -597,7 +602,7 @@
         <location filename="../app/annotation/annotation_dialog.py" line="501"/>
         <location filename="../app/mixins/import_export_mixin.py" line="262"/>
         <location filename="../app/mixins/label_mixin.py" line="201"/>
-        <location filename="../app/mixins/misc_mixin.py" line="124"/>
+        <location filename="../app/mixins/misc_mixin.py" line="127"/>
         <location filename="../app/widgets/dialog_buttons.py" line="104"/>
         <source>确定</source>
         <translation>確定</translation>
@@ -908,7 +913,7 @@
         <translation>清空</translation>
     </message>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="81"/>
+        <location filename="../app/mixins/misc_mixin.py" line="84"/>
         <location filename="../app/widgets/log_dialog.py" line="20"/>
         <source>日志</source>
         <translation>紀錄</translation>
@@ -993,42 +998,42 @@
 <context>
     <name>MiscMixin</name>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="116"/>
+        <location filename="../app/mixins/misc_mixin.py" line="119"/>
         <source>数据集统计</source>
         <translation>資料集統計</translation>
     </message>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="125"/>
+        <location filename="../app/mixins/misc_mixin.py" line="128"/>
         <source>应用所选数据集</source>
         <translation>套用所選資料集</translation>
     </message>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="216"/>
+        <location filename="../app/mixins/misc_mixin.py" line="219"/>
         <source>[{}/{}](未设置)</source>
         <translation>[{}/{}](未設定)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="219"/>
+        <location filename="../app/mixins/misc_mixin.py" line="222"/>
         <source>(未选择数据集)</source>
         <translation>(未選擇資料集)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="387"/>
+        <location filename="../app/mixins/misc_mixin.py" line="390"/>
         <source>删除</source>
         <translation>刪除</translation>
     </message>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="388"/>
+        <location filename="../app/mixins/misc_mixin.py" line="391"/>
         <source>取消</source>
         <translation>取消</translation>
     </message>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="390"/>
+        <location filename="../app/mixins/misc_mixin.py" line="393"/>
         <source>删除图像</source>
         <translation>刪除影像</translation>
     </message>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="391"/>
+        <location filename="../app/mixins/misc_mixin.py" line="394"/>
         <source>将从系统删除所选 {} 张图像?
 
 (图像与同名标注文件不可恢复)</source>
@@ -1037,7 +1042,7 @@
 (影像與同名標註檔案無法復原)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="396"/>
+        <location filename="../app/mixins/misc_mixin.py" line="399"/>
         <source>图像与同名标注文件将从磁盘删除, 不可恢复</source>
         <translation>影像與同名標註檔案將從磁碟刪除, 無法復原</translation>
     </message>

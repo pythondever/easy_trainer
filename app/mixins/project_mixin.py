@@ -55,7 +55,7 @@ class ProjectMixin(object):
                 self._current_dataset = None
                 self.current_page = 0
                 self._clear_scene()
-                self.pageInfoLabel.setText("0 / 0")
+                self._reset_page_info()
             self.refresh_project_list()
 
     def _init_project_tree(self):
@@ -167,7 +167,7 @@ class ProjectMixin(object):
                 self._current_dataset = None
                 self.current_page = 0
                 self._clear_scene()
-                self.pageInfoLabel.setText("0 / 0")
+                self._reset_page_info()
             self.refresh_project_list()
 
     def _on_dataset_move(self, project_name, ds_name):

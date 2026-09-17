@@ -76,6 +76,8 @@ class MiscMixin(object):
             self._refresh_label_filter(*cur)
         else:
             self._reset_label_filter_text()
+        # 底栏分页文案也是运行时拼的
+        self._refresh_page_info()
         dlg = getattr(self, "_log_dialog", None)
         if dlg is not None:
             dlg.ui.retranslateUi(dlg)

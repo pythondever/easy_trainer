@@ -255,18 +255,22 @@ class Ui_AppUI(object):
 
         self.bottomBarLayout.addItem(self.bottomBarLeftSpacer)
 
+        self.pre_page_btn = QPushButton(self.bottomBar)
+        self.pre_page_btn.setObjectName(u"pre_page_btn")
+        self.pre_page_btn.setMinimumSize(QSize(28, 28))
+        self.pre_page_btn.setMaximumSize(QSize(28, 28))
+
+        self.bottomBarLayout.addWidget(self.pre_page_btn)
+
         self.pageInfoLabel = QLabel(self.bottomBar)
         self.pageInfoLabel.setObjectName(u"pageInfoLabel")
 
         self.bottomBarLayout.addWidget(self.pageInfoLabel)
 
-        self.pre_page_btn = QPushButton(self.bottomBar)
-        self.pre_page_btn.setObjectName(u"pre_page_btn")
-
-        self.bottomBarLayout.addWidget(self.pre_page_btn)
-
         self.next_page_btn = QPushButton(self.bottomBar)
         self.next_page_btn.setObjectName(u"next_page_btn")
+        self.next_page_btn.setMinimumSize(QSize(28, 28))
+        self.next_page_btn.setMaximumSize(QSize(28, 28))
 
         self.bottomBarLayout.addWidget(self.next_page_btn)
 
@@ -319,9 +323,15 @@ class Ui_AppUI(object):
 #if QT_CONFIG(tooltip)
         self.language_comboBox.setToolTip(QCoreApplication.translate("AppUI", u"\u754c\u9762\u8bed\u8a00", None))
 #endif // QT_CONFIG(tooltip)
-        self.pageInfoLabel.setText(QCoreApplication.translate("AppUI", u"0 / 0", None))
-        self.pre_page_btn.setText(QCoreApplication.translate("AppUI", u"\u4e0a\u4e00\u9875", None))
-        self.next_page_btn.setText(QCoreApplication.translate("AppUI", u"\u4e0b\u4e00\u9875", None))
+#if QT_CONFIG(tooltip)
+        self.pre_page_btn.setToolTip(QCoreApplication.translate("AppUI", u"\u4e0a\u4e00\u9875", None))
+#endif // QT_CONFIG(tooltip)
+        self.pre_page_btn.setText("")
+        self.pageInfoLabel.setText("")
+#if QT_CONFIG(tooltip)
+        self.next_page_btn.setToolTip(QCoreApplication.translate("AppUI", u"\u4e0b\u4e00\u9875", None))
+#endif // QT_CONFIG(tooltip)
+        self.next_page_btn.setText("")
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_project), QCoreApplication.translate("AppUI", u"\u9879\u76ee", None))
     # retranslateUi
 

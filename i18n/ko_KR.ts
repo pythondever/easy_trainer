@@ -429,17 +429,12 @@
         <translation>인터페이스 언어</translation>
     </message>
     <message>
-        <location filename="../ui/app.ui" line="539"/>
-        <source>0 / 0</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/app.ui" line="546"/>
+        <location filename="../ui/app.ui" line="551"/>
         <source>上一页</source>
         <translation>이전</translation>
     </message>
     <message>
-        <location filename="../ui/app.ui" line="553"/>
+        <location filename="../ui/app.ui" line="580"/>
         <source>下一页</source>
         <translation>다음</translation>
     </message>
@@ -508,14 +503,24 @@
         <translation>이 데이터셋에는 아직 이미지 디렉터리가 없습니다. 먼저 마우스 오른쪽 버튼으로 &quot;가져오기&quot;를 실행하세요</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="798"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="808"/>
+        <source>第 {} / {} 页</source>
+        <translation>{} / {} 페이지</translation>
+    </message>
+    <message>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="812"/>
         <source>第 {}/{} 页 · 共 {} 个</source>
         <translation>{}/{} 페이지 · 총 {}개</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="802"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="814"/>
         <source>第 {}/{} 页 · 共 {} 张</source>
         <translation>{}/{} 페이지 · 총 {}장</translation>
+    </message>
+    <message>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="823"/>
+        <source>暂无数据</source>
+        <translation>데이터 없음</translation>
     </message>
 </context>
 <context>
@@ -597,7 +602,7 @@
         <location filename="../app/annotation/annotation_dialog.py" line="501"/>
         <location filename="../app/mixins/import_export_mixin.py" line="262"/>
         <location filename="../app/mixins/label_mixin.py" line="201"/>
-        <location filename="../app/mixins/misc_mixin.py" line="124"/>
+        <location filename="../app/mixins/misc_mixin.py" line="127"/>
         <location filename="../app/widgets/dialog_buttons.py" line="104"/>
         <source>确定</source>
         <translation>확인</translation>
@@ -908,7 +913,7 @@
         <translation>비우기</translation>
     </message>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="81"/>
+        <location filename="../app/mixins/misc_mixin.py" line="84"/>
         <location filename="../app/widgets/log_dialog.py" line="20"/>
         <source>日志</source>
         <translation>로그</translation>
@@ -993,42 +998,42 @@
 <context>
     <name>MiscMixin</name>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="116"/>
+        <location filename="../app/mixins/misc_mixin.py" line="119"/>
         <source>数据集统计</source>
         <translation>데이터셋 통계</translation>
     </message>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="125"/>
+        <location filename="../app/mixins/misc_mixin.py" line="128"/>
         <source>应用所选数据集</source>
         <translation>선택한 데이터셋 적용</translation>
     </message>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="216"/>
+        <location filename="../app/mixins/misc_mixin.py" line="219"/>
         <source>[{}/{}](未设置)</source>
         <translation>[{}/{}](미설정)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="219"/>
+        <location filename="../app/mixins/misc_mixin.py" line="222"/>
         <source>(未选择数据集)</source>
         <translation>(선택된 데이터셋 없음)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="387"/>
+        <location filename="../app/mixins/misc_mixin.py" line="390"/>
         <source>删除</source>
         <translation>삭제</translation>
     </message>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="388"/>
+        <location filename="../app/mixins/misc_mixin.py" line="391"/>
         <source>取消</source>
         <translation>취소</translation>
     </message>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="390"/>
+        <location filename="../app/mixins/misc_mixin.py" line="393"/>
         <source>删除图像</source>
         <translation>이미지 삭제</translation>
     </message>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="391"/>
+        <location filename="../app/mixins/misc_mixin.py" line="394"/>
         <source>将从系统删除所选 {} 张图像?
 
 (图像与同名标注文件不可恢复)</source>
@@ -1037,7 +1042,7 @@
 (이미지와 같은 이름의 라벨 파일은 복구할 수 없습니다)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="396"/>
+        <location filename="../app/mixins/misc_mixin.py" line="399"/>
         <source>图像与同名标注文件将从磁盘删除, 不可恢复</source>
         <translation>이미지와 같은 이름의 라벨 파일이 디스크에서 삭제되며 복구할 수 없습니다</translation>
     </message>

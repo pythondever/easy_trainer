@@ -3,6 +3,7 @@ import os
 
 from app.widgets.log_dialog import LogDialog
 from app.widgets.popup_flat import ComboPopupFlattener
+from app.widgets.dialog_buttons import resource_icon
 from ui.app import Ui_AppUI as MainUI
 from app.core import i18n
 from app.core.constants import PAGE_SIZE
@@ -10,7 +11,7 @@ from app.core.utils import (setup_matplotlib_chinese, load_style_sheet,
                             project_root)
 from app.core.db import DataBase
 from PySide6.QtGui import QIcon, QPixmap
-from PySide6.QtCore import Qt, QTimer, QEvent
+from PySide6.QtCore import Qt, QSize, QTimer, QEvent
 from PySide6.QtWidgets import QWidget, QApplication, QTimeEdit, QFrame, QHBoxLayout
 
 
@@ -120,10 +121,23 @@ class App(QWidget, MainUI, LabelMixin, ProjectMixin, ImportExportMixin,
         self.sidebarTitle.setVisible(False)
         self.tabWidget.setCurrentIndex(0)
         self._init_image_view()
+        self._init_pager()
         self._init_language_combo()
         self._init_label_filter()
         self._current_dataset = None
         self._setup_header_groups()
+
+    def _init_pager(self):
+        """
+        底栏翻页按钮: 用 resources 里的箭头图标, 不写"上一页/下一页"文字.
+        两个三字按钮用全局 QPushButton 的 padding 会各占约 78px, 底栏里只有它俩,
+        显得笨重; 图标按钮 28x28, 与页码凑成一组.
+        """
+        for btn in (self.pre_page_btn, self.next_page_btn):
+            btn.setIconSize(QSize(14, 14))
+        self.pre_page_btn.setIcon(resource_icon("arrow_left.svg"))
+        self.next_page_btn.setIcon(resource_icon("arrow_right.svg"))
+        self._reset_page_info()
 
     def _setup_header_groups(self):
         """首页顶部工具栏分组: 标签区/统计区/训练区 用竖线分隔"""

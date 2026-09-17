@@ -547,7 +547,7 @@ class DatasetViewMixin(object):
         与图像显示区(_clear_scene)一起重置,避免显示残留的旧数据集状态.
         """
         self._clear_scene()
-        self.pageInfoLabel.setText("0 / 0")
+        self._reset_page_info()
         self.current_page = 0
         if hasattr(self, "label_filter_combo"):
             self.label_filter_combo.blockSignals(True)
@@ -793,16 +793,45 @@ class DatasetViewMixin(object):
                 pos += 1
         scene.setSceneRect(scene.itemsBoundingRect().adjusted(-10, -10, 20, 20))
         self._evict_img_cache()
+        self._set_page_info(cur_label, total_pages, len(view_data))
+
+    def _set_page_info(self, cur_label, total_pages, count):
+        """
+        底栏分页文案: 中间只放"第 N / M 页"(当前页数字化亮), 总数与量词进 tooltip.
+        原来把它跟总数拼成一句, 空态/有数据两套写法切来切去, 居中那组会左右横移.
+        """
+        self._page_info_state = (cur_label, total_pages, count)
+        if not count:
+            self._reset_page_info()
+            return
+        self.pageInfoLabel.setText(
+            QC.translate("DatasetViewMixin", "第 {} / {} 页").format(
+                '<span style="color:#e8eaf0">{}</span>'.format(self.current_page + 1),
+                total_pages))
         if cur_label and cur_label != "__unlabeled__":
-            self.pageInfoLabel.setText(
-                QC.translate("DatasetViewMixin", "第 {}/{} 页 · 共 {} 个").format(
-                    self.current_page + 1, total_pages, len(view_data)))
+            tip = QC.translate("DatasetViewMixin", "第 {}/{} 页 · 共 {} 个")
         else:
-            self.pageInfoLabel.setText(
-                QC.translate("DatasetViewMixin", "第 {}/{} 页 · 共 {} 张").format(
-                    self.current_page + 1, total_pages, len(view_data)))
+            tip = QC.translate("DatasetViewMixin", "第 {}/{} 页 · 共 {} 张")
+        self.pageInfoLabel.setToolTip(tip.format(
+            self.current_page + 1, total_pages, count))
         self.pre_page_btn.setEnabled(self.current_page > 0)
         self.next_page_btn.setEnabled(self.current_page < total_pages - 1)
+
+    def _reset_page_info(self):
+        """图像区清空 / 空数据集: 没有页可翻, 文案与两个按钮一起复位."""
+        self._page_info_state = None
+        self.pageInfoLabel.setText(QC.translate("DatasetViewMixin", "暂无数据"))
+        self.pageInfoLabel.setToolTip("")
+        self.pre_page_btn.setEnabled(False)
+        self.next_page_btn.setEnabled(False)
+
+    def _refresh_page_info(self):
+        """换语言后重刷底栏分页文案(retranslateUi 管不到运行时拼的这行)."""
+        state = getattr(self, "_page_info_state", None)
+        if state:
+            self._set_page_info(*state)
+        else:
+            self._reset_page_info()
 
     def _show_page(self, offset):
         """当前数据集翻页(offset: +1/-1). 分页数据与显示时一致(应用标签筛选)."""

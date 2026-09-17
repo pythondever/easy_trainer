@@ -429,17 +429,12 @@ Trotzdem löschen?</translation>
         <translation>Oberflächensprache</translation>
     </message>
     <message>
-        <location filename="../ui/app.ui" line="539"/>
-        <source>0 / 0</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/app.ui" line="546"/>
+        <location filename="../ui/app.ui" line="551"/>
         <source>上一页</source>
         <translation>Zurück</translation>
     </message>
     <message>
-        <location filename="../ui/app.ui" line="553"/>
+        <location filename="../ui/app.ui" line="580"/>
         <source>下一页</source>
         <translation>Weiter</translation>
     </message>
@@ -508,14 +503,24 @@ Trotzdem löschen?</translation>
         <translation>Dieser Datensatz hat noch keinen Bildordner; zuerst per Rechtsklick „Importieren&quot;</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="798"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="808"/>
+        <source>第 {} / {} 页</source>
+        <translation>Seite {} / {}</translation>
+    </message>
+    <message>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="812"/>
         <source>第 {}/{} 页 · 共 {} 个</source>
         <translation>Seite {}/{} · {} Einträge</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="802"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="814"/>
         <source>第 {}/{} 页 · 共 {} 张</source>
         <translation>Seite {}/{} · {} Bilder</translation>
+    </message>
+    <message>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="823"/>
+        <source>暂无数据</source>
+        <translation>Keine Daten</translation>
     </message>
 </context>
 <context>
@@ -597,7 +602,7 @@ Trotzdem löschen?</translation>
         <location filename="../app/annotation/annotation_dialog.py" line="501"/>
         <location filename="../app/mixins/import_export_mixin.py" line="262"/>
         <location filename="../app/mixins/label_mixin.py" line="201"/>
-        <location filename="../app/mixins/misc_mixin.py" line="124"/>
+        <location filename="../app/mixins/misc_mixin.py" line="127"/>
         <location filename="../app/widgets/dialog_buttons.py" line="104"/>
         <source>确定</source>
         <translation>OK</translation>
@@ -908,7 +913,7 @@ Alle seine Annotationen werden gelöscht und können nicht wiederhergestellt wer
         <translation>Leeren</translation>
     </message>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="81"/>
+        <location filename="../app/mixins/misc_mixin.py" line="84"/>
         <location filename="../app/widgets/log_dialog.py" line="20"/>
         <source>日志</source>
         <translation>Protokoll</translation>
@@ -993,42 +998,42 @@ Alle seine Annotationen werden gelöscht und können nicht wiederhergestellt wer
 <context>
     <name>MiscMixin</name>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="116"/>
+        <location filename="../app/mixins/misc_mixin.py" line="119"/>
         <source>数据集统计</source>
         <translation>Datensatz-Statistik</translation>
     </message>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="125"/>
+        <location filename="../app/mixins/misc_mixin.py" line="128"/>
         <source>应用所选数据集</source>
         <translation>Ausgewählte Datensätze übernehmen</translation>
     </message>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="216"/>
+        <location filename="../app/mixins/misc_mixin.py" line="219"/>
         <source>[{}/{}](未设置)</source>
         <translation>[{}/{}](nicht gesetzt)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="219"/>
+        <location filename="../app/mixins/misc_mixin.py" line="222"/>
         <source>(未选择数据集)</source>
         <translation>(kein Datensatz gewählt)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="387"/>
+        <location filename="../app/mixins/misc_mixin.py" line="390"/>
         <source>删除</source>
         <translation>Löschen</translation>
     </message>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="388"/>
+        <location filename="../app/mixins/misc_mixin.py" line="391"/>
         <source>取消</source>
         <translation>Abbrechen</translation>
     </message>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="390"/>
+        <location filename="../app/mixins/misc_mixin.py" line="393"/>
         <source>删除图像</source>
         <translation>Bilder löschen</translation>
     </message>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="391"/>
+        <location filename="../app/mixins/misc_mixin.py" line="394"/>
         <source>将从系统删除所选 {} 张图像?
 
 (图像与同名标注文件不可恢复)</source>
@@ -1037,7 +1042,7 @@ Alle seine Annotationen werden gelöscht und können nicht wiederhergestellt wer
 (Bilder und gleichnamige Labeldateien können nicht wiederhergestellt werden)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="396"/>
+        <location filename="../app/mixins/misc_mixin.py" line="399"/>
         <source>图像与同名标注文件将从磁盘删除, 不可恢复</source>
         <translation>Bilder und gleichnamige Labeldateien werden von der Festplatte gelöscht. Nicht wiederherstellbar</translation>
     </message>
