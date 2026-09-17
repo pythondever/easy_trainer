@@ -481,7 +481,8 @@ class TrainWorker(QThread):
         rc = self._proc.poll()
         result_path = os.path.join(self._config["timestamp_dir"], "result.json")
         if poll_error:
-            self.failed.emit("训练监控异常, 已终止.\n\n{}".format(poll_error))
+            self.failed.emit(
+                self.tr("训练监控异常, 已终止.\n\n{}").format(poll_error))
         elif rc == 0 and os.path.exists(result_path) and not result_emitted:
             try:
                 with open(result_path, "r", encoding="utf-8") as f:
@@ -490,9 +491,11 @@ class TrainWorker(QThread):
                 result_emitted = True
             except Exception as e:
                 self.failed.emit(
-                    "训练结果文件读取失败: {}\n\n{}".format(result_path, e))
+                    self.tr("训练结果文件读取失败: {}\n\n{}").format(
+                        result_path, e))
                 result_emitted = True
         elif not self._stop_flag and rc != 0:
-            detail = "训练进程异常退出 (code={})\n\n--- 子进程输出(尾部) ---\n{}".format(
-                rc, "\n".join(last_lines))
+            detail = self.tr(
+                "训练进程异常退出 (code={})\n\n--- 子进程输出(尾部) ---\n{}"
+            ).format(rc, "\n".join(last_lines))
             self.failed.emit(detail)

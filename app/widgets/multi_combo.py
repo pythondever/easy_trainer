@@ -7,6 +7,7 @@ QComboBox 撑不起这个样式 - item view 的 ::indicator 只能改尺寸和�
 """
 
 from PySide6.QtCore import QEvent, QObject, QPointF, QRectF, QSize, Qt, QTimer
+from PySide6.QtCore import QCoreApplication as QC
 from PySide6.QtGui import (QColor, QFont, QFontMetrics, QPainter, QPainterPath,
                            QPen, QPolygonF)
 from PySide6.QtWidgets import QLineEdit, QStyle, QStyledItemDelegate
@@ -340,12 +341,13 @@ class ChipLineEdit(QLineEdit):
         event.accept()
 
 
-def install_multi_combo(combo, placeholder="请选择数据集"):
+def install_multi_combo(combo, placeholder=None):
     """就地改造成多选下拉, 列表样式挂在 view 上, 与 model 无关, setModel 前后调用都行."""
     combo.setProperty("multiCombo", True)
     combo.setEditable(True)
     combo.setFocusPolicy(Qt.StrongFocus)
-    combo.setLineEdit(ChipLineEdit(combo, placeholder))
+    combo.setLineEdit(ChipLineEdit(
+        combo, placeholder or QC.translate("MultiCombo", "请选择数据集")))
     view = combo.view()
     if view is not None:
         view.setItemDelegate(MultiComboDelegate(view))

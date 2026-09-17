@@ -7,40 +7,44 @@ from app.widgets.dialog_buttons import add_ok_cancel
 from app.widgets.message_box import MessageBox
 from app.widgets.name_input_dialog import NameInputDialog
 from app.widgets.project_sidebar import ProjectSidebar
+from PySide6.QtCore import QCoreApplication as QC
 from PySide6.QtWidgets import (QDialog, QMenu, QVBoxLayout, QHBoxLayout,
                                QLabel, QComboBox)
 
 
 class ProjectMixin(object):
-    def _show_enter_name(self, preset="", title="输入名称", placeholder="项目名称"):
-        return NameInputDialog.get_name(self, title=title, preset=preset,
-                                        placeholder=placeholder)
+    def _show_enter_name(self, preset="", title=None, placeholder=None):
+        return NameInputDialog.get_name(
+            self, title=title or QC.translate("ProjectMixin", "输入名称"), preset=preset,
+            placeholder=placeholder or QC.translate("ProjectMixin", "项目名称"))
 
     def add_project(self):
-        name, ok = self._show_enter_name(title="创建项目")
+        name, ok = self._show_enter_name(title=QC.translate("ProjectMixin", "创建项目"))
         if not ok or not name:
             return
         if name in self.db.get_projects():
-            MessageBox.warning(self, "创建项目", "项目名称已存在!")
+            MessageBox.warning(self, QC.translate("ProjectMixin", "创建项目"), QC.translate("ProjectMixin", "项目名称已存在!"))
             return
         self.db.add_project(name)
         self._log("创建项目: {}".format(name))
         self.refresh_project_list()
 
     def _rename_project(self, old_name):
-        new_name, ok = self._show_enter_name(preset=old_name, title="修改名称")
+        new_name, ok = self._show_enter_name(
+            preset=old_name, title=QC.translate("ProjectMixin", "修改名称"))
         if not ok or not new_name or new_name == old_name:
             return
         if new_name in self.db.get_projects():
-            MessageBox.warning(self, "修改名称", "项目名称已存在!")
+            MessageBox.warning(self, QC.translate("ProjectMixin", "修改名称"), QC.translate("ProjectMixin", "项目名称已存在!"))
             return
         self.db.rename_project(old_name, new_name)
         self._log("重命名项目: {} → {}".format(old_name, new_name))
         self.refresh_project_list()
 
     def _delete_project(self, name):
-        if MessageBox.question(self, "删除项目", "确定删除项目\"{}\"吗?\n".format(name),
-                               default_yes=True):
+        if MessageBox.question(
+                self, QC.translate("ProjectMixin", "删除项目"),
+                QC.translate("ProjectMixin", "确定删除项目\"{}\"吗?\n").format(name), default_yes=True):
             self._log("删除项目: {}".format(name))
             self.db.delete_project(name)
             self.db.delete_project_info(name)
@@ -81,11 +85,11 @@ class ProjectMixin(object):
 
     def _on_sidebar_project_menu(self, project, global_pos):
         menu = QMenu(self)
-        act_add_ds = menu.addAction("添加数据集")
+        act_add_ds = menu.addAction(QC.translate("ProjectMixin", "添加数据集"))
         menu.addSeparator()
-        act_export = menu.addAction("导出项目")
-        act_rename = menu.addAction("修改名称")
-        act_del = menu.addAction("删除项目")
+        act_export = menu.addAction(QC.translate("ProjectMixin", "导出项目"))
+        act_rename = menu.addAction(QC.translate("ProjectMixin", "修改名称"))
+        act_del = menu.addAction(QC.translate("ProjectMixin", "删除项目"))
         act = menu.exec(global_pos)
         if act is None:
             return
@@ -100,12 +104,12 @@ class ProjectMixin(object):
 
     def _on_sidebar_dataset_menu(self, project, dataset, global_pos):
         menu = QMenu(self)
-        act_import = menu.addAction("导入")
-        act_export = menu.addAction("导出")
-        act_reload = menu.addAction("重载")
-        act_move = menu.addAction("移动")
-        act_rename = menu.addAction("修改")
-        act_del = menu.addAction("删除")
+        act_import = menu.addAction(QC.translate("ProjectMixin", "导入"))
+        act_export = menu.addAction(QC.translate("ProjectMixin", "导出"))
+        act_reload = menu.addAction(QC.translate("ProjectMixin", "重载"))
+        act_move = menu.addAction(QC.translate("ProjectMixin", "移动"))
+        act_rename = menu.addAction(QC.translate("ProjectMixin", "修改"))
+        act_del = menu.addAction(QC.translate("ProjectMixin", "删除"))
         act = menu.exec(global_pos)
         if act is None:
             return
@@ -123,35 +127,36 @@ class ProjectMixin(object):
         elif act == act_del:
             self._delete_dataset(project, dataset)
 
-    def _show_add_dataset(self, preset_name="", title="添加数据集"):
-        return NameInputDialog.get_name(self, title=title, preset=preset_name,
-                                        placeholder="数据集名称")
+    def _show_add_dataset(self, preset_name="", title=None):
+        return NameInputDialog.get_name(
+            self, title=title or QC.translate("ProjectMixin", "添加数据集"), preset=preset_name,
+            placeholder=QC.translate("ProjectMixin", "数据集名称"))
 
     def _add_dataset(self, project_name):
         name, ok = self._show_add_dataset()
         if not ok or not name:
             return
         if not self.db.add_dataset(project_name, name):
-            MessageBox.warning(self, "添加数据集", "该项目下已存在同名数据集!")
+            MessageBox.warning(self, QC.translate("ProjectMixin", "添加数据集"), QC.translate("ProjectMixin", "该项目下已存在同名数据集!"))
             return
         self._log("创建数据集: {}/{}".format(project_name, name))
         self.refresh_project_list()
 
     def _rename_dataset(self, project_name, old_name):
-        name, ok = self._show_add_dataset(preset_name=old_name, title="修改数据集")
+        name, ok = self._show_add_dataset(
+            preset_name=old_name, title=QC.translate("ProjectMixin", "修改数据集"))
         if not ok or not name or name == old_name:
             return
         if not self.db.rename_dataset(project_name, old_name, name):
-            MessageBox.warning(self, "修改数据集", "该项目下已存在同名数据集!")
+            MessageBox.warning(self, QC.translate("ProjectMixin", "修改数据集"), QC.translate("ProjectMixin", "该项目下已存在同名数据集!"))
             return
         self._log("重命名数据集: {} → {}".format(project_name, old_name, name))
         self.refresh_project_list()
 
     def _delete_dataset(self, project_name, ds_name):
         if MessageBox.question(
-                self, "删除数据集",
-                "确定删除数据集\"{}\"吗?\n".format(ds_name),
-                default_yes=True):
+                self, QC.translate("ProjectMixin", "删除数据集"),
+                QC.translate("ProjectMixin", "确定删除数据集\"{}\"吗?\n").format(ds_name), default_yes=True):
             self.db.delete_dataset(project_name, ds_name)
             # 训练/模型记录可能被多个数据集共用,只移除该数据集,无引用才删记录
             self.db.remove_dataset_from_records(project_name, ds_name)
@@ -174,9 +179,9 @@ class ProjectMixin(object):
         dst_proj, dst_ds = target
         # 2. 确认
         if not MessageBox.question(
-                self, "移动数据集",
-                "是否将\"{}\"的数据从\n{} / {} 移动到 {} / {}?\n"
-                "移动后源数据集将清空.".format(
+                self, QC.translate("ProjectMixin", "移动数据集"),
+                QC.translate("ProjectMixin", "是否将\"{}\"的数据从\n{} / {} 移动到 {} / {}?\n"
+                    "移动后源数据集将清空.").format(
                     ds_name, project_name, ds_name, dst_proj, dst_ds),
                 default_yes=True):
             return
@@ -184,11 +189,11 @@ class ProjectMixin(object):
         try:
             self._move_dataset_data(project_name, ds_name, dst_proj, dst_ds)
         except Exception as e:
-            MessageBox.critical(self, "移动失败", str(e))
+            MessageBox.critical(self, QC.translate("ProjectMixin", "移动失败"), str(e))
             return
         MessageBox.information(
-            self, "移动数据集",
-            "已从 {} / {} 移动到 {} / {}".format(
+            self, QC.translate("ProjectMixin", "移动数据集"),
+            QC.translate("ProjectMixin", "已从 {} / {} 移动到 {} / {}").format(
                 project_name, ds_name, dst_proj, dst_ds))
 
     def _select_move_target(self, src_project, src_ds):
@@ -203,15 +208,17 @@ class ProjectMixin(object):
                     continue
                 candidates.append((proj, ds["dataset_name"]))
         if not candidates:
-            MessageBox.warning(self, "移动数据集", "没有可移动到的目标数据集(本项目之外无数据集)")
+            MessageBox.warning(
+                self, QC.translate("ProjectMixin", "移动数据集"),
+                QC.translate("ProjectMixin", "没有可移动到的目标数据集(本项目之外无数据集)"))
             return None
         dlg = QDialog(self)
         dlg.setObjectName("MoveTargetDialog")
-        dlg.setWindowTitle("选择目标数据集")
+        dlg.setWindowTitle(QC.translate("ProjectMixin", "选择目标数据集"))
         layout = QVBoxLayout(dlg)
         layout.setContentsMargins(20, 18, 20, 18)
         layout.setSpacing(14)
-        tip = QLabel("选择要将数据移动到的目标数据集:")
+        tip = QLabel(QC.translate("ProjectMixin", "选择要将数据移动到的目标数据集:"))
         layout.addWidget(tip)
         combo = QComboBox(dlg)
         for proj, ds in candidates:

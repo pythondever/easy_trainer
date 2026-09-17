@@ -15,6 +15,7 @@ from app.widgets.message_box import MessageBox
 from PySide6.QtGui import QPixmap, QPainter, QColor, QImage, QImageReader
 from PySide6.QtCore import (Qt, Signal, QThread, QMutex, QMutexLocker, QTimer,
                             QRect, QSize)
+from PySide6.QtCore import QCoreApplication as QC
 from PySide6.QtWidgets import QMenu, QGraphicsView, QGraphicsScene
 
 
@@ -244,11 +245,15 @@ class DatasetViewMixin(object):
                              if cur_ds else {})
                     unlabeled = _self._view_data_by_label(index)
                     all_paths = [r.get("image_path", "") for r in unlabeled if r.get("image_path")]
-                    act = menu.addAction("删除全部未标注图像({} 张)".format(len(all_paths)))
+                    act = menu.addAction(
+                        QC.translate("DatasetViewMixin",
+                                     "删除全部未标注图像({} 张)").format(len(all_paths)))
                     act.triggered.connect(
                         lambda: _self._delete_paths_with_confirm(all_paths))
                 else:
-                    act = menu.addAction("删除所选图像({} 张)".format(len(selected)))
+                    act = menu.addAction(
+                        QC.translate("DatasetViewMixin",
+                                     "删除所选图像({} 张)").format(len(selected)))
                     act.triggered.connect(lambda: _self._delete_selected_images(selected))
                 menu.exec(ev.globalPos())
                 ev.accept()
@@ -345,8 +350,9 @@ class DatasetViewMixin(object):
         binding = self.db.get_dataset_import(project, dataset)
         if not [p for p in get_paths(binding, "image") if p and os.path.isdir(p)]:
             self._log("重载跳过: 数据集 {}/{} 无图像目录".format(project, dataset))
-            MessageBox.warning(self, "重载",
-                               "该数据集还没有图像目录, 请先右键\"导入\"")
+            MessageBox.warning(self, QC.translate("DatasetViewMixin", "重载"),
+                               QC.translate("DatasetViewMixin",
+                                            "该数据集还没有图像目录, 请先右键\"导入\""))
             return
         if (project, dataset) in self._loading_tasks:
             self._log("重载跳过: 数据集 {}/{} 正在载入".format(project, dataset))
@@ -546,7 +552,8 @@ class DatasetViewMixin(object):
         if hasattr(self, "label_filter_combo"):
             self.label_filter_combo.blockSignals(True)
             self.label_filter_combo.clear()
-            self.label_filter_combo.addItem("未标注", "__unlabeled__")
+            self.label_filter_combo.addItem(
+                QC.translate("LabelMixin", "未标注"), "__unlabeled__")
             self.label_filter_combo.setCurrentIndex(0)
             self.label_filter_combo.blockSignals(False)
         self.current_label = "__unlabeled__"
@@ -787,11 +794,13 @@ class DatasetViewMixin(object):
         scene.setSceneRect(scene.itemsBoundingRect().adjusted(-10, -10, 20, 20))
         self._evict_img_cache()
         if cur_label and cur_label != "__unlabeled__":
-            self.pageInfoLabel.setText("第 {}/{} 页 · 共 {} 个".format(
-                self.current_page + 1, total_pages, len(view_data)))
+            self.pageInfoLabel.setText(
+                QC.translate("DatasetViewMixin", "第 {}/{} 页 · 共 {} 个").format(
+                    self.current_page + 1, total_pages, len(view_data)))
         else:
-            self.pageInfoLabel.setText("第 {}/{} 页 · 共 {} 张".format(
-                self.current_page + 1, total_pages, len(view_data)))
+            self.pageInfoLabel.setText(
+                QC.translate("DatasetViewMixin", "第 {}/{} 页 · 共 {} 张").format(
+                    self.current_page + 1, total_pages, len(view_data)))
         self.pre_page_btn.setEnabled(self.current_page > 0)
         self.next_page_btn.setEnabled(self.current_page < total_pages - 1)
 

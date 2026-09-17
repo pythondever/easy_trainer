@@ -16,7 +16,8 @@ class LogDialog(QDialog):
         super().__init__(parent)
         self.ui = Ui_LogDialog()
         self.ui.setupUi(self)
-        self.setWindowTitle("日志")
+        # 走 .ui 的 windowTitle(带翻译), 代码里再写一遍硬编码会把翻译覆盖掉
+        self.setWindowTitle(self.tr("日志"))
         self.ui.textEdit.setReadOnly(True)
         self.ui.clr_log_btn.clicked.connect(self.clear_log)
         self._load_history()

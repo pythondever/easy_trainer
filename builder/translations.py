@@ -1,0 +1,72 @@
+# -*- coding: utf-8 -*-
+"""
+界面翻译: 抽条目 -> 更新 i18n/*.ts -> 编译出 .qm.
+
+改过界面文案(或新增 self.tr())之后跑一次就行:
+
+    python builder/translations.py
+
+源语言就是中文, 所以只有非中文需要 .ts. 译文内容在 .ts 里改(用 Qt Linguist
+或直接编辑 XML), 这个脚本只负责抽取与编译. 产物 i18n/<lang>.qm 由 build.py
+随发行包一起发布, 少一个 .qm 时运行时静默退回中文.
+"""
+import os
+import shutil
+import subprocess
+import sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+I18N_DIR = os.path.join(ROOT, "i18n")
+
+# 与 app/core/i18n.py 的 LANGUAGES 对应(默认语言中文不需要文件)
+TARGETS = ("en_US",)
+
+
+def _tool(name):
+    """
+    找 pyside6-lupdate / pyside6-lrelease.
+    先看 PATH, 再看当前解释器同级的 bin / Scripts(venv 里这两个工具
+    不一定进 PATH, Windows 上还带 .exe 后缀).
+    """
+    exe = shutil.which(name)
+    if exe:
+        return exe
+    bindir = os.path.dirname(sys.executable)
+    for d in (bindir, os.path.join(bindir, "Scripts"), os.path.join(bindir, "bin")):
+        for candidate in (name, name + ".exe"):
+            path = os.path.join(d, candidate)
+            if os.path.exists(path):
+                return path
+    raise SystemExit("找不到 {}: 装 PySide6 用 pip install pyside6".format(name))
+
+
+def sources():
+    """待抽取的源: 全部 .ui + app/ 下所有 .py(只认 tr()/translate() 包住的字符串)."""
+    files = []
+    ui_dir = os.path.join(ROOT, "ui")
+    files += sorted(os.path.join(ui_dir, fn)
+                    for fn in os.listdir(ui_dir) if fn.endswith(".ui"))
+    app_dir = os.path.join(ROOT, "app")
+    for dirpath, dirnames, filenames in os.walk(app_dir):
+        dirnames[:] = [d for d in dirnames if d != "__pycache__"]
+        files += sorted(os.path.join(dirpath, fn)
+                        for fn in filenames if fn.endswith(".py"))
+    return files
+
+
+def main():
+    os.makedirs(I18N_DIR, exist_ok=True)
+    src = sources()
+    lupdate = _tool("pyside6-lupdate")
+    lrelease = _tool("pyside6-lrelease")
+    for lang in TARGETS:
+        ts = os.path.join(I18N_DIR, lang + ".ts")
+        qm = os.path.join(I18N_DIR, lang + ".qm")
+        print("== {} ==".format(lang))
+        subprocess.run([lupdate] + src + ["-ts", ts], check=True)
+        subprocess.run([lrelease, ts, "-qm", qm], check=True)
+    print("\n完成. 新抽出的条目是 type=\"unfinished\", 编译时会被跳过并回退中文.")
+
+
+if __name__ == "__main__":
+    main()

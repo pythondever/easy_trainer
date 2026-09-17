@@ -397,7 +397,8 @@ class ProjectSidebar(QWidget):
             v.insertWidget(0, card)
             self.cards[project] = card
             n_ds += len(datasets)
-        self.stats_lbl.setText("{} 个项目 · {} 个数据集".format(len(data), n_ds))
+        self.stats_lbl.setText(self.tr("{} 个项目 · {} 个数据集").format(
+            len(data), n_ds))
         if current is not None:
             self.select_dataset(*current)
 

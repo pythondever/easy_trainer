@@ -11,6 +11,7 @@ from app.widgets.dialog_buttons import apply_icon
 from app.widgets.message_box import MessageBox, ProgressDialog
 from app.tasks.merge_task import MergeLabelsTask
 from PySide6.QtGui import QIcon, QPixmap, QColor
+from PySide6.QtCore import QCoreApplication as QC
 from PySide6.QtWidgets import QDialog, QComboBox
 
 # "未标注"不是真实类别, 用黑块占位, 与真实标签的彩色块对齐
@@ -34,9 +35,22 @@ class LabelMixin(object):
         self.label_filter_combo.clear()
         self.label_filter_combo.setSizeAdjustPolicy(QComboBox.AdjustToMinimumContentsLengthWithIcon)
         self.label_filter_combo.setMinimumContentsLength(12)
-        self.label_filter_combo.addItem(_color_icon(UNLABELED_COLOR),
-                                        "未标注", "__unlabeled__")
+        # 显式给 context: mixin 里 self.tr() 挂的是实例的类(App), 与 lupdate
+        # 按定义处抽出来的 "LabelMixin" 对不上, 译文永远匹配不到
+        self.label_filter_combo.addItem(
+            _color_icon(UNLABELED_COLOR),
+            QC.translate("LabelMixin", "未标注"), "__unlabeled__")
         self.label_filter_combo.currentIndexChanged.connect(self._on_label_filter_changed)
+
+    def _reset_label_filter_text(self):
+        """没打开数据集时下拉里只有"未标注"一项, 换语言要把它的文案重设一遍."""
+        combo = getattr(self, "label_filter_combo", None)
+        if combo is None:
+            return
+        text = QC.translate("LabelMixin", "未标注")
+        for i in range(combo.count()):
+            if combo.itemData(i) == "__unlabeled__":
+                combo.setItemText(i, text)
 
     def _on_label_filter_changed(self, idx):
         """标签下拉框变更:重新渲染场景(按标签筛选)."""
@@ -99,8 +113,9 @@ class LabelMixin(object):
             for name, color in sorted(labels.items(),
                                       key=lambda kv: label_sort_key(kv[0])):
                 self.label_filter_combo.addItem(_color_icon(color), name, name)
-            self.label_filter_combo.addItem(_color_icon(UNLABELED_COLOR),
-                                            "未标注", "__unlabeled__")
+            self.label_filter_combo.addItem(
+                _color_icon(UNLABELED_COLOR),
+                QC.translate("LabelMixin", "未标注"), "__unlabeled__")
             if (self.current_label
                     and self.current_label != "__unlabeled__"
                     and self.current_label in labels):
@@ -156,27 +171,29 @@ class LabelMixin(object):
         弹 ui/edit_label.py 对话框(类别 + 批量修改为 + 确定).
         """
         if not self._current_dataset:
-            MessageBox.warning(self, "重命名", "请先在左侧选中一个数据集")
+            MessageBox.warning(self, QC.translate("LabelMixin", "重命名"), QC.translate("LabelMixin", "请先在左侧选中一个数据集"))
             return
         old = self.current_label
         if old == "__unlabeled__" or not old:
-            MessageBox.warning(self, "重命名", "请先在筛选下拉框中选择要重命名的标签")
+            MessageBox.warning(
+                self, QC.translate("LabelMixin", "重命名"),
+                QC.translate("LabelMixin", "请先在筛选下拉框中选择要重命名的标签"))
             return
         dlg = QDialog(self)
-        dlg.setWindowTitle("类别修改")
+        dlg.setWindowTitle(QC.translate("LabelMixin", "类别修改"))
         ui = EditLabelUI()
         ui.setupUi(dlg)
         ui.label_btn.setText(old)
         ui.new_label_edit.setText(old)
         ui.new_label_edit.selectAll()
-        apply_icon(ui.done_btn, "确定")
+        apply_icon(ui.done_btn, QC.translate("DialogButtons", "确定"))
         ui.done_btn.clicked.connect(dlg.accept)
         dlg.exec()
         new_name = ui.new_label_edit.text().strip()
         if dlg.result() != QDialog.Accepted:
             return
         if not new_name:
-            MessageBox.warning(self, "重命名", "标签名称不能为空")
+            MessageBox.warning(self, QC.translate("LabelMixin", "重命名"), QC.translate("LabelMixin", "标签名称不能为空"))
             return
         if new_name == old:
             return
@@ -185,10 +202,12 @@ class LabelMixin(object):
         exists = self.db.get_dataset_labels(proj, ds)
         if new_name in exists:
             if not MessageBox.question(
-                    self, "合并标签",
-                    "标签\"{}\"已存在.\n"
-                    "确定把\"{}\"的所有标注合并到\"{}\"吗?\n"
-                    "此操作会改写数据集源标签文件, 且不可恢复.".format(
+                    self, QC.translate("LabelMixin", "合并标签"),
+                    QC.translate(
+                        "LabelMixin",
+                        "标签\"{}\"已存在.\n"
+                        "确定把\"{}\"的所有标注合并到\"{}\"吗?\n"
+                        "此操作会改写数据集源标签文件, 且不可恢复.").format(
                         new_name, old, new_name),
                     default_yes=False):
                 return
@@ -370,8 +389,9 @@ class LabelMixin(object):
         recs = index.get("all", [])
         progress = None
         if len(recs) > 50:
-            progress = ProgressDialog("重命名标签", "正在更新标注文件...", self,
-                                      maximum=len(recs), cancellable=False)
+            progress = ProgressDialog(
+                QC.translate("LabelMixin", "重命名标签"), QC.translate("LabelMixin", "正在更新标注文件..."), self,
+                maximum=len(recs), cancellable=False)
         try:
             for i, rec in enumerate(recs):
                 if progress is not None:
@@ -404,15 +424,17 @@ class LabelMixin(object):
     def _on_delete_label(self):
         """首页"删除"按钮: 删除当前筛选下拉选中的标签(含确认弹窗)."""
         if not self._current_dataset:
-            MessageBox.warning(self, "删除标签", "请先在左侧选中一个数据集")
+            MessageBox.warning(self, QC.translate("LabelMixin", "删除标签"), QC.translate("LabelMixin", "请先在左侧选中一个数据集"))
             return
         old = self.current_label
         if old == "__unlabeled__" or not old:
-            MessageBox.warning(self, "删除标签", "请先在筛选下拉框中选择要删除的标签")
+            MessageBox.warning(
+                self, QC.translate("LabelMixin", "删除标签"),
+                QC.translate("LabelMixin", "请先在筛选下拉框中选择要删除的标签"))
             return
         if not MessageBox.question(
-                self, "删除标签", "确定删除标签\"{}\"吗?\n该标签的所有标注将被删除, 且不可恢复.".format(old),
-                default_yes=True):
+                self, QC.translate("LabelMixin", "删除标签"),
+                QC.translate("LabelMixin", "确定删除标签\"{}\"吗?\n该标签的所有标注将被删除, 且不可恢复.").format(old), default_yes=True):
             return
         proj, ds = self._current_dataset
         self._apply_delete_label(proj, ds, old)
@@ -511,8 +533,9 @@ class LabelMixin(object):
         recs = index.get("all", [])
         progress = None
         if len(recs) > 50:
-            progress = ProgressDialog("删除标签", "正在清理标注文件...", self,
-                                      maximum=len(recs), cancellable=False)
+            progress = ProgressDialog(
+                QC.translate("LabelMixin", "删除标签"), QC.translate("LabelMixin", "正在清理标注文件..."), self,
+                maximum=len(recs), cancellable=False)
         try:
             for i, rec in enumerate(recs):
                 if progress is not None:

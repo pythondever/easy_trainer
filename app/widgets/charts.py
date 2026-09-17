@@ -5,8 +5,20 @@
 """
 import numpy as np
 from matplotlib.figure import Figure
+from PySide6.QtCore import QCoreApplication as QC
+from PySide6.QtCore import QT_TRANSLATE_NOOP
 
 from app.core.utils import setup_matplotlib_chinese
+
+# 图表里的文案: 存中文原文, 显示时按界面语言翻. NOOP 只为让 lupdate 抽得到译文
+TEXT_NO_LABEL = QT_TRANSLATE_NOOP("Charts", "暂无标注")
+TEXT_LABEL = QT_TRANSLATE_NOOP("Charts", "标签")
+TEXT_LABEL_COUNT = QT_TRANSLATE_NOOP("Charts", "标签数量")
+
+
+def _tr(text, translate):
+    """分类/统计界面的图表走界面语言; 报告 PDF 正文还没翻, 图表跟正文走中文."""
+    return QC.translate("Charts", text) if translate else text
 
 
 def _short(text, n):
@@ -15,7 +27,7 @@ def _short(text, n):
 
 
 def render_label_chart(label_counts, label_colors=None, dark=True,
-                       figsize=None):
+                       figsize=None, translate=True):
     """返回已画好的 Figure. label_counts: {标签: 数量}."""
     setup_matplotlib_chinese()
     num_bars = max(1, len(label_counts))
@@ -28,8 +40,9 @@ def render_label_chart(label_counts, label_colors=None, dark=True,
         fig = Figure(figsize=figsize, dpi=100, facecolor="white")
         axes = fig.add_subplot(111, facecolor="white")
     if not label_counts:
-        axes.text(0.5, 0.5, "暂无标注", ha="center", va="center",
-                  color="#8b93a5", transform=axes.transAxes, fontsize=14)
+        axes.text(0.5, 0.5, _tr(TEXT_NO_LABEL, translate), ha="center",
+                  va="center", color="#8b93a5", transform=axes.transAxes,
+                  fontsize=14)
         axes.set_xticks([])
         axes.set_yticks([])
         return fig
@@ -64,8 +77,10 @@ def render_label_chart(label_counts, label_colors=None, dark=True,
     for i, v in enumerate(values):
         axes.text(x_positions[i], v, str(v), ha="center", va="bottom",
                   color=txt_color, fontsize=fs)
-    axes.set_xlabel("标签", color=label_color, fontsize=11, labelpad=8)
-    axes.set_ylabel("标签数量", color=label_color, fontsize=11, labelpad=8)
+    axes.set_xlabel(_tr(TEXT_LABEL, translate), color=label_color, fontsize=11,
+                    labelpad=8)
+    axes.set_ylabel(_tr(TEXT_LABEL_COUNT, translate), color=label_color, fontsize=11,
+                    labelpad=8)
     axes.tick_params(axis="x", colors=tick_color, labelsize=fs, rotation=rot)
     axes.tick_params(axis="y", colors=tick_color, labelsize=10)
     axes.set_ylim(0, ymax * 1.12 if ymax else 1)

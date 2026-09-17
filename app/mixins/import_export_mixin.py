@@ -15,6 +15,7 @@ from app.widgets.dialog_buttons import (apply_icon, resource_icon, ICON_SIZE,
                                         BTN_WIDTH, BTN_HEIGHT)
 from app.widgets.message_box import MessageBox, ProgressDialog
 from PySide6.QtCore import QSize
+from PySide6.QtCore import QCoreApplication as QC
 from PySide6.QtWidgets import QDialog, QFileDialog, QButtonGroup
 
 try:
@@ -78,14 +79,15 @@ class ImportExportMixin(object):
         实时显示: 共 N 张图像, 已标注 M 张.
         """
         dlg = QDialog(self)
-        dlg.setWindowTitle("导入数据 - {} / {}".format(project_name, dataset_name))
+        dlg.setWindowTitle(
+            QC.translate("ImportExportMixin", "导入数据 - {} / {}").format(project_name, dataset_name))
         ui = Ui_ImportData()
         ui.setupUi(dlg)
         ui.horizontalLayout_3.setSpacing(16)
         _fm = QFontMetrics(ui.yolo_fmt.font())
         for rb in (ui.yolo_fmt, ui.labelme_fmt):
             rb.setMinimumWidth(_fm.horizontalAdvance(rb.text()) + 28)  # indicator+spacing
-        ui.tips_lbl.setText("请选择图像文件夹")
+        ui.tips_lbl.setText(QC.translate("ImportExportMixin", "请选择图像文件夹"))
         # progress_bar 已从 .ui 移除(导入进度走首页进度条)
         ui.done_import_btn.setEnabled(False)
         ui.image_path_txt.setEnabled(False)
@@ -98,7 +100,7 @@ class ImportExportMixin(object):
             # 分类导入:按子文件夹统计各类别图像数
             if ui.cls_fmt.isChecked():
                 if not img_path or not os.path.isdir(img_path):
-                    ui.tips_lbl.setText("请选择分类根目录(子文件夹名=类别)")
+                    ui.tips_lbl.setText(QC.translate("ImportExportMixin", "请选择分类根目录(子文件夹名=类别)"))
                     return
                 classes = {}
                 for entry in os.listdir(img_path):
@@ -111,24 +113,25 @@ class ImportExportMixin(object):
                 root_n = sum(1 for fn in os.listdir(img_path)
                              if fn.lower().endswith(IMAGE_EXTS))
                 if root_n:
-                    classes["(根目录)"] = root_n
+                    classes[QC.translate("ImportExportMixin", "(根目录)")] = root_n
                 if not classes:
-                    ui.tips_lbl.setText("所选文件夹下无分类子文件夹或图像")
+                    ui.tips_lbl.setText(QC.translate("ImportExportMixin", "所选文件夹下无分类子文件夹或图像"))
                 else:
-                    desc = ", ".join("{}: {}张".format(k, v)
+                    desc = ", ".join(QC.translate("ImportExportMixin", "{}: {}张").format(k, v)
                                      for k, v in sorted(classes.items()))
-                    ui.tips_lbl.setText("检测到 {} 类: {}".format(
+                    ui.tips_lbl.setText(QC.translate("ImportExportMixin", "检测到 {} 类: {}").format(
                         len(classes), desc))
                 return
             fmt = ".txt" if ui.yolo_fmt.isChecked() else ".json"
             if not img_path or not os.path.isdir(img_path):
-                ui.tips_lbl.setText("请选择图像文件夹")
+                ui.tips_lbl.setText(QC.translate("ImportExportMixin", "请选择图像文件夹"))
                 return
             total, labeled = self._scan_import_info(img_path, lbl_path, fmt)
             if total == 0:
-                ui.tips_lbl.setText("所选文件夹无图像")
+                ui.tips_lbl.setText(QC.translate("ImportExportMixin", "所选文件夹无图像"))
             elif labeled > 0:
-                ui.tips_lbl.setText("共 {} 张图像, 已标注 {} 张".format(total, labeled))
+                ui.tips_lbl.setText(
+                    QC.translate("ImportExportMixin", "共 {} 张图像, 已标注 {} 张").format(total, labeled))
             else:
                 alt_tip = ""
                 if lbl_path and os.path.isdir(lbl_path):
@@ -144,18 +147,20 @@ class ImportExportMixin(object):
                         alt_labeled = self._count_labeled_in_dir(
                             img_path, lbl_path, alt_ext)
                         if alt_labeled > 0:
-                            alt_tip = "(检测到 {} 张 {} 标签, 请切换上方格式为\"{}\")".format(
+                            alt_tip = QC.translate("ImportExportMixin", "(检测到 {} 张 {} 标签, 请切换上方格式为\"{}\")").format(
                                 alt_labeled, alt_ext, alt_fmt_name)
                 if alt_tip:
-                    ui.tips_lbl.setText("共 {} 张图像, 已标注 0 张 {}".format(total, alt_tip))
+                    ui.tips_lbl.setText(
+                        QC.translate("ImportExportMixin", "共 {} 张图像, 已标注 0 张 {}").format(total, alt_tip))
                 else:
-                    ui.tips_lbl.setText("共 {} 张图像(标签目录无匹配文件)".format(total))
+                    ui.tips_lbl.setText(QC.translate("ImportExportMixin", "共 {} 张图像(标签目录无匹配文件)").format(total))
 
         def choose_folder(operator_name):
-            folder = QFileDialog.getExistingDirectory(self, "选择文件夹")
+            folder = QFileDialog.getExistingDirectory(
+                self, QC.translate("ImportExportMixin", "选择文件夹"))
             if not folder:
                 return
-            if operator_name == "图像":
+            if operator_name == "image":
                 ui.image_path_txt.setEnabled(True)
                 ui.image_path_txt.setText(folder)
             else:
@@ -164,8 +169,8 @@ class ImportExportMixin(object):
             ui.done_import_btn.setEnabled(bool(ui.image_path_txt.text().strip()))
             update_tips()
 
-        ui.choose_image_dir_btn.clicked.connect(lambda: choose_folder("图像"))
-        ui.choose_label_dir_btn.clicked.connect(lambda: choose_folder("标签"))
+        ui.choose_image_dir_btn.clicked.connect(lambda: choose_folder("image"))
+        ui.choose_label_dir_btn.clicked.connect(lambda: choose_folder("label"))
         for btn_name in ("choose_image_dir_btn", "choose_label_dir_btn"):
             btn = getattr(ui, btn_name, None)
             if btn is not None:
@@ -192,7 +197,7 @@ class ImportExportMixin(object):
             ui.label_path_txt.setEnabled(not on)
             ui.choose_label_dir_btn.setEnabled(not on)
             ui.image_path_txt.setPlaceholderText(
-                "分类根目录(子文件夹名=类别)" if on else "图像路径")
+                QC.translate("ImportExportMixin", "分类根目录(子文件夹名=类别)") if on else QC.translate("ImportExportMixin", "图像路径"))
             if on:
                 ui.label_path_txt.clear()
             ui.done_import_btn.setEnabled(bool(ui.image_path_txt.text().strip()))
@@ -214,10 +219,10 @@ class ImportExportMixin(object):
             fmt = "cls" if cls_mode else (
                 ".txt" if ui.yolo_fmt.isChecked() else ".json")
             if not image_path or not os.path.isdir(image_path):
-                MessageBox.warning(dlg, "导入数据", "请先选择有效的图像文件夹")
+                MessageBox.warning(dlg, QC.translate("ImportExportMixin", "导入数据"), QC.translate("ImportExportMixin", "请先选择有效的图像文件夹"))
                 return
             if label_path and not os.path.isdir(label_path):
-                MessageBox.warning(dlg, "导入数据", "标签路径无效")
+                MessageBox.warning(dlg, QC.translate("ImportExportMixin", "导入数据"), QC.translate("ImportExportMixin", "标签路径无效"))
                 return
             dlg.accept()
             if cls_mode:
@@ -254,7 +259,7 @@ class ImportExportMixin(object):
                                       merged_imgs, merged_lbls, fmt,
                                       update_stats=True)
 
-        apply_icon(ui.done_import_btn, "确定")
+        apply_icon(ui.done_import_btn, QC.translate("DialogButtons", "确定"))
         ui.done_import_btn.clicked.connect(do_import)
         dlg.exec()
 
@@ -269,12 +274,12 @@ class ImportExportMixin(object):
         if project is None:
             sel = self.project_tree.current_dataset()
             if sel is None:
-                MessageBox.warning(self, "导出", "请先在左侧选中要导出的数据集")
+                MessageBox.warning(self, QC.translate("ImportExportMixin", "导出"), QC.translate("ImportExportMixin", "请先在左侧选中要导出的数据集"))
                 return
             project, dataset = sel
         export_all = dataset is None
         dlg = QDialog(self)
-        dlg.setWindowTitle("导出")
+        dlg.setWindowTitle(QC.translate("ImportExportMixin", "导出"))
         ui = ExportDataUI()
         ui.setupUi(dlg)
         ui.export_path_txt.setReadOnly(True)
@@ -286,7 +291,7 @@ class ImportExportMixin(object):
                 "QPushButton{padding:0px;border:1px solid #353a48;"
                 "border-radius:6px;}")
         ui.select_path_btn.setIcon(resource_icon("打开.png"))
-        apply_icon(ui.do_export_btn, "导出")
+        apply_icon(ui.do_export_btn, QC.translate("ImportExportMixin", "导出"))
         ui.select_path_btn.clicked.connect(
             lambda: self._pick_export_path(dlg, ui))
         ui.do_export_btn.clicked.connect(dlg.accept)
@@ -294,7 +299,7 @@ class ImportExportMixin(object):
             return
         save_dir = ui.export_path_txt.text().strip()
         if not save_dir:
-            MessageBox.warning(self, "导出", "请先选择导出保存位置")
+            MessageBox.warning(self, QC.translate("ImportExportMixin", "导出"), QC.translate("ImportExportMixin", "请先选择导出保存位置"))
             return
         fmt = "yolo" if ui.exp_yolo_fmt.isChecked() else "labelme"
         try:
@@ -310,7 +315,8 @@ class ImportExportMixin(object):
                 recs_map = {ds: self._collect_export_recs(project_name, ds)
                             for _, ds in ds_list}
                 total = sum(len(v) for v in recs_map.values())
-                dlg2 = ProgressDialog("导出", "正在导出项目...", self, maximum=max(1, total))
+                dlg2 = ProgressDialog(
+                    QC.translate("ImportExportMixin", "导出"), QC.translate("ImportExportMixin", "正在导出项目..."), self, maximum=max(1, total))
                 try:
                     done = 0
                     for proj, ds in ds_list:
@@ -320,8 +326,8 @@ class ImportExportMixin(object):
                 finally:
                     dlg2.close()
                 MessageBox.information(
-                    self, "导出",
-                    "项目\"{}\"导出完成, 共复制 {} 张图像\n位置: {}".format(
+                    self, QC.translate("ImportExportMixin", "导出"),
+                    QC.translate("ImportExportMixin", "项目\"{}\"导出完成, 共复制 {} 张图像\n位置: {}").format(
                         project_name, total, root))
                 self._log("导出项目完成: {} | {} 张图像 | 标签({}) | 格式={} | → {}".format(
                     project_name, total,
@@ -332,8 +338,9 @@ class ImportExportMixin(object):
                 self._log("开始导出: 数据集={}/{} | 源路径={} | 保存路径={} | 格式={}".format(
                     project_name, dataset_name, src, save_dir, fmt))
                 recs = self._collect_export_recs(project_name, dataset_name)
-                dlg2 = ProgressDialog("导出", "正在导出数据集...", self,
-                                      maximum=max(1, len(recs)))
+                dlg2 = ProgressDialog(
+                    QC.translate("ImportExportMixin", "导出"), QC.translate("ImportExportMixin", "正在导出数据集..."), self,
+                    maximum=max(1, len(recs)))
                 try:
                     total = self._export_dataset(
                         project_name, dataset_name, save_dir, fmt=fmt,
@@ -341,8 +348,8 @@ class ImportExportMixin(object):
                 finally:
                     dlg2.close()
                 MessageBox.information(
-                    self, "导出",
-                    "数据集\"{}\"导出完成, 共复制 {} 张图像\n位置: {}".format(
+                    self, QC.translate("ImportExportMixin", "导出"),
+                    QC.translate("ImportExportMixin", "数据集\"{}\"导出完成, 共复制 {} 张图像\n位置: {}").format(
                         dataset_name, total,
                         os.path.join(save_dir, dataset_name)))
                 self._log("导出数据集完成: {}/{} | {} 张图像 | 标签({}) | 格式={} | → {}".format(
@@ -352,10 +359,10 @@ class ImportExportMixin(object):
         except Exception as e:
             self._log("导出失败: 项目={} 数据集={} | {}".format(
                 project, dataset or "(整个项目)", traceback.format_exc()))
-            MessageBox.critical(self, "导出失败", str(e))
+            MessageBox.critical(self, QC.translate("ImportExportMixin", "导出失败"), str(e))
 
     def _pick_export_path(self, dlg, ui):
-        path = QFileDialog.getExistingDirectory(dlg, "选择导出保存位置")
+        path = QFileDialog.getExistingDirectory(dlg, QC.translate("ImportExportMixin", "选择导出保存位置"))
         if path:
             ui.export_path_txt.setText(path)
 
@@ -432,7 +439,7 @@ class ImportExportMixin(object):
                     return copied
                 progress.set_progress(
                     base_done + i,
-                    "正在导出: {}".format(os.path.basename(src)))
+                    QC.translate("ImportExportMixin", "正在导出: {}").format(os.path.basename(src)))
             dst = os.path.join(img_dir, os.path.basename(src))
             if os.path.abspath(src) != os.path.abspath(dst):
                 shutil.copy2(src, dst)

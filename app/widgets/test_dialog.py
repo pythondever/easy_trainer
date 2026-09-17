@@ -20,6 +20,7 @@ from app.core.log import write_log
 from app.widgets.dialog_buttons import apply_icon
 from app.widgets.message_box import MessageBox
 from app.widgets.multi_combo import install_multi_combo
+from app.widgets.status_style import task_text
 from app.train.dialogs import (CONTROL_H, _TrainStartDialog, detach_device_probe,
                                fill_device_combo_async, fill_device_items)
 from app.train.test_result_dialog import TestResultDialog
@@ -97,7 +98,7 @@ class TestDialog(QDialog):
                     QComboBox.SizeAdjustPolicy
                     .AdjustToMinimumContentsLengthWithIcon)
                 combo.setMinimumContentsLength(12)
-        apply_icon(self.ui.cancel_btn, "取消")
+        apply_icon(self.ui.cancel_btn, self.tr("取消"))
         # 提示文字排在勾选框右侧, 得显式要剩余空间:
         # 关掉 wordWrap 后 sizeHint 才是整句宽度, 否则会塌成最长单词的宽度
         self.ui.out_wrap_layout.setStretch(1, 1)
@@ -232,13 +233,11 @@ class TestDialog(QDialog):
         """取代原来的模型下拉: 一次只填一个模型, 点开没得选, 信息直接摆出来更清楚."""
         u = self.ui
         rec = self._record
-        task = {"detect": "检测", "segment": "分割",
-                "classify": "分类"}.get(rec.get("task", ""), "-")
-        u.task_badge.setText(task)
+        u.task_badge.setText(task_text(rec.get("task", "") or "-"))
         path = self._model_path
         if not path:
-            u.model_name.setText("未指定模型")
-            u.model_meta.setText("请在模型列表中重新选择一行")
+            u.model_name.setText(self.tr("未指定模型"))
+            u.model_meta.setText(self.tr("请在模型列表中重新选择一行"))
             return
         u.model_name.setText(os.path.basename(path))
         u.model_name.setToolTip(path)
@@ -246,21 +245,22 @@ class TestDialog(QDialog):
         metric = rec.get("map50") or rec.get("accuracy") or ""
         if metric:
             try:
-                label = {"classify": "准确率",
+                label = {"classify": self.tr("准确率"),
                          "segment": "mask mAP50"}.get(rec.get("task"), "mAP50")
                 meta.append("{} {:.3f}".format(label, float(metric)))
             except (TypeError, ValueError):
                 pass
         if rec.get("img_size"):
-            meta.append("输入 {}".format(rec["img_size"]))
+            meta.append(self.tr("输入 {}").format(rec["img_size"]))
         if rec.get("model_size"):
-            meta.append("规模 {}".format(rec["model_size"]))
+            meta.append(self.tr("规模 {}").format(rec["model_size"]))
         if rec.get("start_time"):
-            meta.append("训练 {}".format(str(rec["start_time"])[:16]))
+            meta.append(self.tr("训练 {}").format(str(rec["start_time"])[:16]))
         u.model_meta.setText(" · ".join(meta) if meta
-                             else "该记录未保存训练指标")
+                             else self.tr("该记录未保存训练指标"))
         if not os.path.exists(path):
-            u.model_meta.setText((u.model_meta.text() + " · 文件已不存在")
+            u.model_meta.setText((u.model_meta.text()
+                                  + self.tr(" · 文件已不存在"))
                                  .lstrip(" ·"))
 
     def _fill_defaults(self):
@@ -286,7 +286,7 @@ class TestDialog(QDialog):
 
     def _update_summary(self, checked):
         if not checked:
-            self.ui.summary_text.setText("请先勾选要测试的数据集")
+            self.ui.summary_text.setText(self.tr("请先勾选要测试的数据集"))
             return
         total = 0
         labeled_ds = 0
@@ -298,15 +298,15 @@ class TestDialog(QDialog):
                 labeled_ds += 1
             if info.get("label_fmt", "") == "cls":
                 cls_ds += 1
-        head = "{} 个数据集 · {} 张图".format(len(checked), total)
+        head = self.tr("{} 个数据集 · {} 张图").format(len(checked), total)
         if cls_ds == len(checked):
-            tail = "分类数据集, 统计每张图的判断正确率"
+            tail = self.tr("分类数据集, 统计每张图的判断正确率")
         elif labeled_ds == len(checked):
-            tail = "已标注, 评估模式: 统计检出率 / 漏检 / 误检"
+            tail = self.tr("已标注, 评估模式: 统计检出率 / 漏检 / 误检")
         elif labeled_ds == 0:
-            tail = "未标注, 推理模式: 只输出预测标签"
+            tail = self.tr("未标注, 推理模式: 只输出预测标签")
         else:
-            tail = "部分已标注, 已标注与未标注的数据集不能一起测"
+            tail = self.tr("部分已标注, 已标注与未标注的数据集不能一起测")
         self.ui.summary_text.setText("{} · {}".format(head, tail))
 
     def _on_data_changed(self):
@@ -329,8 +329,8 @@ class TestDialog(QDialog):
         has_label = labeled > 0
         self.ui.iou_treshold_txt.setEnabled(has_label)
         box = self.ui.output_label_file_checkBox
-        box.setToolTip("为每张图写 <同名>.json 到图像目录, 标注工具可直接打开;"
-                       "该处已有人工标注会被覆盖")
+        box.setToolTip(self.tr("为每张图写 <同名>.json 到图像目录, "
+                               "标注工具可直接打开;该处已有人工标注会被覆盖"))
         if not has_label:
             # 推理模式: 强制输出标注文件
             box.setChecked(True)
@@ -342,11 +342,11 @@ class TestDialog(QDialog):
     # ---------- 开始测试 ----------
     def _on_start(self):
         if self._worker is not None and self._worker.isRunning():
-            MessageBox.warning(self, "测试", "已有测试在进行中")
+            MessageBox.warning(self, self.tr("测试"), self.tr("已有测试在进行中"))
             return
         checked = self._checked_datasets()
         if not checked:
-            MessageBox.warning(self, "测试", "请至少选择一个数据集")
+            MessageBox.warning(self, self.tr("测试"), self.tr("请至少选择一个数据集"))
             return
         cls_mode = getattr(self, "_cls_mode", False)
         if cls_mode:
@@ -356,12 +356,14 @@ class TestDialog(QDialog):
                 conf = float(self.ui.confidence_txt.text() or "0.5")
                 iou = float(self.ui.iou_treshold_txt.text() or "0.5")
             except ValueError:
-                MessageBox.warning(self, "测试", "置信度/iou阈值必须是数字")
+                MessageBox.warning(self, self.tr("测试"),
+                                   self.tr("置信度/iou阈值必须是数字"))
                 return
             output_labels = bool(self.ui.output_label_file_checkBox.isChecked())
         model_path = self._model_path
         if not model_path or not os.path.exists(model_path):
-            MessageBox.warning(self, "测试", "模型文件不存在, 请重新选择")
+            MessageBox.warning(self, self.tr("测试"),
+                               self.tr("模型文件不存在, 请重新选择"))
             return
         # 多个数据集一起测:图像目录逐个展开,标签目录与图像目录按索引配对
         items = []
@@ -373,7 +375,8 @@ class TestDialog(QDialog):
             image_paths = get_paths(binding, "image")
             if not image_paths:
                 MessageBox.warning(
-                    self, "测试", "数据集 {}/{} 未导入图像".format(proj, ds_name))
+                    self, self.tr("测试"),
+                    self.tr("数据集 {}/{} 未导入图像").format(proj, ds_name))
                 return
             label_paths = get_paths(binding, "label")
             this_cls = binding.get("label_fmt", "") == "cls"
@@ -382,13 +385,15 @@ class TestDialog(QDialog):
                 base_cls, base_labeled = this_cls, this_labeled
             elif this_cls != base_cls:
                 MessageBox.warning(
-                    self, "测试",
-                    "分类数据集与检测/分割数据集不能同时测试: {}/{}".format(proj, ds_name))
+                    self, self.tr("测试"),
+                    self.tr("分类数据集与检测/分割数据集不能同时测试: {}/{}")
+                    .format(proj, ds_name))
                 return
             elif this_labeled != base_labeled:
                 MessageBox.warning(
-                    self, "测试",
-                    "已标注与未标注的数据集不能同时测试: {}/{}".format(proj, ds_name))
+                    self, self.tr("测试"),
+                    self.tr("已标注与未标注的数据集不能同时测试: {}/{}")
+                    .format(proj, ds_name))
                 return
             for i, image_path in enumerate(image_paths):
                 items.append({
@@ -425,7 +430,7 @@ class TestDialog(QDialog):
                 [it["image_path"] for it in items], device, cfg_path))
         # 进度条交给首页
         if hasattr(self.app, "_show_train_task"):
-            self.app._show_train_task("测试准备中...", 0)
+            self.app._show_train_task(self.tr("测试准备中..."), 0)
         self._worker = TestWorker(cfg, parent=self.app)
         workers = getattr(self.app, "_test_workers", None)
         if workers is None:
@@ -442,8 +447,8 @@ class TestDialog(QDialog):
         self._worker.start()
         self.ui.start_test_btn.setEnabled(False)
         self.accept()
-        _TrainStartDialog(parent=self.app, title="测试即将开始",
-                          message="测试即将开始").exec()
+        _TrainStartDialog(parent=self.app, title=self.tr("测试即将开始"),
+                          message=self.tr("测试即将开始")).exec()
         # 倒计时结束/人工点确定, 关闭模型列表窗口回首页
         md = getattr(self.app, "_model_dialog", None)
         if md is not None:
@@ -489,7 +494,7 @@ class TestDialog(QDialog):
         if hasattr(self.app, "_show_train_task"):
             pct = done * 100.0 / total if total else 0
             self.app._show_train_task(
-                "测试中 {}/{}".format(done, total), pct)
+                self.tr("测试中 {}/{}").format(done, total), pct)
 
     def _on_finished(self, res):
         write_log("[test-dialog] 测试完成, ok={}".format(res.get("ok")))
@@ -500,7 +505,8 @@ class TestDialog(QDialog):
         self.ui.start_test_btn.setEnabled(True)
         self._worker = None
         if not res.get("ok"):
-            MessageBox.warning(self, "测试结果", "测试未正常完成")
+            MessageBox.warning(self, self.tr("测试结果"),
+                               self.tr("测试未正常完成"))
             return
         if "P" in res or res.get("task") == "classify":
             self._fill_label_stats(res)
@@ -516,4 +522,4 @@ class TestDialog(QDialog):
             self.app._test_start_ts = 0
         self.ui.start_test_btn.setEnabled(True)
         self._worker = None
-        MessageBox.critical(self, "测试失败", detail)
+        MessageBox.critical(self, self.tr("测试失败"), detail)

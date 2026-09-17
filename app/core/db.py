@@ -728,6 +728,18 @@ class DataBase:
             else:
                 txn.delete(keys.models_dir)
 
+    def get_language(self):
+        with self.mdb.begin(write=False) as txn:
+            data = txn.get(keys.language)
+        return data.decode("utf-8") if data else ""
+
+    def set_language(self, code):
+        with self.mdb.begin(write=True) as txn:
+            if code:
+                txn.put(keys.language, str(code).encode("utf-8"))
+            else:
+                txn.delete(keys.language)
+
     # ---------- 训练/模型记录级联删除 ----------
 
     def delete_project_records(self, project_name):

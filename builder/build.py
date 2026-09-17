@@ -26,7 +26,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 HERE = os.path.dirname(os.path.abspath(__file__))
 BUILD_DIR = os.path.join(ROOT, "build")
 ALWAYS_PLAIN = {"__init__.py", "easy_trainer.py"}
-DATA_DIRS = ("style", "resources", "examples")
+DATA_DIRS = ("style", "resources", "examples", "i18n")
 
 
 def collect_py(root_dir, base_pkg):
@@ -61,7 +61,9 @@ def copy_data(target):
     for name in DATA_DIRS:
         src = os.path.join(ROOT, name)
         if os.path.isdir(src):
-            shutil.copytree(src, os.path.join(target, name), dirs_exist_ok=True)
+            # i18n 只带编译好的 .qm; .ts 是翻译源文件, 运行时用不到
+            shutil.copytree(src, os.path.join(target, name), dirs_exist_ok=True,
+                            ignore=shutil.ignore_patterns("*.ts"))
 
 
 def publish_installer():

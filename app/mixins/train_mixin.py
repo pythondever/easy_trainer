@@ -9,6 +9,7 @@ from app.core.log import write_log
 from app.core.metrics import best_map50, best_value
 from app.core.utils import fmt_duration
 from PySide6.QtCore import QTimer, QTime
+from PySide6.QtCore import QCoreApplication as QC
 
 try:
     import pynvml
@@ -43,7 +44,7 @@ class TrainMixin(object):
         # 兜底: run() 的三个分支可能全不命中(rc=0 但没抓到 RESULT),
         # 此时没有任何结果信号, 进度条与队列会永远卡住
         self._train_worker.finished.connect(self._on_worker_thread_finished)
-        self._show_train_task("{} 训练中 0/{}".format(
+        self._show_train_task(QC.translate("TrainMixin", "{} 训练中 0/{}").format(
             config["project"], config["epochs"]), 0)
         self._train_start_ts = time.time()
         self._eta_total_epochs = int(config.get("epochs", 0))
@@ -93,17 +94,19 @@ class TrainMixin(object):
             return
         queued = self.queue_is_running() and self.queue_pending_count() > 0
         if queued:
+            btn_cur = QC.translate("TrainMixin", "仅停止当前")
+            btn_queue = QC.translate("TrainMixin", "停止队列")
             choice = MessageBox.choose(
-                self, "停止训练", "当前正在跑训练队列, 要停止到什么范围?",
-                [("仅停止当前", "primary"), ("停止队列", "danger"),
-                 ("取消", "normal")])
-            if choice is None or choice == "取消":
+                self, QC.translate("TrainMixin", "停止训练"), QC.translate("TrainMixin", "当前正在跑训练队列, 要停止到什么范围?"),
+                [(btn_cur, "primary"), (btn_queue, "danger"),
+                 (QC.translate("TrainMixin", "取消"), "normal")])
+            if choice is None or choice == QC.translate("TrainMixin", "取消"):
                 return
-            if choice == "停止队列":
+            if choice == btn_queue:
                 self.stop_train_queue()
         else:
             if confirm and not MessageBox.question(
-                    self, "停止训练", "确定要停止当前训练吗?"):
+                    self, QC.translate("TrainMixin", "停止训练"), QC.translate("TrainMixin", "确定要停止当前训练吗?")):
                 return
         self._train_stopped = True
         exited = self.kill_training_worker()
@@ -115,9 +118,11 @@ class TrainMixin(object):
         if not exited:
             self._log("[train] 训练进程 10 秒内未退出, 可能有子进程残留占用显存")
             MessageBox.warning(
-                self, "停止训练",
-                "训练进程未能完全退出, 可能仍有子进程占用显存.\n"
-                "建议稍等片刻再启动下一个任务.")
+                self, QC.translate("TrainMixin", "停止训练"),
+                QC.translate(
+                    "TrainMixin",
+                    "训练进程未能完全退出, 可能仍有子进程占用显存.\n"
+                    "建议稍等片刻再启动下一个任务."))
         if rid:
             self.on_train_finished(rid, None)
 
@@ -125,8 +130,9 @@ class TrainMixin(object):
         if self._train_worker is None or self._training_record_id is None:
             return
         project = self._train_worker._config.get("project", "") if self._train_worker else ""
-        self._show_train_task("{} 训练中 {}/{}".format(project, epoch, total),
-                              epoch * 100.0 / total if total else 0)
+        self._show_train_task(
+            QC.translate("TrainMixin", "{} 训练中 {}/{}").format(project, epoch, total),
+            epoch * 100.0 / total if total else 0)
         self._update_eta(epoch, total)
 
     def _on_train_metrics(self, metrics):
@@ -136,10 +142,10 @@ class TrainMixin(object):
         m = best_map50(s)
         if acc is not None:
             self._best_map50 = acc
-            self._progress_tip = "进度 | 当前最好准确率"
+            self._progress_tip = QC.translate("TrainMixin", "进度 | 当前最好准确率")
         elif m is not None:
             self._best_map50 = m
-            self._progress_tip = "进度 | 当前最好 mAP@50"
+            self._progress_tip = QC.translate("TrainMixin", "进度 | 当前最好 mAP@50")
         if acc is not None or m is not None:
             self._apply_progress_format()
         self._pending_metrics = metrics
@@ -180,7 +186,8 @@ class TrainMixin(object):
         if self.queue_is_running():
             write_log("训练失败(队列模式, 已跳过弹窗): {}".format(detail[:2000]))
             return
-        MessageBox.critical(self, "训练失败", "训练过程中发生错误, Err:\n\n{}".format(detail))
+        MessageBox.critical(self, QC.translate("TrainMixin", "训练失败"),
+                            QC.translate("TrainMixin", "训练过程中发生错误, Err:\n\n{}").format(detail))
 
     def _on_train_log(self, line):
         self._log("[train] " + line)

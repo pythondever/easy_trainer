@@ -23,7 +23,7 @@ from app.core.db import get_paths, load_train_metrics
 from app.core.log import write_log
 from app.core.metrics import (best_map50, metric_key, series_from_csv)
 from app.widgets.message_box import MessageBox, ProgressDialog
-from app.widgets.status_style import status_color
+from app.widgets.status_style import status_color, status_text, task_text
 from app.widgets.metrics_dialog import MetricsDialog
 from app.widgets.test_dialog import TestDialog
 from app.train.dialogs import TrainDialog
@@ -31,7 +31,8 @@ from app.train.test_worker import TestWorker
 from app.train.export_worker import OnnxExportWorker, examples_dir
 from ui.model import Ui_ModelDialog
 
-TASK_TEXT = {"detect": "检测", "segment": "分割", "classify": "分类"}
+# 导出文件名里的任务段: 与界面语言无关(同一份权重导出到哪台机器都该同名)
+TASK_FILE_TAG = {"detect": "检测", "segment": "分割", "classify": "分类"}
 COL_TASK, COL_DATA, COL_METRIC, COL_TIME, COL_DUR, COL_IMG, COL_OPS = range(7)
 METRIC_GOOD, METRIC_MID, METRIC_BAD = "#7be39a", "#ffd166", "#ff6b6b"
 
@@ -121,7 +122,8 @@ class ModelDialog(QDialog):
         super().__init__(parent)
         self.ui = Ui_ModelDialog()
         self.ui.setupUi(self)
-        self.setWindowTitle("模型管理")
+        self.setWindowTitle(self.tr("模型管理"))
+        self._tag_filter_combos()
         self.setWindowState(Qt.WindowMaximized)
         self.app = app
         self._project = project
@@ -302,15 +304,30 @@ class ModelDialog(QDialog):
                 return False
         return True
 
+    def _tag_filter_combos(self):
+        """
+        给筛选下拉的每一项挂 itemData(任务键 / 状态键).
+
+        筛选比的是数据里的键, 不能比显示文本: 界面切英文后下拉文本变英文,
+        跟记录里的键对不上, 一选就筛空. 状态用 _status() 的中文键, 与
+        _make_metric_cell / 颜色表共用同一套.
+        """
+        for i, key in enumerate(("", "detect", "segment", "classify")):
+            self.ui.task_combo.setItemData(i, key)
+        for i, key in enumerate(("", "已完成", "训练中", "失败", "已停止")):
+            self.ui.status_combo.setItemData(i, key)
+
     def _apply_filters(self):
         kw = self.ui.search_edit.text().strip().lower()
-        task = self.ui.task_combo.currentText()
-        status = self.ui.status_combo.currentText()
+        # 按 itemData 里的键筛: 界面切英文后 currentText 是英文, 跟记录里的
+        # 中文/英文键都对不上, 筛选会全部落空
+        task = self.ui.task_combo.currentData()
+        status = self.ui.status_combo.currentData()
         recs = []
         for r in self._all_records:
-            if task != "全部任务" and TASK_TEXT.get(r.get("task", ""), "-") != task:
+            if task and r.get("task", "") != task:
                 continue
-            if status != "全部状态":
+            if status:
                 st = _status(r)
                 # 旧记录的"失败/已停止"判定不了, 两种筛选都让它命中
                 if st != status and not (st == "失败/已停止"
@@ -339,7 +356,7 @@ class ModelDialog(QDialog):
             recs = list(best.values())
         self._records = self._sort_records(recs)
         self._page = 0
-        self.ui.count_label.setText("共 {} 条".format(len(self._records)))
+        self.ui.count_label.setText(self.tr("共 {} 条").format(len(self._records)))
         self._render_page()
 
     def _sort_records(self, recs):
@@ -363,7 +380,7 @@ class ModelDialog(QDialog):
             elif self._sort_col == COL_DATA:
                 v = str(r.get("dataset_info") or r.get("dataset") or "")
             else:
-                v = TASK_TEXT.get(r.get("task", ""), "-")
+                v = task_text(r.get("task", "") or "-")
             return v
 
         return sorted(recs, key=key, reverse=self._sort_desc)
@@ -390,11 +407,11 @@ class ModelDialog(QDialog):
                 labels = [labels]
             label_text = " · ".join(str(x) for x in labels[:6])
             if len(labels) > 6:
-                label_text += " 等 {} 类".format(len(labels))
+                label_text += self.tr(" 等 {} 类").format(len(labels))
             data_text = str(r.get("dataset_info") or r.get("dataset") or "")
             if label_text:
                 data_text += "\n{}".format(label_text)
-            vals = [TASK_TEXT.get(r.get("task", ""), "-"), data_text,
+            vals = [task_text(r.get("task", "") or "-"), data_text,
                     "", r.get("start_time", ""), r.get("duration", ""),
                     r.get("img_size", "")]
             for j, v in enumerate(vals):
@@ -404,27 +421,27 @@ class ModelDialog(QDialog):
                 item.setToolTip(str(v))
                 t.setItem(i, j, item)
             if m is None:
-                item = QTableWidgetItem(st)
+                item = QTableWidgetItem(status_text(st))
                 item.setTextAlignment(Qt.AlignCenter)
                 item.setForeground(QColor(status_color(st, "#ffd166")))
                 err = str(r.get("error") or "").strip()
-                item.setToolTip(err or st)
+                item.setToolTip(err or status_text(st))
                 t.setItem(i, COL_METRIC, item)
             else:
                 t.setCellWidget(i, COL_METRIC, self._make_metric_cell(
                     m, st if st != "已完成" else None, r.get("error")))
             btns = []
-            tbtn = QPushButton("测试")
+            tbtn = QPushButton(self.tr("测试"))
             tbtn.setObjectName("opsGo")
             tbtn.setEnabled(bool(r.get("model_path")))
             tbtn.clicked.connect(lambda checked=False, rec=r: self._test(rec))
             btns.append(tbtn)
-            ebtn = QPushButton("导出")
+            ebtn = QPushButton(self.tr("导出"))
             ebtn.setObjectName("opsGo")
             ebtn.setEnabled(bool(r.get("model_path")))
             ebtn.clicked.connect(lambda checked=False, rec=r: self._export(rec))
             btns.append(ebtn)
-            dbtn = QPushButton("删除")
+            dbtn = QPushButton(self.tr("删除"))
             dbtn.setObjectName("opsDel")
             dbtn.clicked.connect(lambda checked=False, rec=r: self._delete(rec))
             btns.append(dbtn)
@@ -455,7 +472,7 @@ class ModelDialog(QDialog):
         lbl.setAlignment(Qt.AlignCenter)
         lbl.setStyleSheet("font-size:12px;color:%s;" % color)
         if status:
-            s = QLabel(status)
+            s = QLabel(status_text(status))
             s.setAlignment(Qt.AlignCenter)
             s.setStyleSheet("font-size:10px;color:%s;"
                             % status_color(status, METRIC_MID))
@@ -499,7 +516,7 @@ class ModelDialog(QDialog):
         self._current = rec
         u = self.ui
         if rec is None:
-            u.detail_info.setText("选中一行查看详情")
+            u.detail_info.setText(self.tr("选中一行查看详情"))
             u.detail_curve.setPixmap(QPixmap())
             u.detail_curve.setText("")
             for b in (u.detail_metrics_btn, u.detail_test_btn,
@@ -512,43 +529,48 @@ class ModelDialog(QDialog):
             labels = [labels]
         batch = rec.get("batch_size", "")
         if batch and str(rec.get("grad_accum", "")) not in ("", "1"):
-            batch = "{} × {} 累积".format(batch, rec.get("grad_accum"))
+            batch = self.tr("{} × {} 累积").format(batch, rec.get("grad_accum"))
+        status_key = self.tr("状态")
         rows = [
-            ("任务", "{} · {}".format(TASK_TEXT.get(rec.get("task", ""), "-"),
-                                     rec.get("model_size", "-"))),
-            ("状态", _status(rec)),
-            ("精度", "{:.3f}".format(m) if m is not None else "-"),
-            ("训练集", rec.get("dataset", "-")),
-            ("验证集", rec.get("val_dataset", "-")),
-            ("图像尺寸", rec.get("img_size", "-")),
-            ("轮数 / 早停", "{} / {}".format(rec.get("epochs", "-"),
-                                            rec.get("early_stop", "-"))),
-            ("批大小", batch or "-"),
-            ("学习率", rec.get("lr", "-")),
-            ("优化器", rec.get("optimizer", "-")),
-            ("设备", rec.get("device", "-")),
-            ("标签", " · ".join(str(x) for x in labels) or "-"),
-            ("训练时间", "{} ~ {}".format(rec.get("start_time", "-"),
-                                         rec.get("end_time", "-"))),
-            ("耗时", rec.get("duration", "-")),
-            ("模型路径", rec.get("model_path", "-")),
+            (self.tr("任务"),
+             "{} · {}".format(task_text(rec.get("task", "") or "-"),
+                              rec.get("model_size", "-"))),
+            (status_key, status_text(_status(rec))),
+            (self.tr("精度"), "{:.3f}".format(m) if m is not None else "-"),
+            (self.tr("训练集"), rec.get("dataset", "-")),
+            (self.tr("验证集"), rec.get("val_dataset", "-")),
+            (self.tr("图像尺寸"), rec.get("img_size", "-")),
+            (self.tr("轮数 / 早停"), "{} / {}".format(rec.get("epochs", "-"),
+                                                rec.get("early_stop", "-"))),
+            (self.tr("批大小"), batch or "-"),
+            (self.tr("学习率"), rec.get("lr", "-")),
+            (self.tr("优化器"), rec.get("optimizer", "-")),
+            (self.tr("设备"), rec.get("device", "-")),
+            (self.tr("标签"), " · ".join(str(x) for x in labels) or "-"),
+            (self.tr("训练时间"), "{} ~ {}".format(rec.get("start_time", "-"),
+                                              rec.get("end_time", "-"))),
+            (self.tr("耗时"), rec.get("duration", "-")),
+            (self.tr("模型路径"), rec.get("model_path", "-")),
         ]
         html = ""
+        # 状态行显示的是译文, 但取色要拿中文键(颜色表按键查, 英文键查不到会掉回默认色)
+        st_key = _status(rec)
         for k, v in rows:
             val = _esc(v)
-            if k == "状态":
+            if k == status_key:
                 val = "<span style='color:{}'>{}</span>".format(
-                    status_color(v), val)
+                    status_color(st_key), val)
             html += ("<tr><td style='color:#8b8b8b;padding-right:6px;"
                      "white-space:nowrap'>{}</td><td>{}</td></tr>".format(
                          _esc(k), val))
         err = str(rec.get("error") or "").strip()
         if err:
             html += ("<tr><td style='color:#8b8b8b;padding-right:6px;"
-                     "vertical-align:top;white-space:nowrap'>失败原因</td>"
+                     "vertical-align:top;white-space:nowrap'>{}</td>"
                      "<td><pre style='margin:0;white-space:pre-wrap;"
                      "font-family:inherit;color:{}'>{{}}</pre></td></tr>"
-                     .format(status_color("失败")).format(_esc(err[:800])))
+                     .format(self.tr("失败原因"), status_color("失败"))
+                     .format(_esc(err[:800])))
         u.detail_info.setText(
             "<table style='font-size:12px;line-height:150%'>{}</table>".format(html))
         self._draw_curve(rec)
@@ -565,7 +587,7 @@ class ModelDialog(QDialog):
         key, ys = _curve_series(series)
         if not ys:
             label.setPixmap(QPixmap())
-            label.setText("暂无曲线")
+            label.setText(self.tr("暂无曲线"))
             return
         w = max(120, label.width() - 4)
         h = 104
@@ -589,7 +611,7 @@ class ModelDialog(QDialog):
             p.drawLine(int(pts[i - 1][0]), int(pts[i - 1][1]),
                        int(pts[i][0]), int(pts[i][1]))
         p.setPen(QColor("#8b8b8b"))
-        p.drawText(6, 14, "{}  最佳 {:.3f}".format(key, hi))
+        p.drawText(6, 14, self.tr("{}  最佳 {:.3f}").format(key, hi))
         p.end()
         label.setPixmap(pix)
 
@@ -597,7 +619,8 @@ class ModelDialog(QDialog):
         path = (self._current or {}).get("model_path", "")
         d = os.path.dirname(path) if path else ""
         if not d or not os.path.isdir(d):
-            MessageBox.warning(self, "打开目录", "模型目录不存在:\n{}".format(d))
+            MessageBox.warning(self, self.tr("打开目录"),
+                               self.tr("模型目录不存在:\n{}").format(d))
             return
         try:
             if sys.platform.startswith("win"):
@@ -607,7 +630,7 @@ class ModelDialog(QDialog):
             else:
                 subprocess.Popen(["xdg-open", d])
         except Exception as e:
-            MessageBox.warning(self, "打开目录", str(e))
+            MessageBox.warning(self, self.tr("打开目录"), str(e))
 
     # ---------- 操作 ----------
 
@@ -627,15 +650,16 @@ class ModelDialog(QDialog):
         except Exception as e:
             print("[model_dialog] 打开指标失败: {}\n{}".format(
                 e, traceback.format_exc()), flush=True)
-            MessageBox.warning(self, "查看指标失败", str(e))
+            MessageBox.warning(self, self.tr("查看指标失败"), str(e))
 
     def _delete(self, record):
         ds = record.get("dataset", "")
         st = record.get("start_time", "")
         try:
             if not MessageBox.question(
-                    self, "删除模型记录",
-                    "确定删除该条模型记录?\n项目={}\n数据集={}\n开始时间={}\n".format(
+                    self, self.tr("删除模型记录"),
+                    self.tr("确定删除该条模型记录?\n项目={}\n数据集={}\n"
+                            "开始时间={}\n").format(
                         record.get("project", ""), ds, st)):
                 return
             write_log("删除模型记录: 项目={} 数据集={} 任务={} 开始时间={}".format(
@@ -663,7 +687,7 @@ class ModelDialog(QDialog):
         except Exception as e:
             trace = traceback.format_exc()
             print("[model_dialog] 打开训练失败: {}\n{}".format(e, trace), flush=True)
-            MessageBox.warning(self, "打开训练失败", str(e))
+            MessageBox.warning(self, self.tr("打开训练失败"), str(e))
 
     def _test(self, record):
         """
@@ -690,7 +714,7 @@ class ModelDialog(QDialog):
             trace = traceback.format_exc()
             print("[model_dialog] 打开测试失败: {}\n{}".format(
                 e, trace), flush=True)
-            MessageBox.warning(self, "打开测试失败", str(e))
+            MessageBox.warning(self, self.tr("打开测试失败"), str(e))
 
     # ---------------- 导出 ----------------
     def _export(self, rec):
@@ -707,10 +731,11 @@ class ModelDialog(QDialog):
                     model_path = p
                     break
         if not model_path or not os.path.exists(model_path):
-            MessageBox.warning(self, "导出模型", "模型文件不存在:\n{}".format(model_path))
+            MessageBox.warning(self, self.tr("导出模型"),
+                               self.tr("模型文件不存在:\n{}").format(model_path))
             write_log("导出模型失败: 模型文件不存在 {}".format(model_path))
             return
-        d = QFileDialog.getExistingDirectory(self, "选择导出目录")
+        d = QFileDialog.getExistingDirectory(self, self.tr("选择导出目录"))
         if not d:
             return
         if not isinstance(rec, dict):
@@ -724,10 +749,11 @@ class ModelDialog(QDialog):
         try:
             os.makedirs(out_dir, exist_ok=True)
         except OSError as e:
-            MessageBox.warning(self, "导出模型", "创建目录失败: {}".format(e))
+            MessageBox.warning(self, self.tr("导出模型"),
+                               self.tr("创建目录失败: {}").format(e))
             write_log("导出模型失败: 创建目录失败 {} | {}".format(out_dir, e))
             return
-        base = "_".join([p for p in (project, TASK_TEXT.get(task, "模型"),
+        base = "_".join([p for p in (project, TASK_FILE_TAG.get(task, "模型"),
                                      img_size, model_size) if p])
         self._exp = {
             "rec": rec, "task": task, "out_dir": out_dir, "base": base,
@@ -736,10 +762,11 @@ class ModelDialog(QDialog):
             "copied": [], "report": "", "note": "",
         }
         write_log("开始导出模型: 项目={} 任务={} 架构={} 尺寸={} | {}".format(
-            project, TASK_TEXT.get(task, task) or "未知", model_size, img_size,
+            project, TASK_FILE_TAG.get(task, task) or "未知", model_size, img_size,
             model_path))
         # maximum=0 → 忙碌进度条(不确定时长); 统一深色样式见 message_box.ProgressDialog
-        self._exp_dlg = ProgressDialog("导出模型", "正在导出 ONNX...", self,
+        self._exp_dlg = ProgressDialog(self.tr("导出模型"),
+                                       self.tr("正在导出 ONNX..."), self,
                                        maximum=0, cancellable=False)
         try:
             size = int(rec.get("img_size") or 0)
@@ -817,24 +844,25 @@ class ModelDialog(QDialog):
         if self._exp["task"] == "classify":
             # test_report 是检测/分割的漏检误检报告, 分类任务不适用
             write_log("导出模型报告跳过: 分类任务不出评估报告")
-            self._export_finish("分类任务不生成评估报告")
+            self._export_finish(self.tr("分类任务不生成评估报告"))
             return
         cfg = self._build_eval_cfg()
         if not cfg:
             write_log("导出模型报告跳过: 未找到验证集")
-            self._export_finish("未找到验证集, 已跳过评估报告")
+            self._export_finish(self.tr("未找到验证集, 已跳过评估报告"))
             return
-        self._exp_dlg.set_text("正在生成模型报告...")
+        self._exp_dlg.set_text(self.tr("正在生成模型报告..."))
         self._eval_worker = TestWorker(cfg, parent=self)
         self._eval_worker.progress.connect(
             lambda done, total: self._exp_dlg.set_text(
-                "正在生成模型报告 {}/{}".format(done, total)))
+                self.tr("正在生成模型报告 {}/{}").format(done, total)))
         self._eval_worker.finished_ok.connect(self._export_on_eval_done)
         self._eval_worker.failed.connect(
             lambda msg: (write_log("导出模型评估失败: {}".format(
                              (msg or "").strip().splitlines()[0] if msg else "未知")),
                          self._export_finish(
-                             "评估失败, 已跳过报告: {}".format((msg or "").splitlines()[0]))))
+                             self.tr("评估失败, 已跳过报告: {}").format(
+                                 (msg or "").splitlines()[0]))))
         self._eval_worker.start()
 
     def _build_eval_cfg(self):
@@ -910,7 +938,8 @@ class ModelDialog(QDialog):
             self._exp["report"] = os.path.basename(pdf)
             self._exp["copied"].append(os.path.basename(pdf))
             write_log("导出模型报告完成: {}".format(os.path.basename(pdf)))
-        self._export_finish("" if pdf else "评估完成, 但报告生成失败")
+        self._export_finish(
+            "" if pdf else self.tr("评估完成, 但报告生成失败"))
 
     def _inject_label_stats(self, res):
         """把验证集的标注分布塞进 res, PDF 首页才有类别分布图."""
@@ -946,23 +975,24 @@ class ModelDialog(QDialog):
         files = ",".join(self._exp["copied"]) or "(空)"
         write_log("导出模型完成: {} | 包含: {}".format(
             self._exp["out_dir"], files))
-        msg = "已导出到:\n{}\n\n包含: {}".format(self._exp["out_dir"], files)
+        msg = self.tr("已导出到:\n{}\n\n包含: {}").format(
+            self._exp["out_dir"], files)
         if note:
             msg += "\n\n{}".format(note)
-        MessageBox.information(self, "导出模型", msg)
+        MessageBox.information(self, self.tr("导出模型"), msg)
 
     def _export_failed(self, msg):
         if self._exp_dlg is not None:
             self._exp_dlg.close()
             self._exp_dlg = None
         head = (msg or "").strip().splitlines()
-        tip = head[0] if head else "未知错误"
+        tip = head[0] if head else self.tr("未知错误")
         write_log("导出模型失败: {}".format(msg or "未知错误"))
         print("[export] ONNX 导出失败: {}".format(msg), flush=True)
         MessageBox.warning(
-            self, "导出模型",
-            "ONNX 导出失败: {}\n\n若提示缺少 onnx / onnxsim, 请先安装:\n"
-            "pip install onnx onnxsim".format(tip))
+            self, self.tr("导出模型"),
+            self.tr("ONNX 导出失败: {}\n\n若提示缺少 onnx / onnxsim, "
+                    "请先安装:\n pip install onnx onnxsim").format(tip))
 
     def _copy_examples(self):
         src = examples_dir()

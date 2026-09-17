@@ -442,6 +442,25 @@
                </property>
               </widget>
              </item>
+             <item>
+              <widget class="QComboBox" name="language_comboBox">
+               <property name="minimumSize">
+                <size>
+                 <width>92</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>92</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="toolTip">
+                <string>界面语言</string>
+               </property>
+              </widget>
+             </item>
             </layout>
            </widget>
           </item>

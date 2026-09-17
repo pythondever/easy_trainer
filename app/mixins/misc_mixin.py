@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
+from app.core import i18n
 from app.core.db import get_paths
 from app.core.label_utils import rec_is_labeled
 from app.widgets.charts import render_label_chart
@@ -15,7 +16,8 @@ from app.widgets.dialog_buttons import apply_icon
 from app.core.log import write_log
 from PySide6.QtGui import QPixmap, QImage, QStandardItem
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QDialog, QMessageBox, QGraphicsScene
+from PySide6.QtCore import QCoreApplication as QC
+from PySide6.QtWidgets import QApplication, QDialog, QMessageBox, QGraphicsScene
 
 
 class MiscMixin(object):
@@ -25,6 +27,47 @@ class MiscMixin(object):
 
     def _log(self, msg):
         self._write_log(msg)
+
+    def _init_language_combo(self):
+        """工具栏语言下拉. 选项名本身不翻译(中英用户互相都认得出该选哪个)."""
+        combo = self.language_comboBox
+        combo.blockSignals(True)
+        combo.clear()
+        for code, name in i18n.LANGUAGES:
+            combo.addItem(name, code)
+        combo.setCurrentIndex(i18n.index_of(i18n.current()))
+        combo.blockSignals(False)
+        combo.currentIndexChanged.connect(self._on_language_changed)
+
+    def _on_language_changed(self, idx):
+        code = self.language_comboBox.itemData(idx)
+        if not code or code == i18n.current():
+            return
+        i18n.apply(QApplication.instance(), code)
+        self.db.set_language(code)
+        self._retranslate_all()
+        self._log("界面语言: {}".format(code))
+
+    def _retranslate_all(self):
+        """
+        换语言后刷新"已经建出来"的窗口. 其余对话框都是用时才 new,
+        下次打开自然是新语言.
+        retranslateUi 会把 .ui 里的静态文案整批重设, 顺带冲掉运行时改过的那几个
+        (显存占用 / 统计文本), 所以紧接着把它们刷回来.
+        """
+        self.retranslateUi(self)
+        self._refresh_gpu_memory()
+        # 侧栏不是 .ui 的一部分, retranslateUi 管不到它的统计文案
+        self.refresh_project_list()
+        cur = getattr(self, "_current_dataset", None)
+        if cur:
+            self._refresh_label_filter(*cur)
+        else:
+            self._reset_label_filter_text()
+        dlg = getattr(self, "_log_dialog", None)
+        if dlg is not None:
+            dlg.ui.retranslateUi(dlg)
+            dlg.setWindowTitle(QC.translate("LogDialog", "日志"))
 
     def _on_log_clicked(self):
         """显示常驻日志对话框(启动时已创建并注册, 隐藏也接收日志)."""
@@ -59,14 +102,16 @@ class MiscMixin(object):
     def _on_dataset_properties(self):
         """工具栏"统计"按钮:全局对话框, 多选数据集查看标注统计与路径."""
         dlg = QDialog(self)
-        dlg.setWindowTitle("数据集统计")
+        dlg.setWindowTitle(QC.translate("MiscMixin", "数据集统计"))
         dlg.setWindowFlags(
             dlg.windowFlags() | Qt.WindowMinimizeButtonHint | Qt.WindowMaximizeButtonHint)
         ui = DatasetPropertiesUI()
         ui.setupUi(dlg)
         ui.image_path_line_txt.setReadOnly(True)
         ui.label_path_line_txt.setReadOnly(True)
-        apply_icon(ui.select_dataset_btn, "确定", "应用所选数据集")
+        apply_icon(ui.select_dataset_btn,
+                   QC.translate("DialogButtons", "确定"),
+                   QC.translate("MiscMixin", "应用所选数据集"))
         # 多选下拉:默认勾选当前选中的数据集(如有)
         self._setup_stats_multi_combo(ui.dataset_comboBox)
         cur = getattr(self, "_current_dataset", None)
@@ -157,10 +202,10 @@ class MiscMixin(object):
                 paths = get_paths(binding, "label")
             paths = [p for p in paths if p]
             if not paths:
-                blocks.append("[{}/{}](未设置)".format(proj, ds))
+                blocks.append(QC.translate("MiscMixin", "[{}/{}](未设置)").format(proj, ds))
             else:
                 blocks.append("[{}/{}]{}".format(proj, ds, "; ".join(paths)))
-        return " | ".join(blocks) or "(未选择数据集)"
+        return " | ".join(blocks) or QC.translate("MiscMixin", "(未选择数据集)")
 
     def _render_label_stats(self, view, project, dataset, label_counts,
                              label_colors=None):
@@ -328,11 +373,16 @@ class MiscMixin(object):
         if not cur_ds or not paths:
             return
         proj, ds = cur_ds
+        btn_delete = QC.translate("MiscMixin", "删除")
+        btn_cancel = QC.translate("MiscMixin", "取消")
         clicked = MessageBox.choose(
-            self, "删除图像", "将从系统删除所选 {} 张图像?\n\n(图像与同名标注文件不可恢复)".format(len(paths)),
-            [("删除", QMessageBox.YesRole),
-             ("取消", QMessageBox.RejectRole)],
-            informative="图像与同名标注文件将从磁盘删除, 不可恢复")
-        if clicked is None or clicked != "删除":
+            self, QC.translate("MiscMixin", "删除图像"),
+            QC.translate("MiscMixin",
+                         "将从系统删除所选 {} 张图像?\n\n(图像与同名标注文件不可恢复)")
+            .format(len(paths)),
+            [(btn_delete, QMessageBox.YesRole),
+             (btn_cancel, QMessageBox.RejectRole)],
+            informative=QC.translate("MiscMixin", "图像与同名标注文件将从磁盘删除, 不可恢复"))
+        if clicked is None or clicked != btn_delete:
             return
         self._delete_images_core(proj, ds, paths, delete_local=True)

@@ -224,6 +224,13 @@ class Ui_AppUI(object):
 
         self.datasetHeaderLayout.addWidget(self.log_btn)
 
+        self.language_comboBox = QComboBox(self.datasetHeader)
+        self.language_comboBox.setObjectName(u"language_comboBox")
+        self.language_comboBox.setMinimumSize(QSize(92, 0))
+        self.language_comboBox.setMaximumSize(QSize(92, 16777215))
+
+        self.datasetHeaderLayout.addWidget(self.language_comboBox)
+
 
         self.mainContentLayout.addWidget(self.datasetHeader)
 
@@ -309,6 +316,9 @@ class Ui_AppUI(object):
         self.model_btn.setText(QCoreApplication.translate("AppUI", u"\u6a21\u578b", None))
         self.queue_btn.setText(QCoreApplication.translate("AppUI", u"\u961f\u5217", None))
         self.log_btn.setText(QCoreApplication.translate("AppUI", u"\u65e5\u5fd7", None))
+#if QT_CONFIG(tooltip)
+        self.language_comboBox.setToolTip(QCoreApplication.translate("AppUI", u"\u754c\u9762\u8bed\u8a00", None))
+#endif // QT_CONFIG(tooltip)
         self.pageInfoLabel.setText(QCoreApplication.translate("AppUI", u"0 / 0", None))
         self.pre_page_btn.setText(QCoreApplication.translate("AppUI", u"\u4e0a\u4e00\u9875", None))
         self.next_page_btn.setText(QCoreApplication.translate("AppUI", u"\u4e0b\u4e00\u9875", None))

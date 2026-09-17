@@ -44,7 +44,7 @@ class MetricsDialog(QDialog):
     def __init__(self, record, db=None, parent=None):
         super().__init__(parent)
         self.setAttribute(Qt.WA_DeleteOnClose)
-        self.setWindowTitle("训练指标")
+        self.setWindowTitle(self.tr("训练指标"))
         self.setWindowFlags(
             self.windowFlags() | Qt.WindowMinimizeButtonHint
             | Qt.WindowMaximizeButtonHint)
@@ -72,15 +72,18 @@ class MetricsDialog(QDialog):
     def _build_toolbar(self):
         row = QHBoxLayout()
         row.addStretch(1)
-        lbl = QLabel("标签筛选")
+        lbl = QLabel(self.tr("标签筛选"))
         lbl.setStyleSheet(_muted_style())
         row.addWidget(lbl)
         self._combo = QComboBox()
-        self._combo.addItem("全部指标")
+        self._all_text = self.tr("全部指标")
+        self._all_p = self.tr("全部标签-P")
+        self._all_r = self.tr("全部标签-R")
+        self._combo.addItem(self._all_text)
         cls_mode = "accuracy" in self._series
         if not cls_mode:
-            self._combo.addItem("全部标签-P")
-            self._combo.addItem("全部标签-R")
+            self._combo.addItem(self._all_p)
+            self._combo.addItem(self._all_r)
         for name in self._labels:
             self._combo.addItem(str(name))
         self._style_combo(self._combo)
@@ -88,7 +91,7 @@ class MetricsDialog(QDialog):
         row.addWidget(self._combo)
         # 无 per_class
         if not self._per_class and not self._labels:
-            self._hint = QLabel("(暂无标签数据,需完成首次 epoch 验证后才会出现)")
+            self._hint = QLabel(self.tr("(暂无标签数据,需完成首次 epoch 验证后才会出现)"))
             self._hint.setStyleSheet(_muted_style(12))
             row.addWidget(self._hint)
         self._body.addLayout(row)
@@ -115,12 +118,12 @@ class MetricsDialog(QDialog):
             self._chart.deleteLater()
             self._chart = None
         sel = self._combo.currentText()
-        if sel == "全部指标":
+        if sel == self._all_text:
             epochs, series = self._epochs, self._series
-        elif sel == "全部标签-P":
+        elif sel == self._all_p:
             epochs = self._epochs
             series = {lb: pc.get("Precision", []) for lb, pc in self._per_class.items()}
-        elif sel == "全部标签-R":
+        elif sel == self._all_r:
             epochs = self._epochs
             series = {lb: pc.get("Recall", []) for lb, pc in self._per_class.items()}
         else:
@@ -129,7 +132,7 @@ class MetricsDialog(QDialog):
         series = {k: v for k, v in series.items()
                   if isinstance(v, list) and v}
         if not epochs or not series:
-            tip = QLabel("暂无该标签的指标数据(训练完成后可查看)")
+            tip = QLabel(self.tr("暂无该标签的指标数据(训练完成后可查看)"))
             tip.setStyleSheet(_muted_style())
             tip.setAlignment(Qt.AlignCenter)
             self._chart = tip
@@ -172,7 +175,8 @@ class MetricsDialog(QDialog):
                               marker="o" if len(xe) <= 100 else None,
                               markersize=4)
             axes.set_xlabel("epoch", color="#c3c9d6")
-            group_label = "loss 值" if g is loss_items else "指标值 (mAP/P/R)"
+            group_label = (self.tr("loss 值") if g is loss_items
+                           else self.tr("指标值 (mAP/P/R)"))
             axes.set_ylabel(group_label, color="#c3c9d6")
             axes.tick_params(axis="x", colors="#c3c9d6")
             axes.tick_params(axis="y", colors="#c3c9d6")

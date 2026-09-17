@@ -7,6 +7,8 @@
 
 import os
 
+from PySide6.QtCore import QT_TRANSLATE_NOOP
+
 from app.core.utils import project_root
 
 ENV_MODELS_DIR = "EASY_TRAINER_MODELS"
@@ -35,30 +37,39 @@ class ModelAsset(object):
 
 _BASE = "https://storage.googleapis.com/rfdetr/"
 
+# desc 是界面文案: 表里存中文原文, 显示时按 "ModelAssets" context 翻(NOOP 只为让 lupdate 抽得到)
 MODELS = (
     ModelAsset(DETECT, "nano", "rf-detr-nano.pth", 366287238,
-               "fb6504cce7fbdc783f7a46991f07639f", "速度最快, 精度够用",
+               "fb6504cce7fbdc783f7a46991f07639f",
+               QT_TRANSLATE_NOOP("ModelAssets", "速度最快, 精度够用"),
                _BASE + "nano_coco/checkpoint_best_regular.pth"),
     ModelAsset(DETECT, "small", "rf-detr-small.pth", 386045550,
-               "fb37061c1af7bace359c91b723a8d5c1", "精度更好, 稍慢一些",
+               "fb37061c1af7bace359c91b723a8d5c1",
+               QT_TRANSLATE_NOOP("ModelAssets", "精度更好, 稍慢一些"),
                _BASE + "small_coco/checkpoint_best_regular.pth"),
     ModelAsset(DETECT, "medium", "rf-detr-medium.pth", 404992918,
-               "7223f764a87b863f02eb8d52bf0ce2ee", "精度更高",
+               "7223f764a87b863f02eb8d52bf0ce2ee",
+               QT_TRANSLATE_NOOP("ModelAssets", "精度更高"),
                _BASE + "medium_coco/checkpoint_best_regular.pth"),
     ModelAsset(DETECT, "large", "rf-detr-large.pth", 1571684963,
-               "992c8e862aa733a7bb2777e45d49f1a0", "精度最高, 显存占用大",
+               "992c8e862aa733a7bb2777e45d49f1a0",
+               QT_TRANSLATE_NOOP("ModelAssets", "精度最高, 显存占用大"),
                _BASE + "rf-detr-large.pth"),
     ModelAsset(SEGMENT, "nano", "rf-detr-seg-nano.pt", 134545398,
-               "9995497791d0ff1664a1d9ddee9cfd20", "轻量分割",
+               "9995497791d0ff1664a1d9ddee9cfd20",
+               QT_TRANSLATE_NOOP("ModelAssets", "轻量分割"),
                _BASE + "rf-detr-seg-n-ft.pth"),
     ModelAsset(SEGMENT, "small", "rf-detr-seg-small.pt", 135042342,
-               "0a2a3006381d0c42853907e700eadd08", "速度与精度平衡",
+               "0a2a3006381d0c42853907e700eadd08",
+               QT_TRANSLATE_NOOP("ModelAssets", "速度与精度平衡"),
                _BASE + "rf-detr-seg-s-ft.pth"),
     ModelAsset(SEGMENT, "medium", "rf-detr-seg-medium.pt", 143024058,
-               "a49af1562c3719227ad43d0ca53b4c7a", "细节更完整",
+               "a49af1562c3719227ad43d0ca53b4c7a",
+               QT_TRANSLATE_NOOP("ModelAssets", "细节更完整"),
                _BASE + "rf-detr-seg-m-ft.pth"),
     ModelAsset(SEGMENT, "large", "rf-detr-seg-large.pt", 145055866,
-               "275f7b094909544ed2841c94a677d07e", "最精细",
+               "275f7b094909544ed2841c94a677d07e",
+               QT_TRANSLATE_NOOP("ModelAssets", "最精细"),
                _BASE + "rf-detr-seg-l-ft.pth"),
 )
 

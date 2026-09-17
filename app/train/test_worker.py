@@ -113,7 +113,7 @@ class TestWorker(QThread):
                 os.remove(out_path)
             except Exception:
                 pass
-            self.failed.emit(f"启动测试进程失败: {e}")
+            self.failed.emit(self.tr("启动测试进程失败: {}").format(e))
             return
         _trace("子进程已启动 pid={}".format(self._proc.pid))
         self.log.emit("[test-worker] 子进程已启动 pid={}".format(self._proc.pid))
@@ -185,6 +185,7 @@ class TestWorker(QThread):
             pass
         rc = self._proc.poll()
         if rc != 0 and not result_emitted:
-            detail = "测试进程异常退出 (code={})\n\n--- 输出(尾部) ---\n{}".format(
-                rc, "\n".join(last_lines))
+            detail = self.tr(
+                "测试进程异常退出 (code={})\n\n--- 输出(尾部) ---\n{}"
+            ).format(rc, "\n".join(last_lines))
             self.failed.emit(detail)

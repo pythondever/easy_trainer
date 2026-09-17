@@ -4,6 +4,7 @@ import os
 from app.widgets.log_dialog import LogDialog
 from app.widgets.popup_flat import ComboPopupFlattener
 from ui.app import Ui_AppUI as MainUI
+from app.core import i18n
 from app.core.constants import PAGE_SIZE
 from app.core.utils import (setup_matplotlib_chinese, load_style_sheet,
                             project_root)
@@ -17,11 +18,14 @@ from app.mixins import (LabelMixin, ProjectMixin, ImportExportMixin,
                         DatasetViewMixin, TrainMixin, QueueMixin, MiscMixin)
 
 
+DB_DIR = os.path.join(os.path.expanduser("~"), ".easy_trainer")
+
+
 class App(QWidget, MainUI, LabelMixin, ProjectMixin, ImportExportMixin,
           DatasetViewMixin, TrainMixin, QueueMixin, MiscMixin):
-    def __init__(self):
+    def __init__(self, db=None):
         super().__init__()
-        self.db = DataBase(os.path.join(os.path.expanduser("~"), ".easy_trainer"))
+        self.db = db if db is not None else DataBase(DB_DIR)
         self.dataset_cache = {}
         self._loading_tasks = {}
         self.page_size = PAGE_SIZE
@@ -116,6 +120,7 @@ class App(QWidget, MainUI, LabelMixin, ProjectMixin, ImportExportMixin,
         self.sidebarTitle.setVisible(False)
         self.tabWidget.setCurrentIndex(0)
         self._init_image_view()
+        self._init_language_combo()
         self._init_label_filter()
         self._current_dataset = None
         self._setup_header_groups()
@@ -194,6 +199,9 @@ def main():
     setup_matplotlib_chinese()
     myapp = QApplication(sys.argv)
     myapp.setStyleSheet(load_style_sheet())
-    ui = App()
+    # db 提前建一次: 界面语言要在 setupUi 之前装好, 否则静态文案已经按中文生成了
+    db = DataBase(DB_DIR)
+    i18n.apply(myapp, db.get_language())
+    ui = App(db)
     ui.show_ui()
     sys.exit(myapp.exec())

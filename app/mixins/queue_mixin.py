@@ -8,6 +8,7 @@ import uuid
 from datetime import datetime
 
 from PySide6.QtCore import QTimer
+from PySide6.QtCore import QCoreApplication as QC
 
 from app.core import model_assets
 from app.core.log import write_log
@@ -290,7 +291,9 @@ class QueueMixin(object):
         status = "stopped" if stopped else ("done" if result else "failed")
         if result is None and not stopped:
             # 失败原因取自训练记录里已写入的日志, 队列项只留一行提示
-            self._mark_item(qid, status, error="训练未完成, 详见日志")
+            self._mark_item(
+                qid, status,
+                error=QC.translate("QueueMixin", "训练未完成, 详见日志"))
         else:
             self._mark_item(qid, status)
         self._queue_current_qid = None
@@ -347,7 +350,8 @@ class QueueMixin(object):
         btn = getattr(self, "queue_btn", None)
         if btn is not None:
             n = self.queue_pending_count()
-            btn.setText("队列 {}".format(n) if n else "队列")
+            btn.setText(QC.translate("QueueMixin", "队列 {}").format(n)
+                         if n else QC.translate("AppUI", "队列"))
         dlg = getattr(self, "_queue_dialog", None)
         if dlg is not None and getattr(dlg, "isVisible", lambda: False)():
             dlg.refresh()

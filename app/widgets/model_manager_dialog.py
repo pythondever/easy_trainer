@@ -8,6 +8,7 @@
 import os
 
 from PySide6.QtCore import Qt
+from PySide6.QtCore import QCoreApplication as QC
 from PySide6.QtGui import QFontMetrics
 from PySide6.QtWidgets import (QCheckBox, QDialog, QFileDialog, QFrame,
                                QHBoxLayout, QLabel, QProgressBar, QPushButton,
@@ -18,6 +19,7 @@ from app.core.log import write_log
 from app.core.model_download import ModelDownloader
 from app.widgets.dialog_buttons import apply_icon
 from app.widgets.message_box import MessageBox
+from app.widgets.status_style import task_text
 from ui.model_manager import Ui_ModelManagerDialog
 
 ROW_H = 38
@@ -28,7 +30,6 @@ W_SIZE = 62
 W_DESC = 136
 W_STATUS = 160
 W_DIR = 220
-TASK_CN = {model_assets.DETECT: "检测", model_assets.SEGMENT: "分割"}
 
 
 def _set_state(widget, state):
@@ -49,8 +50,9 @@ def _fmt_speed(bps):
 def _fmt_eta(secs):
     secs = max(0, int(secs))
     if secs < 60:
-        return "还剩 {}s".format(secs)
-    return "还剩 {}m{}s".format(secs // 60, secs % 60)
+        return QC.translate("ModelManagerDialog", "还剩 {}s").format(secs)
+    return QC.translate("ModelManagerDialog", "还剩 {}m{}s").format(
+        secs // 60, secs % 60)
 
 
 class _ModelRow(QFrame):
@@ -73,7 +75,8 @@ class _ModelRow(QFrame):
         lay.addWidget(self._label(asset.level, "modelName", W_NAME, 13))
         lay.addWidget(self._label(
             model_assets.human_size(asset.nbytes), "modelSize", W_SIZE, 12))
-        lay.addWidget(self._label(asset.desc, "modelDesc", W_DESC, 12))
+        lay.addWidget(self._label(
+            QC.translate("ModelAssets", asset.desc), "modelDesc", W_DESC, 12))
 
         self.bar = QProgressBar()
         self.bar.setObjectName("modelProgress")
@@ -108,18 +111,18 @@ class _ModelRow(QFrame):
 
     def mark_ready(self):
         self.bar.setVisible(False)
-        self.status.setText("已就绪")
+        self.status.setText(self.tr("已就绪"))
         self.status.setToolTip("")
         _set_state(self.status, "ready")
 
     def mark_idle(self):
         self.bar.setVisible(False)
-        self.status.setText("未下载")
+        self.status.setText(self.tr("未下载"))
         self.status.setToolTip("")
         _set_state(self.status, "idle")
 
     def mark_verifying(self):
-        self.status.setText("校验中...")
+        self.status.setText(self.tr("校验中..."))
         _set_state(self.status, "busy")
 
     def mark_busy(self, done, total, bps):
@@ -135,7 +138,7 @@ class _ModelRow(QFrame):
 
     def mark_failed(self, reason):
         self.bar.setVisible(False)
-        self.status.setText("失败")
+        self.status.setText(self.tr("失败"))
         self.status.setToolTip(reason)
         _set_state(self.status, "failed")
 
@@ -160,7 +163,7 @@ class ModelManagerDialog(QDialog):
         self._build_rows()
         for name in preselect:
             self._check_by_name(name)
-        apply_icon(self.ui.close_btn, "关闭")
+        apply_icon(self.ui.close_btn, self.tr("关闭"))
         self.ui.close_btn.clicked.connect(self.reject)
         self.ui.change_dir_btn.clicked.connect(self._on_change_dir)
         self.ui.start_btn.clicked.connect(self._on_start)
@@ -196,7 +199,7 @@ class ModelManagerDialog(QDialog):
 
     def _refresh_total(self, *_):
         total = sum(r.asset.nbytes for r in self._rows if r.is_checked())
-        self.ui.total_label.setText("占用空间 {}".format(
+        self.ui.total_label.setText(self.tr("占用空间 {}").format(
             model_assets.human_size(total)))
         if self._downloader is None:
             self.ui.start_btn.setEnabled(True)
@@ -210,7 +213,8 @@ class ModelManagerDialog(QDialog):
         self.ui.dir_label.setToolTip(self._dir)
 
     def _on_change_dir(self):
-        d = QFileDialog.getExistingDirectory(self, "选择权重目录", self._dir)
+        d = QFileDialog.getExistingDirectory(self, self.tr("选择权重目录"),
+                                             self._dir)
         if not d:
             return
         self._dir = model_assets.set_models_dir(d, sync_rf_home=False)
@@ -241,16 +245,17 @@ class ModelManagerDialog(QDialog):
                 if r.is_checked() and not model_assets.is_ready(r.asset, self._dir)]
         if not todo:
             MessageBox.information(
-                self, "模型权重", "勾选的模型都已就绪, 不需要下载.")
+                self, self.tr("模型权重"), self.tr("勾选的模型都已就绪, 不需要下载."))
             return
         if not self._writable():
             MessageBox.warning(
-                self, "模型权重",
-                "当前目录不可写入, 请点\"更改\"换一个目录:\n{}".format(self._dir))
+                self, self.tr("模型权重"),
+                self.tr("当前目录不可写入, 请点\"更改\"换一个目录:\n{}")
+                .format(self._dir))
             return
         self._failed = {}
         self.ui.start_btn.setEnabled(False)
-        self.ui.start_btn.setText("下载中...")
+        self.ui.start_btn.setText(self.tr("下载中..."))
         self.ui.change_dir_btn.setEnabled(False)
         self._downloader = ModelDownloader(todo, self._dir, self)
         self._downloader.progress.connect(self._on_progress)
@@ -283,7 +288,7 @@ class ModelManagerDialog(QDialog):
 
     def _on_all_finished(self, ok):
         self._downloader = None
-        self.ui.start_btn.setText("开始下载")
+        self.ui.start_btn.setText(self.tr("开始下载"))
         self.ui.start_btn.setEnabled(True)
         self.ui.change_dir_btn.setEnabled(True)
         self._refresh_total()
@@ -292,17 +297,20 @@ class ModelManagerDialog(QDialog):
         model_assets.set_models_dir(self._dir, sync_rf_home=ok)
         if self._failed:
             lines = ["{}: {}".format(k, v) for k, v in self._failed.items()]
-            MessageBox.warning(self, "模型权重",
-                               "以下权重没能下载完成:\n" + "\n".join(lines))
+            MessageBox.warning(self, self.tr("模型权重"),
+                               self.tr("以下权重没能下载完成:\n")
+                               + "\n".join(lines))
         elif ok:
             MessageBox.information(
-                self, "模型权重", "权重已就绪, 保存在:\n{}".format(self._dir))
+                self, self.tr("模型权重"),
+                self.tr("权重已就绪, 保存在:\n{}").format(self._dir))
 
     def closeEvent(self, event):
         if self._downloader is not None:
             if not MessageBox.question(
-                    self, "模型权重",
-                    "下载还在进行, 现在关闭会中断下载(已下载部分保留, 下次可续传).\n确定关闭?"):
+                    self, self.tr("模型权重"),
+                    self.tr("下载还在进行, 现在关闭会中断下载"
+                            "(已下载部分保留, 下次可续传).\n确定关闭?")):
                 event.ignore()
                 return
             self._downloader.cancel()
@@ -331,16 +339,22 @@ def ensure_weight(parent, db, task, level):
     if model_assets.is_ready(asset, directory):
         model_assets.sync_rf_home(saved)
         return True
-    text = "本次训练选用 {} {}模型, 需要先下载 {}.".format(
-        level, TASK_CN.get(task, task), model_assets.human_size(asset.nbytes))
-    informative = ("下载位置: {}\n"
-                   "点\"仍然继续\"则由软件在训练时自行下载, "
-                   "期间训练日志不会显示进度. 建议先在这里下载好.").format(directory)
+    # 模块级函数没有 self.tr; 文案也要按字面量传给 translate, 否则抽不出译文
+    btn_down = QC.translate("ModelManagerDialog", "去下载")
+    btn_keep = QC.translate("ModelManagerDialog", "仍然继续")
+    text = QC.translate(
+        "ModelManagerDialog", "本次训练选用 {} {}模型, 需要先下载 {}.").format(
+        level, task_text(task), model_assets.human_size(asset.nbytes))
+    informative = QC.translate(
+        "ModelManagerDialog",
+        "下载位置: {}\n点\"仍然继续\"则由软件在训练时自行下载, "
+        "期间训练日志不会显示进度. 建议先在这里下载好.").format(directory)
     choice = MessageBox.choose(
-        parent, "缺少模型权重", text,
-        [("去下载", "primary"), ("仍然继续", "normal"), ("取消", "normal")],
+        parent, QC.translate("ModelManagerDialog", "缺少模型权重"), text,
+        [(btn_down, "primary"), (btn_keep, "normal"),
+         (QC.translate("ModelManagerDialog", "取消"), "normal")],
         informative=informative)
-    if choice == "去下载":
+    if choice == btn_down:
         open_model_manager(parent, db, preselect=(asset.filename,))
         return False
-    return choice == "仍然继续"
+    return choice == btn_keep

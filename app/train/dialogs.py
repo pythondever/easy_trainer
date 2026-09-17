@@ -8,6 +8,8 @@ import uuid
 from datetime import datetime
 
 from PySide6.QtCore import Qt, QTimer, QEvent, QObject, QThread, Signal
+from PySide6.QtCore import QCoreApplication as QC
+from PySide6.QtCore import QT_TRANSLATE_NOOP
 from PySide6.QtGui import QIntValidator, QDoubleValidator
 from PySide6.QtWidgets import (QDialog, QLabel, QFileDialog, QComboBox,
                                QPushButton, QVBoxLayout)
@@ -16,6 +18,7 @@ from PySide6.QtGui import QStandardItem
 from app.widgets.dialog_buttons import apply_icon
 from app.widgets.message_box import MessageBox
 from app.widgets.multi_combo import install_multi_combo
+from app.widgets.status_style import task_text
 from app.widgets.model_manager_dialog import ensure_weight, open_model_manager
 from app.core import model_assets
 from app.core.db import get_paths
@@ -24,7 +27,8 @@ from app.train.data_prep import timestamp_dir
 from ui.train import Ui_TrainDialog
 
 CONTROL_H = 36
-TASK_CN = {"detect": "检测", "segment": "分割", "classify": "分类"}
+# 探测设备期间下拉里的占位文本: 常量存原文, 用的时候走 QC.translate
+PROBING_TEXT = QT_TRANSLATE_NOOP("TrainDialog", "正在检测显卡...")
 
 
 def collect_dataset_labels(db, ds_pairs):
@@ -122,13 +126,17 @@ def check_dataset_imported(name, info):
     lab = info.get("label_path", "")
     fmt = info.get("label_fmt", "")
     if not img or not os.path.isdir(img):
-        raise ValueError(
-            "数据集\"{}\"尚未导入图像或路径无效, 请先导入该数据集再训练".format(name))
+        raise ValueError(QC.translate(
+            "TrainDialog",
+            "数据集\"{}\"尚未导入图像或路径无效, 请先导入该数据集再训练")
+            .format(name))
     if fmt == "cls":
         return
     if not lab or not os.path.isdir(lab):
-        raise ValueError(
-            "数据集\"{}\"尚未导入标签或路径无效, 请先导入该数据集再训练".format(name))
+        raise ValueError(QC.translate(
+            "TrainDialog",
+            "数据集\"{}\"尚未导入标签或路径无效, 请先导入该数据集再训练")
+            .format(name))
 
 
 def _unique_ts_dir(out_root, ts):
@@ -154,7 +162,7 @@ def make_train_config(db, params):
     task = params.get("task") or "detect"
     out_root = (params.get("out_root") or "").strip()
     if not out_root:
-        raise ValueError("请先选择输出路径")
+        raise ValueError(QC.translate("TrainDialog", "请先选择输出路径"))
     os.makedirs(out_root, exist_ok=True)
     datasets = []
     for split, pairs in (("train", params.get("train_ds") or []),
@@ -167,13 +175,15 @@ def make_train_config(db, params):
             # 入队后数据集可能被重新导入成别的格式, 出队时再校验一次
             # (队列可能挂着几个小时, 中间改了数据集这里才发现)
             if task == "classify" and fmt != "cls":
-                raise ValueError(
-                    "数据集\"{}/{}\"不是分类数据集(标签格式={}), 无法训练图像分类"
-                    .format(proj, name, fmt or "未知"))
+                raise ValueError(QC.translate(
+                    "TrainDialog",
+                    "数据集\"{}/{}\"不是分类数据集(标签格式={}), 无法训练图像分类")
+                    .format(proj, name, fmt or QC.translate("TrainDialog", "未知")))
             if task != "classify" and fmt == "cls":
-                raise ValueError(
-                    "数据集\"{}/{}\"是分类数据集, 无法训练{}任务".format(
-                        proj, name, TASK_CN.get(task, task)))
+                raise ValueError(QC.translate(
+                    "TrainDialog",
+                    "数据集\"{}/{}\"是分类数据集, 无法训练{}任务")
+                    .format(proj, name, task_text(task)))
             datasets.append({
                 "dataset_name": name, "project": proj, "split": split,
                 "image_path": info.get("image_path", ""),
@@ -184,9 +194,9 @@ def make_train_config(db, params):
                 "label_ids": db.get_dataset_label_ids(proj, name),
             })
     if not any(d["split"] == "train" for d in datasets):
-        raise ValueError("请至少选择一个训练集数据集")
+        raise ValueError(QC.translate("TrainDialog", "请至少选择一个训练集数据集"))
     if not any(d["split"] == "val" for d in datasets):
-        raise ValueError("请至少选择一个验证集数据集")
+        raise ValueError(QC.translate("TrainDialog", "请至少选择一个验证集数据集"))
     ts_dir = _unique_ts_dir(out_root, timestamp_dir())
     architecture = params.get("architecture") or "nano"
     if task == "classify":
@@ -225,19 +235,21 @@ def make_train_config(db, params):
 def params_summary(params):
     """队列项的一行摘要文本(任务/网络/数据集)."""
     task = params.get("task", "")
-    task_text = TASK_CN.get(task, task)
+    shown = task_text(task)
     # 带项目名:不同项目下常有同名数据集(如 test1/train, test2/train)
     names = ["{}/{}".format(p[0], p[1]) for p in (params.get("train_ds") or [])]
-    ds = ", ".join(names) if names else "未选数据集"
-    return "{} · {} · {}".format(task_text, params.get("architecture", ""), ds)
+    ds = ", ".join(names) if names else QC.translate("TrainDialog", "未选数据集")
+    return "{} · {} · {}".format(shown, params.get("architecture", ""), ds)
 
 
 class _TrainStartDialog(QDialog):
     """训练/测试启动提示: 确认按钮带倒计时, 5s 后自动确认; 手动点击立即确认并停止计时."""
 
-    def __init__(self, seconds=5, parent=None, title="训练即将开始",
-                 message="训练即将开始"):
+    def __init__(self, seconds=5, parent=None, title=None, message=None):
         super().__init__(parent)
+        # 默认参数在 installTranslator 之前求值, 中文默认值要延后到这里取
+        title = title or self.tr("训练即将开始")
+        message = message or title
         self.setWindowTitle(title)
         self._left = seconds
         self.setMinimumWidth(280)
@@ -246,7 +258,7 @@ class _TrainStartDialog(QDialog):
         label.setObjectName("dialogConfirmPrompt")
         label.setAlignment(Qt.AlignCenter)
         layout.addWidget(label)
-        self._btn = QPushButton("确认({})".format(seconds))
+        self._btn = QPushButton(self.tr("确认({})").format(seconds))
         self._btn.clicked.connect(self._confirm)
         layout.addWidget(self._btn)
         self._timer = QTimer(self)
@@ -259,7 +271,7 @@ class _TrainStartDialog(QDialog):
             self._timer.stop()
             self.accept()
         else:
-            self._btn.setText("确认({})".format(self._left))
+            self._btn.setText(self.tr("确认({})").format(self._left))
 
     def _confirm(self):
         self._timer.stop()
@@ -328,7 +340,6 @@ class _DeviceProbe(QThread):
 
 
 _PROBES = []                    # 运行中的探测线程, 防止被 GC
-PROBING_TEXT = "正在检测显卡..."
 
 
 def fill_device_items(combo, devices):
@@ -344,7 +355,7 @@ def fill_device_combo_async(dialog, combo, start_button):
     就绪前禁掉下拉与开始按钮, 免得占位值 CPU 被当成用户选择跑出去.
     """
     combo.clear()
-    combo.addItem(PROBING_TEXT, "CPU")
+    combo.addItem(QC.translate("TrainDialog", PROBING_TEXT), "CPU")
     if _DEVICES is not None:        # 本进程已探测过, 不用再起线程
         dialog._on_devices_ready(_DEVICES)
         return
@@ -376,7 +387,6 @@ def detach_device_probe(dialog):
 class TrainDialog(QDialog):
     """统一训练对话框: 任务类型(检测/分割/分类) + 跨项目数据集选择."""
 
-    TASK_TEXT = {"检测": "detect", "分割": "segment", "分类": "classify"}
     # 各任务默认参数:epochs / lr / img_size / grad_accum(分类禁用)
     TASK_DEFAULTS = {
         "detect": (100, 1e-4, 640, 4),
@@ -384,13 +394,19 @@ class TrainDialog(QDialog):
         "classify": (30, 0.001, 224, 4),
     }
     TASK_TIPS = {
-        "detect": "目标检测推荐图像尺寸: 640(可设为 32 的倍数如 640/672)",
-        "segment": "图像分割推荐尺寸: 636(必须为 12 的倍数, 如 636/648/660)",
-        "classify": "图像分类推荐尺寸: 224(小图用 224, 较大图可到 256)",
+        "detect": QT_TRANSLATE_NOOP(
+            "TrainDialog", "目标检测推荐图像尺寸: 640(可设为 32 的倍数如 640/672)"),
+        "segment": QT_TRANSLATE_NOOP(
+            "TrainDialog", "图像分割推荐尺寸: 636(必须为 12 的倍数, 如 636/648/660)"),
+        "classify": QT_TRANSLATE_NOOP(
+            "TrainDialog", "图像分类推荐尺寸: 224(小图用 224, 较大图可到 256)"),
     }
     # 输入框右侧的倍数约束, 写不下整句 tooltip 就靠这几个字
-    IMG_NOTE = {"detect": "32 的倍数", "segment": "12 的倍数",
-                "classify": "建议 224"}
+    IMG_NOTE = {
+        "detect": QT_TRANSLATE_NOOP("TrainDialog", "32 的倍数"),
+        "segment": QT_TRANSLATE_NOOP("TrainDialog", "12 的倍数"),
+        "classify": QT_TRANSLATE_NOOP("TrainDialog", "建议 224"),
+    }
 
     def __init__(self, app, project="", dataset="", preset_record=None):
         """project/dataset 可为空(独立入口);preset_record 传入时按记录回填(模型界面训练按钮)."""
@@ -418,7 +434,8 @@ class TrainDialog(QDialog):
     def _build(self):
         self.ui = Ui_TrainDialog()
         self.ui.setupUi(self)
-        self.setWindowTitle("训练")
+        self._tag_task_combo()
+        self.setWindowTitle(self.tr("训练"))
         self._define_fields()
         self._setup_validators()
         self._fill_defaults()
@@ -426,9 +443,14 @@ class TrainDialog(QDialog):
         self._connect()
         self.resize(740, max(560, self.sizeHint().height()))
 
+    def _tag_task_combo(self):
+        """任务下拉挂 itemData. 按文本找的话, 界面切英文后 _task() 会全部落空."""
+        for i, code in enumerate(("detect", "segment", "classify")):
+            self.ui.task_combo.setItemData(i, code)
+
     def _task(self):
-        """当前任务类型文本:detect/segment/classify."""
-        return self.TASK_TEXT.get(self.ui.task_combo.currentText(), "detect")
+        """当前任务类型:detect/segment/classify(取 itemData, 与界面语言无关)."""
+        return self.ui.task_combo.currentData() or "detect"
 
     def _task_text(self):
         return self.ui.task_combo.currentText()
@@ -487,23 +509,24 @@ class TrainDialog(QDialog):
                     lbl.setMinimumWidth(width)
 
     def _define_fields(self):
+        # name 会拼进校验提示(""批次"不能为空"), 所以跟着界面语言走
         self._int_fields = [
-            (self.ui.batch_size_line_txt, "批次", 4, True),
-            (self.ui.grad_accum_line_txt, "梯度累积", 4, True),
-            (self.ui.epochs_line_txt, "轮次", 100, True),
-            (self.ui.batch_size_line_txt_2, "线程数", 4, True),
-            (self.ui.img_size_line_txt, "图像尺寸", 640, True),
-            (self.ui.early_stop_line_txt, "早停", 20, False),
+            (self.ui.batch_size_line_txt, self.tr("批次"), 4, True),
+            (self.ui.grad_accum_line_txt, self.tr("梯度累积"), 4, True),
+            (self.ui.epochs_line_txt, self.tr("轮次"), 100, True),
+            (self.ui.batch_size_line_txt_2, self.tr("线程数"), 4, True),
+            (self.ui.img_size_line_txt, self.tr("图像尺寸"), 640, True),
+            (self.ui.early_stop_line_txt, self.tr("早停"), 20, False),
         ]
         self._float_fields = [
-            (self.ui.lr_line_txt, "学习率", 1e-4, True),
+            (self.ui.lr_line_txt, self.tr("学习率"), 1e-4, True),
         ]
 
     def _connect(self):
         self.ui.start_train.clicked.connect(self._on_start_train)
         self.ui.add_queue_btn.clicked.connect(self._on_add_to_queue)
         self.ui.select_output_path_btn.clicked.connect(self._select_output_dir)
-        apply_icon(self.ui.cancel_btn, "取消")
+        apply_icon(self.ui.cancel_btn, self.tr("取消"))
         self.ui.cancel_btn.clicked.connect(self.reject)
 
     # ---------- 填充 ----------
@@ -530,7 +553,7 @@ class TrainDialog(QDialog):
             if combo is not None:
                 self._style_combo(combo)
 
-    def _setup_multi_combo(self, combo, placeholder="请选择数据集"):
+    def _setup_multi_combo(self, combo, placeholder=None):
         install_multi_combo(combo, placeholder)
         combo.model().itemChanged.connect(lambda *_: self._update_multi_label(combo))
         combo.activated.connect(lambda _i: self._update_multi_label(combo))
@@ -590,7 +613,7 @@ class TrainDialog(QDialog):
         train = self._selected_datasets()
         val = self._selected_val_datasets()
         if not train:
-            self.ui.summary_text.setText("请选择训练集与验证集")
+            self.ui.summary_text.setText(self.tr("请选择训练集与验证集"))
             return
         total = 0
         labeled = 0
@@ -600,14 +623,14 @@ class TrainDialog(QDialog):
             if int(info.get("labeled") or 0) > 0:
                 labeled += 1
         picked = len(train) + len(val)
-        text = "训练集 {} 个 · 验证集 {} 个 · 共 {} 张图".format(
+        text = self.tr("训练集 {} 个 · 验证集 {} 个 · 共 {} 张图").format(
             len(train), len(val), total)
         if not val:
-            tail = "未选择验证集"
+            tail = self.tr("未选择验证集")
         elif labeled == picked:
-            tail = "已标注, 可直接训练"
+            tail = self.tr("已标注, 可直接训练")
         else:
-            tail = "有 {} 个数据集尚未标注".format(picked - labeled)
+            tail = self.tr("有 {} 个数据集尚未标注").format(picked - labeled)
         self.ui.summary_text.setText("{} · {}".format(text, tail))
 
     def _selected_datasets(self):
@@ -621,10 +644,10 @@ class TrainDialog(QDialog):
     def _fill_defaults(self):
         self._style_all_combos()
         self._setup_multi_combo(self.ui.dataset_combo)
-        self._setup_multi_combo(self.ui.val_combo, "请选择验证集")
+        self._setup_multi_combo(self.ui.val_combo, self.tr("请选择验证集"))
         self._fill_dataset_multi(self.ui.dataset_combo, [])
         self._fill_dataset_multi(self.ui.val_combo, [])
-        self.ui.dataset_label.setText("训练集")
+        self.ui.dataset_label.setText(self.tr("训练集"))
         self._fill_device_combo()
         self._center_combo_items(self.ui.task_combo)
         self._fill_network_combo()
@@ -698,9 +721,9 @@ class TrainDialog(QDialog):
         ready = _DEVICES is not None
         btn.setEnabled(ready and not busy)
         if not ready:
-            btn.setToolTip(PROBING_TEXT)
+            btn.setToolTip(QC.translate("TrainDialog", PROBING_TEXT))
         else:
-            btn.setToolTip("已有训练在进行中, 请先停止" if busy else "")
+            btn.setToolTip(self.tr("已有训练在进行中, 请先停止") if busy else "")
 
     def _fill_optimizer(self):
         """优化器下拉:检测/分割(detr 推荐 adamw) vs 分类(resnet 推荐 sgd)."""
@@ -761,13 +784,10 @@ class TrainDialog(QDialog):
     def _restore_record(self, rec):
         """按指定训练记录回填全部字段(模型界面训练按钮)."""
         task = str(rec.get("task", "") or "")
-        if task in self.TASK_TEXT.values():
-            for k, v in self.TASK_TEXT.items():
-                if v == task:
-                    idx = self.ui.task_combo.findText(k)
-                    if idx >= 0:
-                        self.ui.task_combo.setCurrentIndex(idx)
-                    break
+        if task:
+            idx = self.ui.task_combo.findData(task)
+            if idx >= 0:
+                self.ui.task_combo.setCurrentIndex(idx)
         self._apply_task_ui()
         train_names = [x.strip() for x in str(rec.get("dataset", "")).split(",") if x.strip()]
         val_names = [x.strip() for x in str(rec.get("val_dataset", "")).split(",") if x.strip()]
@@ -846,8 +866,9 @@ class TrainDialog(QDialog):
                            (asset.filename,) if asset else ())
 
     def _setup_img_size_tip(self):
-        self.ui.img_size_line_txt.setToolTip(self.TASK_TIPS.get(self._task(), ""))
-        self.ui.img_note.setText(self.IMG_NOTE.get(self._task(), ""))
+        task = self._task()
+        self.ui.img_size_line_txt.setToolTip(self.tr(self.TASK_TIPS.get(task, "")))
+        self.ui.img_note.setText(self.tr(self.IMG_NOTE.get(task, "")))
 
     # ---------- 校验 ----------
     def _setup_validators(self):
@@ -858,53 +879,59 @@ class TrainDialog(QDialog):
 
     def _validate(self):
         if not self._selected_datasets():
-            return False, "请至少选择一个数据集"
+            return False, self.tr("请至少选择一个数据集")
         for edit, name, _default, required in self._int_fields:
             txt = edit.text().strip()
             if not txt and required:
-                return False, "\"{}\"不能为空".format(name)
+                return False, self.tr("\"{}\"不能为空").format(name)
             if txt:
                 try:
                     int(txt)
                 except ValueError:
-                    return False, "\"{}\"必须是整数(当前: {})".format(name, txt)
+                    return False, self.tr("\"{}\"必须是整数(当前: {})").format(
+                        name, txt)
         for edit, name, _default, required in self._float_fields:
             txt = edit.text().strip()
             if not txt and required:
-                return False, "\"{}\"不能为空".format(name)
+                return False, self.tr("\"{}\"不能为空").format(name)
             if txt:
                 try:
                     float(txt)
                 except ValueError:
-                    return False, "\"{}\"必须是数字(当前: {})".format(name, txt)
+                    return False, self.tr("\"{}\"必须是数字(当前: {})").format(
+                        name, txt)
         # 任务类型与数据集格式匹配校验(按导入时的 label_fmt 判断:cls=分类,其余=检测/分割)
         task = self._task()
         task_text = self._task_text()
         for proj, name in self._selected_datasets() + self._selected_val_datasets():
             fmt = self.app.db.get_dataset_import(proj, name).get("label_fmt", "")
             if task != "classify" and fmt == "cls":
-                return False, "数据集\"{}/{}\"是分类数据集,无法训练{}任务".format(
+                return False, self.tr(
+                    "数据集\"{}/{}\"是分类数据集,无法训练{}任务").format(
                     proj, name, task_text)
             if task == "classify" and fmt != "cls":
-                return False, "数据集\"{}/{}\"不是分类数据集(标签格式={}),无法训练图像分类".format(
-                    proj, name, fmt or "未知")
+                return False, self.tr(
+                    "数据集\"{}/{}\"不是分类数据集(标签格式={}),"
+                    "无法训练图像分类").format(proj, name, fmt or self.tr("未知"))
         return True, ""
 
     # ---------- 交互 ----------
     def _select_output_dir(self):
-        d = QFileDialog.getExistingDirectory(self, "选择输出目录", self.ui.output_line_txt.text())
+        d = QFileDialog.getExistingDirectory(
+            self, self.tr("选择输出目录"), self.ui.output_line_txt.text())
         if d:
             self.ui.output_line_txt.setText(d)
 
     def _on_start_train(self):
         if self.app.is_training():
             MessageBox.warning(
-                self, "开始训练","当前已有训练在进行中, 请先停止!")
+                self, self.tr("开始训练"),
+                self.tr("当前已有训练在进行中, 请先停止!"))
             return
         ok, msg = self._validate()
         if not ok:
             write_log("参数校验未通过: {}".format(msg))
-            MessageBox.warning(self, "参数校验", msg)
+            MessageBox.warning(self, self.tr("参数校验"), msg)
             return
         # 权重缺失时先问一次: 否则训练子进程会静默下载几百 MB, 日志里还看不到进度
         if not ensure_weight(self, self.app.db, self._task(),
@@ -917,14 +944,15 @@ class TrainDialog(QDialog):
             # 落盘失败时不写训练记录,避免模型界面留下没有结果的空行
             tb = traceback.format_exc()
             write_log("训练启动失败: {}\n{}".format(exc, tb))
-            MessageBox.critical(self, "训练启动失败", "{}\n\n{}".format(
-                exc, tb))
+            MessageBox.critical(self, self.tr("训练启动失败"),
+                                 "{}\n\n{}".format(exc, tb))
             return
         record = make_train_record(config, self.app.db, self.project)
         self.app.db.add_train_record(record)
         if not self.app.start_training(config, record["id"]):
             self.app.db.delete_train_record(record["id"])
-            MessageBox.warning(self, "开始训练", "已有训练在进行中, 请先停止!")
+            MessageBox.warning(self, self.tr("开始训练"),
+                               self.tr("已有训练在进行中, 请先停止!"))
             return
         write_log("开始训练: 任务类型={} 训练集={} 验证集={}".format(
             self._task_text(), record["dataset"], record["val_dataset"]))
@@ -936,7 +964,7 @@ class TrainDialog(QDialog):
         """把当前参数快照存入队列(不建目录, 不启动训练)."""
         ok, msg = self._validate()
         if not ok:
-            MessageBox.warning(self, "参数校验", msg)
+            MessageBox.warning(self, self.tr("参数校验"), msg)
             return
         # 入队时就查权重: 队列多半无人守着, 缺权重到出队时才发现在半夜
         if not ensure_weight(self, self.app.db, self._task(),
@@ -944,31 +972,34 @@ class TrainDialog(QDialog):
             return
         params = self.collect_train_params()
         if not params["out_root"]:
-            MessageBox.warning(self, "加入队列", "请先选择输出路径")
+            MessageBox.warning(self, self.tr("加入队列"),
+                               self.tr("请先选择输出路径"))
             return
         for proj, name in params["train_ds"] + params["val_ds"]:
             info = self.app.db.get_dataset_import(proj, name)
             try:
                 check_dataset_imported(name, info)
             except ValueError as exc:
-                MessageBox.warning(self, "加入队列", str(exc))
+                MessageBox.warning(self, self.tr("加入队列"), str(exc))
                 return
         if self.queue_edit_qid:
             # 队列面板的"编辑": 保存即覆盖原队列项, 不新增
             if self.app.queue_update_params(self.queue_edit_qid, params):
-                MessageBox.information(self, "队列", "已更新该队列任务的参数")
+                MessageBox.information(self, self.tr("队列"),
+                                       self.tr("已更新该队列任务的参数"))
                 self.accept()
             return
         try:
             item = self.app.enqueue_train(params)
         except Exception as exc:
-            MessageBox.critical(self, "加入队列失败", "{}".format(exc))
+            MessageBox.critical(self, self.tr("加入队列失败"),
+                                 "{}".format(exc))
             return
         write_log("加入训练队列: {} | {}".format(item["name"], item["qid"]))
         MessageBox.information(
-            self, "加入队列",
-            "已加入队列(第 {} 个), 可在首页\"队列\"中查看或启动.".format(
-                item["order"] + 1))
+            self, self.tr("加入队列"),
+            self.tr("已加入队列(第 {} 个), 可在首页\"队列\"中查看或启动.")
+            .format(item["order"] + 1))
         self.accept()
 
     def collect_train_params(self):

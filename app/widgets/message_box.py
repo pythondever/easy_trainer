@@ -2,6 +2,7 @@
 """统一消息框 + 进度对话框(深色主题, 自绘无边框窗口, 与 app QSS 一致)."""
 
 from PySide6.QtCore import Qt
+from PySide6.QtCore import QCoreApplication as QC
 from PySide6.QtWidgets import (QApplication, QDialog, QFrame, QVBoxLayout,
                                QHBoxLayout, QLabel, QPushButton, QProgressBar)
 from PySide6.QtWidgets import QGraphicsDropShadowEffect
@@ -141,7 +142,8 @@ class MessageBox:
                 default = len(b) > 2 and b[2]
                 added.append(box._add_button(text_b, role_b, default))
         else:
-            added.append(box._add_button("确定", "primary", True))
+            added.append(box._add_button(
+                QC.translate("MessageBox", "确定"), "primary", True))
         if default_idx is not None and buttons and not any(
                 len(b) > 2 and b[2] for b in buttons):
             added[min(default_idx, len(added) - 1)].setFocus()
@@ -165,7 +167,8 @@ class MessageBox:
         """返回 True=是 / False=否; Esc 或 ✕ 关闭等同"否", 不按默认键算."""
         box, btns = MessageBox._show(
             "question", title, text, parent,
-            [("是", "primary", default_yes), ("否", "normal", not default_yes)])
+            [(QC.translate("MessageBox", "是"), "primary", default_yes),
+             (QC.translate("MessageBox", "否"), "normal", not default_yes)])
         clicked = getattr(box, "_clicked", None)
         if clicked is None:                # Esc / ✕关闭
             return False
@@ -220,9 +223,10 @@ class ProgressDialog(QDialog):
         if cancellable:
             row = QHBoxLayout()
             row.addStretch(1)
-            self._cancel_btn = QPushButton("取消")
+            cancel_text = QC.translate("MessageBox", "取消")
+            self._cancel_btn = QPushButton(cancel_text)
             self._cancel_btn.setObjectName("msgBtn")
-            apply_icon(self._cancel_btn, "取消")
+            apply_icon(self._cancel_btn, cancel_text)
             self._cancel_btn.clicked.connect(self._on_cancel)
             row.addWidget(self._cancel_btn)
             layout.addLayout(row)
@@ -251,4 +255,4 @@ class ProgressDialog(QDialog):
     def _on_cancel(self):
         self._cancelled = True
         self._cancel_btn.setEnabled(False)
-        self._cancel_btn.setText("取消中...")
+        self._cancel_btn.setText(QC.translate("MessageBox", "取消中..."))

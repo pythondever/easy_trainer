@@ -8,6 +8,7 @@ import os
 from functools import lru_cache
 
 from PySide6.QtCore import QSize, Qt
+from PySide6.QtCore import QCoreApplication as QC
 from PySide6.QtGui import QIcon, QPainter, QPixmap, QColor
 from PySide6.QtWidgets import QPushButton
 
@@ -20,8 +21,11 @@ ICON_SIZE = 26
 BTN_WIDTH = 56
 BTN_HEIGHT = 36  # 与 style.qss 的 QDialog 控件统一高度一致(CONTROL_H)
 
-CONFIRM_TEXTS = ("确定", "确认", "是", "好", "ok", "yes", "导出", "保存", "应用")
-REJECT_TEXTS = ("取消", "否", "关闭", "no", "cancel", "退出")
+# 调用方传进来的文案可能已经是英文了(界面语言切换后), 两套都要认
+CONFIRM_TEXTS = ("确定", "确认", "是", "好", "ok", "yes", "导出", "保存", "应用",
+                 "ok", "confirm", "yes", "save", "apply", "export")
+REJECT_TEXTS = ("取消", "否", "关闭", "no", "cancel", "退出",
+                "no", "cancel", "close", "dismiss")
 
 # 深色底上的图标色
 REJECT_COLOR = "#9aa3b5"
@@ -94,20 +98,20 @@ def apply_icon(btn, text, tooltip=None):
     return btn
 
 
-def confirm_button(text="确定", parent=None):
+def confirm_button(text=None, parent=None):
     btn = QPushButton(parent)
     btn.setObjectName("msgBtn")
-    return apply_icon(btn, text)
+    return apply_icon(btn, text or QC.translate("DialogButtons", "确定"))
 
 
-def reject_button(text="取消", parent=None):
+def reject_button(text=None, parent=None):
     btn = QPushButton(parent)
     btn.setObjectName("msgBtn")
-    return apply_icon(btn, text)
+    return apply_icon(btn, text or QC.translate("DialogButtons", "取消"))
 
 
 def add_ok_cancel(button_row, on_accept, on_reject=None,
-                  ok_text="确定", cancel_text="取消"):
+                  ok_text=None, cancel_text=None):
     """Windows 习惯: 确定在左."""
     ok = confirm_button(ok_text)
     ok.setDefault(True)

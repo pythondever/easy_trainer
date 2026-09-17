@@ -86,7 +86,7 @@ class TestResultDialog(QDialog):
         super().__init__(parent)
         self._ui = Ui_TestResultDialog()
         self._ui.setupUi(self)
-        apply_icon(self._ui.ok_btn, "确定")
+        apply_icon(self._ui.ok_btn, self.tr("确定"))
         self._ui.ok_btn.clicked.connect(self.accept)
         self._ui.export_pdf_btn.clicked.connect(self._on_export)
         self._res = res
@@ -104,8 +104,8 @@ class TestResultDialog(QDialog):
         self._ui.export_pdf_btn.setEnabled(has_detail)
         self._ui.sample_spin.setEnabled(has_detail)
         self._ui.sample_lbl.setEnabled(has_detail)
-        tip = ("把漏检/误检的图逐张画框导出成 PDF" if has_detail
-               else "本次测试没有逐图错误明细, 无法导出")
+        tip = (self.tr("把漏检/误检的图逐张画框导出成 PDF") if has_detail
+               else self.tr("本次测试没有逐图错误明细, 无法导出"))
         self._ui.export_pdf_btn.setToolTip(tip)
 
     def _on_export(self):
@@ -117,13 +117,14 @@ class TestResultDialog(QDialog):
             default_dir = os.getcwd()
         default_path = os.path.join(default_dir, _default_pdf_name(self._res))
         path, _ = QFileDialog.getSaveFileName(
-            self, "保存 PDF 报告", default_path, "PDF 文件 (*.pdf)")
+            self, self.tr("保存 PDF 报告"), default_path,
+            self.tr("PDF 文件 (*.pdf)"))
         if not path:
             return
         if not path.lower().endswith(".pdf"):
             path += ".pdf"
         self._ui.export_pdf_btn.setEnabled(False)
-        self._ui.export_pdf_btn.setText("正在生成...")
+        self._ui.export_pdf_btn.setText(self.tr("正在生成..."))
         QApplication.setOverrideCursor(Qt.WaitCursor)
         self._worker = _PdfExportWorker(
             self._res, self._ui.sample_spin.value(), path, self)
@@ -133,22 +134,23 @@ class TestResultDialog(QDialog):
 
     def _restore_btn(self):
         QApplication.restoreOverrideCursor()
-        self._ui.export_pdf_btn.setText("导出 PDF 报告")
+        self._ui.export_pdf_btn.setText(self.tr("导出 PDF 报告"))
         self._sync_export_btn()
 
     def _on_export_done(self, path):
         self._restore_btn()
         if not path:
             MessageBox.information(
-                self, "无需导出",
-                "本次测试没有漏检也没有误检, 没有内容可写.")
+                self, self.tr("无需导出"),
+                self.tr("本次测试没有漏检也没有误检, 没有内容可写."))
             return
         MessageBox.information(
-            self, "导出完成", "PDF 报告已保存到:\n{}".format(path))
+            self, self.tr("导出完成"),
+            self.tr("PDF 报告已保存到:\n{}").format(path))
 
     def _on_export_failed(self, msg):
         self._restore_btn()
-        MessageBox.warning(self, "导出失败", msg)
+        MessageBox.warning(self, self.tr("导出失败"), msg)
 
     def closeEvent(self, event):
         # 线程还在跑时不能直接销毁, 否则 Qt 会崩
@@ -172,25 +174,29 @@ class TestResultDialog(QDialog):
         img_miss = res.get("img_miss", 0)
         img_fp = res.get("img_fp", 0)
         # 无标注图不进检出/未检出的分母, 数量对不上时把分母标出来
-        note = "按\"张\"统计 · 检出 1 个即算检出"
+        note = self.tr("按\"张\"统计 · 检出 1 个即算检出")
         if img_gt != total:
-            note += " · 有标注 {} 张".format(img_gt)
+            note += self.tr(" · 有标注 {} 张").format(img_gt)
         u.dim_img_note.setText(note)
         u.img_total_value.setText(str(total))
         u.img_ok_value.setText(str(img_ok))
-        _card(u, "img_ok", "检出图像", _ratio(img_ok, img_gt), "检出率 ")
+        _card(u, "img_ok", self.tr("检出图像"), _ratio(img_ok, img_gt),
+              self.tr("检出率 "))
         u.img_fn_value.setText(str(img_miss))
-        _card(u, "img_fn", "未检出图像",
-              _ratio(img_miss, img_gt), "未检出率 ", lower_better=True)
+        _card(u, "img_fn", self.tr("未检出图像"),
+              _ratio(img_miss, img_gt), self.tr("未检出率 "),
+              lower_better=True)
         u.img_fp_value.setText(str(img_fp))
-        _card(u, "img_fp", "有误检图像",
-              _ratio(img_fp, total), "误检率 ", lower_better=True)
+        _card(u, "img_fp", self.tr("有误检图像"),
+              _ratio(img_fp, total), self.tr("误检率 "), lower_better=True)
 
         per_class = res.get("per_class") or {}
         gt_total = sum(d.get("gt", 0) for d in per_class.values())
-        u.dim_lbl_note.setText("按\"标注框\"统计 · 标注总数 {}".format(gt_total))
+        u.dim_lbl_note.setText(
+            self.tr("按\"标注框\"统计 · 标注总数 {}").format(gt_total))
         u.tp_value.setText(str(tp))
-        _card(u, "tp", "正确检出", _ratio(tp, tp + fn), "检出率 ")
+        _card(u, "tp", self.tr("正确检出"), _ratio(tp, tp + fn),
+              self.tr("检出率 "))
         u.fn_value.setText(str(fn))
         u.fp_value.setText(str(fp))
         u.precision_value.setText(_pct(p))
@@ -210,22 +216,23 @@ class TestResultDialog(QDialog):
         acc = res.get("accuracy", 0.0)
         # 分类一张图只判一个类别, 没有"标注框"这一层, 只保留图像维度
         u.section_lbl.setVisible(False)
-        u.dim_img_note.setText("按\"张\"统计 · 每张图判一个类别")
+        u.dim_img_note.setText(self.tr("按\"张\"统计 · 每张图判一个类别"))
         u.img_total_value.setText(str(total))
-        u.img_total_lbl.setText("测试张数")
+        u.img_total_lbl.setText(self.tr("测试张数"))
         u.img_total_rate.setText("")
         u.img_ok_value.setText(str(correct))
-        _card(u, "img_ok", "判断正确", _ratio(correct, total))
+        _card(u, "img_ok", self.tr("判断正确"), _ratio(correct, total))
         u.img_fn_value.setText(str(error))
-        _card(u, "img_fn", "判断错误",
+        _card(u, "img_fn", self.tr("判断错误"),
               _ratio(error, total), lower_better=True)
         u.img_fp_value.setText(_pct(acc))
-        u.img_fp_lbl.setText("精度")
+        u.img_fp_lbl.setText(self.tr("精度"))
         u.img_fp_rate.setText("")
         u.img_fp_value.setStyleSheet("color:{}".format(_rate_color(acc)))
         u.result_table.setColumnCount(5)
         u.result_table.setHorizontalHeaderLabels(
-            ["类别", "总图数", "正确", "错误", "精度"])
+            [self.tr("类别"), self.tr("总图数"), self.tr("正确"),
+             self.tr("错误"), self.tr("精度")])
         # 类别名按自然排序(纯数字按数值,非数字按字典序),与首页标签下拉一致
         rows = sorted(per_class.items(), key=lambda kv: label_sort_key(str(kv[0])))
         u.result_table.setRowCount(len(rows))
@@ -245,7 +252,8 @@ class TestResultDialog(QDialog):
         if per_class:
             worst = max(per_class.items(), key=lambda kv: kv[1].get("error", 0))
             u.conclusion_label.setText(
-                "整体精度 {:.1f}%, \"{}\"类错误最多({} 张), 是拉低精度的主要原因.".format(
+                self.tr("整体精度 {:.1f}%, \"{}\"类错误最多({} 张),"
+                        " 是拉低精度的主要原因.").format(
                     acc * 100, worst[0], worst[1].get("error", 0)))
         else:
             u.conclusion_label.setText("")
@@ -278,18 +286,18 @@ class TestResultDialog(QDialog):
         if fn >= fp and fn > 0:
             worst = max(((c, d.get("fn", 0)) for c, d in per_class.items()),
                         key=lambda x: x[1])
-            base = ("整体漏检偏多(漏检 {} 个, 多于误检 {} 个)."
-                    "\"{}\"类漏检最多({} 个), 是检出率低的主要原因."
+            base = (self.tr("整体漏检偏多(漏检 {} 个, 多于误检 {} 个)."
+                           "\"{}\"类漏检最多({} 个), 是检出率低的主要原因.")
                     .format(fn, fp, worst[0], worst[1]))
         elif fp > 0:
             worst = max(((c, d.get("fp", 0)) for c, d in per_class.items()),
                         key=lambda x: x[1])
-            base = ("整体误检偏多(误检 {} 个, 多于漏检 {} 个)."
-                    "\"{}\"类误检最多({} 个), 是准确率低的主要原因."
+            base = (self.tr("整体误检偏多(误检 {} 个, 多于漏检 {} 个)."
+                           "\"{}\"类误检最多({} 个), 是准确率低的主要原因.")
                     .format(fp, fn, worst[0], worst[1]))
         else:
-            return "模型表现良好: 无漏检, 无误检."
+            return self.tr("模型表现良好: 无漏检, 无误检.")
         if conf:
-            base += ("另有 {} 处位置对但类别判错(报告里用紫框标出),"
-                     "属分类能力不足, 需补易混淆类别的区分性样本.".format(conf))
+            base += self.tr("另有 {} 处位置对但类别判错(报告里用紫框标出),"
+                            "属分类能力不足, 需补易混淆类别的区分性样本.").format(conf)
         return base

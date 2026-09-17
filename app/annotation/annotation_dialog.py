@@ -13,6 +13,7 @@ from functools import lru_cache
 from PIL import Image
 from PySide6.QtCore import (Qt, Signal, QPoint, QPointF, QTimer, QSize, QThread,
                             QMutex, QMutexLocker, QEvent)
+from PySide6.QtCore import QCoreApplication as QC
 from PySide6.QtGui import (QColor, QPixmap, QKeySequence, QShortcut, QPen,
                            QPainter, QImage, QIcon, QCursor, QLinearGradient,
                            QFont, QImageReader, QIntValidator, QDoubleValidator)
@@ -291,9 +292,9 @@ def _upgrade_graphics_view(view):
         # 仅多边形标注支持"复制"(矩形不出现该菜单); 删除标注用 Delete 键
         if isinstance(hit, AnnotationPolygonItem):
             menu = QMenu(_v)
-            act_copy = menu.addAction("复制")
+            act_copy = menu.addAction(QC.translate("AnnotationDialog", "复制"))
             act_copy.triggered.connect(lambda: _v.window()._copy_template(hit))
-            act_fill = menu.addAction("填充")
+            act_fill = menu.addAction(QC.translate("AnnotationDialog", "填充"))
             act_fill.triggered.connect(lambda: _do_fill(scene, hit))
             menu.exec(ev.globalPos())
             ev.accept()
@@ -303,7 +304,7 @@ def _upgrade_graphics_view(view):
             # 粘贴位置 = 当前右键场景坐标(跟随鼠标, 不受滚动/缩放影响;
             # mapToScene 已是场景坐标, 缩放只改视图变换不改变场景坐标)
             menu = QMenu(_v)
-            act_paste = menu.addAction("粘贴")
+            act_paste = menu.addAction(QC.translate("AnnotationDialog", "粘贴"))
             act_paste.triggered.connect(lambda: _do_paste(scene, scene_pos))
             menu.exec(ev.globalPos())
             ev.accept()
@@ -454,7 +455,7 @@ class AddLabelDialog(QDialog):
         super().__init__(parent)
         self.ui = AddLabelUI()
         self.ui.setupUi(self)
-        self.setWindowTitle("添加标签")
+        self.setWindowTitle(self.tr("添加标签"))
         self._db = db
         self._project = project
         self._dataset = dataset
@@ -468,7 +469,7 @@ class AddLabelDialog(QDialog):
             self._select_color(preset_color)
         if edit_mode:
             # 编辑已有标签: 名称/数据集/导入全部锁定, 只允许改颜色
-            self.setWindowTitle("编辑标签")
+            self.setWindowTitle(self.tr("编辑标签"))
             self.ui.input_label_name_txt.setEnabled(False)
             self.ui.load_project_label_combo.setEnabled(False)
             self.ui.load_label_btn.setEnabled(False)
@@ -497,19 +498,19 @@ class AddLabelDialog(QDialog):
             self.ui.custom_color.setIcon(QIcon(icon_path))
             self.ui.custom_color.setIconSize(QSize(18, 18))
             self.ui.custom_color.clicked.connect(self._pick_custom_color)
-        apply_icon(self.ui.add_label_done_btn, "确定")
+        apply_icon(self.ui.add_label_done_btn, QC.translate("DialogButtons", "确定"))
         self.ui.add_label_done_btn.clicked.connect(self.accept)
         self.ui.input_label_name_txt.setPlaceholderText(
-            "标签名称, 多个用逗号分隔")
+            self.tr("标签名称, 多个用逗号分隔"))
         self._fill_project_label_combo()
-        self.ui.load_label_btn.setText("导入")
+        self.ui.load_label_btn.setText(self.tr("导入"))
         self.ui.load_label_btn.clicked.connect(self._load_labels_from_project)
 
     def _fill_project_label_combo(self):
         """填充同项目其他数据集的标签(单选): 排除当前数据集, 只列有标签的."""
         combo = self.ui.load_project_label_combo
         combo.clear()
-        combo.addItem("选择数据集...", None)
+        combo.addItem(self.tr("选择数据集..."), None)
         if not self._db or not self._project:
             combo.setEnabled(False)
             return
@@ -532,12 +533,13 @@ class AddLabelDialog(QDialog):
         combo = self.ui.load_project_label_combo
         src = combo.currentData()
         if not src:
-            MessageBox.warning(self, "导入标签", "请先选择一个数据集")
+            MessageBox.warning(self, self.tr("导入标签"),
+                               self.tr("请先选择一个数据集"))
             return
         labels = self._db.get_dataset_labels(self._project, src)
         if not labels:
-            MessageBox.warning(self, "导入标签",
-                               "数据集\"{}\"还没有标签".format(src))
+            MessageBox.warning(self, self.tr("导入标签"),
+                               self.tr("数据集\"{}\"还没有标签").format(src))
             return
         self._source_colors = dict(labels)
         names = sorted(labels.keys(), key=label_sort_key)
@@ -684,7 +686,7 @@ class AnnotationDialog(QDialog):
 
         self.ui = AnnotationUI()
         self.ui.setupUi(self)
-        self.setWindowTitle("标注 - {} / {}".format(project, dataset))
+        self.setWindowTitle(self.tr("标注 - {} / {}").format(project, dataset))
         self.setWindowFlags(self.windowFlags()
                             | Qt.WindowMinimizeButtonHint | Qt.WindowMaximizeButtonHint)
         self._replace_view()
@@ -702,8 +704,8 @@ class AnnotationDialog(QDialog):
 
     def _setup_ui(self):
         u = self.ui
-        u.draw_rect_btn.setText("矩形")
-        u.poly_btn.setText("多边形")
+        u.draw_rect_btn.setText(self.tr("矩形"))
+        u.poly_btn.setText(self.tr("多边形"))
         # uic 给的是 ../resources 相对路径, 安装版 cwd 变了就取不到, 这里用绝对路径重设
         for btn, icon_file in ((u.draw_rect_btn, "矩形.png"),
                                (u.poly_btn, "多边形.png"),
@@ -712,10 +714,10 @@ class AnnotationDialog(QDialog):
             if ipath:
                 btn.setIcon(_tinted(ipath, "#b8c0d0"))
                 btn.setIconSize(QSize(18, 18))
-        u.label_list.setText("标签列表")
-        u.labeled_list.setText("标注信息")
-        u.pre_page_btn.setText("上一张")
-        u.next_page_btn.setText("下一张")
+        u.label_list.setText(self.tr("标签列表"))
+        u.labeled_list.setText(self.tr("标注信息"))
+        u.pre_page_btn.setText(self.tr("上一张"))
+        u.next_page_btn.setText(self.tr("下一张"))
         u.lineEdit.hide()
         u.draw_rect_btn.clicked.connect(lambda: self._start_draw("rect"))
         u.poly_btn.clicked.connect(lambda: self._start_draw("polygon"))
@@ -749,7 +751,8 @@ class AnnotationDialog(QDialog):
         u.brightness_lineEdit.setAlignment(Qt.AlignCenter)
         u.brightness_lineEdit.setValidator(QDoubleValidator(0.0, 1.0, 2, self))
         u.brightness_lineEdit.editingFinished.connect(self._normalize_brightness)
-        u.brightness_lineEdit.setToolTip("只在选中的多边形框内生效; A/D 切图或 Ctrl+S 才写盘")
+        u.brightness_lineEdit.setToolTip(
+            self.tr("只在选中的多边形框内生效; A/D 切图或 Ctrl+S 才写盘"))
         u.brightness_slider.setRange(0, 100)
         u.brightness_slider.setFocusPolicy(Qt.NoFocus)
         u.brightness_slider.setToolTip(u.brightness_lineEdit.toolTip())
@@ -787,7 +790,7 @@ class AnnotationDialog(QDialog):
         u.switchButton.setObjectName("switchButton")
         u.switchButton.setChecked(True)
         u.switchButton.toggled.connect(self._toggle_show_boxes)
-        u.show_boxes_label = QLabel("显示标注", self)
+        u.show_boxes_label = QLabel(self.tr("显示标注"), self)
         u.show_boxes_label.setObjectName("show_boxes_label")
         # 参数收进"设置"弹层后, 工具条右侧只剩开关和设置按钮
         idx = u.horizontalLayout.indexOf(u.settings_btn)
@@ -874,10 +877,10 @@ class AnnotationDialog(QDialog):
         """只改选中多边形框内的像素; 没选中或选中的是矩形就提示一下."""
         item = self.scene.selected_item() if self.scene is not None else None
         if item is None:
-            QToolTip.showText(QCursor.pos(), "先在画布上点选一个多边形")
+            QToolTip.showText(QCursor.pos(), self.tr("先在画布上点选一个多边形"))
             return
         if not self.scene.set_polygon_brightness(item, v):
-            QToolTip.showText(QCursor.pos(), "亮度调节只对多边形有效")
+            QToolTip.showText(QCursor.pos(), self.tr("亮度调节只对多边形有效"))
 
     def _commit_brightness(self):
         """
@@ -1149,7 +1152,7 @@ class AnnotationDialog(QDialog):
             "{} × {} × {}    ({}/{}){}".format(
                 pix.width(), pix.height(), channels,
                 self.index + 1, len(self.image_list),
-                "    类别: {}".format(cls) if self.cls_mode else ""))
+                self.tr("    类别: {}").format(cls) if self.cls_mode else ""))
         self._refresh_labeled_list()
         self._dirty = False
         # 新载入的图以磁盘内容为准, 清掉上一张遗留的待写标记
@@ -1176,16 +1179,21 @@ class AnnotationDialog(QDialog):
         cur_path = self.image_list[self.index]
         # 先保存当前未提交的标注(避免画了框没保存就被删, 导致标注明文丢失)
         self._save_current(commit_pending=True)
+        btn_delete = self.tr("删除本地文件")
+        btn_cancel = self.tr("取消")
         clicked = MessageBox.choose(
-            self, "删除图像", "是否删除当前图像?\n\n{}".format(os.path.basename(cur_path)),
-            [("删除本地文件", QMessageBox.YesRole),
-             ("取消", QMessageBox.RejectRole)],
-            informative="图像与同名标注文件将从磁盘删除, 不可恢复")
-        if clicked is None or clicked == "取消":
+            self, self.tr("删除图像"),
+            self.tr("是否删除当前图像?\n\n{}").format(
+                os.path.basename(cur_path)),
+            [(btn_delete, QMessageBox.YesRole),
+             (btn_cancel, QMessageBox.RejectRole)],
+            informative=self.tr("图像与同名标注文件将从磁盘删除, 不可恢复"))
+        if clicked is None or clicked == btn_cancel:
             return
         main = getattr(self, "_main", None)
         if main is None or not hasattr(main, "_delete_images_core"):
-            MessageBox.warning(self, "删除图像", "无法访问主窗口, 删除失败")
+            MessageBox.warning(self, self.tr("删除图像"),
+                               self.tr("无法访问主窗口, 删除失败"))
             return
         main._delete_images_core(self.project, self.dataset, [cur_path], True,
                                  log_msg="标注界面删除图像: {} | 方式={} | 项目={}, 数据集={}".format(
@@ -1199,7 +1207,7 @@ class AnnotationDialog(QDialog):
             self.index = 0
             self.scene.set_image(QPixmap())
             self._refresh_labeled_list()
-            self.ui.image_info_label.setText("(无图像)")
+            self.ui.image_info_label.setText(self.tr("(无图像)"))
             return
         if self.index >= len(self.image_list):
             self.index = len(self.image_list) - 1
@@ -1262,7 +1270,9 @@ class AnnotationDialog(QDialog):
         self._apply_draw_cursor()
         self._set_draw_button_states(True)
         if not self.label_colors:
-            MessageBox.information(self, "添加标签", "请先添加标签(点击\"+\")")
+            MessageBox.information(
+                self, self.tr("添加标签"),
+                self.tr("请先添加标签(点击\"+\")"))
 
     def _apply_draw_cursor(self):
         """多边形=画笔光标, 矩形=十字; override 保证不被 item 光标覆盖."""
@@ -1377,7 +1387,7 @@ class AnnotationDialog(QDialog):
     def _update_clip_label(self):
         cur = self._clip_current + 1 if self._clip_current is not None else 0
         self.ui.clipboard_label.setText(
-            "剪切板  {}/{}".format(cur, len(_clip_templates)))
+            self.tr("剪切板  {}/{}").format(cur, len(_clip_templates)))
 
     def _rebuild_clipboard(self, select=None):
         """按全局剪切板重建缩略图; select=选中下标(None=无选中)."""
@@ -1401,8 +1411,9 @@ class AnnotationDialog(QDialog):
             icon = QIcon(QPixmap.fromImage(t["patch"]))
             btn.setIcon(icon)
             btn.setIconSize(QSize(self.CLIP_W - 8, self.CLIP_H - 8))
-            btn.setToolTip("第 {} 个模板  {}x{}\n左键选中用于粘贴, 右键 删除/导入/导出/清空"
-                           .format(i + 1, t["w"], t["h"]))
+            btn.setToolTip(
+                self.tr("第 {} 个模板  {}x{}\n左键选中用于粘贴, "
+                        "右键 删除/导入/导出/清空").format(i + 1, t["w"], t["h"]))
             btn.setContextMenuPolicy(Qt.CustomContextMenu)
             btn.customContextMenuRequested.connect(
                 lambda _pos, b=btn: self._clip_menu(b))
@@ -1433,13 +1444,13 @@ class AnnotationDialog(QDialog):
     def _clip_menu(self, btn):
         i = self._clip_btns.index(btn) if btn is not None else -1
         menu = QMenu(self)
-        act_del = menu.addAction("删除") if i >= 0 else None
+        act_del = menu.addAction(self.tr("删除")) if i >= 0 else None
         if act_del is not None:
             menu.addSeparator()
-        act_imp = menu.addAction("导入")
-        act_exp = menu.addAction("导出")
+        act_imp = menu.addAction(self.tr("导入"))
+        act_exp = menu.addAction(self.tr("导出"))
         menu.addSeparator()
-        act_clr = menu.addAction("清空")
+        act_clr = menu.addAction(self.tr("清空"))
         if not _clip_templates:
             act_exp.setEnabled(False)
             act_clr.setEnabled(False)
@@ -1467,9 +1478,10 @@ class AnnotationDialog(QDialog):
     def _clip_export(self):
         """导出到目录: 一张一个 png(带 alpha) + 同名 labelme json 记多边形顶点."""
         if not _clip_templates:
-            MessageBox.warning(self, "导出剪切板", "剪切板是空的, 没有可导出的模板")
+            MessageBox.warning(self, self.tr("导出剪切板"),
+                               self.tr("剪切板是空的, 没有可导出的模板"))
             return
-        folder = QFileDialog.getExistingDirectory(self, "选择导出目录")
+        folder = QFileDialog.getExistingDirectory(self, self.tr("选择导出目录"))
         if not folder:
             return
         n = 0
@@ -1493,26 +1505,28 @@ class AnnotationDialog(QDialog):
                 n += 1
         except Exception as e:
             write_log("导出剪切板失败: {}".format(e))
-            MessageBox.warning(self, "导出剪切板",
-                               "导出中断: {}\n(已写出 {} 个)".format(e, n))
+            MessageBox.warning(self, self.tr("导出剪切板"),
+                               self.tr("导出中断: {}\n(已写出 {} 个)").format(e, n))
             return
-        MessageBox.information(self, "导出剪切板",
-                               "已导出 {} 个模板(png + 同名 json)到:\n{}"
-                               .format(n, folder))
+        MessageBox.information(
+            self, self.tr("导出剪切板"),
+            self.tr("已导出 {} 个模板(png + 同名 json)到:\n{}").format(n, folder))
 
     def _clip_import(self):
         """从目录读回 png: 有同名 json 就按顶点重裁 alpha, 没有才回落成矩形."""
-        folder = QFileDialog.getExistingDirectory(self, "选择导入目录")
+        folder = QFileDialog.getExistingDirectory(self, self.tr("选择导入目录"))
         if not folder:
             return
         try:
             names = sorted(f for f in os.listdir(folder)
                            if f.lower().endswith(".png"))
         except OSError as e:
-            MessageBox.warning(self, "导入剪切板", "读取目录失败: {}".format(e))
+            MessageBox.warning(self, self.tr("导入剪切板"),
+                               self.tr("读取目录失败: {}").format(e))
             return
         if not names:
-            MessageBox.warning(self, "导入剪切板", "这个目录里没有 png 文件")
+            MessageBox.warning(self, self.tr("导入剪切板"),
+                               self.tr("这个目录里没有 png 文件"))
             return
         new_items, rect_n, bad = [], 0, []
         for name in names:
@@ -1540,12 +1554,12 @@ class AnnotationDialog(QDialog):
         if new_items:
             _clip_templates[:0] = new_items
             self._rebuild_clipboard(select=0)
-        msg = "已导入 {} 个模板到剪切板".format(len(new_items))
+        msg = self.tr("已导入 {} 个模板到剪切板").format(len(new_items))
         if rect_n:
-            msg += "\n其中 {} 个没有同名 json, 按矩形导入".format(rect_n)
+            msg += self.tr("\n其中 {} 个没有同名 json, 按矩形导入").format(rect_n)
         if bad:
-            msg += "\n{} 个文件读不出来, 已跳过".format(len(bad))
-        MessageBox.information(self, "导入剪切板", msg)
+            msg += self.tr("\n{} 个文件读不出来, 已跳过").format(len(bad))
+        MessageBox.information(self, self.tr("导入剪切板"), msg)
 
     def showEvent(self, event):
         super().showEvent(event)
@@ -1619,7 +1633,9 @@ class AnnotationDialog(QDialog):
             try:
                 shutil.move(old_path, new_path)
             except Exception:
-                MessageBox.warning(self, "修改类别", "移动图像文件失败:\n{}".format(old_path))
+                MessageBox.warning(
+                    self, self.tr("修改类别"),
+                    self.tr("移动图像文件失败:\n{}").format(old_path))
                 return
         self.image_list[self.index] = new_path
         self._cls_changes.append((old_path, new_path, new_cls))
@@ -1676,8 +1692,8 @@ class AnnotationDialog(QDialog):
                 " max-height: 22px; border-radius: 4px; }"
                 "QPushButton:hover { background: #2c303c; }")
             for icon_file, tip, handler in (
-                    ("编辑.png", "编辑", self._edit_label),
-                    ("删除.png", "删除", self._delete_label_from_list)):
+                    ("编辑.png", self.tr("编辑"), self._edit_label),
+                    ("删除.png", self.tr("删除"), self._delete_label_from_list)):
                 ibtn = QPushButton(row)
                 ibtn.setFixedSize(22, 22)
                 ibtn.setCursor(Qt.PointingHandCursor)
@@ -1734,9 +1750,9 @@ class AnnotationDialog(QDialog):
         paths = self._dataset_image_paths()
         progress = None
         if len(paths) > 50:
-            progress = ProgressDialog("删除标签", "正在统计标注文件...", self,
-                                      maximum=len(paths),
-                                      cancellable=False)
+            progress = ProgressDialog(
+                self.tr("删除标签"), self.tr("正在统计标注文件..."), self,
+                maximum=len(paths), cancellable=False)
         try:
             total = 0
             for i, img_path in enumerate(paths):
@@ -1794,24 +1810,24 @@ class AnnotationDialog(QDialog):
             total += max(0, len(scene_items))
         if total > 0:
             if not MessageBox.question(
-                    self, "删除标签",
-                    "标签\"{}\"已有 {} 处标注, 删除后这些标注将被一并删除"
-                    "且不可恢复.\n确定删除吗?".format(name, total),
+                    self, self.tr("删除标签"),
+                    self.tr("标签\"{}\"已有 {} 处标注, 删除后这些标注将被一并删除"
+                            "且不可恢复.\n确定删除吗?").format(name, total),
                     default_yes=True):
                 return
         else:
             if not MessageBox.question(
-                    self, "删除标签",
-                    "确定删除标签\"{}\"吗?".format(name),
+                    self, self.tr("删除标签"),
+                    self.tr("确定删除标签\"{}\"吗?").format(name),
                     default_yes=True):
                 return
         # 确认后清理图像同路径 json(外部标签目录文件由主窗口关闭后统一清理)
         paths = self._dataset_image_paths()
         progress = None
         if len(paths) > 50:
-            progress = ProgressDialog("删除标签", "正在清理标注文件...", self,
-                                      maximum=len(paths),
-                                      cancellable=False)
+            progress = ProgressDialog(
+                self.tr("删除标签"), self.tr("正在清理标注文件..."), self,
+                maximum=len(paths), cancellable=False)
         try:
             for i, img_path in enumerate(paths):
                 if progress is not None:
@@ -1865,7 +1881,8 @@ class AnnotationDialog(QDialog):
             return
         items = dlg.result_data()
         if not items:
-            MessageBox.warning(self, "添加标签", "标签名称不能为空")
+            MessageBox.warning(self, self.tr("添加标签"),
+                               self.tr("标签名称不能为空"))
             return
         # 导入路径: 重复标签跳过(不覆盖已有颜色/标注);手动输入仍按原逻辑
         existing = set(self.label_colors)
@@ -1913,14 +1930,14 @@ class AnnotationDialog(QDialog):
         for area, item in items_with_area:
             if isinstance(item, AnnotationBoxItem):
                 x1, y1, x2, y2 = item.boxes()
-                kind = "矩形"
+                kind = self.tr("矩形")
                 size_text = "{} × {}".format(int(round(x2 - x1)),
                                              int(round(y2 - y1)))
                 area_text = "{:,} px²".format(int(round((x2 - x1) * (y2 - y1))))
             else:  # AnnotationPolygonItem
                 pts = item.points()
-                kind = "多边形"
-                size_text = "{} 个顶点".format(len(pts))
+                kind = self.tr("多边形")
+                size_text = self.tr("{} 个顶点").format(len(pts))
                 area_text = "{:,} px²".format(int(round(area))) if area else "-"
             color = self._resolve_item_color(item)
             rows_data.append((item, kind, size_text, area_text, color))
@@ -2230,7 +2247,7 @@ class ColorPickerDialog(QDialog):
 
     def __init__(self, initial=QColor("#4f7dff"), parent=None):
         super().__init__(parent)
-        self.setWindowTitle("选择颜色")
+        self.setWindowTitle(self.tr("选择颜色"))
         self._color = QColor(initial) if initial.isValid() else QColor("#4f7dff")
 
         layout = QVBoxLayout(self)
@@ -2242,7 +2259,7 @@ class ColorPickerDialog(QDialog):
         self._preview.setFixedSize(80, 48)
         top.addWidget(self._preview)
         html_box = QVBoxLayout()
-        html_box.addWidget(QLabel("十六进制:"))
+        html_box.addWidget(QLabel(self.tr("十六进制:")))
         self._html_edit = QLineEdit()
         self._html_edit.setMaximumWidth(160)
         self._html_edit.textChanged.connect(self._on_html_changed)
@@ -2263,7 +2280,7 @@ class ColorPickerDialog(QDialog):
         picker_row.addStretch(1)
         layout.addLayout(picker_row)
 
-        layout.addWidget(QLabel("基本颜色:"))
+        layout.addWidget(QLabel(self.tr("基本颜色:")))
         grid = QGridLayout()
         grid.setSpacing(6)
         for i, c in enumerate(self.BASIC_COLORS):
@@ -2275,7 +2292,7 @@ class ColorPickerDialog(QDialog):
             grid.addWidget(btn, i // 6, i % 6)
         layout.addLayout(grid)
 
-        layout.addWidget(QLabel("自定义 RGB:"))
+        layout.addWidget(QLabel(self.tr("自定义 RGB:")))
         rgb = QHBoxLayout()
         self._r_edit = QSpinBox()
         self._g_edit = QSpinBox()

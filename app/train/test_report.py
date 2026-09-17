@@ -315,8 +315,9 @@ def _render_label_chart_png(counts, colors, out_png, width_px, height_px):
     if not counts:
         return False
     from app.widgets.charts import render_label_chart
+    # translate=False: 报告正文仍是中文, 图表跟着正文走, 免得一份 PDF 两种语言
     fig = render_label_chart(
-        counts, label_colors=colors, dark=False,
+        counts, label_colors=colors, dark=False, translate=False,
         figsize=(width_px / float(_DPI), height_px / float(_DPI)))
     # 留出 x 轴标签旋转空间, 防底部文字被裁
     fig.subplots_adjust(left=0.085, right=0.985, top=0.9, bottom=0.34)
