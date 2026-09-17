@@ -12,6 +12,7 @@ from app.core.utils import (setup_matplotlib_chinese, load_style_sheet,
 from app.core.db import DataBase
 from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtCore import Qt, QSize, QTimer, QEvent
+from PySide6.QtCore import QCoreApplication as QC
 from PySide6.QtWidgets import QWidget, QApplication, QTimeEdit, QFrame, QHBoxLayout
 
 
@@ -39,12 +40,12 @@ class App(QWidget, MainUI, LabelMixin, ProjectMixin, ImportExportMixin,
         self.register_event()
         self.fill_setting()
         self._log_dialog = LogDialog(self)
-        self._log("软件启动")
+        self._log(QC.translate("App", "软件启动"))
 
     def closeEvent(self, event):
-        self._log("软件退出")
+        self._log(QC.translate("App", "软件退出"))
         if self.is_training():
-            self._log("软件退出前停止训练")
+            self._log(QC.translate("App", "软件退出前停止训练"))
             # 先停队列
             self.stop_train_queue()
             self.stop_training(confirm=False)

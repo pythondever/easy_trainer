@@ -4,7 +4,7 @@
 用法: main(), 由 test_worker 以 -c 导入后调用(打包后是 pyd, 不能 python -m 启动)
 config: model_path(分类 checkpoint), image_path, has_label, device, total, task=classify
 输出:
-  - [test] 进度 N/M
+  - [test] PROGRESS N/M
   - [test] RESULT {"ok", "total", "accuracy",
                    "per_class": {类别: {total, correct, error}}, "task": "classify"}
 """
@@ -20,13 +20,18 @@ for _p in (_WORKSPACE, os.path.join(_WORKSPACE, "app")):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
+from PySide6.QtCore import QCoreApplication as QC
+
+from app.core import i18n
+
 try:
     import torch
     import torch.nn as nn
     from torchvision import transforms, models
     from PIL import Image
 except Exception as e:
-    print("[test] 缺少测试依赖: {}".format(e), flush=True)
+    print("[test] " + QC.translate(
+        "ClassifyTestRunner", "缺少测试依赖: {}").format(e), flush=True)
     sys.exit(1)
 
 from app.core.constants import IMAGE_EXTS as _IMG_EXTS
@@ -80,6 +85,7 @@ def main():
     cfg_path = sys.argv[1]
     with open(cfg_path, "r", encoding="utf-8") as f:
         cfg = json.load(f)
+    i18n.apply_cli(cfg.get("language", ""))
     model_path = cfg.get("model_path", "")
     image_path = cfg.get("image_path", "")
     device = cfg.get("device", "cpu")
@@ -87,8 +93,9 @@ def main():
         device = "cuda"
     else:
         device = "cpu"
-    print("[test] 加载分类模型: {}".format(os.path.basename(model_path)),
-          flush=True)
+    print("[test] " + QC.translate(
+        "ClassifyTestRunner", "加载分类模型: {}").format(
+            os.path.basename(model_path)), flush=True)
     ckpt = torch.load(model_path, map_location="cpu")
     classes = list(ckpt.get("classes") or [])
     arch = ckpt.get("architecture", "resnet18")
@@ -111,7 +118,9 @@ def main():
             for fn in sorted(files):
                 if fn.lower().endswith(_IMG_EXTS):
                     images.append(os.path.join(root, fn))
-    print("[test] 测试图片 {} 张".format(len(images)), flush=True)
+    print("[test] " + QC.translate(
+        "ClassifyTestRunner", "测试图片 {} 张").format(len(images)),
+        flush=True)
     total = 0
     correct = 0
     per_class = {}
@@ -137,7 +146,7 @@ def main():
             if 0 <= k < len(classes):
                 preds[i] = classes[k]
         done += len(idxs)
-        print("[test] 进度 {}/{}".format(done, len(images)), flush=True)
+        print("[test] PROGRESS {}/{}".format(done, len(images)), flush=True)
 
     for p, pred in zip(images, preds):
         true_cls = os.path.basename(os.path.dirname(p)) or "(无类别)"

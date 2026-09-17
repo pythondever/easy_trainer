@@ -3,6 +3,8 @@
 import os
 import sys
 
+from PySide6.QtCore import QCoreApplication as QC
+
 import matplotlib.pyplot as plt
 from matplotlib import font_manager
 
@@ -15,6 +17,8 @@ CJK_FONT_CANDIDATES = (
     "WenQuanYi Micro Hei", "WenQuanYi Zen Hei",
     "Source Han Sans CN", "Source Han Sans SC",
     "AR PL UMing CN", "AR PL UKai CN",
+    "Meiryo", "Yu Gothic", "MS Gothic",                        # Windows(日文)
+    "Malgun Gothic", "Gulim",                                  # Windows(韩文)
 )
 
 _CJK_FONT_FILES = (
@@ -23,26 +27,48 @@ _CJK_FONT_FILES = (
     r"C:\Windows\Fonts\simsun.ttc",
 )
 
-_font_choice_cache = None
+# 雅黑没有韩文字形, 日文也只覆盖一部分. 这两个语言得把专用字体排到候选表
+# 最前, 否则第一个命中的永远是雅黑. PIL 不做字形回退, 只能靠这个顺序点字体.
+_LANG_FIRST = {
+    "ko_KR": ("Malgun Gothic", "Gulim", "Batang", "Noto Sans KR",
+              "Noto Sans CJK KR"),
+    "ja_JP": ("Yu Gothic", "Meiryo", "MS Gothic", "Noto Sans JP",
+              "Noto Sans CJK JP"),
+}
+
+_font_choice_cache = {}
+
+
+def _candidates(lang=None):
+    """按语言排过序的候选字体名: 该语言专用字体在前, 原表整体兜底在后."""
+    return tuple(_LANG_FIRST.get(lang or "", ())) + CJK_FONT_CANDIDATES
+
+
+def _installed_names():
+    try:
+        return {f.name for f in font_manager.fontManager.ttflist}
+    except Exception:
+        return set()
 
 
 def fmt_duration(secs):
     """可读时长(不足1分钟显示秒;长训练显示天/时/分)."""
     if secs < 60:
-        return "{}秒".format(secs)
+        return QC.translate("Utils", "{}秒").format(secs)
     d, rem = divmod(secs, 86400)
     h, rem = divmod(rem, 3600)
     m, s = divmod(rem, 60)
     parts = []
     if d:
-        parts.append("{}天".format(d))
+        parts.append(QC.translate("Utils", "{}天").format(d))
     if h:
-        parts.append("{}小时".format(h))
+        parts.append(QC.translate("Utils", "{}小时").format(h))
     if m or not parts:
-        parts.append("{}分".format(m))
+        parts.append(QC.translate("Utils", "{}分").format(m))
     if s and not d and not h:
-        parts.append("{}秒".format(s))
-    return "".join(parts)
+        parts.append(QC.translate("Utils", "{}秒").format(s))
+    # 分隔空格由各语言的片段自带(中日韩不需要, 拉丁语系需要), 收尾统一裁掉
+    return "".join(parts).strip()
 
 
 def ui_font_family():
@@ -55,16 +81,13 @@ def ui_font_family():
     return "Noto Sans CJK SC"
 
 
-def cjk_font_choice():
-    global _font_choice_cache
-    if _font_choice_cache is not None:
-        return _font_choice_cache
+def cjk_font_choice(lang=None):
+    """(字体名, 字体文件). lang 传界面语言, 韩/日会优先点对应字体."""
+    if lang in _font_choice_cache:
+        return _font_choice_cache[lang]
     family, path = "", ""
-    try:
-        installed = {f.name for f in font_manager.fontManager.ttflist}
-    except Exception:
-        installed = set()
-    for name in CJK_FONT_CANDIDATES:
+    installed = _installed_names()
+    for name in _candidates(lang):
         if name in installed:
             family = name
             break
@@ -89,22 +112,27 @@ def cjk_font_choice():
             if os.path.exists(p):
                 path = p
                 break
-    _font_choice_cache = (family or "DejaVu Sans", path)
-    return _font_choice_cache
+    _font_choice_cache[lang] = (family or "DejaVu Sans", path)
+    return _font_choice_cache[lang]
 
 
-def setup_matplotlib_chinese():
+def setup_matplotlib_chinese(lang=None):
     """
     把中文字体写进全局 rcParams; 幂等(探测结果有缓存, 重复调用无开销).
     之前 charts / metrics_dialog / test_report 各写一份 rcParams, 候选表互不
     相同又都改全局, 后执行的会盖掉前面的, 同一进程里不同图表可能用不同字体
     (一个正常一个方框). 统一走这里.
     """
-    family, _ = cjk_font_choice()
-    plt.rcParams["font.sans-serif"] = [family, "DejaVu Sans"]
+    # 整份候选表交给 matplotlib 做字形回退(3.6+): 雅黑缺韩文时会自动落到
+    # Malgun Gothic, 不用按语言挑单个字体
+    installed = _installed_names()
+    families = [n for n in _candidates(lang) if n in installed]
+    if not families:
+        families = [cjk_font_choice(lang)[0]]
+    plt.rcParams["font.sans-serif"] = families + ["DejaVu Sans"]
     plt.rcParams["font.family"] = "sans-serif"
     plt.rcParams["axes.unicode_minus"] = False
-    return family
+    return families[0]
 
 
 def project_root():

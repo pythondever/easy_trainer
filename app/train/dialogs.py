@@ -20,6 +20,7 @@ from app.widgets.message_box import MessageBox
 from app.widgets.multi_combo import install_multi_combo
 from app.widgets.status_style import task_text
 from app.widgets.model_manager_dialog import ensure_weight, open_model_manager
+from app.core import i18n
 from app.core import model_assets
 from app.core.db import get_paths
 from app.core.log import write_log
@@ -221,6 +222,8 @@ def make_train_config(db, params):
         "lr": params.get("lr", 1e-4),
         "img_size": params.get("img_size", 640),
         "datasets": datasets,
+        # 子进程按它装翻译, 少了这行日志只会出中文
+        "language": i18n.current(),
     }
     # 分类不传梯度累积(runner 不消费该字段),检测/分割才传
     if task != "classify":
@@ -930,7 +933,7 @@ class TrainDialog(QDialog):
             return
         ok, msg = self._validate()
         if not ok:
-            write_log("参数校验未通过: {}".format(msg))
+            write_log(QC.translate("TrainDialog", "参数校验未通过: {}").format(msg))
             MessageBox.warning(self, self.tr("参数校验"), msg)
             return
         # 权重缺失时先问一次: 否则训练子进程会静默下载几百 MB, 日志里还看不到进度
@@ -943,7 +946,9 @@ class TrainDialog(QDialog):
         except Exception as exc:
             # 落盘失败时不写训练记录,避免模型界面留下没有结果的空行
             tb = traceback.format_exc()
-            write_log("训练启动失败: {}\n{}".format(exc, tb))
+            write_log(QC.translate(
+                "TrainDialog",
+                "训练启动失败: {}\n{}").format(exc, tb))
             MessageBox.critical(self, self.tr("训练启动失败"),
                                  "{}\n\n{}".format(exc, tb))
             return
@@ -954,7 +959,9 @@ class TrainDialog(QDialog):
             MessageBox.warning(self, self.tr("开始训练"),
                                self.tr("已有训练在进行中, 请先停止!"))
             return
-        write_log("开始训练: 任务类型={} 训练集={} 验证集={}".format(
+        write_log(QC.translate(
+            "TrainDialog",
+            "开始训练: 任务类型={} 训练集={} 验证集={}").format(
             self._task_text(), record["dataset"], record["val_dataset"]))
         # 启动成功:立即关闭训练窗口 + 弹倒计时提示(5s 自动确认/点击立即确认)
         self.accept()
@@ -995,7 +1002,9 @@ class TrainDialog(QDialog):
             MessageBox.critical(self, self.tr("加入队列失败"),
                                  "{}".format(exc))
             return
-        write_log("加入训练队列: {} | {}".format(item["name"], item["qid"]))
+        write_log(QC.translate(
+            "TrainDialog",
+            "加入训练队列: {} | {}").format(item["name"], item["qid"]))
         MessageBox.information(
             self, self.tr("加入队列"),
             self.tr("已加入队列(第 {} 个), 可在首页\"队列\"中查看或启动.")

@@ -13,6 +13,7 @@ import os
 import shutil
 from datetime import datetime
 from PIL import Image
+from PySide6.QtCore import QCoreApplication as QC
 from app.core.constants import IMAGE_EXTS
 from app.core.db import get_paths
 from app.core.label_utils import (load_json_shapes, load_yolo_shapes,
@@ -185,7 +186,7 @@ def copy_datasets(out_root, project, datasets, task="detect"):
     as_polygon = task == "segment"
     labels = _sort_labels(_collect_labels(datasets))
     label_to_id = {lb: i for i, lb in enumerate(labels)}
-    print("[train] 解析到类别 {} 个: {}".format(len(labels), labels), flush=True)
+    print("[train] " + QC.translate("DataPrep", "解析到类别 {} 个: {}").format(len(labels), labels), flush=True)
     for info in datasets:
         ds_name = info["dataset_name"]
         dst = os.path.join(out_root, project, ds_name)
@@ -205,7 +206,7 @@ def copy_datasets(out_root, project, datasets, task="detect"):
                                        as_polygon)
         n_lab = len([f for f in os.listdir(dst_labels)
                      if f.lower().endswith(".txt")])
-        print("[train] 复制数据集 {}: 图像 {} 张, 标签 {} 个 → {}".format(
+        print("[train] " + QC.translate("DataPrep", "复制数据集 {}: 图像 {} 张, 标签 {} 个 → {}").format(
             ds_name, len(imgs), n_lab, dst), flush=True)
     return labels, label_to_id
 
@@ -292,7 +293,7 @@ def merge_split(out_root, datasets):
             for fn in os.listdir(s):
                 shutil.copy2(os.path.join(s, fn), _unique_dst(d, fn, used))
                 merged += 1
-        print("[train] 合并 {} 数据集 → {} ({} 个文件)".format(
+        print("[train] " + QC.translate("DataPrep", "合并 {} 数据集 → {} ({} 个文件)").format(
             info["dataset_name"], info["split"], merged), flush=True)
 
 
@@ -303,5 +304,5 @@ def write_data_yaml(out_root, labels):
         lines.append("  {}: {}".format(i, lb))
     with open(os.path.join(out_root, "data.yaml"), "w", encoding="utf-8") as f:
         f.write("\n".join(lines) + "\n")
-    print("[train] 生成 data.yaml → {}".format(
+    print("[train] " + QC.translate("DataPrep", "生成 data.yaml → {}").format(
         os.path.join(out_root, "data.yaml")), flush=True)

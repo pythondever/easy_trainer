@@ -18,6 +18,8 @@ for _p in (_WORKSPACE, os.path.join(_WORKSPACE, "app")):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
+from PySide6.QtCore import QCoreApplication as QC
+
 try:
     import torch
 except ImportError:
@@ -32,6 +34,7 @@ from rfdetr import (RFDETRNano, RFDETRSmall, RFDETRMedium, RFDETRLarge,
 
 from app.train.data_prep import (copy_datasets, merge_split,
                                  write_data_yaml, clean_split)
+from app.core import i18n
 from app.core.metrics import best_map50_from_csv
 
 
@@ -54,29 +57,30 @@ def main():
     cfg_path = sys.argv[1]
     with open(cfg_path, "r", encoding="utf-8") as f:
         cfg = json.load(f)
+    i18n.apply_cli(cfg.get("language", ""))
 
     out_root = cfg["out_root"]
     project = cfg["project"]
     ts_dir = cfg["timestamp_dir"]
     os.makedirs(out_root, exist_ok=True)
     os.makedirs(ts_dir, exist_ok=True)
-    print("[train] 输出路径: {}".format(out_root), flush=True)
-    print("[train] 本次训练输出目录(时间戳): {}".format(ts_dir), flush=True)
+    print("[train] " + QC.translate("TrainRunner", "输出路径: {}").format(out_root), flush=True)
+    print("[train] " + QC.translate("TrainRunner", "本次训练输出目录(时间戳): {}").format(ts_dir), flush=True)
     shutil.copy2(cfg_path, os.path.join(ts_dir, "config.json"))
-    print("[train] 训练配置文件已保存 → {}".format(
+    print("[train] " + QC.translate("TrainRunner", "训练配置文件已保存 → {}").format(
         os.path.join(ts_dir, "config.json")), flush=True)
 
     datasets = cfg["datasets"]
     labels, _ = copy_datasets(out_root, project, datasets,
                               cfg.get("task", "detect"))
     if not labels:
-        raise RuntimeError("未从数据集中解析到任何标签类别, 请检查标签文件")
+        raise RuntimeError(QC.translate("TrainRunner", "未从数据集中解析到任何标签类别, 请检查标签文件"))
     clean_split(out_root)
     merge_split(out_root, [d for d in datasets if d["split"] == "train"])
     merge_split(out_root, [d for d in datasets if d["split"] == "val"])
     write_data_yaml(out_root, labels)
     shutil.rmtree(os.path.join(out_root, project), ignore_errors=True)
-    print("[train] 数据准备完成: {} 个类别, 输出目录 {}".format(
+    print("[train] " + QC.translate("TrainRunner", "数据准备完成: {} 个类别, 输出目录 {}").format(
         len(labels), out_root), flush=True)
 
     # 2) 训练:
@@ -90,9 +94,9 @@ def main():
         block = model.model_config.patch_size * model.model_config.num_windows
         if resolution % block != 0:
             resolution = resolution // block * block
-            print("[train] 分割模型 resolution 已自动取整: {} → {} (block={})".format(
+            print("[train] " + QC.translate("TrainRunner", "分割模型 resolution 已自动取整: {} → {} (block={})").format(
                 cfg.get("img_size", 640), resolution, block), flush=True)
-    print("[train] 使用模型 {} device={} epochs={} batch={} resolution={}".format(
+    print("[train] " + QC.translate("TrainRunner", "使用模型 {} device={} epochs={} batch={} resolution={}").format(
         cfg.get("architecture", "nano"), device, cfg["epochs"],
         cfg["batch_size"], resolution), flush=True)
 
@@ -161,7 +165,7 @@ def main():
         early_stopping_patience=max(cfg.get("early_stop", 0), 1),
         log_per_class_metrics=True,
     )
-    print("[train] 训练完成", flush=True)
+    print("[train] " + QC.translate("TrainRunner", "训练完成"), flush=True)
 
     # 3) 结果汇总: best ckpt + metrics.csv 末行指标
     # 在模型目录生成 classes.txt: 每行 "id 类别名"(交付他人使用时显式对照)
@@ -170,7 +174,7 @@ def main():
         with open(classes_path, "w", encoding="utf-8") as f:
             for i, lb in enumerate(labels):
                 f.write("{} {}\n".format(i, lb))
-        print("[train] 生成类别文件: {}".format(classes_path), flush=True)
+        print("[train] " + QC.translate("TrainRunner", "生成类别文件: {}").format(classes_path), flush=True)
     except Exception:
         pass
     result = {"ok": True, "metrics_csv": os.path.join(ts_dir, "metrics.csv")}

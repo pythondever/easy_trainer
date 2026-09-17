@@ -5,6 +5,7 @@ import os
 
 from PySide6.QtCore import Qt, QUrl
 from PySide6.QtCore import QT_TRANSLATE_NOOP
+from PySide6.QtCore import QCoreApplication as QC
 from PySide6.QtGui import QColor, QDesktopServices
 from PySide6.QtWidgets import (QDialog, QTableWidgetItem, QAbstractItemView,
                                QHeaderView, QMenu)
@@ -225,7 +226,7 @@ class TrainQueueDialog(QDialog):
             MessageBox.information(self, self.tr("清理"),
                                    self.tr("没有已结束的任务"))
             return
-        self.app._log("[队列] 已清理 {} 个已结束任务".format(n))
+        self.app._log(QC.translate("TrainQueueDialog", "[队列] 已清理 {} 个已结束任务").format(n))
 
     def _on_edit(self):
         item = self._current_item()

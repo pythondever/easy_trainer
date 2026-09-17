@@ -349,15 +349,15 @@ class DatasetViewMixin(object):
         # 能不能重载只看有没有真实存在的图像目录(与 show_dataset_images 同口径)
         binding = self.db.get_dataset_import(project, dataset)
         if not [p for p in get_paths(binding, "image") if p and os.path.isdir(p)]:
-            self._log("重载跳过: 数据集 {}/{} 无图像目录".format(project, dataset))
+            self._log(QC.translate("DatasetViewMixin", "重载跳过: 数据集 {}/{} 无图像目录").format(project, dataset))
             MessageBox.warning(self, QC.translate("DatasetViewMixin", "重载"),
                                QC.translate("DatasetViewMixin",
                                             "该数据集还没有图像目录, 请先右键\"导入\""))
             return
         if (project, dataset) in self._loading_tasks:
-            self._log("重载跳过: 数据集 {}/{} 正在载入".format(project, dataset))
+            self._log(QC.translate("DatasetViewMixin", "重载跳过: 数据集 {}/{} 正在载入").format(project, dataset))
             return
-        self._log("重载数据集: {}/{}".format(project, dataset))
+        self._log(QC.translate("DatasetViewMixin", "重载数据集: {}/{}").format(project, dataset))
         self.project_tree.select_dataset(project, dataset)
         self._load_dataset_view(project, dataset)
 
@@ -860,8 +860,8 @@ class DatasetViewMixin(object):
         """
         启动后台导入线程
         """
-        self._log("开始导入: {}/{} | 图像路径={} | 标签路径={} | 格式={}".format(
-            project_name, dataset_name, image_path, label_path or "(无)", fmt))
+        self._log(QC.translate("DatasetViewMixin", "开始导入: {}/{} | 图像路径={} | 标签路径={} | 格式={}").format(
+            project_name, dataset_name, image_path, label_path or QC.translate("DatasetViewMixin", "(无)"), fmt))
         key = (project_name, dataset_name)
         if update_stats:
             self._loading_tasks.pop(key, None)
@@ -926,12 +926,12 @@ class DatasetViewMixin(object):
                         label_counts[lbl] = label_counts.get(lbl, 0) + 1
             self.db.save_dataset_label_counts(project_name, dataset_name, label_counts)
             counts_str = ", ".join(
-                "{}: {}个".format(k, v) for k, v in
+                QC.translate("DatasetViewMixin", "{}: {}个").format(k, v) for k, v in
                 sorted(label_counts.items(), key=lambda kv: label_sort_key(kv[0])))
-            self._log("数据集导入完成: {}/{} | 图像 {} 张, 已标注 {} 张"
-                      " | 标签({}类): {}".format(
+            self._log(QC.translate("DatasetViewMixin", "数据集导入完成: {}/{} | 图像 {} 张, 已标注 {} 张"
+                      " | 标签({}类): {}").format(
                 project_name, dataset_name, total, labeled,
-                len(label_counts), counts_str or "(无)"))
+                len(label_counts), counts_str or QC.translate("DatasetViewMixin", "(无)")))
             self._refresh_dataset_labels(project_name, dataset_name, rescan=False)
             if self._current_dataset == (project_name, dataset_name):
                 self._refresh_label_filter(project_name, dataset_name)
@@ -972,7 +972,7 @@ class DatasetViewMixin(object):
         if (project, dataset) in self._loading_tasks:
             return
         if not self.db.get_dataset_import(project, dataset):
-            self._log("数据集 {}/{} 未导入, 右键\"导入\"选择图像与标签目录".format(
+            self._log(QC.translate("DatasetViewMixin", "数据集 {}/{} 未导入, 右键\"导入\"选择图像与标签目录").format(
                 project, dataset))
             return
         self.show_dataset_images(project, dataset, update_stats=True)

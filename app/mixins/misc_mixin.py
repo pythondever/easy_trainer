@@ -51,7 +51,7 @@ class MiscMixin(object):
         i18n.apply(QApplication.instance(), code)
         self.db.set_language(code)
         self._retranslate_all()
-        self._log("界面语言: {}".format(code))
+        self._log(QC.translate("MiscMixin", "界面语言: {}").format(code))
 
     def _retranslate_all(self):
         """
@@ -348,8 +348,8 @@ class MiscMixin(object):
                             if lbl in lc:
                                 lc[lbl] = max(0, lc[lbl] - 1)
                 self.db.save_dataset_label_counts(project, dataset, lc)
-        self._write_log(log_msg or "删除图像: {} 张 | 方式={} | 本地删除文件={} | 项目={}, 数据集={}".format(
-            len(paths), "删除本地文件" if delete_local else "仅标记不加载",
+        self._write_log(log_msg or QC.translate("MiscMixin", "删除图像: {} 张 | 方式={} | 本地删除文件={} | 项目={}, 数据集={}").format(
+            len(paths), QC.translate("MiscMixin", "删除本地文件") if delete_local else QC.translate("MiscMixin", "仅标记不加载"),
             delete_local_count, project, dataset))
         self.show_dataset_images(project, dataset)
         self._refresh_dataset_stats(project, dataset)

@@ -28,8 +28,10 @@ for _p in (_WORKSPACE, os.path.join(_WORKSPACE, "app")):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
+from PySide6.QtCore import QCoreApplication as QC
 from PIL import Image
 
+from app.core import i18n
 from app.train.test_errors import pair_confusions
 from app.core.constants import IMAGE_EXTS as _IMG_EXTS
 
@@ -270,8 +272,8 @@ def _write_labelme_json(img_path, items):
     }
     out = os.path.splitext(img_path)[0] + ".json"
     if load_json_shapes(out):
-        print("[test] 覆盖已有标注 {}".format(os.path.basename(out)),
-              flush=True)
+        print("[test] " + QC.translate("TestRunner", "覆盖已有标注 {}").format(
+            os.path.basename(out)), flush=True)
     with open(out, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
@@ -300,11 +302,14 @@ def _open_detail(cfg):
                     with open(path, "w", encoding="utf-8"):
                         pass
                 except OSError as exc:
-                    print("[test] 明细初始化失败: {}".format(exc), flush=True)
+                    print("[test] " + QC.translate(
+                        "TestRunner", "明细初始化失败: {}").format(exc),
+                        flush=True)
                     return None
         return path
     except OSError as exc:
-        print("[test] 明细目录创建失败: {}".format(exc), flush=True)
+        print("[test] " + QC.translate(
+            "TestRunner", "明细目录创建失败: {}").format(exc), flush=True)
         return None
 
 
@@ -331,7 +336,8 @@ def _write_detail(path, img_path, missing, spurious, hits):
         with open(path, "a", encoding="utf-8") as f:
             f.write(json.dumps(row, ensure_ascii=False) + "\n")
     except OSError as exc:
-        print("[test] 明细写入失败: {}".format(exc), flush=True)
+        print("[test] " + QC.translate(
+            "TestRunner", "明细写入失败: {}").format(exc), flush=True)
 
 
 def _dataset_list(cfg):
@@ -405,10 +411,12 @@ def main():
     with open(cfg_path, "r", encoding="utf-8") as f:
         cfg = json.load(f)
 
+    i18n.apply_cli(cfg.get("language", ""))
     if RFDETR is None:
-        raise RuntimeError("rfdetr 未安装, 无法执行测试")
-    print("[test] 加载模型: {}".format(os.path.basename(cfg["model_path"])),
-          flush=True)
+        raise RuntimeError(
+            QC.translate("TestRunner", "rfdetr 未安装, 无法执行测试"))
+    print("[test] " + QC.translate("TestRunner", "加载模型: {}").format(
+        os.path.basename(cfg["model_path"])), flush=True)
     model = RFDETR.from_checkpoint(cfg["model_path"])
     device = cfg.get("device", "cuda")
     if device.startswith("cuda") and hasattr(model, "to") \
@@ -420,12 +428,14 @@ def main():
                 and torch is not None and torch.cuda.is_available() \
                 else torch.float32
             model.inference(dtype=dtype, compile=False)
-            print("[test] 推理已优化: {}".format(dtype), flush=True)
+            print("[test] " + QC.translate(
+                "TestRunner", "推理已优化: {}").format(dtype), flush=True)
         except Exception:
             pass
 
     pairs = _collect_pairs(cfg)
-    print("[test] 测试图片 {} 张".format(len(pairs)), flush=True)
+    print("[test] " + QC.translate(
+        "TestRunner", "测试图片 {} 张").format(len(pairs)), flush=True)
     conf_th = float(cfg.get("confidence", 0.5))
     iou_th = float(cfg.get("iou_threshold", 0.5))
     has_label = bool(cfg.get("has_label"))
@@ -472,8 +482,9 @@ def main():
                     class_names.append(cn)
                     preds.append((cn, box, cf, poly))
         except Exception as exc:
-            print("[test] 预测失败 {}: {}".format(
-                os.path.basename(img_path), exc), flush=True)
+            print("[test] " + QC.translate(
+                "TestRunner", "预测失败 {}: {}").format(
+                    os.path.basename(img_path), exc), flush=True)
             traceback.print_exc()
             preds = []
             class_names = []
@@ -485,8 +496,9 @@ def main():
                     [(b, class_names[i] if i < len(class_names) else "", p)
                      for i, (_, b, _, p) in enumerate(preds)])
             except Exception as exc:
-                print("[test] 输出标注失败 {}: {}".format(
-                    os.path.basename(img_path), exc), flush=True)
+                print("[test] " + QC.translate(
+                    "TestRunner", "输出标注失败 {}: {}").format(
+                        os.path.basename(img_path), exc), flush=True)
         if has_label:
             with Image.open(img_path) as im:
                 iw, ih = im.size
@@ -520,7 +532,7 @@ def main():
             if detail_path and (missing or spurious):
                 _write_detail(detail_path, img_path, missing, spurious, hits)
         if (i + 1) % 10 == 0 or i + 1 == len(pairs):
-            print("[test] 进度 {}/{}".format(i + 1, len(pairs)), flush=True)
+            print("[test] PROGRESS {}/{}".format(i + 1, len(pairs)), flush=True)
 
     result = {"ok": True, "total": len(pairs),
               "model": os.path.basename(cfg.get("model_path", "") or ""),
@@ -539,12 +551,14 @@ def main():
                        "img_ok": img_ok, "img_miss": img_miss,
                        "img_fp": img_fp})
         if _miss and _miss == len(pairs):
-            print("[test] WARN 标签目录存在但所有 {} 张图都没读到 GT,"
-                  "请确认标签是 .txt (YOLO) 或 .json (labelme)".format(
-                      len(pairs)), flush=True)
+            print("[test] " + QC.translate(
+                "TestRunner", "WARN 标签目录存在但所有 {} 张图都没读到 GT,"
+                "请确认标签是 .txt (YOLO) 或 .json (labelme)").format(
+                    len(pairs)), flush=True)
         elif _miss:
-            print("[test] WARN {} 张图缺标签文件".format(_miss),
-                  flush=True)
+            print("[test] " + QC.translate(
+                "TestRunner", "WARN {} 张图缺标签文件").format(_miss),
+                flush=True)
         print("[test] P={:.4f} R={:.4f} TP={} FP={} FN={}".format(
             p, r, tp, fp, fn), flush=True)
     print("[test] RESULT " + json.dumps(result, ensure_ascii=False),

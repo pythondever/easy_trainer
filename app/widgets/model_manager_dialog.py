@@ -234,7 +234,7 @@ class ModelManagerDialog(QDialog):
             os.remove(probe)
             return True
         except OSError as exc:
-            write_log("权重目录不可写入 {}: {!r}".format(self._dir, exc))
+            write_log(QC.translate("ModelManagerDialog", "权重目录不可写入 {}: {!r}").format(self._dir, exc))
             return False
 
     # ---------- 下载 ----------

@@ -216,6 +216,15 @@ QComboBox:focus {
     padding: 5px 6px;
 }
 
+/* 箭头区默认占 24px, 而箭头图只用 11px + 8px 右边距, 富余的宽度让给文字区:
+   控件因此能从 134 收到 130, 最长那条(Tiếng Việt)右边还剩 5px.
+   只写 ::drop-down, 别给 ::down-arrow 加 id 规则 —— 不同选择器的规则不合并,
+   那样会让全局的箭头图片整条失效. */
+#language_comboBox::drop-down {
+    border: none;
+    width: 18px;
+}
+
 QComboBox::drop-down {
     border: none;
     width: 24px;

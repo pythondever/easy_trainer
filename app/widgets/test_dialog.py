@@ -11,10 +11,12 @@ import tempfile
 import time
 
 from PySide6.QtCore import QLocale, Qt, QEvent, QObject, QTimer
+from PySide6.QtCore import QCoreApplication as QC
 from PySide6.QtGui import (QDoubleValidator, QStandardItem,
                            QStandardItemModel, QValidator)
 from PySide6.QtWidgets import QDialog, QFormLayout, QComboBox
 
+from app.core import i18n
 from app.core.db import get_paths
 from app.core.log import write_log
 from app.widgets.dialog_buttons import apply_icon
@@ -421,11 +423,12 @@ class TestDialog(QDialog):
             "task": "classify" if cls_mode else "",
             "report_dir": report_dir,
             "_cfg_path": cfg_path,
+            "language": i18n.current(),
         }
         with open(cfg_path, "w", encoding="utf-8") as f:
             json.dump(cfg, f, ensure_ascii=False)
         write_log(
-            "[test] 启动测试 worker: model={} 数据集={} 图像目录={} device={} cfg={}".format(
+            QC.translate("TestDialog", "[test] 启动测试 worker: model={} 数据集={} 图像目录={} device={} cfg={}").format(
                 model_path, ["{}/{}".format(p, d) for p, d in checked],
                 [it["image_path"] for it in items], device, cfg_path))
         # 进度条交给首页
@@ -497,7 +500,7 @@ class TestDialog(QDialog):
                 self.tr("测试中 {}/{}").format(done, total), pct)
 
     def _on_finished(self, res):
-        write_log("[test-dialog] 测试完成, ok={}".format(res.get("ok")))
+        write_log(QC.translate("TestDialog", "[test-dialog] 测试完成, ok={}").format(res.get("ok")))
         if hasattr(self.app, "_hide_train_task"):
             self.app._hide_train_task()
         if hasattr(self.app, "_test_start_ts"):
@@ -515,7 +518,7 @@ class TestDialog(QDialog):
             self.app._load_dataset_view(self._project, self._dataset)
 
     def _on_failed(self, detail):
-        write_log("[test-dialog] 测试失败: {}".format(detail[:300]))
+        write_log(QC.translate("TestDialog", "[test-dialog] 测试失败: {}").format(detail[:300]))
         if hasattr(self.app, "_hide_train_task"):
             self.app._hide_train_task()
         if hasattr(self.app, "_test_start_ts"):

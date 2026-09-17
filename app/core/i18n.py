@@ -6,7 +6,7 @@
 """
 import os
 
-from PySide6.QtCore import QTranslator
+from PySide6.QtCore import QCoreApplication, QTranslator
 
 from app.core.utils import project_root
 
@@ -111,3 +111,17 @@ def apply(app, code):
             code = DEFAULT
     _current = code
     return code
+
+
+def apply_cli(code):
+    """
+    子进程里装翻译.
+
+    translator 必须挂在 QCoreApplication 上, 而训练/测试子进程只跑 main(),
+    没有界面也就没人建 app, 这里补一个. 装不上就静默回退中文: 日志语言不对
+    不该把训练本身搞挂.
+    """
+    app = QCoreApplication.instance()
+    if app is None:
+        app = QCoreApplication([])
+    return apply(app, code)

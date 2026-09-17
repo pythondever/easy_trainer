@@ -27,6 +27,8 @@ for _p in (_WORKSPACE, os.path.join(_WORKSPACE, "app")):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
+from PySide6.QtCore import QCoreApplication as QC
+
 try:
     import torch
     import torch.nn as nn
@@ -34,9 +36,10 @@ try:
     from torchvision import transforms, models
     from PIL import Image
 except Exception as e:
-    print("[train] 缺少训练依赖: {}".format(e), flush=True)
+    print("[train] " + QC.translate("ClassifyTrainRunner", "缺少训练依赖: {}").format(e), flush=True)
     sys.exit(1)
 
+from app.core import i18n
 from app.core.constants import IMAGE_EXTS as _IMG_EXTS
 from app.core.db import get_paths
 
@@ -139,6 +142,7 @@ def main():
     cfg_path = sys.argv[1]
     with open(cfg_path, "r", encoding="utf-8") as f:
         cfg = json.load(f)
+    i18n.apply_cli(cfg.get("language", ""))
 
     out_root = cfg["out_root"]
     project = cfg["project"]
@@ -146,8 +150,8 @@ def main():
     os.makedirs(out_root, exist_ok=True)
     os.makedirs(ts_dir, exist_ok=True)
     shutil.copy2(cfg_path, os.path.join(ts_dir, "config.json"))
-    print("[train] 输出路径: {}".format(out_root), flush=True)
-    print("[train] 本次训练输出目录(时间戳): {}".format(ts_dir), flush=True)
+    print("[train] " + QC.translate("ClassifyTrainRunner", "输出路径: {}").format(out_root), flush=True)
+    print("[train] " + QC.translate("ClassifyTrainRunner", "本次训练输出目录(时间戳): {}").format(ts_dir), flush=True)
 
     epochs = int(cfg.get("epochs", 30))
     batch_size = int(cfg.get("batch_size", 32))
@@ -163,7 +167,7 @@ def main():
         device = "cuda"
     else:
         device = "cpu"
-    print("[train] 分类训练: model={} classes={} device={} epochs={} batch={} lr={} img={} optimizer={}".format(
+    print("[train] " + QC.translate("ClassifyTrainRunner", "分类训练: model={} classes={} device={} epochs={} batch={} lr={} img={} optimizer={}").format(
         arch, num_classes, device, epochs, batch_size, lr, img_size, optimizer_name), flush=True)
 
     # 1) 数据准备: 按 split 复制到 out_root/{project}_cls/{train,val}/{类别}/
@@ -172,11 +176,11 @@ def main():
     val_root = os.path.join(cls_root, "val")
     n_train = _collect_images(cfg.get("datasets", []), "train", train_root)
     n_val = _collect_images(cfg.get("datasets", []), "val", val_root)
-    print("[train] 数据准备: train={} 张, val={} 张".format(n_train, n_val), flush=True)
+    print("[train] " + QC.translate("ClassifyTrainRunner", "数据准备: train={} 张, val={} 张").format(n_train, n_val), flush=True)
     if n_train == 0:
-        raise RuntimeError("训练集无图像, 请检查数据集")
+        raise RuntimeError(QC.translate("ClassifyTrainRunner", "训练集无图像, 请检查数据集"))
     if n_val == 0:
-        raise RuntimeError("验证集无图像, 请检查数据集")
+        raise RuntimeError(QC.translate("ClassifyTrainRunner", "验证集无图像, 请检查数据集"))
 
     mean = [0.485, 0.456, 0.406]
     std = [0.229, 0.224, 0.225]
@@ -201,7 +205,7 @@ def main():
         train_ds = _ImageFolderSimple(train_root, train_tf, class_to_idx)
         val_ds = _ImageFolderSimple(val_root, val_tf, class_to_idx)
     if not classes:
-        raise RuntimeError("未从数据集中解析到任何类别(子文件夹),无法训练图像分类")
+        raise RuntimeError(QC.translate("ClassifyTrainRunner", "未从数据集中解析到任何类别(子文件夹),无法训练图像分类"))
     real_classes = len(classes)
     _pin = getattr(device, "type", str(device)) == "cuda"
     _persistent = num_workers > 0
@@ -211,7 +215,7 @@ def main():
     val_loader = DataLoader(val_ds, batch_size=batch_size, shuffle=False,
                             num_workers=num_workers,
                             pin_memory=_pin, persistent_workers=_persistent)
-    print("[train] 数据集: train={} val={} 类别({})={}".format(
+    print("[train] " + QC.translate("ClassifyTrainRunner", "数据集: train={} val={} 类别({})={}").format(
         len(train_ds), len(val_ds), len(classes),
         ", ".join(classes) if len(classes) <= 12 else "{}...".format(
             ", ".join(classes[:12]))), flush=True)
@@ -298,12 +302,12 @@ def main():
         else:
             no_improve += 1
             if early_stop > 0 and no_improve >= early_stop:
-                print("[train] 早停触发: 连续 {} 个 epoch 精度无提升".format(early_stop),
+                print("[train] " + QC.translate("ClassifyTrainRunner", "早停触发: 连续 {} 个 epoch 精度无提升").format(early_stop),
                       flush=True)
                 break
         scheduler.step()
 
-    print("[train] 训练完成 best_acc={:.4f}".format(best_acc), flush=True)
+    print("[train] " + QC.translate("ClassifyTrainRunner", "训练完成 best_acc={:.4f}").format(best_acc), flush=True)
 
     # 模型目录生成 classes.txt: 每行 "id 类别名"(交付他人使用时显式对照)
     classes_path = os.path.join(ts_dir, "classes.txt")
@@ -311,7 +315,7 @@ def main():
         with open(classes_path, "w", encoding="utf-8") as f:
             for i, lb in enumerate(classes):
                 f.write("{} {}\n".format(i, lb))
-        print("[train] 生成类别文件: {}".format(classes_path), flush=True)
+        print("[train] " + QC.translate("ClassifyTrainRunner", "生成类别文件: {}").format(classes_path), flush=True)
     except Exception:
         pass
 

@@ -94,7 +94,7 @@ class QueueMixin(object):
         self._queue_running = True
         self._queue_paused = False
         self._queue_finished_rids = set()
-        write_log("训练队列已启动")
+        write_log(QC.translate("QueueMixin", "训练队列已启动"))
         self._refresh_queue_ui()
         self._pump_queue()
         return True
@@ -104,7 +104,7 @@ class QueueMixin(object):
         if not self._queue_running:
             return
         self._queue_paused = True
-        self._log("[队列] 已暂停, 当前任务完成后停止")
+        self._log(QC.translate("QueueMixin", "[队列] 已暂停, 当前任务完成后停止"))
         self._refresh_queue_ui()
 
     def resume_train_queue(self):
@@ -112,7 +112,7 @@ class QueueMixin(object):
         if not self._queue_running:
             return False
         self._queue_paused = False
-        self._log("[队列] 已继续")
+        self._log(QC.translate("QueueMixin", "[队列] 已继续"))
         self._refresh_queue_ui()
         self._pump_queue()
         return True
@@ -122,7 +122,7 @@ class QueueMixin(object):
         self._queue_paused = True
         self._queue_running = False
         self._queue_current_qid = None
-        self._log("[队列] 已停止")
+        self._log(QC.translate("QueueMixin", "[队列] 已停止"))
         self._refresh_queue_ui()
 
     # ---------- 队列编辑 ----------
@@ -210,7 +210,7 @@ class QueueMixin(object):
         if item is None:
             self._queue_running = False
             self._queue_current_qid = None
-            self._log("[队列] 所有任务已执行完毕")
+            self._log(QC.translate("QueueMixin", "[队列] 所有任务已执行完毕"))
             self._refresh_queue_ui()
             return
         try:
@@ -218,8 +218,8 @@ class QueueMixin(object):
         except Exception as exc:
             # 出队失败不能中断整个队列: 标记后继续下一个
             self._mark_item(item["qid"], "failed", error=str(exc))
-            self._log("[队列] 跳过任务 {}: {}".format(item.get("name"), exc))
-            write_log("队列任务启动失败 {}: {}".format(item.get("name"), exc))
+            self._log(QC.translate("QueueMixin", "[队列] 跳过任务 {}: {}").format(item.get("name"), exc))
+            write_log(QC.translate("QueueMixin", "队列任务启动失败 {}: {}").format(item.get("name"), exc))
             QTimer.singleShot(0, self._pump_queue)
 
     def _next_waiting(self):
@@ -236,7 +236,7 @@ class QueueMixin(object):
                                     params.get("architecture") or "nano",
                                     self.db.get_models_dir())
         if miss is not None:
-            write_log("[队列] 缺少权重 {}, 该项训练时会自行下载".format(
+            write_log(QC.translate("QueueMixin", "[队列] 缺少权重 {}, 该项训练时会自行下载").format(
                 miss.filename))
         # data.yaml / 标签集合都由 make_train_config 之后的 runner 现算,
         # 这里只负责把 db 里的最新路径与 label_ids 解析进 config
@@ -246,16 +246,16 @@ class QueueMixin(object):
         self.db.add_train_record(record)
         if not self.start_training(config, record["id"]):
             self.db.delete_train_record(record["id"])
-            raise RuntimeError("已有训练在进行中")
+            raise RuntimeError(QC.translate("QueueMixin", "已有训练在进行中"))
         self._queue_current_qid = item["qid"]
         self._mark_item(item["qid"], "running",
                         record_id=record["id"],
                         started_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-        self._log("[队列] 开始队列第 {}/{} 项: {}".format(
+        self._log(QC.translate("QueueMixin", "[队列] 开始队列第 {}/{} 项: {}").format(
             int(item.get("order") or 0) + 1,
             len(self.queue_items()),
             item.get("name", "")))
-        write_log("队列启动任务: {} record={}".format(
+        write_log(QC.translate("QueueMixin", "队列启动任务: {} record={}").format(
             item.get("name"), record["id"]))
         self._refresh_queue_ui()
 
@@ -320,7 +320,7 @@ class QueueMixin(object):
         self._cooldown_elapsed += COOLDOWN_MS
         if self._cooldown_elapsed >= COOLDOWN_MAX_MS:
             self._queue_cooling = False
-            self._log("[队列] 显存等待超时, 仍继续启动下一个任务")
+            self._log(QC.translate("QueueMixin", "[队列] 显存等待超时, 仍继续启动下一个任务"))
             QTimer.singleShot(0, self._pump_queue)
             return
         QTimer.singleShot(COOLDOWN_MS, self._tick_cooldown)

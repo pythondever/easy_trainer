@@ -83,7 +83,7 @@ class TrainMixin(object):
         if getattr(self, "_train_settled", True):
             return
         rid = self._training_record_id
-        self._log("[train] 训练线程已结束但未返回结果, 按失败收尾")
+        self._log(QC.translate("TrainMixin", "[train] 训练线程已结束但未返回结果, 按失败收尾"))
         if rid:
             self.on_train_finished(rid, None)
 
@@ -114,9 +114,9 @@ class TrainMixin(object):
         rid = self._training_record_id
         self._training_record_id = None
         self._train_worker = None
-        self._log("手动停止训练: {}".format(rid))
+        self._log(QC.translate("TrainMixin", "手动停止训练: {}").format(rid))
         if not exited:
-            self._log("[train] 训练进程 10 秒内未退出, 可能有子进程残留占用显存")
+            self._log(QC.translate("TrainMixin", "[train] 训练进程 10 秒内未退出, 可能有子进程残留占用显存"))
             MessageBox.warning(
                 self, QC.translate("TrainMixin", "停止训练"),
                 QC.translate(
@@ -184,7 +184,7 @@ class TrainMixin(object):
             self.on_train_finished(rid, None, error=detail)
         # 队列运行时不弹模态框: 无人值守时会一直等点击, 整个队列停摆
         if self.queue_is_running():
-            write_log("训练失败(队列模式, 已跳过弹窗): {}".format(detail[:2000]))
+            write_log(QC.translate("TrainMixin", "训练失败(队列模式, 已跳过弹窗): {}").format(detail[:2000]))
             return
         MessageBox.critical(self, QC.translate("TrainMixin", "训练失败"),
                             QC.translate("TrainMixin", "训练过程中发生错误, Err:\n\n{}").format(detail))
@@ -210,7 +210,7 @@ class TrainMixin(object):
                     r["accuracy"] = "{:.4f}".format(acc)
                 r["metrics_epochs"] = len(metrics.get("epochs") or [])
                 self.db.update_train_record(r)
-                write_log("更新训练指标: record={} 已完成epoch={} map50={} acc={} 类别数={}".format(
+                write_log(QC.translate("TrainMixin", "更新训练指标: record={} 已完成epoch={} map50={} acc={} 类别数={}").format(
                     record_id[:8], r.get("metrics_epochs"),
                     r.get("map50"), r.get("accuracy"),
                     len(metrics.get("per_class", {}))))
@@ -239,7 +239,9 @@ class TrainMixin(object):
                     t0 = datetime.strptime(r.get("start_time", ""), "%Y-%m-%d %H:%M:%S")
                     t1 = datetime.strptime(r["end_time"], "%Y-%m-%d %H:%M:%S")
                     secs = int((t1 - t0).total_seconds())
-                    r["duration"] = fmt_duration(int((t1 - t0).total_seconds()))
+                    r["duration"] = fmt_duration(secs)
+                    # 另存秒数: 表格排序要按秒比, 而本地化后的字符串反解不出秒
+                    r["duration_secs"] = secs
                 except Exception:
                     pass
                 if result:
@@ -271,7 +273,7 @@ class TrainMixin(object):
         rec["id"] = str(uuid.uuid4())
         rec["train_id"] = rid
         self.db.add_model_record(rec)
-        write_log("已保存模型记录: {} | {}".format(
+        write_log(QC.translate("TrainMixin", "已保存模型记录: {} | {}").format(
             rec.get("model_path", ""), rec.get("dataset_info", "")))
 
     def _show_train_task(self, task_name, value=0):

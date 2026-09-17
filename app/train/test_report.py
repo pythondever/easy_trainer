@@ -16,7 +16,9 @@ from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon as MplPolygon, Rectangle
 from PIL import Image, ImageDraw, ImageFont
+from PySide6.QtCore import QCoreApplication as QC
 
+from app.core import i18n
 from app.core.utils import cjk_font_choice, setup_matplotlib_chinese
 from app.train.test_errors import CONFUSE_IOU, pair_confusions
 
@@ -46,7 +48,7 @@ def _pick_image_font():
     字体探测统一在 core.utils(与 matplotlib 图表同源), 否则 PDF 里
     PIL 画的标题和 matplotlib 画的坐标轴可能用了两个字体.
     """
-    _, path = cjk_font_choice()
+    _, path = cjk_font_choice(i18n.current())
     return path or None
 
 
@@ -168,11 +170,11 @@ def _any_poly(rows):
 def _err_foot(n_miss, n_spur, n_conf=0):
     parts = []
     if n_miss:
-        parts.append("漏 {}".format(n_miss))
+        parts.append(QC.translate("TestReport", "漏 {}").format(n_miss))
     if n_spur:
-        parts.append("误 {}".format(n_spur))
+        parts.append(QC.translate("TestReport", "误 {}").format(n_spur))
     if n_conf:
-        parts.append("认错 {}".format(n_conf))
+        parts.append(QC.translate("TestReport", "认错 {}").format(n_conf))
     return "  ·  ".join(parts) or "-"
 
 
@@ -183,7 +185,8 @@ def _cell(ax, row, thumb_w, confuse_iou=CONFUSE_IOU):
     n_miss, n_spur, n_conf = len(miss_boxes), len(spur_boxes), len(pairs)
 
     if arr is None:
-        ax.text(0.5, 0.5, "(图片无法打开)", ha="center", va="center",
+        ax.text(0.5, 0.5, QC.translate("TestReport", "(图片无法打开)"),
+                ha="center", va="center",
                 transform=ax.transAxes, color="#888888")
         ax.set_title(base + "  ·  " + _err_foot(n_miss, n_spur, n_conf),
                      fontsize=8)
@@ -268,8 +271,8 @@ def _cell(ax, row, thumb_w, confuse_iou=CONFUSE_IOU):
         ax.add_patch(Rectangle((x1, y1), bw, bh, fill=False,
                                edgecolor=C_CONFUSE, linewidth=2.6, zorder=5))
         _outline(p["gt"], C_CONFUSE)
-        full = "类别认错: {} → {}".format(p["gt"].get("cls", ""),
-                                       p["pred"].get("cls", ""))
+        full = QC.translate("TestReport", "类别认错: {} → {}").format(
+            p["gt"].get("cls", ""), p["pred"].get("cls", ""))
         # 框比标签还窄时退化成短文案,靠紫色和图例区分
         if len(full) * char_px > bw * px_per_unit:
             full = "{} → {}".format(p["gt"].get("cls", ""),
@@ -295,11 +298,14 @@ def _sample_note(stat):
     mt, st = stat.get("miss_total", 0), stat.get("spur_total", 0)
     limit = stat.get("limit", 0)
     if limit and shown < total:
-        return ("明细抽样: 共 {} 张有问题(漏检 {} / 误检 {}), 本报告抽取 {} 张"
-                " - 每个类别每种错误最多 {} 张, 按错误数从多到少取"
-                .format(total, mt, st, shown, limit)), "#8a5a00"
-    return ("明细: 共 {} 张有问题(漏检 {} / 误检 {}), 已全部列出"
-            .format(total, mt, st)), "#888888"
+        return (QC.translate(
+            "TestReport",
+            "明细抽样: 共 {} 张有问题(漏检 {} / 误检 {}), 本报告抽取 {} 张"
+            " - 每个类别每种错误最多 {} 张, 按错误数从多到少取"
+        ).format(total, mt, st, shown, limit)), "#8a5a00"
+    return (QC.translate(
+        "TestReport", "明细: 共 {} 张有问题(漏检 {} / 误检 {}), 已全部列出"
+    ).format(total, mt, st)), "#888888"
 
 
 def _short(text, n):
@@ -317,7 +323,7 @@ def _render_label_chart_png(counts, colors, out_png, width_px, height_px):
     from app.widgets.charts import render_label_chart
     # translate=False: 报告正文仍是中文, 图表跟着正文走, 免得一份 PDF 两种语言
     fig = render_label_chart(
-        counts, label_colors=colors, dark=False, translate=False,
+        counts, label_colors=colors, dark=False, translate=True,
         figsize=(width_px / float(_DPI), height_px / float(_DPI)))
     # 留出 x 轴标签旋转空间, 防底部文字被裁
     fig.subplots_adjust(left=0.085, right=0.985, top=0.9, bottom=0.34)
@@ -327,15 +333,18 @@ def _render_label_chart_png(counts, colors, out_png, width_px, height_px):
 
 
 def _legend_items(stat):
-    items = [(C_MISSING, "solid", "漏检 GT: 有标注但模型没检出"),
-             (C_SPURIOUS, "dash", "误检预测: 模型检出但标注里没有"),
-             (C_HIT, "solid", "正确检出(仅作位置参照)")]
+    items = [(C_MISSING, "solid",
+              QC.translate("TestReport", "漏检 GT: 有标注但模型没检出")),
+             (C_SPURIOUS, "dash",
+              QC.translate("TestReport", "误检预测: 模型检出但标注里没有")),
+             (C_HIT, "solid",
+              QC.translate("TestReport", "正确检出(仅作位置参照)"))]
     if stat and stat.get("conf_total"):
-        items.insert(2, (C_CONFUSE, "solid",
-                         "类别认错: 位置对但判错类别(GT → 预测)"))
+        items.insert(2, (C_CONFUSE, "solid", QC.translate(
+            "TestReport", "类别认错: 位置对但判错类别(GT → 预测)")))
     if stat and stat.get("has_poly"):
-        items.append((C_MISSING, "dot",
-                      "虚线轮廓: 分割 mask / 标注多边形(判定按外接框 IoU)"))
+        items.append((C_MISSING, "dot", QC.translate(
+            "TestReport", "虚线轮廓: 分割 mask / 标注多边形(判定按外接框 IoU)")))
     return items
 
 
@@ -410,19 +419,24 @@ def _render_summary_png(summary, out_png, stat, chart_png=None):
         return y0 + (len(data) + 1) * rh
 
     y = int(0.34 * dpi)
-    d.text((M, y), "模型评估报告", fill="black", font=f_title)
+    d.text((M, y), QC.translate("TestReport", "模型评估报告"), fill="black",
+           font=f_title)
     y += int(0.46 * dpi)
 
-    d.text((M, y), "当前训练模型", fill="black", font=f_sec)
+    d.text((M, y), QC.translate("TestReport", "当前训练模型"), fill="black",
+           font=f_sec)
     y += int(0.30 * dpi)
-    d.text((M, y), clip(str(summary.get("model") or "(未记录)"), f_b,
-                        content_w), fill="#1f1f1f", font=f_b)
+    d.text((M, y), clip(str(summary.get("model") or
+                            QC.translate("TestReport", "(未记录)")),
+                        f_b, content_w), fill="#1f1f1f", font=f_b)
     y += int(0.26 * dpi)
     ds_txt = ",".join("{}/{}".format(x.get("project", ""), x.get("dataset", ""))
                       for x in (summary.get("datasets") or []))
-    sub = ["数据集 " + (ds_txt or "(未记录)")]
+    sub = [QC.translate("TestReport", "数据集 ") +
+           (ds_txt or QC.translate("TestReport", "(未记录)"))]
     if summary.get("conf") is not None:
-        sub.append("置信度 {}".format(summary["conf"]))
+        sub.append(QC.translate("TestReport", "置信度 {}").format(
+            summary["conf"]))
     if summary.get("iou") is not None:
         sub.append("IoU {}".format(summary["iou"]))
     d.text((M, y), clip("  ·  ".join(sub), f_meta, content_w),
@@ -441,21 +455,31 @@ def _render_summary_png(summary, out_png, stat, chart_png=None):
     rec = tp / (tp + fn) if (tp + fn) else 0.0
     prec = tp / (tp + fp) if (tp + fp) else 0.0
     rows = [
-        ["测试张数", "{} 张".format(total)],
-        ["有问题的图片", "{} 张".format(stat.get("total", 0) if stat else 0)],
-        ["检出率 (Recall)", "{:.1f}%".format(rec * 100)],
-        ["准确率 (Precision)", "{:.1f}%".format(prec * 100)],
-        ["正确检出", "{} 个".format(tp)],
-        ["漏检 (该抓没抓)", "{} 个 / {} 张图".format(
-            fn, stat.get("miss_total", 0) if stat else 0)],
-        ["误检 (过杀)", "{} 个 / {} 张图".format(
-            fp, stat.get("spur_total", 0) if stat else 0)],
+        [QC.translate("TestReport", "测试张数"),
+         QC.translate("TestReport", "{} 张").format(total)],
+        [QC.translate("TestReport", "有问题的图片"),
+         QC.translate("TestReport", "{} 张").format(
+             stat.get("total", 0) if stat else 0)],
+        [QC.translate("TestReport", "检出率 (Recall)"),
+         "{:.1f}%".format(rec * 100)],
+        [QC.translate("TestReport", "准确率 (Precision)"),
+         "{:.1f}%".format(prec * 100)],
+        [QC.translate("TestReport", "正确检出"),
+         QC.translate("TestReport", "{} 个").format(tp)],
+        [QC.translate("TestReport", "漏检 (该抓没抓)"),
+         QC.translate("TestReport", "{} 个 / {} 张图").format(
+             fn, stat.get("miss_total", 0) if stat else 0)],
+        [QC.translate("TestReport", "误检 (过杀)"),
+         QC.translate("TestReport", "{} 个 / {} 张图").format(
+             fp, stat.get("spur_total", 0) if stat else 0)],
     ]
     if stat and stat.get("conf_total"):
-        rows.append(["类别认错 (位置对, 类别错)",
-                     "{} 个 / {} 张图".format(stat["conf_total"],
-                                            stat.get("conf_imgs", 0))])
-    y = table(y, ["指标", "值"], rows, [1.5, 1.0], int(0.33 * dpi))
+        rows.append([QC.translate("TestReport", "类别认错 (位置对, 类别错)"),
+                     QC.translate("TestReport", "{} 个 / {} 张图").format(
+                         stat["conf_total"], stat.get("conf_imgs", 0))])
+    y = table(y, [QC.translate("TestReport", "指标"),
+                  QC.translate("TestReport", "值")],
+              rows, [1.5, 1.0], int(0.33 * dpi))
     y += int(0.30 * dpi)
 
     note, note_color = _sample_note(stat)
@@ -465,9 +489,16 @@ def _render_summary_png(summary, out_png, stat, chart_png=None):
 
     per_class = summary.get("per_class") or {}
     if per_class:
-        d.text((M, y), "按类别", fill="black", font=f_sec)
+        d.text((M, y), QC.translate("TestReport", "按类别"), fill="black",
+               font=f_sec)
         y += int(0.34 * dpi)
-        head = ["类别", "标注", "正确", "漏检", "误检", "检出率", "准确率"]
+        head = [QC.translate("TestReport", "类别"),
+                QC.translate("TestReport", "标注"),
+                QC.translate("TestReport", "正确"),
+                QC.translate("TestReport", "漏检"),
+                QC.translate("TestReport", "误检"),
+                QC.translate("TestReport", "检出率"),
+                QC.translate("TestReport", "准确率")]
         weights = [1.4, 0.6, 0.6, 0.6, 0.6, 0.9, 0.9]
         rh2 = int(0.32 * dpi)
         # 图例两列排布, 条数会随认错/轮廓两条增减, 行数得跟着算才不会出血
@@ -496,7 +527,8 @@ def _render_summary_png(summary, out_png, stat, chart_png=None):
             tpv, fnv, fpv, rs, ps = stats((cls, dd))
             data.append([str(cls), dd.get("gt", 0), tpv, fnv, fpv, rs, ps])
         if hidden:
-            data.append(["... 另有 {} 类未列出".format(len(hidden)),
+            data.append([QC.translate(
+                "TestReport", "... 另有 {} 类未列出").format(len(hidden)),
                          "", "", "", "", "", ""])
         y = table(y, head, data, weights, rh2)
         y += int(0.40 * dpi)
@@ -519,8 +551,9 @@ def _render_summary_png(summary, out_png, stat, chart_png=None):
                fill="black", font=f_meta)
     y += ((len(legend) + 1) // 2) * int(0.36 * dpi)
 
-    d.text((M, y), "错误样本明细(仅列漏检 / 误检图片, 正确检出不列出)",
-           fill="#888888", font=f_meta)
+    d.text((M, y), QC.translate(
+        "TestReport", "错误样本明细(仅列漏检 / 误检图片, 正确检出不列出)"),
+        fill="#888888", font=f_meta)
 
     img.save(out_png, "PNG", dpi=(dpi, dpi))
 
@@ -550,11 +583,13 @@ def _advice_items(res, stat=None):
     tp, fp, fn = res.get("TP", 0), res.get("FP", 0), res.get("FN", 0)
     rec = tp / (tp + fn) if (tp + fn) else 0.0
     prec = tp / (tp + fp) if (tp + fp) else 0.0
-    parts = [[("本轮检出率 {:.0f}%, 准确率 {:.0f}%.".format(
-        rec * 100, prec * 100), False)]]
+    parts = [[(QC.translate("TestReport", "本轮检出率 {:.0f}%, 准确率 {:.0f}%.")
+               .format(rec * 100, prec * 100), False)]]
     if not pc:
-        parts.append([("没有逐类别统计, 无法定位到具体标签,"
-                       "请先确认标签文件能正常读到.", False)])
+        parts.append([(QC.translate(
+            "TestReport",
+            "没有逐类别统计, 无法定位到具体标签,"
+            "请先确认标签文件能正常读到."), False)])
         return [s for p in parts for s in p]
 
     gts = {c: int(d.get("gt", 0)) for c, d in pc.items()}
@@ -575,39 +610,55 @@ def _advice_items(res, stat=None):
     all_fn = len(hot_fn) >= len(gts) and len(gts) > 1
     all_fp = len(hot_fp) >= len(gts) and len(gts) > 1
     if hot_fn:
-        parts.append([("漏检" + ("分布在" if all_fn else "集中在"), False)] +
+        fn_lead = (QC.translate("TestReport", "漏检分布在") if all_fn
+                   else QC.translate("TestReport", "漏检集中在"))
+        parts.append([(fn_lead, False)] +
                      names(hot_fn) +
-                     [("(共 {} 个), 优先补这几类的姿态, 光照样本,"
-                       "并复核标注是否有遗漏.".format(
-                           sum(v for _, v in hot_fn)), False)])
+                     [(QC.translate(
+                         "TestReport",
+                         "(共 {} 个), 优先补这几类的姿态, 光照样本,"
+                         "并复核标注是否有遗漏.").format(
+                             sum(v for _, v in hot_fn)), False)])
     if hot_fp:
-        parts.append([("误检" + ("分布在" if all_fp else "以"), False)] +
+        fp_lead = (QC.translate("TestReport", "误检分布在") if all_fp
+                   else QC.translate("TestReport", "误检以"))
+        fp_tail = (QC.translate(
+            "TestReport", "({} 个),属过杀, 建议补无缺陷负样本,"
+                          "清理标注噪声.") if all_fp else QC.translate(
+            "TestReport", "({} 个)为主,属过杀, 建议补无缺陷负样本,"
+                          "清理标注噪声."))
+        parts.append([(fp_lead, False)] +
                      names(hot_fp) +
-                     [("({} 个){}属过杀, 建议补无缺陷负样本,"
-                       "清理标注噪声.".format(sum(v for _, v in hot_fp),
-                                            "," if all_fp else "为主,"),
-                       False)])
+                     [(fp_tail.format(sum(v for _, v in hot_fp)), False)])
     n_conf = int((stat or {}).get("conf_total", 0))
     if n_conf:
-        parts.append([("此外 {} 处".format(n_conf), False),
-                      ("位置对但类别判错", False),
-                      ("(报告紫框), 属分类能力不足而非定位问题,"
-                       "需补易混淆类别之间的区分性样本.", False)])
+        parts.append([
+            (QC.translate("TestReport",
+                          "此外 {} 处位置对但类别判错").format(n_conf), False),
+            (QC.translate("TestReport",
+                          "(报告紫框), 属分类能力不足而非定位问题,"
+                          "需补易混淆类别之间的区分性样本."), False)])
     worst_cls, worst_gt = min(gts.items(), key=lambda kv: kv[1])
     if (hot_fn or hot_fp) and worst_gt < max(100, avg * 0.4):
-        parts.append([("其中", False), ("\"{}\"".format(worst_cls), True),
-                      ("仅 {} 个标注, 样本不足是主要瓶颈, 建议补到 "
-                       "200 个以上.".format(worst_gt), False)])
+        parts.append([(QC.translate("TestReport", "其中"), False),
+                      ("\"{}\"".format(worst_cls), True),
+                      (QC.translate(
+                          "TestReport",
+                          "仅 {} 个标注, 样本不足是主要瓶颈, 建议补到 "
+                          "200 个以上.").format(worst_gt), False)])
     if len(gts) > 1 and max(gts.values()) > 5 * max(1, min(gts.values())):
-        parts.append([("各类样本量差距大(最多 {} / 最少 {}),"
-                       "训练时建议做类别均衡采样.".format(
-                           max(gts.values()), min(gts.values())), False)])
+        parts.append([(QC.translate(
+            "TestReport", "各类样本量差距大(最多 {} / 最少 {}),"
+                          "训练时建议做类别均衡采样.").format(
+                              max(gts.values()), min(gts.values())), False)])
     if hot_fn or hot_fp:
-        parts.append([("把本报告中的漏检, 误检图加入训练集复训,"
-                       "再用同参数复测对比.", False)])
+        parts.append([(QC.translate(
+            "TestReport", "把本报告中的漏检, 误检图加入训练集复训,"
+                          "再用同参数复测对比."), False)])
     else:
-        parts.append([("本轮无漏检, 无误检, 建议用更严的阈值或更难的样本"
-                       "再压一轮, 确认稳定性.", False)])
+        parts.append([(QC.translate(
+            "TestReport", "本轮无漏检, 无误检, 建议用更严的阈值或更难的样本"
+                          "再压一轮, 确认稳定性."), False)])
 
     out, used = [], 0
     for seg in parts:
@@ -646,14 +697,17 @@ def _render_advice_png(items, out_png, page_no, model=""):
     M, content_w = _MARGIN, _CONTENT_W
 
     y = int(0.55 * dpi)
-    d.text((M, y), "改进建议", fill="black", font=f_title)
+    d.text((M, y), QC.translate("TestReport", "改进建议"), fill="black",
+           font=f_title)
     y += int(0.52 * dpi)
     d.line([(M, y), (M + content_w, y)], fill="#d8d8d8", width=2)
     y += int(0.34 * dpi)
-    lead = "基于本次测试的指标与按类别表现"
+    lead = QC.translate("TestReport", "基于本次测试的指标与按类别表现")
     if model:
-        lead += "(模型: {})".format(_short(model, 28))
-    d.text((M, y), lead + ", 建议如下:", fill="#666666", font=f_lead)
+        lead += QC.translate("TestReport", "(模型: {})").format(
+            _short(model, 28))
+    d.text((M, y), lead + QC.translate("TestReport", ", 建议如下:"),
+           fill="#666666", font=f_lead)
     y += int(0.40 * dpi)
 
     line_h = int(0.34 * dpi)
@@ -676,9 +730,10 @@ def _render_advice_png(items, out_png, page_no, model=""):
     d.line([(M, foot_y - int(0.18 * dpi)),
             (M + content_w, foot_y - int(0.18 * dpi))],
            fill="#e4e4e4", width=1)
-    d.text((M, foot_y), "标红的标签是需要重点关注的类别.",
-           fill="#888888", font=f_meta)
-    page_txt = "第 {} 页".format(page_no)
+    d.text((M, foot_y), QC.translate(
+        "TestReport", "标红的标签是需要重点关注的类别."),
+        fill="#888888", font=f_meta)
+    page_txt = QC.translate("TestReport", "第 {} 页").format(page_no)
     d.text((M + content_w - d.textbbox((0, 0), page_txt, font=f_meta)[2],
             foot_y), page_txt, fill="#777777", font=f_meta)
 
@@ -702,7 +757,8 @@ def _page_gallery(pdf, rows, title, thumb_w, page_no,
                   confuse_iou=CONFUSE_IOU):
     fig = plt.figure(figsize=(_A4_W_IN, _A4_H_IN))
     fig.text(0.04, 0.955, title, fontsize=14, fontweight="bold")
-    fig.text(0.96, 0.955, "第 {} 页".format(page_no),
+    fig.text(0.96, 0.955,
+             QC.translate("TestReport", "第 {} 页").format(page_no),
              fontsize=9, ha="right", color="#777777")
     gs = fig.add_gridspec(_GRID_ROWS, _GRID_COLS,
                           left=0.04, right=0.96, top=0.92, bottom=0.04,
@@ -765,12 +821,16 @@ def build_report(res, out_pdf=None, thumb_w=480, summary_png=None,
 
     def title_of(kind, shown, total):
         if shown < total:
-            return "{}(抽取 {} / 共 {} 张)".format(kind, shown, total)
-        return "{}(共 {} 张)".format(kind, total)
+            return QC.translate(
+                "TestReport", "{}(抽取 {} / 共 {} 张)").format(
+                    kind, shown, total)
+        return QC.translate("TestReport", "{}(共 {} 张)").format(kind, total)
 
-    miss_title = title_of("漏检样本: 有标注但模型没检出",
+    miss_title = title_of(QC.translate("TestReport",
+                                       "漏检样本: 有标注但模型没检出"),
                           len(miss_rows), stat["miss_total"])
-    spur_title = title_of("误检样本: 模型检出但标注里没有",
+    spur_title = title_of(QC.translate("TestReport",
+                                       "误检样本: 模型检出但标注里没有"),
                           len(spur_rows), stat["spur_total"])
 
     with PdfPages(out_pdf) as pdf:
@@ -788,5 +848,5 @@ def build_report(res, out_pdf=None, thumb_w=480, summary_png=None,
                            str(res.get("model") or ""))
         _embed_image_page(pdf, advice_png)
         d = pdf.infodict()
-        d["Title"] = "模型评估报告"
+        d["Title"] = QC.translate("TestReport", "模型评估报告")
     return out_pdf

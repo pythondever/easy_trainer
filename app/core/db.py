@@ -1,6 +1,7 @@
 import lmdb
 import json
 import os
+from PySide6.QtCore import QCoreApplication as QC
 from . import keys
 from .log import write_log
 
@@ -476,8 +477,10 @@ class DataBase:
         try:
             return json.loads(data.decode())
         except Exception as e:
-            write_log("已删除图像记录解析失败, 跳过迁移以免覆盖丢失 "
-                      "({}): {}".format(keys.deleted_images, e))
+            write_log(QC.translate(
+                "DataBase",
+                "已删除图像记录解析失败, 跳过迁移以免覆盖丢失 "
+                "({}): {}").format(keys.deleted_images, e))
             return None
 
     def _rename_deleted_project(self, old_name, new_name):

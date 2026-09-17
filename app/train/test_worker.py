@@ -81,7 +81,7 @@ class TestWorker(QThread):
             except Exception:
                 pass
 
-        _trace("run 开始")
+        _trace(QC.translate("TestWorker", "run 开始"))
         env = dict(os.environ)
         # PYTHONPATH 只对 Linux(venv) 生效; Windows embeddable 有 _pth 会忽略它,
         # 那边的安装根由 installer 写进 _pth
@@ -95,8 +95,8 @@ class TestWorker(QThread):
             # 用户在 Popen 之前就点了停止: 再起进程会立刻脱管
             # (循环条件马上为假, 下面按 rc=None 报"异常退出", 进程却还活着)
             return
-        self.log.emit("[test-worker] 启动子进程: {} {}".format(
-            python, module))
+        self.log.emit("[test-worker] " + QC.translate(
+            "TestWorker", "启动子进程: {} {}").format(python, module))
         out_fd, out_path = tempfile.mkstemp(suffix=".testout")
         os.close(out_fd)
         # 只把 fd 交给子进程, 读写都不经过这个文件对象, 编码无关
@@ -107,7 +107,8 @@ class TestWorker(QThread):
                 cwd=WORKSPACE, stdout=out_file, stderr=subprocess.STDOUT,
                 env=env)
         except Exception as e:
-            self.log.emit("[test-worker] 启动子进程失败: {}".format(e))
+            self.log.emit("[test-worker] " + QC.translate(
+                "TestWorker", "启动子进程失败: {}").format(e))
             out_file.close()
             try:
                 os.remove(out_path)
@@ -115,11 +116,13 @@ class TestWorker(QThread):
                 pass
             self.failed.emit(self.tr("启动测试进程失败: {}").format(e))
             return
-        _trace("子进程已启动 pid={}".format(self._proc.pid))
-        self.log.emit("[test-worker] 子进程已启动 pid={}".format(self._proc.pid))
+        _trace(QC.translate("TestWorker", "子进程已启动 pid={}").format(
+            self._proc.pid))
+        self.log.emit("[test-worker] " + QC.translate(
+            "TestWorker", "子进程已启动 pid={}").format(self._proc.pid))
         last_lines = collections.deque(maxlen=200)
         _ansi_re = re.compile(r"\x1b\[[0-9;]*[a-zA-Z]")
-        _progress_re = re.compile(r"\[test\] 进度 (\d+)/(\d+)")
+        _progress_re = re.compile(r"\[test\] PROGRESS (\d+)/(\d+)")
         pos = 0
         result_emitted = False
         _last_heartbeat = time.time()
@@ -149,7 +152,7 @@ class TestWorker(QThread):
             if buf:
                 self.log.emit("\n".join(buf))
 
-        _trace("进入轮询循环")
+        _trace(QC.translate("TestWorker", "进入轮询循环"))
         try:
             while not self._stop_flag:
                 now = time.time()
@@ -159,8 +162,9 @@ class TestWorker(QThread):
                         fsz = os.path.getsize(out_path)
                     except Exception:
                         fsz = -1
-                    _trace("轮询中: 文件={}B 已读{}行 子进程={}".format(
-                        fsz, _bytes_read[0], self._proc.poll()))
+                    _trace(QC.translate(
+                        "TestWorker", "轮询中: 文件={}B 已读{}行 子进程={}").format(
+                            fsz, _bytes_read[0], self._proc.poll()))
                 lines, pos = _read_new_lines(out_path, pos)
                 if lines:
                     _consume(lines)
@@ -168,16 +172,18 @@ class TestWorker(QThread):
                     break
                 time.sleep(0.1)
         except Exception:
-            _trace("轮询异常:\n" + traceback.format_exc())
+            _trace(QC.translate("TestWorker", "轮询异常:\n")
+                   + traceback.format_exc())
             # 异常跳出也要收尾, 否则下面按 rc 报"异常退出", 进程其实还在跑,
             # 而 UI 收到 failed 就把 worker 句柄丢了, 再没人能杀它
             kill_process_tree(self._proc)
         tail, pos = _read_new_lines(out_path, pos, final=True)
         if tail:
             _consume(tail)
-        _trace("轮询结束 rc={}".format(self._proc.poll()))
-        self.log.emit("[test-worker] 子进程退出 rc={}".format(
+        _trace(QC.translate("TestWorker", "轮询结束 rc={}").format(
             self._proc.poll()))
+        self.log.emit("[test-worker] " + QC.translate(
+            "TestWorker", "子进程退出 rc={}").format(self._proc.poll()))
         out_file.close()
         try:
             os.remove(out_path)

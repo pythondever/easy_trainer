@@ -2,6 +2,7 @@
 """后台导入线程: 扫描图像目录, 可选读取标签(yolo txt / labelme json)."""
 import os
 from PySide6.QtCore import QThread, Signal
+from PySide6.QtCore import QCoreApplication as QC
 from app.core.constants import IMAGE_EXTS
 from app.core.image_utils import pil_open
 from app.core.label_utils import (label_file_has_content, load_json_shapes,
@@ -109,7 +110,7 @@ class ImportTask(QThread):
                     })
             except Exception as e:
                 # 整条记录跳过且不留痕的话, 用户不知道哪张图没导进来
-                write_log("导入跳过 {}: {}".format(img_path, e))
+                write_log(QC.translate("ImportTask", "导入跳过 {}: {}").format(img_path, e))
             if total > 0:
                 pct = int((i + 1) / total * 100)
                 if pct != last_pct:

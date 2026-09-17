@@ -14,6 +14,7 @@ import time
 import urllib.request
 
 from PySide6.QtCore import QThread, Signal
+from PySide6.QtCore import QCoreApplication as QC
 
 from app.core.log import write_log
 
@@ -63,14 +64,18 @@ class ModelDownloader(QThread):
         try:
             os.makedirs(self._dest, exist_ok=True)
         except OSError as exc:
-            return self._fail(asset, "权重目录不可写入, 请点\"更改\"换一个目录", exc)
+            return self._fail(asset, QC.translate(
+                "ModelDownloader",
+                "权重目录不可写入, 请点\"更改\"换一个目录"), exc)
 
         if _size_of(final) == asset.nbytes:
             self.one_done.emit(asset.filename)
             return True
         if os.path.exists(final):
             # 大小不符说明是半截或已损坏的旧文件, 留着会被当成就绪
-            write_log("权重文件大小不符, 丢弃重下: {}".format(final))
+            write_log(QC.translate(
+                "ModelDownloader",
+                "权重文件大小不符, 丢弃重下: {}").format(final))
             _remove(final)
 
         done = _size_of(part)
@@ -78,35 +83,51 @@ class ModelDownloader(QThread):
             _remove(part)
             done = 0
         headers = {"Range": "bytes={}-".format(done)} if done else {}
-        write_log("开始下载权重 {} ({}, 已下载 {})".format(
+        write_log(QC.translate(
+            "ModelDownloader",
+            "开始下载权重 {} ({}, 已下载 {})").format(
             asset.filename, asset.desc, done))
         try:
             resp, start = self._open(asset, headers, done)
         except Exception as exc:
-            write_log("下载权重失败 {}: {}".format(asset.filename, exc))
-            return self._fail(asset, "无法连接下载服务器, 请检查网络后重试", exc)
+            write_log(QC.translate(
+                "ModelDownloader",
+                "下载权重失败 {}: {}").format(asset.filename, exc))
+            return self._fail(asset, QC.translate(
+                "ModelDownloader",
+                "无法连接下载服务器, 请检查网络后重试"), exc)
         try:
             with resp:
                 if not self._write(resp, part, asset, start):
                     return False
         except Exception as exc:
-            return self._fail(asset, "下载中断, 已保留进度, 可再次点击续传", exc)
+            return self._fail(asset, QC.translate(
+                "ModelDownloader",
+                "下载中断, 已保留进度, 可再次点击续传"), exc)
 
         if _size_of(part) != asset.nbytes:
-            return self._fail(asset, "下载不完整, 已保留进度, 可再次点击续传", None)
+            return self._fail(asset, QC.translate(
+                "ModelDownloader",
+                "下载不完整, 已保留进度, 可再次点击续传"), None)
 
         self.verifying.emit(asset.filename)
         got = _md5_of(part)
         if got != asset.md5:
-            write_log("权重校验不通过 {}: 期望 {} 实际 {}".format(
+            write_log(QC.translate(
+                "ModelDownloader",
+                "权重校验不通过 {}: 期望 {} 实际 {}").format(
                 asset.filename, asset.md5, got))
             _remove(part)
-            return self._fail(asset, "文件校验未通过, 损坏文件已删除, 请重试", None)
+            return self._fail(asset, QC.translate(
+                "ModelDownloader",
+                "文件校验未通过, 损坏文件已删除, 请重试"), None)
         try:
             os.replace(part, final)
         except OSError as exc:
-            return self._fail(asset, "写入权重目录失败, 请检查磁盘空间", exc)
-        write_log("权重就绪: {}".format(final))
+            return self._fail(asset, QC.translate(
+                "ModelDownloader",
+                "写入权重目录失败, 请检查磁盘空间"), exc)
+        write_log(QC.translate("ModelDownloader", "权重就绪: {}").format(final))
         self.one_done.emit(asset.filename)
         return True
 
@@ -127,7 +148,9 @@ class ModelDownloader(QThread):
         with open(part, mode) as f:
             while True:
                 if self._cancelled:
-                    write_log("下载已取消, 已下载部分保留以便续传: {}".format(
+                    write_log(QC.translate(
+                        "ModelDownloader",
+                        "下载已取消, 已下载部分保留以便续传: {}").format(
                         asset.filename))
                     return False
                 block = resp.read(CHUNK)
@@ -145,7 +168,9 @@ class ModelDownloader(QThread):
 
     def _fail(self, asset, reason, exc):
         if exc is not None:
-            write_log("权重下载异常 {}: {!r}".format(asset.filename, exc))
+            write_log(QC.translate(
+                "ModelDownloader",
+                "权重下载异常 {}: {!r}").format(asset.filename, exc))
         self.one_failed.emit(asset.filename, reason)
         return False
 

@@ -26,7 +26,7 @@ class ProjectMixin(object):
             MessageBox.warning(self, QC.translate("ProjectMixin", "创建项目"), QC.translate("ProjectMixin", "项目名称已存在!"))
             return
         self.db.add_project(name)
-        self._log("创建项目: {}".format(name))
+        self._log(QC.translate("ProjectMixin", "创建项目: {}").format(name))
         self.refresh_project_list()
 
     def _rename_project(self, old_name):
@@ -38,14 +38,14 @@ class ProjectMixin(object):
             MessageBox.warning(self, QC.translate("ProjectMixin", "修改名称"), QC.translate("ProjectMixin", "项目名称已存在!"))
             return
         self.db.rename_project(old_name, new_name)
-        self._log("重命名项目: {} → {}".format(old_name, new_name))
+        self._log(QC.translate("ProjectMixin", "重命名项目: {} → {}").format(old_name, new_name))
         self.refresh_project_list()
 
     def _delete_project(self, name):
         if MessageBox.question(
                 self, QC.translate("ProjectMixin", "删除项目"),
                 QC.translate("ProjectMixin", "确定删除项目\"{}\"吗?\n").format(name), default_yes=True):
-            self._log("删除项目: {}".format(name))
+            self._log(QC.translate("ProjectMixin", "删除项目: {}").format(name))
             self.db.delete_project(name)
             self.db.delete_project_info(name)
             self.db.delete_project_records(name)
@@ -139,7 +139,7 @@ class ProjectMixin(object):
         if not self.db.add_dataset(project_name, name):
             MessageBox.warning(self, QC.translate("ProjectMixin", "添加数据集"), QC.translate("ProjectMixin", "该项目下已存在同名数据集!"))
             return
-        self._log("创建数据集: {}/{}".format(project_name, name))
+        self._log(QC.translate("ProjectMixin", "创建数据集: {}/{}").format(project_name, name))
         self.refresh_project_list()
 
     def _rename_dataset(self, project_name, old_name):
@@ -150,7 +150,7 @@ class ProjectMixin(object):
         if not self.db.rename_dataset(project_name, old_name, name):
             MessageBox.warning(self, QC.translate("ProjectMixin", "修改数据集"), QC.translate("ProjectMixin", "该项目下已存在同名数据集!"))
             return
-        self._log("重命名数据集: {} → {}".format(project_name, old_name, name))
+        self._log(QC.translate("ProjectMixin", "重命名数据集: {} → {}").format(project_name, old_name, name))
         self.refresh_project_list()
 
     def _delete_dataset(self, project_name, ds_name):
@@ -160,7 +160,7 @@ class ProjectMixin(object):
             self.db.delete_dataset(project_name, ds_name)
             # 训练/模型记录可能被多个数据集共用,只移除该数据集,无引用才删记录
             self.db.remove_dataset_from_records(project_name, ds_name)
-            self._log("删除数据集: {}/{}".format(project_name, ds_name))
+            self._log(QC.translate("ProjectMixin", "删除数据集: {}/{}").format(project_name, ds_name))
             proj_cache = self.dataset_cache.get(project_name, {})
             proj_cache.pop(ds_name, None)
             if getattr(self, "_current_dataset", None) == (project_name, ds_name):
@@ -302,12 +302,12 @@ class ProjectMixin(object):
                 lbl = b[-1]
                 label_counts[lbl] = label_counts.get(lbl, 0) + 1
         counts_str = ", ".join(
-            "{}: {}个".format(k, v) for k, v in
+            QC.translate("ProjectMixin", "{}: {}个").format(k, v) for k, v in
             sorted(label_counts.items(), key=lambda kv: label_sort_key(kv[0])))
-        self._log("数据集移动: {}/{} → {}/{} | 移动图像 {} 张"
-                  " | 目标标签统计({}类): {}".format(
+        self._log(QC.translate("ProjectMixin", "数据集移动: {}/{} → {}/{} | 移动图像 {} 张"
+                  " | 目标标签统计({}类): {}").format(
             src_proj, src_ds, dst_proj, dst_ds, len(moved),
-            len(label_counts), counts_str or "(无)"))
+            len(label_counts), counts_str or QC.translate("ProjectMixin", "(无)")))
 
         # ---- 7. 刷新: 树 / 显示区 / 标签筛选 ----
         self.refresh_project_list()

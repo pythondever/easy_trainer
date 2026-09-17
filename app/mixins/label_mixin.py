@@ -270,13 +270,13 @@ class LabelMixin(object):
                     project_name, dataset_name, changed)
         if merge_mode:
             self.current_label = new_name
-            self._log("合并标签: {} → {} ({}/{}) | 启动后台文件合并, 完成后输出统计".format(
+            self._log(QC.translate("LabelMixin", "合并标签: {} → {} ({}/{}) | 启动后台文件合并, 完成后输出统计").format(
                 old_name, new_name, project_name, dataset_name))
             self._merge_label_files(project_name, dataset_name,
                                     old_name, new_name)
             return  # 文件合并是异步的,完成后回调里刷新
         self.current_label = new_name
-        self._log("重命名标签: {} → {} ({}/{})".format(
+        self._log(QC.translate("LabelMixin", "重命名标签: {} → {} ({}/{})").format(
             old_name, new_name, project_name, dataset_name))
         self._refresh_label_filter(project_name, dataset_name)
         self.show_dataset_images(project_name, dataset_name)
@@ -348,23 +348,23 @@ class LabelMixin(object):
         # 清理 db labels dict 中 cache
         self._sync_db_labels_from_cache(project_name, dataset_name)
         counts_str = ", ".join(
-            "{}: {}个".format(k, v) for k, v in
+            QC.translate("LabelMixin", "{}: {}个").format(k, v) for k, v in
             sorted(label_counts.items(), key=lambda kv: label_sort_key(kv[0])))
         if op == "delete":
-            self._log("删除标签完成: {} | 修改 {} 个标签文件 | "
-                      "删除后标签统计({}类): {}".format(
+            self._log(QC.translate("LabelMixin", "删除标签完成: {} | 修改 {} 个标签文件 | "
+                      "删除后标签统计({}类): {}").format(
                 old_name, changed, len(label_counts),
-                counts_str or "(无)"))
+                counts_str or QC.translate("LabelMixin", "(无)")))
         elif changed:
-            self._log("合并标签: {} → {} | 修改 {} 个标签文件 | "
-                      "合并后标签统计({}类): {}".format(
+            self._log(QC.translate("LabelMixin", "合并标签: {} → {} | 修改 {} 个标签文件 | "
+                      "合并后标签统计({}类): {}").format(
                 old_name, new_name, changed,
-                len(label_counts), counts_str or "(无)"))
+                len(label_counts), counts_str or QC.translate("LabelMixin", "(无)")))
         else:
-            self._log("合并标签: {} → {} | 无标签文件被修改 | "
-                      "合并后标签统计({}类): {}".format(
+            self._log(QC.translate("LabelMixin", "合并标签: {} → {} | 无标签文件被修改 | "
+                      "合并后标签统计({}类): {}").format(
                 old_name, new_name,
-                len(label_counts), counts_str or "(无)"))
+                len(label_counts), counts_str or QC.translate("LabelMixin", "(无)")))
         self._refresh_label_filter(project_name, dataset_name)
         self.show_dataset_images(project_name, dataset_name)
 
@@ -479,7 +479,7 @@ class LabelMixin(object):
                 {k: v for k, v in ids.items() if k not in set(old_ids)})
         if self.current_label == label_name:
             self.current_label = "__unlabeled__"
-        self._log("删除标签: {} ({}/{})".format(
+        self._log(QC.translate("LabelMixin", "删除标签: {} ({}/{})").format(
             label_name, project_name, dataset_name))
         # YOLO txt 文件层删除: 后台删行首==旧 id 的行(否则重新导入标签复活)
         binding = self.db.get_dataset_import(project_name, dataset_name) or {}

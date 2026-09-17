@@ -310,7 +310,7 @@ class ImportExportMixin(object):
                            for d in self.db.get_datasets(project_name)]
                 src = "; ".join(self._export_source(project_name, ds)
                                 for _, ds in ds_list)
-                self._log("开始导出: 项目={} | 源路径={} | 保存路径={} | 格式={}".format(
+                self._log(QC.translate("ImportExportMixin", "开始导出: 项目={} | 源路径={} | 保存路径={} | 格式={}").format(
                     project_name, src, root, fmt))
                 recs_map = {ds: self._collect_export_recs(project_name, ds)
                             for _, ds in ds_list}
@@ -329,13 +329,13 @@ class ImportExportMixin(object):
                     self, QC.translate("ImportExportMixin", "导出"),
                     QC.translate("ImportExportMixin", "项目\"{}\"导出完成, 共复制 {} 张图像\n位置: {}").format(
                         project_name, total, root))
-                self._log("导出项目完成: {} | {} 张图像 | 标签({}) | 格式={} | → {}".format(
+                self._log(QC.translate("ImportExportMixin", "导出项目完成: {} | {} 张图像 | 标签({}) | 格式={} | → {}").format(
                     project_name, total,
                     self._export_labels(project_name, ds_list), fmt, root))
             else:
                 project_name, dataset_name = project, dataset
                 src = self._export_source(project_name, dataset_name)
-                self._log("开始导出: 数据集={}/{} | 源路径={} | 保存路径={} | 格式={}".format(
+                self._log(QC.translate("ImportExportMixin", "开始导出: 数据集={}/{} | 源路径={} | 保存路径={} | 格式={}").format(
                     project_name, dataset_name, src, save_dir, fmt))
                 recs = self._collect_export_recs(project_name, dataset_name)
                 dlg2 = ProgressDialog(
@@ -352,13 +352,13 @@ class ImportExportMixin(object):
                     QC.translate("ImportExportMixin", "数据集\"{}\"导出完成, 共复制 {} 张图像\n位置: {}").format(
                         dataset_name, total,
                         os.path.join(save_dir, dataset_name)))
-                self._log("导出数据集完成: {}/{} | {} 张图像 | 标签({}) | 格式={} | → {}".format(
+                self._log(QC.translate("ImportExportMixin", "导出数据集完成: {}/{} | {} 张图像 | 标签({}) | 格式={} | → {}").format(
                     project_name, dataset_name, total,
                     self._export_labels(project_name, [(project_name, dataset_name)]),
                     fmt, os.path.join(save_dir, dataset_name)))
         except Exception as e:
-            self._log("导出失败: 项目={} 数据集={} | {}".format(
-                project, dataset or "(整个项目)", traceback.format_exc()))
+            self._log(QC.translate("ImportExportMixin", "导出失败: 项目={} 数据集={} | {}").format(
+                project, dataset or QC.translate("ImportExportMixin", "(整个项目)"), traceback.format_exc()))
             MessageBox.critical(self, QC.translate("ImportExportMixin", "导出失败"), str(e))
 
     def _pick_export_path(self, dlg, ui):
@@ -388,15 +388,16 @@ class ImportExportMixin(object):
         binding = self.db.get_dataset_import(project_name, dataset_name) or {}
         img = get_paths(binding, "image")
         lbl = get_paths(binding, "label")
-        return "{} => 标签:{}".format(";".join(img or ["(无)"]),
-                                      ";".join(lbl or ["(无)"]))
+        return QC.translate("ImportExportMixin", "{} => 标签:{}").format(
+            ";".join(img or [QC.translate("ImportExportMixin", "(无)")]),
+            ";".join(lbl or [QC.translate("ImportExportMixin", "(无)")]))
 
     def _export_labels(self, project_name, ds_list):
         """数据集标签列表摘要(label_sort_key 排序), 供导出日志用."""
         all_labels = set()
         for proj, ds in ds_list:
             all_labels.update(self.db.get_dataset_labels(proj, ds))
-        return ", ".join(sorted(all_labels, key=label_sort_key)) or "(无标签)"
+        return ", ".join(sorted(all_labels, key=label_sort_key)) or QC.translate("ImportExportMixin", "(无标签)")
 
     def _export_dataset(self, project_name, dataset_name, base_dir,
                         fmt="labelme", progress=None, base_done=0, total=None):
