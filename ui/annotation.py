@@ -94,6 +94,31 @@ class Ui_annotationDialog(object):
 
         self.verticalLayout_params.addLayout(self.params_row_blend)
 
+        self.params_row_brightness = QHBoxLayout()
+        self.params_row_brightness.setObjectName(u"params_row_brightness")
+        self.brightness_label = QLabel(self.paramsPanel)
+        self.brightness_label.setObjectName(u"brightness_label")
+        self.brightness_label.setMinimumSize(QSize(64, 0))
+
+        self.params_row_brightness.addWidget(self.brightness_label)
+
+        self.brightness_slider = QSlider(self.paramsPanel)
+        self.brightness_slider.setObjectName(u"brightness_slider")
+        self.brightness_slider.setMinimumSize(QSize(120, 0))
+        self.brightness_slider.setOrientation(Qt.Horizontal)
+
+        self.params_row_brightness.addWidget(self.brightness_slider)
+
+        self.brightness_lineEdit = QLineEdit(self.paramsPanel)
+        self.brightness_lineEdit.setObjectName(u"brightness_lineEdit")
+        self.brightness_lineEdit.setMinimumSize(QSize(58, 0))
+        self.brightness_lineEdit.setMaximumSize(QSize(58, 16777215))
+
+        self.params_row_brightness.addWidget(self.brightness_lineEdit)
+
+
+        self.verticalLayout_params.addLayout(self.params_row_brightness)
+
         self.params_row_fill = QHBoxLayout()
         self.params_row_fill.setObjectName(u"params_row_fill")
         self.params_fill_label = QLabel(self.paramsPanel)
@@ -377,6 +402,7 @@ class Ui_annotationDialog(object):
         self.params_angle_label.setText(QCoreApplication.translate("annotationDialog", u"\u89d2\u5ea6\u8303\u56f4", None))
         self.label.setText(QCoreApplication.translate("annotationDialog", u"~", None))
         self.blend_strength_label.setText(QCoreApplication.translate("annotationDialog", u"\u878d\u5408\u5f3a\u5ea6", None))
+        self.brightness_label.setText(QCoreApplication.translate("annotationDialog", u"\u4eae\u5ea6\u8c03\u8282", None))
         self.params_fill_label.setText(QCoreApplication.translate("annotationDialog", u"\u586b\u5145\u989c\u8272", None))
 #if QT_CONFIG(tooltip)
         self.fill_color_btn.setToolTip(QCoreApplication.translate("annotationDialog", u"\u70b9\u51fb\u6253\u5f00\u53d6\u8272\u5668, \u9009\u4efb\u610f\u989c\u8272", None))

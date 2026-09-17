@@ -184,7 +184,8 @@
   <li data-page-node-id="cAZIqZIx91r6GTMMo5r26K"><strong data-page-node-id="sdjJYEm6Ji7OUBexXASKFZ">删除图像</strong>：删除当前这张图</li>
 </ul>
 
-<p data-page-node-id="vRClgAzlOt5WcDuPVzFB0X">右侧<strong data-page-node-id="MmhUdWGkyBJVM1ZSCcy0f5">标签列表</strong>选择类别；勾选“显示标注”可随时隐藏所有框查看原图。
+<p data-page-node-id="vRClgAzlOt5WcDuPVzFB0X">右侧<strong data-page-node-id="MmhUdWGkyBJVM1ZSCcy0f5">标签列表</strong>选择类别；<strong>显示标注</strong>开关可随时隐藏所有标注轮廓（框线、标签、顶点手柄）查看原图；
+尚未落地的粘贴内容只藏轮廓、图案照常显示，所以关掉它正好可以预览“贴上去之后是什么效果”。
 右下方“<strong>标注信息</strong>”面板列出本图所有标注对象的形状（矩形/多边形）、顶点数与面积；
 其下方<strong data-page-node-id="RTQWZSHRxq2knc5Cy3ECtz">图像信息</strong>显示当前图的宽 × 高 × 通道数（如 505×505×3）与序号。</p>
 
@@ -207,11 +208,16 @@
       常用于把缺陷区域抹成背景色</li>
 </ul>
 
-<p data-page-node-id="pWjWypXq10MrcY1KO15sCk">复制后在图像空白处右键选择<strong data-page-node-id="SjRBrY5eaytevDt1pnXQxY">粘贴</strong>，即可把<strong data-page-node-id="A25JlgR12LXRIOYOx9lyTD">剪切板中当前选中</strong>的那张缩略图
+<p data-page-node-id="pWjWypXq10MrcY1KO15sCk"><strong>左键点选</strong>剪切板里的某张缩略图后，把鼠标移到画布上，会有一条<strong>多边形虚线轮廓</strong>
+跟着鼠标走（形状是旋转后的真实轮廓，已套用本次摇出的角度），据此可以先看清这一贴大概落在哪、朝向如何；
+按 <code>Esc</code> 收掉虚线、回到普通鼠标模式，再右键选“粘贴”即可落地。</p>
+
+<p data-page-node-id="pWjWypXq10MrcY1KO15sCk2">在图像空白处右键选择<strong data-page-node-id="SjRBrY5eaytevDt1pnXQxY">粘贴</strong>，即可把<strong data-page-node-id="A25JlgR12LXRIOYOx9lyTD">剪切板中当前选中</strong>的那张缩略图
 贴到鼠标位置（同图或跨图均可）：</p>
 
 <ul data-page-node-id="AAsQTGeDdMXrVemn40EgZa">
-  <li data-page-node-id="91QzL34HQbuGLuVCsAkBos"><strong data-page-node-id="x9gMZaAektZfElpLQM6m9c">角度范围</strong>：粘贴时随机旋转的角度区间（默认 -180 ~ 180）</li>
+  <li data-page-node-id="91QzL34HQbuGLuVCsAkBos"><strong data-page-node-id="x9gMZaAektZfElpLQM6m9c">角度范围</strong>：粘贴时随机旋转的角度区间（默认 -180 ~ 180）；
+      虚线预览用的就是这个区间里摇出的角度，所见即所得</li>
   <li data-page-node-id="nH9hzbNleDAL07jTisJy0F"><strong data-page-node-id="wmtYcSPbGmXBiQFl23lG5u">融合强度</strong>：0 ~ 1，默认 0.70。粘贴时自动做亮度补偿和边缘羽化，
       让粘贴区域与背景自然过渡；设为 0 则等同直接硬贴</li>
   <li data-page-node-id="UuiJlSFkSAXquLHLPOhn05"><strong data-page-node-id="feCbWMLCxKikHu3IsZJ2eX">填充值</strong>：R - G - B 三个输入框（每通道 0 ~ 255，默认 255），配合右键“填充”把区域抹成该颜色</li>
@@ -224,7 +230,29 @@
   <figcaption data-page-node-id="koVEQM8QYsnLgqNq1gk5MG">右键复制标注对象 → 剪切板缩略图，工具栏设置角度范围 / 融合强度 / 填充值</figcaption>
 </figure>
 
-<h3 data-page-node-id="xx5TwSDXQZLCItpwEonRnQ">4.4 按标注类别筛选</h3>
+<h3 data-page-node-id="VwQ9tGm2BzXk1rLpYcTd0a">4.4 多边形区域亮度调节</h3>
+
+<p data-page-node-id="Kd7mYv3QbWx1sTpRgHnZ2c">在画布上点选一个<strong>多边形</strong>标注，工具条“设置”里的
+<strong data-page-node-id="QpL2nXk8VrB4tMszWyGh1e">亮度调节</strong>即可改该多边形<strong>框内像素</strong>的明暗：
+拖动滑块（或直接输入数值）整体提亮或压暗，图像上实时预览。</p>
+
+<ul data-page-node-id="Jt3bWn7KdXqY5mZvRcP2sD">
+  <li data-page-node-id="Hz5cQm1TpKvN8bXdLyRj3w"><strong>范围与含义</strong>：0 ~ 1，默认 <strong>0.50 = 原样</strong>；
+      越往 1 越亮（1.00 约为两倍亮度），越往 0 越暗（0 为全黑）</li>
+  <li data-page-node-id="Rm9pLc4VnQxT6dWsYbGj7t"><strong>作用对象</strong>：只对<strong>选中的多边形</strong>生效；矩形或没选中任何标注时给提示、不动像素。
+      点另一个多边形时滑块回到它自己的值（没调过的都是 0.50），上一个多边形的亮度不会跟着带过去</li>
+  <li data-page-node-id="Wf2yBq8KmNvR5tXdZpLc1s"><strong>什么时候写盘</strong>：拖动过程只改内存、实时预览，按 <code>A</code> / <code>D</code> 切图
+      或 <code>Ctrl + S</code> 才写进图像文件</li>
+  <li data-page-node-id="Nv6tZm3QxKpB9sLdRwYc5h"><strong>撤销</strong>：一次调节只记一步，<code>Ctrl + Z</code> 一下即可回到调节前的像素
+      （同一次里来回拖多少次也只算一步）</li>
+</ul>
+
+<figure data-page-node-id="Ms4qXn1VtLpC7bWdRyGk9z">
+  <img src="images/多边形区域亮度调节.png" alt="多边形亮度调节" data-page-node-id="Tb8vKm2QxLpN4dWsRcYj6h">
+  <figcaption data-page-node-id="Gh5cZq7BvNdX2mKrLjPw8t">选中多边形后用“亮度调节”改框内像素明暗，图像上实时预览</figcaption>
+</figure>
+
+<h3 data-page-node-id="xx5TwSDXQZLCItpwEonRnQ">4.5 按标注类别筛选</h3>
 
 <p data-page-node-id="35aiu9pGC5OFyvHdX0Th2F">首页顶部工具栏的类别下拉框，选择某类别后图像区只显示含该类别的图，
 便于集中检查、补标某一类。</p>

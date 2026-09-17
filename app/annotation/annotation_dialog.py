@@ -20,7 +20,7 @@ from PySide6.QtWidgets import (QDialog, QWidget, QApplication, QVBoxLayout,
                                QHBoxLayout, QLabel, QMessageBox,
                                QGridLayout, QLineEdit, QSpinBox, QPushButton, QFrame,
                                QSlider, QMenu, QGraphicsTextItem, QButtonGroup,
-                               QFileDialog)
+                               QFileDialog, QToolTip)
 
 from ui.annotation import Ui_annotationDialog as AnnotationUI
 from ui.add_label import Ui_addLabelDialog as AddLabelUI
@@ -43,6 +43,7 @@ from PySide6.QtWidgets import QGraphicsView
 BLEND_STRENGTH_DEFAULT = "0.7"     # 粘贴融合力度: 0=原始硬贴, 1=完全融合
 FILL_COLOR_DEFAULT = "#ffffff"     # 多边形右键"填充"用的默认颜色
 ANGLE_RANGE_DEFAULT = (-180, 180)  # 粘贴时随机旋转的角度范围
+BRIGHTNESS_DEFAULT = "0.50"        # 多边形亮度: 0.5=原样, 1=两倍, 0=全黑
 
 # 填充色点(黑 白 灰 红 橙 黄 绿 青 蓝 紫)
 FILL_COLOR_PRESETS = (
@@ -249,6 +250,11 @@ def _upgrade_graphics_view(view):
             _v.verticalScrollBar().setValue(_v.verticalScrollBar().value() - delta.y())
             ev.accept()
             return
+        # 剪切板预览虚线跟着鼠标走(画框/格式刷期间不跟, 免得和绘制预览打架)
+        _scene = _v.scene()
+        if getattr(_scene, "_stamp_ghost", None) is not None:
+            if not getattr(_scene, "draw_mode", False) and _scene.fp_mode is None:
+                _scene.update_stamp_ghost(_v.mapToScene(ev.pos()))
         QGraphicsView.mouseMoveEvent(_v, ev)
     view.mouseMoveEvent = _move
 
@@ -306,17 +312,8 @@ def _upgrade_graphics_view(view):
     view.contextMenuEvent = _ctx_menu
 
     def _do_paste(_scene, _pos):
-        """粘贴前读取角度范围输入框(容错: 空/非整数用默认 ±180), 再执行粘贴."""
         dialog = view.window()   # 顶层窗口 = AnnotationDialog
-        try:
-            lo = int(dialog.ui.min_ange_lineEdit.text())
-        except (ValueError, TypeError):
-            lo = ANGLE_RANGE_DEFAULT[0]
-        try:
-            hi = int(dialog.ui.max_ange_lineEdit.text())
-        except (ValueError, TypeError):
-            hi = ANGLE_RANGE_DEFAULT[1]
-        _scene.angle_range = (lo, hi)
+        _scene.angle_range = dialog._paste_angle_range()
         _scene._paste_template(_pos)
 
     def _do_fill(_scene, _item):
@@ -671,6 +668,7 @@ class AnnotationDialog(QDialog):
         self._pix_cache_bytes_max = 768 * 1024 * 1024
         self._pix_fmt_cache = {}
         self._pix_unsaved = False
+        self._bright_unsaved = False   # 亮度改过但还没显式保存, 见 _commit_brightness
         self._closing = False
         self._prefetch_worker = _PrefetchWorker(self.image_list, self)
         self._prefetch_worker.decoded.connect(self._on_prefetch_decoded)
@@ -723,7 +721,8 @@ class AnnotationDialog(QDialog):
         u.poly_btn.clicked.connect(lambda: self._start_draw("polygon"))
         # 行标签钉死 64 宽: QLabel 默认会把行内富余宽度吸走, 各行控件起始列就对不齐了
         for name in ("params_angle_label", "blend_strength_label",
-                     "params_fill_label", "params_presets_label"):
+                     "brightness_label", "params_fill_label",
+                     "params_presets_label"):
             getattr(u, name).setFixedWidth(64)
         # 角度范围输入框: 粘贴时随机旋转的角度范围(默认 -180 ~ 180, 居中, 仅整数)
         # 高度不在这里定: __init__ 时按钮还没被 QSS 定高(36), 此时取值会偏大,
@@ -745,6 +744,18 @@ class AnnotationDialog(QDialog):
         u.blend_slider.setFocusPolicy(Qt.NoFocus)
         u.blend_slider.valueChanged.connect(self._on_blend_slider)
         self._normalize_blend_strength()
+        # 亮度调节: 只改选中多边形框内的像素, 拖动实时预览, 落盘等切图/Ctrl+S
+        u.brightness_lineEdit.setText(BRIGHTNESS_DEFAULT)
+        u.brightness_lineEdit.setAlignment(Qt.AlignCenter)
+        u.brightness_lineEdit.setValidator(QDoubleValidator(0.0, 1.0, 2, self))
+        u.brightness_lineEdit.editingFinished.connect(self._normalize_brightness)
+        u.brightness_lineEdit.setToolTip("只在选中的多边形框内生效; A/D 切图或 Ctrl+S 才写盘")
+        u.brightness_slider.setRange(0, 100)
+        u.brightness_slider.setFocusPolicy(Qt.NoFocus)
+        u.brightness_slider.setToolTip(u.brightness_lineEdit.toolTip())
+        u.brightness_slider.valueChanged.connect(self._on_brightness_slider)
+        u.brightness_slider.sliderReleased.connect(self._commit_brightness)
+        self._sync_brightness_slider()
         # 填充颜色: 多边形右键"填充"写入的颜色, 色块(取色器)/ 常用色点 / 文本框三种改法
         u.fill_color_lineEdit.setText(FILL_COLOR_DEFAULT)
         u.fill_color_lineEdit.setAlignment(Qt.AlignCenter)
@@ -835,6 +846,57 @@ class AnnotationDialog(QDialog):
         self.ui.blend_strength_lineEdit.setText("{:.2f}".format(value / 100.0))
         self._normalize_blend_strength()
 
+    def _sync_brightness_slider(self):
+        """输入框 -> 滑块(不碰图像); 空值/非法值回默认, 返回收敛后的值."""
+        edit = self.ui.brightness_lineEdit
+        try:
+            v = float(edit.text().strip())
+        except ValueError:
+            v = float(BRIGHTNESS_DEFAULT)
+        v = min(1.0, max(0.0, v))
+        edit.setText("{:.2f}".format(v))
+        slider = self.ui.brightness_slider
+        slider.blockSignals(True)
+        slider.setValue(int(round(v * 100)))
+        slider.blockSignals(False)
+        return v
+
+    def _normalize_brightness(self):
+        self._apply_brightness(self._sync_brightness_slider())
+        self._commit_brightness()
+
+    def _on_brightness_slider(self, value):
+        v = min(1.0, max(0.0, value / 100.0))
+        self.ui.brightness_lineEdit.setText("{:.2f}".format(v))
+        self._apply_brightness(v)
+
+    def _apply_brightness(self, v):
+        """只改选中多边形框内的像素; 没选中或选中的是矩形就提示一下."""
+        item = self.scene.selected_item() if self.scene is not None else None
+        if item is None:
+            QToolTip.showText(QCursor.pos(), "先在画布上点选一个多边形")
+            return
+        if not self.scene.set_polygon_brightness(item, v):
+            QToolTip.showText(QCursor.pos(), "亮度调节只对多边形有效")
+
+    def _commit_brightness(self):
+        """
+        亮度改完落定: 只刷新图像缓存, 不设 _pix_unsaved 也不启动 150ms 自动保存.
+        后者会让"松手后随手画个框"触发的自动保存把亮度一起写掉, 等于拖一下就写一次盘;
+        真正写盘统一等 _save_current 里用户显式保存的那一次.
+        """
+        scene = getattr(self, "scene", None)
+        if scene is None or not scene.has_pending_brightness():
+            return
+        if not (0 <= self.index < len(self.image_list)):
+            return
+        pix = scene.image_item.pixmap()
+        if pix is None or pix.isNull():
+            return
+        self._put_pix_cache(self.image_list[self.index], pix)
+        self._bright_unsaved = True
+        self._dirty = True
+
     def _set_fill_color(self, value):
         """填充色唯一入口: 色名/十六进制/三通道都从这里过, 保证文本框/色块/色点三处一致."""
         rgb = _parse_rgb(value) or _parse_rgb(FILL_COLOR_DEFAULT)
@@ -907,6 +969,9 @@ class AnnotationDialog(QDialog):
         u.max_ange_lineEdit.setText(str(ANGLE_RANGE_DEFAULT[1]))
         u.blend_strength_lineEdit.setText(BLEND_STRENGTH_DEFAULT)
         self._normalize_blend_strength()
+        u.brightness_lineEdit.setText(BRIGHTNESS_DEFAULT)
+        self._sync_brightness_slider()
+        self.scene.drop_brightness()
         self._set_fill_color(FILL_COLOR_DEFAULT)
 
     def _on_image_pixels_changed(self):
@@ -1067,12 +1132,9 @@ class AnnotationDialog(QDialog):
             self.scene.load_boxes(boxes)
         finally:
             self._loading = False
-        # A/D 切图保持"显示标注"开关状态(关闭时隐藏标注框)
+        # A/D 切图保持"显示标注"开关状态(关闭时隐藏标注轮廓)
         show = getattr(self.ui, "switchButton", None) is not None and self.ui.switchButton.isChecked()
-        self.scene.show_annotations = show
-        if not show:
-            for item in self.scene.all_items():
-                item.setVisible(False)
+        self.scene.set_annotations_visible(show)
         self._ensure_label_colors(boxes)
         QTimer.singleShot(0, self.view.fit_window)
         channels = {
@@ -1195,6 +1257,7 @@ class AnnotationDialog(QDialog):
         self._hide_params_panel()
         if self.scene.fp_mode is not None:
             self.scene.set_format_painter(False)
+        self.scene.stop_stamp_ghost()
         self.scene.set_draw_mode(True, shape)
         self._apply_draw_cursor()
         self._set_draw_button_states(True)
@@ -1226,9 +1289,10 @@ class AnnotationDialog(QDialog):
         self._set_draw_button_states(True)
 
     def _cancel_draw_mode(self):
-        """主动退出画模式(不创建标注): 恢复光标 + 按钮样式."""
+        """主动退出画模式(不创建标注): 恢复光标 + 按钮样式; 顺带收掉剪切板预览虚线."""
         if self.scene.fp_mode is not None:
             self.scene.set_format_painter(False)
+        self._cancel_stamp_ghost()
         self.scene.set_draw_mode(False)
         self.scene._cancel_polygon()
         self._clear_override_cursor()
@@ -1237,11 +1301,37 @@ class AnnotationDialog(QDialog):
 
     # ---------------- 复制/粘贴(格式刷改造: 右键复制多边形 + 随机旋转粘贴) ----------------
     def _toggle_show_boxes(self, checked):
-        """"显示标注"开关: 关闭时隐藏图像上的标注框, 右侧列表信息保留."""
-        self.scene.show_annotations = bool(checked)
-        for item in self.scene.all_items():
-            item.setVisible(checked)
+        """"显示标注"开关: 关闭时隐藏标注轮廓, 右侧列表信息保留."""
+        self.scene.set_annotations_visible(checked)
         self.scene.invalidate()
+
+    def _paste_angle_range(self):
+        """角度范围输入框 → (lo, hi); 空/非整数回默认."""
+        try:
+            lo = int(self.ui.min_ange_lineEdit.text())
+        except (ValueError, TypeError):
+            lo = ANGLE_RANGE_DEFAULT[0]
+        try:
+            hi = int(self.ui.max_ange_lineEdit.text())
+        except (ValueError, TypeError):
+            hi = ANGLE_RANGE_DEFAULT[1]
+        return lo, hi
+
+    def _cancel_stamp_ghost(self):
+        """收掉剪切板预览虚线并取消缩略图选中, 回到普通鼠标模式."""
+        self.scene.stop_stamp_ghost()
+        self.scene.fp_template = None
+        btn = None
+        if (self._clip_current is not None
+                and 0 <= self._clip_current < len(self._clip_btns)):
+            btn = self._clip_btns[self._clip_current]
+        if btn is not None and btn.isChecked():
+            # 互斥组里没法直接取消选中, 临时解开再勾回去
+            self._clip_group.setExclusive(False)
+            btn.setChecked(False)
+            self._clip_group.setExclusive(True)
+        self._clip_current = None
+        self._update_clip_label()
 
     # ---------------- 剪切板缩略图(全局粘贴模板) ----------------
     CLIP_W, CLIP_H = 120, 90
@@ -1291,6 +1381,7 @@ class AnnotationDialog(QDialog):
 
     def _rebuild_clipboard(self, select=None):
         """按全局剪切板重建缩略图; select=选中下标(None=无选中)."""
+        self.scene.stop_stamp_ghost()
         layout = self.ui.clipboard_layout
         while layout.count():
             w = layout.takeAt(0).widget()
@@ -1336,6 +1427,8 @@ class AnnotationDialog(QDialog):
         if self.scene.fp_mode is not None:
             self.scene.set_format_painter(False)
         self.scene.fp_template = t
+        self.scene.angle_range = self._paste_angle_range()
+        self.scene.start_stamp_ghost()
 
     def _clip_menu(self, btn):
         i = self._clip_btns.index(btn) if btn is not None else -1
@@ -1929,12 +2022,27 @@ class AnnotationDialog(QDialog):
         会触发整行 unpolish/polish, 是框多时卡顿的主因之一.
         """
         sel = _sel if _sel is not None else self.scene.selected_item()
+        self._sync_brightness_for(sel)
         row = self._labeled_rows.get(sel)
         if row is self._labeled_sel_row:
             return
         _set_row_background(self._labeled_sel_row, False)
         _set_row_background(row, True)
         self._labeled_sel_row = row
+
+    def _sync_brightness_for(self, item):
+        """
+        换选标注 → 亮度滑块摆到这个框自己的值(没调过的一律 0.50).
+        上一个框调的亮度不能顺延: 停在 0.80 时点另一个多边形, 再拖一下就把新框也调亮了,
+        而用户看到的滑块还以为是 0.50.
+        """
+        v = self.scene.brightness_of(item) if item is not None \
+            else float(BRIGHTNESS_DEFAULT)
+        self.ui.brightness_lineEdit.setText("{:.2f}".format(v))
+        slider = self.ui.brightness_slider
+        slider.blockSignals(True)
+        slider.setValue(int(round(v * 100)))
+        slider.blockSignals(False)
 
     @staticmethod
     def _polygon_area(points):
@@ -1960,6 +2068,12 @@ class AnnotationDialog(QDialog):
         否则刚粘上去就被烧进图里, 根本没机会拖到位.
         """
         if commit_pending:
+            # 亮度只在用户显式保存时落地: 让自动保存(150ms)也带上的话, 拖一下就写一次盘
+            self._commit_brightness()
+            if self._bright_unsaved:
+                self._bright_unsaved = False
+                self._pix_unsaved = True
+                self._dirty = True
             self.scene.commit_pastes()
         elif self.scene.has_pending_pastes():
             # 还有浮层没落地就写盘的话, json 里会有标注、图像里却没有对应图案

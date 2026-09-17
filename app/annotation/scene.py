@@ -66,12 +66,17 @@ class AnnotationScene(QGraphicsScene):
         self.fp_preview_item = None
         self.fp_ghost_item = None
         self._fp_undo_stack = []
-        self._paste_pos = None   # 复制/粘贴: 左键点击空白处记录的粘贴锚点
+        self._paste_pos = None           # 复制/粘贴: 左键点击空白处记录的粘贴锚点
         self.angle_range = (-180, 180)   # 粘贴随机旋转角度范围(由标注界面输入框设置)
         self.blend_strength = 0.7        # 粘贴融合力度 0~1(由标注界面输入框设置)
+        self._bright_edit = None         # 正在调亮度的区域基准, 见 set_polygon_brightness
+        self._bright_cache = {}          # 多边形 -> 亮度基准, 切回同一个框再调时不叠加
         # "显示标注"开关状态(由标注界面同步): 只影响粘贴出来的框, 手绘的照常显示
         self.show_annotations = True
         self._pending_pastes = []   # 浮动粘贴: 图案还没写进图像像素的多边形
+        # 剪切板选中后的落点预览: 跟鼠标走的多边形虚线, 角度此刻定死, 预览即落点
+        self._stamp_ghost = None
+        self._stamp_angle = None
 
     def set_image(self, pixmap):
         self.clear()
@@ -82,6 +87,9 @@ class AnnotationScene(QGraphicsScene):
         self.fp_ghost_item = None
         self._fp_undo_stack = []
         self._pending_pastes = []
+        self._stamp_ghost = None
+        self._stamp_angle = None
+        self.drop_brightness()
         self.addItem(self.image_item)
         self.image_rect = QRectF(0, 0, pixmap.width(), pixmap.height())
         self.setSceneRect(self.image_rect.adjusted(-50, -50, 50, 50))
@@ -356,6 +364,7 @@ class AnnotationScene(QGraphicsScene):
         before = pix.copy(ox, oy, max(0, bw), max(0, bh))
         if before.isNull():
             before = None
+        self.drop_brightness()
         p = QPainter(pix)
         strength = float(getattr(self, "blend_strength", 0.0) or 0.0)
         if strength > 0.0 and bw > 0 and bh > 0:
@@ -371,6 +380,50 @@ class AnnotationScene(QGraphicsScene):
         self.image_item.setPixmap(pix)
         return before, ox, oy
 
+    def start_stamp_ghost(self):
+        """
+        选中剪切板模板: 开一条跟随鼠标的多边形虚线, 让人先看清这一贴落在哪.
+        角度在这里一次定死: 预览和落点必须是同一个角, 否则虚线骗人.
+        """
+        self.stop_stamp_ghost()
+        if not self.fp_template:
+            return
+        lo, hi = getattr(self, "angle_range", (-180, 180))
+        self._stamp_angle = random.uniform(lo, hi)
+        item = QGraphicsPolygonItem()
+        pen = QPen(QColor(91, 140, 255, 230), 1.4)
+        pen.setCosmetic(True)
+        pen.setStyle(Qt.DashLine)
+        item.setPen(pen)
+        item.setBrush(QBrush(QColor(91, 140, 255, 30)))
+        item.setZValue(18)
+        item.setAcceptedMouseButtons(Qt.NoButton)
+        self.addItem(item)
+        self._stamp_ghost = item
+
+    def stop_stamp_ghost(self):
+        """ESC / 换模板 / 切图: 收掉虚线预览."""
+        if self._stamp_ghost is not None:
+            self.removeItem(self._stamp_ghost)
+            self._stamp_ghost = None
+        self._stamp_angle = None
+
+    def update_stamp_ghost(self, pos):
+        """虚线跟着鼠标: 先平移居中到光标, 再按已定角度旋转, 最后夹回图内."""
+        t = self.fp_template
+        item = self._stamp_ghost
+        if t is None or item is None or self._stamp_angle is None:
+            return
+        pts = t["points"]
+        xs = [p[0] for p in pts]
+        ys = [p[1] for p in pts]
+        dx = pos.x() - (min(xs) + max(xs)) / 2
+        dy = pos.y() - (min(ys) + max(ys)) / 2
+        moved = [[p[0] + dx, p[1] + dy] for p in pts]
+        rotated = self._rotate_points(moved, pos, self._stamp_angle)
+        rotated = self._clamp_points_in_image(rotated)
+        item.setPolygon(QPolygonF([QPointF(x, y) for x, y in rotated]))
+
     def _paste_template(self, pos):
         """
         以 pos 为中心把模板贴成浮动层: 只放预览, 不动图像像素, 期间可整体拖动位置.
@@ -380,7 +433,9 @@ class AnnotationScene(QGraphicsScene):
         if not t:
             return
         lo, hi = getattr(self, "angle_range", (-180, 180))
-        angle = random.uniform(lo, hi)
+        # 有虚线预览时用预览那个角(所见即所得); 没预览(格式刷刷子)才现摇一个
+        angle = self._stamp_angle if self._stamp_angle is not None \
+            else random.uniform(lo, hi)
         # 1. 平移到以 pos 为中心(已有基础夹紧)
         shifted = self._shift_template(pos)
         # 2. 绕 pos 随机旋转(正=顺时针, 负=逆时针)
@@ -406,10 +461,12 @@ class AnnotationScene(QGraphicsScene):
                                     "angle": angle})
             self._pending_pastes.append(item)
         # 粘贴不享受"刚画完仍显示"的例外: 开关关着就不出框, 也不抢占选中态
+        item.set_outline_visible(self.show_annotations)
         if self.show_annotations:
             item.setSelected(True)
-        else:
-            item.setVisible(False)
+        # 下一次粘贴换个角度(虚线预览同步刷新, 连续贴才不会摞成一模一样的)
+        if self._stamp_ghost is not None:
+            self._stamp_angle = random.uniform(lo, hi)
 
     def has_pending_pastes(self):
         return any(i.scene() is self for i in self._pending_pastes)
@@ -421,6 +478,7 @@ class AnnotationScene(QGraphicsScene):
         """
         if not self._pending_pastes:
             return 0
+        self.drop_brightness()
         pending = self._pending_pastes
         self._pending_pastes = []
         done = 0
@@ -433,6 +491,8 @@ class AnnotationScene(QGraphicsScene):
                              meta["center"].y() + off.y())
             res = self._blend_stamp_at(meta["patch"], center, meta["angle"])
             item.clear_pending_stamp()
+            # 图案已进像素, 框从此只是框: 开关关着就该整体隐藏
+            item.set_outline_visible(self.show_annotations)
             if res is None:
                 continue
             before, ox, oy = res
@@ -465,6 +525,7 @@ class AnnotationScene(QGraphicsScene):
         before = pix.copy(ox, oy, bw, bh)
         if before.isNull():
             return False
+        self.drop_brightness()
         p = QPainter(pix)
         p.setRenderHint(QPainter.Antialiasing)
         path = QPainterPath()
@@ -478,8 +539,85 @@ class AnnotationScene(QGraphicsScene):
             {"before": before, "ox": ox, "oy": oy, "item": None})
         return True
 
+    def _polygon_coverage(self, poly, ox, oy, w, h):
+        """多边形内部 255, 边缘按抗锯齿取中间值, 外部 0; 亮度按它插值, 边界才不出硬边."""
+        mask = QImage(w, h, QImage.Format_ARGB32_Premultiplied)
+        mask.fill(Qt.transparent)
+        p = QPainter(mask)
+        p.setRenderHint(QPainter.Antialiasing)
+        p.setPen(Qt.NoPen)
+        p.setBrush(QColor(255, 255, 255))
+        p.translate(-ox, -oy)
+        p.drawPolygon(poly)
+        p.end()
+        # mask 是局部的, 必须 copy: 直接留视图会在 QImage 销毁后悬空
+        return _bgra_view(mask)[..., 3].copy()
+
+    def set_polygon_brightness(self, item, value):
+        """0.5=原样, 1=两倍, 0=全黑; 只改多边形框内像素, 拖动过程不叠加."""
+        if not isinstance(item, AnnotationPolygonItem):
+            return False
+        pix = self.image_item.pixmap() if self.image_item is not None else None
+        if pix is None:
+            return False
+        poly = item.mapToScene(item.polygon())
+        if poly.count() < 3:
+            return False
+        box = poly.boundingRect()
+        ox = max(0, int(box.left()))
+        oy = max(0, int(box.top()))
+        bw = min(int(box.right()) + 1, pix.width()) - ox
+        bh = min(int(box.bottom()) + 1, pix.height()) - oy
+        if bw <= 0 or bh <= 0:
+            return False
+        # 基准按多边形各存一份: 调完 A 去调 B 再回来调 A, 不会在已调亮的像素上再叠一层
+        e = self._bright_cache.get(item)
+        if (e is None or e["ox"] != ox or e["oy"] != oy
+                or e["w"] != bw or e["h"] != bh):
+            before = pix.copy(ox, oy, bw, bh)
+            if before.isNull():
+                return False
+            e = {"item": item, "before": before, "ox": ox, "oy": oy,
+                 "w": bw, "h": bh,
+                 "cov": self._polygon_coverage(poly, ox, oy, bw, bh)}
+            self._bright_cache[item] = e
+            # 一次调节只入一条撤销: 每次拖动都从这份基准重算, 拖十下 Ctrl+Z 也是一步回原样
+            self._fp_undo_stack.append(
+                {"before": before, "ox": ox, "oy": oy, "item": None})
+        self._bright_edit = e
+        e["value"] = value
+        factor = max(0.0, value / 0.5)
+        base_q = e["before"].toImage().convertToFormat(QImage.Format_ARGB32)
+        base = _bgra_view(base_q)[..., :3].astype(np.float32)
+        k = 1.0 + (factor - 1.0) * (e["cov"].astype(np.float32) / 255.0)[..., None]
+        layer = QImage(e["w"], e["h"], QImage.Format_ARGB32)
+        lv = _bgra_view(layer)
+        lv[..., :3] = np.clip(base * k, 0, 255).astype(np.uint8)
+        lv[..., 3] = 255
+        p = QPainter(pix)
+        p.drawImage(e["ox"], e["oy"], layer)
+        p.end()
+        self.image_item.setPixmap(pix)
+        self.image_modified = True
+        self._force_full_redraw()
+        return True
+
+    def has_pending_brightness(self):
+        return self._bright_edit is not None
+
+    def brightness_of(self, item):
+        """该多边形当前的亮度值(没调过就是 0.5), 切回同一个框时把滑块摆回原位."""
+        e = self._bright_cache.get(item)
+        return e["value"] if e is not None else 0.5
+
+    def drop_brightness(self):
+        """换图或像素被别的操作改写时调: 基准作废, 下次按当下像素重取一份."""
+        self._bright_edit = None
+        self._bright_cache.clear()
+
     def undo_last_paste(self):
         """撤销最近一次粘贴/填充: 浮动层直接丢掉(像素没动过), 已落地的恢复像素 + 删标注."""
+        self.drop_brightness()
         while self._pending_pastes:
             item = self._pending_pastes.pop()
             if item.scene() is not self:
@@ -520,6 +658,15 @@ class AnnotationScene(QGraphicsScene):
             self.image_pixels_changed.emit()
         self.boxes_changed.emit()
         return True
+
+    def set_annotations_visible(self, show):
+        """
+        "显示标注"开关. 浮动粘贴(图案还没进像素)只藏轮廓留图案 ——
+        整个 item 一起藏的话, 粘上去还没保存的效果就看不见了.
+        """
+        self.show_annotations = bool(show)
+        for item in self.all_items():
+            item.set_outline_visible(show)
 
     def all_items(self):
         items = []
@@ -606,6 +753,7 @@ class AnnotationScene(QGraphicsScene):
         for item in self.all_items():
             self.removeItem(item)
         self._pending_pastes = []
+        self.drop_brightness()
         self._reset_draw_state()
 
     def selected_item(self):
@@ -629,6 +777,9 @@ class AnnotationScene(QGraphicsScene):
 
     def _dispose_item(self, item):
         """彻底释放 item: 隐藏 + 取消缓存, 防视图缓存残留."""
+        self._bright_cache.pop(item, None)
+        if self._bright_edit is not None and self._bright_edit["item"] is item:
+            self._bright_edit = None
         try:
             item.hide()
             item.setCacheMode(QGraphicsItem.NoCache)

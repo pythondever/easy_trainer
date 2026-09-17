@@ -213,6 +213,10 @@ class AnnotationBoxItem(QGraphicsRectItem):
         r = self.rect().translated(self.pos())
         return [r.left(), r.top(), r.right(), r.bottom()]
 
+    def set_outline_visible(self, show):
+        """矩形没有浮层图案, 关掉"显示标注"就是整体隐藏."""
+        self.setVisible(bool(show))
+
     # ---------------- 交互 ---------------- 
     def handle_at(self, point):
         if not self.isSelected():
@@ -467,7 +471,23 @@ class AnnotationPolygonItem(QGraphicsPolygonItem):
         self.pending_img = None
         self.pending_anchor = None
         self.pending_meta = None
+        # "显示标注"关掉时只藏轮廓、保留浮层图案(见 set_outline_visible)
+        self._outline_hidden = False
         self._update_handles()
+
+    def set_outline_visible(self, show):
+        """
+        "显示标注"开关: 浮动粘贴的图案还没写进图像像素, 这时候连图一起藏了
+        就没法预览这一贴的效果, 所以有浮层的只藏轮廓(chip/顶点手柄/虚线).
+        """
+        show = bool(show)
+        if self.pending_img is not None:
+            self._outline_hidden = not show
+            self.setVisible(True)
+        else:
+            self._outline_hidden = False
+            self.setVisible(show)
+        self.update()
 
     def is_floating(self):
         """浮动层: 图案还没写进图像像素, 这期间只能整体拖动, 不能拽顶点改形状."""
@@ -704,6 +724,8 @@ class AnnotationPolygonItem(QGraphicsPolygonItem):
                 painter.setClipRect(clip)
             painter.drawImage(self.pending_anchor, self.pending_img)
             painter.restore()
+        if self._outline_hidden:
+            return
         pen = QPen(self.pen())
         pen.setCosmetic(True)
         painter.setPen(pen)
