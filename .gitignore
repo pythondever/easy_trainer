@@ -28,6 +28,9 @@ dist/
 **/obj/
 *.user
 
+# Deploy 发布产物（deploy.exe 单文件）
+/deploy/release/
+
 # 系统
 Thumbs.db
 .DS_Store

@@ -1,0 +1,112 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>deploy</AssemblyName>
+    <ApplicationIcon>..\..\resources\favicon.ico</ApplicationIcon>
+    <Version>1.0.0</Version>
+    <AssemblyTitle>EasyTrainer 模型转换工具</AssemblyTitle>
+    <Product>EasyTrainer</Product>
+  </PropertyGroup>
+
+  <!-- 自包含/单文件只在发布时生效: 写在这里会让 dotnet build -c Release 也展开成 230+ 个 runtime 文件.
+       发布参数见 Properties/PublishProfiles/win-x64.pubxml -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <DebugType>none</DebugType>
+  </PropertyGroup>
+
+  <!-- 不带发布配置的 Release 发布会产出一个跑不起来的框架依赖目录, 直接拦下并给出正确命令.
+       不能把 win-x64 写成默认 PublishProfile: 那样 dotnet build 也会导入 profile 展开 270+ 个文件 -->
+  <Target Name="GuardReleasePublish" BeforeTargets="Publish"
+          Condition="'$(Configuration)' == 'Release' AND '$(RuntimeIdentifier)' == ''">
+    <Error Text="Release 发布请带上发布配置: dotnet publish -c Release -p:PublishProfile=win-x64" />
+  </Target>
+
+  <ItemGroup>
+    <PackageReference Include="JYPPX.TensorRT.CSharp.API" Version="4.0.0" />
+    <PackageReference Include="JYPPX.TensorRT.CSharp.API.Runtime.win-x64.trt10.11.cuda12.9.cudnn9.22.Bridge" Version="4.0.0" />
+  </ItemGroup>
+
+  <!-- OpenVINO 运行时 (onnx -> IR 用) ====================================
+       只有 3 个 dll / 22 MB: openvino.dll + onnx 前端 + oneTBB, 转换阶段不碰任何设备插件.
+       和 TensorRT 不同, 这三份跟着 exe 走 —— 单文件发布时被嵌进 exe, 现场看不到文件.
+       换来源 -p:OvRuntimeDir=D:\别处\runtime
+       不打包 -p:OvSkip=1 -->
+  <PropertyGroup>
+    <OvRuntimeDir Condition="'$(OvRuntimeDir)' == '' AND '$(OPENVINO_DIR)' != ''">$(OPENVINO_DIR)</OvRuntimeDir>
+    <OvRuntimeDir Condition="'$(OvRuntimeDir)' == ''">D:\OpenVINO\runtime</OvRuntimeDir>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(OvSkip)' != '1'">
+    <!-- 桥接 dll 由 ovbridge\build.cmd 编译, 改过 ovbridge.cpp 要重跑一次.
+         Link 是必须的: 不写它就按 native\ovbridge.dll 的相对路径拷出去, 运行时在根目录找不到 -->
+    <None Include="native\ovbridge.dll" Link="ovbridge.dll" CopyToOutputDirectory="PreserveNewest" Visible="false" />
+    <None Include="$(OvRuntimeDir)\openvino.dll;$(OvRuntimeDir)\openvino_onnx_frontend.dll;$(OvRuntimeDir)\tbb12.dll"
+          CopyToOutputDirectory="PreserveNewest" Visible="false"
+          Condition="Exists('$(OvRuntimeDir)\openvino.dll')" />
+  </ItemGroup>
+
+  <Target Name="CheckOpenVinoRuntime" BeforeTargets="Publish" Condition="'$(OvSkip)' != '1'">
+    <Error Condition="!Exists('native\ovbridge.dll')"
+           Text="缺少 native\ovbridge.dll, 先跑 deploy\ovbridge\build.cmd 编译 (或 -p:OvSkip=1 关掉 IR 转换)" />
+    <Warning Condition="!Exists('$(OvRuntimeDir)\openvino.dll')"
+             Text="没找到 OpenVINO 运行时 ($(OvRuntimeDir)), 本次发布不含 IR 转换。用 -p:OvRuntimeDir=... 指定, 或 -p:OvSkip=1 关掉打包。" />
+  </Target>
+
+  <!-- 发布时装配 TensorRT 运行时 ==========================================
+       publish 后把 4 个 dll 拷进 release\toolchain\, 程序启动会自己命中 exe\toolchain,
+       现场不用再选目录. 只带目标机架构那一份 builder resource (每份 240 MB):
+         换架构 -p:TrtArch=sm120
+         换来源 -p:TrtToolchainDir=D:\别处\toolchain
+         不打包 -p:TrtSkip=1 -->
+  <PropertyGroup>
+    <TrtToolchainDir Condition="'$(TrtToolchainDir)' == '' AND '$(EASY_TRAINER_TRT)' != ''">$(EASY_TRAINER_TRT)</TrtToolchainDir>
+    <TrtToolchainDir Condition="'$(TrtToolchainDir)' == ''">D:\TensorRT\toolchain</TrtToolchainDir>
+    <TrtArch Condition="'$(TrtArch)' == ''">sm89</TrtArch>
+  </PropertyGroup>
+
+  <Target Name="PackTensorRt" AfterTargets="Publish" Condition="'$(TrtSkip)' != '1'">
+    <PropertyGroup>
+      <_TrtBuildDir>$(TrtToolchainDir)\build</_TrtBuildDir>
+      <_TrtDest>$(PublishDir)toolchain</_TrtDest>
+    </PropertyGroup>
+
+    <!-- 工具链整个不在时只告警: 让没装工具链的机器也能发布(包里就少了 engine 转换能力) -->
+    <Warning Condition="!Exists('$(_TrtBuildDir)\nvinfer_10.dll')"
+             Text="没找到 TensorRT 工具链 ($(TrtToolchainDir)), 本次发布不含 engine 转换运行时。用 -p:TrtToolchainDir=... 指定, 或 -p:TrtSkip=1 关掉打包。" />
+
+    <!-- 用通配符取文件: 架构目录不在时自然是空集, 不用去赌 item 条件里元数据的解析时机 -->
+    <ItemGroup Condition="Exists('$(_TrtBuildDir)\nvinfer_10.dll')">
+      <_TrtBuildDll Include="$(_TrtBuildDir)\nvinfer_10.dll;$(_TrtBuildDir)\nvinfer_plugin_10.dll;$(_TrtBuildDir)\nvonnxparser_10.dll" />
+      <_TrtArchDll Include="$(TrtToolchainDir)\arch\$(TrtArch)\nvinfer_builder_resource_*.dll" />
+      <_TrtManifest Include="$(TrtToolchainDir)\manifest.json" Condition="Exists('$(TrtToolchainDir)\manifest.json')" />
+    </ItemGroup>
+
+    <!-- 指定架构那一份不在就一定跑不起 engine, 直接失败, 别发出去一个残包 -->
+    <Error Condition="'@(_TrtBuildDll)' != '' AND '@(_TrtArchDll)' == ''"
+           Text="工具链里没有 $(TrtArch) 的 builder resource ($(TrtToolchainDir)\arch\$(TrtArch)\)。换 -p:TrtArch=&lt;架构&gt;, 或 -p:TrtSkip=1 关掉打包。" />
+
+    <Copy Condition="'@(_TrtBuildDll)' != ''"
+          SourceFiles="@(_TrtBuildDll)"
+          DestinationFolder="$(_TrtDest)\build"
+          SkipUnchangedFiles="true" />
+    <Copy Condition="'@(_TrtArchDll)' != ''"
+          SourceFiles="@(_TrtArchDll)"
+          DestinationFolder="$(_TrtDest)\arch\$(TrtArch)"
+          SkipUnchangedFiles="true" />
+    <!-- manifest 只用来在界面上显示版本号, 程序认架构一律看文件在不在 -->
+    <Copy Condition="'@(_TrtManifest)' != ''"
+          SourceFiles="@(_TrtManifest)"
+          DestinationFolder="$(_TrtDest)"
+          SkipUnchangedFiles="true" />
+
+    <Message Importance="high" Condition="'@(_TrtBuildDll)' != ''"
+             Text="TensorRT 运行时 -> $(_TrtDest) ($(TrtArch), 4 个 dll)" />
+  </Target>
+
+</Project>
