@@ -1,48 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1" language="en_US">
+<TS version="2.1" language="de_DE">
 <context>
     <name>AddLabelDialog</name>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="458"/>
         <source>添加标签</source>
-        <translation>Add Label</translation>
+        <translation>Label hinzufügen</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="472"/>
         <source>编辑标签</source>
-        <translation>Edit Label</translation>
+        <translation>Label bearbeiten</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="504"/>
         <source>标签名称, 多个用逗号分隔</source>
-        <translation>Label names, separate multiple with commas</translation>
+        <translation>Labelnamen, mehrere durch Komma trennen</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="506"/>
         <source>导入</source>
-        <translation>Import</translation>
+        <translation>Importieren</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="513"/>
         <source>选择数据集...</source>
-        <translation>Select dataset...</translation>
+        <translation>Datensatz wählen...</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="536"/>
         <location filename="../app/annotation/annotation_dialog.py" line="541"/>
         <source>导入标签</source>
-        <translation>Import Labels</translation>
+        <translation>Labels importieren</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="537"/>
         <source>请先选择一个数据集</source>
-        <translation>Select a dataset first</translation>
+        <translation>Zuerst einen Datensatz auswählen</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="542"/>
         <source>数据集&quot;{}&quot;还没有标签</source>
-        <translation>Dataset &quot;{}&quot; has no labels yet</translation>
+        <translation>Datensatz „{}&quot; hat noch keine Labels</translation>
     </message>
 </context>
 <context>
@@ -50,17 +50,17 @@
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="295"/>
         <source>复制</source>
-        <translation>Copy</translation>
+        <translation>Kopieren</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="297"/>
         <source>填充</source>
-        <translation>Fill</translation>
+        <translation>Füllen</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="307"/>
         <source>粘贴</source>
-        <translation>Paste</translation>
+        <translation>Einfügen</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="689"/>
@@ -71,7 +71,7 @@
         <location filename="../app/annotation/annotation_dialog.py" line="707"/>
         <location filename="../app/annotation/annotation_dialog.py" line="1933"/>
         <source>矩形</source>
-        <translation>Rectangle</translation>
+        <translation>Rechteck</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="708"/>
@@ -82,220 +82,220 @@
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="717"/>
         <source>标签列表</source>
-        <translation>Labels</translation>
+        <translation>Label-Liste</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="718"/>
         <source>标注信息</source>
-        <translation>Annotations</translation>
+        <translation>Annotationen</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="719"/>
         <source>上一张</source>
-        <translation>Prev</translation>
+        <translation>Zurück</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="720"/>
         <source>下一张</source>
-        <translation>Next</translation>
+        <translation>Weiter</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="755"/>
         <source>只在选中的多边形框内生效; A/D 切图或 Ctrl+S 才写盘</source>
-        <translation>Applies only inside the selected polygon; written to disk on A/D image switch or Ctrl+S</translation>
+        <translation>Wirkt nur im ausgewählten Polygon; gespeichert wird erst bei A/D-Bildwechsel oder Ctrl+S</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="793"/>
         <source>显示标注</source>
-        <translation>Show labels</translation>
+        <translation>Annotationen anzeigen</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="880"/>
         <source>先在画布上点选一个多边形</source>
-        <translation>Select a polygon on the canvas first</translation>
+        <translation>Zuerst ein Polygon auf der Zeichenfläche auswählen</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="883"/>
         <source>亮度调节只对多边形有效</source>
-        <translation>Brightness adjustment only works on polygons</translation>
+        <translation>Helligkeitsanpassung wirkt nur auf Polygone</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="1155"/>
         <source>    类别: {}</source>
-        <translation>    Class: {}</translation>
+        <translation>    Klasse: {}</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="1182"/>
         <source>删除本地文件</source>
-        <translation>Delete local file</translation>
+        <translation>Lokale Datei löschen</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="1183"/>
         <source>取消</source>
-        <translation>Cancel</translation>
+        <translation>Abbrechen</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="1185"/>
         <location filename="../app/annotation/annotation_dialog.py" line="1195"/>
         <source>删除图像</source>
-        <translation>Delete Image</translation>
+        <translation>Bild löschen</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="1186"/>
         <source>是否删除当前图像?
 
 {}</source>
-        <translation>Delete the current image?
+        <translation>Aktuelles Bild löschen?
 
 {}</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="1190"/>
         <source>图像与同名标注文件将从磁盘删除, 不可恢复</source>
-        <translation>The image and its label file will be deleted from disk. This cannot be undone</translation>
+        <translation>Bild und gleichnamige Labeldatei werden von der Festplatte gelöscht. Nicht wiederherstellbar</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="1196"/>
         <source>无法访问主窗口, 删除失败</source>
-        <translation>Cannot reach the main window; delete failed</translation>
+        <translation>Kein Zugriff auf das Hauptfenster; Löschen fehlgeschlagen</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="1210"/>
         <source>(无图像)</source>
-        <translation>(no image)</translation>
+        <translation>(kein Bild)</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="1274"/>
         <location filename="../app/annotation/annotation_dialog.py" line="1884"/>
         <source>添加标签</source>
-        <translation>Add Label</translation>
+        <translation>Label hinzufügen</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="1275"/>
         <source>请先添加标签(点击&quot;+&quot;)</source>
-        <translation>Add a label first (click &quot;+&quot;)</translation>
+        <translation>Zuerst ein Label hinzufügen (auf „+&quot; klicken)</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="1390"/>
         <source>剪切板  {}/{}</source>
-        <translation>Clipboard  {}/{}</translation>
+        <translation>Zwischenablage  {}/{}</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="1415"/>
         <source>第 {} 个模板  {}x{}
 左键选中用于粘贴, 右键 删除/导入/导出/清空</source>
-        <translation>Template {}  {}x{}
-Left click to select for pasting; right click to delete / import / export / clear</translation>
+        <translation>Vorlage {}  {}x{}
+Linksklick zum Auswählen fürs Einfügen; Rechtsklick: Löschen / Importieren / Exportieren / Leeren</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="1447"/>
         <location filename="../app/annotation/annotation_dialog.py" line="1696"/>
         <source>删除</source>
-        <translation>Delete</translation>
+        <translation>Löschen</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="1450"/>
         <source>导入</source>
-        <translation>Import</translation>
+        <translation>Importieren</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="1451"/>
         <source>导出</source>
-        <translation>Export</translation>
+        <translation>Exportieren</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="1453"/>
         <source>清空</source>
-        <translation>Clear</translation>
+        <translation>Leeren</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="1481"/>
         <location filename="../app/annotation/annotation_dialog.py" line="1508"/>
         <location filename="../app/annotation/annotation_dialog.py" line="1512"/>
         <source>导出剪切板</source>
-        <translation>Export Clipboard</translation>
+        <translation>Zwischenablage exportieren</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="1482"/>
         <source>剪切板是空的, 没有可导出的模板</source>
-        <translation>The clipboard is empty; nothing to export</translation>
+        <translation>Die Zwischenablage ist leer; keine Vorlagen zum Exportieren</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="1484"/>
         <source>选择导出目录</source>
-        <translation>Select Export Directory</translation>
+        <translation>Exportordner wählen</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="1509"/>
         <source>导出中断: {}
 (已写出 {} 个)</source>
-        <translation>Export interrupted: {}
-({} written)</translation>
+        <translation>Export abgebrochen: {}
+({} geschrieben)</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="1513"/>
         <source>已导出 {} 个模板(png + 同名 json)到:
 {}</source>
-        <translation>Exported {} template(s) (png + same-name json) to:
+        <translation>{} Vorlage(n) exportiert (png + gleichnamige json) nach:
 {}</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="1517"/>
         <source>选择导入目录</source>
-        <translation>Select Import Directory</translation>
+        <translation>Importordner wählen</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="1524"/>
         <location filename="../app/annotation/annotation_dialog.py" line="1528"/>
         <location filename="../app/annotation/annotation_dialog.py" line="1562"/>
         <source>导入剪切板</source>
-        <translation>Import Clipboard</translation>
+        <translation>Zwischenablage importieren</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="1525"/>
         <source>读取目录失败: {}</source>
-        <translation>Failed to read the directory: {}</translation>
+        <translation>Ordner konnte nicht gelesen werden: {}</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="1529"/>
         <source>这个目录里没有 png 文件</source>
-        <translation>No png files in this directory</translation>
+        <translation>In diesem Ordner gibt es keine png-Dateien</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="1557"/>
         <source>已导入 {} 个模板到剪切板</source>
-        <translation>Imported {} template(s) into the clipboard</translation>
+        <translation>{} Vorlage(n) in die Zwischenablage importiert</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="1559"/>
         <source>
 其中 {} 个没有同名 json, 按矩形导入</source>
         <translation>
-{} of them have no same-name json and were imported as rectangles</translation>
+Davon {} ohne gleichnamige json, als Rechteck importiert</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="1561"/>
         <source>
 {} 个文件读不出来, 已跳过</source>
         <translation>
-{} file(s) could not be read and were skipped</translation>
+{} Datei(en) nicht lesbar, übersprungen</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="1637"/>
         <source>修改类别</source>
-        <translation>Change Class</translation>
+        <translation>Klasse ändern</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="1638"/>
         <source>移动图像文件失败:
 {}</source>
-        <translation>Failed to move the image file:
+        <translation>Bilddatei konnte nicht verschoben werden:
 {}</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="1695"/>
         <source>编辑</source>
-        <translation>Edit</translation>
+        <translation>Bearbeiten</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="1754"/>
@@ -303,39 +303,39 @@ Left click to select for pasting; right click to delete / import / export / clea
         <location filename="../app/annotation/annotation_dialog.py" line="1820"/>
         <location filename="../app/annotation/annotation_dialog.py" line="1829"/>
         <source>删除标签</source>
-        <translation>Delete Label</translation>
+        <translation>Label löschen</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="1754"/>
         <source>正在统计标注文件...</source>
-        <translation>Counting label files...</translation>
+        <translation>Labeldateien werden gezählt...</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="1814"/>
         <source>标签&quot;{}&quot;已有 {} 处标注, 删除后这些标注将被一并删除且不可恢复.
 确定删除吗?</source>
-        <translation>Label &quot;{}&quot; has {} annotation(s). Deleting it removes them all and cannot be undone.
-Delete anyway?</translation>
+        <translation>Label „{}&quot; hat {} Annotation(en). Beim Löschen werden sie mit entfernt und können nicht wiederhergestellt werden.
+Trotzdem löschen?</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="1821"/>
         <source>确定删除标签&quot;{}&quot;吗?</source>
-        <translation>Delete label &quot;{}&quot;?</translation>
+        <translation>Label „{}&quot; löschen?</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="1829"/>
         <source>正在清理标注文件...</source>
-        <translation>Cleaning up label files...</translation>
+        <translation>Labeldateien werden bereinigt...</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="1885"/>
         <source>标签名称不能为空</source>
-        <translation>Label name cannot be empty</translation>
+        <translation>Labelname darf nicht leer sein</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="1940"/>
         <source>{} 个顶点</source>
-        <translation>{} vertices</translation>
+        <translation>{} Eckpunkte</translation>
     </message>
 </context>
 <context>
@@ -350,12 +350,12 @@ Delete anyway?</translation>
         <location filename="../ui/app.ui" line="114"/>
         <location filename="../ui/app.ui" line="170"/>
         <source>项目</source>
-        <translation>Projects</translation>
+        <translation>Projekte</translation>
     </message>
     <message>
         <location filename="../ui/app.ui" line="193"/>
         <source>添加项目</source>
-        <translation>Add Project</translation>
+        <translation>Projekt hinzufügen</translation>
     </message>
     <message>
         <location filename="../ui/app.ui" line="196"/>
@@ -370,12 +370,12 @@ Delete anyway?</translation>
     <message>
         <location filename="../ui/app.ui" line="365"/>
         <source>停止训练</source>
-        <translation>Stop Training</translation>
+        <translation>Training stoppen</translation>
     </message>
     <message>
         <location filename="../ui/app.ui" line="372"/>
         <source>剩余时间:</source>
-        <translation>Time Left:</translation>
+        <translation>Restzeit:</translation>
     </message>
     <message>
         <location filename="../ui/app.ui" line="382"/>
@@ -390,43 +390,43 @@ Delete anyway?</translation>
     <message>
         <location filename="../ui/app.ui" line="399"/>
         <source>编辑</source>
-        <translation>Edit</translation>
+        <translation>Bearbeiten</translation>
     </message>
     <message>
         <location filename="../ui/app.ui" line="406"/>
         <source>删除</source>
-        <translation>Delete</translation>
+        <translation>Löschen</translation>
     </message>
     <message>
         <location filename="../ui/app.ui" line="413"/>
         <source>统计</source>
-        <translation>Stats</translation>
+        <translation>Statistik</translation>
     </message>
     <message>
         <location filename="../ui/app.ui" line="420"/>
         <source>训练</source>
-        <translation>Train</translation>
+        <translation>Training</translation>
     </message>
     <message>
         <location filename="../ui/app.ui" line="427"/>
         <source>模型</source>
-        <translation>Models</translation>
+        <translation>Modelle</translation>
     </message>
     <message>
         <location filename="../ui/app.ui" line="434"/>
         <location filename="../app/mixins/queue_mixin.py" line="354"/>
         <source>队列</source>
-        <translation>Queue</translation>
+        <translation>Warteschlange</translation>
     </message>
     <message>
         <location filename="../ui/app.ui" line="441"/>
         <source>日志</source>
-        <translation>Log</translation>
+        <translation>Protokoll</translation>
     </message>
     <message>
         <location filename="../ui/app.ui" line="460"/>
         <source>界面语言</source>
-        <translation>Interface language</translation>
+        <translation>Oberflächensprache</translation>
     </message>
     <message>
         <location filename="../ui/app.ui" line="539"/>
@@ -436,12 +436,12 @@ Delete anyway?</translation>
     <message>
         <location filename="../ui/app.ui" line="546"/>
         <source>上一页</source>
-        <translation>Prev</translation>
+        <translation>Zurück</translation>
     </message>
     <message>
         <location filename="../ui/app.ui" line="553"/>
         <source>下一页</source>
-        <translation>Next</translation>
+        <translation>Weiter</translation>
     </message>
 </context>
 <context>
@@ -449,7 +449,7 @@ Delete anyway?</translation>
     <message>
         <location filename="../app/widgets/charts.py" line="14"/>
         <source>暂无标注</source>
-        <translation>No annotations</translation>
+        <translation>Keine Annotationen</translation>
     </message>
     <message>
         <location filename="../app/widgets/charts.py" line="15"/>
@@ -459,7 +459,7 @@ Delete anyway?</translation>
     <message>
         <location filename="../app/widgets/charts.py" line="16"/>
         <source>标签数量</source>
-        <translation>Label count</translation>
+        <translation>Labelanzahl</translation>
     </message>
 </context>
 <context>
@@ -467,7 +467,7 @@ Delete anyway?</translation>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="2250"/>
         <source>选择颜色</source>
-        <translation>Pick Color</translation>
+        <translation>Farbe wählen</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="2262"/>
@@ -477,12 +477,12 @@ Delete anyway?</translation>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="2283"/>
         <source>基本颜色:</source>
-        <translation>Basic colors:</translation>
+        <translation>Grundfarben:</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="2295"/>
         <source>自定义 RGB:</source>
-        <translation>Custom RGB:</translation>
+        <translation>Eigenes RGB:</translation>
     </message>
 </context>
 <context>
@@ -490,32 +490,32 @@ Delete anyway?</translation>
     <message>
         <location filename="../app/mixins/dataset_view_mixin.py" line="249"/>
         <source>删除全部未标注图像({} 张)</source>
-        <translation>Delete all unlabeled images ({} images)</translation>
+        <translation>Alle nicht annotierten Bilder löschen ({} Bilder)</translation>
     </message>
     <message>
         <location filename="../app/mixins/dataset_view_mixin.py" line="255"/>
         <source>删除所选图像({} 张)</source>
-        <translation>Delete selected images ({} images)</translation>
+        <translation>Ausgewählte Bilder löschen ({} Bilder)</translation>
     </message>
     <message>
         <location filename="../app/mixins/dataset_view_mixin.py" line="353"/>
         <source>重载</source>
-        <translation>Reload</translation>
+        <translation>Neu laden</translation>
     </message>
     <message>
         <location filename="../app/mixins/dataset_view_mixin.py" line="354"/>
         <source>该数据集还没有图像目录, 请先右键&quot;导入&quot;</source>
-        <translation>This dataset has no image directory yet; right-click &quot;Import&quot; first</translation>
+        <translation>Dieser Datensatz hat noch keinen Bildordner; zuerst per Rechtsklick „Importieren&quot;</translation>
     </message>
     <message>
         <location filename="../app/mixins/dataset_view_mixin.py" line="798"/>
         <source>第 {}/{} 页 · 共 {} 个</source>
-        <translation>Page {}/{} · {} items</translation>
+        <translation>Seite {}/{} · {} Einträge</translation>
     </message>
     <message>
         <location filename="../app/mixins/dataset_view_mixin.py" line="802"/>
         <source>第 {}/{} 页 · 共 {} 张</source>
-        <translation>Page {}/{} · {} images</translation>
+        <translation>Seite {}/{} · {} Bilder</translation>
     </message>
 </context>
 <context>
@@ -523,12 +523,12 @@ Delete anyway?</translation>
     <message>
         <location filename="../ui/dataset_properties.ui" line="14"/>
         <source>数据集属性</source>
-        <translation>Dataset Properties</translation>
+        <translation>Datensatz-Eigenschaften</translation>
     </message>
     <message>
         <location filename="../ui/dataset_properties.ui" line="30"/>
         <source>选择数据:</source>
-        <translation>Select dataset:</translation>
+        <translation>Datensatz wählen:</translation>
     </message>
     <message>
         <location filename="../ui/dataset_properties.ui" line="53"/>
@@ -538,57 +538,57 @@ Delete anyway?</translation>
     <message>
         <location filename="../ui/dataset_properties.ui" line="77"/>
         <source>图像路径:</source>
-        <translation>Image path:</translation>
+        <translation>Bildpfad:</translation>
     </message>
     <message>
         <location filename="../ui/dataset_properties.ui" line="98"/>
         <source>标签路径:</source>
-        <translation>Label path:</translation>
+        <translation>Labelpfad:</translation>
     </message>
     <message>
         <location filename="../ui/dataset_properties.ui" line="119"/>
         <source>标签分布:</source>
-        <translation>Label distribution:</translation>
+        <translation>Labelverteilung:</translation>
     </message>
     <message>
         <location filename="../ui/edit_label.ui" line="14"/>
         <source>类别修改</source>
-        <translation>Edit Class</translation>
+        <translation>Klasse ändern</translation>
     </message>
     <message>
         <location filename="../ui/edit_label.ui" line="22"/>
         <source>类别</source>
-        <translation>Class</translation>
+        <translation>Klasse</translation>
     </message>
     <message>
         <location filename="../ui/edit_label.ui" line="42"/>
         <source>批量修改为</source>
-        <translation>Rename all to</translation>
+        <translation>Alle umbenennen in</translation>
     </message>
     <message>
         <location filename="../ui/export_data.ui" line="14"/>
         <source>导出</source>
-        <translation>Export</translation>
+        <translation>Exportieren</translation>
     </message>
     <message>
         <location filename="../ui/export_data.ui" line="36"/>
         <source>请选择导出路径</source>
-        <translation>Select an export path</translation>
+        <translation>Exportpfad wählen</translation>
     </message>
     <message>
         <location filename="../ui/export_data.ui" line="90"/>
         <source>导出格式</source>
-        <translation>Export format</translation>
+        <translation>Exportformat</translation>
     </message>
     <message>
         <location filename="../ui/export_data.ui" line="106"/>
         <source>labelme 格式</source>
-        <translation>labelme format</translation>
+        <translation>labelme-Format</translation>
     </message>
     <message>
         <location filename="../ui/export_data.ui" line="119"/>
         <source>yolo 格式</source>
-        <translation>yolo format</translation>
+        <translation>yolo-Format</translation>
     </message>
 </context>
 <context>
@@ -605,7 +605,7 @@ Delete anyway?</translation>
     <message>
         <location filename="../app/widgets/dialog_buttons.py" line="110"/>
         <source>取消</source>
-        <translation>Cancel</translation>
+        <translation>Abbrechen</translation>
     </message>
 </context>
 <context>
@@ -613,22 +613,22 @@ Delete anyway?</translation>
     <message>
         <location filename="../ui/import_data.ui" line="14"/>
         <source>导入数据</source>
-        <translation>Import Data</translation>
+        <translation>Daten importieren</translation>
     </message>
     <message>
         <location filename="../ui/import_data.ui" line="33"/>
         <source>图像路径</source>
-        <translation>Image path</translation>
+        <translation>Bildpfad</translation>
     </message>
     <message>
         <location filename="../ui/import_data.ui" line="73"/>
         <source>标签路径</source>
-        <translation>Label path</translation>
+        <translation>Labelpfad</translation>
     </message>
     <message>
         <location filename="../ui/import_data.ui" line="113"/>
         <source>标签格式:</source>
-        <translation>Label format:</translation>
+        <translation>Labelformat:</translation>
     </message>
     <message>
         <location filename="../ui/import_data.ui" line="126"/>
@@ -643,12 +643,12 @@ Delete anyway?</translation>
     <message>
         <location filename="../ui/import_data.ui" line="149"/>
         <source>按子文件夹分类导入</source>
-        <translation>Import as classification (subfolders)</translation>
+        <translation>Als Klassifizierung importieren (Unterordner)</translation>
     </message>
     <message>
         <location filename="../ui/import_data.ui" line="179"/>
         <source>提示信息</source>
-        <translation>Info</translation>
+        <translation>Hinweis</translation>
     </message>
 </context>
 <context>
@@ -656,94 +656,94 @@ Delete anyway?</translation>
     <message>
         <location filename="../app/mixins/import_export_mixin.py" line="83"/>
         <source>导入数据 - {} / {}</source>
-        <translation>Import Data - {} / {}</translation>
+        <translation>Daten importieren - {} / {}</translation>
     </message>
     <message>
         <location filename="../app/mixins/import_export_mixin.py" line="90"/>
         <location filename="../app/mixins/import_export_mixin.py" line="127"/>
         <source>请选择图像文件夹</source>
-        <translation>Choose an image folder</translation>
+        <translation>Bildordner wählen</translation>
     </message>
     <message>
         <location filename="../app/mixins/import_export_mixin.py" line="103"/>
         <source>请选择分类根目录(子文件夹名=类别)</source>
-        <translation>Choose the classification root folder (subfolder name = class)</translation>
+        <translation>Klassifizierungs-Wurzelordner wählen (Unterordnername = Klasse)</translation>
     </message>
     <message>
         <location filename="../app/mixins/import_export_mixin.py" line="116"/>
         <source>(根目录)</source>
-        <translation>(root folder)</translation>
+        <translation>(Wurzelordner)</translation>
     </message>
     <message>
         <location filename="../app/mixins/import_export_mixin.py" line="118"/>
         <source>所选文件夹下无分类子文件夹或图像</source>
-        <translation>No class subfolders or images in the selected folder</translation>
+        <translation>Keine Klassen-Unterordner oder Bilder im gewählten Ordner</translation>
     </message>
     <message>
         <location filename="../app/mixins/import_export_mixin.py" line="120"/>
         <source>{}: {}张</source>
-        <translation>{}: {} images</translation>
+        <translation>{}: {} Bilder</translation>
     </message>
     <message>
         <location filename="../app/mixins/import_export_mixin.py" line="122"/>
         <source>检测到 {} 类: {}</source>
-        <translation>Detected {} classes: {}</translation>
+        <translation>{} Klassen erkannt: {}</translation>
     </message>
     <message>
         <location filename="../app/mixins/import_export_mixin.py" line="131"/>
         <source>所选文件夹无图像</source>
-        <translation>No images in the selected folder</translation>
+        <translation>Keine Bilder im gewählten Ordner</translation>
     </message>
     <message>
         <location filename="../app/mixins/import_export_mixin.py" line="134"/>
         <source>共 {} 张图像, 已标注 {} 张</source>
-        <translation>{} images, {} labeled</translation>
+        <translation>{} Bilder, {} annotiert</translation>
     </message>
     <message>
         <location filename="../app/mixins/import_export_mixin.py" line="150"/>
         <source>(检测到 {} 张 {} 标签, 请切换上方格式为&quot;{}&quot;)</source>
-        <translation>({} {} label(s) detected; switch the format above to &quot;{}&quot;)</translation>
+        <translation>({} {} Labels erkannt; oben das Format auf „{}&quot; umstellen)</translation>
     </message>
     <message>
         <location filename="../app/mixins/import_export_mixin.py" line="154"/>
         <source>共 {} 张图像, 已标注 0 张 {}</source>
-        <translation>{} images, 0 labeled {}</translation>
+        <translation>{} Bilder, 0 annotiert {}</translation>
     </message>
     <message>
         <location filename="../app/mixins/import_export_mixin.py" line="156"/>
         <source>共 {} 张图像(标签目录无匹配文件)</source>
-        <translation>{} images (no matching files in the label folder)</translation>
+        <translation>{} Bilder (keine passenden Dateien im Labelordner)</translation>
     </message>
     <message>
         <location filename="../app/mixins/import_export_mixin.py" line="160"/>
         <source>选择文件夹</source>
-        <translation>Select Folder</translation>
+        <translation>Ordner wählen</translation>
     </message>
     <message>
         <location filename="../app/mixins/import_export_mixin.py" line="200"/>
         <source>分类根目录(子文件夹名=类别)</source>
-        <translation>Classification root (subfolder name = class)</translation>
+        <translation>Klassifizierungs-Wurzel (Unterordnername = Klasse)</translation>
     </message>
     <message>
         <location filename="../app/mixins/import_export_mixin.py" line="200"/>
         <source>图像路径</source>
-        <translation>Image path</translation>
+        <translation>Bildpfad</translation>
     </message>
     <message>
         <location filename="../app/mixins/import_export_mixin.py" line="222"/>
         <location filename="../app/mixins/import_export_mixin.py" line="225"/>
         <source>导入数据</source>
-        <translation>Import Data</translation>
+        <translation>Daten importieren</translation>
     </message>
     <message>
         <location filename="../app/mixins/import_export_mixin.py" line="222"/>
         <source>请先选择有效的图像文件夹</source>
-        <translation>Choose a valid image folder first</translation>
+        <translation>Zuerst einen gültigen Bildordner wählen</translation>
     </message>
     <message>
         <location filename="../app/mixins/import_export_mixin.py" line="225"/>
         <source>标签路径无效</source>
-        <translation>Invalid label path</translation>
+        <translation>Labelpfad ungültig</translation>
     </message>
     <message>
         <location filename="../app/mixins/import_export_mixin.py" line="277"/>
@@ -755,56 +755,56 @@ Delete anyway?</translation>
         <location filename="../app/mixins/import_export_mixin.py" line="342"/>
         <location filename="../app/mixins/import_export_mixin.py" line="351"/>
         <source>导出</source>
-        <translation>Export</translation>
+        <translation>Exportieren</translation>
     </message>
     <message>
         <location filename="../app/mixins/import_export_mixin.py" line="277"/>
         <source>请先在左侧选中要导出的数据集</source>
-        <translation>Select the dataset to export on the left first</translation>
+        <translation>Zuerst links den zu exportierenden Datensatz auswählen</translation>
     </message>
     <message>
         <location filename="../app/mixins/import_export_mixin.py" line="302"/>
         <source>请先选择导出保存位置</source>
-        <translation>Choose where to save the export first</translation>
+        <translation>Zuerst den Speicherort für den Export wählen</translation>
     </message>
     <message>
         <location filename="../app/mixins/import_export_mixin.py" line="319"/>
         <source>正在导出项目...</source>
-        <translation>Exporting project...</translation>
+        <translation>Projekt wird exportiert...</translation>
     </message>
     <message>
         <location filename="../app/mixins/import_export_mixin.py" line="330"/>
         <source>项目&quot;{}&quot;导出完成, 共复制 {} 张图像
 位置: {}</source>
-        <translation>Project &quot;{}&quot; exported: {} images copied
-Location: {}</translation>
+        <translation>Projekt „{}&quot; exportiert: {} Bilder kopiert
+Ort: {}</translation>
     </message>
     <message>
         <location filename="../app/mixins/import_export_mixin.py" line="342"/>
         <source>正在导出数据集...</source>
-        <translation>Exporting dataset...</translation>
+        <translation>Datensatz wird exportiert...</translation>
     </message>
     <message>
         <location filename="../app/mixins/import_export_mixin.py" line="352"/>
         <source>数据集&quot;{}&quot;导出完成, 共复制 {} 张图像
 位置: {}</source>
-        <translation>Dataset &quot;{}&quot; exported: {} images copied
-Location: {}</translation>
+        <translation>Datensatz „{}&quot; exportiert: {} Bilder kopiert
+Ort: {}</translation>
     </message>
     <message>
         <location filename="../app/mixins/import_export_mixin.py" line="362"/>
         <source>导出失败</source>
-        <translation>Export Failed</translation>
+        <translation>Export fehlgeschlagen</translation>
     </message>
     <message>
         <location filename="../app/mixins/import_export_mixin.py" line="365"/>
         <source>选择导出保存位置</source>
-        <translation>Select Export Destination</translation>
+        <translation>Ziel für Export wählen</translation>
     </message>
     <message>
         <location filename="../app/mixins/import_export_mixin.py" line="442"/>
         <source>正在导出: {}</source>
-        <translation>Exporting: {}</translation>
+        <translation>Export läuft: {}</translation>
     </message>
 </context>
 <context>
@@ -815,59 +815,59 @@ Location: {}</translation>
         <location filename="../app/mixins/label_mixin.py" line="60"/>
         <location filename="../app/mixins/label_mixin.py" line="129"/>
         <source>未标注</source>
-        <translation>Unlabeled</translation>
+        <translation>Nicht annotiert</translation>
     </message>
     <message>
         <location filename="../app/mixins/label_mixin.py" line="186"/>
         <location filename="../app/mixins/label_mixin.py" line="191"/>
         <location filename="../app/mixins/label_mixin.py" line="208"/>
         <source>重命名</source>
-        <translation>Rename</translation>
+        <translation>Umbenennen</translation>
     </message>
     <message>
         <location filename="../app/mixins/label_mixin.py" line="186"/>
         <location filename="../app/mixins/label_mixin.py" line="439"/>
         <source>请先在左侧选中一个数据集</source>
-        <translation>Select a dataset on the left first</translation>
+        <translation>Zuerst links einen Datensatz auswählen</translation>
     </message>
     <message>
         <location filename="../app/mixins/label_mixin.py" line="192"/>
         <source>请先在筛选下拉框中选择要重命名的标签</source>
-        <translation>Select the label to rename in the filter dropdown first</translation>
+        <translation>Zuerst im Filter-Dropdown das umzubenennende Label wählen</translation>
     </message>
     <message>
         <location filename="../app/mixins/label_mixin.py" line="195"/>
         <source>类别修改</source>
-        <translation>Edit Class</translation>
+        <translation>Klasse ändern</translation>
     </message>
     <message>
         <location filename="../app/mixins/label_mixin.py" line="208"/>
         <source>标签名称不能为空</source>
-        <translation>Label name cannot be empty</translation>
+        <translation>Labelname darf nicht leer sein</translation>
     </message>
     <message>
         <location filename="../app/mixins/label_mixin.py" line="217"/>
         <source>合并标签</source>
-        <translation>Merge Labels</translation>
+        <translation>Labels zusammenführen</translation>
     </message>
     <message>
         <location filename="../app/mixins/label_mixin.py" line="218"/>
         <source>标签&quot;{}&quot;已存在.
 确定把&quot;{}&quot;的所有标注合并到&quot;{}&quot;吗?
 此操作会改写数据集源标签文件, 且不可恢复.</source>
-        <translation>Label &quot;{}&quot; already exists.
-Merge all annotations of &quot;{}&quot; into &quot;{}&quot;?
-This rewrites the dataset&apos;s source label files and cannot be undone.</translation>
+        <translation>Label „{}&quot; existiert bereits.
+Alle Annotationen von „{}&quot; in „{}&quot; zusammenführen?
+Dies überschreibt die Quell-Labeldateien des Datensatzes und kann nicht rückgängig gemacht werden.</translation>
     </message>
     <message>
         <location filename="../app/mixins/label_mixin.py" line="405"/>
         <source>重命名标签</source>
-        <translation>Rename Labels</translation>
+        <translation>Labels umbenennen</translation>
     </message>
     <message>
         <location filename="../app/mixins/label_mixin.py" line="405"/>
         <source>正在更新标注文件...</source>
-        <translation>Updating label files...</translation>
+        <translation>Labeldateien werden aktualisiert...</translation>
     </message>
     <message>
         <location filename="../app/mixins/label_mixin.py" line="439"/>
@@ -875,24 +875,24 @@ This rewrites the dataset&apos;s source label files and cannot be undone.</trans
         <location filename="../app/mixins/label_mixin.py" line="448"/>
         <location filename="../app/mixins/label_mixin.py" line="549"/>
         <source>删除标签</source>
-        <translation>Delete Label</translation>
+        <translation>Label löschen</translation>
     </message>
     <message>
         <location filename="../app/mixins/label_mixin.py" line="445"/>
         <source>请先在筛选下拉框中选择要删除的标签</source>
-        <translation>Select the label to delete in the filter dropdown first</translation>
+        <translation>Zuerst im Filter-Dropdown das zu löschende Label wählen</translation>
     </message>
     <message>
         <location filename="../app/mixins/label_mixin.py" line="449"/>
         <source>确定删除标签&quot;{}&quot;吗?
 该标签的所有标注将被删除, 且不可恢复.</source>
-        <translation>Delete label &quot;{}&quot;?
-All its annotations will be removed and cannot be undone.</translation>
+        <translation>Label „{}&quot; löschen?
+Alle seine Annotationen werden gelöscht und können nicht wiederhergestellt werden.</translation>
     </message>
     <message>
         <location filename="../app/mixins/label_mixin.py" line="549"/>
         <source>正在清理标注文件...</source>
-        <translation>Cleaning up label files...</translation>
+        <translation>Labeldateien werden bereinigt...</translation>
     </message>
 </context>
 <context>
@@ -900,18 +900,18 @@ All its annotations will be removed and cannot be undone.</translation>
     <message>
         <location filename="../ui/log.ui" line="14"/>
         <source>Dialog</source>
-        <translation>Add Label</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/log.ui" line="37"/>
         <source>清空</source>
-        <translation>Clear</translation>
+        <translation>Leeren</translation>
     </message>
     <message>
         <location filename="../app/mixins/misc_mixin.py" line="81"/>
         <location filename="../app/widgets/log_dialog.py" line="20"/>
         <source>日志</source>
-        <translation>Log</translation>
+        <translation>Protokoll</translation>
     </message>
 </context>
 <context>
@@ -924,22 +924,22 @@ All its annotations will be removed and cannot be undone.</translation>
     <message>
         <location filename="../app/widgets/message_box.py" line="170"/>
         <source>是</source>
-        <translation>Yes</translation>
+        <translation>Ja</translation>
     </message>
     <message>
         <location filename="../app/widgets/message_box.py" line="171"/>
         <source>否</source>
-        <translation>No</translation>
+        <translation>Nein</translation>
     </message>
     <message>
         <location filename="../app/widgets/message_box.py" line="226"/>
         <source>取消</source>
-        <translation>Cancel</translation>
+        <translation>Abbrechen</translation>
     </message>
     <message>
         <location filename="../app/widgets/message_box.py" line="258"/>
         <source>取消中...</source>
-        <translation>Cancelling...</translation>
+        <translation>Wird abgebrochen...</translation>
     </message>
 </context>
 <context>
@@ -947,37 +947,37 @@ All its annotations will be removed and cannot be undone.</translation>
     <message>
         <location filename="../app/widgets/metrics_dialog.py" line="47"/>
         <source>训练指标</source>
-        <translation>Training Metrics</translation>
+        <translation>Trainingsmetriken</translation>
     </message>
     <message>
         <location filename="../app/widgets/metrics_dialog.py" line="75"/>
         <source>标签筛选</source>
-        <translation>Label filter</translation>
+        <translation>Labelfilter</translation>
     </message>
     <message>
         <location filename="../app/widgets/metrics_dialog.py" line="79"/>
         <source>全部指标</source>
-        <translation>All metrics</translation>
+        <translation>Alle Metriken</translation>
     </message>
     <message>
         <location filename="../app/widgets/metrics_dialog.py" line="80"/>
         <source>全部标签-P</source>
-        <translation>All labels - P</translation>
+        <translation>Alle Labels - P</translation>
     </message>
     <message>
         <location filename="../app/widgets/metrics_dialog.py" line="81"/>
         <source>全部标签-R</source>
-        <translation>All labels - R</translation>
+        <translation>Alle Labels - R</translation>
     </message>
     <message>
         <location filename="../app/widgets/metrics_dialog.py" line="94"/>
         <source>(暂无标签数据,需完成首次 epoch 验证后才会出现)</source>
-        <translation>(No label data yet; shown after the first epoch validation)</translation>
+        <translation>(Noch keine Labeldaten; erscheinen erst nach der ersten Epochen-Validierung)</translation>
     </message>
     <message>
         <location filename="../app/widgets/metrics_dialog.py" line="135"/>
         <source>暂无该标签的指标数据(训练完成后可查看)</source>
-        <translation>No metric data for this label yet (available after training completes)</translation>
+        <translation>Noch keine Metrikdaten für dieses Label (nach Abschluss des Trainings verfügbar)</translation>
     </message>
     <message>
         <location filename="../app/widgets/metrics_dialog.py" line="178"/>
@@ -987,7 +987,7 @@ All its annotations will be removed and cannot be undone.</translation>
     <message>
         <location filename="../app/widgets/metrics_dialog.py" line="179"/>
         <source>指标值 (mAP/P/R)</source>
-        <translation>Metric (mAP/P/R)</translation>
+        <translation>Metrik (mAP/P/R)</translation>
     </message>
 </context>
 <context>
@@ -995,51 +995,51 @@ All its annotations will be removed and cannot be undone.</translation>
     <message>
         <location filename="../app/mixins/misc_mixin.py" line="116"/>
         <source>数据集统计</source>
-        <translation>Dataset Statistics</translation>
+        <translation>Datensatz-Statistik</translation>
     </message>
     <message>
         <location filename="../app/mixins/misc_mixin.py" line="125"/>
         <source>应用所选数据集</source>
-        <translation>Apply selected datasets</translation>
+        <translation>Ausgewählte Datensätze übernehmen</translation>
     </message>
     <message>
         <location filename="../app/mixins/misc_mixin.py" line="216"/>
         <source>[{}/{}](未设置)</source>
-        <translation>[{}/{}](not set)</translation>
+        <translation>[{}/{}](nicht gesetzt)</translation>
     </message>
     <message>
         <location filename="../app/mixins/misc_mixin.py" line="219"/>
         <source>(未选择数据集)</source>
-        <translation>(no dataset selected)</translation>
+        <translation>(kein Datensatz gewählt)</translation>
     </message>
     <message>
         <location filename="../app/mixins/misc_mixin.py" line="387"/>
         <source>删除</source>
-        <translation>Delete</translation>
+        <translation>Löschen</translation>
     </message>
     <message>
         <location filename="../app/mixins/misc_mixin.py" line="388"/>
         <source>取消</source>
-        <translation>Cancel</translation>
+        <translation>Abbrechen</translation>
     </message>
     <message>
         <location filename="../app/mixins/misc_mixin.py" line="390"/>
         <source>删除图像</source>
-        <translation>Delete Images</translation>
+        <translation>Bilder löschen</translation>
     </message>
     <message>
         <location filename="../app/mixins/misc_mixin.py" line="391"/>
         <source>将从系统删除所选 {} 张图像?
 
 (图像与同名标注文件不可恢复)</source>
-        <translation>Delete the selected {} image(s) from the system?
+        <translation>Die ausgewählten {} Bilder endgültig löschen?
 
-(Images and their label files cannot be recovered)</translation>
+(Bilder und gleichnamige Labeldateien können nicht wiederhergestellt werden)</translation>
     </message>
     <message>
         <location filename="../app/mixins/misc_mixin.py" line="396"/>
         <source>图像与同名标注文件将从磁盘删除, 不可恢复</source>
-        <translation>Images and their label files will be deleted from disk. This cannot be undone</translation>
+        <translation>Bilder und gleichnamige Labeldateien werden von der Festplatte gelöscht. Nicht wiederherstellbar</translation>
     </message>
 </context>
 <context>
@@ -1047,42 +1047,42 @@ All its annotations will be removed and cannot be undone.</translation>
     <message>
         <location filename="../app/core/model_assets.py" line="44"/>
         <source>速度最快, 精度够用</source>
-        <translation>Fastest, accuracy is sufficient</translation>
+        <translation>Am schnellsten, Genauigkeit ausreichend</translation>
     </message>
     <message>
         <location filename="../app/core/model_assets.py" line="48"/>
         <source>精度更好, 稍慢一些</source>
-        <translation>Better accuracy, slightly slower</translation>
+        <translation>Bessere Genauigkeit, etwas langsamer</translation>
     </message>
     <message>
         <location filename="../app/core/model_assets.py" line="52"/>
         <source>精度更高</source>
-        <translation>Higher accuracy</translation>
+        <translation>Höhere Genauigkeit</translation>
     </message>
     <message>
         <location filename="../app/core/model_assets.py" line="56"/>
         <source>精度最高, 显存占用大</source>
-        <translation>Highest accuracy, but uses more VRAM</translation>
+        <translation>Höchste Genauigkeit, hoher VRAM-Bedarf</translation>
     </message>
     <message>
         <location filename="../app/core/model_assets.py" line="60"/>
         <source>轻量分割</source>
-        <translation>Lightweight segmentation</translation>
+        <translation>Leichtgewichtige Segmentierung</translation>
     </message>
     <message>
         <location filename="../app/core/model_assets.py" line="64"/>
         <source>速度与精度平衡</source>
-        <translation>Balanced speed and accuracy</translation>
+        <translation>Ausgewogen zwischen Tempo und Genauigkeit</translation>
     </message>
     <message>
         <location filename="../app/core/model_assets.py" line="68"/>
         <source>细节更完整</source>
-        <translation>More complete details</translation>
+        <translation>Vollständigere Details</translation>
     </message>
     <message>
         <location filename="../app/core/model_assets.py" line="72"/>
         <source>最精细</source>
-        <translation>Most refined</translation>
+        <translation>Am feinsten</translation>
     </message>
 </context>
 <context>
@@ -1091,42 +1091,42 @@ All its annotations will be removed and cannot be undone.</translation>
         <location filename="../ui/model.ui" line="14"/>
         <location filename="../app/widgets/model_dialog.py" line="125"/>
         <source>模型管理</source>
-        <translation>Model Manager</translation>
+        <translation>Modellverwaltung</translation>
     </message>
     <message>
         <location filename="../ui/model.ui" line="28"/>
         <source>搜索项目 / 数据集 / 标签</source>
-        <translation>Search project / dataset / label</translation>
+        <translation>Projekt / Datensatz / Label suchen</translation>
     </message>
     <message>
         <location filename="../ui/model.ui" line="39"/>
         <source>全部任务</source>
-        <translation>All tasks</translation>
+        <translation>Alle Aufgaben</translation>
     </message>
     <message>
         <location filename="../ui/model.ui" line="44"/>
         <source>检测</source>
-        <translation>Detection</translation>
+        <translation>Erkennung</translation>
     </message>
     <message>
         <location filename="../ui/model.ui" line="49"/>
         <source>分割</source>
-        <translation>Segmentation</translation>
+        <translation>Segmentierung</translation>
     </message>
     <message>
         <location filename="../ui/model.ui" line="54"/>
         <source>分类</source>
-        <translation>Classification</translation>
+        <translation>Klassifizierung</translation>
     </message>
     <message>
         <location filename="../ui/model.ui" line="66"/>
         <source>全部状态</source>
-        <translation>All statuses</translation>
+        <translation>Alle Status</translation>
     </message>
     <message>
         <location filename="../ui/model.ui" line="71"/>
         <source>已完成</source>
-        <translation>Finished</translation>
+        <translation>Abgeschlossen</translation>
     </message>
     <message>
         <location filename="../ui/model.ui" line="76"/>
@@ -1136,98 +1136,98 @@ All its annotations will be removed and cannot be undone.</translation>
     <message>
         <location filename="../ui/model.ui" line="81"/>
         <source>失败</source>
-        <translation>Failed</translation>
+        <translation>Fehlgeschlagen</translation>
     </message>
     <message>
         <location filename="../ui/model.ui" line="86"/>
         <source>已停止</source>
-        <translation>Stopped</translation>
+        <translation>Gestoppt</translation>
     </message>
     <message>
         <location filename="../ui/model.ui" line="94"/>
         <source>仅看每个数据集最佳</source>
-        <translation>Best per dataset only</translation>
+        <translation>Nur beste je Datensatz</translation>
     </message>
     <message>
         <location filename="../ui/model.ui" line="114"/>
         <source>共 0 条</source>
-        <translation>0 records</translation>
+        <translation>0 Einträge</translation>
     </message>
     <message>
         <location filename="../ui/model.ui" line="135"/>
         <location filename="../app/widgets/model_dialog.py" line="535"/>
         <source>任务</source>
-        <translation>Task</translation>
+        <translation>Aufgabe</translation>
     </message>
     <message>
         <location filename="../ui/model.ui" line="140"/>
         <source>数据集 / 标签</source>
-        <translation>Dataset / Labels</translation>
+        <translation>Datensatz / Labels</translation>
     </message>
     <message>
         <location filename="../ui/model.ui" line="145"/>
         <location filename="../app/widgets/model_dialog.py" line="539"/>
         <source>精度</source>
-        <translation>Accuracy</translation>
+        <translation>Genauigkeit</translation>
     </message>
     <message>
         <location filename="../ui/model.ui" line="150"/>
         <location filename="../app/widgets/model_dialog.py" line="550"/>
         <source>训练时间</source>
-        <translation>Trained at</translation>
+        <translation>Trainiert am</translation>
     </message>
     <message>
         <location filename="../ui/model.ui" line="155"/>
         <location filename="../app/widgets/model_dialog.py" line="552"/>
         <source>耗时</source>
-        <translation>Duration</translation>
+        <translation>Dauer</translation>
     </message>
     <message>
         <location filename="../ui/model.ui" line="160"/>
         <location filename="../app/widgets/model_dialog.py" line="542"/>
         <source>图像尺寸</source>
-        <translation>Image Size</translation>
+        <translation>Bildgröße</translation>
     </message>
     <message>
         <location filename="../ui/model.ui" line="165"/>
         <source>操作</source>
-        <translation>Actions</translation>
+        <translation>Aktionen</translation>
     </message>
     <message>
         <location filename="../ui/model.ui" line="182"/>
         <source>模型详情</source>
-        <translation>Model details</translation>
+        <translation>Modelldetails</translation>
     </message>
     <message>
         <location filename="../ui/model.ui" line="189"/>
         <location filename="../app/widgets/model_dialog.py" line="519"/>
         <source>选中一行查看详情</source>
-        <translation>Select a row to see details</translation>
+        <translation>Eine Zeile auswählen für Details</translation>
     </message>
     <message>
         <location filename="../ui/model.ui" line="215"/>
         <source>查看完整指标</source>
-        <translation>View full metrics</translation>
+        <translation>Alle Metriken anzeigen</translation>
     </message>
     <message>
         <location filename="../ui/model.ui" line="222"/>
         <source>测试此模型</source>
-        <translation>Test this model</translation>
+        <translation>Dieses Modell testen</translation>
     </message>
     <message>
         <location filename="../ui/model.ui" line="229"/>
         <source>按此配置重训</source>
-        <translation>Retrain with this config</translation>
+        <translation>Mit dieser Konfiguration neu trainieren</translation>
     </message>
     <message>
         <location filename="../ui/model.ui" line="236"/>
         <source>打开模型目录</source>
-        <translation>Open model directory</translation>
+        <translation>Modellordner öffnen</translation>
     </message>
     <message>
         <location filename="../ui/model.ui" line="276"/>
         <source>上一页</source>
-        <translation>Prev</translation>
+        <translation>Zurück</translation>
     </message>
     <message>
         <location filename="../ui/model.ui" line="283"/>
@@ -1237,37 +1237,37 @@ All its annotations will be removed and cannot be undone.</translation>
     <message>
         <location filename="../ui/model.ui" line="290"/>
         <source>下一页</source>
-        <translation>Next</translation>
+        <translation>Weiter</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_dialog.py" line="359"/>
         <source>共 {} 条</source>
-        <translation>{} records</translation>
+        <translation>{} Einträge</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_dialog.py" line="410"/>
         <source> 等 {} 类</source>
-        <translation> and {} more classes</translation>
+        <translation> und {} weitere Klassen</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_dialog.py" line="434"/>
         <source>测试</source>
-        <translation>Test</translation>
+        <translation>Testen</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_dialog.py" line="439"/>
         <source>导出</source>
-        <translation>Export</translation>
+        <translation>Exportieren</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_dialog.py" line="444"/>
         <source>删除</source>
-        <translation>Delete</translation>
+        <translation>Löschen</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_dialog.py" line="532"/>
         <source>{} × {} 累积</source>
-        <translation>{} × {} accumulated</translation>
+        <translation>{} × {} akkumuliert</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_dialog.py" line="533"/>
@@ -1277,37 +1277,37 @@ All its annotations will be removed and cannot be undone.</translation>
     <message>
         <location filename="../app/widgets/model_dialog.py" line="540"/>
         <source>训练集</source>
-        <translation>Train Set</translation>
+        <translation>Trainingsset</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_dialog.py" line="541"/>
         <source>验证集</source>
-        <translation>Val Set</translation>
+        <translation>Validierungsset</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_dialog.py" line="543"/>
         <source>轮数 / 早停</source>
-        <translation>Epochs / Early stop</translation>
+        <translation>Epochen / Early Stop</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_dialog.py" line="545"/>
         <source>批大小</source>
-        <translation>Batch size</translation>
+        <translation>Batch-Größe</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_dialog.py" line="546"/>
         <source>学习率</source>
-        <translation>Learning rate</translation>
+        <translation>Lernrate</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_dialog.py" line="547"/>
         <source>优化器</source>
-        <translation>Optimizer</translation>
+        <translation>Optimierer</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_dialog.py" line="548"/>
         <source>设备</source>
-        <translation>Device</translation>
+        <translation>Gerät</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_dialog.py" line="549"/>
@@ -1317,45 +1317,45 @@ All its annotations will be removed and cannot be undone.</translation>
     <message>
         <location filename="../app/widgets/model_dialog.py" line="553"/>
         <source>模型路径</source>
-        <translation>Model path</translation>
+        <translation>Modellpfad</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_dialog.py" line="572"/>
         <source>失败原因</source>
-        <translation>Failure reason</translation>
+        <translation>Fehlerursache</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_dialog.py" line="590"/>
         <source>暂无曲线</source>
-        <translation>No curve</translation>
+        <translation>Keine Kurve</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_dialog.py" line="614"/>
         <source>{}  最佳 {:.3f}</source>
-        <translation>{}  best {:.3f}</translation>
+        <translation>{}  bestes {:.3f}</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_dialog.py" line="622"/>
         <location filename="../app/widgets/model_dialog.py" line="633"/>
         <source>打开目录</source>
-        <translation>Open directory</translation>
+        <translation>Ordner öffnen</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_dialog.py" line="623"/>
         <source>模型目录不存在:
 {}</source>
-        <translation>Model directory does not exist:
+        <translation>Modellordner existiert nicht:
 {}</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_dialog.py" line="653"/>
         <source>查看指标失败</source>
-        <translation>Failed to open metrics</translation>
+        <translation>Metriken konnten nicht geöffnet werden</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_dialog.py" line="660"/>
         <source>删除模型记录</source>
-        <translation>Delete Model Record</translation>
+        <translation>Modelleintrag löschen</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_dialog.py" line="661"/>
@@ -1364,21 +1364,21 @@ All its annotations will be removed and cannot be undone.</translation>
 数据集={}
 开始时间={}
 </source>
-        <translation>Delete this model record?
-Project={}
-Dataset={}
-Start time={}
+        <translation>Diesen Modelleintrag löschen?
+Projekt={}
+Datensatz={}
+Startzeit={}
 </translation>
     </message>
     <message>
         <location filename="../app/widgets/model_dialog.py" line="690"/>
         <source>打开训练失败</source>
-        <translation>Failed to open training</translation>
+        <translation>Training konnte nicht geöffnet werden</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_dialog.py" line="717"/>
         <source>打开测试失败</source>
-        <translation>Failed to open testing</translation>
+        <translation>Test konnte nicht geöffnet werden</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_dialog.py" line="734"/>
@@ -1387,59 +1387,59 @@ Start time={}
         <location filename="../app/widgets/model_dialog.py" line="982"/>
         <location filename="../app/widgets/model_dialog.py" line="993"/>
         <source>导出模型</source>
-        <translation>Export Model</translation>
+        <translation>Modell exportieren</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_dialog.py" line="735"/>
         <source>模型文件不存在:
 {}</source>
-        <translation>Model file does not exist:
+        <translation>Modelldatei existiert nicht:
 {}</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_dialog.py" line="738"/>
         <source>选择导出目录</source>
-        <translation>Select Export Directory</translation>
+        <translation>Exportordner wählen</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_dialog.py" line="753"/>
         <source>创建目录失败: {}</source>
-        <translation>Failed to create directory: {}</translation>
+        <translation>Ordner konnte nicht erstellt werden: {}</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_dialog.py" line="769"/>
         <source>正在导出 ONNX...</source>
-        <translation>Exporting ONNX...</translation>
+        <translation>ONNX wird exportiert...</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_dialog.py" line="847"/>
         <source>分类任务不生成评估报告</source>
-        <translation>Classification tasks do not produce an evaluation report</translation>
+        <translation>Klassifizierungsaufgaben erzeugen keinen Auswertungsbericht</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_dialog.py" line="852"/>
         <source>未找到验证集, 已跳过评估报告</source>
-        <translation>No validation set found; evaluation report skipped</translation>
+        <translation>Kein Validierungsset gefunden; Auswertungsbericht übersprungen</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_dialog.py" line="854"/>
         <source>正在生成模型报告...</source>
-        <translation>Generating model report...</translation>
+        <translation>Modellbericht wird erstellt...</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_dialog.py" line="858"/>
         <source>正在生成模型报告 {}/{}</source>
-        <translation>Generating model report {}/{}</translation>
+        <translation>Modellbericht wird erstellt {}/{}</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_dialog.py" line="864"/>
         <source>评估失败, 已跳过报告: {}</source>
-        <translation>Evaluation failed; report skipped: {}</translation>
+        <translation>Auswertung fehlgeschlagen; Bericht übersprungen: {}</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_dialog.py" line="942"/>
         <source>评估完成, 但报告生成失败</source>
-        <translation>Evaluation finished, but the report could not be generated</translation>
+        <translation>Auswertung abgeschlossen, aber der Bericht konnte nicht erstellt werden</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_dialog.py" line="978"/>
@@ -1447,15 +1447,15 @@ Start time={}
 {}
 
 包含: {}</source>
-        <translation>Exported to:
+        <translation>Exportiert nach:
 {}
 
-Contains: {}</translation>
+Enthält: {}</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_dialog.py" line="989"/>
         <source>未知错误</source>
-        <translation>Unknown error</translation>
+        <translation>Unbekannter Fehler</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_dialog.py" line="994"/>
@@ -1463,9 +1463,9 @@ Contains: {}</translation>
 
 若提示缺少 onnx / onnxsim, 请先安装:
  pip install onnx onnxsim</source>
-        <translation>ONNX export failed: {}
+        <translation>ONNX-Export fehlgeschlagen: {}
 
-If it reports missing onnx / onnxsim, install them first:
+Falls onnx / onnxsim fehlen, zuerst installieren:
  pip install onnx onnxsim</translation>
     </message>
 </context>
@@ -1479,12 +1479,12 @@ If it reports missing onnx / onnxsim, install them first:
         <location filename="../app/widgets/model_manager_dialog.py" line="305"/>
         <location filename="../app/widgets/model_manager_dialog.py" line="311"/>
         <source>模型权重</source>
-        <translation>Model Weights</translation>
+        <translation>Modellgewichte</translation>
     </message>
     <message>
         <location filename="../ui/model_manager.ui" line="35"/>
         <source>目标检测</source>
-        <translation>Object Detection</translation>
+        <translation>Objekterkennung</translation>
     </message>
     <message>
         <location filename="../ui/model_manager.ui" line="38"/>
@@ -1501,12 +1501,12 @@ If it reports missing onnx / onnxsim, install them first:
     <message>
         <location filename="../ui/model_manager.ui" line="69"/>
         <source>图像分割</source>
-        <translation>Image Segmentation</translation>
+        <translation>Bildsegmentierung</translation>
     </message>
     <message>
         <location filename="../ui/model_manager.ui" line="121"/>
         <source>下载目录</source>
-        <translation>Download folder</translation>
+        <translation>Downloadordner</translation>
     </message>
     <message>
         <location filename="../ui/model_manager.ui" line="124"/>
@@ -1522,13 +1522,13 @@ If it reports missing onnx / onnxsim, install them first:
     <message>
         <location filename="../ui/model_manager.ui" line="138"/>
         <source>更改</source>
-        <translation>Change</translation>
+        <translation>Ändern</translation>
     </message>
     <message>
         <location filename="../ui/model_manager.ui" line="165"/>
         <location filename="../app/widgets/model_manager_dialog.py" line="291"/>
         <source>开始下载</source>
-        <translation>Start Download</translation>
+        <translation>Download starten</translation>
     </message>
     <message>
         <location filename="../ui/model_manager.ui" line="168"/>
@@ -1539,97 +1539,97 @@ If it reports missing onnx / onnxsim, install them first:
         <location filename="../ui/model_manager.ui" line="175"/>
         <location filename="../app/widgets/model_manager_dialog.py" line="166"/>
         <source>关闭</source>
-        <translation>Close</translation>
+        <translation>Schließen</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_manager_dialog.py" line="53"/>
         <source>还剩 {}s</source>
-        <translation>{}s left</translation>
+        <translation>Noch {}s</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_manager_dialog.py" line="54"/>
         <source>还剩 {}m{}s</source>
-        <translation>{}m{}s left</translation>
+        <translation>Noch {}m{}s</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_manager_dialog.py" line="202"/>
         <source>占用空间 {}</source>
-        <translation>Uses {}</translation>
+        <translation>Belegt {}</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_manager_dialog.py" line="216"/>
         <source>选择权重目录</source>
-        <translation>Select Weights Directory</translation>
+        <translation>Gewichtsordner wählen</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_manager_dialog.py" line="248"/>
         <source>勾选的模型都已就绪, 不需要下载.</source>
-        <translation>All selected models are ready; nothing to download.</translation>
+        <translation>Alle ausgewählten Modelle sind bereit; kein Download nötig.</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_manager_dialog.py" line="253"/>
         <source>当前目录不可写入, 请点&quot;更改&quot;换一个目录:
 {}</source>
-        <translation>The current directory is not writable. Click &quot;Change&quot; to pick another:
+        <translation>Der aktuelle Ordner ist nicht beschreibbar. Auf „Ändern&quot; klicken und einen anderen wählen:
 {}</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_manager_dialog.py" line="258"/>
         <source>下载中...</source>
-        <translation>Downloading...</translation>
+        <translation>Wird heruntergeladen...</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_manager_dialog.py" line="301"/>
         <source>以下权重没能下载完成:
 </source>
-        <translation>These weights could not be downloaded:
+        <translation>Diese Gewichte konnten nicht vollständig geladen werden:
 </translation>
     </message>
     <message>
         <location filename="../app/widgets/model_manager_dialog.py" line="306"/>
         <source>权重已就绪, 保存在:
 {}</source>
-        <translation>Weights are ready, saved in:
+        <translation>Gewichte sind bereit, gespeichert in:
 {}</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_manager_dialog.py" line="312"/>
         <source>下载还在进行, 现在关闭会中断下载(已下载部分保留, 下次可续传).
 确定关闭?</source>
-        <translation>A download is still running. Closing now interrupts it (the parts already downloaded are kept and will resume next time).
-Close anyway?</translation>
+        <translation>Ein Download läuft noch. Beim Schließen wird er unterbrochen (bereits Geladenes bleibt erhalten und wird beim nächsten Mal fortgesetzt).
+Trotzdem schließen?</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_manager_dialog.py" line="343"/>
         <source>去下载</source>
-        <translation>Download</translation>
+        <translation>Herunterladen</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_manager_dialog.py" line="344"/>
         <source>仍然继续</source>
-        <translation>Continue Anyway</translation>
+        <translation>Trotzdem fortfahren</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_manager_dialog.py" line="345"/>
         <source>本次训练选用 {} {}模型, 需要先下载 {}.</source>
-        <translation>This training uses the {} {} model and needs {} downloaded first.</translation>
+        <translation>Dieses Training nutzt das Modell {} {} und benötigt zuerst {}.</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_manager_dialog.py" line="348"/>
         <source>下载位置: {}
 点&quot;仍然继续&quot;则由软件在训练时自行下载, 期间训练日志不会显示进度. 建议先在这里下载好.</source>
-        <translation>Download location: {}
-Click &quot;Continue Anyway&quot; and the app will download it during training, with no progress in the training log. Downloading it here first is recommended.</translation>
+        <translation>Downloadort: {}
+Bei „Trotzdem fortfahren&quot; lädt die Software während des Trainings selbst; im Trainingsprotokoll erscheint dabei kein Fortschritt. Besser hier vorab herunterladen.</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_manager_dialog.py" line="353"/>
         <source>缺少模型权重</source>
-        <translation>Missing Model Weights</translation>
+        <translation>Modellgewichte fehlen</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_manager_dialog.py" line="355"/>
         <source>取消</source>
-        <translation>Cancel</translation>
+        <translation>Abbrechen</translation>
     </message>
 </context>
 <context>
@@ -1637,7 +1637,7 @@ Click &quot;Continue Anyway&quot; and the app will download it during training, 
     <message>
         <location filename="../app/widgets/multi_combo.py" line="350"/>
         <source>请选择数据集</source>
-        <translation>Select datasets</translation>
+        <translation>Datensätze wählen</translation>
     </message>
 </context>
 <context>
@@ -1647,7 +1647,7 @@ Click &quot;Continue Anyway&quot; and the app will download it during training, 
         <location filename="../ui/input_name.ui" line="40"/>
         <location filename="../app/widgets/name_input_dialog.py" line="13"/>
         <source>输入名称</source>
-        <translation>Enter Name</translation>
+        <translation>Name eingeben</translation>
     </message>
     <message>
         <location filename="../ui/input_name.ui" line="43"/>
@@ -1658,12 +1658,12 @@ Click &quot;Continue Anyway&quot; and the app will download it during training, 
         <location filename="../ui/input_name.ui" line="65"/>
         <location filename="../app/widgets/name_input_dialog.py" line="14"/>
         <source>请输入名称</source>
-        <translation>Enter a name</translation>
+        <translation>Namen eingeben</translation>
     </message>
     <message>
         <location filename="../ui/input_name.ui" line="100"/>
         <source>取消</source>
-        <translation>Cancel</translation>
+        <translation>Abbrechen</translation>
     </message>
     <message>
         <location filename="../ui/input_name.ui" line="113"/>
@@ -1681,43 +1681,43 @@ Click &quot;Continue Anyway&quot; and the app will download it during training, 
     <message>
         <location filename="../app/mixins/project_mixin.py" line="18"/>
         <source>输入名称</source>
-        <translation>Enter Name</translation>
+        <translation>Name eingeben</translation>
     </message>
     <message>
         <location filename="../app/mixins/project_mixin.py" line="19"/>
         <source>项目名称</source>
-        <translation>Project name</translation>
+        <translation>Projektname</translation>
     </message>
     <message>
         <location filename="../app/mixins/project_mixin.py" line="22"/>
         <location filename="../app/mixins/project_mixin.py" line="26"/>
         <source>创建项目</source>
-        <translation>Create Project</translation>
+        <translation>Projekt erstellen</translation>
     </message>
     <message>
         <location filename="../app/mixins/project_mixin.py" line="26"/>
         <location filename="../app/mixins/project_mixin.py" line="38"/>
         <source>项目名称已存在!</source>
-        <translation>A project with this name already exists!</translation>
+        <translation>Ein Projekt mit diesem Namen existiert bereits!</translation>
     </message>
     <message>
         <location filename="../app/mixins/project_mixin.py" line="34"/>
         <location filename="../app/mixins/project_mixin.py" line="38"/>
         <location filename="../app/mixins/project_mixin.py" line="91"/>
         <source>修改名称</source>
-        <translation>Rename</translation>
+        <translation>Umbenennen</translation>
     </message>
     <message>
         <location filename="../app/mixins/project_mixin.py" line="46"/>
         <location filename="../app/mixins/project_mixin.py" line="92"/>
         <source>删除项目</source>
-        <translation>Delete Project</translation>
+        <translation>Projekt löschen</translation>
     </message>
     <message>
         <location filename="../app/mixins/project_mixin.py" line="47"/>
         <source>确定删除项目&quot;{}&quot;吗?
 </source>
-        <translation>Delete project &quot;{}&quot;?
+        <translation>Projekt „{}&quot; löschen?
 </translation>
     </message>
     <message>
@@ -1725,70 +1725,70 @@ Click &quot;Continue Anyway&quot; and the app will download it during training, 
         <location filename="../app/mixins/project_mixin.py" line="132"/>
         <location filename="../app/mixins/project_mixin.py" line="140"/>
         <source>添加数据集</source>
-        <translation>Add Dataset</translation>
+        <translation>Datensatz hinzufügen</translation>
     </message>
     <message>
         <location filename="../app/mixins/project_mixin.py" line="90"/>
         <source>导出项目</source>
-        <translation>Export Project</translation>
+        <translation>Projekt exportieren</translation>
     </message>
     <message>
         <location filename="../app/mixins/project_mixin.py" line="107"/>
         <source>导入</source>
-        <translation>Import</translation>
+        <translation>Importieren</translation>
     </message>
     <message>
         <location filename="../app/mixins/project_mixin.py" line="108"/>
         <source>导出</source>
-        <translation>Export</translation>
+        <translation>Exportieren</translation>
     </message>
     <message>
         <location filename="../app/mixins/project_mixin.py" line="109"/>
         <source>重载</source>
-        <translation>Reload</translation>
+        <translation>Neu laden</translation>
     </message>
     <message>
         <location filename="../app/mixins/project_mixin.py" line="110"/>
         <source>移动</source>
-        <translation>Move</translation>
+        <translation>Verschieben</translation>
     </message>
     <message>
         <location filename="../app/mixins/project_mixin.py" line="111"/>
         <source>修改</source>
-        <translation>Rename</translation>
+        <translation>Umbenennen</translation>
     </message>
     <message>
         <location filename="../app/mixins/project_mixin.py" line="112"/>
         <source>删除</source>
-        <translation>Delete</translation>
+        <translation>Löschen</translation>
     </message>
     <message>
         <location filename="../app/mixins/project_mixin.py" line="133"/>
         <source>数据集名称</source>
-        <translation>Dataset name</translation>
+        <translation>Datensatzname</translation>
     </message>
     <message>
         <location filename="../app/mixins/project_mixin.py" line="140"/>
         <location filename="../app/mixins/project_mixin.py" line="151"/>
         <source>该项目下已存在同名数据集!</source>
-        <translation>A dataset with this name already exists in this project!</translation>
+        <translation>In diesem Projekt existiert bereits ein Datensatz mit diesem Namen!</translation>
     </message>
     <message>
         <location filename="../app/mixins/project_mixin.py" line="147"/>
         <location filename="../app/mixins/project_mixin.py" line="151"/>
         <source>修改数据集</source>
-        <translation>Rename Dataset</translation>
+        <translation>Datensatz umbenennen</translation>
     </message>
     <message>
         <location filename="../app/mixins/project_mixin.py" line="158"/>
         <source>删除数据集</source>
-        <translation>Delete Dataset</translation>
+        <translation>Datensatz löschen</translation>
     </message>
     <message>
         <location filename="../app/mixins/project_mixin.py" line="159"/>
         <source>确定删除数据集&quot;{}&quot;吗?
 </source>
-        <translation>Delete dataset &quot;{}&quot;?
+        <translation>Datensatz „{}&quot; löschen?
 </translation>
     </message>
     <message>
@@ -1796,41 +1796,41 @@ Click &quot;Continue Anyway&quot; and the app will download it during training, 
         <location filename="../app/mixins/project_mixin.py" line="195"/>
         <location filename="../app/mixins/project_mixin.py" line="212"/>
         <source>移动数据集</source>
-        <translation>Move Dataset</translation>
+        <translation>Datensatz verschieben</translation>
     </message>
     <message>
         <location filename="../app/mixins/project_mixin.py" line="183"/>
         <source>是否将&quot;{}&quot;的数据从
 {} / {} 移动到 {} / {}?
 移动后源数据集将清空.</source>
-        <translation>Move the data of &quot;{}&quot; from
-{} / {} to {} / {}?
-The source dataset will be emptied.</translation>
+        <translation>Die Daten von „{}&quot; von
+{} / {} nach {} / {} verschieben?
+Der Quell-Datensatz wird danach geleert.</translation>
     </message>
     <message>
         <location filename="../app/mixins/project_mixin.py" line="192"/>
         <source>移动失败</source>
-        <translation>Move Failed</translation>
+        <translation>Verschieben fehlgeschlagen</translation>
     </message>
     <message>
         <location filename="../app/mixins/project_mixin.py" line="196"/>
         <source>已从 {} / {} 移动到 {} / {}</source>
-        <translation>Moved from {} / {} to {} / {}</translation>
+        <translation>Von {} / {} nach {} / {} verschoben</translation>
     </message>
     <message>
         <location filename="../app/mixins/project_mixin.py" line="213"/>
         <source>没有可移动到的目标数据集(本项目之外无数据集)</source>
-        <translation>No target dataset available (there are no datasets outside this project)</translation>
+        <translation>Kein Ziel-Datensatz verfügbar (außerhalb dieses Projekts gibt es keine Datensätze)</translation>
     </message>
     <message>
         <location filename="../app/mixins/project_mixin.py" line="217"/>
         <source>选择目标数据集</source>
-        <translation>Select Target Dataset</translation>
+        <translation>Ziel-Datensatz wählen</translation>
     </message>
     <message>
         <location filename="../app/mixins/project_mixin.py" line="221"/>
         <source>选择要将数据移动到的目标数据集:</source>
-        <translation>Select the target dataset to move the data into:</translation>
+        <translation>Ziel-Datensatz wählen, in den die Daten verschoben werden:</translation>
     </message>
 </context>
 <context>
@@ -1838,7 +1838,7 @@ The source dataset will be emptied.</translation>
     <message>
         <location filename="../app/widgets/project_sidebar.py" line="400"/>
         <source>{} 个项目 · {} 个数据集</source>
-        <translation>Projects {} · Datasets {}</translation>
+        <translation>Projekte {} · Datensätze {}</translation>
     </message>
 </context>
 <context>
@@ -1846,12 +1846,12 @@ The source dataset will be emptied.</translation>
     <message>
         <location filename="../app/mixins/queue_mixin.py" line="296"/>
         <source>训练未完成, 详见日志</source>
-        <translation>Training did not finish; see the log</translation>
+        <translation>Training nicht abgeschlossen; siehe Protokoll</translation>
     </message>
     <message>
         <location filename="../app/mixins/queue_mixin.py" line="353"/>
         <source>队列 {}</source>
-        <translation>Queue {}</translation>
+        <translation>Warteschlange {}</translation>
     </message>
 </context>
 <context>
@@ -1859,7 +1859,7 @@ The source dataset will be emptied.</translation>
     <message>
         <location filename="../app/widgets/status_style.py" line="21"/>
         <source>等待中</source>
-        <translation>Waiting</translation>
+        <translation>Wartet</translation>
     </message>
     <message>
         <location filename="../app/widgets/status_style.py" line="22"/>
@@ -1871,36 +1871,36 @@ The source dataset will be emptied.</translation>
         <location filename="../app/widgets/status_style.py" line="23"/>
         <location filename="../app/widgets/status_style.py" line="30"/>
         <source>已完成</source>
-        <translation>Finished</translation>
+        <translation>Abgeschlossen</translation>
     </message>
     <message>
         <location filename="../app/widgets/status_style.py" line="24"/>
         <location filename="../app/widgets/status_style.py" line="31"/>
         <source>失败</source>
-        <translation>Failed</translation>
+        <translation>Fehlgeschlagen</translation>
     </message>
     <message>
         <location filename="../app/widgets/status_style.py" line="25"/>
         <location filename="../app/widgets/status_style.py" line="34"/>
         <source>已跳过</source>
-        <translation>Skipped</translation>
+        <translation>Übersprungen</translation>
     </message>
     <message>
         <location filename="../app/widgets/status_style.py" line="26"/>
         <location filename="../app/widgets/status_style.py" line="32"/>
         <source>已停止</source>
-        <translation>Stopped</translation>
+        <translation>Gestoppt</translation>
     </message>
     <message>
         <location filename="../app/widgets/status_style.py" line="27"/>
         <location filename="../app/widgets/status_style.py" line="35"/>
         <source>已中断</source>
-        <translation>Interrupted</translation>
+        <translation>Abgebrochen</translation>
     </message>
     <message>
         <location filename="../app/widgets/status_style.py" line="33"/>
         <source>失败/已停止</source>
-        <translation>Failed/Stopped</translation>
+        <translation>Fehlgeschlagen/Gestoppt</translation>
     </message>
 </context>
 <context>
@@ -1908,17 +1908,17 @@ The source dataset will be emptied.</translation>
     <message>
         <location filename="../app/widgets/status_style.py" line="40"/>
         <source>检测</source>
-        <translation>Detection</translation>
+        <translation>Erkennung</translation>
     </message>
     <message>
         <location filename="../app/widgets/status_style.py" line="41"/>
         <source>分割</source>
-        <translation>Segmentation</translation>
+        <translation>Segmentierung</translation>
     </message>
     <message>
         <location filename="../app/widgets/status_style.py" line="42"/>
         <source>分类</source>
-        <translation>Classification</translation>
+        <translation>Klassifizierung</translation>
     </message>
 </context>
 <context>
@@ -1927,7 +1927,7 @@ The source dataset will be emptied.</translation>
         <location filename="../ui/test_dialog.ui" line="14"/>
         <location filename="../ui/test_dialog.ui" line="41"/>
         <source>模型测试</source>
-        <translation>Model Testing</translation>
+        <translation>Modelltest</translation>
     </message>
     <message>
         <location filename="../ui/test_dialog.ui" line="44"/>
@@ -1937,7 +1937,7 @@ The source dataset will be emptied.</translation>
     <message>
         <location filename="../ui/test_dialog.ui" line="77"/>
         <source>检测</source>
-        <translation>Detection</translation>
+        <translation>Erkennung</translation>
     </message>
     <message>
         <location filename="../ui/test_dialog.ui" line="80"/>
@@ -1957,7 +1957,7 @@ The source dataset will be emptied.</translation>
     <message>
         <location filename="../ui/test_dialog.ui" line="105"/>
         <source>mAP50 0.912 · 输入 640 · 规模 n · 训练 2026-09-01 14:22</source>
-        <translation>mAP50 0.912 · Input 640 · Scale n · Trained 2026-09-01 14:22</translation>
+        <translation>mAP50 0.912 · Eingabe 640 · Skala n · Training 2026-09-01 14:22</translation>
     </message>
     <message>
         <location filename="../ui/test_dialog.ui" line="108"/>
@@ -1967,7 +1967,7 @@ The source dataset will be emptied.</translation>
     <message>
         <location filename="../ui/test_dialog.ui" line="126"/>
         <source>数据与设备</source>
-        <translation>Data &amp; Device</translation>
+        <translation>Daten &amp; Gerät</translation>
     </message>
     <message>
         <location filename="../ui/test_dialog.ui" line="129"/>
@@ -1984,27 +1984,27 @@ The source dataset will be emptied.</translation>
     <message>
         <location filename="../ui/test_dialog.ui" line="168"/>
         <source>数据</source>
-        <translation>Data</translation>
+        <translation>Daten</translation>
     </message>
     <message>
         <location filename="../ui/test_dialog.ui" line="191"/>
         <source>设备</source>
-        <translation>Device</translation>
+        <translation>Gerät</translation>
     </message>
     <message>
         <location filename="../ui/test_dialog.ui" line="221"/>
         <source>测试参数</source>
-        <translation>Test Parameters</translation>
+        <translation>Testparameter</translation>
     </message>
     <message>
         <location filename="../ui/test_dialog.ui" line="263"/>
         <source>置信度</source>
-        <translation>Confidence</translation>
+        <translation>Konfidenz</translation>
     </message>
     <message>
         <location filename="../ui/test_dialog.ui" line="304"/>
         <source>低于该分数的预测直接丢弃</source>
-        <translation>Predictions scoring below this value are discarded</translation>
+        <translation>Vorhersagen unterhalb dieses Werts werden verworfen</translation>
     </message>
     <message>
         <location filename="../ui/test_dialog.ui" line="307"/>
@@ -2016,22 +2016,22 @@ The source dataset will be emptied.</translation>
     <message>
         <location filename="../ui/test_dialog.ui" line="320"/>
         <source>IoU 阈值</source>
-        <translation>IoU threshold</translation>
+        <translation>IoU-Schwelle</translation>
     </message>
     <message>
         <location filename="../ui/test_dialog.ui" line="361"/>
         <source>与标注框重合度达标才算正确检出</source>
-        <translation>Overlap with the ground-truth box must reach this value to count as a correct detection</translation>
+        <translation>Die Überlappung mit dem Labelrahmen muss diesen Wert erreichen, um als korrekt erkannt zu gelten</translation>
     </message>
     <message>
         <location filename="../ui/test_dialog.ui" line="377"/>
         <source>输出标签文件</source>
-        <translation>Write label files</translation>
+        <translation>Labeldateien schreiben</translation>
     </message>
     <message>
         <location filename="../ui/test_dialog.ui" line="409"/>
         <source>把预测框写成 labelme json，便于人工复核</source>
-        <translation>Write predicted boxes as labelme json for manual review</translation>
+        <translation>Vorhersagerahmen als labelme json schreiben, für die manuelle Prüfung</translation>
     </message>
     <message>
         <location filename="../ui/test_dialog.ui" line="461"/>
@@ -2046,7 +2046,7 @@ The source dataset will be emptied.</translation>
     <message>
         <location filename="../ui/test_dialog.ui" line="471"/>
         <source>请选择数据集</source>
-        <translation>Select datasets</translation>
+        <translation>Datensätze wählen</translation>
     </message>
     <message>
         <location filename="../ui/test_dialog.ui" line="474"/>
@@ -2057,87 +2057,87 @@ The source dataset will be emptied.</translation>
         <location filename="../ui/test_dialog.ui" line="515"/>
         <location filename="../app/widgets/test_dialog.py" line="101"/>
         <source>取消</source>
-        <translation>Cancel</translation>
+        <translation>Abbrechen</translation>
     </message>
     <message>
         <location filename="../ui/test_dialog.ui" line="522"/>
         <source>开始测试</source>
-        <translation>Start Test</translation>
+        <translation>Test starten</translation>
     </message>
     <message>
         <location filename="../app/widgets/test_dialog.py" line="239"/>
         <source>未指定模型</source>
-        <translation>No model selected</translation>
+        <translation>Kein Modell angegeben</translation>
     </message>
     <message>
         <location filename="../app/widgets/test_dialog.py" line="240"/>
         <source>请在模型列表中重新选择一行</source>
-        <translation>Select a row in the model list again</translation>
+        <translation>In der Modellliste erneut eine Zeile auswählen</translation>
     </message>
     <message>
         <location filename="../app/widgets/test_dialog.py" line="248"/>
         <source>准确率</source>
-        <translation>Accuracy</translation>
+        <translation>Genauigkeit</translation>
     </message>
     <message>
         <location filename="../app/widgets/test_dialog.py" line="254"/>
         <source>输入 {}</source>
-        <translation>Input {}</translation>
+        <translation>Eingabe {}</translation>
     </message>
     <message>
         <location filename="../app/widgets/test_dialog.py" line="256"/>
         <source>规模 {}</source>
-        <translation>Scale {}</translation>
+        <translation>Skala {}</translation>
     </message>
     <message>
         <location filename="../app/widgets/test_dialog.py" line="258"/>
         <source>训练 {}</source>
-        <translation>Trained {}</translation>
+        <translation>Training {}</translation>
     </message>
     <message>
         <location filename="../app/widgets/test_dialog.py" line="260"/>
         <source>该记录未保存训练指标</source>
-        <translation>This record has no saved training metrics</translation>
+        <translation>Für diesen Eintrag wurden keine Trainingsmetriken gespeichert</translation>
     </message>
     <message>
         <location filename="../app/widgets/test_dialog.py" line="263"/>
         <source> · 文件已不存在</source>
-        <translation> · file no longer exists</translation>
+        <translation> · Datei existiert nicht mehr</translation>
     </message>
     <message>
         <location filename="../app/widgets/test_dialog.py" line="289"/>
         <source>请先勾选要测试的数据集</source>
-        <translation>Select the datasets to test first</translation>
+        <translation>Zuerst die zu testenden Datensätze anhaken</translation>
     </message>
     <message>
         <location filename="../app/widgets/test_dialog.py" line="301"/>
         <source>{} 个数据集 · {} 张图</source>
-        <translation>{} datasets · {} images</translation>
+        <translation>{} Datensätze · {} Bilder</translation>
     </message>
     <message>
         <location filename="../app/widgets/test_dialog.py" line="303"/>
         <source>分类数据集, 统计每张图的判断正确率</source>
-        <translation>Classification dataset; measures per-image accuracy</translation>
+        <translation>Klassifizierungs-Datensatz; misst die Trefferquote pro Bild</translation>
     </message>
     <message>
         <location filename="../app/widgets/test_dialog.py" line="305"/>
         <source>已标注, 评估模式: 统计检出率 / 漏检 / 误检</source>
-        <translation>Labeled: evaluation mode, measures recall / misses / false positives</translation>
+        <translation>Annotiert, Auswertungsmodus: Trefferquote / Übersehenes / Fehlalarme</translation>
     </message>
     <message>
         <location filename="../app/widgets/test_dialog.py" line="307"/>
         <source>未标注, 推理模式: 只输出预测标签</source>
-        <translation>Unlabeled: inference mode, only writes predicted labels</translation>
+        <translation>Nicht annotiert, Inferenzmodus: gibt nur vorhergesagte Labels aus</translation>
     </message>
     <message>
         <location filename="../app/widgets/test_dialog.py" line="309"/>
         <source>部分已标注, 已标注与未标注的数据集不能一起测</source>
-        <translation>Partially labeled; labeled and unlabeled datasets cannot be tested together</translation>
+        <translation>Teilweise annotiert; annotierte und nicht annotierte Datensätze können nicht zusammen getestet werden</translation>
     </message>
     <message>
         <location filename="../app/widgets/test_dialog.py" line="332"/>
         <source>为每张图写 &lt;同名&gt;.json 到图像目录, 标注工具可直接打开;该处已有人工标注会被覆盖</source>
-        <translation>Write &lt;same-name&gt;.json next to each image so the annotation tool can open it directly; existing manual labels there are overwritten</translation>
+        <translation>Schreibt &lt;gleicher Name&gt;.json neben jedes Bild, sodass das Annotationstool sie direkt öffnen kann; vorhandene manuelle Labels dort werden überschrieben</translation>
     </message>
     <message>
         <location filename="../app/widgets/test_dialog.py" line="345"/>
@@ -2148,73 +2148,73 @@ The source dataset will be emptied.</translation>
         <location filename="../app/widgets/test_dialog.py" line="388"/>
         <location filename="../app/widgets/test_dialog.py" line="394"/>
         <source>测试</source>
-        <translation>Test</translation>
+        <translation>Testen</translation>
     </message>
     <message>
         <location filename="../app/widgets/test_dialog.py" line="345"/>
         <source>已有测试在进行中</source>
-        <translation>A test is already running</translation>
+        <translation>Ein Test läuft bereits</translation>
     </message>
     <message>
         <location filename="../app/widgets/test_dialog.py" line="349"/>
         <source>请至少选择一个数据集</source>
-        <translation>Select at least one dataset</translation>
+        <translation>Mindestens einen Datensatz auswählen</translation>
     </message>
     <message>
         <location filename="../app/widgets/test_dialog.py" line="360"/>
         <source>置信度/iou阈值必须是数字</source>
-        <translation>Confidence / IoU threshold must be a number</translation>
+        <translation>Konfidenz/IoU-Schwelle muss eine Zahl sein</translation>
     </message>
     <message>
         <location filename="../app/widgets/test_dialog.py" line="366"/>
         <source>模型文件不存在, 请重新选择</source>
-        <translation>The model file does not exist; please select it again</translation>
+        <translation>Die Modelldatei existiert nicht; bitte erneut auswählen</translation>
     </message>
     <message>
         <location filename="../app/widgets/test_dialog.py" line="379"/>
         <source>数据集 {}/{} 未导入图像</source>
-        <translation>Dataset {}/{} has no images imported</translation>
+        <translation>Datensatz {}/{} hat keine Bilder importiert</translation>
     </message>
     <message>
         <location filename="../app/widgets/test_dialog.py" line="389"/>
         <source>分类数据集与检测/分割数据集不能同时测试: {}/{}</source>
-        <translation>Classification and detection/segmentation datasets cannot be tested together: {}/{}</translation>
+        <translation>Klassifizierungs- und Erkennungs-/Segmentierungs-Datensätze können nicht zusammen getestet werden: {}/{}</translation>
     </message>
     <message>
         <location filename="../app/widgets/test_dialog.py" line="395"/>
         <source>已标注与未标注的数据集不能同时测试: {}/{}</source>
-        <translation>Labeled and unlabeled datasets cannot be tested together: {}/{}</translation>
+        <translation>Annotierte und nicht annotierte Datensätze können nicht zusammen getestet werden: {}/{}</translation>
     </message>
     <message>
         <location filename="../app/widgets/test_dialog.py" line="433"/>
         <source>测试准备中...</source>
-        <translation>Preparing test...</translation>
+        <translation>Test wird vorbereitet...</translation>
     </message>
     <message>
         <location filename="../app/widgets/test_dialog.py" line="450"/>
         <location filename="../app/widgets/test_dialog.py" line="451"/>
         <source>测试即将开始</source>
-        <translation>Test is about to start</translation>
+        <translation>Test startet gleich</translation>
     </message>
     <message>
         <location filename="../app/widgets/test_dialog.py" line="497"/>
         <source>测试中 {}/{}</source>
-        <translation>Testing {}/{}</translation>
+        <translation>Test läuft {}/{}</translation>
     </message>
     <message>
         <location filename="../app/widgets/test_dialog.py" line="508"/>
         <source>测试结果</source>
-        <translation>Test Results</translation>
+        <translation>Testergebnisse</translation>
     </message>
     <message>
         <location filename="../app/widgets/test_dialog.py" line="509"/>
         <source>测试未正常完成</source>
-        <translation>The test did not finish normally</translation>
+        <translation>Der Test wurde nicht regulär abgeschlossen</translation>
     </message>
     <message>
         <location filename="../app/widgets/test_dialog.py" line="525"/>
         <source>测试失败</source>
-        <translation>Test Failed</translation>
+        <translation>Test fehlgeschlagen</translation>
     </message>
 </context>
 <context>
@@ -2222,12 +2222,12 @@ The source dataset will be emptied.</translation>
     <message>
         <location filename="../ui/test_result.ui" line="14"/>
         <source>测试结果分析</source>
-        <translation>Test Result Analysis</translation>
+        <translation>Testergebnis-Analyse</translation>
     </message>
     <message>
         <location filename="../ui/test_result.ui" line="58"/>
         <source>图像维度</source>
-        <translation>By Image</translation>
+        <translation>Nach Bild</translation>
     </message>
     <message>
         <location filename="../ui/test_result.ui" line="61"/>
@@ -2238,7 +2238,7 @@ The source dataset will be emptied.</translation>
     <message>
         <location filename="../ui/test_result.ui" line="68"/>
         <source>按「张」统计</source>
-        <translation>Counted by image</translation>
+        <translation>Zählung nach Bildern</translation>
     </message>
     <message>
         <location filename="../ui/test_result.ui" line="71"/>
@@ -2273,7 +2273,7 @@ The source dataset will be emptied.</translation>
         <location filename="../ui/test_result.ui" line="138"/>
         <location filename="../app/train/test_result_dialog.py" line="221"/>
         <source>测试张数</source>
-        <translation>Images tested</translation>
+        <translation>Getestete Bilder</translation>
     </message>
     <message>
         <location filename="../ui/test_result.ui" line="144"/>
@@ -2302,47 +2302,47 @@ The source dataset will be emptied.</translation>
     <message>
         <location filename="../ui/test_result.ui" line="194"/>
         <source>全对图像</source>
-        <translation>All-correct images</translation>
+        <translation>Bilder ohne Fehler</translation>
     </message>
     <message>
         <location filename="../ui/test_result.ui" line="250"/>
         <source>有漏检图像</source>
-        <translation>Images with misses</translation>
+        <translation>Bilder mit Übersehenem</translation>
     </message>
     <message>
         <location filename="../ui/test_result.ui" line="306"/>
         <location filename="../app/train/test_result_dialog.py" line="190"/>
         <source>有误检图像</source>
-        <translation>Images with false positives</translation>
+        <translation>Bilder mit Fehlalarm</translation>
     </message>
     <message>
         <location filename="../ui/test_result.ui" line="350"/>
         <source>标签维度</source>
-        <translation>By Label</translation>
+        <translation>Nach Label</translation>
     </message>
     <message>
         <location filename="../ui/test_result.ui" line="360"/>
         <source>按「标注框」统计</source>
-        <translation>Counted by box</translation>
+        <translation>Zählung nach Rahmen</translation>
     </message>
     <message>
         <location filename="../ui/test_result.ui" line="430"/>
         <location filename="../ui/test_result.ui" line="639"/>
         <location filename="../app/train/test_result_dialog.py" line="198"/>
         <source>正确检出</source>
-        <translation>Correct</translation>
+        <translation>Korrekt</translation>
     </message>
     <message>
         <location filename="../ui/test_result.ui" line="486"/>
         <location filename="../ui/test_result.ui" line="644"/>
         <source>漏检</source>
-        <translation>Missed</translation>
+        <translation>Übersehen</translation>
     </message>
     <message>
         <location filename="../ui/test_result.ui" line="542"/>
         <location filename="../ui/test_result.ui" line="649"/>
         <source>误检</source>
-        <translation>False pos.</translation>
+        <translation>Fehlalarm</translation>
     </message>
     <message>
         <location filename="../ui/test_result.ui" line="585"/>
@@ -2353,51 +2353,51 @@ The source dataset will be emptied.</translation>
         <location filename="../ui/test_result.ui" line="598"/>
         <location filename="../ui/test_result.ui" line="659"/>
         <source>准确率</source>
-        <translation>Accuracy</translation>
+        <translation>Genauigkeit</translation>
     </message>
     <message>
         <location filename="../ui/test_result.ui" line="629"/>
         <location filename="../app/train/test_result_dialog.py" line="234"/>
         <source>类别</source>
-        <translation>Class</translation>
+        <translation>Klasse</translation>
     </message>
     <message>
         <location filename="../ui/test_result.ui" line="634"/>
         <source>标注数</source>
-        <translation>Boxes</translation>
+        <translation>Rahmen</translation>
     </message>
     <message>
         <location filename="../ui/test_result.ui" line="654"/>
         <source>检出率</source>
-        <translation>Recall</translation>
+        <translation>Trefferquote</translation>
     </message>
     <message>
         <location filename="../ui/test_result.ui" line="679"/>
         <source>每类抽取</source>
-        <translation>Per class</translation>
+        <translation>Pro Klasse</translation>
     </message>
     <message>
         <location filename="../ui/test_result.ui" line="686"/>
         <source>每个类别的每种错误（漏检 / 误检）最多列出几张图。
 报告体积约 120 KB 一张，样本多时调小可以显著减小 PDF；选「全部」则每张有问题的图都列。</source>
-        <translation>Maximum images listed per error type (missed / false positive) for each class.
-The report is about 120 KB per image; lowering this shrinks the PDF noticeably when there are many samples. Choosing &quot;All&quot; lists every problematic image.</translation>
+        <translation>Maximale Anzahl gelisteter Bilder je Fehlertyp (Übersehen / Fehlalarm) und Klasse.
+Der Bericht umfasst ca. 120 KB pro Bild; bei vielen Stichproben verkleinert ein niedrigerer Wert die PDF deutlich. Bei „Alle&quot; wird jedes problematische Bild gelistet.</translation>
     </message>
     <message>
         <location filename="../ui/test_result.ui" line="690"/>
         <source> 张</source>
-        <translation> images</translation>
+        <translation> Bilder</translation>
     </message>
     <message>
         <location filename="../ui/test_result.ui" line="693"/>
         <source>全部</source>
-        <translation>All</translation>
+        <translation>Alle</translation>
     </message>
     <message>
         <location filename="../ui/test_result.ui" line="722"/>
         <location filename="../app/train/test_result_dialog.py" line="137"/>
         <source>导出 PDF 报告</source>
-        <translation>Export PDF Report</translation>
+        <translation>PDF-Bericht exportieren</translation>
     </message>
     <message>
         <location filename="../ui/test_result.ui" line="729"/>
@@ -2408,156 +2408,156 @@ The report is about 120 KB per image; lowering this shrinks the PDF noticeably w
     <message>
         <location filename="../app/train/test_result_dialog.py" line="107"/>
         <source>把漏检/误检的图逐张画框导出成 PDF</source>
-        <translation>Export a PDF with boxes drawn on every missed / false-positive image</translation>
+        <translation>Alle Bilder mit Übersehenem oder Fehlalarm mit Rahmen in ein PDF exportieren</translation>
     </message>
     <message>
         <location filename="../app/train/test_result_dialog.py" line="108"/>
         <source>本次测试没有逐图错误明细, 无法导出</source>
-        <translation>This test has no per-image error details; cannot export</translation>
+        <translation>Dieser Test enthält keine Fehlerdetails pro Bild; Export nicht möglich</translation>
     </message>
     <message>
         <location filename="../app/train/test_result_dialog.py" line="120"/>
         <source>保存 PDF 报告</source>
-        <translation>Save PDF Report</translation>
+        <translation>PDF-Bericht speichern</translation>
     </message>
     <message>
         <location filename="../app/train/test_result_dialog.py" line="121"/>
         <source>PDF 文件 (*.pdf)</source>
-        <translation>PDF files (*.pdf)</translation>
+        <translation>PDF-Dateien (*.pdf)</translation>
     </message>
     <message>
         <location filename="../app/train/test_result_dialog.py" line="127"/>
         <source>正在生成...</source>
-        <translation>Generating...</translation>
+        <translation>Wird erstellt...</translation>
     </message>
     <message>
         <location filename="../app/train/test_result_dialog.py" line="144"/>
         <source>无需导出</source>
-        <translation>Nothing to Export</translation>
+        <translation>Nichts zu exportieren</translation>
     </message>
     <message>
         <location filename="../app/train/test_result_dialog.py" line="145"/>
         <source>本次测试没有漏检也没有误检, 没有内容可写.</source>
-        <translation>This test has neither misses nor false positives; nothing to write.</translation>
+        <translation>Dieser Test hat weder Übersehenes noch Fehlalarme; nichts zu schreiben.</translation>
     </message>
     <message>
         <location filename="../app/train/test_result_dialog.py" line="148"/>
         <source>导出完成</source>
-        <translation>Export Complete</translation>
+        <translation>Export abgeschlossen</translation>
     </message>
     <message>
         <location filename="../app/train/test_result_dialog.py" line="149"/>
         <source>PDF 报告已保存到:
 {}</source>
-        <translation>PDF report saved to:
+        <translation>PDF-Bericht gespeichert unter:
 {}</translation>
     </message>
     <message>
         <location filename="../app/train/test_result_dialog.py" line="153"/>
         <source>导出失败</source>
-        <translation>Export Failed</translation>
+        <translation>Export fehlgeschlagen</translation>
     </message>
     <message>
         <location filename="../app/train/test_result_dialog.py" line="177"/>
         <source>按&quot;张&quot;统计 · 检出 1 个即算检出</source>
-        <translation>By image · one detected box counts as detected</translation>
+        <translation>Nach Bild · ein erkannter Rahmen zählt als erkannt</translation>
     </message>
     <message>
         <location filename="../app/train/test_result_dialog.py" line="179"/>
         <source> · 有标注 {} 张</source>
-        <translation> · {} images with labels</translation>
+        <translation> · {} Bilder mit Labels</translation>
     </message>
     <message>
         <location filename="../app/train/test_result_dialog.py" line="183"/>
         <source>检出图像</source>
-        <translation>Detected images</translation>
+        <translation>Erkannte Bilder</translation>
     </message>
     <message>
         <location filename="../app/train/test_result_dialog.py" line="184"/>
         <location filename="../app/train/test_result_dialog.py" line="199"/>
         <source>检出率 </source>
-        <translation>Recall </translation>
+        <translation>Trefferquote </translation>
     </message>
     <message>
         <location filename="../app/train/test_result_dialog.py" line="186"/>
         <source>未检出图像</source>
-        <translation>Undetected images</translation>
+        <translation>Nicht erkannte Bilder</translation>
     </message>
     <message>
         <location filename="../app/train/test_result_dialog.py" line="187"/>
         <source>未检出率 </source>
-        <translation>Miss rate </translation>
+        <translation>Übersehensquote </translation>
     </message>
     <message>
         <location filename="../app/train/test_result_dialog.py" line="191"/>
         <source>误检率 </source>
-        <translation>False positive rate </translation>
+        <translation>Fehlalarmquote </translation>
     </message>
     <message>
         <location filename="../app/train/test_result_dialog.py" line="196"/>
         <source>按&quot;标注框&quot;统计 · 标注总数 {}</source>
-        <translation>By box · {} boxes total</translation>
+        <translation>Nach Rahmen · {} Rahmen insgesamt</translation>
     </message>
     <message>
         <location filename="../app/train/test_result_dialog.py" line="219"/>
         <source>按&quot;张&quot;统计 · 每张图判一个类别</source>
-        <translation>By image · one class judged per image</translation>
+        <translation>Nach Bild · eine Klasse pro Bild</translation>
     </message>
     <message>
         <location filename="../app/train/test_result_dialog.py" line="224"/>
         <source>判断正确</source>
-        <translation>Correct</translation>
+        <translation>Richtig</translation>
     </message>
     <message>
         <location filename="../app/train/test_result_dialog.py" line="226"/>
         <source>判断错误</source>
-        <translation>Wrong</translation>
+        <translation>Falsch</translation>
     </message>
     <message>
         <location filename="../app/train/test_result_dialog.py" line="229"/>
         <location filename="../app/train/test_result_dialog.py" line="235"/>
         <source>精度</source>
-        <translation>Accuracy</translation>
+        <translation>Genauigkeit</translation>
     </message>
     <message>
         <location filename="../app/train/test_result_dialog.py" line="234"/>
         <source>总图数</source>
-        <translation>Total images</translation>
+        <translation>Bilder gesamt</translation>
     </message>
     <message>
         <location filename="../app/train/test_result_dialog.py" line="234"/>
         <source>正确</source>
-        <translation>Correct</translation>
+        <translation>Richtig</translation>
     </message>
     <message>
         <location filename="../app/train/test_result_dialog.py" line="235"/>
         <source>错误</source>
-        <translation>Wrong</translation>
+        <translation>Falsch</translation>
     </message>
     <message>
         <location filename="../app/train/test_result_dialog.py" line="255"/>
         <source>整体精度 {:.1f}%, &quot;{}&quot;类错误最多({} 张), 是拉低精度的主要原因.</source>
-        <translation>Overall accuracy {:.1f}%. Class &quot;{}&quot; has the most errors ({} images) and is the main reason for the lower accuracy.</translation>
+        <translation>Gesamtgenauigkeit {:.1f}%. Klasse „{}&quot; hat die meisten Fehler ({} Bilder) und ist die Hauptursache für die niedrigere Genauigkeit.</translation>
     </message>
     <message>
         <location filename="../app/train/test_result_dialog.py" line="289"/>
         <source>整体漏检偏多(漏检 {} 个, 多于误检 {} 个).&quot;{}&quot;类漏检最多({} 个), 是检出率低的主要原因.</source>
-        <translation>Misses dominate overall ({} missed vs {} false positives). Class &quot;{}&quot; has the most misses ({}) and is the main reason for the low recall.</translation>
+        <translation>Insgesamt überwiegt Übersehenes ({} übersehen gegenüber {} Fehlalarmen). Klasse „{}&quot; hat die meisten übersehenen Objekte ({}) und ist die Hauptursache für die niedrige Trefferquote.</translation>
     </message>
     <message>
         <location filename="../app/train/test_result_dialog.py" line="295"/>
         <source>整体误检偏多(误检 {} 个, 多于漏检 {} 个).&quot;{}&quot;类误检最多({} 个), 是准确率低的主要原因.</source>
-        <translation>False positives dominate overall ({} vs {} missed). Class &quot;{}&quot; has the most false positives ({}) and is the main reason for the low precision.</translation>
+        <translation>Insgesamt überwiegen Fehlalarme ({} Fehlalarme gegenüber {} übersehenen). Klasse „{}&quot; hat die meisten Fehlalarme ({}) und ist die Hauptursache für die niedrige Genauigkeit.</translation>
     </message>
     <message>
         <location filename="../app/train/test_result_dialog.py" line="299"/>
         <source>模型表现良好: 无漏检, 无误检.</source>
-        <translation>The model performs well: no misses and no false positives.</translation>
+        <translation>Das Modell ist gut: kein Übersehenes und keine Fehlalarme.</translation>
     </message>
     <message>
         <location filename="../app/train/test_result_dialog.py" line="301"/>
         <source>另有 {} 处位置对但类别判错(报告里用紫框标出),属分类能力不足, 需补易混淆类别的区分性样本.</source>
-        <translation>{} more boxes are correctly located but assigned the wrong class (marked with purple boxes in the report). This points to weak classification ability; add more discriminative samples for easily confused classes.</translation>
+        <translation>Weitere {} Rahmen sind korrekt positioniert, aber falsch klassifiziert (im Bericht violett markiert). Das deutet auf zu schwache Klassifizierung hin; mehr unterscheidbare Beispiele für leicht verwechselbare Klassen ergänzen.</translation>
     </message>
 </context>
 <context>
@@ -2565,7 +2565,7 @@ The report is about 120 KB per image; lowering this shrinks the PDF noticeably w
     <message>
         <location filename="../app/train/test_worker.py" line="116"/>
         <source>启动测试进程失败: {}</source>
-        <translation>Failed to start the test process: {}</translation>
+        <translation>Testprozess konnte nicht gestartet werden: {}</translation>
     </message>
     <message>
         <location filename="../app/train/test_worker.py" line="189"/>
@@ -2573,9 +2573,9 @@ The report is about 120 KB per image; lowering this shrinks the PDF noticeably w
 
 --- 输出(尾部) ---
 {}</source>
-        <translation>The test process exited abnormally (code={})
+        <translation>Testprozess wurde unerwartet beendet (code={})
 
---- output (tail) ---
+--- Ausgabe (Ende) ---
 {}</translation>
     </message>
 </context>
@@ -2586,7 +2586,7 @@ The report is about 120 KB per image; lowering this shrinks the PDF noticeably w
         <location filename="../ui/train.ui" line="40"/>
         <location filename="../app/train/dialogs.py" line="438"/>
         <source>训练</source>
-        <translation>Train</translation>
+        <translation>Training</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="43"/>
@@ -2597,7 +2597,7 @@ The report is about 120 KB per image; lowering this shrinks the PDF noticeably w
         <location filename="../ui/train.ui" line="50"/>
         <location filename="../ui/train.ui" line="144"/>
         <source>检测</source>
-        <translation>Detection</translation>
+        <translation>Erkennung</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="53"/>
@@ -2607,7 +2607,7 @@ The report is about 120 KB per image; lowering this shrinks the PDF noticeably w
     <message>
         <location filename="../ui/train.ui" line="93"/>
         <source>模型与数据</source>
-        <translation>Model &amp; Data</translation>
+        <translation>Modell &amp; Daten</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="96"/>
@@ -2626,59 +2626,59 @@ The report is about 120 KB per image; lowering this shrinks the PDF noticeably w
     <message>
         <location filename="../ui/train.ui" line="133"/>
         <source>任务类型</source>
-        <translation>Task</translation>
+        <translation>Aufgabentyp</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="149"/>
         <source>分割</source>
-        <translation>Segmentation</translation>
+        <translation>Segmentierung</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="154"/>
         <source>分类</source>
-        <translation>Classification</translation>
+        <translation>Klassifizierung</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="162"/>
         <source>网络</source>
-        <translation>Network</translation>
+        <translation>Netzwerk</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="175"/>
         <source>权重</source>
-        <translation>Weights</translation>
+        <translation>Gewichte</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="182"/>
         <location filename="../app/train/dialogs.py" line="650"/>
         <source>训练集</source>
-        <translation>Train Set</translation>
+        <translation>Trainingsset</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="202"/>
         <source>验证集</source>
-        <translation>Val Set</translation>
+        <translation>Validierungsset</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="222"/>
         <source>设备</source>
-        <translation>Device</translation>
+        <translation>Gerät</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="255"/>
         <source>训练超参</source>
-        <translation>Hyperparameters</translation>
+        <translation>Hyperparameter</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="295"/>
         <location filename="../app/train/dialogs.py" line="516"/>
         <source>轮次</source>
-        <translation>Epochs</translation>
+        <translation>Epochen</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="308"/>
         <source>优化器</source>
-        <translation>Optimizer</translation>
+        <translation>Optimierer</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="321"/>
@@ -2689,7 +2689,7 @@ The report is about 120 KB per image; lowering this shrinks the PDF noticeably w
     <message>
         <location filename="../ui/train.ui" line="358"/>
         <source>连续无提升则提前结束，0 为关闭</source>
-        <translation>Stop early when no improvement; 0 disables</translation>
+        <translation>Beendet früher, wenn keine Verbesserung mehr eintritt; 0 deaktiviert</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="361"/>
@@ -2703,12 +2703,12 @@ The report is about 120 KB per image; lowering this shrinks the PDF noticeably w
         <location filename="../ui/train.ui" line="374"/>
         <location filename="../app/train/dialogs.py" line="522"/>
         <source>学习率</source>
-        <translation>Learning rate</translation>
+        <translation>Lernrate</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="411"/>
         <source>初始学习率，训练中自动衰减</source>
-        <translation>Initial LR, decayed while training</translation>
+        <translation>Anfängliche Lernrate, wird beim Training automatisch reduziert</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="427"/>
@@ -2720,24 +2720,24 @@ The report is about 120 KB per image; lowering this shrinks the PDF noticeably w
         <location filename="../ui/train.ui" line="440"/>
         <location filename="../app/train/dialogs.py" line="518"/>
         <source>图像尺寸</source>
-        <translation>Image Size</translation>
+        <translation>Bildgröße</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="471"/>
         <location filename="../app/train/dialogs.py" line="406"/>
         <source>32 的倍数</source>
-        <translation>multiple of 32</translation>
+        <translation>Vielfaches von 32</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="487"/>
         <location filename="../app/train/dialogs.py" line="515"/>
         <source>梯度累积</source>
-        <translation>Grad Accum</translation>
+        <translation>Grad-Akkum.</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="524"/>
         <source>显存不足时调大，等效批次 × N</source>
-        <translation>Raise when VRAM is tight; effective batch × N</translation>
+        <translation>Bei VRAM-Mangel erhöhen; effektive Batch × N</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="540"/>
@@ -2748,22 +2748,22 @@ The report is about 120 KB per image; lowering this shrinks the PDF noticeably w
     <message>
         <location filename="../ui/train.ui" line="573"/>
         <source>输出</source>
-        <translation>Output</translation>
+        <translation>Ausgabe</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="616"/>
         <source>输出路径</source>
-        <translation>Output Path</translation>
+        <translation>Ausgabepfad</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="631"/>
         <source>留空则自动按时间生成目录</source>
-        <translation>Leave empty to auto-name a timestamped folder</translation>
+        <translation>Leer lassen für automatischen Ordner mit Zeitstempel</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="644"/>
         <source>选择路径</source>
-        <translation>Browse</translation>
+        <translation>Durchsuchen</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="689"/>
@@ -2779,7 +2779,7 @@ The report is about 120 KB per image; lowering this shrinks the PDF noticeably w
         <location filename="../ui/train.ui" line="705"/>
         <location filename="../app/train/dialogs.py" line="616"/>
         <source>请选择训练集与验证集</source>
-        <translation>Select a train set and a val set</translation>
+        <translation>Trainings- und Validierungsset wählen</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="708"/>
@@ -2790,7 +2790,7 @@ The report is about 120 KB per image; lowering this shrinks the PDF noticeably w
         <location filename="../ui/train.ui" line="749"/>
         <location filename="../app/train/dialogs.py" line="529"/>
         <source>取消</source>
-        <translation>Cancel</translation>
+        <translation>Abbrechen</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="762"/>
@@ -2798,198 +2798,198 @@ The report is about 120 KB per image; lowering this shrinks the PDF noticeably w
         <location filename="../app/train/dialogs.py" line="983"/>
         <location filename="../app/train/dialogs.py" line="1000"/>
         <source>加入队列</source>
-        <translation>Add to Queue</translation>
+        <translation>Zur Warteschlange</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="775"/>
         <location filename="../app/train/dialogs.py" line="928"/>
         <location filename="../app/train/dialogs.py" line="954"/>
         <source>开始训练</source>
-        <translation>Start Training</translation>
+        <translation>Training starten</translation>
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="31"/>
         <source>正在检测显卡...</source>
-        <translation>Detecting GPUs...</translation>
+        <translation>GPUs werden erkannt...</translation>
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="129"/>
         <source>数据集&quot;{}&quot;尚未导入图像或路径无效, 请先导入该数据集再训练</source>
-        <translation>Dataset &quot;{}&quot; has no images imported or its path is invalid. Import it before training.</translation>
+        <translation>Datensatz „{}&quot; hat keine importierten Bilder oder der Pfad ist ungültig. Zuerst importieren, dann trainieren</translation>
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="136"/>
         <source>数据集&quot;{}&quot;尚未导入标签或路径无效, 请先导入该数据集再训练</source>
-        <translation>Dataset &quot;{}&quot; has no labels imported or its path is invalid. Import it before training.</translation>
+        <translation>Datensatz „{}&quot; hat keine importierten Labels oder der Pfad ist ungültig. Zuerst importieren, dann trainieren</translation>
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="165"/>
         <location filename="../app/train/dialogs.py" line="976"/>
         <source>请先选择输出路径</source>
-        <translation>Select an output path first</translation>
+        <translation>Zuerst einen Ausgabepfad wählen</translation>
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="178"/>
         <source>数据集&quot;{}/{}&quot;不是分类数据集(标签格式={}), 无法训练图像分类</source>
-        <translation>Dataset &quot;{}/{}&quot; is not a classification dataset (label format={}); cannot train image classification</translation>
+        <translation>Datensatz „{}/{}&quot; ist kein Klassifizierungs-Datensatz (Labelformat={}); Bildklassifizierung nicht möglich</translation>
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="181"/>
         <location filename="../app/train/dialogs.py" line="915"/>
         <source>未知</source>
-        <translation>unknown</translation>
+        <translation>unbekannt</translation>
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="183"/>
         <source>数据集&quot;{}/{}&quot;是分类数据集, 无法训练{}任务</source>
-        <translation>Dataset &quot;{}/{}&quot; is a classification dataset; cannot train a {} task</translation>
+        <translation>Datensatz „{}/{}&quot; ist ein Klassifizierungs-Datensatz; {} kann nicht trainiert werden</translation>
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="197"/>
         <source>请至少选择一个训练集数据集</source>
-        <translation>Select at least one train-set dataset</translation>
+        <translation>Mindestens einen Trainings-Datensatz wählen</translation>
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="199"/>
         <source>请至少选择一个验证集数据集</source>
-        <translation>Select at least one val-set dataset</translation>
+        <translation>Mindestens einen Validierungs-Datensatz wählen</translation>
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="241"/>
         <source>未选数据集</source>
-        <translation>no dataset selected</translation>
+        <translation>kein Datensatz gewählt</translation>
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="397"/>
         <source>目标检测推荐图像尺寸: 640(可设为 32 的倍数如 640/672)</source>
-        <translation>Recommended image size for detection: 640 (set it to a multiple of 32, e.g. 640/672)</translation>
+        <translation>Empfohlene Bildgröße für Erkennung: 640 (Vielfaches von 32, z. B. 640/672)</translation>
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="399"/>
         <source>图像分割推荐尺寸: 636(必须为 12 的倍数, 如 636/648/660)</source>
-        <translation>Recommended size for segmentation: 636 (must be a multiple of 12, e.g. 636/648/660)</translation>
+        <translation>Empfohlene Größe für Segmentierung: 636 (muss ein Vielfaches von 12 sein, z. B. 636/648/660)</translation>
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="401"/>
         <source>图像分类推荐尺寸: 224(小图用 224, 较大图可到 256)</source>
-        <translation>Recommended size for classification: 224 (224 for small images, up to 256 for larger ones)</translation>
+        <translation>Empfohlene Größe für Klassifizierung: 224 (224 für kleine Bilder, bis 256 bei größeren)</translation>
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="407"/>
         <source>12 的倍数</source>
-        <translation>multiple of 12</translation>
+        <translation>Vielfaches von 12</translation>
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="408"/>
         <source>建议 224</source>
-        <translation>224 suggested</translation>
+        <translation>224 empfohlen</translation>
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="626"/>
         <source>训练集 {} 个 · 验证集 {} 个 · 共 {} 张图</source>
-        <translation>{} train · {} val · {} images total</translation>
+        <translation>Trainingssets {} · Validierungssets {} · {} Bilder gesamt</translation>
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="629"/>
         <source>未选择验证集</source>
-        <translation>no val set selected</translation>
+        <translation>kein Validierungsset gewählt</translation>
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="631"/>
         <source>已标注, 可直接训练</source>
-        <translation>labeled, ready to train</translation>
+        <translation>annotiert, direkt trainierbar</translation>
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="633"/>
         <source>有 {} 个数据集尚未标注</source>
-        <translation>{} dataset(s) are not fully labeled</translation>
+        <translation>{} Datensatz/Datensätze noch nicht annotiert</translation>
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="647"/>
         <source>请选择验证集</source>
-        <translation>Select val datasets</translation>
+        <translation>Validierungs-Datensätze wählen</translation>
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="726"/>
         <source>已有训练在进行中, 请先停止</source>
-        <translation>A training job is already running; stop it first</translation>
+        <translation>Ein Training läuft bereits; zuerst stoppen</translation>
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="882"/>
         <source>请至少选择一个数据集</source>
-        <translation>Select at least one dataset</translation>
+        <translation>Mindestens einen Datensatz auswählen</translation>
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="886"/>
         <location filename="../app/train/dialogs.py" line="896"/>
         <source>&quot;{}&quot;不能为空</source>
-        <translation>&quot;{}&quot; cannot be empty</translation>
+        <translation>„{}&quot; darf nicht leer sein</translation>
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="891"/>
         <source>&quot;{}&quot;必须是整数(当前: {})</source>
-        <translation>&quot;{}&quot; must be an integer (currently: {})</translation>
+        <translation>„{}&quot; muss eine ganze Zahl sein (aktuell: {})</translation>
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="901"/>
         <source>&quot;{}&quot;必须是数字(当前: {})</source>
-        <translation>&quot;{}&quot; must be a number (currently: {})</translation>
+        <translation>„{}&quot; muss eine Zahl sein (aktuell: {})</translation>
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="910"/>
         <source>数据集&quot;{}/{}&quot;是分类数据集,无法训练{}任务</source>
-        <translation>Dataset &quot;{}/{}&quot; is a classification dataset; cannot train a {} task</translation>
+        <translation>Datensatz „{}/{}&quot; ist ein Klassifizierungs-Datensatz; {} kann nicht trainiert werden</translation>
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="914"/>
         <source>数据集&quot;{}/{}&quot;不是分类数据集(标签格式={}),无法训练图像分类</source>
-        <translation>Dataset &quot;{}/{}&quot; is not a classification dataset (label format={}); cannot train image classification</translation>
+        <translation>Datensatz „{}/{}&quot; ist kein Klassifizierungs-Datensatz (Labelformat={}); Bildklassifizierung nicht möglich</translation>
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="921"/>
         <source>选择输出目录</source>
-        <translation>Select Output Directory</translation>
+        <translation>Ausgabeordner wählen</translation>
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="929"/>
         <source>当前已有训练在进行中, 请先停止!</source>
-        <translation>A training job is already running; stop it first!</translation>
+        <translation>Ein Training läuft bereits; zuerst stoppen!</translation>
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="934"/>
         <location filename="../app/train/dialogs.py" line="967"/>
         <source>参数校验</source>
-        <translation>Parameter Validation</translation>
+        <translation>Parametervalidierung</translation>
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="947"/>
         <source>训练启动失败</source>
-        <translation>Training Failed to Start</translation>
+        <translation>Training konnte nicht starten</translation>
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="955"/>
         <source>已有训练在进行中, 请先停止!</source>
-        <translation>A training job is already running; stop it first!</translation>
+        <translation>Ein Training läuft bereits; zuerst stoppen!</translation>
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="988"/>
         <source>队列</source>
-        <translation>Queue</translation>
+        <translation>Warteschlange</translation>
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="989"/>
         <source>已更新该队列任务的参数</source>
-        <translation>Queue task parameters updated</translation>
+        <translation>Parameter der Warteschlangen-Aufgabe aktualisiert</translation>
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="995"/>
         <source>加入队列失败</source>
-        <translation>Failed to Add to Queue</translation>
+        <translation>Hinzufügen zur Warteschlange fehlgeschlagen</translation>
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="1001"/>
         <source>已加入队列(第 {} 个), 可在首页&quot;队列&quot;中查看或启动.</source>
-        <translation>Added to the queue (position {}). Review or start it from &quot;Queue&quot; on the home page.</translation>
+        <translation>Zur Warteschlange hinzugefügt (Position {}). Auf der Startseite unter „Warteschlange&quot; prüfen oder starten.</translation>
     </message>
 </context>
 <context>
@@ -2997,74 +2997,74 @@ The report is about 120 KB per image; lowering this shrinks the PDF noticeably w
     <message>
         <location filename="../app/mixins/train_mixin.py" line="47"/>
         <source>{} 训练中 0/{}</source>
-        <translation>{} training 0/{}</translation>
+        <translation>{} Training 0/{}</translation>
     </message>
     <message>
         <location filename="../app/mixins/train_mixin.py" line="97"/>
         <source>仅停止当前</source>
-        <translation>Stop Current Only</translation>
+        <translation>Nur aktuelles stoppen</translation>
     </message>
     <message>
         <location filename="../app/mixins/train_mixin.py" line="98"/>
         <source>停止队列</source>
-        <translation>Stop Queue</translation>
+        <translation>Warteschlange stoppen</translation>
     </message>
     <message>
         <location filename="../app/mixins/train_mixin.py" line="100"/>
         <location filename="../app/mixins/train_mixin.py" line="109"/>
         <location filename="../app/mixins/train_mixin.py" line="121"/>
         <source>停止训练</source>
-        <translation>Stop Training</translation>
+        <translation>Training stoppen</translation>
     </message>
     <message>
         <location filename="../app/mixins/train_mixin.py" line="100"/>
         <source>当前正在跑训练队列, 要停止到什么范围?</source>
-        <translation>A training queue is running. How much should be stopped?</translation>
+        <translation>Eine Trainings-Warteschlange läuft. Wie weit soll gestoppt werden?</translation>
     </message>
     <message>
         <location filename="../app/mixins/train_mixin.py" line="102"/>
         <location filename="../app/mixins/train_mixin.py" line="103"/>
         <source>取消</source>
-        <translation>Cancel</translation>
+        <translation>Abbrechen</translation>
     </message>
     <message>
         <location filename="../app/mixins/train_mixin.py" line="109"/>
         <source>确定要停止当前训练吗?</source>
-        <translation>Stop the current training?</translation>
+        <translation>Aktuelles Training stoppen?</translation>
     </message>
     <message>
         <location filename="../app/mixins/train_mixin.py" line="122"/>
         <source>训练进程未能完全退出, 可能仍有子进程占用显存.
 建议稍等片刻再启动下一个任务.</source>
-        <translation>The training process did not exit completely; child processes may still hold VRAM.
-Wait a moment before starting the next task.</translation>
+        <translation>Der Trainingsprozess wurde nicht vollständig beendet; Unterprozesse belegen möglicherweise noch VRAM.
+Vor dem nächsten Task besser kurz warten.</translation>
     </message>
     <message>
         <location filename="../app/mixins/train_mixin.py" line="134"/>
         <source>{} 训练中 {}/{}</source>
-        <translation>{} training {}/{}</translation>
+        <translation>{} Training {}/{}</translation>
     </message>
     <message>
         <location filename="../app/mixins/train_mixin.py" line="145"/>
         <source>进度 | 当前最好准确率</source>
-        <translation>Progress | best accuracy so far</translation>
+        <translation>Fortschritt | beste Genauigkeit bisher</translation>
     </message>
     <message>
         <location filename="../app/mixins/train_mixin.py" line="148"/>
         <source>进度 | 当前最好 mAP@50</source>
-        <translation>Progress | best mAP@50 so far</translation>
+        <translation>Fortschritt | bester mAP@50 bisher</translation>
     </message>
     <message>
         <location filename="../app/mixins/train_mixin.py" line="189"/>
         <source>训练失败</source>
-        <translation>Training Failed</translation>
+        <translation>Training fehlgeschlagen</translation>
     </message>
     <message>
         <location filename="../app/mixins/train_mixin.py" line="190"/>
         <source>训练过程中发生错误, Err:
 
 {}</source>
-        <translation>An error occurred during training, Err:
+        <translation>Während des Trainings ist ein Fehler aufgetreten, Err:
 
 {}</translation>
     </message>
@@ -3076,7 +3076,7 @@ Wait a moment before starting the next task.</translation>
         <location filename="../ui/train_queue.ui" line="40"/>
         <location filename="../app/widgets/queue_dialog.py" line="31"/>
         <source>训练队列</source>
-        <translation>Training Queue</translation>
+        <translation>Trainings-Warteschlange</translation>
     </message>
     <message>
         <location filename="../ui/train_queue.ui" line="43"/>
@@ -3087,7 +3087,7 @@ Wait a moment before starting the next task.</translation>
         <location filename="../ui/train_queue.ui" line="50"/>
         <location filename="../app/widgets/queue_dialog.py" line="124"/>
         <source>空闲</source>
-        <translation>Idle</translation>
+        <translation>Leerlauf</translation>
     </message>
     <message>
         <location filename="../ui/train_queue.ui" line="53"/>
@@ -3107,22 +3107,22 @@ Wait a moment before starting the next task.</translation>
     <message>
         <location filename="../ui/train_queue.ui" line="103"/>
         <source>任务</source>
-        <translation>Task</translation>
+        <translation>Aufgabe</translation>
     </message>
     <message>
         <location filename="../ui/train_queue.ui" line="108"/>
         <source>数据集</source>
-        <translation>Dataset</translation>
+        <translation>Datensatz</translation>
     </message>
     <message>
         <location filename="../ui/train_queue.ui" line="113"/>
         <source>网络</source>
-        <translation>Network</translation>
+        <translation>Netzwerk</translation>
     </message>
     <message>
         <location filename="../ui/train_queue.ui" line="118"/>
         <source>轮次</source>
-        <translation>Epochs</translation>
+        <translation>Epochen</translation>
     </message>
     <message>
         <location filename="../ui/train_queue.ui" line="123"/>
@@ -3142,7 +3142,7 @@ Wait a moment before starting the next task.</translation>
     <message>
         <location filename="../ui/train_queue.ui" line="168"/>
         <source>队列为空，可在训练界面点「加入队列」添加任务</source>
-        <translation>The queue is empty. Click &quot;Add to Queue&quot; in the training dialog to add tasks.</translation>
+        <translation>Die Warteschlange ist leer. Im Trainingsdialog auf „Zur Warteschlange&quot; klicken, um Aufgaben hinzuzufügen</translation>
     </message>
     <message>
         <location filename="../ui/train_queue.ui" line="171"/>
@@ -3152,7 +3152,7 @@ Wait a moment before starting the next task.</translation>
     <message>
         <location filename="../ui/train_queue.ui" line="199"/>
         <source>上移</source>
-        <translation>Move Up</translation>
+        <translation>Nach oben</translation>
     </message>
     <message>
         <location filename="../ui/train_queue.ui" line="202"/>
@@ -3165,34 +3165,34 @@ Wait a moment before starting the next task.</translation>
     <message>
         <location filename="../ui/train_queue.ui" line="209"/>
         <source>下移</source>
-        <translation>Move Down</translation>
+        <translation>Nach unten</translation>
     </message>
     <message>
         <location filename="../ui/train_queue.ui" line="219"/>
         <location filename="../app/widgets/queue_dialog.py" line="261"/>
         <source>移除</source>
-        <translation>Remove</translation>
+        <translation>Entfernen</translation>
     </message>
     <message>
         <location filename="../ui/train_queue.ui" line="229"/>
         <source>清理已结束</source>
-        <translation>Clear Finished</translation>
+        <translation>Beendete löschen</translation>
     </message>
     <message>
         <location filename="../ui/train_queue.ui" line="252"/>
         <source>编辑</source>
-        <translation>Edit</translation>
+        <translation>Bearbeiten</translation>
     </message>
     <message>
         <location filename="../ui/train_queue.ui" line="259"/>
         <source>关闭</source>
-        <translation>Close</translation>
+        <translation>Schließen</translation>
     </message>
     <message>
         <location filename="../ui/train_queue.ui" line="272"/>
         <location filename="../app/widgets/queue_dialog.py" line="148"/>
         <source>开始队列</source>
-        <translation>Start Queue</translation>
+        <translation>Warteschlange starten</translation>
     </message>
     <message>
         <location filename="../ui/train_queue.ui" line="275"/>
@@ -3202,37 +3202,37 @@ Wait a moment before starting the next task.</translation>
     <message>
         <location filename="../app/widgets/queue_dialog.py" line="20"/>
         <source>队列为空, 可在训练界面点&quot;加入队列&quot;添加任务</source>
-        <translation>The queue is empty. Click &quot;Add to Queue&quot; in the training dialog to add tasks.</translation>
+        <translation>Die Warteschlange ist leer. Im Trainingsdialog auf „Zur Warteschlange&quot; klicken, um Aufgaben hinzuzufügen</translation>
     </message>
     <message>
         <location filename="../app/widgets/queue_dialog.py" line="111"/>
         <source>已暂停</source>
-        <translation>Paused</translation>
+        <translation>Pausiert</translation>
     </message>
     <message>
         <location filename="../app/widgets/queue_dialog.py" line="112"/>
         <source>当前任务完成后停止, 可点&quot;继续队列&quot;恢复</source>
-        <translation>Stops after the current task; click &quot;Resume Queue&quot; to continue</translation>
+        <translation>Stoppt nach der aktuellen Aufgabe; über „Warteschlange fortsetzen&quot; wieder aufnehmen</translation>
     </message>
     <message>
         <location filename="../app/widgets/queue_dialog.py" line="114"/>
         <source>运行中</source>
-        <translation>Running</translation>
+        <translation>Läuft</translation>
     </message>
     <message>
         <location filename="../app/widgets/queue_dialog.py" line="114"/>
         <source>队列正在串行执行</source>
-        <translation>The queue runs tasks one after another</translation>
+        <translation>Die Warteschlange führt die Aufgaben nacheinander aus</translation>
     </message>
     <message>
         <location filename="../app/widgets/queue_dialog.py" line="116"/>
         <source>待启动</source>
-        <translation>Pending</translation>
+        <translation>Wartet auf Start</translation>
     </message>
     <message>
         <location filename="../app/widgets/queue_dialog.py" line="117"/>
         <source>有 {} 个任务等待启动</source>
-        <translation>{} task(s) waiting to start</translation>
+        <translation>{} Aufgabe(n) warten auf den Start</translation>
     </message>
     <message>
         <location filename="../app/widgets/queue_dialog.py" line="119"/>
@@ -3242,54 +3242,54 @@ Wait a moment before starting the next task.</translation>
     <message>
         <location filename="../app/widgets/queue_dialog.py" line="119"/>
         <source>当前有训练在进行(非队列启动)</source>
-        <translation>A training job is running (not started by the queue)</translation>
+        <translation>Ein Training läuft (nicht aus der Warteschlange gestartet)</translation>
     </message>
     <message>
         <location filename="../app/widgets/queue_dialog.py" line="121"/>
         <source>已结束</source>
-        <translation>Finished</translation>
+        <translation>Beendet</translation>
     </message>
     <message>
         <location filename="../app/widgets/queue_dialog.py" line="122"/>
         <source>没有待执行的任务, 点&quot;重新开始队列&quot;可重跑</source>
-        <translation>No pending tasks; click &quot;Restart Queue&quot; to run them again</translation>
+        <translation>Keine offenen Aufgaben; über „Warteschlange neu starten&quot; erneut ausführen</translation>
     </message>
     <message>
         <location filename="../app/widgets/queue_dialog.py" line="128"/>
         <source>共 {} 个: 等待 {} · 完成 {} · 失败 {}</source>
-        <translation>{} total: {} waiting · {} done · {} failed</translation>
+        <translation>{} gesamt: {} wartend · {} fertig · {} fehlgeschlagen</translation>
     </message>
     <message>
         <location filename="../app/widgets/queue_dialog.py" line="131"/>
         <source>正在训练&quot;{}&quot; · {}</source>
-        <translation>Training &quot;{}&quot; · {}</translation>
+        <translation>Training „{}&quot; · {}</translation>
     </message>
     <message>
         <location filename="../app/widgets/queue_dialog.py" line="134"/>
         <source>下一个: &quot;{}&quot; · {}</source>
-        <translation>Next: &quot;{}&quot; · {}</translation>
+        <translation>Nächste: „{}&quot; · {}</translation>
     </message>
     <message>
         <location filename="../app/widgets/queue_dialog.py" line="146"/>
         <source>继续队列</source>
-        <translation>Resume Queue</translation>
+        <translation>Warteschlange fortsetzen</translation>
     </message>
     <message>
         <location filename="../app/widgets/queue_dialog.py" line="150"/>
         <location filename="../app/widgets/queue_dialog.py" line="189"/>
         <source>重新开始队列</source>
-        <translation>Restart Queue</translation>
+        <translation>Warteschlange neu starten</translation>
     </message>
     <message>
         <location filename="../app/widgets/queue_dialog.py" line="170"/>
         <location filename="../app/widgets/queue_dialog.py" line="196"/>
         <source>队列</source>
-        <translation>Queue</translation>
+        <translation>Warteschlange</translation>
     </message>
     <message>
         <location filename="../app/widgets/queue_dialog.py" line="171"/>
         <source>已有训练在进行中, 请先停止</source>
-        <translation>A training job is already running; stop it first</translation>
+        <translation>Ein Training läuft bereits; zuerst stoppen</translation>
     </message>
     <message>
         <location filename="../app/widgets/queue_dialog.py" line="184"/>
@@ -3303,78 +3303,78 @@ Wait a moment before starting the next task.</translation>
 待重跑: {}
 
 是否重新入队并开始训练?</source>
-        <translation>There are no waiting tasks in the queue.
+        <translation>Es gibt keine wartenden Aufgaben in der Warteschlange.
 
-To re-run: {}
+Erneut ausführen: {}
 
-Re-enqueue them and start training?</translation>
+Erneut einreihen und Training starten?</translation>
     </message>
     <message>
         <location filename="../app/widgets/queue_dialog.py" line="197"/>
         <source>队列启动失败, 请查看日志</source>
-        <translation>Failed to start the queue; check the log</translation>
+        <translation>Warteschlange konnte nicht gestartet werden; siehe Protokoll</translation>
     </message>
     <message>
         <location filename="../app/widgets/queue_dialog.py" line="213"/>
         <location filename="../app/widgets/queue_dialog.py" line="217"/>
         <source>移除任务</source>
-        <translation>Remove Task</translation>
+        <translation>Aufgabe entfernen</translation>
     </message>
     <message>
         <location filename="../app/widgets/queue_dialog.py" line="214"/>
         <source>训练中的任务不能移除, 请先停止</source>
-        <translation>A running task cannot be removed; stop it first</translation>
+        <translation>Eine laufende Aufgabe kann nicht entfernt werden; zuerst stoppen</translation>
     </message>
     <message>
         <location filename="../app/widgets/queue_dialog.py" line="218"/>
         <source>确定从队列中移除&quot;{}&quot;吗?</source>
-        <translation>Remove &quot;{}&quot; from the queue?</translation>
+        <translation>„{}&quot; aus der Warteschlange entfernen?</translation>
     </message>
     <message>
         <location filename="../app/widgets/queue_dialog.py" line="225"/>
         <source>清理</source>
-        <translation>Clear</translation>
+        <translation>Löschen</translation>
     </message>
     <message>
         <location filename="../app/widgets/queue_dialog.py" line="226"/>
         <source>没有已结束的任务</source>
-        <translation>No finished tasks</translation>
+        <translation>Keine beendeten Aufgaben</translation>
     </message>
     <message>
         <location filename="../app/widgets/queue_dialog.py" line="235"/>
         <source>编辑任务</source>
-        <translation>Edit Task</translation>
+        <translation>Aufgabe bearbeiten</translation>
     </message>
     <message>
         <location filename="../app/widgets/queue_dialog.py" line="236"/>
         <source>训练中的任务不能编辑, 请先停止</source>
-        <translation>A running task cannot be edited; stop it first</translation>
+        <translation>Eine laufende Aufgabe kann nicht bearbeitet werden; zuerst stoppen</translation>
     </message>
     <message>
         <location filename="../app/widgets/queue_dialog.py" line="252"/>
         <source>重新入队</source>
-        <translation>Re-enqueue</translation>
+        <translation>Erneut einreihen</translation>
     </message>
     <message>
         <location filename="../app/widgets/queue_dialog.py" line="254"/>
         <location filename="../app/widgets/queue_dialog.py" line="275"/>
         <source>打开输出目录</source>
-        <translation>Open Output Directory</translation>
+        <translation>Ausgabeordner öffnen</translation>
     </message>
     <message>
         <location filename="../app/widgets/queue_dialog.py" line="256"/>
         <source>在模型界面查看</source>
-        <translation>View in Model Manager</translation>
+        <translation>In der Modellverwaltung ansehen</translation>
     </message>
     <message>
         <location filename="../app/widgets/queue_dialog.py" line="276"/>
         <source>目录不存在: {}</source>
-        <translation>Directory does not exist: {}</translation>
+        <translation>Ordner existiert nicht: {}</translation>
     </message>
     <message>
         <location filename="../app/widgets/queue_dialog.py" line="277"/>
         <source>未设置</source>
-        <translation>Not set</translation>
+        <translation>Nicht gesetzt</translation>
     </message>
 </context>
 <context>
@@ -3384,7 +3384,7 @@ Re-enqueue them and start training?</translation>
         <source>训练监控异常, 已终止.
 
 {}</source>
-        <translation>Training monitor error; terminated.
+        <translation>Trainingsüberwachung fehlerhaft; abgebrochen.
 
 {}</translation>
     </message>
@@ -3393,7 +3393,7 @@ Re-enqueue them and start training?</translation>
         <source>训练结果文件读取失败: {}
 
 {}</source>
-        <translation>Failed to read the training result file: {}
+        <translation>Trainingsergebnisdatei konnte nicht gelesen werden: {}
 
 {}</translation>
     </message>
@@ -3403,9 +3403,9 @@ Re-enqueue them and start training?</translation>
 
 --- 子进程输出(尾部) ---
 {}</source>
-        <translation>The training process exited abnormally (code={})
+        <translation>Trainingsprozess wurde unerwartet beendet (code={})
 
---- subprocess output (tail) ---
+--- Unterprozess-Ausgabe (Ende) ---
 {}</translation>
     </message>
 </context>
@@ -3414,22 +3414,22 @@ Re-enqueue them and start training?</translation>
     <message>
         <location filename="../app/widgets/model_manager_dialog.py" line="114"/>
         <source>已就绪</source>
-        <translation>Ready</translation>
+        <translation>Bereit</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_manager_dialog.py" line="120"/>
         <source>未下载</source>
-        <translation>Not downloaded</translation>
+        <translation>Nicht geladen</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_manager_dialog.py" line="125"/>
         <source>校验中...</source>
-        <translation>Verifying...</translation>
+        <translation>Wird geprüft...</translation>
     </message>
     <message>
         <location filename="../app/widgets/model_manager_dialog.py" line="141"/>
         <source>失败</source>
-        <translation>Failed</translation>
+        <translation>Fehlgeschlagen</translation>
     </message>
 </context>
 <context>
@@ -3437,7 +3437,7 @@ Re-enqueue them and start training?</translation>
     <message>
         <location filename="../app/train/dialogs.py" line="251"/>
         <source>训练即将开始</source>
-        <translation>Training is about to start</translation>
+        <translation>Training startet gleich</translation>
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="261"/>
@@ -3451,12 +3451,12 @@ Re-enqueue them and start training?</translation>
     <message>
         <location filename="../ui/add_label.ui" line="14"/>
         <source>Dialog</source>
-        <translation>Add Label</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/add_label.ui" line="49"/>
         <source>导入</source>
-        <translation>Import</translation>
+        <translation>Importieren</translation>
     </message>
     <message>
         <location filename="../ui/add_label.ui" line="284"/>
@@ -3469,12 +3469,12 @@ Re-enqueue them and start training?</translation>
     <message>
         <location filename="../ui/annotation.ui" line="14"/>
         <source>Dialog</source>
-        <translation>Add Label</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/annotation.ui" line="24"/>
         <source>矩形</source>
-        <translation>Rectangle</translation>
+        <translation>Rechteck</translation>
     </message>
     <message>
         <location filename="../ui/annotation.ui" line="35"/>
@@ -3484,22 +3484,22 @@ Re-enqueue them and start training?</translation>
     <message>
         <location filename="../ui/annotation.ui" line="46"/>
         <source>删除图像</source>
-        <translation>Delete Image</translation>
+        <translation>Bild löschen</translation>
     </message>
     <message>
         <location filename="../ui/annotation.ui" line="70"/>
         <source>设置</source>
-        <translation>Settings</translation>
+        <translation>Einstellungen</translation>
     </message>
     <message>
         <location filename="../ui/annotation.ui" line="90"/>
         <source>标签列表</source>
-        <translation>Labels</translation>
+        <translation>Label-Liste</translation>
     </message>
     <message>
         <location filename="../ui/annotation.ui" line="113"/>
         <source>添加标签</source>
-        <translation>Add Label</translation>
+        <translation>Label hinzufügen</translation>
     </message>
     <message>
         <location filename="../ui/annotation.ui" line="116"/>
@@ -3509,37 +3509,37 @@ Re-enqueue them and start training?</translation>
     <message>
         <location filename="../ui/annotation.ui" line="160"/>
         <source>标注信息</source>
-        <translation>Annotations</translation>
+        <translation>Annotationen</translation>
     </message>
     <message>
         <location filename="../ui/annotation.ui" line="203"/>
         <source>图像信息</source>
-        <translation>Image Info</translation>
+        <translation>Bildinfo</translation>
     </message>
     <message>
         <location filename="../ui/annotation.ui" line="230"/>
         <source>剪切板</source>
-        <translation>Clipboard</translation>
+        <translation>Zwischenablage</translation>
     </message>
     <message>
         <location filename="../ui/annotation.ui" line="295"/>
         <source>上一张(A)</source>
-        <translation>Prev (A)</translation>
+        <translation>Zurück (A)</translation>
     </message>
     <message>
         <location filename="../ui/annotation.ui" line="302"/>
         <source>下一张(D)</source>
-        <translation>Next (D)</translation>
+        <translation>Weiter (D)</translation>
     </message>
     <message>
         <location filename="../ui/annotation.ui" line="352"/>
         <source>标注参数</source>
-        <translation>Annotation Params</translation>
+        <translation>Annotationsparameter</translation>
     </message>
     <message>
         <location filename="../ui/annotation.ui" line="364"/>
         <source>角度范围</source>
-        <translation>Angle Range</translation>
+        <translation>Winkelbereich</translation>
     </message>
     <message>
         <location filename="../ui/annotation.ui" line="378"/>
@@ -3549,27 +3549,27 @@ Re-enqueue them and start training?</translation>
     <message>
         <location filename="../ui/annotation.ui" line="412"/>
         <source>融合强度</source>
-        <translation>Blend Strength</translation>
+        <translation>Mischstärke</translation>
     </message>
     <message>
         <location filename="../ui/annotation.ui" line="446"/>
         <source>亮度调节</source>
-        <translation>Brightness</translation>
+        <translation>Helligkeit</translation>
     </message>
     <message>
         <location filename="../ui/annotation.ui" line="480"/>
         <source>填充颜色</source>
-        <translation>Fill Color</translation>
+        <translation>Füllfarbe</translation>
     </message>
     <message>
         <location filename="../ui/annotation.ui" line="487"/>
         <source>点击打开取色器, 选任意颜色</source>
-        <translation>Click to open the color picker</translation>
+        <translation>Klicken, um den Farbwähler zu öffnen</translation>
     </message>
     <message>
         <location filename="../ui/annotation.ui" line="500"/>
         <source>支持 #RRGGBB / #RGB / 255,255,255 / black / 白 等写法, 也可以点左边色块打开取色器</source>
-        <translation>Accepts #RRGGBB / #RGB / 255,255,255 / black / white — or click the swatch on the left to pick a color</translation>
+        <translation>Unterstützt #RRGGBB / #RGB / 255,255,255 / black / weiß — oder links auf das Farbfeld klicken, um den Farbwähler zu öffnen</translation>
     </message>
     <message>
         <location filename="../ui/annotation.ui" line="503"/>
@@ -3579,22 +3579,22 @@ Re-enqueue them and start training?</translation>
     <message>
         <location filename="../ui/annotation.ui" line="510"/>
         <source>自定义颜色</source>
-        <translation>Custom Color</translation>
+        <translation>Eigene Farbe</translation>
     </message>
     <message>
         <location filename="../ui/annotation.ui" line="537"/>
         <source>常用色</source>
-        <translation>Presets</translation>
+        <translation>Vorgaben</translation>
     </message>
     <message>
         <location filename="../ui/annotation.ui" line="568"/>
         <source>恢复默认</source>
-        <translation>Reset</translation>
+        <translation>Zurücksetzen</translation>
     </message>
     <message>
         <location filename="../ui/annotation.ui" line="588"/>
         <source>完成</source>
-        <translation>Done</translation>
+        <translation>Fertig</translation>
     </message>
 </context>
 </TS>

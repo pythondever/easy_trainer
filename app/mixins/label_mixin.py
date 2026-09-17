@@ -17,6 +17,9 @@ from PySide6.QtWidgets import QDialog, QComboBox
 # "未标注"不是真实类别, 用黑块占位, 与真实标签的彩色块对齐
 UNLABELED_COLOR = "#000000"
 
+# 下拉框得放得下最长的标签名, 但这一排控件很挤, 撑太宽会顶掉后面的按钮
+LABEL_FILTER_MAX_WIDTH = 180
+
 
 def _color_icon(color):
     """14x14 纯色块, 下拉框里标签前的色标."""
@@ -33,14 +36,21 @@ class LabelMixin(object):
         """
         self.label_filter_combo = self.label_comboBox
         self.label_filter_combo.clear()
-        self.label_filter_combo.setSizeAdjustPolicy(QComboBox.AdjustToMinimumContentsLengthWithIcon)
-        self.label_filter_combo.setMinimumContentsLength(12)
         # 显式给 context: mixin 里 self.tr() 挂的是实例的类(App), 与 lupdate
         # 按定义处抽出来的 "LabelMixin" 对不上, 译文永远匹配不到
         self.label_filter_combo.addItem(
             _color_icon(UNLABELED_COLOR),
             QC.translate("LabelMixin", "未标注"), "__unlabeled__")
+        self._fit_label_filter_width()
         self.label_filter_combo.currentIndexChanged.connect(self._on_label_filter_changed)
+
+    def _fit_label_filter_width(self):
+        """宽度按最宽条目算: 只数字符数的写法会把德语长词和长标签名截断."""
+        combo = getattr(self, "label_filter_combo", None)
+        if combo is None:
+            return
+        combo.setSizeAdjustPolicy(QComboBox.AdjustToContents)
+        combo.setMinimumWidth(min(combo.sizeHint().width(), LABEL_FILTER_MAX_WIDTH))
 
     def _reset_label_filter_text(self):
         """没打开数据集时下拉里只有"未标注"一项, 换语言要把它的文案重设一遍."""
@@ -51,6 +61,7 @@ class LabelMixin(object):
         for i in range(combo.count()):
             if combo.itemData(i) == "__unlabeled__":
                 combo.setItemText(i, text)
+        self._fit_label_filter_width()
 
     def _on_label_filter_changed(self, idx):
         """标签下拉框变更:重新渲染场景(按标签筛选)."""
@@ -129,6 +140,7 @@ class LabelMixin(object):
                 self._set_label_filter_default(project_name, dataset_name, labels)
         finally:
             self.label_filter_combo.blockSignals(False)
+        self._fit_label_filter_width()
 
     def _set_label_filter_default(self, project_name, dataset_name, labels):
         """

@@ -66,8 +66,8 @@
       名称前的圆点表示该数据集<strong data-page-node-id="mz3CXIAJ7mpdG0byQUPakX">是否已加载进内存</strong>（绿=已加载，红=未加载）</li>
   <li data-page-node-id="ZNsYrpDdDXhM5Cq1EFlhKh"><strong data-page-node-id="IQS6pgKESuXQOm1INYiekJ">中间图像区</strong>：缩略图分页浏览，底部有翻页与总数</li>
   <li data-page-node-id="ig3anMDDYpACwcu61esIjD"><strong data-page-node-id="wHGxlguD5wEW2SivuHbRkS">顶部工具栏</strong>：显示比例、标注筛选，以及编辑、删除、导入、导出、属性、训练、模型、日志等按钮</li>
-  <li data-page-node-id="zXk2pQwErTy7UiOpAs3dFg"><strong data-page-node-id="vBn4mKl9JhGf2DsAqW8zXc">界面语言</strong>：工具栏最右侧的下拉框，在<b>中文</b>与 <b>English</b> 之间切换。主界面当场就变，已经打开的窗口（日志、训练队列）也一起刷新；还没打开的对话框，下次打开自然就是新语言。选择会记住，下次启动仍是该语言。
-      译文放在 <code>i18n/en_US.ts</code>（<code>.qm</code> 由它编译出来），改过界面文案后跑一次 <code>python builder/translations.py</code> 重新抽取并编译</li>
+  <li data-page-node-id="zXk2pQwErTy7UiOpAs3dFg"><strong data-page-node-id="vBn4mKl9JhGf2DsAqW8zXc">界面语言</strong>：工具栏最右侧的下拉框，可选 <b>中文</b>、<b>English</b>、<b>繁體中文</b>、<b>日本語</b>、<b>한국어</b>、<b>Deutsch</b>、<b>Español</b>、<b>Français</b>、<b>Tiếng Việt</b> 九种。主界面当场就变，已经打开的窗口（日志、训练队列）也一起刷新；还没打开的对话框，下次打开自然就是新语言。选择会记住，下次启动仍是该语言。下拉框里列出的是各语言自己的写法，跟当前界面语言无关，所以任何语言下都能认出该选哪一项。
+      <br>译文按语言放在 <code>i18n/&lt;语言代码&gt;.ts</code>（<code>.qm</code> 由它编译出来），改过界面文案后跑一次 <code>python builder/translations.py</code> 重新抽取并编译全部语言。新抽出的条目会标成未完成，编译时跳过并回退中文，所以漏译最多是那一句显示中文，不会让界面空掉</li>
 </ul>
 
 <figure data-page-node-id="53Y78EVgaJO2RRmH6ViZxN">

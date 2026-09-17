@@ -10,11 +10,18 @@ from PySide6.QtCore import QTranslator
 
 from app.core.utils import project_root
 
-# (代码, 下拉框里显示的名字). 名字本身不翻译: 中文用户看得到 "English",
-# 英文用户看得到 "中文", 两边都认得出该选哪个.
+# (代码, 下拉框里显示的名字). 名字本身不翻译: 各语言用户都看自己母语那一项,
+# 认得出该选哪个. 名字用本地写法且尽量短, 下拉框只有 100px 出头.
 LANGUAGES = (
     ("zh_CN", "中文"),
     ("en_US", "English"),
+    ("zh_TW", "繁體中文"),
+    ("ja_JP", "日本語"),
+    ("ko_KR", "한국어"),
+    ("de_DE", "Deutsch"),
+    ("es_ES", "Español"),
+    ("fr_FR", "Français"),
+    ("vi_VN", "Tiếng Việt"),
 )
 
 DEFAULT = "zh_CN"

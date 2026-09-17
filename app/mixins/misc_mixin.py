@@ -35,6 +35,10 @@ class MiscMixin(object):
         combo.clear()
         for code, name in i18n.LANGUAGES:
             combo.addItem(name, code)
+        # 各语言名长短差得多, 左对齐看着参差. QSS 的 text-align 对 QComboBox 不生效,
+        # 只有 item 的 TextAlignmentRole 管用, 收起态和弹层都认它.
+        for i in range(combo.count()):
+            combo.setItemData(i, Qt.AlignCenter, Qt.TextAlignmentRole)
         combo.setCurrentIndex(i18n.index_of(i18n.current()))
         combo.blockSignals(False)
         combo.currentIndexChanged.connect(self._on_language_changed)
@@ -57,6 +61,13 @@ class MiscMixin(object):
         """
         self.retranslateUi(self)
         self._refresh_gpu_memory()
+        # 下拉框选中项跟着当前语言走: apply() 未必是从下拉框触发的(如启动时读 db)
+        idx = i18n.index_of(i18n.current())
+        combo = self.language_comboBox
+        if combo.currentIndex() != idx:
+            combo.blockSignals(True)
+            combo.setCurrentIndex(idx)
+            combo.blockSignals(False)
         # 侧栏不是 .ui 的一部分, retranslateUi 管不到它的统计文案
         self.refresh_project_list()
         cur = getattr(self, "_current_dataset", None)
