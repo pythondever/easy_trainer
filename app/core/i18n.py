@@ -11,7 +11,7 @@ from PySide6.QtCore import QTranslator
 from app.core.utils import project_root
 
 # (代码, 下拉框里显示的名字). 名字本身不翻译: 各语言用户都看自己母语那一项,
-# 认得出该选哪个. 名字用本地写法且尽量短, 下拉框只有 100px 出头.
+# 认得出该选哪个. 名字用本地写法且尽量短, 下拉框前面还挂着国旗.
 LANGUAGES = (
     ("zh_CN", "中文"),
     ("en_US", "English"),
@@ -23,6 +23,20 @@ LANGUAGES = (
     ("fr_FR", "Français"),
     ("vi_VN", "Tiếng Việt"),
 )
+
+# 国旗图标: 自绘 SVG 而非 emoji. Windows 的 Segoe UI Emoji 不含区域指示符,
+# 🇺🇸 这种会退化成 "US" 两个字母摆在界面上.
+_FLAG = {
+    "zh_CN": "cn",
+    "en_US": "us",
+    "zh_TW": "cn",      # 繁体同样挂中国国旗
+    "ja_JP": "jp",
+    "ko_KR": "kr",
+    "de_DE": "de",
+    "es_ES": "es",
+    "fr_FR": "fr",
+    "vi_VN": "vn",
+}
 
 DEFAULT = "zh_CN"
 
@@ -59,6 +73,14 @@ def index_of(code):
 
 def qm_path(code):
     return os.path.join(project_root(), "i18n", code + ".qm")
+
+
+def flag_path(code):
+    """语言代码 -> 国旗图标绝对路径(文件缺失返回空串, 调用方按无图标处理)."""
+    name = _FLAG.get(normalize(code))
+    path = (os.path.join(project_root(), "resources", "flags", name + ".svg")
+            if name else "")
+    return path if path and os.path.exists(path) else ""
 
 
 def current():

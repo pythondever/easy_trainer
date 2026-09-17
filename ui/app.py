@@ -226,8 +226,8 @@ class Ui_AppUI(object):
 
         self.language_comboBox = QComboBox(self.datasetHeader)
         self.language_comboBox.setObjectName(u"language_comboBox")
-        self.language_comboBox.setMinimumSize(QSize(116, 0))
-        self.language_comboBox.setMaximumSize(QSize(116, 16777215))
+        self.language_comboBox.setMinimumSize(QSize(134, 0))
+        self.language_comboBox.setMaximumSize(QSize(134, 16777215))
 
         self.datasetHeaderLayout.addWidget(self.language_comboBox)
 

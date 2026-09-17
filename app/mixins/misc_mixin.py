@@ -5,6 +5,7 @@ from app.core import i18n
 from app.core.db import get_paths
 from app.core.label_utils import rec_is_labeled
 from app.widgets.charts import render_label_chart
+from app.widgets.flag_combo import install_flag_combo
 from app.widgets.log_dialog import LogDialog
 from app.widgets.model_dialog import ModelDialog
 from app.widgets.queue_dialog import TrainQueueDialog
@@ -14,8 +15,8 @@ from ui.dataset_properties import Ui_Dialog as DatasetPropertiesUI
 from app.widgets.message_box import MessageBox
 from app.widgets.dialog_buttons import apply_icon
 from app.core.log import write_log
-from PySide6.QtGui import QPixmap, QImage, QStandardItem
-from PySide6.QtCore import Qt
+from PySide6.QtGui import QIcon, QPixmap, QImage, QStandardItem
+from PySide6.QtCore import QSize, Qt
 from PySide6.QtCore import QCoreApplication as QC
 from PySide6.QtWidgets import QApplication, QDialog, QMessageBox, QGraphicsScene
 
@@ -33,12 +34,12 @@ class MiscMixin(object):
         combo = self.language_comboBox
         combo.blockSignals(True)
         combo.clear()
+        combo.setIconSize(QSize(22, 15))
         for code, name in i18n.LANGUAGES:
-            combo.addItem(name, code)
-        # 各语言名长短差得多, 左对齐看着参差. QSS 的 text-align 对 QComboBox 不生效,
-        # 只有 item 的 TextAlignmentRole 管用, 收起态和弹层都认它.
-        for i in range(combo.count()):
-            combo.setItemData(i, Qt.AlignCenter, Qt.TextAlignmentRole)
+            path = i18n.flag_path(code)
+            combo.addItem(QIcon(path) if path else QIcon(), name, code)
+        # 各语言名长短差得多, 图标与文字的位置由 flag_combo 里的自绘统一管
+        install_flag_combo(combo)
         combo.setCurrentIndex(i18n.index_of(i18n.current()))
         combo.blockSignals(False)
         combo.currentIndexChanged.connect(self._on_language_changed)

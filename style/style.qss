@@ -211,6 +211,11 @@ QComboBox:focus {
     border-color: #4f7dff;
 }
 
+/* 语言下拉要装九种语言名里最长的那个(Tiếng Việt), 左右内边距比通用下拉紧一点 */
+#language_comboBox {
+    padding: 5px 6px;
+}
+
 QComboBox::drop-down {
     border: none;
     width: 24px;
