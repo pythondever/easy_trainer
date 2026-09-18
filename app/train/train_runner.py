@@ -33,11 +33,21 @@ from rfdetr import (RFDETRNano, RFDETRSmall, RFDETRMedium, RFDETRLarge,
                     RFDETRSegLarge)
 
 from app.train.data_prep import prepare_dataset
-from app.core import i18n
+from app.core import i18n, model_assets
 from app.core.metrics import best_map50_from_csv
 
 
-def _make_model(architecture, task="detect"):
+def _pretrained_path(cfg, task):
+    """训练起步用的预训练权重绝对路径; 缺文件返回空串(UI 已负责提示下载)."""
+    given = cfg.get("pretrained_path")
+    if given and os.path.isfile(given):
+        return given
+    return model_assets.resolve_path(
+        task, cfg.get("architecture", "nano"),
+        cfg.get("family") or "transformer")
+
+
+def _make_model(architecture, task="detect", pretrained_path=""):
     if task == "segment":
         variants = {
             "nano": RFDETRSegNano, "small": RFDETRSegSmall,
@@ -49,7 +59,9 @@ def _make_model(architecture, task="detect"):
             "medium": RFDETRMedium, "large": RFDETRLarge,
         }
     cls = variants.get(architecture, variants["nano"])
-    return cls()
+    # 必须显式给路径: rfdetr 只在拿到纯文件名时才去 RF_HOME 找, 而我们的文件按档位命名,
+    # 官方名在那边根本不存在. 给了完整路径它就直接用, 不看 RF_HOME
+    return cls(pretrain_weights=pretrained_path)
 
 
 def main():
@@ -73,7 +85,13 @@ def main():
     labels = prepare_dataset(out_root, project, cfg["datasets"], task)
 
     # 2) 训练:
-    model = _make_model(cfg.get("architecture", "nano"), task)
+    weights = _pretrained_path(cfg, task)
+    if not weights:
+        raise RuntimeError(QC.translate(
+            "TrainRunner",
+            "预训练权重缺失: 请先在权重管理里下载 {} 档的模型").format(
+            cfg.get("architecture", "nano")))
+    model = _make_model(cfg.get("architecture", "nano"), task, weights)
     device = cfg.get("device", "cpu")
     if device.startswith("cuda"):
         device = "cuda" if (torch is not None and torch.cuda.is_available()) else "cpu"

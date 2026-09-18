@@ -1347,60 +1347,60 @@ Toutes ses annotations seront supprimées et ne pourront pas être récupérées
 <context>
     <name>ModelAssets</name>
     <message>
-        <location filename="../app/core/model_assets.py" line="72"/>
-        <location filename="../app/core/model_assets.py" line="105"/>
+        <location filename="../app/core/model_assets.py" line="75"/>
+        <location filename="../app/core/model_assets.py" line="109"/>
         <source>速度最快, 精度够用</source>
         <translation>Le plus rapide, précision suffisante</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="73"/>
-        <location filename="../app/core/model_assets.py" line="109"/>
+        <location filename="../app/core/model_assets.py" line="76"/>
+        <location filename="../app/core/model_assets.py" line="113"/>
         <source>精度更好, 稍慢一些</source>
         <translation>Meilleure précision, un peu plus lent</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="74"/>
-        <location filename="../app/core/model_assets.py" line="113"/>
+        <location filename="../app/core/model_assets.py" line="77"/>
+        <location filename="../app/core/model_assets.py" line="117"/>
         <source>精度更高</source>
         <translation>Précision supérieure</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="75"/>
-        <location filename="../app/core/model_assets.py" line="117"/>
+        <location filename="../app/core/model_assets.py" line="78"/>
+        <location filename="../app/core/model_assets.py" line="121"/>
         <source>精度最高, 显存占用大</source>
         <translation>Précision maximale, mais consomme plus de VRAM</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="76"/>
+        <location filename="../app/core/model_assets.py" line="79"/>
         <source>精度极致, 显存占用很大</source>
         <translation>Précision extrême, mais consomme beaucoup plus de VRAM</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="79"/>
-        <location filename="../app/core/model_assets.py" line="121"/>
+        <location filename="../app/core/model_assets.py" line="82"/>
+        <location filename="../app/core/model_assets.py" line="125"/>
         <source>轻量分割</source>
         <translation>Segmentation légère</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="80"/>
-        <location filename="../app/core/model_assets.py" line="125"/>
+        <location filename="../app/core/model_assets.py" line="83"/>
+        <location filename="../app/core/model_assets.py" line="129"/>
         <source>速度与精度平衡</source>
         <translation>Équilibre entre vitesse et précision</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="81"/>
-        <location filename="../app/core/model_assets.py" line="129"/>
+        <location filename="../app/core/model_assets.py" line="84"/>
+        <location filename="../app/core/model_assets.py" line="133"/>
         <source>细节更完整</source>
         <translation>Détails plus complets</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="82"/>
-        <location filename="../app/core/model_assets.py" line="133"/>
+        <location filename="../app/core/model_assets.py" line="85"/>
+        <location filename="../app/core/model_assets.py" line="137"/>
         <source>最精细</source>
         <translation>Le plus fin</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="83"/>
+        <location filename="../app/core/model_assets.py" line="86"/>
         <source>最精细, 显存占用很大</source>
         <translation>Le plus fin, mais consomme beaucoup plus de VRAM</translation>
     </message>
@@ -1924,67 +1924,67 @@ En cas de message indiquant onnx / onnxsim manquants, installez-les d&apos;abord
 <context>
     <name>ModelDownloader</name>
     <message>
-        <location filename="../app/core/model_download.py" line="69"/>
+        <location filename="../app/core/model_download.py" line="92"/>
         <source>权重目录不可写入, 请点&quot;更改&quot;换一个目录</source>
         <translation>Le dossier des poids n&apos;est pas accessible en écriture ; cliquez sur « Modifier » pour en choisir un autre</translation>
     </message>
     <message>
-        <location filename="../app/core/model_download.py" line="78"/>
+        <location filename="../app/core/model_download.py" line="101"/>
         <source>权重文件大小不符, 丢弃重下: {}</source>
         <translation>Taille du fichier de poids incorrecte, fichier abandonné et re-téléchargé : {}</translation>
     </message>
     <message>
-        <location filename="../app/core/model_download.py" line="88"/>
+        <location filename="../app/core/model_download.py" line="111"/>
         <source>开始下载权重 {} ({}, 已下载 {})</source>
         <translation>Début du téléchargement des poids {} ({}, déjà téléchargé {})</translation>
     </message>
     <message>
-        <location filename="../app/core/model_download.py" line="95"/>
+        <location filename="../app/core/model_download.py" line="118"/>
         <source>下载权重失败 {}: {}</source>
         <translation>Échec du téléchargement des poids {} : {}</translation>
     </message>
     <message>
-        <location filename="../app/core/model_download.py" line="98"/>
+        <location filename="../app/core/model_download.py" line="121"/>
         <source>无法连接下载服务器, 请检查网络后重试</source>
         <translation>Impossible de se connecter au serveur de téléchargement, vérifiez le réseau puis réessayez</translation>
     </message>
     <message>
-        <location filename="../app/core/model_download.py" line="106"/>
+        <location filename="../app/core/model_download.py" line="129"/>
         <source>下载中断, 已保留进度, 可再次点击续传</source>
         <translation>Téléchargement interrompu, progression conservée ; cliquez à nouveau pour reprendre</translation>
     </message>
     <message>
-        <location filename="../app/core/model_download.py" line="111"/>
+        <location filename="../app/core/model_download.py" line="134"/>
         <source>下载不完整, 已保留进度, 可再次点击续传</source>
         <translation>Téléchargement incomplet, progression conservée ; cliquez à nouveau pour reprendre</translation>
     </message>
     <message>
-        <location filename="../app/core/model_download.py" line="118"/>
+        <location filename="../app/core/model_download.py" line="141"/>
         <source>权重校验不通过 {}: 期望 {} 实际 {}</source>
         <translation>Vérification des poids échouée {} : attendu {} obtenu {}</translation>
     </message>
     <message>
-        <location filename="../app/core/model_download.py" line="123"/>
+        <location filename="../app/core/model_download.py" line="146"/>
         <source>文件校验未通过, 损坏文件已删除, 请重试</source>
         <translation>Vérification du fichier échouée, fichier corrompu supprimé, veuillez réessayer</translation>
     </message>
     <message>
-        <location filename="../app/core/model_download.py" line="129"/>
+        <location filename="../app/core/model_download.py" line="152"/>
         <source>写入权重目录失败, 请检查磁盘空间</source>
         <translation>Échec de l&apos;écriture dans le dossier des poids, vérifiez l&apos;espace disque</translation>
     </message>
     <message>
-        <location filename="../app/core/model_download.py" line="132"/>
+        <location filename="../app/core/model_download.py" line="155"/>
         <source>权重就绪: {}</source>
         <translation>Poids prêts : {}</translation>
     </message>
     <message>
-        <location filename="../app/core/model_download.py" line="153"/>
+        <location filename="../app/core/model_download.py" line="176"/>
         <source>下载已取消, 已下载部分保留以便续传: {}</source>
         <translation>Téléchargement annulé, la partie déjà téléchargée est conservée pour la reprise : {}</translation>
     </message>
     <message>
-        <location filename="../app/core/model_download.py" line="173"/>
+        <location filename="../app/core/model_download.py" line="196"/>
         <source>权重下载异常 {}: {!r}</source>
         <translation>Erreur de téléchargement des poids {} : {!r}</translation>
     </message>
@@ -1993,11 +1993,11 @@ En cas de message indiquant onnx / onnxsim manquants, installez-les d&apos;abord
     <name>ModelManagerDialog</name>
     <message>
         <location filename="../ui/model_manager.ui" line="14"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="287"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="291"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="339"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="344"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="350"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="288"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="292"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="341"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="346"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="352"/>
         <source>模型权重</source>
         <translation>Poids du modèle</translation>
     </message>
@@ -2060,7 +2060,7 @@ En cas de message indiquant onnx / onnxsim manquants, installez-les d&apos;abord
     </message>
     <message>
         <location filename="../ui/model_manager.ui" line="265"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="330"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="331"/>
         <source>开始下载</source>
         <translation>Démarrer le téléchargement</translation>
     </message>
@@ -2071,7 +2071,7 @@ En cas de message indiquant onnx / onnxsim manquants, installez-les d&apos;abord
     </message>
     <message>
         <location filename="../ui/model_manager.ui" line="275"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="169"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="172"/>
         <source>关闭</source>
         <translation>Fermer</translation>
     </message>
@@ -2086,85 +2086,85 @@ En cas de message indiquant onnx / onnxsim manquants, installez-les d&apos;abord
         <translation>{} min {} s restantes</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="237"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="238"/>
         <source>占用空间 {}</source>
         <translation>Espace utilisé {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="255"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="256"/>
         <source>选择权重目录</source>
         <translation>Sélectionner le dossier des poids</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="276"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="277"/>
         <source>权重目录不可写入 {}: {!r}</source>
         <translation>Dossier des poids non accessible en écriture {} : {!r}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="287"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="288"/>
         <source>勾选的模型都已就绪, 不需要下载.</source>
         <translation>Tous les modèles cochés sont prêts, aucun téléchargement nécessaire.</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="292"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="293"/>
         <source>当前目录不可写入, 请点&quot;更改&quot;换一个目录:
 {}</source>
         <translation>Le dossier actuel n&apos;est pas accessible en écriture. Cliquez sur « Modifier » pour en choisir un autre :
 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="297"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="298"/>
         <source>下载中...</source>
         <translation>Téléchargement...</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="340"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="342"/>
         <source>以下权重没能下载完成:
 </source>
         <translation>Ces poids n&apos;ont pas pu être téléchargés :
 </translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="345"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="347"/>
         <source>权重已就绪, 保存在:
 {}</source>
         <translation>Poids prêts, enregistrés dans :
 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="351"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="353"/>
         <source>下载还在进行, 现在关闭会中断下载(已下载部分保留, 下次可续传).
 确定关闭?</source>
         <translation>Un téléchargement est toujours en cours. Fermer maintenant l&apos;interrompra (les parties déjà téléchargées sont conservées et la reprise se fera au prochain lancement).
 Fermer quand même ?</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="382"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="385"/>
         <source>去下载</source>
         <translation>Télécharger</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="389"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="392"/>
         <source>下载位置: {}</source>
         <translation>Emplacement de téléchargement : {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="395"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="398"/>
         <source>该架构的权重必须先下载好才能开始训练.</source>
         <translation>Les poids de cette architecture doivent être téléchargés avant de pouvoir lancer l&apos;entraînement.</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="385"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="388"/>
         <source>本次训练选用 {} {}模型, 需要先下载 {}.</source>
         <translation>Cet entraînement utilise le modèle {} {} et nécessite de télécharger {} au préalable.</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="384"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="387"/>
         <source>缺少模型权重</source>
         <translation>Poids du modèle manquants</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="383"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="386"/>
         <source>取消</source>
         <translation>Annuler</translation>
     </message>
@@ -4567,47 +4567,48 @@ Les remettre en file et démarrer l&apos;entraînement ?</translation>
 <context>
     <name>TrainRunner</name>
     <message>
-        <location filename="../app/train/train_runner.py" line="66"/>
-        <location filename="../app/train/yolo_train_runner.py" line="174"/>
+        <location filename="../app/train/train_runner.py" line="78"/>
+        <location filename="../app/train/yolo_train_runner.py" line="170"/>
         <source>输出路径: {}</source>
         <translation>Chemin de sortie : {}</translation>
     </message>
     <message>
-        <location filename="../app/train/train_runner.py" line="67"/>
-        <location filename="../app/train/yolo_train_runner.py" line="175"/>
+        <location filename="../app/train/train_runner.py" line="79"/>
+        <location filename="../app/train/yolo_train_runner.py" line="171"/>
         <source>本次训练输出目录(时间戳): {}</source>
         <translation>Dossier de sortie de cet entraînement (horodatage) : {}</translation>
     </message>
     <message>
-        <location filename="../app/train/train_runner.py" line="69"/>
+        <location filename="../app/train/train_runner.py" line="81"/>
         <source>训练配置文件已保存 → {}</source>
         <translation>Fichier de configuration d&apos;entraînement enregistré → {}</translation>
     </message>
     <message>
-        <location filename="../app/train/train_runner.py" line="85"/>
+        <location filename="../app/train/train_runner.py" line="103"/>
         <source>分割模型 resolution 已自动取整: {} → {} (block={})</source>
         <translation>Résolution du modèle de segmentation arrondie automatiquement : {} → {} (block={})</translation>
     </message>
     <message>
-        <location filename="../app/train/train_runner.py" line="87"/>
-        <location filename="../app/train/yolo_train_runner.py" line="210"/>
+        <location filename="../app/train/train_runner.py" line="105"/>
+        <location filename="../app/train/yolo_train_runner.py" line="206"/>
         <source>使用模型 {} device={} epochs={} batch={} resolution={}</source>
         <translation>Modèle utilisé {} device={} epochs={} batch={} resolution={}</translation>
     </message>
     <message>
-        <location filename="../app/train/train_runner.py" line="156"/>
-        <location filename="../app/train/yolo_train_runner.py" line="238"/>
+        <location filename="../app/train/train_runner.py" line="174"/>
+        <location filename="../app/train/yolo_train_runner.py" line="234"/>
         <source>训练完成</source>
         <translation>Entraînement terminé</translation>
     </message>
     <message>
-        <location filename="../app/train/train_runner.py" line="165"/>
-        <location filename="../app/train/yolo_train_runner.py" line="245"/>
+        <location filename="../app/train/train_runner.py" line="183"/>
+        <location filename="../app/train/yolo_train_runner.py" line="241"/>
         <source>生成类别文件: {}</source>
         <translation>Génération du fichier de classes : {}</translation>
     </message>
     <message>
-        <location filename="../app/train/yolo_train_runner.py" line="181"/>
+        <location filename="../app/train/train_runner.py" line="90"/>
+        <location filename="../app/train/yolo_train_runner.py" line="177"/>
         <source>预训练权重缺失: 请先在权重管理里下载 {} 档的模型</source>
         <translation>Poids pré-entraînés manquants : téléchargez d&apos;abord le modèle de niveau {} dans Poids du modèle</translation>
     </message>

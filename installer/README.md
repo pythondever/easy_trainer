@@ -52,9 +52,11 @@ transformers 格式的 safetensors，rfdetr 包不认），大陆网络下不动
 
 ## 权重清单（唯一数据源）
 
-`builder\pretrained-assets.txt`：`文件名 \t URL \t SHA256`，**C# 安装器、installer.sh、
-builder\build.py 三端共用**，改这一处即可换源或添加国内镜像（同一文件名写多行 = 多个候选源，
-安装器按顺序尝试）。Python 运行时本身的下载信息仍写死在 `InstallerCore.cs` 常量里。
+`builder\pretrained-assets.txt`：`相对 pretrained/ 的路径 \t URL \t SHA256`，**C# 安装器、
+installer.sh、builder\build.py 三端共用**，改这一处即可换源或添加国内镜像（同一路径写多行 =
+多个候选源，安装器按顺序尝试）。第一列可带子目录（`transformer/nano.pt`），与软件内的
+架构分目录一一对应 —— 少了 `transformer/` 这层，装完软件仍会认为权重缺失。
+Python 运行时本身的下载信息仍写死在 `InstallerCore.cs` 常量里。
 
 ## 构建步骤（Windows）
 

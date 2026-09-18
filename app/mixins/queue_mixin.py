@@ -240,10 +240,10 @@ class QueueMixin(object):
             # CNN 后端拿到权重名就直接加载, 没有"训练时自己下"这一步
             if family == "cnn":
                 write_log(QC.translate("QueueMixin", "[队列] 缺少权重 {}, 该项训练会失败").format(
-                    miss.filename))
+                    model_assets.rel_path(miss)))
             else:
                 write_log(QC.translate("QueueMixin", "[队列] 缺少权重 {}, 该项训练时会自行下载").format(
-                    miss.filename))
+                    model_assets.rel_path(miss)))
         # data.yaml / 标签集合都由 make_train_config 之后的 runner 现算,
         # 这里只负责把 db 里的最新路径与 label_ids 解析进 config
         config = make_train_config(self.db, params)

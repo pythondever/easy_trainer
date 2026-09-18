@@ -396,6 +396,8 @@ public static class InstallEngine
             var grp = groups[i];
             var file = grp.Key;
             var target = Path.Combine(dest, file);
+            // 清单里的名字可以带子目录(如 transformer/nano.pt, 与软件内的架构分目录对应)
+            Directory.CreateDirectory(Path.GetDirectoryName(target)!);
             var segPct = 100.0 / n * w / totalBytes;
             var segBase = stageBase + (int)(segPct * i);
             var no = $"第 {i + 1}/{n} 个文件";

@@ -1347,60 +1347,60 @@ Mọi chú thích của nhãn này sẽ bị xóa và không thể khôi phục.
 <context>
     <name>ModelAssets</name>
     <message>
-        <location filename="../app/core/model_assets.py" line="72"/>
-        <location filename="../app/core/model_assets.py" line="105"/>
+        <location filename="../app/core/model_assets.py" line="75"/>
+        <location filename="../app/core/model_assets.py" line="109"/>
         <source>速度最快, 精度够用</source>
         <translation>Nhanh nhất, độ chính xác đủ dùng</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="73"/>
-        <location filename="../app/core/model_assets.py" line="109"/>
+        <location filename="../app/core/model_assets.py" line="76"/>
+        <location filename="../app/core/model_assets.py" line="113"/>
         <source>精度更好, 稍慢一些</source>
         <translation>Độ chính xác tốt hơn, hơi chậm</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="74"/>
-        <location filename="../app/core/model_assets.py" line="113"/>
+        <location filename="../app/core/model_assets.py" line="77"/>
+        <location filename="../app/core/model_assets.py" line="117"/>
         <source>精度更高</source>
         <translation>Độ chính xác cao hơn</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="75"/>
-        <location filename="../app/core/model_assets.py" line="117"/>
+        <location filename="../app/core/model_assets.py" line="78"/>
+        <location filename="../app/core/model_assets.py" line="121"/>
         <source>精度最高, 显存占用大</source>
         <translation>Độ chính xác cao nhất, tốn nhiều bộ nhớ GPU</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="76"/>
+        <location filename="../app/core/model_assets.py" line="79"/>
         <source>精度极致, 显存占用很大</source>
         <translation>Độ chính xác tối đa, tốn rất nhiều bộ nhớ GPU</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="79"/>
-        <location filename="../app/core/model_assets.py" line="121"/>
+        <location filename="../app/core/model_assets.py" line="82"/>
+        <location filename="../app/core/model_assets.py" line="125"/>
         <source>轻量分割</source>
         <translation>Phân đoạn nhẹ</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="80"/>
-        <location filename="../app/core/model_assets.py" line="125"/>
+        <location filename="../app/core/model_assets.py" line="83"/>
+        <location filename="../app/core/model_assets.py" line="129"/>
         <source>速度与精度平衡</source>
         <translation>Cân bằng tốc độ và độ chính xác</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="81"/>
-        <location filename="../app/core/model_assets.py" line="129"/>
+        <location filename="../app/core/model_assets.py" line="84"/>
+        <location filename="../app/core/model_assets.py" line="133"/>
         <source>细节更完整</source>
         <translation>Chi tiết đầy đủ hơn</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="82"/>
-        <location filename="../app/core/model_assets.py" line="133"/>
+        <location filename="../app/core/model_assets.py" line="85"/>
+        <location filename="../app/core/model_assets.py" line="137"/>
         <source>最精细</source>
         <translation>Chi tiết nhất</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="83"/>
+        <location filename="../app/core/model_assets.py" line="86"/>
         <source>最精细, 显存占用很大</source>
         <translation>Chi tiết nhất, tốn rất nhiều bộ nhớ GPU</translation>
     </message>
@@ -1924,67 +1924,67 @@ Nếu báo thiếu onnx / onnxsim, hãy cài trước:
 <context>
     <name>ModelDownloader</name>
     <message>
-        <location filename="../app/core/model_download.py" line="69"/>
+        <location filename="../app/core/model_download.py" line="92"/>
         <source>权重目录不可写入, 请点&quot;更改&quot;换一个目录</source>
         <translation>Không ghi được vào thư mục trọng số, bấm &quot;Thay đổi&quot; để chọn thư mục khác</translation>
     </message>
     <message>
-        <location filename="../app/core/model_download.py" line="78"/>
+        <location filename="../app/core/model_download.py" line="101"/>
         <source>权重文件大小不符, 丢弃重下: {}</source>
         <translation>Kích thước tệp trọng số không khớp, bỏ và tải lại: {}</translation>
     </message>
     <message>
-        <location filename="../app/core/model_download.py" line="88"/>
+        <location filename="../app/core/model_download.py" line="111"/>
         <source>开始下载权重 {} ({}, 已下载 {})</source>
         <translation>Bắt đầu tải trọng số {} ({}, đã tải {})</translation>
     </message>
     <message>
-        <location filename="../app/core/model_download.py" line="95"/>
+        <location filename="../app/core/model_download.py" line="118"/>
         <source>下载权重失败 {}: {}</source>
         <translation>Tải trọng số thất bại {}: {}</translation>
     </message>
     <message>
-        <location filename="../app/core/model_download.py" line="98"/>
+        <location filename="../app/core/model_download.py" line="121"/>
         <source>无法连接下载服务器, 请检查网络后重试</source>
         <translation>Không kết nối được máy chủ tải, kiểm tra mạng rồi thử lại</translation>
     </message>
     <message>
-        <location filename="../app/core/model_download.py" line="106"/>
+        <location filename="../app/core/model_download.py" line="129"/>
         <source>下载中断, 已保留进度, 可再次点击续传</source>
         <translation>Tải bị ngắt, đã giữ tiến độ, bấm lại để tải tiếp</translation>
     </message>
     <message>
-        <location filename="../app/core/model_download.py" line="111"/>
+        <location filename="../app/core/model_download.py" line="134"/>
         <source>下载不完整, 已保留进度, 可再次点击续传</source>
         <translation>Tải chưa đầy đủ, đã giữ tiến độ, bấm lại để tải tiếp</translation>
     </message>
     <message>
-        <location filename="../app/core/model_download.py" line="118"/>
+        <location filename="../app/core/model_download.py" line="141"/>
         <source>权重校验不通过 {}: 期望 {} 实际 {}</source>
         <translation>Kiểm tra trọng số không đạt {}: mong đợi {} thực tế {}</translation>
     </message>
     <message>
-        <location filename="../app/core/model_download.py" line="123"/>
+        <location filename="../app/core/model_download.py" line="146"/>
         <source>文件校验未通过, 损坏文件已删除, 请重试</source>
         <translation>Kiểm tra tệp không đạt, đã xóa tệp hỏng, thử lại</translation>
     </message>
     <message>
-        <location filename="../app/core/model_download.py" line="129"/>
+        <location filename="../app/core/model_download.py" line="152"/>
         <source>写入权重目录失败, 请检查磁盘空间</source>
         <translation>Ghi vào thư mục trọng số thất bại, kiểm tra dung lượng đĩa</translation>
     </message>
     <message>
-        <location filename="../app/core/model_download.py" line="132"/>
+        <location filename="../app/core/model_download.py" line="155"/>
         <source>权重就绪: {}</source>
         <translation>Trọng số sẵn sàng: {}</translation>
     </message>
     <message>
-        <location filename="../app/core/model_download.py" line="153"/>
+        <location filename="../app/core/model_download.py" line="176"/>
         <source>下载已取消, 已下载部分保留以便续传: {}</source>
         <translation>Đã hủy tải, phần đã tải được giữ lại để tải tiếp: {}</translation>
     </message>
     <message>
-        <location filename="../app/core/model_download.py" line="173"/>
+        <location filename="../app/core/model_download.py" line="196"/>
         <source>权重下载异常 {}: {!r}</source>
         <translation>Tải trọng số gặp lỗi {}: {!r}</translation>
     </message>
@@ -1993,11 +1993,11 @@ Nếu báo thiếu onnx / onnxsim, hãy cài trước:
     <name>ModelManagerDialog</name>
     <message>
         <location filename="../ui/model_manager.ui" line="14"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="287"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="291"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="339"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="344"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="350"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="288"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="292"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="341"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="346"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="352"/>
         <source>模型权重</source>
         <translation>Trọng số mô hình</translation>
     </message>
@@ -2060,7 +2060,7 @@ Nếu báo thiếu onnx / onnxsim, hãy cài trước:
     </message>
     <message>
         <location filename="../ui/model_manager.ui" line="265"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="330"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="331"/>
         <source>开始下载</source>
         <translation>Bắt đầu tải</translation>
     </message>
@@ -2071,7 +2071,7 @@ Nếu báo thiếu onnx / onnxsim, hãy cài trước:
     </message>
     <message>
         <location filename="../ui/model_manager.ui" line="275"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="169"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="172"/>
         <source>关闭</source>
         <translation>Đóng</translation>
     </message>
@@ -2086,85 +2086,85 @@ Nếu báo thiếu onnx / onnxsim, hãy cài trước:
         <translation>Còn {}m{}s</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="237"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="238"/>
         <source>占用空间 {}</source>
         <translation>Chiếm {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="255"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="256"/>
         <source>选择权重目录</source>
         <translation>Chọn thư mục trọng số</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="276"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="277"/>
         <source>权重目录不可写入 {}: {!r}</source>
         <translation>Không ghi được vào thư mục trọng số {}: {!r}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="287"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="288"/>
         <source>勾选的模型都已就绪, 不需要下载.</source>
         <translation>Các mô hình đã chọn đều sẵn sàng, không cần tải.</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="292"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="293"/>
         <source>当前目录不可写入, 请点&quot;更改&quot;换一个目录:
 {}</source>
         <translation>Thư mục hiện tại không ghi được, bấm &quot;Thay đổi&quot; để chọn thư mục khác:
 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="297"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="298"/>
         <source>下载中...</source>
         <translation>Đang tải...</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="340"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="342"/>
         <source>以下权重没能下载完成:
 </source>
         <translation>Các trọng số sau chưa tải xong:
 </translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="345"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="347"/>
         <source>权重已就绪, 保存在:
 {}</source>
         <translation>Trọng số đã sẵn sàng, lưu tại:
 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="351"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="353"/>
         <source>下载还在进行, 现在关闭会中断下载(已下载部分保留, 下次可续传).
 确定关闭?</source>
         <translation>Đang tải, đóng bây giờ sẽ ngắt quá trình tải (phần đã tải được giữ lại, lần sau tải tiếp).
 Đóng?</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="382"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="385"/>
         <source>去下载</source>
         <translation>Tải về</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="389"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="392"/>
         <source>下载位置: {}</source>
         <translation>Vị trí tải xuống: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="395"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="398"/>
         <source>该架构的权重必须先下载好才能开始训练.</source>
         <translation>Phải tải trọng số của kiến trúc này trước khi có thể bắt đầu huấn luyện.</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="385"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="388"/>
         <source>本次训练选用 {} {}模型, 需要先下载 {}.</source>
         <translation>Lần huấn luyện này dùng mô hình {} {}, cần tải {} trước.</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="384"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="387"/>
         <source>缺少模型权重</source>
         <translation>Thiếu trọng số mô hình</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="383"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="386"/>
         <source>取消</source>
         <translation>Hủy</translation>
     </message>
@@ -4567,47 +4567,48 @@ Chờ chạy lại: {}
 <context>
     <name>TrainRunner</name>
     <message>
-        <location filename="../app/train/train_runner.py" line="66"/>
-        <location filename="../app/train/yolo_train_runner.py" line="174"/>
+        <location filename="../app/train/train_runner.py" line="78"/>
+        <location filename="../app/train/yolo_train_runner.py" line="170"/>
         <source>输出路径: {}</source>
         <translation>Đường dẫn đầu ra: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/train_runner.py" line="67"/>
-        <location filename="../app/train/yolo_train_runner.py" line="175"/>
+        <location filename="../app/train/train_runner.py" line="79"/>
+        <location filename="../app/train/yolo_train_runner.py" line="171"/>
         <source>本次训练输出目录(时间戳): {}</source>
         <translation>Thư mục đầu ra của lần huấn luyện này (dấu thời gian): {}</translation>
     </message>
     <message>
-        <location filename="../app/train/train_runner.py" line="69"/>
+        <location filename="../app/train/train_runner.py" line="81"/>
         <source>训练配置文件已保存 → {}</source>
         <translation>Đã lưu tệp cấu hình huấn luyện → {}</translation>
     </message>
     <message>
-        <location filename="../app/train/train_runner.py" line="85"/>
+        <location filename="../app/train/train_runner.py" line="103"/>
         <source>分割模型 resolution 已自动取整: {} → {} (block={})</source>
         <translation>Độ phân giải mô hình phân đoạn đã tự động làm tròn: {} → {} (block={})</translation>
     </message>
     <message>
-        <location filename="../app/train/train_runner.py" line="87"/>
-        <location filename="../app/train/yolo_train_runner.py" line="210"/>
+        <location filename="../app/train/train_runner.py" line="105"/>
+        <location filename="../app/train/yolo_train_runner.py" line="206"/>
         <source>使用模型 {} device={} epochs={} batch={} resolution={}</source>
         <translation>Dùng mô hình {} device={} epochs={} batch={} resolution={}</translation>
     </message>
     <message>
-        <location filename="../app/train/train_runner.py" line="156"/>
-        <location filename="../app/train/yolo_train_runner.py" line="238"/>
+        <location filename="../app/train/train_runner.py" line="174"/>
+        <location filename="../app/train/yolo_train_runner.py" line="234"/>
         <source>训练完成</source>
         <translation>Huấn luyện xong</translation>
     </message>
     <message>
-        <location filename="../app/train/train_runner.py" line="165"/>
-        <location filename="../app/train/yolo_train_runner.py" line="245"/>
+        <location filename="../app/train/train_runner.py" line="183"/>
+        <location filename="../app/train/yolo_train_runner.py" line="241"/>
         <source>生成类别文件: {}</source>
         <translation>Tạo tệp lớp: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/yolo_train_runner.py" line="181"/>
+        <location filename="../app/train/train_runner.py" line="90"/>
+        <location filename="../app/train/yolo_train_runner.py" line="177"/>
         <source>预训练权重缺失: 请先在权重管理里下载 {} 档的模型</source>
         <translation>Thiếu trọng số huấn luyện trước: hãy tải mô hình mức {} trong Trọng số mô hình trước</translation>
     </message>

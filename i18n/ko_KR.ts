@@ -1347,60 +1347,60 @@
 <context>
     <name>ModelAssets</name>
     <message>
-        <location filename="../app/core/model_assets.py" line="72"/>
-        <location filename="../app/core/model_assets.py" line="105"/>
+        <location filename="../app/core/model_assets.py" line="75"/>
+        <location filename="../app/core/model_assets.py" line="109"/>
         <source>速度最快, 精度够用</source>
         <translation>가장 빠르고 정확도는 충분함</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="73"/>
-        <location filename="../app/core/model_assets.py" line="109"/>
+        <location filename="../app/core/model_assets.py" line="76"/>
+        <location filename="../app/core/model_assets.py" line="113"/>
         <source>精度更好, 稍慢一些</source>
         <translation>정확도가 더 좋고 약간 느림</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="74"/>
-        <location filename="../app/core/model_assets.py" line="113"/>
+        <location filename="../app/core/model_assets.py" line="77"/>
+        <location filename="../app/core/model_assets.py" line="117"/>
         <source>精度更高</source>
         <translation>정확도가 더 높음</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="75"/>
-        <location filename="../app/core/model_assets.py" line="117"/>
+        <location filename="../app/core/model_assets.py" line="78"/>
+        <location filename="../app/core/model_assets.py" line="121"/>
         <source>精度最高, 显存占用大</source>
         <translation>정확도가 가장 높지만 VRAM 사용량이 큼</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="76"/>
+        <location filename="../app/core/model_assets.py" line="79"/>
         <source>精度极致, 显存占用很大</source>
         <translation>정확도가 최고 수준, VRAM 사용량이 매우 큼</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="79"/>
-        <location filename="../app/core/model_assets.py" line="121"/>
+        <location filename="../app/core/model_assets.py" line="82"/>
+        <location filename="../app/core/model_assets.py" line="125"/>
         <source>轻量分割</source>
         <translation>경량 세그멘테이션</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="80"/>
-        <location filename="../app/core/model_assets.py" line="125"/>
+        <location filename="../app/core/model_assets.py" line="83"/>
+        <location filename="../app/core/model_assets.py" line="129"/>
         <source>速度与精度平衡</source>
         <translation>속도와 정확도의 균형</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="81"/>
-        <location filename="../app/core/model_assets.py" line="129"/>
+        <location filename="../app/core/model_assets.py" line="84"/>
+        <location filename="../app/core/model_assets.py" line="133"/>
         <source>细节更完整</source>
         <translation>디테일이 더 완전함</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="82"/>
-        <location filename="../app/core/model_assets.py" line="133"/>
+        <location filename="../app/core/model_assets.py" line="85"/>
+        <location filename="../app/core/model_assets.py" line="137"/>
         <source>最精细</source>
         <translation>가장 정밀함</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="83"/>
+        <location filename="../app/core/model_assets.py" line="86"/>
         <source>最精细, 显存占用很大</source>
         <translation>가장 정밀함, VRAM 사용량이 매우 큼</translation>
     </message>
@@ -1924,67 +1924,67 @@ onnx / onnxsim이 없다는 메시지가 나오면 먼저 설치하세요:
 <context>
     <name>ModelDownloader</name>
     <message>
-        <location filename="../app/core/model_download.py" line="69"/>
+        <location filename="../app/core/model_download.py" line="92"/>
         <source>权重目录不可写入, 请点&quot;更改&quot;换一个目录</source>
         <translation>가중치 디렉터리에 쓸 수 없습니다. &quot;변경&quot;을 눌러 다른 디렉터리를 선택하세요</translation>
     </message>
     <message>
-        <location filename="../app/core/model_download.py" line="78"/>
+        <location filename="../app/core/model_download.py" line="101"/>
         <source>权重文件大小不符, 丢弃重下: {}</source>
         <translation>가중치 파일 크기가 일치하지 않아 삭제 후 다시 다운로드합니다: {}</translation>
     </message>
     <message>
-        <location filename="../app/core/model_download.py" line="88"/>
+        <location filename="../app/core/model_download.py" line="111"/>
         <source>开始下载权重 {} ({}, 已下载 {})</source>
         <translation>가중치 {} 다운로드 시작 ({}, 다운로드됨 {})</translation>
     </message>
     <message>
-        <location filename="../app/core/model_download.py" line="95"/>
+        <location filename="../app/core/model_download.py" line="118"/>
         <source>下载权重失败 {}: {}</source>
         <translation>가중치 다운로드 실패 {}: {}</translation>
     </message>
     <message>
-        <location filename="../app/core/model_download.py" line="98"/>
+        <location filename="../app/core/model_download.py" line="121"/>
         <source>无法连接下载服务器, 请检查网络后重试</source>
         <translation>다운로드 서버에 연결할 수 없습니다. 네트워크를 확인한 후 다시 시도하세요</translation>
     </message>
     <message>
-        <location filename="../app/core/model_download.py" line="106"/>
+        <location filename="../app/core/model_download.py" line="129"/>
         <source>下载中断, 已保留进度, 可再次点击续传</source>
         <translation>다운로드 중단됨, 진행 상황은 보존되었습니다. 다시 클릭하면 이어받을 수 있습니다</translation>
     </message>
     <message>
-        <location filename="../app/core/model_download.py" line="111"/>
+        <location filename="../app/core/model_download.py" line="134"/>
         <source>下载不完整, 已保留进度, 可再次点击续传</source>
         <translation>다운로드가 불완전합니다. 진행 상황은 보존되었습니다. 다시 클릭하면 이어받을 수 있습니다</translation>
     </message>
     <message>
-        <location filename="../app/core/model_download.py" line="118"/>
+        <location filename="../app/core/model_download.py" line="141"/>
         <source>权重校验不通过 {}: 期望 {} 实际 {}</source>
         <translation>가중치 검증 실패 {}: 예상 {} 실제 {}</translation>
     </message>
     <message>
-        <location filename="../app/core/model_download.py" line="123"/>
+        <location filename="../app/core/model_download.py" line="146"/>
         <source>文件校验未通过, 损坏文件已删除, 请重试</source>
         <translation>파일 검증에 실패했습니다. 손상된 파일은 삭제되었습니다. 다시 시도하세요</translation>
     </message>
     <message>
-        <location filename="../app/core/model_download.py" line="129"/>
+        <location filename="../app/core/model_download.py" line="152"/>
         <source>写入权重目录失败, 请检查磁盘空间</source>
         <translation>가중치 디렉터리 쓰기 실패, 디스크 공간을 확인하세요</translation>
     </message>
     <message>
-        <location filename="../app/core/model_download.py" line="132"/>
+        <location filename="../app/core/model_download.py" line="155"/>
         <source>权重就绪: {}</source>
         <translation>가중치 준비됨: {}</translation>
     </message>
     <message>
-        <location filename="../app/core/model_download.py" line="153"/>
+        <location filename="../app/core/model_download.py" line="176"/>
         <source>下载已取消, 已下载部分保留以便续传: {}</source>
         <translation>다운로드가 취소되었습니다. 내려받은 부분은 이어받을 수 있도록 보존됩니다: {}</translation>
     </message>
     <message>
-        <location filename="../app/core/model_download.py" line="173"/>
+        <location filename="../app/core/model_download.py" line="196"/>
         <source>权重下载异常 {}: {!r}</source>
         <translation>가중치 다운로드 예외 {}: {!r}</translation>
     </message>
@@ -1993,11 +1993,11 @@ onnx / onnxsim이 없다는 메시지가 나오면 먼저 설치하세요:
     <name>ModelManagerDialog</name>
     <message>
         <location filename="../ui/model_manager.ui" line="14"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="287"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="291"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="339"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="344"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="350"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="288"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="292"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="341"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="346"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="352"/>
         <source>模型权重</source>
         <translation>모델 가중치</translation>
     </message>
@@ -2060,7 +2060,7 @@ onnx / onnxsim이 없다는 메시지가 나오면 먼저 설치하세요:
     </message>
     <message>
         <location filename="../ui/model_manager.ui" line="265"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="330"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="331"/>
         <source>开始下载</source>
         <translation>다운로드 시작</translation>
     </message>
@@ -2071,7 +2071,7 @@ onnx / onnxsim이 없다는 메시지가 나오면 먼저 설치하세요:
     </message>
     <message>
         <location filename="../ui/model_manager.ui" line="275"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="169"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="172"/>
         <source>关闭</source>
         <translation>닫기</translation>
     </message>
@@ -2086,85 +2086,85 @@ onnx / onnxsim이 없다는 메시지가 나오면 먼저 설치하세요:
         <translation>{}m{}s 남음</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="237"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="238"/>
         <source>占用空间 {}</source>
         <translation>사용 공간 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="255"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="256"/>
         <source>选择权重目录</source>
         <translation>가중치 디렉터리 선택</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="276"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="277"/>
         <source>权重目录不可写入 {}: {!r}</source>
         <translation>가중치 디렉터리에 쓸 수 없습니다 {}: {!r}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="287"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="288"/>
         <source>勾选的模型都已就绪, 不需要下载.</source>
         <translation>선택한 모델이 모두 준비되어 다운로드가 필요하지 않습니다.</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="292"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="293"/>
         <source>当前目录不可写入, 请点&quot;更改&quot;换一个目录:
 {}</source>
         <translation>현재 디렉터리에 쓸 수 없습니다. &quot;변경&quot;을 눌러 다른 디렉터리를 선택하세요:
 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="297"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="298"/>
         <source>下载中...</source>
         <translation>다운로드 중...</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="340"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="342"/>
         <source>以下权重没能下载完成:
 </source>
         <translation>다음 가중치는 다운로드를 완료하지 못했습니다:
 </translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="345"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="347"/>
         <source>权重已就绪, 保存在:
 {}</source>
         <translation>가중치가 준비되었습니다. 저장 위치:
 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="351"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="353"/>
         <source>下载还在进行, 现在关闭会中断下载(已下载部分保留, 下次可续传).
 确定关闭?</source>
         <translation>다운로드가 진행 중입니다. 지금 닫으면 중단됩니다(내려받은 부분은 보존되며 다음에 이어받기 가능).
 닫으시겠습니까?</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="382"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="385"/>
         <source>去下载</source>
         <translation>다운로드</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="389"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="392"/>
         <source>下载位置: {}</source>
         <translation>다운로드 위치: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="395"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="398"/>
         <source>该架构的权重必须先下载好才能开始训练.</source>
         <translation>이 아키텍처의 가중치를 먼저 다운로드해야 학습을 시작할 수 있습니다.</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="385"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="388"/>
         <source>本次训练选用 {} {}模型, 需要先下载 {}.</source>
         <translation>이번 학습은 {} {} 모델을 사용하며, {}을(를) 먼저 다운로드해야 합니다.</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="384"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="387"/>
         <source>缺少模型权重</source>
         <translation>모델 가중치 없음</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="383"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="386"/>
         <source>取消</source>
         <translation>취소</translation>
     </message>
@@ -4567,47 +4567,48 @@ onnx / onnxsim이 없다는 메시지가 나오면 먼저 설치하세요:
 <context>
     <name>TrainRunner</name>
     <message>
-        <location filename="../app/train/train_runner.py" line="66"/>
-        <location filename="../app/train/yolo_train_runner.py" line="174"/>
+        <location filename="../app/train/train_runner.py" line="78"/>
+        <location filename="../app/train/yolo_train_runner.py" line="170"/>
         <source>输出路径: {}</source>
         <translation>출력 경로: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/train_runner.py" line="67"/>
-        <location filename="../app/train/yolo_train_runner.py" line="175"/>
+        <location filename="../app/train/train_runner.py" line="79"/>
+        <location filename="../app/train/yolo_train_runner.py" line="171"/>
         <source>本次训练输出目录(时间戳): {}</source>
         <translation>이번 학습 출력 디렉터리(타임스탬프): {}</translation>
     </message>
     <message>
-        <location filename="../app/train/train_runner.py" line="69"/>
+        <location filename="../app/train/train_runner.py" line="81"/>
         <source>训练配置文件已保存 → {}</source>
         <translation>학습 설정 파일 저장됨 → {}</translation>
     </message>
     <message>
-        <location filename="../app/train/train_runner.py" line="85"/>
+        <location filename="../app/train/train_runner.py" line="103"/>
         <source>分割模型 resolution 已自动取整: {} → {} (block={})</source>
         <translation>세그멘테이션 모델 resolution 자동 정수화: {} → {} (block={})</translation>
     </message>
     <message>
-        <location filename="../app/train/train_runner.py" line="87"/>
-        <location filename="../app/train/yolo_train_runner.py" line="210"/>
+        <location filename="../app/train/train_runner.py" line="105"/>
+        <location filename="../app/train/yolo_train_runner.py" line="206"/>
         <source>使用模型 {} device={} epochs={} batch={} resolution={}</source>
         <translation>사용 모델 {} device={} epochs={} batch={} resolution={}</translation>
     </message>
     <message>
-        <location filename="../app/train/train_runner.py" line="156"/>
-        <location filename="../app/train/yolo_train_runner.py" line="238"/>
+        <location filename="../app/train/train_runner.py" line="174"/>
+        <location filename="../app/train/yolo_train_runner.py" line="234"/>
         <source>训练完成</source>
         <translation>학습 완료</translation>
     </message>
     <message>
-        <location filename="../app/train/train_runner.py" line="165"/>
-        <location filename="../app/train/yolo_train_runner.py" line="245"/>
+        <location filename="../app/train/train_runner.py" line="183"/>
+        <location filename="../app/train/yolo_train_runner.py" line="241"/>
         <source>生成类别文件: {}</source>
         <translation>클래스 파일 생성: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/yolo_train_runner.py" line="181"/>
+        <location filename="../app/train/train_runner.py" line="90"/>
+        <location filename="../app/train/yolo_train_runner.py" line="177"/>
         <source>预训练权重缺失: 请先在权重管理里下载 {} 档的模型</source>
         <translation>사전 학습 가중치 누락: 먼저 가중치 관리에서 {} 등급 모델을 다운로드하세요</translation>
     </message>

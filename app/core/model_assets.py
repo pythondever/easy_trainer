@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 """
 预训练权重清单与存放目录
-文件名/字节数/MD5 与 rfdetr 包内 ModelWeights 注册表逐条对齐: 同名文件放进 RF_HOME,
-模型构造阶段直接命中, 不再走它自己的在线下载(那条路径不显示进度, 失败只抛堆栈).
 
-权重根目录下按架构分 cnn / transformer 两个子目录. rfdetr 只认 RF_HOME 指向的单个
-目录, 两套后端的权重混放会让它扫到不属于自己的文件.
+本地文件名一律用档位名(nano.pt / nano-seg.pt), 与官方发布名无关: 下载按 asset.url 取远端
+文件, 落到本地改成这个名, 所以 URL 里仍是原始名. 字节数/MD5 仍与 rfdetr 包内 ModelWeights
+注册表逐条对齐.
+
+权重根目录下按架构分 cnn / transformer 两个子目录. rfdetr 侧靠显式传 pretrain_weights
+拿绝对路径(见 train_runner._make_model), 它只认路径不认文件名, 所以两套后端的权重即使
+重名也不会互相扫到.
 """
 
 import os
@@ -91,44 +94,45 @@ def _yolo_assets():
         for task, suffix, desc in ((DETECT_CNN, "", _YOLO_DESC[level]),
                                    (SEGMENT_CNN, "-seg",
                                     _YOLO_SEG_DESC[level])):
-            name = "yolo11{}{}.pt".format(letter, suffix)
-            nbytes, md5 = _YOLO_FILES[name]
-            out.append(ModelAsset(task, level, name, nbytes, md5, desc,
-                                  _YOLO_BASE + name))
+            # 远端名(MD5 表按它索引)与本地落盘名分开: 远端带 yolo11 前缀, 本地只用档位名
+            remote = "yolo11{}{}.pt".format(letter, suffix)
+            nbytes, md5 = _YOLO_FILES[remote]
+            out.append(ModelAsset(task, level, level + suffix + ".pt",
+                                  nbytes, md5, desc, _YOLO_BASE + remote))
     return out
 
 
 # desc 是界面文案: 表里存中文原文, 显示时按 "ModelAssets" context 翻(NOOP 只为让 lupdate 抽得到)
 MODELS = (
-    ModelAsset(DETECT, "nano", "rf-detr-nano.pth", 366287238,
+    ModelAsset(DETECT, "nano", "nano.pt", 366287238,
                "fb6504cce7fbdc783f7a46991f07639f",
                QT_TRANSLATE_NOOP("ModelAssets", "速度最快, 精度够用"),
                _BASE + "nano_coco/checkpoint_best_regular.pth"),
-    ModelAsset(DETECT, "small", "rf-detr-small.pth", 386045550,
+    ModelAsset(DETECT, "small", "small.pt", 386045550,
                "fb37061c1af7bace359c91b723a8d5c1",
                QT_TRANSLATE_NOOP("ModelAssets", "精度更好, 稍慢一些"),
                _BASE + "small_coco/checkpoint_best_regular.pth"),
-    ModelAsset(DETECT, "medium", "rf-detr-medium.pth", 404992918,
+    ModelAsset(DETECT, "medium", "medium.pt", 404992918,
                "7223f764a87b863f02eb8d52bf0ce2ee",
                QT_TRANSLATE_NOOP("ModelAssets", "精度更高"),
                _BASE + "medium_coco/checkpoint_best_regular.pth"),
-    ModelAsset(DETECT, "large", "rf-detr-large.pth", 1571684963,
+    ModelAsset(DETECT, "large", "large.pt", 1571684963,
                "992c8e862aa733a7bb2777e45d49f1a0",
                QT_TRANSLATE_NOOP("ModelAssets", "精度最高, 显存占用大"),
                _BASE + "rf-detr-large.pth"),
-    ModelAsset(SEGMENT, "nano", "rf-detr-seg-nano.pt", 134545398,
+    ModelAsset(SEGMENT, "nano", "nano-seg.pt", 134545398,
                "9995497791d0ff1664a1d9ddee9cfd20",
                QT_TRANSLATE_NOOP("ModelAssets", "轻量分割"),
                _BASE + "rf-detr-seg-n-ft.pth"),
-    ModelAsset(SEGMENT, "small", "rf-detr-seg-small.pt", 135042342,
+    ModelAsset(SEGMENT, "small", "small-seg.pt", 135042342,
                "0a2a3006381d0c42853907e700eadd08",
                QT_TRANSLATE_NOOP("ModelAssets", "速度与精度平衡"),
                _BASE + "rf-detr-seg-s-ft.pth"),
-    ModelAsset(SEGMENT, "medium", "rf-detr-seg-medium.pt", 143024058,
+    ModelAsset(SEGMENT, "medium", "medium-seg.pt", 143024058,
                "a49af1562c3719227ad43d0ca53b4c7a",
                QT_TRANSLATE_NOOP("ModelAssets", "细节更完整"),
                _BASE + "rf-detr-seg-m-ft.pth"),
-    ModelAsset(SEGMENT, "large", "rf-detr-seg-large.pt", 145055866,
+    ModelAsset(SEGMENT, "large", "large-seg.pt", 145055866,
                "275f7b094909544ed2841c94a677d07e",
                QT_TRANSLATE_NOOP("ModelAssets", "最精细"),
                _BASE + "rf-detr-seg-l-ft.pth"),
@@ -197,6 +201,14 @@ def path_of(asset, directory=None):
     return os.path.join(dir_for(family_of(asset), directory), asset.filename)
 
 
+def rel_path(asset):
+    """
+    权重在根目录下的相对路径(cnn/nano.pt). 跨架构指认一个权重时用它, 不要用
+    asset.filename: 本地名只到档位, nano.pt 在两套架构下都有.
+    """
+    return "{}/{}".format(family_of(asset), asset.filename)
+
+
 def is_ready(asset, directory=None):
     """
     就绪 = 文件存在且字节数相符.
@@ -227,6 +239,17 @@ def missing(task, level, saved="", family="transformer"):
     if asset is None:
         return None
     return None if is_ready(asset, models_dir(saved)) else asset
+
+
+def resolve_path(task, level, family="transformer"):
+    """
+    训练子进程要传给后端的权重绝对路径; 没就绪返回空串.
+    子进程拿不到 db, 靠父进程传下来的 EASY_TRAINER_MODELS 定位(models_dir 无参即可).
+    """
+    asset = find(asset_task(task, family), level)
+    if asset is None:
+        return ""
+    return path_of(asset) if is_ready(asset) else ""
 
 
 def human_size(nbytes):

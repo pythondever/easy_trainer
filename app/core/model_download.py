@@ -25,17 +25,40 @@ _REPORT_INTERVAL = 0.1
 _HASH_CHUNK = 1 << 22
 
 
+class _Redirect(urllib.request.HTTPRedirectHandler):
+    """
+    跟随 308.
+
+    hf-mirror 的 /resolve/ 会间歇性用 308 跳到实际文件地址, 而 CPython 3.10 的
+    HTTPRedirectHandler 只挂了 301/302/303/307, redirect_request 里也只放行这四个
+    —— 单加 http_error_308 别名会在里面被判非法, 照样抛 HTTPError. 308 与 307 同属
+    "保持原方法"的跳转, 折成 307 交给基类即可.
+    """
+
+    http_error_308 = urllib.request.HTTPRedirectHandler.http_error_302
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return super().redirect_request(
+            req, fp, 307 if code == 308 else code, msg, headers, newurl)
+
+
+_OPENER = urllib.request.build_opener(_Redirect)
+
+
 class ModelDownloader(QThread):
     """
     串行下载多个权重, 支持取消与断点续传.
     每个文件先落到 <名字>.part, 校验通过才改名成正式文件, 避免半截文件被当成可用权重.
     """
 
-    progress = Signal(str, int, int, float)   # 文件名, 已完成字节, 总字节, 字节/秒
-    verifying = Signal(str)                   # 文件名(正在校验)
+    progress = Signal(str, int, int, float)   # 权重标识, 已完成字节, 总字节, 字节/秒
+    verifying = Signal(str)                   # 权重标识(正在校验)
     one_done = Signal(str)
-    one_failed = Signal(str, str)             # 文件名, 业务语言原因
+    one_failed = Signal(str, str)             # 权重标识, 业务语言原因
     all_finished = Signal(bool)               # 是否全部成功
+
+    # 信号里的"权重标识"一律是根目录下的相对路径(cnn/nano.pt): 本地文件名只到档位,
+    # 两套架构下的 nano.pt 同名, 只用文件名分不出是哪一行
 
     def __init__(self, assets, dest, parent=None):
         super().__init__(parent)
@@ -71,7 +94,7 @@ class ModelDownloader(QThread):
                 "权重目录不可写入, 请点\"更改\"换一个目录"), exc)
 
         if _size_of(final) == asset.nbytes:
-            self.one_done.emit(asset.filename)
+            self.one_done.emit(model_assets.rel_path(asset))
             return True
         if os.path.exists(final):
             # 大小不符说明是半截或已损坏的旧文件, 留着会被当成就绪
@@ -88,13 +111,13 @@ class ModelDownloader(QThread):
         write_log(QC.translate(
             "ModelDownloader",
             "开始下载权重 {} ({}, 已下载 {})").format(
-            asset.filename, asset.desc, done))
+            model_assets.rel_path(asset), asset.desc, done))
         try:
             resp, start = self._open(asset, headers, done)
         except Exception as exc:
             write_log(QC.translate(
                 "ModelDownloader",
-                "下载权重失败 {}: {}").format(asset.filename, exc))
+                "下载权重失败 {}: {}").format(model_assets.rel_path(asset), exc))
             return self._fail(asset, QC.translate(
                 "ModelDownloader",
                 "无法连接下载服务器, 请检查网络后重试"), exc)
@@ -112,13 +135,13 @@ class ModelDownloader(QThread):
                 "ModelDownloader",
                 "下载不完整, 已保留进度, 可再次点击续传"), None)
 
-        self.verifying.emit(asset.filename)
+        self.verifying.emit(model_assets.rel_path(asset))
         got = _md5_of(part)
         if got != asset.md5:
             write_log(QC.translate(
                 "ModelDownloader",
                 "权重校验不通过 {}: 期望 {} 实际 {}").format(
-                asset.filename, asset.md5, got))
+                model_assets.rel_path(asset), asset.md5, got))
             _remove(part)
             return self._fail(asset, QC.translate(
                 "ModelDownloader",
@@ -130,13 +153,13 @@ class ModelDownloader(QThread):
                 "ModelDownloader",
                 "写入权重目录失败, 请检查磁盘空间"), exc)
         write_log(QC.translate("ModelDownloader", "权重就绪: {}").format(final))
-        self.one_done.emit(asset.filename)
+        self.one_done.emit(model_assets.rel_path(asset))
         return True
 
     def _open(self, asset, headers, done):
         """发起请求, 返回 (响应对象, 起始字节)."""
         req = urllib.request.Request(asset.url, headers=headers)
-        resp = urllib.request.urlopen(req, timeout=_TIMEOUT)
+        resp = _OPENER.open(req, timeout=_TIMEOUT)
         status = getattr(resp, "status", 200)
         if done and status != 206:
             # 服务端不支持续传: 从头下载, 否则拼出来的文件是坏的
@@ -153,7 +176,7 @@ class ModelDownloader(QThread):
                     write_log(QC.translate(
                         "ModelDownloader",
                         "下载已取消, 已下载部分保留以便续传: {}").format(
-                        asset.filename))
+                        model_assets.rel_path(asset)))
                     return False
                 block = resp.read(CHUNK)
                 if not block:
@@ -162,18 +185,18 @@ class ModelDownloader(QThread):
                 done += len(block)
                 now = time.time()
                 if now - last >= _REPORT_INTERVAL:
-                    self.progress.emit(asset.filename, done, asset.nbytes,
+                    self.progress.emit(model_assets.rel_path(asset), done, asset.nbytes,
                                        (done - last_bytes) / (now - last))
                     last, last_bytes = now, done
-        self.progress.emit(asset.filename, done, asset.nbytes, 0.0)
+        self.progress.emit(model_assets.rel_path(asset), done, asset.nbytes, 0.0)
         return True
 
     def _fail(self, asset, reason, exc):
         if exc is not None:
             write_log(QC.translate(
                 "ModelDownloader",
-                "权重下载异常 {}: {!r}").format(asset.filename, exc))
-        self.one_failed.emit(asset.filename, reason)
+                "权重下载异常 {}: {!r}").format(model_assets.rel_path(asset), exc))
+        self.one_failed.emit(model_assets.rel_path(asset), reason)
         return False
 
 

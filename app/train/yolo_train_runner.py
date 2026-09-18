@@ -145,18 +145,14 @@ def _device_arg(device):
     return int(parts[1]) if len(parts) > 1 and parts[1].isdigit() else 0
 
 
-def _pretrained_path(cfg, architecture, task):
+def _pretrained_path(cfg, task):
     """训练起步用的预训练权重绝对路径; 缺文件返回空串(UI 已负责提示下载)."""
     given = cfg.get("pretrained_path")
     if given and os.path.isfile(given):
         return given
-    asset = model_assets.find(
-        model_assets.asset_task(task, cfg.get("family") or "transformer"),
-        architecture)
-    if asset is None:
-        return ""
-    path = model_assets.path_of(asset)
-    return path if os.path.isfile(path) else ""
+    return model_assets.resolve_path(
+        task, cfg.get("architecture", "nano"),
+        cfg.get("family") or "transformer")
 
 
 def main():
@@ -176,7 +172,7 @@ def main():
 
     task = cfg.get("task", "detect")
     architecture = cfg.get("architecture", "nano")
-    weights = _pretrained_path(cfg, architecture, task)
+    weights = _pretrained_path(cfg, task)
     if not weights:
         raise RuntimeError(QC.translate(
             "TrainRunner",

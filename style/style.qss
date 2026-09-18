@@ -105,27 +105,27 @@ QPushButton:disabled {
 }
 
 /* #msgBtn 是 ID 选择器，特异性高于属性选择器，弹窗按钮要带 ID 才盖得住 */
-QPushButton[class="primary"],
-QPushButton#msgBtn[class="primary"] {
+QPushButton[class~="primary"],
+QPushButton#msgBtn[class~="primary"] {
     background-color: #4f7dff;
     border: 1px solid #4f7dff;
     color: #ffffff;
     font-weight: bold;
 }
 
-QPushButton[class="primary"]:hover,
-QPushButton#msgBtn[class="primary"]:hover {
+QPushButton[class~="primary"]:hover,
+QPushButton#msgBtn[class~="primary"]:hover {
     background-color: #638cff;
     border-color: #638cff;
 }
 
-QPushButton[class="primary"]:pressed,
-QPushButton#msgBtn[class="primary"]:pressed {
+QPushButton[class~="primary"]:pressed,
+QPushButton#msgBtn[class~="primary"]:pressed {
     background-color: #3f6ceb;
 }
 
-QPushButton[class="primary"]:disabled,
-QPushButton#msgBtn[class="primary"]:disabled {
+QPushButton[class~="primary"]:disabled,
+QPushButton#msgBtn[class~="primary"]:disabled {
     background-color: #2c3a5e;
     border-color: #2c3a5e;
     color: #7d879c;
@@ -574,10 +574,10 @@ QToolButton:focus, QToolButton:hover:focus {
     background-color: #2b2f3b;
 }
 /* Primary/Danger 背景本身接近主色，边框换成对比色才看得出 */
-QPushButton[class="primary"]:focus,
-QPushButton[class="primary"]:hover:focus,
-QPushButton#msgBtn[class="primary"]:focus,
-QPushButton#msgBtn[class="primary"]:hover:focus {
+QPushButton[class~="primary"]:focus,
+QPushButton[class~="primary"]:hover:focus,
+QPushButton#msgBtn[class~="primary"]:focus,
+QPushButton#msgBtn[class~="primary"]:hover:focus {
     border-color: #ffffff;
 }
 QPushButton[class="danger"]:focus,
@@ -1255,6 +1255,27 @@ QFrame#msgFrame QPushButton#msgBtn {
 }
 QFrame#msgFrame QPushButton#msgBtn:hover { background-color: #343a48; }
 QFrame#msgFrame QPushButton#msgBtn:pressed { background-color: #3d4556; }
+/* primary 必须再带一层 QFrame#msgFrame 前缀: 上面两条是双 ID 选择器, 通用段那套
+   QPushButton#msgBtn[class~="primary"] 只挂一个 ID, 特异性不够, 主按钮会静默变灰.
+   border 不能省: 它同时决定高度(内容 22 + padding 12 + 边框 2 = 36), 省了会比同排的
+   iconBtn 矮 2px */
+QFrame#msgFrame QPushButton#msgBtn[class~="primary"] {
+    background-color: #4f7dff; color: #ffffff; border: 1px solid #4f7dff;
+    font-weight: bold;
+}
+QFrame#msgFrame QPushButton#msgBtn[class~="primary"]:hover {
+    background-color: #638cff; border-color: #638cff;
+}
+QFrame#msgFrame QPushButton#msgBtn[class~="primary"]:pressed {
+    background-color: #3f6ceb; border-color: #3f6ceb;
+}
+QFrame#msgFrame QPushButton#msgBtn[class~="primary"]:disabled {
+    background-color: #2c3a5e; border-color: #2c3a5e; color: #7d879c;
+}
+QFrame#msgFrame QPushButton#msgBtn[class~="primary"]:focus,
+QFrame#msgFrame QPushButton#msgBtn[class~="primary"]:hover:focus {
+    border-color: #ffffff;
+}
 QFrame#msgFrame QLabel#msgText {
     color: #cfd6e4; font-size: 13px; background: transparent;
 }

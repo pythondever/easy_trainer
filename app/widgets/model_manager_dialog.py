@@ -156,16 +156,19 @@ class ModelManagerDialog(QDialog):
         self.ui.setupUi(self)
         self._db = db
         self._rows = []
+        # 权重标识(根目录下相对路径) → 行. 本地文件名只到档位, nano.pt 在 cnn 和
+        # transformer 下各有一份, 拿文件名当键会让进度画到另一个架构的行上
+        self._rows_by_key = {}
         self._downloader = None
         self._failed = {}
         self._focus_row = None
         self._dir = model_assets.models_dir(db.get_models_dir() if db else "")
         self._show_dir()
         self._build_rows()
-        for name in preselect:
-            self._check_by_name(name)
+        for key in preselect:
+            self._check_key(key)
             if self._focus_row is None:
-                self._focus_row = self._row_of(name)
+                self._focus_row = self._row_of(key)
         apply_icon(self.ui.close_btn, self.tr("关闭"))
         self.ui.close_btn.clicked.connect(self.reject)
         self.ui.change_dir_btn.clicked.connect(self._on_change_dir)
@@ -208,6 +211,7 @@ class ModelManagerDialog(QDialog):
             assets = model_assets.for_task(task)
             for i, asset in enumerate(assets):
                 row = _ModelRow(asset)
+                self._rows_by_key[model_assets.rel_path(asset)] = row
                 if i == len(assets) - 1:
                     # 最后一行不画分隔线, 否则和分组框的下边框叠成粗线
                     row.setProperty("last", True)
@@ -221,16 +225,13 @@ class ModelManagerDialog(QDialog):
             # 不补这一下, _fit_height 量到的内容高度会少掉整个分组
             layout.parentWidget().updateGeometry()
 
-    def _check_by_name(self, filename):
-        for row in self._rows:
-            if row.asset.filename == filename:
-                row.set_checked(True)
+    def _check_key(self, key):
+        row = self._row_of(key)
+        if row is not None:
+            row.set_checked(True)
 
-    def _row_of(self, filename):
-        for row in self._rows:
-            if row.asset.filename == filename:
-                return row
-        return None
+    def _row_of(self, key):
+        return self._rows_by_key.get(key)
 
     def _refresh_total(self, *_):
         total = sum(r.asset.nbytes for r in self._rows if r.is_checked())
@@ -304,26 +305,26 @@ class ModelManagerDialog(QDialog):
         self._downloader.all_finished.connect(self._on_all_finished)
         self._downloader.start()
 
-    def _on_progress(self, filename, done, total, bps):
-        row = self._row_of(filename)
+    def _on_progress(self, key, done, total, bps):
+        row = self._row_of(key)
         if row is not None:
             row.mark_busy(done, total, bps)
 
-    def _on_verifying(self, filename):
-        row = self._row_of(filename)
+    def _on_verifying(self, key):
+        row = self._row_of(key)
         if row is not None:
             row.mark_verifying()
 
-    def _on_one_done(self, filename):
-        row = self._row_of(filename)
+    def _on_one_done(self, key):
+        row = self._row_of(key)
         if row is not None:
             row.mark_ready()
 
-    def _on_one_failed(self, filename, reason):
-        row = self._row_of(filename)
+    def _on_one_failed(self, key, reason):
+        row = self._row_of(key)
         if row is not None:
             row.mark_failed(reason)
-        self._failed[filename] = reason
+        self._failed[key] = reason
 
     def _on_all_finished(self, ok):
         self._downloader = None
@@ -335,10 +336,11 @@ class ModelManagerDialog(QDialog):
         # 可用权重, 指过去会把它原本"回落 C 盘缓存"的兜底堵掉
         model_assets.set_models_dir(self._dir, sync_rf_home=ok)
         if self._failed:
-            lines = ["{}: {}".format(k, v) for k, v in self._failed.items()]
+            # 同一原因在多个文件上重复时只报一次; 是哪几个文件看列表里标红的行
+            reasons = list(dict.fromkeys(self._failed.values()))
             MessageBox.warning(self, self.tr("模型权重"),
                                self.tr("以下权重没能下载完成:\n")
-                               + "\n".join(lines))
+                               + "\n".join(reasons))
         elif ok:
             MessageBox.information(
                 self, self.tr("模型权重"),
@@ -359,6 +361,7 @@ class ModelManagerDialog(QDialog):
 
 
 def open_model_manager(parent, db, preselect=()):
+    """preselect 收权重标识(model_assets.rel_path), 不是文件名."""
     dlg = ModelManagerDialog(parent, db, preselect)
     dlg.exec()
     return dlg
@@ -395,5 +398,6 @@ def ensure_weight(parent, db, task, level, family="transformer"):
         informative=location + "\n" + QC.translate(
             "ModelManagerDialog", "该架构的权重必须先下载好才能开始训练."))
     if choice == btn_down:
-        open_model_manager(parent, db, preselect=(asset.filename,))
+        open_model_manager(parent, db,
+                           preselect=(model_assets.rel_path(asset),))
     return False

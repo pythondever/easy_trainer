@@ -168,6 +168,7 @@ if [ "$WITH_PRETRAINED" = "1" ]; then
     for entry in "${PRETRAINED[@]}"; do
       IFS='|' read -r fname url sha <<< "$entry"
       target="$PRETRAIN_DIR/$fname"
+      mkdir -p "$(dirname "$target")"   # 清单里的名字可带子目录(transformer/nano.pt)
       if [ -f "$target" ] && echo "$sha  $target" | sha256sum -c --status 2>/dev/null; then
         log "  $fname 已就绪, 跳过"; continue
       fi
