@@ -19,9 +19,8 @@ from app.widgets.dialog_buttons import apply_icon
 from app.widgets.message_box import MessageBox
 from app.widgets.multi_combo import install_multi_combo
 from app.widgets.status_style import task_text
-from app.widgets.model_manager_dialog import ensure_weight, open_model_manager
+from app.widgets.model_manager_dialog import ensure_weight
 from app.core import i18n
-from app.core import model_assets
 from app.core.db import get_paths
 from app.core.log import write_log
 from app.train.data_prep import timestamp_dir
@@ -480,7 +479,6 @@ class TrainDialog(QDialog):
             combo = getattr(self.ui, combo_name, None)
             if combo is not None:
                 combo.setFixedHeight(CONTROL_H)
-        self.ui.weight_btn.setFixedHeight(CONTROL_H)
         # 下拉的 sizeHint 按最长条目算, GPU 全名会把整列撑宽, 改成按固定字符数估宽
         for name in ("dataset_combo", "val_combo", "device_combo"):
             combo = getattr(self.ui, name, None)
@@ -857,15 +855,8 @@ class TrainDialog(QDialog):
         combo.addItems(["nano", "small", "medium", "large"])
         self._center_combo_items(combo)
         if self._task() == "classify":
+            # 分类走 resnet 从头训练, 与 rf-detr 档位无关, 固定 nano
             combo.setCurrentIndex(0)
-        # 分类走 resnet 从头训练, 没有可下载的权重
-        self.ui.weight_btn.setEnabled(self._task() != "classify")
-
-    def _on_manage_weights(self):
-        asset = model_assets.find(self._task(),
-                                  self.ui.network_combo.currentText() or "nano")
-        open_model_manager(self, self.app.db,
-                           (asset.filename,) if asset else ())
 
     def _setup_img_size_tip(self):
         task = self._task()

@@ -61,7 +61,10 @@ def main():
         # -target-language 不能省: 少了它新生成的 .ts 根元素没有 language 属性,
         # 之后 lupdate 会拒绝更新该文件("does not specify any target languages"),
         # 界面文案改了也抽不进来, 这个语言就永远停在旧条目上.
-        subprocess.run([lupdate] + src + ["-ts", ts, "-target-language", lang], check=True)
+        # -no-obsolete: 少了它, 文案删掉后条目会以 type="vanished" 留在 .ts 里越积越多
+        # (译文要找回可查 git 历史)
+        subprocess.run([lupdate] + src + ["-ts", ts, "-target-language", lang,
+                                          "-no-obsolete"], check=True)
         subprocess.run([lrelease, ts, "-qm", qm], check=True)
     print("\n完成. 新抽出的条目是 type=\"unfinished\", 编译时会被跳过并回退中文.")
 

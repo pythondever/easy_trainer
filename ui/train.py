@@ -104,11 +104,6 @@ class Ui_TrainDialog(object):
 
         self.grid_data.addWidget(self.network_combo, 0, 3, 1, 1)
 
-        self.weight_btn = QPushButton(TrainDialog)
-        self.weight_btn.setObjectName(u"weight_btn")
-
-        self.grid_data.addWidget(self.weight_btn, 0, 4, 1, 1)
-
         self.dataset_label = QLabel(TrainDialog)
         self.dataset_label.setObjectName(u"dataset_label")
         self.dataset_label.setAlignment(Qt.AlignLeft|Qt.AlignVCenter)
@@ -472,7 +467,6 @@ class Ui_TrainDialog(object):
         self.task_combo.setItemText(2, QCoreApplication.translate("TrainDialog", u"\u5206\u7c7b", None))
 
         self.network_label.setText(QCoreApplication.translate("TrainDialog", u"\u7f51\u7edc", None))
-        self.weight_btn.setText(QCoreApplication.translate("TrainDialog", u"\u6743\u91cd", None))
         self.dataset_label.setText(QCoreApplication.translate("TrainDialog", u"\u8bad\u7ec3\u96c6", None))
         self.val_label.setText(QCoreApplication.translate("TrainDialog", u"\u9a8c\u8bc1\u96c6", None))
         self.device_label.setText(QCoreApplication.translate("TrainDialog", u"\u8bbe\u5907", None))
