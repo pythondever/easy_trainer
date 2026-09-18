@@ -196,11 +196,15 @@ class App(QWidget, MainUI, LabelMixin, ProjectMixin, ImportExportMixin,
 
     def eventFilter(self, obj, event):
         """拦截 graphics_view 双击事件(双击小图进入标注)."""
+        # Qt 偶发把非 QEvent 的对象当 event 投过来, 透传给 super() 会踩 shiboken
+        # 的实参校验抛 TypeError, 这个异常在事件分发里没人接, 直接掀掉进程
+        if not isinstance(event, QEvent):
+            return False
         if (obj is self.graphics_view.viewport()
                 and event.type() == QEvent.MouseButtonDblClick):
             self._on_graphics_double_click(event.position().toPoint())
             return True
-        return super().eventFilter(obj, event)
+        return False
 
     def show_ui(self):
         self.showMaximized()

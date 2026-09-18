@@ -674,7 +674,7 @@ class ModelDialog(QDialog):
                 return
             write_log(QC.translate("ModelDialog", "删除模型记录: 项目={} 数据集={} 任务={} 开始时间={}").format(
                 record.get("project", ""), ds,
-                TASK_TEXT.get(record.get("task", ""), record.get("task", "")), st))
+                task_text(record.get("task", "")), st))
             self.app.db.delete_model_record(record.get("id"))
             # 模型列表同时展示训练记录: 联动删除对应训练记录(train_id)
             tid = record.get("train_id")

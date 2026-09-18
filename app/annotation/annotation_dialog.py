@@ -942,12 +942,16 @@ class AnnotationDialog(QDialog):
     def eventFilter(self, obj, event):
         # 弹层不在布局里, 收不到"点了别处"的信号, 只能全局盯鼠标按下.
         # 按坐标判落点而不是看 obj: QLabel 不吃鼠标事件, 会一路冒泡到 dialog 再进来
+        # Qt 偶发把非 QEvent 的对象当 event 投过来, 透传给 super() 会踩 shiboken
+        # 的实参校验抛 TypeError, 这个异常在事件分发里没人接, 直接掀掉进程
+        if not isinstance(event, QEvent):
+            return False
         if (event.type() == QEvent.Type.MouseButtonPress
                 and not self.ui.paramsPanel.isHidden()
                 and isinstance(obj, QWidget) and obj.window() is self
                 and not self._hit_params_area(event.globalPosition().toPoint())):
             self._hide_params_panel()
-        return super().eventFilter(obj, event)
+        return False
 
     def _hit_params_area(self, gpos):
         """落点在弹层或"设置"按钮上就不算点了别处."""

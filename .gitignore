@@ -12,6 +12,11 @@ logs/
 data.mdb
 lock.mdb
 
+# 权重目录：pretrained/ 由用户按清单下载，weights/ 是 ultralytics 的 AMP 自检缓存
+# （yolo26n.pt，落点由 cwd 决定），两者都靠重下而不是靠版本库分发
+/pretrained/
+/weights/
+
 # IDE
 .idea/
 .vscode/

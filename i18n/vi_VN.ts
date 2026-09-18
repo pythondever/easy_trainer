@@ -69,13 +69,13 @@
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="707"/>
-        <location filename="../app/annotation/annotation_dialog.py" line="1930"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1934"/>
         <source>矩形</source>
         <translation>Hình chữ nhật</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="708"/>
-        <location filename="../app/annotation/annotation_dialog.py" line="1936"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1940"/>
         <source>多边形</source>
         <translation>Đa giác</translation>
     </message>
@@ -120,28 +120,28 @@
         <translation>Điều chỉnh độ sáng chỉ có tác dụng với đa giác</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1155"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1159"/>
         <source>    类别: {}</source>
         <translation>    Lớp: {}</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1182"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1186"/>
         <source>删除本地文件</source>
         <translation>Xóa tệp cục bộ</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1183"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1187"/>
         <source>取消</source>
         <translation>Hủy</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1185"/>
-        <location filename="../app/annotation/annotation_dialog.py" line="1195"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1189"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1199"/>
         <source>删除图像</source>
         <translation>Xóa ảnh</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1186"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1190"/>
         <source>是否删除当前图像?
 
 {}</source>
@@ -150,190 +150,190 @@
 {}</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1190"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1194"/>
         <source>图像与同名标注文件将从磁盘删除, 不可恢复</source>
         <translation>Ảnh và tệp nhãn cùng tên sẽ bị xóa khỏi đĩa, không thể khôi phục</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1196"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1200"/>
         <source>无法访问主窗口, 删除失败</source>
         <translation>Không truy cập được cửa sổ chính, xóa thất bại</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1210"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1214"/>
         <source>(无图像)</source>
         <translation>(không có ảnh)</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1274"/>
-        <location filename="../app/annotation/annotation_dialog.py" line="1881"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1278"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1885"/>
         <source>添加标签</source>
         <translation>Thêm nhãn</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1275"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1279"/>
         <source>请先添加标签(点击&quot;+&quot;)</source>
         <translation>Thêm nhãn trước (bấm &quot;+&quot;)</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1387"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1391"/>
         <source>剪切板  {}/{}</source>
         <translation>Bộ nhớ tạm  {}/{}</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1412"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1416"/>
         <source>第 {} 个模板  {}x{}
 左键选中用于粘贴, 右键 删除/导入/导出/清空</source>
         <translation>Mẫu thứ {}  {}x{}
 Bấm chuột trái để chọn mẫu dán, chuột phải để Xóa/Nhập/Xuất/Xóa hết</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1444"/>
-        <location filename="../app/annotation/annotation_dialog.py" line="1693"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1448"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1697"/>
         <source>删除</source>
         <translation>Xóa</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1447"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1451"/>
         <source>导入</source>
         <translation>Nhập</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1448"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1452"/>
         <source>导出</source>
         <translation>Xuất</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1450"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1454"/>
         <source>清空</source>
         <translation>Xóa hết</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1478"/>
-        <location filename="../app/annotation/annotation_dialog.py" line="1505"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1482"/>
         <location filename="../app/annotation/annotation_dialog.py" line="1509"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1513"/>
         <source>导出剪切板</source>
         <translation>Xuất bộ nhớ tạm</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1479"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1483"/>
         <source>剪切板是空的, 没有可导出的模板</source>
         <translation>Bộ nhớ tạm trống, không có mẫu để xuất</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1481"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1485"/>
         <source>选择导出目录</source>
         <translation>Chọn thư mục xuất</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1506"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1510"/>
         <source>导出中断: {}
 (已写出 {} 个)</source>
         <translation>Xuất bị gián đoạn: {}
 (đã ghi {} mẫu)</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1510"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1514"/>
         <source>已导出 {} 个模板(png + 同名 json)到:
 {}</source>
         <translation>Đã xuất {} mẫu (png + json cùng tên) tới:
 {}</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1514"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1518"/>
         <source>选择导入目录</source>
         <translation>Chọn thư mục nhập</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1521"/>
         <location filename="../app/annotation/annotation_dialog.py" line="1525"/>
-        <location filename="../app/annotation/annotation_dialog.py" line="1559"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1529"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1563"/>
         <source>导入剪切板</source>
         <translation>Nhập bộ nhớ tạm</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1522"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1526"/>
         <source>读取目录失败: {}</source>
         <translation>Đọc thư mục thất bại: {}</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1526"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1530"/>
         <source>这个目录里没有 png 文件</source>
         <translation>Thư mục này không có tệp png</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1554"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1558"/>
         <source>已导入 {} 个模板到剪切板</source>
         <translation>Đã nhập {} mẫu vào bộ nhớ tạm</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1556"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1560"/>
         <source>
 其中 {} 个没有同名 json, 按矩形导入</source>
         <translation>
 Trong đó {} mẫu không có json cùng tên, nhập dưới dạng hình chữ nhật</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1558"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1562"/>
         <source>
 {} 个文件读不出来, 已跳过</source>
         <translation>
 Không đọc được {} tệp, đã bỏ qua</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1634"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1638"/>
         <source>修改类别</source>
         <translation>Sửa lớp</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1635"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1639"/>
         <source>移动图像文件失败:
 {}</source>
         <translation>Di chuyển tệp ảnh thất bại:
 {}</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1692"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1696"/>
         <source>编辑</source>
         <translation>Sửa</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1751"/>
-        <location filename="../app/annotation/annotation_dialog.py" line="1810"/>
-        <location filename="../app/annotation/annotation_dialog.py" line="1817"/>
-        <location filename="../app/annotation/annotation_dialog.py" line="1826"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1755"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1814"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1821"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1830"/>
         <source>删除标签</source>
         <translation>Xóa nhãn</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1751"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1755"/>
         <source>正在统计标注文件...</source>
         <translation>Đang thống kê tệp nhãn...</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1811"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1815"/>
         <source>标签&quot;{}&quot;已有 {} 处标注, 删除后这些标注将被一并删除且不可恢复.
 确定删除吗?</source>
         <translation>Nhãn &quot;{}&quot; đã có {} chú thích, xóa nhãn sẽ xóa luôn các chú thích này và không thể khôi phục.
 Xác nhận xóa?</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1818"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1822"/>
         <source>确定删除标签&quot;{}&quot;吗?</source>
         <translation>Xác nhận xóa nhãn &quot;{}&quot;?</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1826"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1830"/>
         <source>正在清理标注文件...</source>
         <translation>Đang dọn tệp chú thích...</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1882"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1886"/>
         <source>标签名称不能为空</source>
         <translation>Tên nhãn không được để trống</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1937"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1941"/>
         <source>{} 个顶点</source>
         <translation>{} đỉnh</translation>
     </message>
@@ -559,22 +559,22 @@ Xác nhận xóa?</translation>
 <context>
     <name>ColorPickerDialog</name>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="2246"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="2250"/>
         <source>选择颜色</source>
         <translation>Chọn màu</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="2258"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="2262"/>
         <source>十六进制:</source>
         <translation>Thập lục phân:</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="2279"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="2283"/>
         <source>基本颜色:</source>
         <translation>Màu cơ bản:</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="2291"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="2295"/>
         <source>自定义 RGB:</source>
         <translation>RGB tùy chỉnh:</translation>
     </message>
@@ -1996,8 +1996,7 @@ Nếu báo thiếu onnx / onnxsim, hãy cài trước:
         <location filename="../app/widgets/model_manager_dialog.py" line="288"/>
         <location filename="../app/widgets/model_manager_dialog.py" line="292"/>
         <location filename="../app/widgets/model_manager_dialog.py" line="341"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="346"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="352"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="348"/>
         <source>模型权重</source>
         <translation>Trọng số mô hình</translation>
     </message>
@@ -2125,46 +2124,34 @@ Nếu báo thiếu onnx / onnxsim, hãy cài trước:
 </translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="347"/>
-        <source>权重已就绪, 保存在:
-{}</source>
-        <translation>Trọng số đã sẵn sàng, lưu tại:
-{}</translation>
-    </message>
-    <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="353"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="349"/>
         <source>下载还在进行, 现在关闭会中断下载(已下载部分保留, 下次可续传).
 确定关闭?</source>
         <translation>Đang tải, đóng bây giờ sẽ ngắt quá trình tải (phần đã tải được giữ lại, lần sau tải tiếp).
 Đóng?</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="385"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="381"/>
         <source>去下载</source>
         <translation>Tải về</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="392"/>
-        <source>下载位置: {}</source>
-        <translation>Vị trí tải xuống: {}</translation>
-    </message>
-    <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="398"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="390"/>
         <source>该架构的权重必须先下载好才能开始训练.</source>
         <translation>Phải tải trọng số của kiến trúc này trước khi có thể bắt đầu huấn luyện.</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="388"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="384"/>
         <source>本次训练选用 {} {}模型, 需要先下载 {}.</source>
         <translation>Lần huấn luyện này dùng mô hình {} {}, cần tải {} trước.</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="387"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="383"/>
         <source>缺少模型权重</source>
         <translation>Thiếu trọng số mô hình</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="386"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="382"/>
         <source>取消</source>
         <translation>Hủy</translation>
     </message>
@@ -3632,60 +3619,60 @@ Báo cáo tốn khoảng 120 KB mỗi ảnh; khi có nhiều mẫu, giảm số 
 <context>
     <name>TestWorker</name>
     <message>
-        <location filename="../app/train/test_worker.py" line="84"/>
+        <location filename="../app/train/test_worker.py" line="85"/>
         <source>run 开始</source>
         <translation>run bắt đầu</translation>
     </message>
     <message>
-        <location filename="../app/train/test_worker.py" line="98"/>
+        <location filename="../app/train/test_worker.py" line="99"/>
         <source>启动子进程: {} {}</source>
         <translation>Khởi động tiến trình con: {} {}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_worker.py" line="110"/>
+        <location filename="../app/train/test_worker.py" line="111"/>
         <source>启动子进程失败: {}</source>
         <translation>Khởi động tiến trình con thất bại: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_worker.py" line="117"/>
+        <location filename="../app/train/test_worker.py" line="118"/>
         <source>启动测试进程失败: {}</source>
         <translation>Khởi động tiến trình kiểm thử thất bại: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_worker.py" line="119"/>
-        <location filename="../app/train/test_worker.py" line="121"/>
+        <location filename="../app/train/test_worker.py" line="120"/>
+        <location filename="../app/train/test_worker.py" line="122"/>
         <source>子进程已启动 pid={}</source>
         <translation>Đã khởi động tiến trình con pid={}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_worker.py" line="155"/>
+        <location filename="../app/train/test_worker.py" line="156"/>
         <source>进入轮询循环</source>
         <translation>Vào vòng lặp thăm dò</translation>
     </message>
     <message>
-        <location filename="../app/train/test_worker.py" line="165"/>
+        <location filename="../app/train/test_worker.py" line="166"/>
         <source>轮询中: 文件={}B 已读{}行 子进程={}</source>
         <translation>Đang thăm dò: tệp={}B đã đọc {} dòng tiến trình con={}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_worker.py" line="175"/>
+        <location filename="../app/train/test_worker.py" line="176"/>
         <source>轮询异常:
 </source>
         <translation>Thăm dò gặp lỗi:
 </translation>
     </message>
     <message>
-        <location filename="../app/train/test_worker.py" line="183"/>
+        <location filename="../app/train/test_worker.py" line="184"/>
         <source>轮询结束 rc={}</source>
         <translation>Kết thúc thăm dò rc={}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_worker.py" line="185"/>
+        <location filename="../app/train/test_worker.py" line="186"/>
         <source>子进程退出 rc={}</source>
         <translation>Tiến trình con thoát rc={}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_worker.py" line="195"/>
+        <location filename="../app/train/test_worker.py" line="196"/>
         <source>测试进程异常退出 (code={})
 
 --- 输出(尾部) ---

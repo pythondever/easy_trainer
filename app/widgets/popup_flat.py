@@ -14,6 +14,11 @@ class ComboPopupFlattener(QObject):
     """装在 QApplication 上的事件过滤器, 只关心弹层视图的显示与隐藏."""
 
     def eventFilter(self, obj, event):
+        # 基类默认实现就是 return False, 不必再透传; 透传在偶发收到非 QEvent 的实参时
+        # (实测撞到过 QStandardItem) 会踩 shiboken 的实参类型校验 TypeError, 而这个
+        # 异常发生在 Qt 事件分发里没人接, 直接终止进程
+        if not isinstance(event, QEvent):
+            return False
         t = event.type()
         if (t == QEvent.Show or t == QEvent.Hide) and isinstance(obj, QAbstractItemView):
             owner = obj.parentWidget()
@@ -24,4 +29,4 @@ class ComboPopupFlattener(QObject):
                 # 动态属性不会自动触发样式重算
                 owner.style().unpolish(owner)
                 owner.style().polish(owner)
-        return super().eventFilter(obj, event)
+        return False

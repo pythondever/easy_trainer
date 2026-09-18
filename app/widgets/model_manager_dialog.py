@@ -341,10 +341,6 @@ class ModelManagerDialog(QDialog):
             MessageBox.warning(self, self.tr("模型权重"),
                                self.tr("以下权重没能下载完成:\n")
                                + "\n".join(reasons))
-        elif ok:
-            MessageBox.information(
-                self, self.tr("模型权重"),
-                self.tr("权重已就绪, 保存在:\n{}").format(self._dir))
 
     def closeEvent(self, event):
         if self._downloader is not None:
@@ -370,7 +366,7 @@ def open_model_manager(parent, db, preselect=()):
 def ensure_weight(parent, db, task, level, family="transformer"):
     """训练前预检: 返回 True 表示可以开始训练, 缺权重一律不放行.
 
-    缺失时弹窗说清要下多少、下到哪, 并给"去下载/取消"两条路:
+    缺失时弹窗说清要下多少, 并给"去下载/取消"两条路:
     点"去下载"会打开权重管理且不启动训练, 避免用户以为已经开训了.
     """
     asset = model_assets.find(model_assets.asset_task(task, family), level)
@@ -388,14 +384,10 @@ def ensure_weight(parent, db, task, level, family="transformer"):
     text = QC.translate(
         "ModelManagerDialog", "本次训练选用 {} {}模型, 需要先下载 {}.").format(
         level, task_text(task), model_assets.human_size(asset.nbytes))
-    # 显示实际落盘的子目录, 而不是根目录: 两者差一级, 用户照着去找文件才不会扑空
-    location = QC.translate(
-        "ModelManagerDialog", "下载位置: {}").format(
-        model_assets.dir_for(model_assets.family_of(asset), directory))
     choice = MessageBox.choose(
         parent, title, text,
         [(btn_down, "primary"), (btn_cancel, "normal")],
-        informative=location + "\n" + QC.translate(
+        informative=QC.translate(
             "ModelManagerDialog", "该架构的权重必须先下载好才能开始训练."))
     if choice == btn_down:
         open_model_manager(parent, db,

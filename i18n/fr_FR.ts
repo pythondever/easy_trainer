@@ -69,13 +69,13 @@
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="707"/>
-        <location filename="../app/annotation/annotation_dialog.py" line="1930"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1934"/>
         <source>矩形</source>
         <translation>Rectangle</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="708"/>
-        <location filename="../app/annotation/annotation_dialog.py" line="1936"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1940"/>
         <source>多边形</source>
         <translation>Polygone</translation>
     </message>
@@ -120,28 +120,28 @@
         <translation>Le réglage de luminosité ne s&apos;applique qu&apos;aux polygones</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1155"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1159"/>
         <source>    类别: {}</source>
         <translation>    Classe : {}</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1182"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1186"/>
         <source>删除本地文件</source>
         <translation>Supprimer le fichier local</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1183"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1187"/>
         <source>取消</source>
         <translation>Annuler</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1185"/>
-        <location filename="../app/annotation/annotation_dialog.py" line="1195"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1189"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1199"/>
         <source>删除图像</source>
         <translation>Supprimer l&apos;image</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1186"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1190"/>
         <source>是否删除当前图像?
 
 {}</source>
@@ -150,190 +150,190 @@
 {}</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1190"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1194"/>
         <source>图像与同名标注文件将从磁盘删除, 不可恢复</source>
         <translation>L&apos;image et son fichier d&apos;annotation seront supprimés du disque. Action irréversible</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1196"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1200"/>
         <source>无法访问主窗口, 删除失败</source>
         <translation>Fenêtre principale inaccessible, échec de la suppression</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1210"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1214"/>
         <source>(无图像)</source>
         <translation>(aucune image)</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1274"/>
-        <location filename="../app/annotation/annotation_dialog.py" line="1881"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1278"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1885"/>
         <source>添加标签</source>
         <translation>Ajouter une étiquette</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1275"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1279"/>
         <source>请先添加标签(点击&quot;+&quot;)</source>
         <translation>Ajoutez d&apos;abord une étiquette (cliquez sur « + »)</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1387"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1391"/>
         <source>剪切板  {}/{}</source>
         <translation>Presse-papiers  {}/{}</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1412"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1416"/>
         <source>第 {} 个模板  {}x{}
 左键选中用于粘贴, 右键 删除/导入/导出/清空</source>
         <translation>Modèle {}  {}x{}
 Clic gauche pour sélectionner en vue du collage ; clic droit pour supprimer / importer / exporter / vider</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1444"/>
-        <location filename="../app/annotation/annotation_dialog.py" line="1693"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1448"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1697"/>
         <source>删除</source>
         <translation>Supprimer</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1447"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1451"/>
         <source>导入</source>
         <translation>Importer</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1448"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1452"/>
         <source>导出</source>
         <translation>Exporter</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1450"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1454"/>
         <source>清空</source>
         <translation>Vider</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1478"/>
-        <location filename="../app/annotation/annotation_dialog.py" line="1505"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1482"/>
         <location filename="../app/annotation/annotation_dialog.py" line="1509"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1513"/>
         <source>导出剪切板</source>
         <translation>Exporter le presse-papiers</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1479"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1483"/>
         <source>剪切板是空的, 没有可导出的模板</source>
         <translation>Le presse-papiers est vide, aucun modèle à exporter</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1481"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1485"/>
         <source>选择导出目录</source>
         <translation>Sélectionner le dossier d&apos;export</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1506"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1510"/>
         <source>导出中断: {}
 (已写出 {} 个)</source>
         <translation>Export interrompu : {}
 ({} écrit(s))</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1510"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1514"/>
         <source>已导出 {} 个模板(png + 同名 json)到:
 {}</source>
         <translation>{} modèle(s) exporté(s) (png + json du même nom) vers :
 {}</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1514"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1518"/>
         <source>选择导入目录</source>
         <translation>Sélectionner le dossier d&apos;import</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1521"/>
         <location filename="../app/annotation/annotation_dialog.py" line="1525"/>
-        <location filename="../app/annotation/annotation_dialog.py" line="1559"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1529"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1563"/>
         <source>导入剪切板</source>
         <translation>Importer le presse-papiers</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1522"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1526"/>
         <source>读取目录失败: {}</source>
         <translation>Échec de la lecture du dossier : {}</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1526"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1530"/>
         <source>这个目录里没有 png 文件</source>
         <translation>Aucun fichier png dans ce dossier</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1554"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1558"/>
         <source>已导入 {} 个模板到剪切板</source>
         <translation>{} modèle(s) importé(s) dans le presse-papiers</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1556"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1560"/>
         <source>
 其中 {} 个没有同名 json, 按矩形导入</source>
         <translation>
 Dont {} sans json du même nom, importés comme rectangles</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1558"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1562"/>
         <source>
 {} 个文件读不出来, 已跳过</source>
         <translation>
 {} fichier(s) illisible(s), ignoré(s)</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1634"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1638"/>
         <source>修改类别</source>
         <translation>Modifier la classe</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1635"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1639"/>
         <source>移动图像文件失败:
 {}</source>
         <translation>Échec du déplacement du fichier image :
 {}</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1692"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1696"/>
         <source>编辑</source>
         <translation>Modifier</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1751"/>
-        <location filename="../app/annotation/annotation_dialog.py" line="1810"/>
-        <location filename="../app/annotation/annotation_dialog.py" line="1817"/>
-        <location filename="../app/annotation/annotation_dialog.py" line="1826"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1755"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1814"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1821"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1830"/>
         <source>删除标签</source>
         <translation>Supprimer l&apos;étiquette</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1751"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1755"/>
         <source>正在统计标注文件...</source>
         <translation>Comptage des fichiers d&apos;annotation...</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1811"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1815"/>
         <source>标签&quot;{}&quot;已有 {} 处标注, 删除后这些标注将被一并删除且不可恢复.
 确定删除吗?</source>
         <translation>L&apos;étiquette « {} » compte {} annotation(s). Elles seront toutes supprimées et ne pourront pas être récupérées.
 Confirmer la suppression ?</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1818"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1822"/>
         <source>确定删除标签&quot;{}&quot;吗?</source>
         <translation>Supprimer l&apos;étiquette « {} » ?</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1826"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1830"/>
         <source>正在清理标注文件...</source>
         <translation>Nettoyage des fichiers d&apos;annotation...</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1882"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1886"/>
         <source>标签名称不能为空</source>
         <translation>Le nom de l&apos;étiquette ne peut pas être vide</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1937"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1941"/>
         <source>{} 个顶点</source>
         <translation>{} sommets</translation>
     </message>
@@ -559,22 +559,22 @@ Confirmer la suppression ?</translation>
 <context>
     <name>ColorPickerDialog</name>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="2246"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="2250"/>
         <source>选择颜色</source>
         <translation>Choisir une couleur</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="2258"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="2262"/>
         <source>十六进制:</source>
         <translation>Hexadécimal :</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="2279"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="2283"/>
         <source>基本颜色:</source>
         <translation>Couleurs de base :</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="2291"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="2295"/>
         <source>自定义 RGB:</source>
         <translation>RGB personnalisé :</translation>
     </message>
@@ -1996,8 +1996,7 @@ En cas de message indiquant onnx / onnxsim manquants, installez-les d&apos;abord
         <location filename="../app/widgets/model_manager_dialog.py" line="288"/>
         <location filename="../app/widgets/model_manager_dialog.py" line="292"/>
         <location filename="../app/widgets/model_manager_dialog.py" line="341"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="346"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="352"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="348"/>
         <source>模型权重</source>
         <translation>Poids du modèle</translation>
     </message>
@@ -2125,46 +2124,34 @@ En cas de message indiquant onnx / onnxsim manquants, installez-les d&apos;abord
 </translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="347"/>
-        <source>权重已就绪, 保存在:
-{}</source>
-        <translation>Poids prêts, enregistrés dans :
-{}</translation>
-    </message>
-    <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="353"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="349"/>
         <source>下载还在进行, 现在关闭会中断下载(已下载部分保留, 下次可续传).
 确定关闭?</source>
         <translation>Un téléchargement est toujours en cours. Fermer maintenant l&apos;interrompra (les parties déjà téléchargées sont conservées et la reprise se fera au prochain lancement).
 Fermer quand même ?</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="385"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="381"/>
         <source>去下载</source>
         <translation>Télécharger</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="392"/>
-        <source>下载位置: {}</source>
-        <translation>Emplacement de téléchargement : {}</translation>
-    </message>
-    <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="398"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="390"/>
         <source>该架构的权重必须先下载好才能开始训练.</source>
         <translation>Les poids de cette architecture doivent être téléchargés avant de pouvoir lancer l&apos;entraînement.</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="388"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="384"/>
         <source>本次训练选用 {} {}模型, 需要先下载 {}.</source>
         <translation>Cet entraînement utilise le modèle {} {} et nécessite de télécharger {} au préalable.</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="387"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="383"/>
         <source>缺少模型权重</source>
         <translation>Poids du modèle manquants</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="386"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="382"/>
         <source>取消</source>
         <translation>Annuler</translation>
     </message>
@@ -3632,60 +3619,60 @@ Le rapport pèse environ 120 Ko par image ; réduire cette valeur diminue nettem
 <context>
     <name>TestWorker</name>
     <message>
-        <location filename="../app/train/test_worker.py" line="84"/>
+        <location filename="../app/train/test_worker.py" line="85"/>
         <source>run 开始</source>
         <translation>run démarré</translation>
     </message>
     <message>
-        <location filename="../app/train/test_worker.py" line="98"/>
+        <location filename="../app/train/test_worker.py" line="99"/>
         <source>启动子进程: {} {}</source>
         <translation>Lancement du sous-processus : {} {}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_worker.py" line="110"/>
+        <location filename="../app/train/test_worker.py" line="111"/>
         <source>启动子进程失败: {}</source>
         <translation>Échec du lancement du sous-processus : {}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_worker.py" line="117"/>
+        <location filename="../app/train/test_worker.py" line="118"/>
         <source>启动测试进程失败: {}</source>
         <translation>Échec du lancement du processus de test : {}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_worker.py" line="119"/>
-        <location filename="../app/train/test_worker.py" line="121"/>
+        <location filename="../app/train/test_worker.py" line="120"/>
+        <location filename="../app/train/test_worker.py" line="122"/>
         <source>子进程已启动 pid={}</source>
         <translation>Sous-processus lancé pid={}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_worker.py" line="155"/>
+        <location filename="../app/train/test_worker.py" line="156"/>
         <source>进入轮询循环</source>
         <translation>Entrée dans la boucle de scrutation</translation>
     </message>
     <message>
-        <location filename="../app/train/test_worker.py" line="165"/>
+        <location filename="../app/train/test_worker.py" line="166"/>
         <source>轮询中: 文件={}B 已读{}行 子进程={}</source>
         <translation>Scrutation : fichier={}B lignes lues={} sous-processus={}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_worker.py" line="175"/>
+        <location filename="../app/train/test_worker.py" line="176"/>
         <source>轮询异常:
 </source>
         <translation>Erreur de scrutation :
 </translation>
     </message>
     <message>
-        <location filename="../app/train/test_worker.py" line="183"/>
+        <location filename="../app/train/test_worker.py" line="184"/>
         <source>轮询结束 rc={}</source>
         <translation>Scrutation terminée rc={}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_worker.py" line="185"/>
+        <location filename="../app/train/test_worker.py" line="186"/>
         <source>子进程退出 rc={}</source>
         <translation>Sous-processus terminé rc={}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_worker.py" line="195"/>
+        <location filename="../app/train/test_worker.py" line="196"/>
         <source>测试进程异常退出 (code={})
 
 --- 输出(尾部) ---

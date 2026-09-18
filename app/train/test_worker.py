@@ -11,6 +11,7 @@ import tempfile
 import time
 import traceback
 
+from PySide6.QtCore import QCoreApplication as QC
 from PySide6.QtCore import QThread, Signal
 
 from app.core.utils import decode_text_bytes
