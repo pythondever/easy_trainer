@@ -188,9 +188,6 @@ class TrainWorker(QThread):
 
     @staticmethod
     def _build_payload(s, pc):
-        """
-        构造 metrics payload
-        """
         p = {"epochs": copy.deepcopy(s.get("epochs", [])),
              "series": {k: copy.deepcopy(v)
                         for k, v in s.items() if k != "epochs"}}

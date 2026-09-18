@@ -303,7 +303,6 @@ class TrainMixin(object):
         self.train_progress.setToolTip(self._progress_tip)
 
     def _hide_train_task(self):
-        """训练结束/无训练任务时隐藏."""
         self.task_name_label.hide()
         self.train_progress.hide()
         self.stop_train_btn.hide()

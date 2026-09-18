@@ -104,10 +104,7 @@ def _curve_series(series):
 
 
 def _duration_seconds(rec):
-    """
-    耗时秒数. 新记录直接读存下的秒数; 老记录只有一句本地化文案, 退回按
-    中英文单位反解(单位模式已不再随界面语言变, 只是兼容历史数据).
-    """
+    """耗时秒数: 新记录直接读 duration_secs; 老记录只有一句本地化文案, 退回按单位反解."""
     secs = rec.get("duration_secs")
     if isinstance(secs, int):
         return secs
@@ -322,12 +319,8 @@ class ModelDialog(QDialog):
         return True
 
     def _tag_filter_combos(self):
-        """
-        给筛选下拉的每一项挂 itemData(任务键 / 状态键).
-
-        筛选比的是数据里的键, 不能比显示文本: 界面切英文后下拉文本变英文,
-        跟记录里的键对不上, 一选就筛空. 状态用 _status() 的中文键, 与
-        _make_metric_cell / 颜色表共用同一套.
+        """给筛选下拉挂 itemData(任务键 / 状态键): 筛的是键不是显示文本, 界面切英文后
+        按文本筛会全部落空.
         """
         for i, key in enumerate(("", "detect", "segment", "classify")):
             self.ui.task_combo.setItemData(i, key)

@@ -30,10 +30,6 @@ def _color_icon(color):
 
 class LabelMixin(object):
     def _init_label_filter(self):
-        """
-        绑定首页设计器已有的标签筛选下拉框(label_comboBox).
-        第一项固定"未标注".
-        """
         self.label_filter_combo = self.label_comboBox
         self.label_filter_combo.clear()
         # 显式给 context: mixin 里 self.tr() 挂的是实例的类(App), 与 lupdate
@@ -45,7 +41,6 @@ class LabelMixin(object):
         self.label_filter_combo.currentIndexChanged.connect(self._on_label_filter_changed)
 
     def _fit_label_filter_width(self):
-        """宽度按最宽条目算: 只数字符数的写法会把德语长词和长标签名截断."""
         combo = getattr(self, "label_filter_combo", None)
         if combo is None:
             return

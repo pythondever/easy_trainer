@@ -1,14 +1,9 @@
 # -*- coding: utf-8 -*-
-"""训练状态/任务的显示名与颜色 - 全仓唯一来源.
+"""训练状态/任务的显示名与颜色 - 全仓唯一来源, 键中英文都认.
 
-模型管理页用中文状态键, 训练队列用英文状态键, 之前各维护一份映射,
-"失败"一处是 #ff6b6b, 另一处是 #ff9aa2, 同一个状态在两个页面显示两个
-颜色; 详情页的"失败原因"又单独硬编码了一次 #ff9aa2. 这里把两套键合并
-到一张表, 取值一律走 status_text / status_color, 键中英文都认.
-
-表里存的是**中文原文**, 界面语言切英文时靠 QT_TRANSLATE_NOOP 登记的
-"StatusText"/"TaskText" 两个 context 翻出来. 调用方拿到的键(如
-model_dialog._status 的返回值)始终是中文, 只用来比较, 不直接上屏.
+表里存的是中文原文: 上屏走 status_text / task_text 按界面语言翻, 取色走
+status_color. 调用方拿到的键(如 model_dialog._status 的返回值)始终是中文,
+只用来比较, 不直接上屏.
 """
 
 from PySide6.QtCore import QCoreApplication as QC

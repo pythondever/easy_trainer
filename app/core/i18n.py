@@ -55,7 +55,6 @@ def normalize(code):
 
 
 def label(code):
-    """语言代码 -> 下拉框显示名."""
     for known, name in LANGUAGES:
         if known == code:
             return name
@@ -84,17 +83,14 @@ def flag_path(code):
 
 
 def current():
-    """当前生效的语言代码."""
     return _current
 
 
 def apply(app, code):
-    """
-    装翻译并返回真正生效的语言代码.
+    """装翻译, 返回真正生效的语言代码(.qm 缺失或损坏时退回默认语言).
 
-    必须在任何界面对象(含 setupUi)之前调用才能对静态文案生效;
-    已经在显示的窗口不会自己变, 调用方得自己再走一遍 retranslateUi.
-    翻译文件缺失/加载失败时静默退回中文, 不让用户卡在一个空白界面上.
+    必须在建任何界面对象(含 setupUi)之前调用, 才对静态文案生效; 已经在显示的窗口
+    不会自己变, 调用方要自己再走一遍 retranslateUi.
     """
     global _translator, _current
     if _translator is not None:
@@ -114,13 +110,7 @@ def apply(app, code):
 
 
 def apply_cli(code):
-    """
-    子进程里装翻译.
-
-    translator 必须挂在 QCoreApplication 上, 而训练/测试子进程只跑 main(),
-    没有界面也就没人建 app, 这里补一个. 装不上就静默回退中文: 日志语言不对
-    不该把训练本身搞挂.
-    """
+    """子进程里装翻译: 训练/测试子进程只跑 main(), 没人建 QCoreApplication, 这里补一个."""
     app = QCoreApplication.instance()
     if app is None:
         app = QCoreApplication([])

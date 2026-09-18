@@ -1348,9 +1348,6 @@ class AnnotationDialog(QDialog):
     CLIP_ROWS = 3   # 剪切板可视行数, 超出后滚动
 
     def _clip_qss(self):
-        """
-        缩略图尺寸QSS
-        """
         w, h = self.CLIP_W - 4, self.CLIP_H - 4
         return ("QPushButton#clipThumb {{ border: 2px solid #3a3f4e;"
                 " border-radius: 4px; padding: 0px; background: #22252d;"
@@ -2237,7 +2234,6 @@ class SwitchButton(QWidget):
 
 
 class ColorPickerDialog(QDialog):
-    """自定义全中文颜色选择对话框."""
 
     BASIC_COLORS = [
         "#FF0000", "#00FF00", "#0000FF", "#FFFF00",

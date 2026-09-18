@@ -129,11 +129,7 @@ class App(QWidget, MainUI, LabelMixin, ProjectMixin, ImportExportMixin,
         self._setup_header_groups()
 
     def _init_pager(self):
-        """
-        底栏翻页按钮: 用 resources 里的箭头图标, 不写"上一页/下一页"文字.
-        两个三字按钮用全局 QPushButton 的 padding 会各占约 78px, 底栏里只有它俩,
-        显得笨重; 图标按钮 28x28, 与页码凑成一组.
-        """
+        """底栏翻页用箭头图标: 三字按钮按全局 padding 要占约 78px, 底栏里只有它俩显笨重."""
         for btn in (self.pre_page_btn, self.next_page_btn):
             btn.setIconSize(QSize(14, 14))
         self.pre_page_btn.setIcon(resource_icon("arrow_left.svg"))

@@ -121,9 +121,6 @@ except ImportError:
 
 
 def _decode_roi(path, box, size=200):
-    """
-    只解码标注框区域的像素
-    """
     if not box or len(box) < 4:
         return None
     try:
@@ -796,10 +793,7 @@ class DatasetViewMixin(object):
         self._set_page_info(cur_label, total_pages, len(view_data))
 
     def _set_page_info(self, cur_label, total_pages, count):
-        """
-        底栏分页文案: 中间只放"第 N / M 页"(当前页数字化亮), 总数与量词进 tooltip.
-        原来把它跟总数拼成一句, 空态/有数据两套写法切来切去, 居中那组会左右横移.
-        """
+        """底栏只放"第 N / M 页", 当前页数字化亮; 总数与量词进 tooltip, 免得居中那组随内容横移."""
         self._page_info_state = (cur_label, total_pages, count)
         if not count:
             self._reset_page_info()
@@ -857,9 +851,6 @@ class DatasetViewMixin(object):
                              image_path, label_path="", fmt="",
                              update_stats=False, excluded=None,
                              write_db=True):
-        """
-        启动后台导入线程
-        """
         self._log(QC.translate("DatasetViewMixin", "开始导入: {}/{} | 图像路径={} | 标签路径={} | 格式={}").format(
             project_name, dataset_name, image_path, label_path or QC.translate("DatasetViewMixin", "(无)"), fmt))
         key = (project_name, dataset_name)

@@ -43,10 +43,10 @@ _CHART_H = 240                     # 标注分布柱状图占位高度
 PER_CLASS_LIMIT = 10
 
 def _pick_image_font():
-    """
-    PIL 绘制用的字体文件路径; 找不到中文字体返回 None.
-    字体探测统一在 core.utils(与 matplotlib 图表同源), 否则 PDF 里
-    PIL 画的标题和 matplotlib 画的坐标轴可能用了两个字体.
+    """PIL 绘制用的字体文件路径: 取当前界面语言的字体, 找不到返回 None.
+
+    字体探测统一在 core.utils(与 matplotlib 图表同源), 否则 PDF 里 PIL 画的
+    标题和 matplotlib 画的坐标轴可能用了两个字体.
     """
     _, path = cjk_font_choice(i18n.current())
     return path or None
@@ -314,16 +314,12 @@ def _short(text, n):
 
 
 def _render_label_chart_png(counts, colors, out_png, width_px, height_px):
-    """
-    各类别标注数量柱状图, 样式对齐统计界面(共用 app/charts 实现).
-    白底: 报告是打印/归档用的, 深色底那一套在纸上糊成一团.
-    """
+    """各类别标注数量柱状图. 白底: 报告要打印/归档, 深色底在纸上糊成一团."""
     if not counts:
         return False
     from app.widgets.charts import render_label_chart
-    # translate=False: 报告正文仍是中文, 图表跟着正文走, 免得一份 PDF 两种语言
     fig = render_label_chart(
-        counts, label_colors=colors, dark=False, translate=True,
+        counts, label_colors=colors, dark=False,
         figsize=(width_px / float(_DPI), height_px / float(_DPI)))
     # 留出 x 轴标签旋转空间, 防底部文字被裁
     fig.subplots_adjust(left=0.085, right=0.985, top=0.9, bottom=0.34)
@@ -576,9 +572,6 @@ def _dash_rect(d, box, color, width=3, dash=9, gap=6):
 
 
 def _advice_items(res, stat=None):
-    """
-    改进建议
-    """
     pc = {str(k): (v or {}) for k, v in (res.get("per_class") or {}).items()}
     tp, fp, fn = res.get("TP", 0), res.get("FP", 0), res.get("FN", 0)
     rec = tp / (tp + fn) if (tp + fn) else 0.0

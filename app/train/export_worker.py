@@ -14,7 +14,6 @@ WORKSPACE = os.path.dirname(os.path.dirname(os.path.dirname(
 
 
 class OnnxExportWorker(QThread):
-    """把 .pth 转成 .onnx."""
 
     stage = Signal(str)
     finished_ok = Signal(str)      # onnx 路径

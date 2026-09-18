@@ -30,7 +30,7 @@ class MiscMixin(object):
         self._write_log(msg)
 
     def _init_language_combo(self):
-        """工具栏语言下拉. 选项名本身不翻译(中英用户互相都认得出该选哪个)."""
+        """工具栏语言下拉; 选项名不翻译, 理由见 i18n.LANGUAGES."""
         combo = self.language_comboBox
         combo.blockSignals(True)
         combo.clear()
@@ -54,12 +54,7 @@ class MiscMixin(object):
         self._log(QC.translate("MiscMixin", "界面语言: {}").format(code))
 
     def _retranslate_all(self):
-        """
-        换语言后刷新"已经建出来"的窗口. 其余对话框都是用时才 new,
-        下次打开自然是新语言.
-        retranslateUi 会把 .ui 里的静态文案整批重设, 顺带冲掉运行时改过的那几个
-        (显存占用 / 统计文本), 所以紧接着把它们刷回来.
-        """
+        """retranslateUi 会顺带冲掉运行时改过的文案(显存占用 / 统计文本), 之后要刷回来."""
         self.retranslateUi(self)
         self._refresh_gpu_memory()
         # 下拉框选中项跟着当前语言走: apply() 未必是从下拉框触发的(如启动时读 db)
@@ -223,9 +218,6 @@ class MiscMixin(object):
 
     def _render_label_stats(self, view, project, dataset, label_counts,
                              label_colors=None):
-        """
-        标签分布柱状图
-        """
         if label_colors is None:
             label_colors = self.db.get_dataset_labels(project, dataset)
         fig = render_label_chart(label_counts, label_colors=label_colors,
@@ -280,7 +272,6 @@ class MiscMixin(object):
         self.project_tree.set_row_progress(project_name, dataset_name, labeled, total)
 
     def _refresh_dataset_row_progress(self, project_name, dataset_name):
-        """根据 db 当前 binding 刷新项目树该数据集行的进度数值."""
         binding = self.db.get_dataset_import(project_name, dataset_name)
         total = binding.get("total", 0) or 0
         labeled = binding.get("labeled", 0) or 0

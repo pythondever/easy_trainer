@@ -1,11 +1,8 @@
 # -*- coding: utf-8 -*-
-"""
-语言下拉: 国旗与语言名贴在一起, 两者作为一组绘制.
+"""语言下拉: 国旗与语言名作为一组绘制.
 
-QComboBox 默认"图标钉在左边, 文本在剩下的区域里居中", 中间会空出一大块.
-而且两个状态若用两套规则(收起态居中 / 弹层靠左), 展开的一瞬间旗会横向跳一下,
-看着就像"弹层没居中". 所以这里统一: 整组都从控件左缘 CONTENT_LEFT 处起排,
-切语言、展开弹层, 旗都不动.
+QComboBox 默认"图标钉左, 文本在剩余区居中", 中间空一大块; 收起态与弹层若各用一套
+规则, 展开瞬间旗会横跳. 这里统一从控件左缘 CONTENT_LEFT 起排, 两个状态位置一致.
 """
 
 from PySide6.QtCore import QEvent, QObject, QRect, Qt
@@ -16,14 +13,12 @@ from PySide6.QtWidgets import (QStyle, QStyledItemDelegate, QStyleOptionComboBox
 ICON_GAP = 6        # 国旗与语言名的间距. 默认两者隔了十几到二十几像素
 CONTENT_LEFT = 12   # 旗左缘距控件左缘, 收起态与弹层共用
 
-# 弹层的列表视口比弹层窗口左右各内缩这么多(实测 134 窗口 / 124 视口),
-# 所以项里再退掉它, 旗落在同一个屏幕位置.
+# 弹层的列表视口比弹层窗口左右各内缩这么多, 所以项里再退掉它, 旗落在同一个屏幕位置
 POPUP_INSET = 5
 ITEM_LEFT_PAD = CONTENT_LEFT - POPUP_INSET
 
 
 def _draw_icon_text(painter, clip_rect, x, icon, text, icon_size, color, gap):
-    """把"图标 + 间距 + 文字"从 x 处起画, 超出 clip_rect 就裁掉."""
     painter.setClipRect(clip_rect)      # 文案长于可用区时裁掉, 别压到箭头上
     fm = QFontMetrics(painter.font())
     text_w = fm.horizontalAdvance(text)
@@ -39,9 +34,9 @@ def _draw_icon_text(painter, clip_rect, x, icon, text, icon_size, color, gap):
 
 
 class _CollapsedPainter(QObject):
-    """收起态: 自己画图标和文字, 背景/边框/箭头仍交给样式, 免得 QSS 失效.
+    """收起态自绘图标与文字, 背景/边框/箭头仍交给样式(免得 QSS 失效).
 
-    拦掉整个 Paint 事件而不是改 currentText - 后者是 model 的数据, 改不了.
+    拦整个 Paint 事件, 而不是改 currentText - 后者是 model 数据, 改不了.
     """
 
     def __init__(self, combo, gap):

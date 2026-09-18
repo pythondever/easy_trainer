@@ -1,14 +1,9 @@
 # -*- coding: utf-8 -*-
-"""
-界面翻译: 抽条目 -> 更新 i18n/*.ts -> 编译出 .qm.
-
-改过界面文案(或新增 self.tr())之后跑一次就行:
+"""界面翻译: 抽条目 -> 更新 i18n/*.ts -> 编译出 .qm. 改过界面文案后跑一次:
 
     python builder/translations.py
 
-源语言就是中文, 所以只有非中文需要 .ts. 译文内容在 .ts 里改(用 Qt Linguist
-或直接编辑 XML), 这个脚本只负责抽取与编译. 产物 i18n/<lang>.qm 由 build.py
-随发行包一起发布, 少一个 .qm 时运行时静默退回中文.
+译文在 .ts 里改, 本脚本只做抽取与编译; 产物 i18n/<lang>.qm 由 build.py 随发行包发布.
 """
 import os
 import shutil

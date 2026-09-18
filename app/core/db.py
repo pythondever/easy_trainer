@@ -366,7 +366,6 @@ class DataBase:
                     txn.put(key, json.dumps(recs, ensure_ascii=False).encode())
 
     def delete_dataset(self, project_name, dataset_name):
-        """删除项目下的一个数据集记录."""
         info_list = self.get_project_info()
         keep = []
         for info in info_list:

@@ -452,7 +452,6 @@ class TrainDialog(QDialog):
             self.ui.task_combo.setItemData(i, code)
 
     def _task(self):
-        """当前任务类型:detect/segment/classify(取 itemData, 与界面语言无关)."""
         return self.ui.task_combo.currentData() or "detect"
 
     def _task_text(self):

@@ -85,7 +85,6 @@ def checked_rows(model):
 
 
 def toggle_row(index):
-    """切一下这一行的勾选."""
     if not index.isValid():
         return
     model = index.model()

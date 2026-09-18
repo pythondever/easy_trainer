@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""通用工具函数: 时长格式化, matplotlib 中文字体, 样式表加载, 跨平台字体."""
+"""通用工具函数: 时长格式化, 界面字体选择, 路径与编码, 样式表加载."""
 import os
 import sys
 
@@ -117,11 +117,10 @@ def cjk_font_choice(lang=None):
 
 
 def setup_matplotlib_chinese(lang=None):
-    """
-    把中文字体写进全局 rcParams; 幂等(探测结果有缓存, 重复调用无开销).
-    之前 charts / metrics_dialog / test_report 各写一份 rcParams, 候选表互不
-    相同又都改全局, 后执行的会盖掉前面的, 同一进程里不同图表可能用不同字体
-    (一个正常一个方框). 统一走这里.
+    """把界面语言的字体写进全局 rcParams; 幂等(探测结果有缓存, 重复调用无开销).
+
+    各图表模块一律从这里取字体, 别自己写 rcParams - 改的都是全局, 后执行的会盖掉
+    前面那份, 同一进程里不同图表会用到两套字体(一个正常一个方框).
     """
     # 整份候选表交给 matplotlib 做字形回退(3.6+): 雅黑缺韩文时会自动落到
     # Malgun Gothic, 不用按语言挑单个字体
