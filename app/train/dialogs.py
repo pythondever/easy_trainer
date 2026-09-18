@@ -72,6 +72,7 @@ def make_train_record(config, db, project_fallback=""):
         "end_time": "",
         "duration": "",
         "model_size": config.get("model_size", ""),
+        "family": config.get("family", ""),
         "map50": "",
         "img_size": config.get("img_size", ""),
         # ema 优先: 与 runner 交付的 best 同源(regular 是另一条 track 的 best)
@@ -110,6 +111,7 @@ def params_to_record(params):
         "early_stop": params.get("early_stop", ""),
         "img_size": params.get("img_size", ""),
         "model_size": params.get("architecture", ""),
+        "family": params.get("family", ""),
         "device": params.get("device", ""),
         "optimizer": params.get("optimizer", ""),
         "output_path": params.get("out_root", ""),
@@ -210,6 +212,7 @@ def make_train_config(db, params):
         "project": datasets[0]["project"],
         "timestamp_dir": ts_dir,
         "architecture": architecture,
+        "family": params.get("family") or "transformer",
         "model_size": params.get("architecture") or "nano",
         "device": params.get("device") or "",
         "epochs": params.get("epochs", 100),
@@ -320,6 +323,8 @@ def collect_devices():
             for i in range(torch.cuda.device_count()):
                 try:
                     name = torch.cuda.get_device_name(i)
+                    # 下拉宽度放不下全名, 而 ElideLeft 先吃掉的正是前缀, 反倒把型号挤没
+                    name = name.removeprefix("NVIDIA ")
                     total = torch.cuda.get_device_properties(i).total_memory
                     text = "{} ({:.0f} GB)".format(name, total / 1024 ** 3)
                 except Exception:
@@ -400,6 +405,8 @@ class TrainDialog(QDialog):
             "TrainDialog", "目标检测推荐图像尺寸: 640(可设为 32 的倍数如 640/672)"),
         "segment": QT_TRANSLATE_NOOP(
             "TrainDialog", "图像分割推荐尺寸: 636(必须为 12 的倍数, 如 636/648/660)"),
+        "cnn_segment": QT_TRANSLATE_NOOP(
+            "TrainDialog", "CNN 分割推荐尺寸: 640(需为 32 的倍数)"),
         "classify": QT_TRANSLATE_NOOP(
             "TrainDialog", "图像分类推荐尺寸: 224(小图用 224, 较大图可到 256)"),
     }
@@ -408,6 +415,13 @@ class TrainDialog(QDialog):
         "detect": QT_TRANSLATE_NOOP("TrainDialog", "32 的倍数"),
         "segment": QT_TRANSLATE_NOOP("TrainDialog", "12 的倍数"),
         "classify": QT_TRANSLATE_NOOP("TrainDialog", "建议 224"),
+        # 636 那个 12 的倍数来自 rf-detr 的 patch_size*num_windows, CNN 没有这约束
+        "cnn_segment": QT_TRANSLATE_NOOP("TrainDialog", "32 的倍数"),
+    }
+    # 切架构时要跟着换的推荐值; 没列的沿用任务默认(分类只有 resnet, 不参与)
+    ARCH_DEFAULTS = {
+        "transformer": {},
+        "cnn": {"lr": 0.01, "batch": 16, "optimizer": "sgd", "img_size": 640},
     }
 
     def __init__(self, app, project="", dataset="", preset_record=None):
@@ -422,9 +436,6 @@ class TrainDialog(QDialog):
         self._combo_filters = []
         self._preset_record = preset_record
         self.queue_edit_qid = None   # 队列面板"编辑"时回填用: 保存即更新该队列项
-        self._last_epochs_default = None
-        self._last_lr_default = None
-        self._last_img_default = None
         self._pending_device = None   # 设备列表探测期间没回填上的设备串
         self._build()
 
@@ -474,7 +485,7 @@ class TrainDialog(QDialog):
             out_edit.textChanged.connect(
                 lambda t: out_edit.setToolTip(t))
         for combo_name in ("task_combo", "dataset_combo", "val_combo", "network_combo",
-                           "device_combo", "img_size_comboBox",
+                           "arch_combo", "device_combo", "img_size_comboBox",
                            "optimizer_comboBox"):
             combo = getattr(self.ui, combo_name, None)
             if combo is not None:
@@ -547,7 +558,7 @@ class TrainDialog(QDialog):
 
     def _style_all_combos(self):
         # 多选下拉的编辑区自己画标签(见 _setup_multi_combo), 不套这里的居中和点击展开
-        for name in ("task_combo", "network_combo", "device_combo",
+        for name in ("task_combo", "network_combo", "device_combo", "arch_combo",
                      "img_size_comboBox", "optimizer_comboBox"):
             combo = getattr(self.ui, name, None)
             if combo is not None:
@@ -650,10 +661,12 @@ class TrainDialog(QDialog):
         self.ui.dataset_label.setText(self.tr("训练集"))
         self._fill_device_combo()
         self._center_combo_items(self.ui.task_combo)
+        self._fill_arch_combo()
         self._fill_network_combo()
         self._fill_optimizer()
         self.ui.task_combo.setCurrentIndex(0)  # 默认检测
         self.ui.task_combo.currentIndexChanged.connect(self._on_task_changed)
+        self.ui.arch_combo.currentIndexChanged.connect(self._on_arch_changed)
         # 预设记录(模型界面训练按钮)时完整回填;首页进入填任务推荐参数
         if self._preset_record is not None:
             self._restore_record(self._preset_record)
@@ -726,11 +739,14 @@ class TrainDialog(QDialog):
             btn.setToolTip(self.tr("已有训练在进行中, 请先停止") if busy else "")
 
     def _fill_optimizer(self):
-        """优化器下拉:检测/分割(detr 推荐 adamw) vs 分类(resnet 推荐 sgd)."""
+        """优化器下拉: 分类(resnet)与 CNN(YOLO) 推荐 sgd, 检测/分割的 detr 推荐 adamw."""
         combo = self.ui.optimizer_comboBox
         combo.clear()
         if self._task() == "classify":
             combo.addItems(["adamw", "sgd"])
+            recommended = "sgd"
+        elif self._arch() == "cnn":
+            combo.addItems(["adamw", "sgd", "adam"])
             recommended = "sgd"
         else:
             combo.addItems(["adamw", "sgd", "adam"])
@@ -751,35 +767,59 @@ class TrainDialog(QDialog):
 
     def _on_task_changed(self):
         self.ui.task_badge.setText(self._task_text())
-        self._fill_optimizer()
         self._apply_task_ui()
-        self._setup_img_size_tip()
+
+    def _fill_arch_combo(self):
+        """架构下拉: 值放 itemData, 和任务下拉一样不吃界面语言的亏."""
+        combo = self.ui.arch_combo
+        combo.clear()
+        for text, code in (("Transformer", "transformer"), ("CNN", "cnn")):
+            combo.addItem(text, code)
+        combo.setCurrentIndex(0)
+        self._center_combo_items(combo)
+
+    def _arch(self):
+        return self.ui.arch_combo.currentData() or "transformer"
+
+    def _on_arch_changed(self):
+        self._apply_task_ui()
 
     def _apply_task_ui(self):
-        """任务类型切换:按任务推荐填充参数, grad_accum 可用性, 网络项.
+        """任务类型/架构切换: 按两者推荐填充参数, grad_accum 可用性, 型号项.
 
         首页进入是空表单,用户选择任务类型后由这里给出推荐值;
         模型界面回填(preset_record)时 _apply_record_params 会在其后覆盖为记录值.
         """
         task = self._task()
         epochs, lr, img, _ = self.TASK_DEFAULTS.get(task, (100, 1e-4, 640, 4))
+        self._sync_arch_combo(task)
+        over = {} if task == "classify" else self.ARCH_DEFAULTS.get(self._arch(), {})
         self.ui.grad_accum_line_txt.setEnabled(task != "classify")
         self.ui.epochs_line_txt.setText(str(epochs))
-        self.ui.lr_line_txt.setText(str(lr))
-        self.ui.img_size_line_txt.setText(str(img))
-        # 通用参数推荐值(批次/线程数/早停)
-        if not self.ui.batch_size_line_txt.text().strip():
-            self.ui.batch_size_line_txt.setText("4")
+        self.ui.lr_line_txt.setText(str(over.get("lr", lr)))
+        self.ui.img_size_line_txt.setText(str(over.get("img_size", img)))
+        # 批次跟着架构走(CNN 显存占用比 detr 小得多), 所以是覆盖而不是"空才填"
+        self.ui.batch_size_line_txt.setText(str(over.get("batch", 4)))
         if not self.ui.batch_size_line_txt_2.text().strip():
             self.ui.batch_size_line_txt_2.setText("4")
         if not self.ui.early_stop_line_txt.text().strip():
             self.ui.early_stop_line_txt.setText("20")
         if not self.ui.grad_accum_line_txt.text().strip():
             self.ui.grad_accum_line_txt.setText("4")
-        self._last_epochs_default = epochs
-        self._last_lr_default = lr
-        self._last_img_default = img
+        self._fill_optimizer()
         self._fill_network_combo()
+        self._setup_img_size_tip()
+
+    def _sync_arch_combo(self, task):
+        """分类只有 resnet(CNN) 一条路, 架构锁死; 锁的时候别触发联动, 否则覆盖回填值."""
+        combo = self.ui.arch_combo
+        combo.setEnabled(task != "classify")
+        if task == "classify":
+            idx = combo.findData("cnn")
+            if idx >= 0:
+                combo.blockSignals(True)
+                combo.setCurrentIndex(idx)
+                combo.blockSignals(False)
 
     def _restore_record(self, rec):
         """按指定训练记录回填全部字段(模型界面训练按钮)."""
@@ -788,6 +828,12 @@ class TrainDialog(QDialog):
             idx = self.ui.task_combo.findData(task)
             if idx >= 0:
                 self.ui.task_combo.setCurrentIndex(idx)
+        # 老记录没有 family, 当年只有 rf-detr 一条路, 一律当 transformer
+        arch = self.ui.arch_combo
+        idx = arch.findData(str(rec.get("family") or "transformer"))
+        arch.blockSignals(True)
+        arch.setCurrentIndex(idx if idx >= 0 else 0)
+        arch.blockSignals(False)
         self._apply_task_ui()
         train_names = [x.strip() for x in str(rec.get("dataset", "")).split(",") if x.strip()]
         val_names = [x.strip() for x in str(rec.get("val_dataset", "")).split(",") if x.strip()]
@@ -850,18 +896,28 @@ class TrainDialog(QDialog):
             self.ui.output_line_txt.setText(str(out))
 
     def _fill_network_combo(self):
+        """型号档位: CNN 多一档 x-large(YOLO11 五档), 前四档两边同名同义."""
         combo = self.ui.network_combo
         combo.clear()
-        combo.addItems(["nano", "small", "medium", "large"])
+        if self._task() != "classify" and self._arch() == "cnn":
+            combo.addItems(["nano", "small", "medium", "large", "x-large"])
+        else:
+            combo.addItems(["nano", "small", "medium", "large"])
         self._center_combo_items(combo)
         if self._task() == "classify":
-            # 分类走 resnet 从头训练, 与 rf-detr 档位无关, 固定 nano
+            # 分类只有 resnet, 档位即 resnet18/34/50/101, 固定从头训练的那档
             combo.setCurrentIndex(0)
 
     def _setup_img_size_tip(self):
-        task = self._task()
-        self.ui.img_size_line_txt.setToolTip(self.tr(self.TASK_TIPS.get(task, "")))
-        self.ui.img_note.setText(self.tr(self.IMG_NOTE.get(task, "")))
+        key = self._img_key()
+        self.ui.img_size_line_txt.setToolTip(self.tr(self.TASK_TIPS.get(key, "")))
+        self.ui.img_note.setText(self.tr(self.IMG_NOTE.get(key, "")))
+
+    def _img_key(self):
+        """CNN 分割不吃 rf-detr 的 12 的倍数约束, 提示语单独一套."""
+        if self._task() == "segment" and self._arch() == "cnn":
+            return "cnn_segment"
+        return self._task()
 
     # ---------- 校验 ----------
     def _setup_validators(self):
@@ -915,6 +971,12 @@ class TrainDialog(QDialog):
         if d:
             self.ui.output_line_txt.setText(d)
 
+    def _family_ready(self):
+        """CNN(YOLO) 训练后端还没接: 选到 CNN 先挡住, 别让子进程按 rf-detr 的档位跑."""
+        if self._task() == "classify" or self._arch() != "cnn":
+            return True, ""
+        return False, self.tr("CNN(YOLO) 训练后端尚未接入, 请先选择 Transformer 架构")
+
     def _on_start_train(self):
         if self.app.is_training():
             MessageBox.warning(
@@ -925,6 +987,10 @@ class TrainDialog(QDialog):
         if not ok:
             write_log(QC.translate("TrainDialog", "参数校验未通过: {}").format(msg))
             MessageBox.warning(self, self.tr("参数校验"), msg)
+            return
+        ok, msg = self._family_ready()
+        if not ok:
+            MessageBox.warning(self, self.tr("开始训练"), msg)
             return
         # 权重缺失时先问一次: 否则训练子进程会静默下载几百 MB, 日志里还看不到进度
         if not ensure_weight(self, self.app.db, self._task(),
@@ -962,6 +1028,10 @@ class TrainDialog(QDialog):
         ok, msg = self._validate()
         if not ok:
             MessageBox.warning(self, self.tr("参数校验"), msg)
+            return
+        ok, msg = self._family_ready()
+        if not ok:
+            MessageBox.warning(self, self.tr("加入队列"), msg)
             return
         # 入队时就查权重: 队列多半无人守着, 缺权重到出队时才发现在半夜
         if not ensure_weight(self, self.app.db, self._task(),
@@ -1006,6 +1076,7 @@ class TrainDialog(QDialog):
         return {
             "task": self._task(),
             "architecture": self.ui.network_combo.currentText() or "nano",
+            "family": self._arch(),
             "device": self._device(),
             "epochs": self.param_int(self.ui.epochs_line_txt, 100),
             "batch_size": self.param_int(self.ui.batch_size_line_txt, 8),

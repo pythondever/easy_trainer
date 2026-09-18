@@ -137,7 +137,18 @@ class Ui_TrainDialog(object):
         self.device_combo = QComboBox(TrainDialog)
         self.device_combo.setObjectName(u"device_combo")
 
-        self.grid_data.addWidget(self.device_combo, 2, 1, 1, 3)
+        self.grid_data.addWidget(self.device_combo, 2, 1, 1, 1)
+
+        self.arch_label = QLabel(TrainDialog)
+        self.arch_label.setObjectName(u"arch_label")
+        self.arch_label.setAlignment(Qt.AlignLeft|Qt.AlignVCenter)
+
+        self.grid_data.addWidget(self.arch_label, 2, 2, 1, 1)
+
+        self.arch_combo = QComboBox(TrainDialog)
+        self.arch_combo.setObjectName(u"arch_combo")
+
+        self.grid_data.addWidget(self.arch_combo, 2, 3, 1, 1)
 
 
         self.mainLayout.addLayout(self.grid_data)
@@ -466,10 +477,11 @@ class Ui_TrainDialog(object):
         self.task_combo.setItemText(1, QCoreApplication.translate("TrainDialog", u"\u5206\u5272", None))
         self.task_combo.setItemText(2, QCoreApplication.translate("TrainDialog", u"\u5206\u7c7b", None))
 
-        self.network_label.setText(QCoreApplication.translate("TrainDialog", u"\u7f51\u7edc", None))
+        self.network_label.setText(QCoreApplication.translate("TrainDialog", u"\u578b\u53f7", None))
         self.dataset_label.setText(QCoreApplication.translate("TrainDialog", u"\u8bad\u7ec3\u96c6", None))
         self.val_label.setText(QCoreApplication.translate("TrainDialog", u"\u9a8c\u8bc1\u96c6", None))
         self.device_label.setText(QCoreApplication.translate("TrainDialog", u"\u8bbe\u5907", None))
+        self.arch_label.setText(QCoreApplication.translate("TrainDialog", u"\u67b6\u6784", None))
         self.group_hyper_title.setText(QCoreApplication.translate("TrainDialog", u"\u8bad\u7ec3\u8d85\u53c2", None))
         self.group_hyper_title.setProperty(u"class", QCoreApplication.translate("TrainDialog", u"dialogSectionTitle", None))
         self.group_hyper_line.setProperty(u"class", QCoreApplication.translate("TrainDialog", u"dialogSectionLine", None))

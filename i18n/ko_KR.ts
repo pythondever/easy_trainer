@@ -3651,7 +3651,7 @@ onnx / onnxsim이 없다는 메시지가 나오면 먼저 설치하세요:
     <message>
         <location filename="../ui/train.ui" line="14"/>
         <location filename="../ui/train.ui" line="40"/>
-        <location filename="../app/train/dialogs.py" line="440"/>
+        <location filename="../app/train/dialogs.py" line="449"/>
         <source>训练</source>
         <translation>학습</translation>
     </message>
@@ -3678,15 +3678,15 @@ onnx / onnxsim이 없다는 메시지가 나오면 먼저 설치하세요:
     </message>
     <message>
         <location filename="../ui/train.ui" line="96"/>
-        <location filename="../ui/train.ui" line="251"/>
-        <location filename="../ui/train.ui" line="569"/>
+        <location filename="../ui/train.ui" line="264"/>
+        <location filename="../ui/train.ui" line="582"/>
         <source>dialogSectionTitle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="115"/>
-        <location filename="../ui/train.ui" line="270"/>
-        <location filename="../ui/train.ui" line="588"/>
+        <location filename="../ui/train.ui" line="283"/>
+        <location filename="../ui/train.ui" line="601"/>
         <source>dialogSectionLine</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3707,12 +3707,12 @@ onnx / onnxsim이 없다는 메시지가 나오면 먼저 설치하세요:
     </message>
     <message>
         <location filename="../ui/train.ui" line="162"/>
-        <source>网络</source>
-        <translation>네트워크</translation>
+        <source>型号</source>
+        <translation>모델</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="175"/>
-        <location filename="../app/train/dialogs.py" line="650"/>
+        <location filename="../app/train/dialogs.py" line="659"/>
         <source>训练集</source>
         <translation>학습 세트</translation>
     </message>
@@ -3727,145 +3727,153 @@ onnx / onnxsim이 없다는 메시지가 나오면 먼저 설치하세요:
         <translation>장치</translation>
     </message>
     <message>
-        <location filename="../ui/train.ui" line="248"/>
+        <location filename="../ui/train.ui" line="228"/>
+        <source>架构</source>
+        <translation>아키텍처</translation>
+    </message>
+    <message>
+        <location filename="../ui/train.ui" line="261"/>
         <source>训练超参</source>
         <translation>학습 하이퍼파라미터</translation>
     </message>
     <message>
-        <location filename="../ui/train.ui" line="288"/>
-        <location filename="../app/train/dialogs.py" line="516"/>
+        <location filename="../ui/train.ui" line="301"/>
+        <location filename="../app/train/dialogs.py" line="525"/>
         <source>轮次</source>
         <translation>에포크</translation>
     </message>
     <message>
-        <location filename="../ui/train.ui" line="301"/>
+        <location filename="../ui/train.ui" line="314"/>
         <source>优化器</source>
         <translation>옵티마이저</translation>
     </message>
     <message>
-        <location filename="../ui/train.ui" line="314"/>
-        <location filename="../app/train/dialogs.py" line="519"/>
+        <location filename="../ui/train.ui" line="327"/>
+        <location filename="../app/train/dialogs.py" line="528"/>
         <source>早停</source>
         <translation>조기 중단</translation>
     </message>
     <message>
-        <location filename="../ui/train.ui" line="351"/>
+        <location filename="../ui/train.ui" line="364"/>
         <source>连续无提升则提前结束，0 为关闭</source>
         <translation>연속으로 개선이 없으면 조기 종료하며, 0은 사용 안 함</translation>
     </message>
     <message>
-        <location filename="../ui/train.ui" line="354"/>
-        <location filename="../ui/train.ui" line="407"/>
-        <location filename="../ui/train.ui" line="467"/>
-        <location filename="../ui/train.ui" line="520"/>
+        <location filename="../ui/train.ui" line="367"/>
+        <location filename="../ui/train.ui" line="420"/>
+        <location filename="../ui/train.ui" line="480"/>
+        <location filename="../ui/train.ui" line="533"/>
         <source>fieldNote</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/train.ui" line="367"/>
-        <location filename="../app/train/dialogs.py" line="522"/>
+        <location filename="../ui/train.ui" line="380"/>
+        <location filename="../app/train/dialogs.py" line="531"/>
         <source>学习率</source>
         <translation>학습률</translation>
     </message>
     <message>
-        <location filename="../ui/train.ui" line="404"/>
+        <location filename="../ui/train.ui" line="417"/>
         <source>初始学习率，训练中自动衰减</source>
         <translation>초기 학습률, 학습 중 자동 감소</translation>
     </message>
     <message>
-        <location filename="../ui/train.ui" line="420"/>
-        <location filename="../app/train/dialogs.py" line="514"/>
+        <location filename="../ui/train.ui" line="433"/>
+        <location filename="../app/train/dialogs.py" line="523"/>
         <source>批次</source>
         <translation>배치</translation>
     </message>
     <message>
-        <location filename="../ui/train.ui" line="433"/>
-        <location filename="../app/train/dialogs.py" line="518"/>
+        <location filename="../ui/train.ui" line="446"/>
+        <location filename="../app/train/dialogs.py" line="527"/>
         <source>图像尺寸</source>
         <translation>이미지 크기</translation>
     </message>
     <message>
-        <location filename="../ui/train.ui" line="464"/>
-        <location filename="../app/train/dialogs.py" line="408"/>
+        <location filename="../ui/train.ui" line="477"/>
+        <location filename="../app/train/dialogs.py" line="413"/>
+        <location filename="../app/train/dialogs.py" line="417"/>
         <source>32 的倍数</source>
         <translation>32의 배수</translation>
     </message>
     <message>
-        <location filename="../ui/train.ui" line="480"/>
-        <location filename="../app/train/dialogs.py" line="515"/>
+        <location filename="../ui/train.ui" line="493"/>
+        <location filename="../app/train/dialogs.py" line="524"/>
         <source>梯度累积</source>
         <translation>그래디언트 누적</translation>
     </message>
     <message>
-        <location filename="../ui/train.ui" line="517"/>
+        <location filename="../ui/train.ui" line="530"/>
         <source>显存不足时调大，等效批次 × N</source>
         <translation>VRAM이 부족할 때 늘리며, 실질 배치 × N</translation>
     </message>
     <message>
-        <location filename="../ui/train.ui" line="533"/>
-        <location filename="../app/train/dialogs.py" line="517"/>
+        <location filename="../ui/train.ui" line="546"/>
+        <location filename="../app/train/dialogs.py" line="526"/>
         <source>线程数</source>
         <translation>스레드 수</translation>
     </message>
     <message>
-        <location filename="../ui/train.ui" line="566"/>
+        <location filename="../ui/train.ui" line="579"/>
         <source>输出</source>
         <translation>출력</translation>
     </message>
     <message>
-        <location filename="../ui/train.ui" line="609"/>
+        <location filename="../ui/train.ui" line="622"/>
         <source>输出路径</source>
         <translation>출력 경로</translation>
     </message>
     <message>
-        <location filename="../ui/train.ui" line="624"/>
+        <location filename="../ui/train.ui" line="637"/>
         <source>留空则自动按时间生成目录</source>
         <translation>비워두면 시간 기준으로 디렉터리가 자동 생성됩니다</translation>
     </message>
     <message>
-        <location filename="../ui/train.ui" line="637"/>
+        <location filename="../ui/train.ui" line="650"/>
         <source>选择路径</source>
         <translation>찾아보기</translation>
     </message>
     <message>
-        <location filename="../ui/train.ui" line="682"/>
+        <location filename="../ui/train.ui" line="695"/>
         <source>i</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/train.ui" line="685"/>
+        <location filename="../ui/train.ui" line="698"/>
         <source>summaryIcon</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/train.ui" line="698"/>
-        <location filename="../app/train/dialogs.py" line="616"/>
+        <location filename="../ui/train.ui" line="711"/>
+        <location filename="../app/train/dialogs.py" line="625"/>
         <source>请选择训练集与验证集</source>
         <translation>학습 세트와 검증 세트를 선택하세요</translation>
     </message>
     <message>
-        <location filename="../ui/train.ui" line="701"/>
+        <location filename="../ui/train.ui" line="714"/>
         <source>summaryText</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/train.ui" line="742"/>
-        <location filename="../app/train/dialogs.py" line="529"/>
+        <location filename="../ui/train.ui" line="755"/>
+        <location filename="../app/train/dialogs.py" line="538"/>
         <source>取消</source>
         <translation>취소</translation>
     </message>
     <message>
-        <location filename="../ui/train.ui" line="755"/>
-        <location filename="../app/train/dialogs.py" line="972"/>
-        <location filename="../app/train/dialogs.py" line="980"/>
-        <location filename="../app/train/dialogs.py" line="999"/>
+        <location filename="../ui/train.ui" line="768"/>
+        <location filename="../app/train/dialogs.py" line="1032"/>
+        <location filename="../app/train/dialogs.py" line="1040"/>
+        <location filename="../app/train/dialogs.py" line="1048"/>
+        <location filename="../app/train/dialogs.py" line="1067"/>
         <source>加入队列</source>
         <translation>대기열에 추가</translation>
     </message>
     <message>
-        <location filename="../ui/train.ui" line="768"/>
-        <location filename="../app/train/dialogs.py" line="921"/>
-        <location filename="../app/train/dialogs.py" line="949"/>
+        <location filename="../ui/train.ui" line="781"/>
+        <location filename="../app/train/dialogs.py" line="981"/>
+        <location filename="../app/train/dialogs.py" line="991"/>
+        <location filename="../app/train/dialogs.py" line="1013"/>
         <source>开始训练</source>
         <translation>학습 시작</translation>
     </message>
@@ -3875,203 +3883,213 @@ onnx / onnxsim이 없다는 메시지가 나오면 먼저 설치하세요:
         <translation>GPU 감지 중...</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="129"/>
+        <location filename="../app/train/dialogs.py" line="131"/>
         <source>数据集&quot;{}&quot;尚未导入图像或路径无效, 请先导入该数据集再训练</source>
         <translation>데이터셋 &quot;{}&quot;에 이미지가 없거나 경로가 유효하지 않습니다. 해당 데이터셋을 먼저 가져온 후 학습하세요</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="136"/>
+        <location filename="../app/train/dialogs.py" line="138"/>
         <source>数据集&quot;{}&quot;尚未导入标签或路径无效, 请先导入该数据集再训练</source>
         <translation>데이터셋 &quot;{}&quot;에 라벨이 없거나 경로가 유효하지 않습니다. 해당 데이터셋을 먼저 가져온 후 학습하세요</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="165"/>
-        <location filename="../app/train/dialogs.py" line="973"/>
+        <location filename="../app/train/dialogs.py" line="167"/>
+        <location filename="../app/train/dialogs.py" line="1041"/>
         <source>请先选择输出路径</source>
         <translation>먼저 출력 경로를 선택하세요</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="178"/>
+        <location filename="../app/train/dialogs.py" line="180"/>
         <source>数据集&quot;{}/{}&quot;不是分类数据集(标签格式={}), 无法训练图像分类</source>
         <translation>데이터셋 &quot;{}/{}&quot;은(는) 분류 데이터셋이 아니므로(라벨 형식={}) 이미지 분류를 학습할 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="181"/>
-        <location filename="../app/train/dialogs.py" line="908"/>
+        <location filename="../app/train/dialogs.py" line="183"/>
+        <location filename="../app/train/dialogs.py" line="962"/>
         <source>未知</source>
         <translation>알 수 없음</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="183"/>
+        <location filename="../app/train/dialogs.py" line="185"/>
         <source>数据集&quot;{}/{}&quot;是分类数据集, 无法训练{}任务</source>
         <translation>데이터셋 &quot;{}/{}&quot;은(는) 분류 데이터셋이므로 {} 작업을 학습할 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="197"/>
+        <location filename="../app/train/dialogs.py" line="199"/>
         <source>请至少选择一个训练集数据集</source>
         <translation>학습 세트 데이터셋을 하나 이상 선택하세요</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="199"/>
+        <location filename="../app/train/dialogs.py" line="201"/>
         <source>请至少选择一个验证集数据集</source>
         <translation>검증 세트 데이터셋을 하나 이상 선택하세요</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="243"/>
+        <location filename="../app/train/dialogs.py" line="246"/>
         <source>未选数据集</source>
         <translation>선택된 데이터셋 없음</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="399"/>
+        <location filename="../app/train/dialogs.py" line="402"/>
         <source>目标检测推荐图像尺寸: 640(可设为 32 的倍数如 640/672)</source>
         <translation>객체 검출 권장 이미지 크기: 640(32의 배수로 설정 가능, 예: 640/672)</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="401"/>
+        <location filename="../app/train/dialogs.py" line="404"/>
         <source>图像分割推荐尺寸: 636(必须为 12 的倍数, 如 636/648/660)</source>
         <translation>이미지 세그멘테이션 권장 크기: 636(반드시 12의 배수, 예: 636/648/660)</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="403"/>
+        <location filename="../app/train/dialogs.py" line="406"/>
+        <source>CNN 分割推荐尺寸: 640(需为 32 的倍数)</source>
+        <translation>CNN 세그멘테이션 권장 크기: 640(32의 배수여야 합니다)</translation>
+    </message>
+    <message>
+        <location filename="../app/train/dialogs.py" line="408"/>
         <source>图像分类推荐尺寸: 224(小图用 224, 较大图可到 256)</source>
         <translation>이미지 분류 권장 크기: 224(작은 이미지는 224, 큰 이미지는 256까지)</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="409"/>
+        <location filename="../app/train/dialogs.py" line="414"/>
         <source>12 的倍数</source>
         <translation>12의 배수</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="410"/>
+        <location filename="../app/train/dialogs.py" line="415"/>
         <source>建议 224</source>
         <translation>224 권장</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="626"/>
+        <location filename="../app/train/dialogs.py" line="635"/>
         <source>训练集 {} 个 · 验证集 {} 个 · 共 {} 张图</source>
         <translation>학습 세트 {}개 · 검증 세트 {}개 · 총 {}장</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="629"/>
+        <location filename="../app/train/dialogs.py" line="638"/>
         <source>未选择验证集</source>
         <translation>검증 세트 미선택</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="631"/>
+        <location filename="../app/train/dialogs.py" line="640"/>
         <source>已标注, 可直接训练</source>
         <translation>라벨링 완료, 바로 학습 가능</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="633"/>
+        <location filename="../app/train/dialogs.py" line="642"/>
         <source>有 {} 个数据集尚未标注</source>
         <translation>라벨링되지 않은 데이터셋이 {}개 있습니다</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="647"/>
+        <location filename="../app/train/dialogs.py" line="656"/>
         <source>请选择验证集</source>
         <translation>검증 세트 선택</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="726"/>
+        <location filename="../app/train/dialogs.py" line="737"/>
         <source>已有训练在进行中, 请先停止</source>
         <translation>이미 학습이 진행 중입니다. 먼저 중지하세요</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="875"/>
+        <location filename="../app/train/dialogs.py" line="929"/>
         <source>请至少选择一个数据集</source>
         <translation>데이터셋을 하나 이상 선택하세요</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="879"/>
-        <location filename="../app/train/dialogs.py" line="889"/>
+        <location filename="../app/train/dialogs.py" line="933"/>
+        <location filename="../app/train/dialogs.py" line="943"/>
         <source>&quot;{}&quot;不能为空</source>
         <translation>&quot;{}&quot;은(는) 비워둘 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="884"/>
+        <location filename="../app/train/dialogs.py" line="938"/>
         <source>&quot;{}&quot;必须是整数(当前: {})</source>
         <translation>&quot;{}&quot;은(는) 정수여야 합니다(현재: {})</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="894"/>
+        <location filename="../app/train/dialogs.py" line="948"/>
         <source>&quot;{}&quot;必须是数字(当前: {})</source>
         <translation>&quot;{}&quot;은(는) 숫자여야 합니다(현재: {})</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="903"/>
+        <location filename="../app/train/dialogs.py" line="957"/>
         <source>数据集&quot;{}/{}&quot;是分类数据集,无法训练{}任务</source>
         <translation>데이터셋 &quot;{}/{}&quot;은(는) 분류 데이터셋이므로 {} 작업을 학습할 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="907"/>
+        <location filename="../app/train/dialogs.py" line="961"/>
         <source>数据集&quot;{}/{}&quot;不是分类数据集(标签格式={}),无法训练图像分类</source>
         <translation>데이터셋 &quot;{}/{}&quot;은(는) 분류 데이터셋이 아니므로(라벨 형식={}) 이미지 분류를 학습할 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="914"/>
+        <location filename="../app/train/dialogs.py" line="968"/>
         <source>选择输出目录</source>
         <translation>출력 디렉터리 선택</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="922"/>
+        <location filename="../app/train/dialogs.py" line="976"/>
+        <source>CNN(YOLO) 训练后端尚未接入, 请先选择 Transformer 架构</source>
+        <translation>CNN(YOLO) 학습 백엔드가 아직 준비되지 않았습니다. 먼저 Transformer 아키텍처를 선택하세요</translation>
+    </message>
+    <message>
+        <location filename="../app/train/dialogs.py" line="982"/>
         <source>当前已有训练在进行中, 请先停止!</source>
         <translation>현재 학습이 진행 중입니다. 먼저 중지하세요!</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="926"/>
+        <location filename="../app/train/dialogs.py" line="986"/>
         <source>参数校验未通过: {}</source>
         <translation>파라미터 검증 실패: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="927"/>
-        <location filename="../app/train/dialogs.py" line="964"/>
+        <location filename="../app/train/dialogs.py" line="987"/>
+        <location filename="../app/train/dialogs.py" line="1028"/>
         <source>参数校验</source>
         <translation>파라미터 검증</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="939"/>
+        <location filename="../app/train/dialogs.py" line="1003"/>
         <source>训练启动失败: {}
 {}</source>
         <translation>학습 시작 실패: {}
 {}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="942"/>
+        <location filename="../app/train/dialogs.py" line="1006"/>
         <source>训练启动失败</source>
         <translation>학습 시작 실패</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="950"/>
+        <location filename="../app/train/dialogs.py" line="1014"/>
         <source>已有训练在进行中, 请先停止!</source>
         <translation>이미 학습이 진행 중입니다. 먼저 중지하세요!</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="952"/>
+        <location filename="../app/train/dialogs.py" line="1016"/>
         <source>开始训练: 任务类型={} 训练集={} 验证集={}</source>
         <translation>학습 시작: 작업 유형={} 학습 세트={} 검증 세트={}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="985"/>
+        <location filename="../app/train/dialogs.py" line="1053"/>
         <source>队列</source>
         <translation>대기열</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="986"/>
+        <location filename="../app/train/dialogs.py" line="1054"/>
         <source>已更新该队列任务的参数</source>
         <translation>대기열 작업의 파라미터를 업데이트했습니다</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="992"/>
+        <location filename="../app/train/dialogs.py" line="1060"/>
         <source>加入队列失败</source>
         <translation>대기열 추가 실패</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="995"/>
+        <location filename="../app/train/dialogs.py" line="1063"/>
         <source>加入训练队列: {} | {}</source>
         <translation>학습 대기열에 추가: {} | {}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1000"/>
+        <location filename="../app/train/dialogs.py" line="1068"/>
         <source>已加入队列(第 {} 个), 可在首页&quot;队列&quot;中查看或启动.</source>
         <translation>대기열에 추가되었습니다({}번째). 홈 화면의 &quot;대기열&quot;에서 확인하거나 시작할 수 있습니다.</translation>
     </message>
@@ -4230,8 +4248,8 @@ onnx / onnxsim이 없다는 메시지가 나오면 먼저 설치하세요:
     </message>
     <message>
         <location filename="../ui/train_queue.ui" line="113"/>
-        <source>网络</source>
-        <translation>네트워크</translation>
+        <source>型号</source>
+        <translation>모델</translation>
     </message>
     <message>
         <location filename="../ui/train_queue.ui" line="118"/>
@@ -4626,13 +4644,13 @@ onnx / onnxsim이 없다는 메시지가 나오면 먼저 설치하세요:
 <context>
     <name>_TrainStartDialog</name>
     <message>
-        <location filename="../app/train/dialogs.py" line="253"/>
+        <location filename="../app/train/dialogs.py" line="256"/>
         <source>训练即将开始</source>
         <translation>학습이 곧 시작됩니다</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="263"/>
-        <location filename="../app/train/dialogs.py" line="276"/>
+        <location filename="../app/train/dialogs.py" line="266"/>
+        <location filename="../app/train/dialogs.py" line="279"/>
         <source>确认({})</source>
         <translation>확인({})</translation>
     </message>

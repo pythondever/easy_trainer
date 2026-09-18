@@ -181,7 +181,7 @@ class Ui_TrainQueueDialog(object):
         ___qtablewidgetitem3 = self.queue_table.horizontalHeaderItem(3)
         ___qtablewidgetitem3.setText(QCoreApplication.translate("TrainQueueDialog", u"\u6570\u636e\u96c6", None))
         ___qtablewidgetitem4 = self.queue_table.horizontalHeaderItem(4)
-        ___qtablewidgetitem4.setText(QCoreApplication.translate("TrainQueueDialog", u"\u7f51\u7edc", None))
+        ___qtablewidgetitem4.setText(QCoreApplication.translate("TrainQueueDialog", u"\u578b\u53f7", None))
         ___qtablewidgetitem5 = self.queue_table.horizontalHeaderItem(5)
         ___qtablewidgetitem5.setText(QCoreApplication.translate("TrainQueueDialog", u"\u8f6e\u6b21", None))
         ___qtablewidgetitem6 = self.queue_table.horizontalHeaderItem(6)
