@@ -6,6 +6,7 @@ import json
 import traceback
 import uuid
 from datetime import datetime
+from importlib.util import find_spec
 
 from PySide6.QtCore import Qt, QTimer, QEvent, QObject, QThread, Signal
 from PySide6.QtCore import QCoreApplication as QC
@@ -46,6 +47,20 @@ def collect_dataset_labels(db, ds_pairs):
 # 各任务 best 权重的文件名: rf-detr 用 ema track, 分类 runner 只有单一 best
 BEST_CKPT = {"classify": "checkpoint_best.pth"}
 BEST_CKPT_DEFAULT = "checkpoint_best_ema.pth"
+BEST_CKPT_CNN = os.path.join("weights", "best.pt")
+
+
+def best_ckpt_name(config):
+    """训练期间先按这个填记录的 model_path, 跑完由 runner 的 RESULT 覆盖.
+
+    分类也带 family="cnn", 但它的产物名不随架构变, 所以先按任务判.
+    """
+    task = config.get("task", "")
+    if task == "classify":
+        return BEST_CKPT["classify"]
+    if config.get("family") == "cnn":
+        return BEST_CKPT_CNN
+    return BEST_CKPT_DEFAULT
 
 
 def make_train_record(config, db, project_fallback=""):
@@ -75,10 +90,8 @@ def make_train_record(config, db, project_fallback=""):
         "family": config.get("family", ""),
         "map50": "",
         "img_size": config.get("img_size", ""),
-        # ema 优先: 与 runner 交付的 best 同源(regular 是另一条 track 的 best)
         "model_path": os.path.join(
-            config.get("timestamp_dir", ""),
-            BEST_CKPT.get(config.get("task", ""), BEST_CKPT_DEFAULT)),
+            config.get("timestamp_dir", ""), best_ckpt_name(config)),
         "dataset_info": dataset_info,
         "output_path": config.get("out_root", ""),
         "epochs": config.get("epochs", ""),
@@ -972,10 +985,15 @@ class TrainDialog(QDialog):
             self.ui.output_line_txt.setText(d)
 
     def _family_ready(self):
-        """CNN(YOLO) 训练后端还没接: 选到 CNN 先挡住, 别让子进程按 rf-detr 的档位跑."""
+        """CNN 走 ultralytics 后端, 没装就别放行 —— 否则要等子进程起来才报 ImportError.
+
+        用 find_spec 而不是 import: 后者在 GUI 线程里要花一两秒.
+        """
         if self._task() == "classify" or self._arch() != "cnn":
             return True, ""
-        return False, self.tr("CNN(YOLO) 训练后端尚未接入, 请先选择 Transformer 架构")
+        if find_spec("ultralytics") is None:
+            return False, self.tr("未安装 ultralytics, 无法使用 CNN 架构")
+        return True, ""
 
     def _on_start_train(self):
         if self.app.is_training():
@@ -992,9 +1010,10 @@ class TrainDialog(QDialog):
         if not ok:
             MessageBox.warning(self, self.tr("开始训练"), msg)
             return
-        # 权重缺失时先问一次: 否则训练子进程会静默下载几百 MB, 日志里还看不到进度
+        # 权重缺失时拦下来: 子进程自己下是静默的, 日志里看不到进度
         if not ensure_weight(self, self.app.db, self._task(),
-                             self.ui.network_combo.currentText() or "nano"):
+                             self.ui.network_combo.currentText() or "nano",
+                             self._arch()):
             return
         params = self.collect_train_params()
         try:
@@ -1035,7 +1054,8 @@ class TrainDialog(QDialog):
             return
         # 入队时就查权重: 队列多半无人守着, 缺权重到出队时才发现在半夜
         if not ensure_weight(self, self.app.db, self._task(),
-                             self.ui.network_combo.currentText() or "nano"):
+                             self.ui.network_combo.currentText() or "nano",
+                             self._arch()):
             return
         params = self.collect_train_params()
         if not params["out_root"]:

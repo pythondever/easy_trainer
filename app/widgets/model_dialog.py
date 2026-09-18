@@ -782,8 +782,9 @@ class ModelDialog(QDialog):
             size = int(rec.get("img_size") or 0)
         except (TypeError, ValueError):
             size = 0
-        self._onnx_worker = OnnxExportWorker(model_path, task,
-                                             self._exp["onnx"], size, parent=self)
+        self._onnx_worker = OnnxExportWorker(
+            model_path, task, self._exp["onnx"], size,
+            family=rec.get("family") or "", parent=self)
         self._onnx_worker.stage.connect(
             lambda msg: self._exp_dlg.set_text(
                 str(msg).replace("[export] ", "")))
@@ -805,14 +806,20 @@ class ModelDialog(QDialog):
         model_dir = self._exp["model_dir"]
         model_path = self._exp["model_path"]
         task = self._exp["task"]
-        src = os.path.join(model_dir, "classes.txt")
-        if os.path.exists(src):
+        # ultralytics 的权重在 <ts_dir>/weights/ 下, classes.txt 却在上一级
+        dirs = [model_dir, os.path.dirname(model_dir)]
+        src = ""
+        for d in dirs:
+            if d and os.path.exists(os.path.join(d, "classes.txt")):
+                src = os.path.join(d, "classes.txt")
+                break
+        if src:
             shutil.copy2(src, os.path.join(out_dir, "classes.txt"))
             self._exp["copied"].append("classes.txt")
             return
         yaml_src = ""
-        for cand in (os.path.join(model_dir, "data.yaml"),
-                     os.path.join(os.path.dirname(model_dir), "data.yaml")):
+        for d in dirs:
+            cand = os.path.join(d, "data.yaml")
             if os.path.exists(cand):
                 yaml_src = cand
                 break
@@ -924,6 +931,7 @@ class ModelDialog(QDialog):
             "has_label": has_label, "device": rec.get("device") or "cuda",
             "total": total, "output_labels": False,
             "task": "classify" if cls_mode else "",
+            "family": rec.get("family") or "",
             "report_dir": report_dir, "_cfg_path": cfg_path,
             "language": i18n.current(),
         }

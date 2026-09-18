@@ -16,6 +16,7 @@ import urllib.request
 from PySide6.QtCore import QThread, Signal
 from PySide6.QtCore import QCoreApplication as QC
 
+from app.core import model_assets
 from app.core.log import write_log
 
 CHUNK = 1 << 20
@@ -39,6 +40,7 @@ class ModelDownloader(QThread):
     def __init__(self, assets, dest, parent=None):
         super().__init__(parent)
         self._assets = list(assets)
+        # 权重根目录: 每个文件实际落在它按架构分出的子目录里
         self._dest = dest
         self._cancelled = False
 
@@ -59,10 +61,10 @@ class ModelDownloader(QThread):
         self.all_finished.emit(ok)
 
     def _fetch(self, asset):
-        final = os.path.join(self._dest, asset.filename)
+        final = model_assets.path_of(asset, self._dest)
         part = final + ".part"
         try:
-            os.makedirs(self._dest, exist_ok=True)
+            os.makedirs(os.path.dirname(final), exist_ok=True)
         except OSError as exc:
             return self._fail(asset, QC.translate(
                 "ModelDownloader",

@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """模型权重管理对话框: 列出所有可选权重, 现场下载并显示进度.
 
-训练前预检(ensure_weight)也在这里: 权重缺失时给用户"去下载/仍然继续/取消"三条路,
+训练前预检(ensure_weight)也在这里: 权重缺失时给用户"去下载/取消"两条路,
 而不是让训练子进程在后台悄悄下载、失败了只丢一堆堆栈.
 """
 
 import os
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QTimer
 from PySide6.QtCore import QCoreApplication as QC
 from PySide6.QtGui import QFontMetrics
 from PySide6.QtWidgets import (QCheckBox, QDialog, QFileDialog, QFrame,
@@ -158,21 +158,53 @@ class ModelManagerDialog(QDialog):
         self._rows = []
         self._downloader = None
         self._failed = {}
+        self._focus_row = None
         self._dir = model_assets.models_dir(db.get_models_dir() if db else "")
         self._show_dir()
         self._build_rows()
         for name in preselect:
             self._check_by_name(name)
+            if self._focus_row is None:
+                self._focus_row = self._row_of(name)
         apply_icon(self.ui.close_btn, self.tr("关闭"))
         self.ui.close_btn.clicked.connect(self.reject)
         self.ui.change_dir_btn.clicked.connect(self._on_change_dir)
         self.ui.start_btn.clicked.connect(self._on_start)
         self._refresh_total()
+        self._fit_height()
+
+    def _fit_height(self):
+        """十八行权重全展开约 900px, 小屏上会顶出去: 按内容高度开窗, 上限留给屏幕."""
+        scr = self.screen()
+        avail = scr.availableGeometry().height() if scr else 900
+        margin = self.ui.root_layout.contentsMargins()
+        want = (self.ui.groups_content.sizeHint().height()
+                + self.ui.foot_layout.sizeHint().height()
+                + margin.top() + margin.bottom()
+                + self.ui.root_layout.spacing())
+        self.resize(self.width(), min(want, max(360, avail - 90)))
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        if self._focus_row is not None:
+            # "去下载"带过来的那一行在滚动区下方, 不滚过去看着像没勾上.
+            # 开窗这一拍滚动条量程还没算出来, 得推到事件循环下一拍
+            QTimer.singleShot(0, self._scroll_to_focus)
+
+    def _scroll_to_focus(self):
+        row, self._focus_row = self._focus_row, None
+        if row is not None:
+            self.ui.groups_scroll.ensureWidgetVisible(row)
 
     # ---------- 构建 ----------
     def _build_rows(self):
+        # 顺序必须与 .ui 里标题+分组框的排布一致, 否则行会挂到别的标题下面
         for task, layout in ((model_assets.DETECT, self.ui.detect_layout),
-                             (model_assets.SEGMENT, self.ui.segment_layout)):
+                             (model_assets.DETECT_CNN,
+                              self.ui.detect_cnn_layout),
+                             (model_assets.SEGMENT, self.ui.segment_layout),
+                             (model_assets.SEGMENT_CNN,
+                              self.ui.segment_cnn_layout)):
             assets = model_assets.for_task(task)
             for i, asset in enumerate(assets):
                 row = _ModelRow(asset)
@@ -185,6 +217,9 @@ class ModelManagerDialog(QDialog):
                 row.check.toggled.connect(self._refresh_total)
                 layout.addWidget(row)
                 self._rows.append(row)
+            # addWidget 只把内层布局标脏, 装滚动区的外层缓存里这个框还是空的高.
+            # 不补这一下, _fit_height 量到的内容高度会少掉整个分组
+            layout.parentWidget().updateGeometry()
 
     def _check_by_name(self, filename):
         for row in self._rows:
@@ -210,7 +245,11 @@ class ModelManagerDialog(QDialog):
         fm = QFontMetrics(self.ui.dir_label.font())
         self.ui.dir_label.setFixedWidth(W_DIR)
         self.ui.dir_label.setText(fm.elidedText(self._dir, Qt.ElideMiddle, W_DIR))
-        self.ui.dir_label.setToolTip(self._dir)
+        # 标签只放得下根目录, 实际文件在架构子目录里: tooltip 补上, 免得照着去找扑空
+        self.ui.dir_label.setToolTip("{}\ntransformer  {}\ncnn  {}".format(
+            self._dir,
+            model_assets.dir_for(model_assets.TRANSFORMER, self._dir),
+            model_assets.dir_for(model_assets.CNN, self._dir)))
 
     def _on_change_dir(self):
         d = QFileDialog.getExistingDirectory(self, self.tr("选择权重目录"),
@@ -325,13 +364,13 @@ def open_model_manager(parent, db, preselect=()):
     return dlg
 
 
-def ensure_weight(parent, db, task, level):
-    """训练前预检: 返回 True 表示可以开始训练.
+def ensure_weight(parent, db, task, level, family="transformer"):
+    """训练前预检: 返回 True 表示可以开始训练, 缺权重一律不放行.
 
-    缺失时弹窗说清要下多少、下到哪, 并给"去下载/仍然继续/取消"三条路:
+    缺失时弹窗说清要下多少、下到哪, 并给"去下载/取消"两条路:
     点"去下载"会打开权重管理且不启动训练, 避免用户以为已经开训了.
     """
-    asset = model_assets.find(task, level)
+    asset = model_assets.find(model_assets.asset_task(task, family), level)
     if asset is None:
         return True
     saved = db.get_models_dir() if db is not None else ""
@@ -341,20 +380,20 @@ def ensure_weight(parent, db, task, level):
         return True
     # 模块级函数没有 self.tr; 文案也要按字面量传给 translate, 否则抽不出译文
     btn_down = QC.translate("ModelManagerDialog", "去下载")
-    btn_keep = QC.translate("ModelManagerDialog", "仍然继续")
+    btn_cancel = QC.translate("ModelManagerDialog", "取消")
+    title = QC.translate("ModelManagerDialog", "缺少模型权重")
     text = QC.translate(
         "ModelManagerDialog", "本次训练选用 {} {}模型, 需要先下载 {}.").format(
         level, task_text(task), model_assets.human_size(asset.nbytes))
-    informative = QC.translate(
-        "ModelManagerDialog",
-        "下载位置: {}\n点\"仍然继续\"则由软件在训练时自行下载, "
-        "期间训练日志不会显示进度. 建议先在这里下载好.").format(directory)
+    # 显示实际落盘的子目录, 而不是根目录: 两者差一级, 用户照着去找文件才不会扑空
+    location = QC.translate(
+        "ModelManagerDialog", "下载位置: {}").format(
+        model_assets.dir_for(model_assets.family_of(asset), directory))
     choice = MessageBox.choose(
-        parent, QC.translate("ModelManagerDialog", "缺少模型权重"), text,
-        [(btn_down, "primary"), (btn_keep, "normal"),
-         (QC.translate("ModelManagerDialog", "取消"), "normal")],
-        informative=informative)
+        parent, title, text,
+        [(btn_down, "primary"), (btn_cancel, "normal")],
+        informative=location + "\n" + QC.translate(
+            "ModelManagerDialog", "该架构的权重必须先下载好才能开始训练."))
     if choice == btn_down:
         open_model_manager(parent, db, preselect=(asset.filename,))
-        return False
-    return choice == btn_keep
+    return False

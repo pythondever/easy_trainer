@@ -432,7 +432,7 @@
     </message>
     <message>
         <location filename="../ui/app.ui" line="434"/>
-        <location filename="../app/mixins/queue_mixin.py" line="354"/>
+        <location filename="../app/mixins/queue_mixin.py" line="360"/>
         <source>队列</source>
         <translation>キュー</translation>
     </message>
@@ -605,9 +605,19 @@
         <translation>{} データセットをマージ → {} ({} 個のファイル)</translation>
     </message>
     <message>
-        <location filename="../app/train/data_prep.py" line="307"/>
+        <location filename="../app/train/data_prep.py" line="313"/>
         <source>生成 data.yaml → {}</source>
         <translation>data.yaml を生成 → {}</translation>
+    </message>
+    <message>
+        <location filename="../app/train/data_prep.py" line="326"/>
+        <source>未从数据集中解析到任何标签类别, 请检查标签文件</source>
+        <translation>データセットからラベルクラスを解析できませんでした。ラベルファイルを確認してください</translation>
+    </message>
+    <message>
+        <location filename="../app/train/data_prep.py" line="333"/>
+        <source>数据准备完成: {} 个类别, 输出目录 {}</source>
+        <translation>データ準備完了: {} クラス, 出力フォルダ {}</translation>
     </message>
 </context>
 <context>
@@ -1337,44 +1347,62 @@
 <context>
     <name>ModelAssets</name>
     <message>
-        <location filename="../app/core/model_assets.py" line="44"/>
+        <location filename="../app/core/model_assets.py" line="72"/>
+        <location filename="../app/core/model_assets.py" line="105"/>
         <source>速度最快, 精度够用</source>
         <translation>最速で精度も十分</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="48"/>
+        <location filename="../app/core/model_assets.py" line="73"/>
+        <location filename="../app/core/model_assets.py" line="109"/>
         <source>精度更好, 稍慢一些</source>
         <translation>精度はより良く、やや遅い</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="52"/>
+        <location filename="../app/core/model_assets.py" line="74"/>
+        <location filename="../app/core/model_assets.py" line="113"/>
         <source>精度更高</source>
         <translation>より高精度</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="56"/>
+        <location filename="../app/core/model_assets.py" line="75"/>
+        <location filename="../app/core/model_assets.py" line="117"/>
         <source>精度最高, 显存占用大</source>
         <translation>最高精度、VRAM 消費大</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="60"/>
+        <location filename="../app/core/model_assets.py" line="76"/>
+        <source>精度极致, 显存占用很大</source>
+        <translation>最高精度、VRAM 消費が非常に大きい</translation>
+    </message>
+    <message>
+        <location filename="../app/core/model_assets.py" line="79"/>
+        <location filename="../app/core/model_assets.py" line="121"/>
         <source>轻量分割</source>
         <translation>軽量セグメンテーション</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="64"/>
+        <location filename="../app/core/model_assets.py" line="80"/>
+        <location filename="../app/core/model_assets.py" line="125"/>
         <source>速度与精度平衡</source>
         <translation>速度と精度のバランス</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="68"/>
+        <location filename="../app/core/model_assets.py" line="81"/>
+        <location filename="../app/core/model_assets.py" line="129"/>
         <source>细节更完整</source>
         <translation>細部まで再現</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="72"/>
+        <location filename="../app/core/model_assets.py" line="82"/>
+        <location filename="../app/core/model_assets.py" line="133"/>
         <source>最精细</source>
         <translation>最も精密</translation>
+    </message>
+    <message>
+        <location filename="../app/core/model_assets.py" line="83"/>
+        <source>最精细, 显存占用很大</source>
+        <translation>最も精密、VRAM 消費が非常に大きい</translation>
     </message>
 </context>
 <context>
@@ -1714,8 +1742,8 @@
         <location filename="../app/widgets/model_dialog.py" line="744"/>
         <location filename="../app/widgets/model_dialog.py" line="762"/>
         <location filename="../app/widgets/model_dialog.py" line="778"/>
-        <location filename="../app/widgets/model_dialog.py" line="993"/>
-        <location filename="../app/widgets/model_dialog.py" line="1005"/>
+        <location filename="../app/widgets/model_dialog.py" line="1001"/>
+        <location filename="../app/widgets/model_dialog.py" line="1013"/>
         <source>导出模型</source>
         <translation>モデルをエクスポート</translation>
     </message>
@@ -1753,7 +1781,7 @@
     </message>
     <message>
         <location filename="../app/widgets/model_dialog.py" line="775"/>
-        <location filename="../app/widgets/model_dialog.py" line="872"/>
+        <location filename="../app/widgets/model_dialog.py" line="879"/>
         <source>未知</source>
         <translation>不明</translation>
     </message>
@@ -1763,89 +1791,89 @@
         <translation>ONNX をエクスポート中...</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="797"/>
+        <location filename="../app/widgets/model_dialog.py" line="798"/>
         <source>ONNX 导出完成: {} ({:.1f} MB)</source>
         <translation>ONNX エクスポート完了: {} ({:.1f} MB)</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="849"/>
+        <location filename="../app/widgets/model_dialog.py" line="856"/>
         <source>生成 classes.txt 失败: {}</source>
         <translation>classes.txt の生成に失敗しました: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="850"/>
+        <location filename="../app/widgets/model_dialog.py" line="857"/>
         <source>[export] 生成 classes.txt 失败: {}</source>
         <translation>[export] classes.txt の生成に失敗しました: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="856"/>
+        <location filename="../app/widgets/model_dialog.py" line="863"/>
         <source>导出模型报告跳过: 分类任务不出评估报告</source>
         <translation>モデルレポートのエクスポートをスキップ: 分類タスクでは評価レポートを出力しません</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="857"/>
+        <location filename="../app/widgets/model_dialog.py" line="864"/>
         <source>分类任务不生成评估报告</source>
         <translation>分類タスクでは評価レポートを生成しません</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="861"/>
+        <location filename="../app/widgets/model_dialog.py" line="868"/>
         <source>导出模型报告跳过: 未找到验证集</source>
         <translation>モデルレポートのエクスポートをスキップ: 検証セットが見つかりません</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="862"/>
+        <location filename="../app/widgets/model_dialog.py" line="869"/>
         <source>未找到验证集, 已跳过评估报告</source>
         <translation>検証セットが見つからないため、評価レポートをスキップしました</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="864"/>
+        <location filename="../app/widgets/model_dialog.py" line="871"/>
         <source>正在生成模型报告...</source>
         <translation>モデルレポートを生成中...</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="868"/>
+        <location filename="../app/widgets/model_dialog.py" line="875"/>
         <source>正在生成模型报告 {}/{}</source>
         <translation>モデルレポートを生成中 {}/{}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="871"/>
+        <location filename="../app/widgets/model_dialog.py" line="878"/>
         <source>导出模型评估失败: {}</source>
         <translation>モデルエクスポートの評価に失敗しました: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="874"/>
+        <location filename="../app/widgets/model_dialog.py" line="881"/>
         <source>评估失败, 已跳过报告: {}</source>
         <translation>評価に失敗し、レポートをスキップしました: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="946"/>
+        <location filename="../app/widgets/model_dialog.py" line="954"/>
         <source>[export] 生成评估报告失败:
 {}</source>
         <translation>[export] 評価レポートの生成に失敗しました:
 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="947"/>
+        <location filename="../app/widgets/model_dialog.py" line="955"/>
         <source>生成评估报告失败: {}</source>
         <translation>評価レポートの生成に失敗しました: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="951"/>
+        <location filename="../app/widgets/model_dialog.py" line="959"/>
         <source>导出模型报告完成: {}</source>
         <translation>モデルレポートのエクスポート完了: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="953"/>
+        <location filename="../app/widgets/model_dialog.py" line="961"/>
         <source>评估完成, 但报告生成失败</source>
         <translation>評価は完了しましたが、レポートの生成に失敗しました</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="987"/>
+        <location filename="../app/widgets/model_dialog.py" line="995"/>
         <source>导出模型完成: {} | 包含: {}</source>
         <translation>モデルのエクスポート完了: {} | 内容: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="989"/>
+        <location filename="../app/widgets/model_dialog.py" line="997"/>
         <source>已导出到:
 {}
 
@@ -1856,23 +1884,23 @@
 内容: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1000"/>
-        <location filename="../app/widgets/model_dialog.py" line="1002"/>
+        <location filename="../app/widgets/model_dialog.py" line="1008"/>
+        <location filename="../app/widgets/model_dialog.py" line="1010"/>
         <source>未知错误</source>
         <translation>不明なエラー</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1001"/>
+        <location filename="../app/widgets/model_dialog.py" line="1009"/>
         <source>导出模型失败: {}</source>
         <translation>モデルのエクスポートに失敗しました: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1003"/>
+        <location filename="../app/widgets/model_dialog.py" line="1011"/>
         <source>[export] ONNX 导出失败: {}</source>
         <translation>[export] ONNX のエクスポートに失敗しました: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1006"/>
+        <location filename="../app/widgets/model_dialog.py" line="1014"/>
         <source>ONNX 导出失败: {}
 
 若提示缺少 onnx / onnxsim, 请先安装:
@@ -1883,12 +1911,12 @@ onnx / onnxsim が見つからない場合は先にインストールしてく�
  pip install onnx onnxsim</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1021"/>
+        <location filename="../app/widgets/model_dialog.py" line="1029"/>
         <source>复制导出示例失败: {}</source>
         <translation>エクスポートサンプルのコピーに失敗しました: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1022"/>
+        <location filename="../app/widgets/model_dialog.py" line="1030"/>
         <source>[export] 复制示例失败: {}</source>
         <translation>[export] サンプルのコピーに失敗しました: {}</translation>
     </message>
@@ -1896,67 +1924,67 @@ onnx / onnxsim が見つからない場合は先にインストールしてく�
 <context>
     <name>ModelDownloader</name>
     <message>
-        <location filename="../app/core/model_download.py" line="67"/>
+        <location filename="../app/core/model_download.py" line="69"/>
         <source>权重目录不可写入, 请点&quot;更改&quot;换一个目录</source>
         <translation>重みフォルダに書き込めません。「変更」をクリックして別のフォルダを指定してください</translation>
     </message>
     <message>
-        <location filename="../app/core/model_download.py" line="76"/>
+        <location filename="../app/core/model_download.py" line="78"/>
         <source>权重文件大小不符, 丢弃重下: {}</source>
         <translation>重みファイルのサイズが一致しないため破棄して再ダウンロードします: {}</translation>
     </message>
     <message>
-        <location filename="../app/core/model_download.py" line="86"/>
+        <location filename="../app/core/model_download.py" line="88"/>
         <source>开始下载权重 {} ({}, 已下载 {})</source>
         <translation>重み {} のダウンロードを開始 ({}, ダウンロード済み {})</translation>
     </message>
     <message>
-        <location filename="../app/core/model_download.py" line="93"/>
+        <location filename="../app/core/model_download.py" line="95"/>
         <source>下载权重失败 {}: {}</source>
         <translation>重みのダウンロードに失敗 {}: {}</translation>
     </message>
     <message>
-        <location filename="../app/core/model_download.py" line="96"/>
+        <location filename="../app/core/model_download.py" line="98"/>
         <source>无法连接下载服务器, 请检查网络后重试</source>
         <translation>ダウンロードサーバーに接続できません。ネットワークを確認して再試行してください</translation>
     </message>
     <message>
-        <location filename="../app/core/model_download.py" line="104"/>
+        <location filename="../app/core/model_download.py" line="106"/>
         <source>下载中断, 已保留进度, 可再次点击续传</source>
         <translation>ダウンロードが中断されました。進捗は保持されています。再度クリックすると続きから再開できます</translation>
     </message>
     <message>
-        <location filename="../app/core/model_download.py" line="109"/>
+        <location filename="../app/core/model_download.py" line="111"/>
         <source>下载不完整, 已保留进度, 可再次点击续传</source>
         <translation>ダウンロードが不完全です。進捗は保持されています。再度クリックすると続きから再開できます</translation>
     </message>
     <message>
-        <location filename="../app/core/model_download.py" line="116"/>
+        <location filename="../app/core/model_download.py" line="118"/>
         <source>权重校验不通过 {}: 期望 {} 实际 {}</source>
         <translation>重みの検証に失敗 {}: 期待値 {} 実際 {}</translation>
     </message>
     <message>
-        <location filename="../app/core/model_download.py" line="121"/>
+        <location filename="../app/core/model_download.py" line="123"/>
         <source>文件校验未通过, 损坏文件已删除, 请重试</source>
         <translation>ファイルの検証に失敗しました。破損ファイルは削除済みです。再試行してください</translation>
     </message>
     <message>
-        <location filename="../app/core/model_download.py" line="127"/>
+        <location filename="../app/core/model_download.py" line="129"/>
         <source>写入权重目录失败, 请检查磁盘空间</source>
         <translation>重みフォルダへの書き込みに失敗しました。ディスク容量を確認してください</translation>
     </message>
     <message>
-        <location filename="../app/core/model_download.py" line="130"/>
+        <location filename="../app/core/model_download.py" line="132"/>
         <source>权重就绪: {}</source>
         <translation>重みの準備完了: {}</translation>
     </message>
     <message>
-        <location filename="../app/core/model_download.py" line="151"/>
+        <location filename="../app/core/model_download.py" line="153"/>
         <source>下载已取消, 已下载部分保留以便续传: {}</source>
         <translation>ダウンロードをキャンセルしました。ダウンロード済みの部分は続きから再開できるよう保持されています: {}</translation>
     </message>
     <message>
-        <location filename="../app/core/model_download.py" line="171"/>
+        <location filename="../app/core/model_download.py" line="173"/>
         <source>权重下载异常 {}: {!r}</source>
         <translation>重みのダウンロードで例外 {}: {!r}</translation>
     </message>
@@ -1965,71 +1993,85 @@ onnx / onnxsim が見つからない場合は先にインストールしてく�
     <name>ModelManagerDialog</name>
     <message>
         <location filename="../ui/model_manager.ui" line="14"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="248"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="252"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="300"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="305"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="311"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="287"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="291"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="339"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="344"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="350"/>
         <source>模型权重</source>
         <translation>モデルの重み</translation>
     </message>
     <message>
-        <location filename="../ui/model_manager.ui" line="35"/>
-        <source>目标检测</source>
-        <translation>物体検出</translation>
-    </message>
-    <message>
-        <location filename="../ui/model_manager.ui" line="38"/>
-        <location filename="../ui/model_manager.ui" line="72"/>
+        <location filename="../ui/model_manager.ui" line="66"/>
+        <location filename="../ui/model_manager.ui" line="100"/>
+        <location filename="../ui/model_manager.ui" line="134"/>
+        <location filename="../ui/model_manager.ui" line="168"/>
         <source>modelGroupTitle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/model_manager.ui" line="45"/>
-        <location filename="../ui/model_manager.ui" line="79"/>
+        <location filename="../ui/model_manager.ui" line="73"/>
+        <location filename="../ui/model_manager.ui" line="107"/>
+        <location filename="../ui/model_manager.ui" line="141"/>
+        <location filename="../ui/model_manager.ui" line="175"/>
         <source>modelGroup</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/model_manager.ui" line="69"/>
-        <source>图像分割</source>
-        <translation>画像セグメンテーション</translation>
+        <location filename="../ui/model_manager.ui" line="63"/>
+        <source>目标检测 · Transformer</source>
+        <translation>物体検出 · Transformer</translation>
     </message>
     <message>
-        <location filename="../ui/model_manager.ui" line="121"/>
+        <location filename="../ui/model_manager.ui" line="97"/>
+        <source>目标检测 · CNN</source>
+        <translation>物体検出 · CNN</translation>
+    </message>
+    <message>
+        <location filename="../ui/model_manager.ui" line="131"/>
+        <source>图像分割 · Transformer</source>
+        <translation>画像セグメンテーション · Transformer</translation>
+    </message>
+    <message>
+        <location filename="../ui/model_manager.ui" line="165"/>
+        <source>图像分割 · CNN</source>
+        <translation>画像セグメンテーション · CNN</translation>
+    </message>
+    <message>
+        <location filename="../ui/model_manager.ui" line="221"/>
         <source>下载目录</source>
         <translation>ダウンロード先</translation>
     </message>
     <message>
-        <location filename="../ui/model_manager.ui" line="124"/>
-        <location filename="../ui/model_manager.ui" line="158"/>
+        <location filename="../ui/model_manager.ui" line="224"/>
+        <location filename="../ui/model_manager.ui" line="258"/>
         <source>modelFootLabel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/model_manager.ui" line="131"/>
+        <location filename="../ui/model_manager.ui" line="231"/>
         <source>modelDir</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/model_manager.ui" line="138"/>
+        <location filename="../ui/model_manager.ui" line="238"/>
         <source>更改</source>
         <translation>変更</translation>
     </message>
     <message>
-        <location filename="../ui/model_manager.ui" line="165"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="291"/>
+        <location filename="../ui/model_manager.ui" line="265"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="330"/>
         <source>开始下载</source>
         <translation>ダウンロード開始</translation>
     </message>
     <message>
-        <location filename="../ui/model_manager.ui" line="168"/>
+        <location filename="../ui/model_manager.ui" line="268"/>
         <source>primary</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/model_manager.ui" line="175"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="166"/>
+        <location filename="../ui/model_manager.ui" line="275"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="169"/>
         <source>关闭</source>
         <translation>閉じる</translation>
     </message>
@@ -2044,87 +2086,85 @@ onnx / onnxsim が見つからない場合は先にインストールしてく�
         <translation>残り {}m{}s</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="202"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="237"/>
         <source>占用空间 {}</source>
         <translation>使用容量 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="216"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="255"/>
         <source>选择权重目录</source>
         <translation>重みフォルダを選択</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="237"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="276"/>
         <source>权重目录不可写入 {}: {!r}</source>
         <translation>重みフォルダに書き込めません {}: {!r}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="248"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="287"/>
         <source>勾选的模型都已就绪, 不需要下载.</source>
         <translation>チェックしたモデルはすべて準備済みで、ダウンロードは不要です。</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="253"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="292"/>
         <source>当前目录不可写入, 请点&quot;更改&quot;换一个目录:
 {}</source>
         <translation>現在のフォルダに書き込めません。「変更」をクリックして別のフォルダを指定してください:
 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="258"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="297"/>
         <source>下载中...</source>
         <translation>ダウンロード中...</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="301"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="340"/>
         <source>以下权重没能下载完成:
 </source>
         <translation>以下の重みをダウンロードできませんでした:
 </translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="306"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="345"/>
         <source>权重已就绪, 保存在:
 {}</source>
         <translation>重みの準備が完了しました。保存先:
 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="312"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="351"/>
         <source>下载还在进行, 现在关闭会中断下载(已下载部分保留, 下次可续传).
 确定关闭?</source>
         <translation>ダウンロードが進行中です。今閉じるとダウンロードが中断されます(ダウンロード済みの部分は保持され、次回続きから再開できます)。
 閉じますか?</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="343"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="382"/>
         <source>去下载</source>
         <translation>ダウンロードへ</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="344"/>
-        <source>仍然继续</source>
-        <translation>そのまま続行</translation>
+        <location filename="../app/widgets/model_manager_dialog.py" line="389"/>
+        <source>下载位置: {}</source>
+        <translation>ダウンロード先: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="345"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="395"/>
+        <source>该架构的权重必须先下载好才能开始训练.</source>
+        <translation>このアーキテクチャの重みを先にダウンロードしないと学習を開始できません。</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/model_manager_dialog.py" line="385"/>
         <source>本次训练选用 {} {}模型, 需要先下载 {}.</source>
         <translation>今回の学習では {} {} モデルを使用するため、先に {} をダウンロードする必要があります。</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="348"/>
-        <source>下载位置: {}
-点&quot;仍然继续&quot;则由软件在训练时自行下载, 期间训练日志不会显示进度. 建议先在这里下载好.</source>
-        <translation>ダウンロード先: {}
-「そのまま続行」をクリックすると、学習時にソフトが自動でダウンロードしますが、その間ログに進捗は表示されません。ここで先にダウンロードしておくことをおすすめします。</translation>
-    </message>
-    <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="353"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="384"/>
         <source>缺少模型权重</source>
         <translation>モデルの重みがありません</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="355"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="383"/>
         <source>取消</source>
         <translation>キャンセル</translation>
     </message>
@@ -2421,37 +2461,42 @@ onnx / onnxsim が見つからない場合は先にインストールしてく�
         <translation>キュータスクの起動に失敗 {}: {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/queue_mixin.py" line="239"/>
+        <location filename="../app/mixins/queue_mixin.py" line="242"/>
+        <source>[队列] 缺少权重 {}, 该项训练会失败</source>
+        <translation>[队列] 重み {} がありません。この学習は失敗します</translation>
+    </message>
+    <message>
+        <location filename="../app/mixins/queue_mixin.py" line="245"/>
         <source>[队列] 缺少权重 {}, 该项训练时会自行下载</source>
         <translation>[队列] 重み {} がありません。この項目は学習時に自動でダウンロードします</translation>
     </message>
     <message>
-        <location filename="../app/mixins/queue_mixin.py" line="249"/>
+        <location filename="../app/mixins/queue_mixin.py" line="255"/>
         <source>已有训练在进行中</source>
         <translation>学習が既に実行中です</translation>
     </message>
     <message>
-        <location filename="../app/mixins/queue_mixin.py" line="254"/>
+        <location filename="../app/mixins/queue_mixin.py" line="260"/>
         <source>[队列] 开始队列第 {}/{} 项: {}</source>
         <translation>[队列] キューの {}/{} 番目を開始: {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/queue_mixin.py" line="258"/>
+        <location filename="../app/mixins/queue_mixin.py" line="264"/>
         <source>队列启动任务: {} record={}</source>
         <translation>キューのタスクを起動: {} record={}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/queue_mixin.py" line="296"/>
+        <location filename="../app/mixins/queue_mixin.py" line="302"/>
         <source>训练未完成, 详见日志</source>
         <translation>学習が完了しませんでした。詳細はログをご確認ください</translation>
     </message>
     <message>
-        <location filename="../app/mixins/queue_mixin.py" line="323"/>
+        <location filename="../app/mixins/queue_mixin.py" line="329"/>
         <source>[队列] 显存等待超时, 仍继续启动下一个任务</source>
         <translation>[队列] VRAM 待ちがタイムアウトしました。次のタスクの起動を続行します</translation>
     </message>
     <message>
-        <location filename="../app/mixins/queue_mixin.py" line="353"/>
+        <location filename="../app/mixins/queue_mixin.py" line="359"/>
         <source>队列 {}</source>
         <translation>キュー {}</translation>
     </message>
@@ -2788,48 +2833,48 @@ onnx / onnxsim が見つからない場合は先にインストールしてく�
         <translation>ラベル付きと未ラベルのデータセットは同時にテストできません: {}/{}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="431"/>
+        <location filename="../app/widgets/test_dialog.py" line="432"/>
         <source>[test] 启动测试 worker: model={} 数据集={} 图像目录={} device={} cfg={}</source>
         <translation>[test] テスト worker を起動: model={} データセット={} 画像フォルダ={} device={} cfg={}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="436"/>
+        <location filename="../app/widgets/test_dialog.py" line="437"/>
         <source>测试准备中...</source>
         <translation>テストを準備中...</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="453"/>
         <location filename="../app/widgets/test_dialog.py" line="454"/>
+        <location filename="../app/widgets/test_dialog.py" line="455"/>
         <source>测试即将开始</source>
         <translation>まもなくテストを開始します</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="500"/>
+        <location filename="../app/widgets/test_dialog.py" line="501"/>
         <source>测试中 {}/{}</source>
         <translation>テスト中 {}/{}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="503"/>
+        <location filename="../app/widgets/test_dialog.py" line="504"/>
         <source>[test-dialog] 测试完成, ok={}</source>
         <translation>[test-dialog] テスト完了, ok={}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="511"/>
+        <location filename="../app/widgets/test_dialog.py" line="512"/>
         <source>测试结果</source>
         <translation>テスト結果</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="512"/>
+        <location filename="../app/widgets/test_dialog.py" line="513"/>
         <source>测试未正常完成</source>
         <translation>テストが正常に完了しませんでした</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="521"/>
+        <location filename="../app/widgets/test_dialog.py" line="522"/>
         <source>[test-dialog] 测试失败: {}</source>
         <translation>[test-dialog] テストに失敗しました: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="528"/>
+        <location filename="../app/widgets/test_dialog.py" line="529"/>
         <source>测试失败</source>
         <translation>テスト失敗</translation>
     </message>
@@ -3519,62 +3564,67 @@ onnx / onnxsim が見つからない場合は先にインストールしてく�
 <context>
     <name>TestRunner</name>
     <message>
-        <location filename="../app/train/test_runner.py" line="275"/>
+        <location filename="../app/train/test_runner.py" line="279"/>
         <source>覆盖已有标注 {}</source>
         <translation>既存のアノテーションを上書き {}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_runner.py" line="305"/>
+        <location filename="../app/train/test_runner.py" line="309"/>
         <source>明细初始化失败: {}</source>
         <translation>詳細の初期化に失敗しました: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_runner.py" line="311"/>
+        <location filename="../app/train/test_runner.py" line="315"/>
         <source>明细目录创建失败: {}</source>
         <translation>詳細フォルダの作成に失敗しました: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_runner.py" line="339"/>
+        <location filename="../app/train/test_runner.py" line="343"/>
         <source>明细写入失败: {}</source>
         <translation>詳細の書き込みに失敗しました: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_runner.py" line="417"/>
+        <location filename="../app/train/test_runner.py" line="424"/>
+        <source>ultralytics 未安装, 无法执行测试</source>
+        <translation>ultralytics がインストールされていないため、テストを実行できません</translation>
+    </message>
+    <message>
+        <location filename="../app/train/test_runner.py" line="428"/>
         <source>rfdetr 未安装, 无法执行测试</source>
         <translation>rfdetr がインストールされていないため、テストを実行できません</translation>
     </message>
     <message>
-        <location filename="../app/train/test_runner.py" line="418"/>
+        <location filename="../app/train/test_runner.py" line="430"/>
         <source>加载模型: {}</source>
         <translation>モデルを読み込み: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_runner.py" line="431"/>
+        <location filename="../app/train/test_runner.py" line="446"/>
         <source>推理已优化: {}</source>
         <translation>推論を最適化しました: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_runner.py" line="437"/>
+        <location filename="../app/train/test_runner.py" line="462"/>
         <source>测试图片 {} 张</source>
         <translation>テスト画像 {} 枚</translation>
     </message>
     <message>
-        <location filename="../app/train/test_runner.py" line="485"/>
+        <location filename="../app/train/test_runner.py" line="510"/>
         <source>预测失败 {}: {}</source>
         <translation>予測に失敗 {}: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_runner.py" line="499"/>
+        <location filename="../app/train/test_runner.py" line="524"/>
         <source>输出标注失败 {}: {}</source>
         <translation>アノテーションの出力に失敗 {}: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_runner.py" line="554"/>
+        <location filename="../app/train/test_runner.py" line="579"/>
         <source>WARN 标签目录存在但所有 {} 张图都没读到 GT,请确认标签是 .txt (YOLO) 或 .json (labelme)</source>
         <translation>WARN ラベルフォルダは存在しますが、{} 枚すべての画像で GT を読み取れませんでした。ラベルが .txt (YOLO) または .json (labelme) かを確認してください</translation>
     </message>
     <message>
-        <location filename="../app/train/test_runner.py" line="559"/>
+        <location filename="../app/train/test_runner.py" line="584"/>
         <source>WARN {} 张图缺标签文件</source>
         <translation>WARN {} 枚の画像にラベルファイルがありません</translation>
     </message>
@@ -3651,7 +3701,7 @@ onnx / onnxsim が見つからない場合は先にインストールしてく�
     <message>
         <location filename="../ui/train.ui" line="14"/>
         <location filename="../ui/train.ui" line="40"/>
-        <location filename="../app/train/dialogs.py" line="449"/>
+        <location filename="../app/train/dialogs.py" line="464"/>
         <source>训练</source>
         <translation>学習</translation>
     </message>
@@ -3712,7 +3762,7 @@ onnx / onnxsim が見つからない場合は先にインストールしてく�
     </message>
     <message>
         <location filename="../ui/train.ui" line="175"/>
-        <location filename="../app/train/dialogs.py" line="659"/>
+        <location filename="../app/train/dialogs.py" line="674"/>
         <source>训练集</source>
         <translation>学習セット</translation>
     </message>
@@ -3738,7 +3788,7 @@ onnx / onnxsim が見つからない場合は先にインストールしてく�
     </message>
     <message>
         <location filename="../ui/train.ui" line="301"/>
-        <location filename="../app/train/dialogs.py" line="525"/>
+        <location filename="../app/train/dialogs.py" line="540"/>
         <source>轮次</source>
         <translation>エポック</translation>
     </message>
@@ -3749,7 +3799,7 @@ onnx / onnxsim が見つからない場合は先にインストールしてく�
     </message>
     <message>
         <location filename="../ui/train.ui" line="327"/>
-        <location filename="../app/train/dialogs.py" line="528"/>
+        <location filename="../app/train/dialogs.py" line="543"/>
         <source>早停</source>
         <translation>早期終了</translation>
     </message>
@@ -3768,7 +3818,7 @@ onnx / onnxsim が見つからない場合は先にインストールしてく�
     </message>
     <message>
         <location filename="../ui/train.ui" line="380"/>
-        <location filename="../app/train/dialogs.py" line="531"/>
+        <location filename="../app/train/dialogs.py" line="546"/>
         <source>学习率</source>
         <translation>学習率</translation>
     </message>
@@ -3779,26 +3829,26 @@ onnx / onnxsim が見つからない場合は先にインストールしてく�
     </message>
     <message>
         <location filename="../ui/train.ui" line="433"/>
-        <location filename="../app/train/dialogs.py" line="523"/>
+        <location filename="../app/train/dialogs.py" line="538"/>
         <source>批次</source>
         <translation>バッチ</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="446"/>
-        <location filename="../app/train/dialogs.py" line="527"/>
+        <location filename="../app/train/dialogs.py" line="542"/>
         <source>图像尺寸</source>
         <translation>画像サイズ</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="477"/>
-        <location filename="../app/train/dialogs.py" line="413"/>
-        <location filename="../app/train/dialogs.py" line="417"/>
+        <location filename="../app/train/dialogs.py" line="428"/>
+        <location filename="../app/train/dialogs.py" line="432"/>
         <source>32 的倍数</source>
         <translation>32 の倍数</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="493"/>
-        <location filename="../app/train/dialogs.py" line="524"/>
+        <location filename="../app/train/dialogs.py" line="539"/>
         <source>梯度累积</source>
         <translation>勾配累積</translation>
     </message>
@@ -3809,7 +3859,7 @@ onnx / onnxsim が見つからない場合は先にインストールしてく�
     </message>
     <message>
         <location filename="../ui/train.ui" line="546"/>
-        <location filename="../app/train/dialogs.py" line="526"/>
+        <location filename="../app/train/dialogs.py" line="541"/>
         <source>线程数</source>
         <translation>スレッド数</translation>
     </message>
@@ -3845,7 +3895,7 @@ onnx / onnxsim が見つからない場合は先にインストールしてく�
     </message>
     <message>
         <location filename="../ui/train.ui" line="711"/>
-        <location filename="../app/train/dialogs.py" line="625"/>
+        <location filename="../app/train/dialogs.py" line="640"/>
         <source>请选择训练集与验证集</source>
         <translation>学習セットと検証セットを選択してください</translation>
     </message>
@@ -3856,240 +3906,240 @@ onnx / onnxsim が見つからない場合は先にインストールしてく�
     </message>
     <message>
         <location filename="../ui/train.ui" line="755"/>
-        <location filename="../app/train/dialogs.py" line="538"/>
+        <location filename="../app/train/dialogs.py" line="553"/>
         <source>取消</source>
         <translation>キャンセル</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="768"/>
-        <location filename="../app/train/dialogs.py" line="1032"/>
-        <location filename="../app/train/dialogs.py" line="1040"/>
-        <location filename="../app/train/dialogs.py" line="1048"/>
-        <location filename="../app/train/dialogs.py" line="1067"/>
+        <location filename="../app/train/dialogs.py" line="1053"/>
+        <location filename="../app/train/dialogs.py" line="1062"/>
+        <location filename="../app/train/dialogs.py" line="1070"/>
+        <location filename="../app/train/dialogs.py" line="1089"/>
         <source>加入队列</source>
         <translation>キューに追加</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="781"/>
-        <location filename="../app/train/dialogs.py" line="981"/>
-        <location filename="../app/train/dialogs.py" line="991"/>
-        <location filename="../app/train/dialogs.py" line="1013"/>
+        <location filename="../app/train/dialogs.py" line="1001"/>
+        <location filename="../app/train/dialogs.py" line="1011"/>
+        <location filename="../app/train/dialogs.py" line="1034"/>
         <source>开始训练</source>
         <translation>学習を開始</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="31"/>
+        <location filename="../app/train/dialogs.py" line="32"/>
         <source>正在检测显卡...</source>
         <translation>GPU を検出中...</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="131"/>
+        <location filename="../app/train/dialogs.py" line="144"/>
         <source>数据集&quot;{}&quot;尚未导入图像或路径无效, 请先导入该数据集再训练</source>
         <translation>データセット「{}」は画像が未インポートかパスが無効です。先にこのデータセットをインポートしてから学習してください</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="138"/>
+        <location filename="../app/train/dialogs.py" line="151"/>
         <source>数据集&quot;{}&quot;尚未导入标签或路径无效, 请先导入该数据集再训练</source>
         <translation>データセット「{}」はラベルが未インポートかパスが無効です。先にこのデータセットをインポートしてから学習してください</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="167"/>
-        <location filename="../app/train/dialogs.py" line="1041"/>
+        <location filename="../app/train/dialogs.py" line="180"/>
+        <location filename="../app/train/dialogs.py" line="1063"/>
         <source>请先选择输出路径</source>
         <translation>先に出力パスを選択してください</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="180"/>
+        <location filename="../app/train/dialogs.py" line="193"/>
         <source>数据集&quot;{}/{}&quot;不是分类数据集(标签格式={}), 无法训练图像分类</source>
         <translation>データセット「{}/{}」は分類データセットではありません(ラベル形式={})。画像分類を学習できません</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="183"/>
-        <location filename="../app/train/dialogs.py" line="962"/>
+        <location filename="../app/train/dialogs.py" line="196"/>
+        <location filename="../app/train/dialogs.py" line="977"/>
         <source>未知</source>
         <translation>不明</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="185"/>
+        <location filename="../app/train/dialogs.py" line="198"/>
         <source>数据集&quot;{}/{}&quot;是分类数据集, 无法训练{}任务</source>
         <translation>データセット「{}/{}」は分類データセットです。{} タスクを学習できません</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="199"/>
+        <location filename="../app/train/dialogs.py" line="212"/>
         <source>请至少选择一个训练集数据集</source>
         <translation>学習セットのデータセットを少なくとも 1 つ選択してください</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="201"/>
+        <location filename="../app/train/dialogs.py" line="214"/>
         <source>请至少选择一个验证集数据集</source>
         <translation>検証セットのデータセットを少なくとも 1 つ選択してください</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="246"/>
+        <location filename="../app/train/dialogs.py" line="259"/>
         <source>未选数据集</source>
         <translation>データセット未選択</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="402"/>
+        <location filename="../app/train/dialogs.py" line="417"/>
         <source>目标检测推荐图像尺寸: 640(可设为 32 的倍数如 640/672)</source>
         <translation>物体検出の推奨画像サイズ: 640(32 の倍数、例: 640/672 に設定可)</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="404"/>
+        <location filename="../app/train/dialogs.py" line="419"/>
         <source>图像分割推荐尺寸: 636(必须为 12 的倍数, 如 636/648/660)</source>
         <translation>セグメンテーションの推奨サイズ: 636(12 の倍数である必要があります。例: 636/648/660)</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="406"/>
+        <location filename="../app/train/dialogs.py" line="421"/>
         <source>CNN 分割推荐尺寸: 640(需为 32 的倍数)</source>
         <translation>CNN セグメンテーションの推奨サイズ: 640(32 の倍数である必要があります)</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="408"/>
+        <location filename="../app/train/dialogs.py" line="423"/>
         <source>图像分类推荐尺寸: 224(小图用 224, 较大图可到 256)</source>
         <translation>画像分類の推奨サイズ: 224(小さい画像は 224、大きい画像は 256 まで)</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="414"/>
+        <location filename="../app/train/dialogs.py" line="429"/>
         <source>12 的倍数</source>
         <translation>12 の倍数</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="415"/>
+        <location filename="../app/train/dialogs.py" line="430"/>
         <source>建议 224</source>
         <translation>224 を推奨</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="635"/>
+        <location filename="../app/train/dialogs.py" line="650"/>
         <source>训练集 {} 个 · 验证集 {} 个 · 共 {} 张图</source>
         <translation>学習セット {} 件 · 検証セット {} 件 · 画像 全 {} 枚</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="638"/>
+        <location filename="../app/train/dialogs.py" line="653"/>
         <source>未选择验证集</source>
         <translation>検証セット未選択</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="640"/>
+        <location filename="../app/train/dialogs.py" line="655"/>
         <source>已标注, 可直接训练</source>
         <translation>ラベル付き、そのまま学習できます</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="642"/>
+        <location filename="../app/train/dialogs.py" line="657"/>
         <source>有 {} 个数据集尚未标注</source>
         <translation>{} 件のデータセットが未ラベルです</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="656"/>
+        <location filename="../app/train/dialogs.py" line="671"/>
         <source>请选择验证集</source>
         <translation>検証セットを選択してください</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="737"/>
+        <location filename="../app/train/dialogs.py" line="752"/>
         <source>已有训练在进行中, 请先停止</source>
         <translation>学習が既に実行中です。先に停止してください</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="929"/>
+        <location filename="../app/train/dialogs.py" line="944"/>
         <source>请至少选择一个数据集</source>
         <translation>少なくとも 1 つのデータセットを選択してください</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="933"/>
-        <location filename="../app/train/dialogs.py" line="943"/>
+        <location filename="../app/train/dialogs.py" line="948"/>
+        <location filename="../app/train/dialogs.py" line="958"/>
         <source>&quot;{}&quot;不能为空</source>
         <translation>「{}」は空にできません</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="938"/>
+        <location filename="../app/train/dialogs.py" line="953"/>
         <source>&quot;{}&quot;必须是整数(当前: {})</source>
         <translation>「{}」は整数でなければなりません(現在: {})</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="948"/>
+        <location filename="../app/train/dialogs.py" line="963"/>
         <source>&quot;{}&quot;必须是数字(当前: {})</source>
         <translation>「{}」は数値でなければなりません(現在: {})</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="957"/>
+        <location filename="../app/train/dialogs.py" line="972"/>
         <source>数据集&quot;{}/{}&quot;是分类数据集,无法训练{}任务</source>
         <translation>データセット「{}/{}」は分類データセットです。{} タスクを学習できません</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="961"/>
+        <location filename="../app/train/dialogs.py" line="976"/>
         <source>数据集&quot;{}/{}&quot;不是分类数据集(标签格式={}),无法训练图像分类</source>
         <translation>データセット「{}/{}」は分類データセットではありません(ラベル形式={})。画像分類を学習できません</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="968"/>
+        <location filename="../app/train/dialogs.py" line="983"/>
         <source>选择输出目录</source>
         <translation>出力フォルダを選択</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="976"/>
-        <source>CNN(YOLO) 训练后端尚未接入, 请先选择 Transformer 架构</source>
-        <translation>CNN(YOLO) の学習バックエンドは未対応です。先に Transformer アーキテクチャを選択してください</translation>
+        <location filename="../app/train/dialogs.py" line="995"/>
+        <source>未安装 ultralytics, 无法使用 CNN 架构</source>
+        <translation>ultralytics がインストールされていないため、CNN アーキテクチャを使用できません</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="982"/>
+        <location filename="../app/train/dialogs.py" line="1002"/>
         <source>当前已有训练在进行中, 请先停止!</source>
         <translation>現在すでに学習が実行中です。先に停止してください!</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="986"/>
+        <location filename="../app/train/dialogs.py" line="1006"/>
         <source>参数校验未通过: {}</source>
         <translation>パラメータ検証に失敗しました: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="987"/>
-        <location filename="../app/train/dialogs.py" line="1028"/>
+        <location filename="../app/train/dialogs.py" line="1007"/>
+        <location filename="../app/train/dialogs.py" line="1049"/>
         <source>参数校验</source>
         <translation>パラメータ検証</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1003"/>
+        <location filename="../app/train/dialogs.py" line="1024"/>
         <source>训练启动失败: {}
 {}</source>
         <translation>学習の起動に失敗しました: {}
 {}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1006"/>
+        <location filename="../app/train/dialogs.py" line="1027"/>
         <source>训练启动失败</source>
         <translation>学習の起動に失敗しました</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1014"/>
+        <location filename="../app/train/dialogs.py" line="1035"/>
         <source>已有训练在进行中, 请先停止!</source>
         <translation>学習が既に実行中です。先に停止してください!</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1016"/>
+        <location filename="../app/train/dialogs.py" line="1037"/>
         <source>开始训练: 任务类型={} 训练集={} 验证集={}</source>
         <translation>学習開始: タスク種別={} 学習セット={} 検証セット={}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1053"/>
+        <location filename="../app/train/dialogs.py" line="1075"/>
         <source>队列</source>
         <translation>キュー</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1054"/>
+        <location filename="../app/train/dialogs.py" line="1076"/>
         <source>已更新该队列任务的参数</source>
         <translation>このキュータスクのパラメータを更新しました</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1060"/>
+        <location filename="../app/train/dialogs.py" line="1082"/>
         <source>加入队列失败</source>
         <translation>キューの追加に失敗しました</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1063"/>
+        <location filename="../app/train/dialogs.py" line="1085"/>
         <source>加入训练队列: {} | {}</source>
         <translation>学習キューに追加: {} | {}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1068"/>
+        <location filename="../app/train/dialogs.py" line="1090"/>
         <source>已加入队列(第 {} 个), 可在首页&quot;队列&quot;中查看或启动.</source>
         <translation>キューに追加しました({} 番目)。ホームの「キュー」で確認または開始できます。</translation>
     </message>
@@ -4517,55 +4567,55 @@ onnx / onnxsim が見つからない場合は先にインストールしてく�
 <context>
     <name>TrainRunner</name>
     <message>
-        <location filename="../app/train/train_runner.py" line="67"/>
+        <location filename="../app/train/train_runner.py" line="66"/>
+        <location filename="../app/train/yolo_train_runner.py" line="174"/>
         <source>输出路径: {}</source>
         <translation>出力パス: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/train_runner.py" line="68"/>
+        <location filename="../app/train/train_runner.py" line="67"/>
+        <location filename="../app/train/yolo_train_runner.py" line="175"/>
         <source>本次训练输出目录(时间戳): {}</source>
         <translation>今回の学習の出力フォルダ(タイムスタンプ): {}</translation>
     </message>
     <message>
-        <location filename="../app/train/train_runner.py" line="70"/>
+        <location filename="../app/train/train_runner.py" line="69"/>
         <source>训练配置文件已保存 → {}</source>
         <translation>学習設定ファイルを保存しました → {}</translation>
     </message>
     <message>
-        <location filename="../app/train/train_runner.py" line="77"/>
-        <source>未从数据集中解析到任何标签类别, 请检查标签文件</source>
-        <translation>データセットからラベルクラスを解析できませんでした。ラベルファイルを確認してください</translation>
-    </message>
-    <message>
-        <location filename="../app/train/train_runner.py" line="83"/>
-        <source>数据准备完成: {} 个类别, 输出目录 {}</source>
-        <translation>データ準備完了: {} クラス, 出力フォルダ {}</translation>
-    </message>
-    <message>
-        <location filename="../app/train/train_runner.py" line="97"/>
+        <location filename="../app/train/train_runner.py" line="85"/>
         <source>分割模型 resolution 已自动取整: {} → {} (block={})</source>
         <translation>セグメンテーションモデルの resolution を自動で整数化しました: {} → {} (block={})</translation>
     </message>
     <message>
-        <location filename="../app/train/train_runner.py" line="99"/>
+        <location filename="../app/train/train_runner.py" line="87"/>
+        <location filename="../app/train/yolo_train_runner.py" line="210"/>
         <source>使用模型 {} device={} epochs={} batch={} resolution={}</source>
         <translation>使用モデル {} device={} epochs={} batch={} resolution={}</translation>
     </message>
     <message>
-        <location filename="../app/train/train_runner.py" line="168"/>
+        <location filename="../app/train/train_runner.py" line="156"/>
+        <location filename="../app/train/yolo_train_runner.py" line="238"/>
         <source>训练完成</source>
         <translation>学習完了</translation>
     </message>
     <message>
-        <location filename="../app/train/train_runner.py" line="177"/>
+        <location filename="../app/train/train_runner.py" line="165"/>
+        <location filename="../app/train/yolo_train_runner.py" line="245"/>
         <source>生成类别文件: {}</source>
         <translation>クラスファイルを生成: {}</translation>
+    </message>
+    <message>
+        <location filename="../app/train/yolo_train_runner.py" line="181"/>
+        <source>预训练权重缺失: 请先在权重管理里下载 {} 档的模型</source>
+        <translation>事前学習済みの重みがありません: 先に重み管理で {} のモデルをダウンロードしてください</translation>
     </message>
 </context>
 <context>
     <name>TrainWorker</name>
     <message>
-        <location filename="../app/train/train_worker.py" line="482"/>
+        <location filename="../app/train/train_worker.py" line="491"/>
         <source>训练监控异常, 已终止.
 
 {}</source>
@@ -4574,7 +4624,7 @@ onnx / onnxsim が見つからない場合は先にインストールしてく�
 {}</translation>
     </message>
     <message>
-        <location filename="../app/train/train_worker.py" line="491"/>
+        <location filename="../app/train/train_worker.py" line="500"/>
         <source>训练结果文件读取失败: {}
 
 {}</source>
@@ -4583,7 +4633,7 @@ onnx / onnxsim が見つからない場合は先にインストールしてく�
 {}</translation>
     </message>
     <message>
-        <location filename="../app/train/train_worker.py" line="496"/>
+        <location filename="../app/train/train_worker.py" line="505"/>
         <source>训练进程异常退出 (code={})
 
 --- 子进程输出(尾部) ---
@@ -4644,13 +4694,13 @@ onnx / onnxsim が見つからない場合は先にインストールしてく�
 <context>
     <name>_TrainStartDialog</name>
     <message>
-        <location filename="../app/train/dialogs.py" line="256"/>
+        <location filename="../app/train/dialogs.py" line="269"/>
         <source>训练即将开始</source>
         <translation>まもなく学習を開始します</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="266"/>
         <location filename="../app/train/dialogs.py" line="279"/>
+        <location filename="../app/train/dialogs.py" line="292"/>
         <source>确认({})</source>
         <translation>確認({})</translation>
     </message>

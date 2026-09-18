@@ -32,8 +32,7 @@ from rfdetr import (RFDETRNano, RFDETRSmall, RFDETRMedium, RFDETRLarge,
                     RFDETRSegNano, RFDETRSegSmall, RFDETRSegMedium,
                     RFDETRSegLarge)
 
-from app.train.data_prep import (copy_datasets, merge_split,
-                                 write_data_yaml, clean_split)
+from app.train.data_prep import prepare_dataset
 from app.core import i18n
 from app.core.metrics import best_map50_from_csv
 
@@ -70,21 +69,10 @@ def main():
     print("[train] " + QC.translate("TrainRunner", "训练配置文件已保存 → {}").format(
         os.path.join(ts_dir, "config.json")), flush=True)
 
-    datasets = cfg["datasets"]
-    labels, _ = copy_datasets(out_root, project, datasets,
-                              cfg.get("task", "detect"))
-    if not labels:
-        raise RuntimeError(QC.translate("TrainRunner", "未从数据集中解析到任何标签类别, 请检查标签文件"))
-    clean_split(out_root)
-    merge_split(out_root, [d for d in datasets if d["split"] == "train"])
-    merge_split(out_root, [d for d in datasets if d["split"] == "val"])
-    write_data_yaml(out_root, labels)
-    shutil.rmtree(os.path.join(out_root, project), ignore_errors=True)
-    print("[train] " + QC.translate("TrainRunner", "数据准备完成: {} 个类别, 输出目录 {}").format(
-        len(labels), out_root), flush=True)
+    task = cfg.get("task", "detect")
+    labels = prepare_dataset(out_root, project, cfg["datasets"], task)
 
     # 2) 训练:
-    task = cfg.get("task", "detect")
     model = _make_model(cfg.get("architecture", "nano"), task)
     device = cfg.get("device", "cpu")
     if device.startswith("cuda"):

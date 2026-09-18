@@ -421,6 +421,7 @@ class TestDialog(QDialog):
             "has_label": has_label, "device": device,
             "total": total, "output_labels": output_labels,
             "task": "classify" if cls_mode else "",
+            "family": self._record.get("family") or "",
             "report_dir": report_dir,
             "_cfg_path": cfg_path,
             "language": i18n.current(),

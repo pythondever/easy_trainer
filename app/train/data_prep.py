@@ -298,11 +298,39 @@ def merge_split(out_root, datasets):
 
 
 def write_data_yaml(out_root, labels):
-    """生成 <out_root>/data.yaml(train/val 合并目录 + names)."""
-    lines = ["path: .", "train: train", "val: val", "", "names:"]
+    """
+    生成 <out_root>/data.yaml(train/val 合并目录 + names).
+
+    不写 path 行: rfdetr 把它当"相对 dataset_dir", 而 ultralytics 的
+    Path(".").exists() 恒为真, 会跳过它的 DATASETS_DIR 兜底、当成"相对进程 cwd",
+    两边语义不同. 留空则两家都回落到"data.yaml 所在目录", 且文件里不带机器路径.
+    """
+    lines = ["train: train", "val: val", "", "names:"]
     for i, lb in enumerate(labels):
         lines.append("  {}: {}".format(i, lb))
     with open(os.path.join(out_root, "data.yaml"), "w", encoding="utf-8") as f:
         f.write("\n".join(lines) + "\n")
     print("[train] " + QC.translate("DataPrep", "生成 data.yaml → {}").format(
         os.path.join(out_root, "data.yaml")), flush=True)
+
+
+def prepare_dataset(out_root, project, datasets, task="detect"):
+    """
+    训练前的数据准备(两个训练后端共用), 返回类别名列表.
+
+    顺序有讲究: merge_split 会从 <项目>/<数据集> 里取图, 取完才能删掉那份副本.
+    """
+    datasets = list(datasets)
+    labels, _ = copy_datasets(out_root, project, datasets, task)
+    if not labels:
+        raise RuntimeError(QC.translate(
+            "DataPrep", "未从数据集中解析到任何标签类别, 请检查标签文件"))
+    clean_split(out_root)
+    merge_split(out_root, [d for d in datasets if d["split"] == "train"])
+    merge_split(out_root, [d for d in datasets if d["split"] == "val"])
+    write_data_yaml(out_root, labels)
+    shutil.rmtree(os.path.join(out_root, project), ignore_errors=True)
+    print("[train] " + QC.translate(
+        "DataPrep", "数据准备完成: {} 个类别, 输出目录 {}").format(
+        len(labels), out_root), flush=True)
+    return labels

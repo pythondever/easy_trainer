@@ -30,8 +30,18 @@ WORKSPACE = os.path.dirname(os.path.dirname(os.path.dirname(
 # 打包后 runner 是 .pyd(脚本文件不存在), 子进程只能 -c 导入本模块再调 main()
 TRAIN_RUNNER = "app.train.train_runner"
 CLASSIFY_TRAIN_RUNNER = "app.train.classify_train_runner"
+YOLO_TRAIN_RUNNER = "app.train.yolo_train_runner"
 # 判定一个 epoch 是否已产出指标(val 有了, 或 train 行到了)的列
 _EPOCH_KEYS = ("val/mAP_50", "val/segm_mAP_50", "val/loss", "train/loss")
+
+
+def runner_module(config):
+    """按任务与网络架构选训练脚本: 分类是 resnet, CNN 是 ultralytics, 其余是 rf-detr."""
+    if config.get("task") == "classify":
+        return CLASSIFY_TRAIN_RUNNER
+    if config.get("family") == "cnn":
+        return YOLO_TRAIN_RUNNER
+    return TRAIN_RUNNER
 
 CSV_POLL_INTERVAL = 5   # 定时检查 metrics.csv 修改时间的间隔(秒)
 LOG_FLUSH_SECS = 0.1
@@ -266,8 +276,7 @@ class TrainWorker(QThread):
     def run(self):
         cfg_path = self._config["_cfg_path"]
         python = sys.executable
-        module = (CLASSIFY_TRAIN_RUNNER
-                  if self._config.get("task") == "classify" else TRAIN_RUNNER)
+        module = runner_module(self._config)
         env = dict(os.environ)
         env["PYTHONPATH"] = WORKSPACE
         env["PYTHONUNBUFFERED"] = "1"

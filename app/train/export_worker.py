@@ -19,18 +19,21 @@ class OnnxExportWorker(QThread):
     finished_ok = Signal(str)      # onnx 路径
     failed = Signal(str)
 
-    def __init__(self, model_path, task, out_file, img_size=0, parent=None):
+    def __init__(self, model_path, task, out_file, img_size=0, family="",
+                 parent=None):
         super().__init__(parent)
         self._model_path = model_path
         self._task = task
         self._out_file = out_file
         self._img_size = img_size
+        self._family = family
 
     def run(self):
         try:
             path = onnx_export.export_onnx(
                 self._model_path, self._task, self._out_file,
-                img_size=self._img_size, log=self.stage.emit)
+                img_size=self._img_size, family=self._family,
+                log=self.stage.emit)
             self.finished_ok.emit(path)
         except Exception as e:
             self.failed.emit("{}\n{}".format(e, traceback.format_exc()))

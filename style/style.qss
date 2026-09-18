@@ -472,6 +472,9 @@ QCheckBox::indicator {
 QCheckBox::indicator:checked {
     background-color: #4f7dff;
     border-color: #4f7dff;
+    /* 勾形是预渲染 PNG(28px 给 14px, 与 radio 同样的 2 倍图):
+       QSS 画不出勾, 直接给图在分数缩放下比缩放矢量更可控 */
+    image: url({{RES_DIR}}/check_mark.png);
 }
 QCheckBox::indicator:hover {
     border-color: #4f7dff;

@@ -9,6 +9,14 @@ nvidia-ml-py>=11.5.0
 # torch>=2.0
 # torchvision>=0.15
 # rfdetr>=1.9.2
+# CNN(网络架构选 CNN)训练另需 ultralytics:
+#   pip install --no-deps ultralytics ultralytics-thop && pip install polars
+#   必须 --no-deps: ultralytics 依赖的是 opencv-python(GUI 版, 会拉 OpenCV 5),
+#   它和本文件里的 opencv-python-headless 往同一个 cv2/ 目录写文件互相覆盖.
+#   它只要求 cv2>=4.7, headless 完全够用. polars 是纯 python, 与 cv2 无关.
+# ultralytics>=8.3.0
+# ultralytics-thop>=2.0
+# polars>=1.0
 onnx>=1.16
 onnxsim>=0.4.33
 onnxruntime>=1.16

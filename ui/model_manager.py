@@ -16,49 +16,92 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QDialog, QFrame, QHBoxLayout,
-    QLabel, QPushButton, QSizePolicy, QSpacerItem,
-    QVBoxLayout, QWidget)
+    QLabel, QPushButton, QScrollArea, QSizePolicy,
+    QSpacerItem, QVBoxLayout, QWidget)
 
 class Ui_ModelManagerDialog(object):
     def setupUi(self, ModelManagerDialog):
         if not ModelManagerDialog.objectName():
             ModelManagerDialog.setObjectName(u"ModelManagerDialog")
-        ModelManagerDialog.resize(720, 470)
+        ModelManagerDialog.resize(720, 560)
         self.root_layout = QVBoxLayout(ModelManagerDialog)
         self.root_layout.setSpacing(10)
         self.root_layout.setObjectName(u"root_layout")
         self.root_layout.setContentsMargins(22, 18, 22, 16)
-        self.detect_title = QLabel(ModelManagerDialog)
+        self.groups_scroll = QScrollArea(ModelManagerDialog)
+        self.groups_scroll.setObjectName(u"groups_scroll")
+        self.groups_scroll.setFrameShape(QFrame.NoFrame)
+        self.groups_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.groups_scroll.setWidgetResizable(True)
+        self.groups_content = QWidget()
+        self.groups_content.setObjectName(u"groups_content")
+        self.groups_layout = QVBoxLayout(self.groups_content)
+        self.groups_layout.setSpacing(10)
+        self.groups_layout.setObjectName(u"groups_layout")
+        self.groups_layout.setContentsMargins(0, 0, 0, 0)
+        self.detect_title = QLabel(self.groups_content)
         self.detect_title.setObjectName(u"detect_title")
 
-        self.root_layout.addWidget(self.detect_title)
+        self.groups_layout.addWidget(self.detect_title)
 
-        self.detect_frame = QFrame(ModelManagerDialog)
+        self.detect_frame = QFrame(self.groups_content)
         self.detect_frame.setObjectName(u"detect_frame")
         self.detect_layout = QVBoxLayout(self.detect_frame)
         self.detect_layout.setSpacing(0)
         self.detect_layout.setObjectName(u"detect_layout")
         self.detect_layout.setContentsMargins(1, 1, 1, 1)
 
-        self.root_layout.addWidget(self.detect_frame)
+        self.groups_layout.addWidget(self.detect_frame)
 
-        self.segment_title = QLabel(ModelManagerDialog)
+        self.detect_cnn_title = QLabel(self.groups_content)
+        self.detect_cnn_title.setObjectName(u"detect_cnn_title")
+
+        self.groups_layout.addWidget(self.detect_cnn_title)
+
+        self.detect_cnn_frame = QFrame(self.groups_content)
+        self.detect_cnn_frame.setObjectName(u"detect_cnn_frame")
+        self.detect_cnn_layout = QVBoxLayout(self.detect_cnn_frame)
+        self.detect_cnn_layout.setSpacing(0)
+        self.detect_cnn_layout.setObjectName(u"detect_cnn_layout")
+        self.detect_cnn_layout.setContentsMargins(1, 1, 1, 1)
+
+        self.groups_layout.addWidget(self.detect_cnn_frame)
+
+        self.segment_title = QLabel(self.groups_content)
         self.segment_title.setObjectName(u"segment_title")
 
-        self.root_layout.addWidget(self.segment_title)
+        self.groups_layout.addWidget(self.segment_title)
 
-        self.segment_frame = QFrame(ModelManagerDialog)
+        self.segment_frame = QFrame(self.groups_content)
         self.segment_frame.setObjectName(u"segment_frame")
         self.segment_layout = QVBoxLayout(self.segment_frame)
         self.segment_layout.setSpacing(0)
         self.segment_layout.setObjectName(u"segment_layout")
         self.segment_layout.setContentsMargins(1, 1, 1, 1)
 
-        self.root_layout.addWidget(self.segment_frame)
+        self.groups_layout.addWidget(self.segment_frame)
 
-        self.root_spacer = QSpacerItem(20, 10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        self.segment_cnn_title = QLabel(self.groups_content)
+        self.segment_cnn_title.setObjectName(u"segment_cnn_title")
 
-        self.root_layout.addItem(self.root_spacer)
+        self.groups_layout.addWidget(self.segment_cnn_title)
+
+        self.segment_cnn_frame = QFrame(self.groups_content)
+        self.segment_cnn_frame.setObjectName(u"segment_cnn_frame")
+        self.segment_cnn_layout = QVBoxLayout(self.segment_cnn_frame)
+        self.segment_cnn_layout.setSpacing(0)
+        self.segment_cnn_layout.setObjectName(u"segment_cnn_layout")
+        self.segment_cnn_layout.setContentsMargins(1, 1, 1, 1)
+
+        self.groups_layout.addWidget(self.segment_cnn_frame)
+
+        self.groups_spacer = QSpacerItem(20, 10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+
+        self.groups_layout.addItem(self.groups_spacer)
+
+        self.groups_scroll.setWidget(self.groups_content)
+
+        self.root_layout.addWidget(self.groups_scroll)
 
         self.foot_layout = QHBoxLayout()
         self.foot_layout.setSpacing(8)
@@ -108,12 +151,18 @@ class Ui_ModelManagerDialog(object):
 
     def retranslateUi(self, ModelManagerDialog):
         ModelManagerDialog.setWindowTitle(QCoreApplication.translate("ModelManagerDialog", u"\u6a21\u578b\u6743\u91cd", None))
-        self.detect_title.setText(QCoreApplication.translate("ModelManagerDialog", u"\u76ee\u6807\u68c0\u6d4b", None))
+        self.detect_title.setText(QCoreApplication.translate("ModelManagerDialog", u"\u76ee\u6807\u68c0\u6d4b \u00b7 Transformer", None))
         self.detect_title.setProperty(u"class", QCoreApplication.translate("ModelManagerDialog", u"modelGroupTitle", None))
         self.detect_frame.setProperty(u"class", QCoreApplication.translate("ModelManagerDialog", u"modelGroup", None))
-        self.segment_title.setText(QCoreApplication.translate("ModelManagerDialog", u"\u56fe\u50cf\u5206\u5272", None))
+        self.detect_cnn_title.setText(QCoreApplication.translate("ModelManagerDialog", u"\u76ee\u6807\u68c0\u6d4b \u00b7 CNN", None))
+        self.detect_cnn_title.setProperty(u"class", QCoreApplication.translate("ModelManagerDialog", u"modelGroupTitle", None))
+        self.detect_cnn_frame.setProperty(u"class", QCoreApplication.translate("ModelManagerDialog", u"modelGroup", None))
+        self.segment_title.setText(QCoreApplication.translate("ModelManagerDialog", u"\u56fe\u50cf\u5206\u5272 \u00b7 Transformer", None))
         self.segment_title.setProperty(u"class", QCoreApplication.translate("ModelManagerDialog", u"modelGroupTitle", None))
         self.segment_frame.setProperty(u"class", QCoreApplication.translate("ModelManagerDialog", u"modelGroup", None))
+        self.segment_cnn_title.setText(QCoreApplication.translate("ModelManagerDialog", u"\u56fe\u50cf\u5206\u5272 \u00b7 CNN", None))
+        self.segment_cnn_title.setProperty(u"class", QCoreApplication.translate("ModelManagerDialog", u"modelGroupTitle", None))
+        self.segment_cnn_frame.setProperty(u"class", QCoreApplication.translate("ModelManagerDialog", u"modelGroup", None))
         self.dir_title.setText(QCoreApplication.translate("ModelManagerDialog", u"\u4e0b\u8f7d\u76ee\u5f55", None))
         self.dir_title.setProperty(u"class", QCoreApplication.translate("ModelManagerDialog", u"modelFootLabel", None))
         self.dir_label.setProperty(u"class", QCoreApplication.translate("ModelManagerDialog", u"modelDir", None))

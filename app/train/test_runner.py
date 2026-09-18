@@ -3,7 +3,8 @@
 
 用法: main(), 由 test_worker 以 -c 导入后调用(打包后是 pyd, 不能 python -m 启动)
 config 字段(dialogs.py _on_start_test 组装):
-  model_path   训练输出的 best total checkpoint(.pth)
+  model_path   训练输出的 best checkpoint(rf-detr 是 .pth, CNN 是 .pt)
+  family       网络架构(transformer/cnn), 决定用哪套后端加载 model_path
   image_path   测试数据集图片目录
   label_path   标注目录(可选; 为空即推理模式)
   iou_threshold IoU 阈值(评估模式用)
@@ -17,6 +18,7 @@ import os
 import sys
 import traceback
 import warnings
+from importlib.util import find_spec
 
 
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -54,6 +56,8 @@ try:
     from rfdetr import RFDETR   # from_checkpoint 自动推断检测/分割模型类
 except ImportError:
     RFDETR = None
+
+from app.train.yolo_backend import YoloPredictor, uses_cnn
 
 try:
     from app.core.label_utils import (load_json_shapes, load_yolo_shapes,
@@ -406,19 +410,30 @@ def _match(preds, gts, iou_th, per_class, use_cls=None):
     return tp, fp, fn, missing, spurious, hits
 
 
-def main():
-    cfg_path = sys.argv[1]
-    with open(cfg_path, "r", encoding="utf-8") as f:
-        cfg = json.load(f)
+def _make_predictor(cfg):
+    """
+    按 cfg["family"] 加载模型, 返回可直接 predict 的对象.
 
-    i18n.apply_cli(cfg.get("language", ""))
-    if RFDETR is None:
+    两套后端的 predict 签名一致(图片路径 + threshold), 所以下游统计与报告代码
+    完全不用分架构. 缺依赖时分开报错 —— rfdetr 与 ultralytics 是两个独立安装,
+    说清缺哪个才知道该装什么.
+    """
+    cnn = uses_cnn(cfg)
+    if cnn:
+        if find_spec("ultralytics") is None:
+            raise RuntimeError(QC.translate(
+                "TestRunner", "ultralytics 未安装, 无法执行测试"))
+    elif RFDETR is None:
         raise RuntimeError(
             QC.translate("TestRunner", "rfdetr 未安装, 无法执行测试"))
+
     print("[test] " + QC.translate("TestRunner", "加载模型: {}").format(
         os.path.basename(cfg["model_path"])), flush=True)
-    model = RFDETR.from_checkpoint(cfg["model_path"])
     device = cfg.get("device", "cuda")
+    if cnn:
+        return YoloPredictor(cfg["model_path"], device)
+
+    model = RFDETR.from_checkpoint(cfg["model_path"])
     if device.startswith("cuda") and hasattr(model, "to") \
             and torch is not None and torch.cuda.is_available():
         model.to(device)
@@ -432,6 +447,16 @@ def main():
                 "TestRunner", "推理已优化: {}").format(dtype), flush=True)
         except Exception:
             pass
+    return model
+
+
+def main():
+    cfg_path = sys.argv[1]
+    with open(cfg_path, "r", encoding="utf-8") as f:
+        cfg = json.load(f)
+
+    i18n.apply_cli(cfg.get("language", ""))
+    model = _make_predictor(cfg)
 
     pairs = _collect_pairs(cfg)
     print("[test] " + QC.translate(

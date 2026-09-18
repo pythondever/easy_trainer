@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>720</width>
-    <height>470</height>
+    <height>560</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -30,85 +30,185 @@
     <number>16</number>
    </property>
    <item>
-    <widget class="QLabel" name="detect_title">
-     <property name="text">
-      <string>目标检测</string>
+    <widget class="QScrollArea" name="groups_scroll">
+     <property name="frameShape">
+      <enum>QFrame::NoFrame</enum>
      </property>
-     <property name="class" stdset="0">
-      <string>modelGroupTitle</string>
+     <property name="horizontalScrollBarPolicy">
+      <enum>Qt::ScrollBarAlwaysOff</enum>
      </property>
+     <property name="widgetResizable">
+      <bool>true</bool>
+     </property>
+     <widget class="QWidget" name="groups_content">
+      <layout class="QVBoxLayout" name="groups_layout">
+       <property name="spacing">
+        <number>10</number>
+       </property>
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="QLabel" name="detect_title">
+         <property name="text">
+          <string>目标检测 · Transformer</string>
+         </property>
+         <property name="class" stdset="0">
+          <string>modelGroupTitle</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QFrame" name="detect_frame">
+         <property name="class" stdset="0">
+          <string>modelGroup</string>
+         </property>
+         <layout class="QVBoxLayout" name="detect_layout">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <property name="leftMargin">
+           <number>1</number>
+          </property>
+          <property name="topMargin">
+           <number>1</number>
+          </property>
+          <property name="rightMargin">
+           <number>1</number>
+          </property>
+          <property name="bottomMargin">
+           <number>1</number>
+          </property>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="detect_cnn_title">
+         <property name="text">
+          <string>目标检测 · CNN</string>
+         </property>
+         <property name="class" stdset="0">
+          <string>modelGroupTitle</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QFrame" name="detect_cnn_frame">
+         <property name="class" stdset="0">
+          <string>modelGroup</string>
+         </property>
+         <layout class="QVBoxLayout" name="detect_cnn_layout">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <property name="leftMargin">
+           <number>1</number>
+          </property>
+          <property name="topMargin">
+           <number>1</number>
+          </property>
+          <property name="rightMargin">
+           <number>1</number>
+          </property>
+          <property name="bottomMargin">
+           <number>1</number>
+          </property>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="segment_title">
+         <property name="text">
+          <string>图像分割 · Transformer</string>
+         </property>
+         <property name="class" stdset="0">
+          <string>modelGroupTitle</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QFrame" name="segment_frame">
+         <property name="class" stdset="0">
+          <string>modelGroup</string>
+         </property>
+         <layout class="QVBoxLayout" name="segment_layout">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <property name="leftMargin">
+           <number>1</number>
+          </property>
+          <property name="topMargin">
+           <number>1</number>
+          </property>
+          <property name="rightMargin">
+           <number>1</number>
+          </property>
+          <property name="bottomMargin">
+           <number>1</number>
+          </property>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="segment_cnn_title">
+         <property name="text">
+          <string>图像分割 · CNN</string>
+         </property>
+         <property name="class" stdset="0">
+          <string>modelGroupTitle</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QFrame" name="segment_cnn_frame">
+         <property name="class" stdset="0">
+          <string>modelGroup</string>
+         </property>
+         <layout class="QVBoxLayout" name="segment_cnn_layout">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <property name="leftMargin">
+           <number>1</number>
+          </property>
+          <property name="topMargin">
+           <number>1</number>
+          </property>
+          <property name="rightMargin">
+           <number>1</number>
+          </property>
+          <property name="bottomMargin">
+           <number>1</number>
+          </property>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="groups_spacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>10</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
     </widget>
-   </item>
-   <item>
-    <widget class="QFrame" name="detect_frame">
-     <property name="class" stdset="0">
-      <string>modelGroup</string>
-     </property>
-     <layout class="QVBoxLayout" name="detect_layout">
-      <property name="spacing">
-       <number>0</number>
-      </property>
-      <property name="leftMargin">
-       <number>1</number>
-      </property>
-      <property name="topMargin">
-       <number>1</number>
-      </property>
-      <property name="rightMargin">
-       <number>1</number>
-      </property>
-      <property name="bottomMargin">
-       <number>1</number>
-      </property>
-     </layout>
-    </widget>
-   </item>
-   <item>
-    <widget class="QLabel" name="segment_title">
-     <property name="text">
-      <string>图像分割</string>
-     </property>
-     <property name="class" stdset="0">
-      <string>modelGroupTitle</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QFrame" name="segment_frame">
-     <property name="class" stdset="0">
-      <string>modelGroup</string>
-     </property>
-     <layout class="QVBoxLayout" name="segment_layout">
-      <property name="spacing">
-       <number>0</number>
-      </property>
-      <property name="leftMargin">
-       <number>1</number>
-      </property>
-      <property name="topMargin">
-       <number>1</number>
-      </property>
-      <property name="rightMargin">
-       <number>1</number>
-      </property>
-      <property name="bottomMargin">
-       <number>1</number>
-      </property>
-     </layout>
-    </widget>
-   </item>
-   <item>
-    <spacer name="root_spacer">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>10</height>
-      </size>
-     </property>
-    </spacer>
    </item>
    <item>
     <layout class="QHBoxLayout" name="foot_layout">
