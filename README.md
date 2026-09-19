@@ -174,14 +174,14 @@ sudo apt install fonts-noto-cjk   # 中文字体
   ```powershell
   installer.exe --install D:\EasyTrainer runtime     # 组件: runtime / program / pretrained 逗号组合
   ```
-- **Linux**：`./installer.sh [-d 安装目录] [-p]`（`-p` 一并安装预训练权重，约 880MB）
+- **Linux**：`./installer.sh [-d 安装目录] [-p]`（`-p` 一并安装预训练权重，约 1.0GB）
 
 | 组件 | 来源 | 方式 |
 |---|---|---|
 | 程序本体 | 构建期嵌入 installer.exe | 解压，不联网 |
 | 运行时 | 华为云官方 Python 3.10 embeddable 包 | 解压即用（绿色，不写注册表） |
 | 依赖（torch 等） | 清华 PyPI + torch 专用源 | pip 现场安装（约 2.5GB 下载） |
-| 预训练权重 | rfdetr 官方源（storage.googleapis.com） | 下载到 `pretrained\`（约 880MB） |
+| 预训练权重 | 官方源（Google 存储 + HuggingFace 镜像） | 下载到 `pretrained\`（约 1.0GB） |
 
 安装前按所选组件估算并校验磁盘空间（装运行时约需 10GB）；下载失败自动重试，pip 失败换源重试。**离线兜底**：把 `python-3.10.11-embed-amd64.zip` / `pretrained.zip` 放到安装器同目录即自动优先使用，完全不走网络。
 

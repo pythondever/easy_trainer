@@ -3,7 +3,7 @@
 #
 # 用法: ./installer.sh [-d 安装目录] [-p] [-h]
 #   -d  安装根目录(默认 ~/EasyTrainer)
-#   -p  同时安装预训练权重(默认跳过; 官方 GCS 约 880MB, 大陆网络可能失败, 失败仅警告)
+#   -p  同时安装预训练权重(默认跳过; 约 1.0GB, 大陆网络可能失败, 失败仅警告)
 #   -h  显示帮助
 #
 # 需与本脚本同目录放置 program.zip, requirements-release.txt, requirements-nodeps.txt,
@@ -20,13 +20,16 @@ SELF_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$HOME/EasyTrainer"
 WITH_PRETRAINED=0
 
-# 优先读三端共用的 pretrained-assets.txt(build.py 会一起打包)
+# 兜底: 同目录没有 pretrained-assets.txt 时用(build.py 会把它一起打包, 正常走不到这里).
+# 文件名必须与清单第一列同构(带架构子目录 + 档位名), 否则会落到软件找不到的位置.
 declare -a PRETRAINED=( \
-  "rf-detr-nano.pth|https://storage.googleapis.com/rfdetr/nano_coco/checkpoint_best_regular.pth|D8D6B9EE57D4D0ED2B1F305163624712A0532CB7BCE0C747317984FC5457440D" \
-  "rf-detr-seg-nano.pt|https://storage.googleapis.com/rfdetr/rf-detr-seg-n-ft.pth|A44613A4ECD6B5BA61A62002C600B0B6CB7A9DA2936A45317EC4B62C635FB99B" \
-  "rf-detr-seg-small.pt|https://storage.googleapis.com/rfdetr/rf-detr-seg-s-ft.pth|6DE3DA31B2572CAC214A1C76CCE4A92A13966D56390AC2B3A3DE9A8DC2B2BCA3" \
-  "rf-detr-seg-medium.pt|https://storage.googleapis.com/rfdetr/rf-detr-seg-m-ft.pth|3AD325094735F431AEE9962A8D204D68EB5BFC393D53E7E836E70998FEF5EA58" \
-  "rf-detr-seg-large.pt|https://storage.googleapis.com/rfdetr/rf-detr-seg-l-ft.pth|CA7B7C630BA22496067CC4F034C4E70C8E47FD7ADCEA04C3A49AA8C1755CBE6B" \
+  "transformer/nano.pt|https://storage.googleapis.com/rfdetr/nano_coco/checkpoint_best_regular.pth|D8D6B9EE57D4D0ED2B1F305163624712A0532CB7BCE0C747317984FC5457440D" \
+  "transformer/nano-seg.pt|https://storage.googleapis.com/rfdetr/rf-detr-seg-n-ft.pth|A44613A4ECD6B5BA61A62002C600B0B6CB7A9DA2936A45317EC4B62C635FB99B" \
+  "transformer/small-seg.pt|https://storage.googleapis.com/rfdetr/rf-detr-seg-s-ft.pth|6DE3DA31B2572CAC214A1C76CCE4A92A13966D56390AC2B3A3DE9A8DC2B2BCA3" \
+  "cnn/nano.pt|https://hf-mirror.com/Ultralytics/YOLO11/resolve/main/yolo11n.pt|0EBBC80D4A7680D14987A577CD21342B65ECFD94632BD9A8DA63AE6417644EE1" \
+  "cnn/small.pt|https://hf-mirror.com/Ultralytics/YOLO11/resolve/main/yolo11s.pt|85A76FE86DD8AFE384648546B56A7A78580C7CB7B404FC595F97969322D502D5" \
+  "cnn/nano-seg.pt|https://hf-mirror.com/Ultralytics/YOLO11/resolve/main/yolo11n-seg.pt|55ED65C56C91713D23E8402371C6C49A6FD84F257F7DCE452E8D70E41DCBE152" \
+  "cnn/small-seg.pt|https://hf-mirror.com/Ultralytics/YOLO11/resolve/main/yolo11s-seg.pt|1CAA81C0195412EFA411B632BCFB8C184939DDDB6AE41F6A80C41B211FF257C3" \
 )
 
 ASSETS_FILE="$SELF_DIR/pretrained-assets.txt"
@@ -124,7 +127,7 @@ NODEPS_REQ="$SELF_DIR/requirements-nodeps.txt"
 prog_kb=$("$PY" -c 'import sys,zipfile;print(sum(i.file_size for i in zipfile.ZipFile(sys.argv[1]).infolist())//1024)' "$ZIP" 2>/dev/null) || prog_kb=0
 case "$prog_kb" in ''|*[!0-9]*) prog_kb=0 ;; esac
 need_kb=$((prog_kb + 9 * 1024 * 1024))
-[ "$WITH_PRETRAINED" = "1" ] && need_kb=$((need_kb + 880 * 1024))
+[ "$WITH_PRETRAINED" = "1" ] && need_kb=$((need_kb + 1024 * 1024))
 free_kb=$(df -Pk "$ROOT" 2>/dev/null | awk 'NR==2 {print $4}')
 case "$free_kb" in ''|*[!0-9]*) free_kb="" ;; esac
 if [ -n "$free_kb" ] && [ "$free_kb" -lt "$need_kb" ]; then
@@ -175,7 +178,7 @@ if [ "$WITH_PRETRAINED" = "1" ]; then
     log "解压同目录 pretrained.zip(离线分发)..."
     "$VPY" -m zipfile -e "$SELF_DIR/pretrained.zip" "$PRETRAIN_DIR" || log "警告: pretrained.zip 解压失败"
   else
-    log "在线下载预训练权重(官方 GCS, 单文件失败仅警告, 重跑可续传)..."
+    log "在线下载预训练权重(官方源/镜像, 单文件失败仅警告, 重跑可续传)..."
     for entry in "${PRETRAINED[@]}"; do
       IFS='|' read -r fname url sha <<< "$entry"
       target="$PRETRAIN_DIR/$fname"

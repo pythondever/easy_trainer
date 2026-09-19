@@ -22,10 +22,6 @@ class SelectablePixmapItem(QGraphicsPixmapItem):
         self._labels = list(labels or [])
         self._sel_color = QColor("#4f7dff")
 
-    def set_labels(self, labels):
-        self._labels = list(labels or [])
-        self.update()
-
     def boundingRect(self):
         pm = self.pixmap()
         w = pm.width() + 2 * CARD_PAD

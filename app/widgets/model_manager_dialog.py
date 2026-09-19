@@ -11,8 +11,7 @@ from PySide6.QtCore import Qt, QTimer
 from PySide6.QtCore import QCoreApplication as QC
 from PySide6.QtGui import QFontMetrics
 from PySide6.QtWidgets import (QCheckBox, QDialog, QFileDialog, QFrame,
-                               QHBoxLayout, QLabel, QProgressBar, QPushButton,
-                               QVBoxLayout)
+                               QHBoxLayout, QLabel, QProgressBar)
 
 from app.core import model_assets
 from app.core.log import write_log

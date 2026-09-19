@@ -19,7 +19,7 @@ installer.exe   双击打开 → 勾选 → 联网下载安装
 | 程序本体 program | 构建期 csproj 嵌入 exe | 直接解压，**不联网** |
 | 运行时 | 官方 python 3.10 embeddable zip（国内镜像） | 下载 → 解压即用（绿色，不写注册表） |
 | torch 等依赖 | PyPI 国内镜像（清华）+ torch 专用源 | pip 现场安装（约 2.5GB 下载） |
-| 预训练权重 | 官方源（storage.googleapis.com，rfdetr 分发通道） | 下载 5 个 .pth/.pt 到 `pretrained\`（约 880MB） |
+| 预训练权重 | 官方源（Google 存储 + HuggingFace 镜像） | 下载 8 个 .pth/.pt 到 `pretrained\`（约 1.0GB） |
 
 Python、pip 依赖是国内可直连的公开地址，**无需自建服务器/OSS**：
 - Python：`https://mirrors.huaweicloud.com/python/3.10.11/python-3.10.11-embed-amd64.zip`
@@ -43,8 +43,9 @@ Python 走 **embeddable 绿色包**（不装 MSI、不写注册表、不需要�
 仅装"程序本体"只要几百 MB。安装器会在开始前按所选组件估算并校验，空间不足直接报错、
 不会装一半才发现。
 
-**注意**：预训练权重没有国内镜像（rfdetr 官方仅发布在 Google 存储；HuggingFace 上只有
-transformers 格式的 safetensors，rfdetr 包不认），大陆网络下不动时改用离线兜底（见下），
+**注意**：rf-detr 那批权重没有国内镜像（官方仅发布在 Google 存储；HuggingFace 上只有
+transformers 格式的 safetensors，rfdetr 包不认），YOLO11 那批走 HuggingFace 镜像
+（hf-mirror.com）可直连。大陆网络下拉不动时改用离线兜底（见下），
 或在软件内"导入权重目录"。
 
 **离线兜底**：把 `python-3.10.11-embed-amd64.zip`（或可选 `pretrained.zip`）放安装器同目录，
@@ -54,8 +55,9 @@ transformers 格式的 safetensors，rfdetr 包不认），大陆网络下不动
 
 `builder\pretrained-assets.txt`：`相对 pretrained/ 的路径 \t URL \t SHA256`，**C# 安装器、
 installer.sh、builder\build.py 三端共用**，改这一处即可换源或添加国内镜像（同一路径写多行 =
-多个候选源，安装器按顺序尝试）。第一列可带子目录（`transformer/nano.pt`），与软件内的
-架构分目录一一对应 —— 少了 `transformer/` 这层，装完软件仍会认为权重缺失。
+多个候选源，安装器按顺序尝试）。第一列带架构子目录（`transformer/nano.pt`、`cnn/nano.pt`），
+与软件内的架构分目录（transformer / cnn）一一对应 —— 少了这一层，装完软件仍会认为权重缺失。
+当前默认装 8 个：`transformer` 与 `cnn` 各 4 个（检测/分割 × nano/small）。
 Python 运行时本身的下载信息仍写死在 `InstallerCore.cs` 常量里。
 
 ## 构建步骤（Windows）
@@ -135,7 +137,7 @@ installer.exe --install D:\EasyTrainer runtime
   与旧明文 `.py`（保留 `__init__.py`、`easy_trainer.py`）——扩展模块导入优先级高于源码，不清会把
   新版已删除的模块"复活"（改了代码没生效/幽灵模块）。`runtime`、`pretrained` 与 Linux 端行为一致。
 - pip 现场安装无断点续传，中途断网重跑安装器即可（已装部分 pip 会跳过/缓存）。
-- torch 装完约占 4.3GB + 权重可选 882MB，安装前确认目标盘空间。
+- torch 装完约占 4.3GB + 权重可选 1.0GB，安装前确认目标盘空间。
 - 中文安装路径可用（cv2/PyTorch 均按 UTF-8 处理）；安装器 per-user 安装免 UAC，
   不写系统注册表（Python 本体按用户级安装到安装目录内）。
 - 卸载：运行 `installer.exe` → 「卸载…」选择安装根即可。
@@ -160,7 +162,7 @@ python3 builder/build.py -t dist/program
 
 ```bash
 ./installer.sh            # 默认装到 ~/EasyTrainer
-./installer.sh -d /opt/easy_trainer -p   # 换目录 + 安装预训练权重(~880MB)
+./installer.sh -d /opt/easy_trainer -p   # 换目录 + 安装预训练权重(~1.0GB)
 TORCH_INDEX=https://download.pytorch.org/whl/cu121 ./installer.sh   # torch 换源
 ```
 

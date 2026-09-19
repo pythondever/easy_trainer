@@ -760,24 +760,6 @@ class DataBase:
         for tid in doomed:
             self.delete_train_metrics(tid)
 
-    def dataset_in_records(self, project_name, dataset_name):
-        """
-        该数据集是否被训练记录引用(训练集或验证集任一出现).
-        model_history 是 train_history 的子集(训练完成时浅拷贝),无需重复检查.
-        """
-        key = keys.train_history
-        with self.mdb.begin(write=False) as txn:
-            data = txn.get(key)
-        recs = json.loads(data.decode()) if data else []
-        for r in recs:
-            if r.get("project") != project_name:
-                continue
-            for field in ("dataset", "val_dataset"):
-                names = [x.strip() for x in str(r.get(field, "")).split(",") if x.strip()]
-                if any(_ds_of(n) == dataset_name for n in names):
-                    return True
-        return False
-
     def _strip_dataset_from_record(self, record, ds_name):
         """从记录中移除 ds_name,返回 (record, 是否仍被其他数据集引用)."""
         def _strip(field):

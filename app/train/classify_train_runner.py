@@ -45,17 +45,6 @@ from app.core.constants import IMAGE_EXTS as _IMG_EXTS
 from app.core.db import get_paths
 
 
-
-def _scan_classes(root):
-    """扫描根目录下的类别子文件夹名(排序)."""
-    out = []
-    if os.path.isdir(root):
-        for entry in sorted(os.listdir(root)):
-            if os.path.isdir(os.path.join(root, entry)):
-                out.append(entry)
-    return out
-
-
 class _ImageFolderSimple(Dataset):
     """"根目录/类别子文件夹/图像"结构的分类数据集."""
 
