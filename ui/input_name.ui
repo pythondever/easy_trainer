@@ -40,7 +40,7 @@
                 <string>输入名称</string>
               </property>
               <property name="class" stdset="0">
-                <string>dialogTitle</string>
+                <string notr="true">dialogTitle</string>
               </property>
             </widget>
           </item>
@@ -113,7 +113,7 @@
                 <string>确定</string>
               </property>
               <property name="class" stdset="0">
-                <string>primary</string>
+                <string notr="true">primary</string>
               </property>
             </widget>
           </item>

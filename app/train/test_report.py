@@ -28,6 +28,10 @@ C_SPURIOUS = "#f08c00"
 C_HIT = "#2f9e44"
 C_CONFUSE = "#7048e8"
 
+# 避头尾: 这些标点不能出现在行首, 反过来开引号类不能吊在行尾
+_NO_LINE_START = "。，、；：？！）】》」』〉·…%‰"
+_NO_LINE_END = "（【《「『〈"
+
 _A4_W_PT, _A4_H_PT = 595, 842      # A4 pt (1pt=1/72 英寸, 矢量 PDF 用)
 _A4_W_IN, _A4_H_IN = 8.27, 11.69   # matplotlib figsize 用英寸
 _GRID_COLS, _GRID_ROWS = 2, 3
@@ -344,6 +348,28 @@ def _legend_items(stat):
     return items
 
 
+def _legend_slots(legend, col_w, sw_w, f_meta, tw):
+    """给图例算 (列, 行, 是否独占整行) 位置.
+
+    条数会随"认错/轮廓"两条增减, 长语言(西/法/越)的说明半栏放不下,
+    这种就让它独占一整行 —— 否则会被省略号吃掉后半句.
+    """
+    slots, row, col = [], 0, 0
+    for _, _, label in legend:
+        if tw(label, f_meta) > col_w - sw_w - 16:
+            if col:
+                row, col = row + 1, 0
+            slots.append((0, row, True))
+            row += 1
+        else:
+            slots.append((col, row, False))
+            col += 1
+            if col == 2:
+                row, col = row + 1, 0
+    rows = max((s[1] for s in slots), default=-1) + 1
+    return slots, rows
+
+
 def _render_summary_png(summary, out_png, stat, chart_png=None):
     """
     stat 里的张数一律是全量, 抽样情况单独用一行说明,
@@ -480,10 +506,18 @@ def _render_summary_png(summary, out_png, stat, chart_png=None):
 
     note, note_color = _sample_note(stat)
     if note:
-        d.text((M, y), note, fill=note_color, font=f_meta)
-        y += int(0.34 * dpi)
+        # 这句话带三个数字, 长语言里一行放不下, 必须折行才留在页内
+        for ln in wrap_text(d, note, f_meta, content_w, max_lines=2):
+            d.text((M, y), ln, fill=note_color, font=f_meta)
+            y += int(0.24 * dpi)
+        y += int(0.12 * dpi)
 
     per_class = summary.get("per_class") or {}
+    legend = _legend_items(stat)
+    sw_w, sw_h = int(0.55 * dpi), int(0.18 * dpi)
+    col_w = content_w / 2.0
+    row_h = int(0.36 * dpi)
+    legend_slots, legend_rows = _legend_slots(legend, col_w, sw_w, f_meta, tw)
     if per_class:
         d.text((M, y), QC.translate("TestReport", "按类别"), fill="black",
                font=f_sec)
@@ -497,9 +531,7 @@ def _render_summary_png(summary, out_png, stat, chart_png=None):
                 QC.translate("TestReport", "准确率")]
         weights = [1.4, 0.6, 0.6, 0.6, 0.6, 0.9, 0.9]
         rh2 = int(0.32 * dpi)
-        # 图例两列排布, 条数会随认错/轮廓两条增减, 行数得跟着算才不会出血
-        legend_rows = (len(_legend_items(stat)) + 1) // 2
-        legend_h = legend_rows * int(0.36 * dpi) + int(0.34 * dpi)
+        legend_h = legend_rows * row_h + int(0.34 * dpi)
         room = H - int(0.46 * dpi) - legend_h - int(0.34 * dpi) - y
         max_rows = max(1, int(room // rh2) - 1)
 
@@ -529,12 +561,9 @@ def _render_summary_png(summary, out_png, stat, chart_png=None):
         y = table(y, head, data, weights, rh2)
         y += int(0.40 * dpi)
 
-    legend = _legend_items(stat)
-    sw_w, sw_h = int(0.55 * dpi), int(0.18 * dpi)
-    col_w = content_w / 2.0
-    for i, (color, style, label) in enumerate(legend):
-        cx = M + (i % 2) * col_w
-        cy = y + (i // 2) * int(0.36 * dpi)
+    for (col, row, wide), (color, style, label) in zip(legend_slots, legend):
+        cx = M + col * col_w
+        cy = y + row * row_h
         box = [cx, cy, cx + sw_w, cy + sw_h]
         if style == "dash":
             _dash_rect(d, box, color, 3)
@@ -542,10 +571,10 @@ def _render_summary_png(summary, out_png, stat, chart_png=None):
             _dash_rect(d, box, color, 2, dash=3, gap=4)
         else:
             d.rectangle(box, outline=color, width=3)
-        d.text((cx + sw_w + 12, cy + 2),
-               clip(label, f_meta, col_w - sw_w - 16),
+        room_w = (content_w if wide else col_w) - sw_w - 16
+        d.text((cx + sw_w + 12, cy + 2), clip(label, f_meta, room_w),
                fill="black", font=f_meta)
-    y += ((len(legend) + 1) // 2) * int(0.36 * dpi)
+    y += legend_rows * row_h
 
     d.text((M, y), QC.translate(
         "TestReport", "错误样本明细(仅列漏检 / 误检图片, 正确检出不列出)"),
@@ -653,16 +682,13 @@ def _advice_items(res, stat=None):
             "TestReport", "本轮无漏检, 无误检, 建议用更严的阈值或更难的样本"
                           "再压一轮, 确认稳定性."), False)])
 
-    out, used = [], 0
-    for seg in parts:
-        n = sum(len(t) for t, _ in seg) + 1      # +1 是段间换行, 也算 1 字
-        if out and used + n > 200:
-            break
+    # 不按字符数截断: 一个中文字和一段拉丁词组的渲染宽度差好几倍, 按字数砍会让
+    # 德/西/法语报告只剩一条建议. 放不放得下由 render_advice_pages 按真实宽度分页.
+    out = []
+    for i, seg in enumerate(parts):
+        if i:
+            out.append(("\n", False))
         out.extend(seg)
-        out.append(("\n", False))
-        used += n
-    if out and out[-1][0] == "\n":
-        out.pop()
     return out
 
 
@@ -673,20 +699,183 @@ def _char_w(d, ch, font):
         return d.textbbox((0, 0), ch, font=font)[2]
 
 
-def _render_advice_png(items, out_png, page_no, model=""):
-    dpi = _DPI
-    img = Image.new("RGB", (_PAGE_W, _PAGE_H), "white")
-    d = ImageDraw.Draw(img)
+def _is_cjk(ch):
+    o = ord(ch)
+    return (0x2E80 <= o <= 0x9FFF or 0x3000 <= o <= 0x303F
+            or 0xF900 <= o <= 0xFAFF or 0xFE30 <= o <= 0xFE4F
+            or 0xFF00 <= o <= 0xFF60 or 0xFFE0 <= o <= 0xFFE6)
+
+
+def _split_units(text):
+    """切最小排版单元: 拉丁按词, CJK 和全角标点逐字, 空格单独成单元.
+
+    拉丁按词是重点 —— 逐字符推进会把 "for" 断成 "fo" + "r".
+    """
+    units, buf = [], ""
+    for ch in text:
+        if ch == " ":
+            if buf:
+                units.append(buf)
+                buf = ""
+            units.append(" ")
+        elif _is_cjk(ch):
+            if buf:
+                units.append(buf)
+                buf = ""
+            units.append(ch)
+        else:
+            buf += ch
+    if buf:
+        units.append(buf)
+    return units
+
+
+def _need_space(prev_ch, cur_ch):
+    """拉丁词后面紧跟引号之类的片段要补个空格; CJK 侧不补(中英混排里反而怪).
+
+    翻译成拉丁语言时"漏检集中在"会译成以单词结尾的句子, 直接接引号就粘成
+    "auf"划痕"" 了, 而中文源串本身不需要空格.
+    """
+    return (bool(prev_ch) and prev_ch.isascii() and prev_ch.isalnum()
+            and bool(cur_ch) and not _is_cjk(cur_ch) and cur_ch != " ")
+
+
+def _wrap(d, items, font, width):
+    """把 (文本, 是否标签) 序列按真实宽度折行. 空列表代表段间空行.
+
+    返回 [[(x, 单元, 是否标签), ...], ...], 每行的 x 是相对内容左边距的偏移.
+    """
+    def wf(u):
+        return _char_w(d, u, font)
+
+    def rstrip(line):
+        while line and line[-1][1] == " ":
+            line.pop()
+
+    lines, cur, x, prev_ch = [], [], 0.0, ""
+    for text, is_label in items:
+        if text == "\n":
+            rstrip(cur)
+            lines.append(cur)
+            cur, x, prev_ch = [], 0.0, ""
+            continue
+        if _need_space(prev_ch, text[:1]):
+            text = " " + text
+        prev_ch = text[-1:]
+        # 标签整体不拆(引号里是类别名, 断开会看不出是同一个词)
+        units = [(text, is_label)] if is_label else \
+            [(u, is_label) for u in _split_units(text)]
+        for u, lab in units:
+            if u == " ":
+                if cur:                      # 行首空格丢掉
+                    cur.append((x, u, lab))
+                    x += wf(u)
+                continue
+            w = wf(u)
+            if cur and x + w > width:
+                if not _NO_LINE_START.startswith(u[:1]):   # 标点允许悬出行尾
+                    tail = None
+                    if _NO_LINE_END.startswith(cur[-1][1][:1]):
+                        tail = cur.pop()     # 开引号不能吊在行尾, 跟着下移
+                    rstrip(cur)
+                    lines.append(cur)
+                    cur, x = [], 0.0
+                    if tail:
+                        cur.append((x, tail[1], tail[2]))
+                        x += wf(tail[1])
+            cur.append((x, u, lab))
+            x += w
+    rstrip(cur)
+    lines.append(cur)
+    return lines
+
+
+def wrap_text(d, txt, font, maxw, max_lines=2, ellipsis="..."):
+    """把一句话折成最多 max_lines 行; 还放不下就在末行加省略号.
+
+    给汇总页那种"必须画在页面内、又没法换页"的说明文字用.
+    """
+    units = _split_units(txt)
+    lines, cur, x = [], "", 0.0
+    for i, u in enumerate(units):
+        if u == " ":
+            if cur:
+                cur += u
+                x += _char_w(d, u, font)
+            continue
+        w = _char_w(d, u, font)
+        if cur and x + w > maxw:
+            if len(lines) + 1 >= max_lines:
+                rest = cur + "".join(units[i:])
+                while rest and _char_w(d, rest + ellipsis, font) > maxw:
+                    rest = rest[:-1]
+                lines.append(rest + ellipsis)
+                return lines
+            lines.append(cur.rstrip())
+            cur, x = u, w
+        else:
+            cur += u
+            x += w
+    lines.append(cur.rstrip())
+    return lines
+
+
+def _advice_fonts():
     fpath = _pick_image_font()
 
     def font(sz):
         return ImageFont.truetype(fpath, sz) if fpath else \
             ImageFont.load_default()
 
-    f_title = font(34)
-    f_lead = font(18)
-    f_body = font(28)
-    f_meta = font(14)
+    return font(34), font(18), font(28), font(14)
+
+
+def render_advice_pages(items, out_dir, first_page_no, model=""):
+    """改进建议渲染成 1..N 页 PNG, 返回 (路径列表, 下一页页码).
+
+    分页放在这里而不是在 _advice_items 里截断: 只有渲染时才拿得到字体和真实宽度.
+    """
+    dpi = _DPI
+    f_title, f_lead, f_body, f_meta = _advice_fonts()
+    M, content_w = _MARGIN, _CONTENT_W
+    line_h = int(0.34 * dpi)
+    gap_h = int(0.10 * dpi)          # 段间额外留白
+
+    probe = ImageDraw.Draw(Image.new("RGB", (1, 1)))
+    lines = _wrap(probe, items, f_body, content_w)
+
+    body_top = int(0.55 * dpi) + int(0.52 * dpi) + int(0.34 * dpi) \
+        + int(0.40 * dpi)
+    foot_y = _PAGE_H - int(0.62 * dpi)
+    body_bottom = foot_y - int(0.18 * dpi) - int(0.12 * dpi)
+
+    pages, chunk, used = [], [], 0
+    for ln in lines:
+        need = line_h if ln else gap_h
+        if chunk and used + need > body_bottom - body_top:
+            pages.append(chunk)
+            chunk, used = [], 0
+        chunk.append(ln)
+        used += need
+    if chunk:
+        pages.append(chunk)
+
+    paths = []
+    for i, chunk in enumerate(pages):
+        page_no = first_page_no + i
+        out_png = os.path.join(out_dir, "advice_{}.png".format(i + 1))
+        _render_advice_png(chunk, out_png, page_no, model, page_no_of=(i + 1,
+                            len(pages)), fonts=(f_title, f_lead, f_body, f_meta))
+        paths.append(out_png)
+    return paths, first_page_no + len(pages)
+
+
+def _render_advice_png(lines, out_png, page_no, model="", page_no_of=(1, 1),
+                       fonts=None):
+    dpi = _DPI
+    img = Image.new("RGB", (_PAGE_W, _PAGE_H), "white")
+    d = ImageDraw.Draw(img)
+    f_title, f_lead, f_body, f_meta = fonts or _advice_fonts()
     M, content_w = _MARGIN, _CONTENT_W
 
     y = int(0.55 * dpi)
@@ -704,20 +893,14 @@ def _render_advice_png(items, out_png, page_no, model=""):
     y += int(0.40 * dpi)
 
     line_h = int(0.34 * dpi)
-    x0 = M
-    x, yy = x0, y
-    for text, is_label in items:
-        for ch in text:
-            if ch == "\n":
-                x, yy = x0, yy + line_h + int(0.10 * dpi)
-                continue
-            w = _char_w(d, ch, f_body)
-            if x + w > x0 + content_w:
-                x, yy = x0, yy + line_h
-            d.text((x, yy), ch, font=f_body,
+    for ln in lines:
+        if not ln:
+            y += int(0.10 * dpi)
+            continue
+        for x, text, is_label in ln:
+            d.text((M + x, y), text, font=f_body,
                    fill=C_MISSING if is_label else "#202020")
-            x += w
-    y = yy + line_h
+        y += line_h
 
     foot_y = _PAGE_H - int(0.62 * dpi)
     d.line([(M, foot_y - int(0.18 * dpi)),
@@ -726,7 +909,10 @@ def _render_advice_png(items, out_png, page_no, model=""):
     d.text((M, foot_y), QC.translate(
         "TestReport", "标红的标签是需要重点关注的类别."),
         fill="#888888", font=f_meta)
-    page_txt = QC.translate("TestReport", "第 {} 页").format(page_no)
+    idx, total = page_no_of
+    # 多页时把 "2/3" 当页码传进去, 复用已有的"第 {} 页"译文, 不必再多一条待翻译文案
+    page_txt = QC.translate("TestReport", "第 {} 页").format(
+        "{}/{}".format(idx, total) if total > 1 else page_no)
     d.text((M + content_w - d.textbbox((0, 0), page_txt, font=f_meta)[2],
             foot_y), page_txt, fill="#777777", font=f_meta)
 
@@ -786,7 +972,6 @@ def build_report(res, out_pdf=None, thumb_w=480, summary_png=None,
     tmp_dir = tempfile.TemporaryDirectory(prefix="et_report_")
     if summary_png is None:
         summary_png = os.path.join(tmp_dir.name, "summary.png")
-    advice_png = os.path.join(tmp_dir.name, "advice.png")
     chart_png = os.path.join(tmp_dir.name, "label_chart.png")
 
     setup_matplotlib_chinese()
@@ -837,9 +1022,11 @@ def build_report(res, out_pdf=None, thumb_w=480, summary_png=None,
             _page_gallery(pdf, spur_rows[start:start + _GRID_COLS * _GRID_ROWS],
                           spur_title, thumb_w, page, confuse_iou)
             page += 1
-        _render_advice_png(_advice_items(res, stat), advice_png, page,
-                           str(res.get("model") or ""))
-        _embed_image_page(pdf, advice_png)
+        advice_pngs, page = render_advice_pages(
+            _advice_items(res, stat), tmp_dir.name, page,
+            str(res.get("model") or ""))
+        for png in advice_pngs:
+            _embed_image_page(pdf, png)
         d = pdf.infodict()
         d["Title"] = QC.translate("TestReport", "模型评估报告")
     return out_pdf

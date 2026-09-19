@@ -43,7 +43,6 @@ def _reset_queue_item(item, order):
 
 class QueueMixin(object):
     _queue_running = False      # 队列引擎激活中
-    _queue_paused = False       # 暂停: 当前任务跑完不再取下一个
     _queue_current_qid = None
     _queue_finished_rids = None  # 本轮已收尾的 record_id, 防重复推进
     _queue_cooling = False
@@ -60,9 +59,6 @@ class QueueMixin(object):
 
     def queue_is_running(self):
         return bool(self._queue_running)
-
-    def queue_is_paused(self):
-        return bool(self._queue_paused)
 
     # ---------- 入队 ----------
     def enqueue_train(self, params):
@@ -88,40 +84,19 @@ class QueueMixin(object):
 
     # ---------- 控制 ----------
     def start_train_queue(self):
-        """开始/继续队列. 已在训练则交给队列接管收尾, 不重复启动."""
+        """启动/重启队列. 已在训练则交给队列接管收尾, 不重复启动."""
         if self.is_training():
             return False
         self._queue_running = True
-        self._queue_paused = False
         self._queue_finished_rids = set()
         write_log(QC.translate("QueueMixin", "训练队列已启动"))
         self._refresh_queue_ui()
         self._pump_queue()
         return True
 
-    def pause_train_queue(self):
-        """暂停: 当前任务继续跑完, 不再取下一个."""
-        if not self._queue_running:
-            return
-        self._queue_paused = True
-        self._log(QC.translate("QueueMixin", "[队列] 已暂停, 当前任务完成后停止"))
-        self._refresh_queue_ui()
-
-    def resume_train_queue(self):
-        """从暂停恢复(引擎还活着, 只是不再取任务)."""
-        if not self._queue_running:
-            return False
-        self._queue_paused = False
-        self._log(QC.translate("QueueMixin", "[队列] 已继续"))
-        self._refresh_queue_ui()
-        self._pump_queue()
-        return True
-
     def stop_train_queue(self):
-        """停止队列: 暂停调度(不改动任务状态, 可再次启动继续)."""
-        self._queue_paused = True
+        """停止队列: 不再取下一个任务, 进行中的那个照常收尾."""
         self._queue_running = False
-        self._queue_current_qid = None
         self._log(QC.translate("QueueMixin", "[队列] 已停止"))
         self._refresh_queue_ui()
 
@@ -202,7 +177,7 @@ class QueueMixin(object):
     # ---------- 调度 ----------
     def _pump_queue(self):
         """取下一个任务启动; 没有则结束本轮队列."""
-        if not self._queue_running or self._queue_paused:
+        if not self._queue_running:
             return
         if self.is_training():
             return
@@ -303,7 +278,7 @@ class QueueMixin(object):
         else:
             self._mark_item(qid, status)
         self._queue_current_qid = None
-        if not self._queue_running or self._queue_paused:
+        if not self._queue_running:
             self._refresh_queue_ui()
             return
         self._wait_gpu_then_pump()
@@ -351,7 +326,6 @@ class QueueMixin(object):
 
     # ---------- UI 回调(由主窗口/队列面板实现)----------
     def _refresh_queue_ui(self):
-        """刷新工具栏角标与队列面板(存在时)."""
         # 主窗口用 setupUi(self), 控件直接挂在 self 上(训练对话框才是 self.ui.xxx)
         btn = getattr(self, "queue_btn", None)
         if btn is not None:

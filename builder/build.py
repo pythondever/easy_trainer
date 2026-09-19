@@ -101,6 +101,7 @@ def publish_linux(program_zip):
     items = [
         (program_zip, "program.zip"),
         (os.path.join(HERE, "requirements-release.txt"), "requirements-release.txt"),
+        (os.path.join(HERE, "requirements-nodeps.txt"), "requirements-nodeps.txt"),
         (os.path.join(HERE, "pretrained-assets.txt"), "pretrained-assets.txt"),
         (os.path.join(ROOT, "installer", "installer.sh"), "installer.sh"),
     ]

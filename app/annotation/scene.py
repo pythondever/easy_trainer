@@ -902,7 +902,6 @@ class AnnotationScene(QGraphicsScene):
         return QColor(self._resolve_color(self.current_label))
 
     def _polygon_press(self, pos):
-        """画笔模式: 按下开始采集轨迹."""
         self._free_track = [[pos.x(), pos.y()]]
         self._ensure_polygon_preview()
         self._update_polygon_preview()

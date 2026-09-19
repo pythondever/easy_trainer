@@ -41,7 +41,7 @@
       <string>模型测试</string>
      </property>
      <property name="class" stdset="0">
-      <string>dialogTitle</string>
+      <string notr="true">dialogTitle</string>
      </property>
     </widget>
    </item>
@@ -77,7 +77,7 @@
            <string>检测</string>
           </property>
           <property name="class" stdset="0">
-           <string>taskBadge</string>
+           <string notr="true">taskBadge</string>
           </property>
          </widget>
         </item>
@@ -93,7 +93,7 @@
            <string>best.pth</string>
           </property>
           <property name="class" stdset="0">
-           <string>modelName</string>
+           <string notr="true">modelName</string>
           </property>
          </widget>
         </item>
@@ -105,7 +105,7 @@
          <string>mAP50 0.912 · 输入 640 · 规模 n · 训练 2026-09-01 14:22</string>
         </property>
         <property name="class" stdset="0">
-         <string>modelMeta</string>
+         <string notr="true">modelMeta</string>
         </property>
         <property name="wordWrap">
          <bool>true</bool>
@@ -126,7 +126,7 @@
         <string>数据与设备</string>
        </property>
        <property name="class" stdset="0">
-        <string>dialogSectionTitle</string>
+        <string notr="true">dialogSectionTitle</string>
        </property>
       </widget>
      </item>
@@ -145,7 +145,7 @@
         <enum>QFrame::Sunken</enum>
        </property>
        <property name="class" stdset="0">
-        <string>dialogSectionLine</string>
+        <string notr="true">dialogSectionLine</string>
        </property>
       </widget>
      </item>
@@ -221,7 +221,7 @@
         <string>测试参数</string>
        </property>
        <property name="class" stdset="0">
-        <string>dialogSectionTitle</string>
+        <string notr="true">dialogSectionTitle</string>
        </property>
       </widget>
      </item>
@@ -240,7 +240,7 @@
         <enum>QFrame::Sunken</enum>
        </property>
        <property name="class" stdset="0">
-        <string>dialogSectionLine</string>
+        <string notr="true">dialogSectionLine</string>
        </property>
       </widget>
      </item>
@@ -304,7 +304,7 @@
            <string>低于该分数的预测直接丢弃</string>
           </property>
           <property name="class" stdset="0">
-           <string>fieldNote</string>
+           <string notr="true">fieldNote</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -361,7 +361,7 @@
            <string>与标注框重合度达标才算正确检出</string>
           </property>
           <property name="class" stdset="0">
-           <string>fieldNote</string>
+           <string notr="true">fieldNote</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -409,7 +409,7 @@
            <string>把预测框写成 labelme json，便于人工复核</string>
           </property>
           <property name="class" stdset="0">
-           <string>fieldNote</string>
+           <string notr="true">fieldNote</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -461,7 +461,7 @@
          <string>i</string>
         </property>
         <property name="class" stdset="0">
-         <string>summaryIcon</string>
+         <string notr="true">summaryIcon</string>
         </property>
        </widget>
       </item>
@@ -471,7 +471,7 @@
          <string>请选择数据集</string>
         </property>
         <property name="class" stdset="0">
-         <string>summaryText</string>
+         <string notr="true">summaryText</string>
         </property>
         <property name="wordWrap">
          <bool>true</bool>

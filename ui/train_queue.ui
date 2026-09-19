@@ -40,7 +40,7 @@
                 <string>训练队列</string>
               </property>
               <property name="class" stdset="0">
-                <string>dialogTitle</string>
+                <string notr="true">dialogTitle</string>
               </property>
             </widget>
           </item>
@@ -50,7 +50,7 @@
                 <string>空闲</string>
               </property>
               <property name="class" stdset="0">
-                <string>taskBadge</string>
+                <string notr="true">taskBadge</string>
               </property>
             </widget>
           </item>
@@ -152,7 +152,7 @@
                   <string>i</string>
                 </property>
                 <property name="class" stdset="0">
-                  <string>summaryIcon</string>
+                  <string notr="true">summaryIcon</string>
                 </property>
               </widget>
             </item>
@@ -168,7 +168,7 @@
                   <string>队列为空，可在训练界面点「加入队列」添加任务</string>
                 </property>
                 <property name="class" stdset="0">
-                  <string>summaryText</string>
+                  <string notr="true">summaryText</string>
                 </property>
                 <property name="alignment">
                   <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -199,7 +199,7 @@
                 <string>上移</string>
               </property>
               <property name="class" stdset="0">
-                <string>ghost</string>
+                <string notr="true">ghost</string>
               </property>
             </widget>
           </item>
@@ -209,7 +209,7 @@
                 <string>下移</string>
               </property>
               <property name="class" stdset="0">
-                <string>ghost</string>
+                <string notr="true">ghost</string>
               </property>
             </widget>
           </item>
@@ -219,7 +219,7 @@
                 <string>移除</string>
               </property>
               <property name="class" stdset="0">
-                <string>ghost</string>
+                <string notr="true">ghost</string>
               </property>
             </widget>
           </item>
@@ -229,7 +229,7 @@
                 <string>清理已结束</string>
               </property>
               <property name="class" stdset="0">
-                <string>ghost</string>
+                <string notr="true">ghost</string>
               </property>
             </widget>
           </item>
@@ -272,7 +272,7 @@
                 <string>开始队列</string>
               </property>
               <property name="class" stdset="0">
-                <string>primary</string>
+                <string notr="true">primary</string>
               </property>
             </widget>
           </item>

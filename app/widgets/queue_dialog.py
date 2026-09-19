@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""训练队列面板: 查看/排序/编辑队列任务, 控制队列的启动与暂停."""
+"""训练队列面板: 查看/排序/编辑队列任务, 控制队列的启动与停止."""
 
 import os
 
@@ -108,11 +108,7 @@ class TrainQueueDialog(QDialog):
         done = [i for i in items if i.get("status") == "done"]
         failed = [i for i in items if i.get("status") in ("failed", "skipped")]
         if self.app.queue_is_running():
-            if self.app.queue_is_paused():
-                badge = self.tr("已暂停")
-                tip = self.tr("当前任务完成后停止, 可点\"继续队列\"恢复")
-            else:
-                badge, tip = self.tr("运行中"), self.tr("队列正在串行执行")
+            badge, tip = self.tr("运行中"), self.tr("队列正在串行执行")
         elif waiting:
             badge = self.tr("待启动")
             tip = self.tr("有 {} 个任务等待启动").format(len(waiting))
@@ -140,19 +136,18 @@ class TrainQueueDialog(QDialog):
         self._update_buttons(items)
 
     def _update_buttons(self, items):
-        paused = self.app.queue_is_running() and self.app.queue_is_paused()
         has_waiting = any(i.get("status") == "waiting" for i in items)
         finished = [i for i in items if i.get("status") in DONE_STATUS]
-        if paused:
-            self.ui.start_btn.setText(self.tr("继续队列"))
-        elif has_waiting or not items:
+        if has_waiting or not items:
             self.ui.start_btn.setText(self.tr("开始队列"))
         else:
             self.ui.start_btn.setText(self.tr("重新开始队列"))
         # 队列全跑完(含全部失败)时按钮也得可用,点击即批量重新入队后启动,
+        # 引擎还活着时禁用: 冷却期点它会绕过"等显存回落"直接出队下一个
         self.ui.start_btn.setEnabled(
             not self.app.is_training()
-            and (has_waiting or paused or bool(finished)))
+            and not self.app.queue_is_running()
+            and (has_waiting or bool(finished)))
         for btn in (self.ui.move_up_btn, self.ui.move_down_btn,
                     self.ui.remove_btn, self.ui.edit_btn):
             btn.setEnabled(bool(self._current_item()))
@@ -170,10 +165,6 @@ class TrainQueueDialog(QDialog):
         if self.app.is_training():
             MessageBox.warning(self, self.tr("队列"),
                                self.tr("已有训练在进行中, 请先停止"))
-            return
-        if self.app.queue_is_paused() and self.app.queue_is_running():
-            self.app.resume_train_queue()
-            self.refresh()
             return
         items = self.app.queue_items()
         if not any(i.get("status") == "waiting" for i in items):

@@ -74,6 +74,9 @@ except Exception:                  # runner 被单独调试时可能没有 app �
 
 _MAX_POLY_PTS = 60
 
+# rf-detr 把"无物体"槽命名成这个; 置信度压到 0 时它会被当成预测放出来
+_BG_CLASS = "__background__"
+
 
 def _list_images(img_dir):
     """返回图片文件绝对路径列表(按名称排序, 稳定复现)."""
@@ -415,17 +418,14 @@ def _make_predictor(cfg):
     按 cfg["family"] 加载模型, 返回可直接 predict 的对象.
 
     两套后端的 predict 签名一致(图片路径 + threshold), 所以下游统计与报告代码
-    完全不用分架构. 缺依赖时分开报错 —— rfdetr 与 ultralytics 是两个独立安装,
-    说清缺哪个才知道该装什么.
+    完全不用分架构.
+    缺依赖时报同一句: 这条会原样进失败弹窗, 不点库名.
     """
     cnn = uses_cnn(cfg)
-    if cnn:
-        if find_spec("ultralytics") is None:
-            raise RuntimeError(QC.translate(
-                "TestRunner", "ultralytics 未安装, 无法执行测试"))
-    elif RFDETR is None:
+    missing = find_spec("ultralytics") is None if cnn else RFDETR is None
+    if missing:
         raise RuntimeError(
-            QC.translate("TestRunner", "rfdetr 未安装, 无法执行测试"))
+            QC.translate("TestRunner", "当前安装缺少所需组件, 无法执行测试"))
 
     print("[test] " + QC.translate("TestRunner", "加载模型: {}").format(
         os.path.basename(cfg["model_path"])), flush=True)
@@ -495,6 +495,8 @@ def main():
                            float(x[2]), float(x[3])]
                     if k < len(cnames) and cnames[k]:
                         cn = str(cnames[k])
+                        if cn == _BG_CLASS:
+                            continue    # 背景槽不是目标, 别算进 det/fp
                     elif cids is not None and k < len(cids):
                         cn = str(int(cids[k]))
                         preds_are_ids = True

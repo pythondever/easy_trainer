@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """测试工作线程: 以子进程方式运行 test_runner, 转发日志/进度/结果."""
 
-import collections
 import json
 import os
 import re
@@ -12,10 +11,10 @@ import time
 import traceback
 
 from PySide6.QtCore import QCoreApplication as QC
-from PySide6.QtCore import QThread, Signal
+from PySide6.QtCore import Signal
 
 from app.core.utils import decode_text_bytes
-from app.train.proc_utils import kill_process_tree, runner_bootstrap
+from app.train.proc_utils import SubprocessWorker, runner_bootstrap
 
 WORKSPACE = os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__))))
@@ -50,24 +49,13 @@ def _read_new_lines(path, start, final=False):
     return lines, start + cut
 
 
-class TestWorker(QThread):
+class TestWorker(SubprocessWorker):
     """运行一次测试(子进程), 通过信号上报日志/进度/结果."""
 
     log = Signal(str)
     progress = Signal(int, int)
     finished_ok = Signal(dict)           # test_runner 的 RESULT 内容
     failed = Signal(str)                 # traceback
-
-    def __init__(self, config, parent=None):
-        super().__init__(parent)
-        self._config = config
-        self._proc = None
-        self._stop_flag = False
-
-    def stop(self):
-        """请求停止: 置标志并终止子进程及其孙进程."""
-        self._stop_flag = True
-        kill_process_tree(self._proc)
 
     def run(self):
         cfg_path = self._config["_cfg_path"]
@@ -121,7 +109,6 @@ class TestWorker(QThread):
             self._proc.pid))
         self.log.emit("[test-worker] " + QC.translate(
             "TestWorker", "子进程已启动 pid={}").format(self._proc.pid))
-        last_lines = collections.deque(maxlen=200)
         _ansi_re = re.compile(r"\x1b\[[0-9;]*[a-zA-Z]")
         _progress_re = re.compile(r"\[test\] PROGRESS (\d+)/(\d+)")
         pos = 0
@@ -136,7 +123,6 @@ class TestWorker(QThread):
                 line = _ansi_re.sub("", line.rstrip("\r\n"))
                 if not line:
                     continue
-                last_lines.append(line)
                 _bytes_read[0] += 1
                 buf.append(line)
                 m = _progress_re.search(line)
@@ -177,7 +163,7 @@ class TestWorker(QThread):
                    + traceback.format_exc())
             # 异常跳出也要收尾, 否则下面按 rc 报"异常退出", 进程其实还在跑,
             # 而 UI 收到 failed 就把 worker 句柄丢了, 再没人能杀它
-            kill_process_tree(self._proc)
+            self._kill_proc()
         tail, pos = _read_new_lines(out_path, pos, final=True)
         if tail:
             _consume(tail)
@@ -192,7 +178,5 @@ class TestWorker(QThread):
             pass
         rc = self._proc.poll()
         if rc != 0 and not result_emitted:
-            detail = self.tr(
-                "测试进程异常退出 (code={})\n\n--- 输出(尾部) ---\n{}"
-            ).format(rc, "\n".join(last_lines))
-            self.failed.emit(detail)
+            # 尾部输出已逐行进过日志(落 app.log), 弹窗不再复述: 里面多半是堆栈
+            self.failed.emit(self.tr("测试未能完成, 详情见日志"))

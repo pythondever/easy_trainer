@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
-"""子进程收尾与启动表达式: 训练/测试 worker 共用一份, 避免杀进程逻辑分叉."""
+"""子进程收尾, 启动表达式与 worker 公共底座: 训练/测试共用一份, 避免逻辑分叉."""
 
 import os
+
+from PySide6.QtCore import QThread
 
 try:
     import psutil
@@ -59,3 +61,25 @@ def kill_process_tree(proc):
         proc.kill()
     except Exception:
         pass
+
+
+class SubprocessWorker(QThread):
+    """跑子进程的 worker 的公共部分: 配置快照, 进程句柄, 停止标志.
+
+    信号留给各自的子类声明 - 训练要报指标, 测试不报.
+    """
+
+    def __init__(self, config, parent=None):
+        super().__init__(parent)
+        self._config = config
+        self._proc = None
+        self._stop_flag = False
+
+    def stop(self):
+        """请求停止: 置标志并终止子进程及其孙进程."""
+        self._stop_flag = True
+        self._kill_proc()
+
+    def _kill_proc(self):
+        """终止子进程及其孙进程; 不动 _stop_flag(监控循环收尾也要用)."""
+        kill_process_tree(self._proc)

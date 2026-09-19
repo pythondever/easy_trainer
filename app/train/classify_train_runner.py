@@ -33,8 +33,9 @@ try:
     import torch
     import torch.nn as nn
     from torch.utils.data import DataLoader, Dataset
-    from torchvision import transforms, models
+    from torchvision import transforms
     from PIL import Image
+    from app.train.classify_common import make_resnet
 except Exception as e:
     print("[train] " + QC.translate("ClassifyTrainRunner", "缺少训练依赖: {}").format(e), flush=True)
     sys.exit(1)
@@ -84,17 +85,6 @@ class _ImageFolderSimple(Dataset):
         if self.transform is not None:
             im = self.transform(im)
         return im, ci
-
-
-def _make_model(arch, num_classes):
-    variants = {
-        "resnet18": models.resnet18, "resnet34": models.resnet34,
-        "resnet50": models.resnet50, "resnet101": models.resnet101,
-    }
-    model = variants.get(arch, models.resnet18)(weights=None)
-    in_f = model.fc.in_features
-    model.fc = nn.Linear(in_f, num_classes)
-    return model
 
 
 def _collect_images(datasets, split, dest):
@@ -221,7 +211,7 @@ def main():
             ", ".join(classes[:12]))), flush=True)
 
     # 2) 模型
-    model = _make_model(arch, real_classes)
+    model = make_resnet(arch, real_classes)
     model.to(device)
     criterion = nn.CrossEntropyLoss()
     if optimizer_name == "sgd":

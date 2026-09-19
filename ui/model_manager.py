@@ -41,11 +41,13 @@ class Ui_ModelManagerDialog(object):
         self.groups_layout.setContentsMargins(0, 0, 0, 0)
         self.detect_title = QLabel(self.groups_content)
         self.detect_title.setObjectName(u"detect_title")
+        self.detect_title.setProperty(u"class", u"modelGroupTitle")
 
         self.groups_layout.addWidget(self.detect_title)
 
         self.detect_frame = QFrame(self.groups_content)
         self.detect_frame.setObjectName(u"detect_frame")
+        self.detect_frame.setProperty(u"class", u"modelGroup")
         self.detect_layout = QVBoxLayout(self.detect_frame)
         self.detect_layout.setSpacing(0)
         self.detect_layout.setObjectName(u"detect_layout")
@@ -55,11 +57,13 @@ class Ui_ModelManagerDialog(object):
 
         self.detect_cnn_title = QLabel(self.groups_content)
         self.detect_cnn_title.setObjectName(u"detect_cnn_title")
+        self.detect_cnn_title.setProperty(u"class", u"modelGroupTitle")
 
         self.groups_layout.addWidget(self.detect_cnn_title)
 
         self.detect_cnn_frame = QFrame(self.groups_content)
         self.detect_cnn_frame.setObjectName(u"detect_cnn_frame")
+        self.detect_cnn_frame.setProperty(u"class", u"modelGroup")
         self.detect_cnn_layout = QVBoxLayout(self.detect_cnn_frame)
         self.detect_cnn_layout.setSpacing(0)
         self.detect_cnn_layout.setObjectName(u"detect_cnn_layout")
@@ -69,11 +73,13 @@ class Ui_ModelManagerDialog(object):
 
         self.segment_title = QLabel(self.groups_content)
         self.segment_title.setObjectName(u"segment_title")
+        self.segment_title.setProperty(u"class", u"modelGroupTitle")
 
         self.groups_layout.addWidget(self.segment_title)
 
         self.segment_frame = QFrame(self.groups_content)
         self.segment_frame.setObjectName(u"segment_frame")
+        self.segment_frame.setProperty(u"class", u"modelGroup")
         self.segment_layout = QVBoxLayout(self.segment_frame)
         self.segment_layout.setSpacing(0)
         self.segment_layout.setObjectName(u"segment_layout")
@@ -83,11 +89,13 @@ class Ui_ModelManagerDialog(object):
 
         self.segment_cnn_title = QLabel(self.groups_content)
         self.segment_cnn_title.setObjectName(u"segment_cnn_title")
+        self.segment_cnn_title.setProperty(u"class", u"modelGroupTitle")
 
         self.groups_layout.addWidget(self.segment_cnn_title)
 
         self.segment_cnn_frame = QFrame(self.groups_content)
         self.segment_cnn_frame.setObjectName(u"segment_cnn_frame")
+        self.segment_cnn_frame.setProperty(u"class", u"modelGroup")
         self.segment_cnn_layout = QVBoxLayout(self.segment_cnn_frame)
         self.segment_cnn_layout.setSpacing(0)
         self.segment_cnn_layout.setObjectName(u"segment_cnn_layout")
@@ -108,11 +116,13 @@ class Ui_ModelManagerDialog(object):
         self.foot_layout.setObjectName(u"foot_layout")
         self.dir_title = QLabel(ModelManagerDialog)
         self.dir_title.setObjectName(u"dir_title")
+        self.dir_title.setProperty(u"class", u"modelFootLabel")
 
         self.foot_layout.addWidget(self.dir_title)
 
         self.dir_label = QLabel(ModelManagerDialog)
         self.dir_label.setObjectName(u"dir_label")
+        self.dir_label.setProperty(u"class", u"modelDir")
 
         self.foot_layout.addWidget(self.dir_label)
 
@@ -127,11 +137,13 @@ class Ui_ModelManagerDialog(object):
 
         self.total_label = QLabel(ModelManagerDialog)
         self.total_label.setObjectName(u"total_label")
+        self.total_label.setProperty(u"class", u"modelFootLabel")
 
         self.foot_layout.addWidget(self.total_label)
 
         self.start_btn = QPushButton(ModelManagerDialog)
         self.start_btn.setObjectName(u"start_btn")
+        self.start_btn.setProperty(u"class", u"primary")
 
         self.foot_layout.addWidget(self.start_btn)
 
@@ -152,24 +164,12 @@ class Ui_ModelManagerDialog(object):
     def retranslateUi(self, ModelManagerDialog):
         ModelManagerDialog.setWindowTitle(QCoreApplication.translate("ModelManagerDialog", u"\u6a21\u578b\u6743\u91cd", None))
         self.detect_title.setText(QCoreApplication.translate("ModelManagerDialog", u"\u76ee\u6807\u68c0\u6d4b \u00b7 Transformer", None))
-        self.detect_title.setProperty(u"class", QCoreApplication.translate("ModelManagerDialog", u"modelGroupTitle", None))
-        self.detect_frame.setProperty(u"class", QCoreApplication.translate("ModelManagerDialog", u"modelGroup", None))
         self.detect_cnn_title.setText(QCoreApplication.translate("ModelManagerDialog", u"\u76ee\u6807\u68c0\u6d4b \u00b7 CNN", None))
-        self.detect_cnn_title.setProperty(u"class", QCoreApplication.translate("ModelManagerDialog", u"modelGroupTitle", None))
-        self.detect_cnn_frame.setProperty(u"class", QCoreApplication.translate("ModelManagerDialog", u"modelGroup", None))
         self.segment_title.setText(QCoreApplication.translate("ModelManagerDialog", u"\u56fe\u50cf\u5206\u5272 \u00b7 Transformer", None))
-        self.segment_title.setProperty(u"class", QCoreApplication.translate("ModelManagerDialog", u"modelGroupTitle", None))
-        self.segment_frame.setProperty(u"class", QCoreApplication.translate("ModelManagerDialog", u"modelGroup", None))
         self.segment_cnn_title.setText(QCoreApplication.translate("ModelManagerDialog", u"\u56fe\u50cf\u5206\u5272 \u00b7 CNN", None))
-        self.segment_cnn_title.setProperty(u"class", QCoreApplication.translate("ModelManagerDialog", u"modelGroupTitle", None))
-        self.segment_cnn_frame.setProperty(u"class", QCoreApplication.translate("ModelManagerDialog", u"modelGroup", None))
         self.dir_title.setText(QCoreApplication.translate("ModelManagerDialog", u"\u4e0b\u8f7d\u76ee\u5f55", None))
-        self.dir_title.setProperty(u"class", QCoreApplication.translate("ModelManagerDialog", u"modelFootLabel", None))
-        self.dir_label.setProperty(u"class", QCoreApplication.translate("ModelManagerDialog", u"modelDir", None))
         self.change_dir_btn.setText(QCoreApplication.translate("ModelManagerDialog", u"\u66f4\u6539", None))
-        self.total_label.setProperty(u"class", QCoreApplication.translate("ModelManagerDialog", u"modelFootLabel", None))
         self.start_btn.setText(QCoreApplication.translate("ModelManagerDialog", u"\u5f00\u59cb\u4e0b\u8f7d", None))
-        self.start_btn.setProperty(u"class", QCoreApplication.translate("ModelManagerDialog", u"primary", None))
         self.close_btn.setText(QCoreApplication.translate("ModelManagerDialog", u"\u5173\u95ed", None))
     # retranslateUi
 

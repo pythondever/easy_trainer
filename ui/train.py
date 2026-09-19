@@ -34,11 +34,13 @@ class Ui_TrainDialog(object):
         self.title_row.setObjectName(u"title_row")
         self.title_label = QLabel(TrainDialog)
         self.title_label.setObjectName(u"title_label")
+        self.title_label.setProperty(u"class", u"dialogTitle")
 
         self.title_row.addWidget(self.title_label)
 
         self.task_badge = QLabel(TrainDialog)
         self.task_badge.setObjectName(u"task_badge")
+        self.task_badge.setProperty(u"class", u"taskBadge")
 
         self.title_row.addWidget(self.task_badge)
 
@@ -57,6 +59,7 @@ class Ui_TrainDialog(object):
         self.section_data_layout.setContentsMargins(0, 0, 0, 0)
         self.group_data_title = QLabel(self.section_data_wrap)
         self.group_data_title.setObjectName(u"group_data_title")
+        self.group_data_title.setProperty(u"class", u"dialogSectionTitle")
 
         self.section_data_layout.addWidget(self.group_data_title)
 
@@ -69,6 +72,7 @@ class Ui_TrainDialog(object):
         self.group_data_line.setSizePolicy(sizePolicy)
         self.group_data_line.setFrameShape(QFrame.HLine)
         self.group_data_line.setFrameShadow(QFrame.Sunken)
+        self.group_data_line.setProperty(u"class", u"dialogSectionLine")
 
         self.section_data_layout.addWidget(self.group_data_line)
 
@@ -161,6 +165,7 @@ class Ui_TrainDialog(object):
         self.section_hyper_layout.setContentsMargins(0, 0, 0, 0)
         self.group_hyper_title = QLabel(self.section_hyper_wrap)
         self.group_hyper_title.setObjectName(u"group_hyper_title")
+        self.group_hyper_title.setProperty(u"class", u"dialogSectionTitle")
 
         self.section_hyper_layout.addWidget(self.group_hyper_title)
 
@@ -170,6 +175,7 @@ class Ui_TrainDialog(object):
         self.group_hyper_line.setSizePolicy(sizePolicy)
         self.group_hyper_line.setFrameShape(QFrame.HLine)
         self.group_hyper_line.setFrameShadow(QFrame.Sunken)
+        self.group_hyper_line.setProperty(u"class", u"dialogSectionLine")
 
         self.section_hyper_layout.addWidget(self.group_hyper_line)
 
@@ -226,6 +232,7 @@ class Ui_TrainDialog(object):
         sizePolicy1.setVerticalStretch(0)
         sizePolicy1.setHeightForWidth(self.early_note.sizePolicy().hasHeightForWidth())
         self.early_note.setSizePolicy(sizePolicy1)
+        self.early_note.setProperty(u"class", u"fieldNote")
         self.early_note.setWordWrap(True)
 
         self.early_wrap_layout.addWidget(self.early_note)
@@ -254,6 +261,7 @@ class Ui_TrainDialog(object):
         self.lr_note.setObjectName(u"lr_note")
         sizePolicy1.setHeightForWidth(self.lr_note.sizePolicy().hasHeightForWidth())
         self.lr_note.setSizePolicy(sizePolicy1)
+        self.lr_note.setProperty(u"class", u"fieldNote")
         self.lr_note.setWordWrap(True)
 
         self.lr_wrap_layout.addWidget(self.lr_note)
@@ -291,6 +299,7 @@ class Ui_TrainDialog(object):
 
         self.img_note = QLabel(self.img_wrap)
         self.img_note.setObjectName(u"img_note")
+        self.img_note.setProperty(u"class", u"fieldNote")
         self.img_note.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignVCenter)
 
         self.img_wrap_layout.addWidget(self.img_note)
@@ -319,6 +328,7 @@ class Ui_TrainDialog(object):
         self.grad_note.setObjectName(u"grad_note")
         sizePolicy1.setHeightForWidth(self.grad_note.sizePolicy().hasHeightForWidth())
         self.grad_note.setSizePolicy(sizePolicy1)
+        self.grad_note.setProperty(u"class", u"fieldNote")
         self.grad_note.setWordWrap(True)
 
         self.grad_wrap_layout.addWidget(self.grad_note)
@@ -348,6 +358,7 @@ class Ui_TrainDialog(object):
         self.section_out_layout.setContentsMargins(0, 0, 0, 0)
         self.group_out_title = QLabel(self.section_out_wrap)
         self.group_out_title.setObjectName(u"group_out_title")
+        self.group_out_title.setProperty(u"class", u"dialogSectionTitle")
 
         self.section_out_layout.addWidget(self.group_out_title)
 
@@ -357,6 +368,7 @@ class Ui_TrainDialog(object):
         self.group_out_line.setSizePolicy(sizePolicy)
         self.group_out_line.setFrameShape(QFrame.HLine)
         self.group_out_line.setFrameShadow(QFrame.Sunken)
+        self.group_out_line.setProperty(u"class", u"dialogSectionLine")
 
         self.section_out_layout.addWidget(self.group_out_line)
 
@@ -406,6 +418,7 @@ class Ui_TrainDialog(object):
         self.summary_bar_layout.setContentsMargins(12, 10, 12, 10)
         self.summary_icon = QLabel(self.summary_bar)
         self.summary_icon.setObjectName(u"summary_icon")
+        self.summary_icon.setProperty(u"class", u"summaryIcon")
 
         self.summary_bar_layout.addWidget(self.summary_icon)
 
@@ -416,6 +429,7 @@ class Ui_TrainDialog(object):
         sizePolicy2.setVerticalStretch(0)
         sizePolicy2.setHeightForWidth(self.summary_text.sizePolicy().hasHeightForWidth())
         self.summary_text.setSizePolicy(sizePolicy2)
+        self.summary_text.setProperty(u"class", u"summaryText")
         self.summary_text.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignVCenter)
 
         self.summary_bar_layout.addWidget(self.summary_text)
@@ -466,12 +480,8 @@ class Ui_TrainDialog(object):
     def retranslateUi(self, TrainDialog):
         TrainDialog.setWindowTitle(QCoreApplication.translate("TrainDialog", u"\u8bad\u7ec3", None))
         self.title_label.setText(QCoreApplication.translate("TrainDialog", u"\u8bad\u7ec3", None))
-        self.title_label.setProperty(u"class", QCoreApplication.translate("TrainDialog", u"dialogTitle", None))
         self.task_badge.setText(QCoreApplication.translate("TrainDialog", u"\u68c0\u6d4b", None))
-        self.task_badge.setProperty(u"class", QCoreApplication.translate("TrainDialog", u"taskBadge", None))
         self.group_data_title.setText(QCoreApplication.translate("TrainDialog", u"\u6a21\u578b\u4e0e\u6570\u636e", None))
-        self.group_data_title.setProperty(u"class", QCoreApplication.translate("TrainDialog", u"dialogSectionTitle", None))
-        self.group_data_line.setProperty(u"class", QCoreApplication.translate("TrainDialog", u"dialogSectionLine", None))
         self.task_label.setText(QCoreApplication.translate("TrainDialog", u"\u4efb\u52a1\u7c7b\u578b", None))
         self.task_combo.setItemText(0, QCoreApplication.translate("TrainDialog", u"\u68c0\u6d4b", None))
         self.task_combo.setItemText(1, QCoreApplication.translate("TrainDialog", u"\u5206\u5272", None))
@@ -483,35 +493,25 @@ class Ui_TrainDialog(object):
         self.device_label.setText(QCoreApplication.translate("TrainDialog", u"\u8bbe\u5907", None))
         self.arch_label.setText(QCoreApplication.translate("TrainDialog", u"\u67b6\u6784", None))
         self.group_hyper_title.setText(QCoreApplication.translate("TrainDialog", u"\u8bad\u7ec3\u8d85\u53c2", None))
-        self.group_hyper_title.setProperty(u"class", QCoreApplication.translate("TrainDialog", u"dialogSectionTitle", None))
-        self.group_hyper_line.setProperty(u"class", QCoreApplication.translate("TrainDialog", u"dialogSectionLine", None))
         self.epoch_label.setText(QCoreApplication.translate("TrainDialog", u"\u8f6e\u6b21", None))
         self.optimizer_label.setText(QCoreApplication.translate("TrainDialog", u"\u4f18\u5316\u5668", None))
         self.early_stop_label.setText(QCoreApplication.translate("TrainDialog", u"\u65e9\u505c", None))
         self.early_note.setText(QCoreApplication.translate("TrainDialog", u"\u8fde\u7eed\u65e0\u63d0\u5347\u5219\u63d0\u524d\u7ed3\u675f\uff0c0 \u4e3a\u5173\u95ed", None))
-        self.early_note.setProperty(u"class", QCoreApplication.translate("TrainDialog", u"fieldNote", None))
         self.lr_label.setText(QCoreApplication.translate("TrainDialog", u"\u5b66\u4e60\u7387", None))
         self.lr_note.setText(QCoreApplication.translate("TrainDialog", u"\u521d\u59cb\u5b66\u4e60\u7387\uff0c\u8bad\u7ec3\u4e2d\u81ea\u52a8\u8870\u51cf", None))
-        self.lr_note.setProperty(u"class", QCoreApplication.translate("TrainDialog", u"fieldNote", None))
         self.batch_label.setText(QCoreApplication.translate("TrainDialog", u"\u6279\u6b21", None))
         self.img_size_label.setText(QCoreApplication.translate("TrainDialog", u"\u56fe\u50cf\u5c3a\u5bf8", None))
         self.img_note.setText(QCoreApplication.translate("TrainDialog", u"32 \u7684\u500d\u6570", None))
-        self.img_note.setProperty(u"class", QCoreApplication.translate("TrainDialog", u"fieldNote", None))
         self.grad_accum_label.setText(QCoreApplication.translate("TrainDialog", u"\u68af\u5ea6\u7d2f\u79ef", None))
         self.grad_note.setText(QCoreApplication.translate("TrainDialog", u"\u663e\u5b58\u4e0d\u8db3\u65f6\u8c03\u5927\uff0c\u7b49\u6548\u6279\u6b21 \u00d7 N", None))
-        self.grad_note.setProperty(u"class", QCoreApplication.translate("TrainDialog", u"fieldNote", None))
         self.loader_num_label.setText(QCoreApplication.translate("TrainDialog", u"\u7ebf\u7a0b\u6570", None))
         self.group_out_title.setText(QCoreApplication.translate("TrainDialog", u"\u8f93\u51fa", None))
-        self.group_out_title.setProperty(u"class", QCoreApplication.translate("TrainDialog", u"dialogSectionTitle", None))
-        self.group_out_line.setProperty(u"class", QCoreApplication.translate("TrainDialog", u"dialogSectionLine", None))
         self.output_label.setText(QCoreApplication.translate("TrainDialog", u"\u8f93\u51fa\u8def\u5f84", None))
         self.output_line_txt.setText("")
         self.output_line_txt.setPlaceholderText(QCoreApplication.translate("TrainDialog", u"\u7559\u7a7a\u5219\u81ea\u52a8\u6309\u65f6\u95f4\u751f\u6210\u76ee\u5f55", None))
         self.select_output_path_btn.setText(QCoreApplication.translate("TrainDialog", u"\u9009\u62e9\u8def\u5f84", None))
         self.summary_icon.setText(QCoreApplication.translate("TrainDialog", u"i", None))
-        self.summary_icon.setProperty(u"class", QCoreApplication.translate("TrainDialog", u"summaryIcon", None))
         self.summary_text.setText(QCoreApplication.translate("TrainDialog", u"\u8bf7\u9009\u62e9\u8bad\u7ec3\u96c6\u4e0e\u9a8c\u8bc1\u96c6", None))
-        self.summary_text.setProperty(u"class", QCoreApplication.translate("TrainDialog", u"summaryText", None))
         self.cancel_btn.setText(QCoreApplication.translate("TrainDialog", u"\u53d6\u6d88", None))
         self.add_queue_btn.setText(QCoreApplication.translate("TrainDialog", u"\u52a0\u5165\u961f\u5217", None))
         self.start_train.setText(QCoreApplication.translate("TrainDialog", u"\u5f00\u59cb\u8bad\u7ec3", None))

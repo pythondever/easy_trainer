@@ -335,7 +335,7 @@ class ChipLineEdit(QLineEdit):
                     item.setCheckState(Qt.Unchecked)
                 event.accept()
                 return
-        # 其余位置沿用"点框内任意位置展开"; 原来的过滤器随旧 lineEdit 一起没了
+        # 点框内任意位置展开: 没有事件过滤器接管, 这里手动补一次 showPopup
         QTimer.singleShot(0, self._combo.showPopup)
         event.accept()
 

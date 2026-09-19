@@ -33,6 +33,7 @@ class Ui_NameInputDialog(object):
         self.title_row.setObjectName(u"title_row")
         self.title_label = QLabel(NameInputDialog)
         self.title_label.setObjectName(u"title_label")
+        self.title_label.setProperty(u"class", u"dialogTitle")
 
         self.title_row.addWidget(self.title_label)
 
@@ -70,6 +71,7 @@ class Ui_NameInputDialog(object):
         self.ok_btn = QPushButton(NameInputDialog)
         self.ok_btn.setObjectName(u"ok_btn")
         self.ok_btn.setMinimumSize(QSize(90, 36))
+        self.ok_btn.setProperty(u"class", u"primary")
 
         self.bottom_row.addWidget(self.ok_btn)
 
@@ -85,10 +87,8 @@ class Ui_NameInputDialog(object):
     def retranslateUi(self, NameInputDialog):
         NameInputDialog.setWindowTitle(QCoreApplication.translate("NameInputDialog", u"\u8f93\u5165\u540d\u79f0", None))
         self.title_label.setText(QCoreApplication.translate("NameInputDialog", u"\u8f93\u5165\u540d\u79f0", None))
-        self.title_label.setProperty(u"class", QCoreApplication.translate("NameInputDialog", u"dialogTitle", None))
         self.name_edit.setPlaceholderText(QCoreApplication.translate("NameInputDialog", u"\u8bf7\u8f93\u5165\u540d\u79f0", None))
         self.cancel_btn.setText(QCoreApplication.translate("NameInputDialog", u"\u53d6\u6d88", None))
         self.ok_btn.setText(QCoreApplication.translate("NameInputDialog", u"\u786e\u5b9a", None))
-        self.ok_btn.setProperty(u"class", QCoreApplication.translate("NameInputDialog", u"primary", None))
     # retranslateUi
 

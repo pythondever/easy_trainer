@@ -2,6 +2,8 @@
 import json
 import os
 
+from app.core.constants import IMAGE_EXTS
+
 
 def normalize_label(name):
     s = str(name).strip()
@@ -18,16 +20,22 @@ def label_sort_key(name):
         return (1, s)
 
 
-def load_json_shapes(json_path):
-    """读 labelme json → [(label, points)], points = [[x, y], ...] 像素坐标.
+def load_json_shapes_checked(json_path):
+    """读 labelme json → (shapes, 是否 labelme 文件).
 
-    保留多边形顶点而不是只取外接框: 分割训练要拿顶点写 yolo-seg,
-    压成框之后 mask 就没了.
+    "这张图标过没有"要同时知道 shapes 是否为空和这个 json 是不是标注文件,
+    而 load_json_shapes 与 looks_like_labelme 各自读一遍同一个文件. 合到
+    一次读盘, 判定口径与原来两个函数逐个调用完全一致.
     """
-    shapes = []
     try:
         with open(json_path, "r", encoding="utf-8") as f:
             data = json.load(f)
+    except Exception:
+        return [], False
+    if not isinstance(data, dict) or not isinstance(data.get("shapes"), list):
+        return [], False
+    try:
+        shapes = []
         for shape in data.get("shapes", []):
             pts = shape.get("points") or []
             if len(pts) < 2:
@@ -35,8 +43,17 @@ def load_json_shapes(json_path):
             shapes.append((normalize_label(shape.get("label", "unknown")),
                            [[float(p[0]), float(p[1])] for p in pts]))
     except Exception:
-        return []
-    return shapes
+        return [], True
+    return shapes, True
+
+
+def load_json_shapes(json_path):
+    """读 labelme json → [(label, points)], points = [[x, y], ...] 像素坐标.
+
+    保留多边形顶点而不是只取外接框: 分割训练要拿顶点写 yolo-seg,
+    压成框之后 mask 就没了.
+    """
+    return load_json_shapes_checked(json_path)[0]
 
 
 def looks_like_labelme(json_path):
@@ -45,12 +62,7 @@ def looks_like_labelme(json_path):
     图像目录里可能有别的 json(导出清单, 类别表等), 它们不是标注,
     不能被当成"这张图没有目标"把有效标签清空.
     """
-    try:
-        with open(json_path, "r", encoding="utf-8") as f:
-            data = json.load(f)
-    except Exception:
-        return False
-    return isinstance(data, dict) and isinstance(data.get("shapes"), list)
+    return load_json_shapes_checked(json_path)[1]
 
 
 def same_dir_json(image_path):
@@ -180,18 +192,46 @@ def image_has_label(image_path, label_dirs, fmt):
     同路径 json 存在即权威(哪怕 shapes 是空的) - 那表示用户在标注界面把框
     删空了, 不能再回退导入目录的旧标签, 否则删空的框会"复活".
     """
-    js = same_dir_json(image_path)
-    if js:
-        return bool(load_json_shapes(js))
+    same = os.path.splitext(image_path)[0] + ".json"
+    if os.path.isfile(same):
+        shapes, is_labelme = load_json_shapes_checked(same)
+        if is_labelme:
+            return bool(shapes)
     if not fmt or fmt == "cls":
         return False
     ext = ".txt" if fmt == ".txt" else ".json"
     stem = os.path.splitext(os.path.basename(image_path))[0]
     for d in label_dirs or []:
-        if d and os.path.isdir(d) and label_file_has_content(
-                os.path.join(d, stem + ext), ext):
+        # 不在这里判 d 是不是目录: label_file_has_content 的 isfile 已经兜住,
+        # 而这个函数是逐图调用的, 每张图多一次 stat 没必要
+        if d and label_file_has_content(os.path.join(d, stem + ext), ext):
             return True
     return False
+
+
+def count_images_labeled(image_path, label_path="", fmt="", cancelled=None):
+    """数图像张数与其中已标注的张数; 目录不存在返回 None.
+
+    label_path 支持 str 或 list(多路径导入). cancelled 是个无参可调用对象,
+    返回真值时提前收工(返回 None), 供后台线程在用户换了目录后放弃过期扫描.
+    """
+    if not image_path or not os.path.isdir(image_path):
+        return None
+    label_dirs = ([label_path] if isinstance(label_path, str)
+                  else list(label_path or []))
+    label_dirs = [p for p in label_dirs if p and os.path.isdir(p)]
+    total = 0
+    labeled = 0
+    for root, _, files in os.walk(image_path):
+        for fn in files:
+            if not fn.lower().endswith(IMAGE_EXTS):
+                continue
+            total += 1
+            if image_has_label(os.path.join(root, fn), label_dirs, fmt):
+                labeled += 1
+            if cancelled is not None and cancelled():
+                return None
+    return total, labeled
 
 
 def rec_is_labeled(rec):

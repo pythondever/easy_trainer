@@ -26,9 +26,9 @@ from app.core import i18n
 
 try:
     import torch
-    import torch.nn as nn
-    from torchvision import transforms, models
+    from torchvision import transforms
     from PIL import Image
+    from app.train.classify_common import make_resnet
 except Exception as e:
     print("[test] " + QC.translate(
         "ClassifyTestRunner", "缺少测试依赖: {}").format(e), flush=True)
@@ -36,17 +36,6 @@ except Exception as e:
 
 from app.core.constants import IMAGE_EXTS as _IMG_EXTS
 
-
-
-def _make_model(arch, num_classes):
-    variants = {
-        "resnet18": models.resnet18, "resnet34": models.resnet34,
-        "resnet50": models.resnet50, "resnet101": models.resnet101,
-    }
-    model = variants.get(arch, models.resnet18)(weights=None)
-    in_f = model.fc.in_features
-    model.fc = nn.Linear(in_f, num_classes)
-    return model
 
 
 class _ImageListDS(torch.utils.data.Dataset):
@@ -100,7 +89,7 @@ def main():
     classes = list(ckpt.get("classes") or [])
     arch = ckpt.get("architecture", "resnet18")
     fc_out = int(ckpt["state_dict"]["fc.weight"].shape[0])
-    model = _make_model(arch, fc_out)
+    model = make_resnet(arch, fc_out)
     model.load_state_dict(ckpt["state_dict"])
     model.to(device).eval()
     img_size = int(cfg.get("img_size", 224))

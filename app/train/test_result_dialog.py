@@ -46,6 +46,22 @@ def _card(u, name, text, rate=None, rate_prefix="", lower_better=False):
                                        _rate_span(rate, lower_better)))
 
 
+def _fit_table_width(table):
+    """按实际列宽给表格顶出下限.
+
+    QTableWidget 不把列宽算进自己的最小宽度, 窗口一窄就冒横向滚动条、
+    末列被挡在视野外. 卡片区变窄时(长语言反而会更宽)就会挤到表格.
+    """
+    table.ensurePolished()          # 列宽要在样式表生效后量, 否则字体字号还没定
+    table.resizeColumnsToContents()
+    total = sum(table.columnWidth(c) for c in range(table.columnCount()))
+    total += table.frameWidth() * 2 + table.verticalScrollBar().sizeHint().width()
+    vh = table.verticalHeader()     # 行号列也占视野宽度
+    if not vh.isHidden():
+        total += max(vh.width(), vh.sizeHint().width())
+    table.setMinimumWidth(total + 4)
+
+
 def _default_pdf_name(res):
     """默认文件名: 模型名_时间戳.pdf. 模型名做 sanitize, 避开路径分隔符与 Windows 非法字符."""
     model = (res.get("model") or "model")
@@ -248,7 +264,7 @@ class TestResultDialog(QDialog):
                     Qt.AlignLeft | Qt.AlignVCenter if j == 0
                     else Qt.AlignCenter)
                 u.result_table.setItem(i, j, item)
-        u.result_table.resizeColumnsToContents()
+        _fit_table_width(u.result_table)
         if per_class:
             worst = max(per_class.items(), key=lambda kv: kv[1].get("error", 0))
             u.conclusion_label.setText(
@@ -278,7 +294,7 @@ class TestResultDialog(QDialog):
                 else:
                     item.setTextAlignment(Qt.AlignCenter)
                 u.result_table.setItem(i, j, item)
-        u.result_table.resizeColumnsToContents()
+        _fit_table_width(u.result_table)
 
     def _conclusion(self, per_class, tp, fp, fn, conf=None):
         if tp == 0 and fp == 0 and fn == 0:

@@ -10,7 +10,7 @@ import os
 import tempfile
 import time
 
-from PySide6.QtCore import QLocale, Qt, QEvent, QObject, QTimer
+from PySide6.QtCore import QLocale, Qt
 from PySide6.QtCore import QCoreApplication as QC
 from PySide6.QtGui import (QDoubleValidator, QStandardItem,
                            QStandardItemModel, QValidator)
@@ -19,6 +19,7 @@ from PySide6.QtWidgets import QDialog, QFormLayout, QComboBox
 from app.core import i18n
 from app.core.db import get_paths
 from app.core.log import write_log
+from app.widgets.combo_utils import style_combo
 from app.widgets.dialog_buttons import apply_icon
 from app.widgets.message_box import MessageBox
 from app.widgets.multi_combo import install_multi_combo
@@ -43,18 +44,6 @@ class _RatioValidator(QDoubleValidator):
             except ValueError:
                 pass
         return state, text, pos
-
-
-class _ClickToPopupFilter(QObject):
-    def __init__(self, combo, parent=None):
-        super().__init__(parent)
-        self._combo = combo
-
-    def eventFilter(self, obj, event):
-        if event.type() == QEvent.MouseButtonPress and event.button() == Qt.LeftButton:
-            QTimer.singleShot(0, self._combo.showPopup)
-            return True
-        return False
 
 
 class TestDialog(QDialog):
@@ -107,17 +96,7 @@ class TestDialog(QDialog):
         self.ui.out_note.setMinimumWidth(0)
         self.ui.out_note.setToolTip(self.ui.out_note.text())
         self._align_form_labels()
-        combo = self.ui.test_device_combo
-        combo.setEditable(True)
-        combo.setFocusPolicy(Qt.StrongFocus)
-        le = combo.lineEdit()
-        le.setObjectName("multiComboLineEdit")
-        le.setReadOnly(True)
-        le.setAlignment(Qt.AlignHCenter)
-        f = _ClickToPopupFilter(combo)
-        combo.installEventFilter(f)
-        le.installEventFilter(f)
-        self._combo_filters.append(f)
+        style_combo(self.ui.test_device_combo, self._combo_filters, self)
         for name in ("confidence_txt", "iou_treshold_txt"):
             edit = getattr(self.ui, name, None)
             if edit is not None:
@@ -232,7 +211,7 @@ class TestDialog(QDialog):
         self.ui.start_test_btn.setEnabled(True)
 
     def _fill_model_card(self):
-        """取代原来的模型下拉: 一次只填一个模型, 点开没得选, 信息直接摆出来更清楚."""
+        """卡片直摆信息而不是下拉: 一次只填一个模型, 点开也没得选, 卡片反而看得全."""
         u = self.ui
         rec = self._record
         u.task_badge.setText(task_text(rec.get("task", "") or "-"))

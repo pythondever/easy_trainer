@@ -8,9 +8,10 @@ from app.core.db import get_paths
 from app.core.constants import IMAGE_EXTS
 from ui.import_data import Ui_ImportData
 from ui.export_data import Ui_Dialog as ExportDataUI
-from app.core.label_utils import (image_has_label, label_sort_key,
+from app.core.label_utils import (count_images_labeled, label_sort_key,
                              load_json_shapes, load_yolo_shapes, same_dir_json,
                              shapes_to_yolo_text, shapes_to_labelme_json)
+from app.tasks.import_scan_task import ImportScanTask
 from app.widgets.dialog_buttons import (apply_icon, resource_icon, ICON_SIZE,
                                         BTN_WIDTH, BTN_HEIGHT)
 from app.widgets.message_box import MessageBox, ProgressDialog
@@ -25,32 +26,6 @@ except ImportError:
 
 
 class ImportExportMixin(object):
-    @staticmethod
-    def _scan_import_info(image_path, label_path="", fmt=""):
-        """
-        扫描导入信息: 图像总数 + 已标注数.
-        - total = 图像目录下图像数(jpg/jpeg/png/bmp/webp, 含子目录)
-        - labeled = 有非空标签文件的图像数: 图像同路径权威 json 优先, 其次
-          label_path 里的同名标签文件; 空文件, 空 shapes 都不算已标注
-        label_path 支持 str 或 list(多路径导入).
-        返回 (total, labeled); 目录不存在返回 None.
-        """
-        if not image_path or not os.path.isdir(image_path):
-            return None
-        label_dirs = ([label_path] if isinstance(label_path, str)
-                      else list(label_path or []))
-        label_dirs = [p for p in label_dirs if p and os.path.isdir(p)]
-        total = 0
-        labeled = 0
-        for root, _, files in os.walk(image_path):
-            for fn in files:
-                if not fn.lower().endswith(IMAGE_EXTS):
-                    continue
-                total += 1
-                if image_has_label(os.path.join(root, fn), label_dirs, fmt):
-                    labeled += 1
-        return total, labeled
-
     @staticmethod
     def _count_labeled_in_dir(image_path, label_path, ext):
         """
@@ -93,8 +68,71 @@ class ImportExportMixin(object):
         ui.image_path_txt.setEnabled(False)
         ui.label_path_txt.setEnabled(False)
 
+        # 后台扫描状态: task 是活着的线程, token 用来丢弃过期结果,
+        # last 缓存最近一次同参数的扫描结果, 点"确定"时直接复用不再扫一遍
+        scan = {"task": None, "token": 0, "last": None}
+
+        def apply_scan(img_path, lbl_path, fmt, total, labeled):
+            """扫描结果回到主线程后更新提示."""
+            scan["last"] = (img_path, lbl_path, fmt, total, labeled)
+            if total == 0:
+                ui.tips_lbl.setText(QC.translate("ImportExportMixin", "所选文件夹无图像"))
+            elif labeled > 0:
+                ui.tips_lbl.setText(
+                    QC.translate("ImportExportMixin", "共 {} 张图像, 已标注 {} 张").format(total, labeled))
+            else:
+                alt_tip = ""
+                if lbl_path and os.path.isdir(lbl_path):
+                    alt_ext = ".txt" if fmt == ".json" else ".json"
+                    alt_fmt_name = "Yolo txt" if alt_ext == ".txt" else "Labelme json"
+                    try:
+                        alt_names = {os.path.splitext(fn)[0]
+                                     for fn in os.listdir(lbl_path)
+                                     if fn.lower().endswith(alt_ext)}
+                    except OSError:
+                        alt_names = set()
+                    if alt_names:
+                        alt_labeled = self._count_labeled_in_dir(
+                            img_path, lbl_path, alt_ext)
+                        if alt_labeled > 0:
+                            alt_tip = QC.translate("ImportExportMixin", "(检测到 {} 张 {} 标签, 请切换上方格式为\"{}\")").format(
+                                alt_labeled, alt_ext, alt_fmt_name)
+                if alt_tip:
+                    ui.tips_lbl.setText(
+                        QC.translate("ImportExportMixin", "共 {} 张图像, 已标注 0 张 {}").format(total, alt_tip))
+                else:
+                    ui.tips_lbl.setText(QC.translate("ImportExportMixin", "共 {} 张图像(标签目录无匹配文件)").format(total))
+
+        def start_scan(img_path, lbl_path, fmt):
+            """起一个后台扫描; 上一个还在跑就先取消, 回来时靠 token 判过期."""
+            scan["token"] += 1
+            token = scan["token"]
+            old = scan["task"]
+            if old is not None:
+                old.cancel()
+            task = ImportScanTask(img_path, lbl_path, fmt, parent=dlg)
+            scan["task"] = task
+
+            def on_scanned(total, labeled, token=token):
+                # 用户又改了目录或格式: 过期结果丢掉, 免得盖住新的提示
+                if token != scan["token"]:
+                    return
+                apply_scan(img_path, lbl_path, fmt, total, labeled)
+
+            def on_finished(task=task):
+                if scan["task"] is task:
+                    scan["task"] = None
+
+            task.scanned_signal.connect(on_scanned)
+            task.finished.connect(on_finished)
+            task.start()
+
         def update_tips():
-            """实时统计图像目录 + 已标注数 → 更新 tips_lbl 显示."""
+            """实时统计图像目录 + 已标注数 → 更新 tips_lbl 显示.
+
+            判定"已标注"要逐图解析标签文件, 上万张图会卡住一两秒, 所以这里
+            只做立刻能判的检查, 数字扫描交给后台线程.
+            """
             img_path = ui.image_path_txt.text().strip()
             lbl_path = ui.label_path_txt.text().strip()
             # 分类导入:按子文件夹统计各类别图像数
@@ -126,34 +164,7 @@ class ImportExportMixin(object):
             if not img_path or not os.path.isdir(img_path):
                 ui.tips_lbl.setText(QC.translate("ImportExportMixin", "请选择图像文件夹"))
                 return
-            total, labeled = self._scan_import_info(img_path, lbl_path, fmt)
-            if total == 0:
-                ui.tips_lbl.setText(QC.translate("ImportExportMixin", "所选文件夹无图像"))
-            elif labeled > 0:
-                ui.tips_lbl.setText(
-                    QC.translate("ImportExportMixin", "共 {} 张图像, 已标注 {} 张").format(total, labeled))
-            else:
-                alt_tip = ""
-                if lbl_path and os.path.isdir(lbl_path):
-                    alt_ext = ".txt" if fmt == ".json" else ".json"
-                    alt_fmt_name = "Yolo txt" if alt_ext == ".txt" else "Labelme json"
-                    try:
-                        alt_names = {os.path.splitext(fn)[0]
-                                     for fn in os.listdir(lbl_path)
-                                     if fn.lower().endswith(alt_ext)}
-                    except OSError:
-                        alt_names = set()
-                    if alt_names:
-                        alt_labeled = self._count_labeled_in_dir(
-                            img_path, lbl_path, alt_ext)
-                        if alt_labeled > 0:
-                            alt_tip = QC.translate("ImportExportMixin", "(检测到 {} 张 {} 标签, 请切换上方格式为\"{}\")").format(
-                                alt_labeled, alt_ext, alt_fmt_name)
-                if alt_tip:
-                    ui.tips_lbl.setText(
-                        QC.translate("ImportExportMixin", "共 {} 张图像, 已标注 0 张 {}").format(total, alt_tip))
-                else:
-                    ui.tips_lbl.setText(QC.translate("ImportExportMixin", "共 {} 张图像(标签目录无匹配文件)").format(total))
+            start_scan(img_path, lbl_path, fmt)
 
         def choose_folder(operator_name):
             folder = QFileDialog.getExistingDirectory(
@@ -233,9 +244,13 @@ class ImportExportMixin(object):
                             _total += 1
                 _labeled = _total
             else:
-                _scanned = self._scan_import_info(image_path, label_path, fmt)
-                _total = _scanned[0] if _scanned else 0
-                _labeled = _scanned[1] if _scanned else 0
+                # 刚才那次实时统计就是当前参数的话直接拿结果, 不必再扫一遍
+                cached = scan["last"]
+                if cached and cached[:3] == (image_path, label_path, fmt):
+                    _total, _labeled = cached[3], cached[4]
+                else:
+                    _scanned = count_images_labeled(image_path, label_path, fmt)
+                    _total, _labeled = _scanned if _scanned else (0, 0)
             # 合并历史路径 + 本次新路径(去重保序), 保证多次导入不同文件夹都能累计
             binding = self.db.get_dataset_import(project_name, dataset_name)
             old_imgs = get_paths(binding, "image")
@@ -262,6 +277,11 @@ class ImportExportMixin(object):
         apply_icon(ui.done_import_btn, QC.translate("DialogButtons", "确定"))
         ui.done_import_btn.clicked.connect(do_import)
         dlg.exec()
+        # 关对话框时后台扫描可能还没跑完: 取消并等它退出, 否则线程会随 dlg 一起被销毁
+        task = scan["task"]
+        if task is not None:
+            task.cancel()
+            task.wait()
 
     def _on_export_clicked(self, project=None, dataset=None):
         """

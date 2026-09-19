@@ -31,6 +31,10 @@
     <EmbeddedResource Include="..\..\builder\requirements-release.txt"
                       Condition="Exists('..\..\builder\requirements-release.txt')"
                       LogicalName="requirements.txt" />
+    <!-- 主清单装不了的那几个(要 no-deps, 见文件内注释) -->
+    <EmbeddedResource Include="..\..\builder\requirements-nodeps.txt"
+                      Condition="Exists('..\..\builder\requirements-nodeps.txt')"
+                      LogicalName="requirements-nodeps.txt" />
   </ItemGroup>
 
 </Project>

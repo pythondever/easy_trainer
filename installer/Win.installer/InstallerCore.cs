@@ -207,16 +207,11 @@ public static class InstallEngine
     private static async Task InstallRequirementsAsync(string python, string stage,
         IProgress<InstallReport> report, int stageBase, long w, long totalBytes, string logPath)
     {
-        var reqPath = Path.Combine(Path.GetTempPath(), "installer", "requirements.txt");
-        using (var rs = OpenEmbedded("requirements.txt"))
-        {
-            if (rs is null)
-                throw new InvalidOperationException("安装程序内置缺少 requirements.txt(发布不完整)");
-            Directory.CreateDirectory(Path.GetDirectoryName(reqPath)!);
-            using var rfs = File.Create(reqPath);
-            await rfs.WriteAsync(Encoding.UTF8.GetPreamble());
-            await rs.CopyToAsync(rfs);
-        }
+        var reqPath = await ExtractEmbeddedAsync("requirements.txt");
+        // ultralytics 这类包声明的依赖跟本发行版的锁版冲突(它会拉进带 GUI 的
+        // opencv-python, 与已有的 headless 抢 cv2), 只能装完主清单后 --no-deps 补一份.
+        // 清单与理由见 builder/requirements-nodeps.txt
+        var noDepsPath = await ExtractEmbeddedAsync("requirements-nodeps.txt", required: false);
 
         const string pipMsg = "正在下载安装所需组件, 请勿断网...";
         report.Report(new InstallReport { Stage = stage, Detail = pipMsg, Pct = stageBase + (int)(12 * w / totalBytes) });
@@ -224,13 +219,39 @@ public static class InstallEngine
         string? lastErr = null;
         foreach (var torchIdx in TorchIndexUrls)
         {
-            var args = $"-m pip install --disable-pip-version-check --timeout 60 --retries 10 "
-                     + $"-r \"{reqPath}\" -i {PipIndex} --extra-index-url {torchIdx}";
-            var (ok, err) = await RunPipAsync(python, args, stage, pipMsg, logPath, report, stageBase, w, totalBytes);
+            var src = $"-i {PipIndex} --extra-index-url {torchIdx}";
+            var (ok, err) = await RunPipAsync(python,
+                $"-m pip install --disable-pip-version-check --timeout 60 --retries 10 "
+                + $"-r \"{reqPath}\" {src}",
+                stage, pipMsg, logPath, report, stageBase, w, totalBytes);
+            if (ok && noDepsPath is not null)
+                // --no-deps: 依赖已在主清单里钉好, 这里只补包本身
+                (ok, err) = await RunPipAsync(python,
+                    $"-m pip install --disable-pip-version-check --timeout 60 --retries 10 "
+                    + $"--no-deps -r \"{noDepsPath}\" {src}",
+                    stage, pipMsg, logPath, report, stageBase, w, totalBytes);
             if (ok) return;
             lastErr = err;
         }
         throw new InvalidOperationException("pip 安装依赖失败:" + lastErr);
+    }
+
+    /// <summary>把内置资源解到临时目录并返回落盘路径; required=false 时缺了返回 null.</summary>
+    private static async Task<string?> ExtractEmbeddedAsync(string name, bool required = true)
+    {
+        var path = Path.Combine(Path.GetTempPath(), "installer", name);
+        using var rs = OpenEmbedded(name);
+        if (rs is null)
+        {
+            if (required)
+                throw new InvalidOperationException($"安装程序内置缺少 {name}(发布不完整)");
+            return null;
+        }
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        using var fs = File.Create(path);
+        await fs.WriteAsync(Encoding.UTF8.GetPreamble());
+        await rs.CopyToAsync(fs);
+        return path;
     }
 
     private static async Task<(bool Ok, string? Error)> RunPipAsync(string python, string args, string stage, string pipMsg,

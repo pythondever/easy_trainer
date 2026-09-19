@@ -34,11 +34,13 @@ class Ui_TrainQueueDialog(object):
         self.title_row.setObjectName(u"title_row")
         self.title_label = QLabel(TrainQueueDialog)
         self.title_label.setObjectName(u"title_label")
+        self.title_label.setProperty(u"class", u"dialogTitle")
 
         self.title_row.addWidget(self.title_label)
 
         self.queue_badge = QLabel(TrainQueueDialog)
         self.queue_badge.setObjectName(u"queue_badge")
+        self.queue_badge.setProperty(u"class", u"taskBadge")
 
         self.title_row.addWidget(self.queue_badge)
 
@@ -90,6 +92,7 @@ class Ui_TrainQueueDialog(object):
         self.summary_bar_layout.setContentsMargins(12, 10, 12, 10)
         self.summary_icon = QLabel(self.summary_bar)
         self.summary_icon.setObjectName(u"summary_icon")
+        self.summary_icon.setProperty(u"class", u"summaryIcon")
 
         self.summary_bar_layout.addWidget(self.summary_icon)
 
@@ -100,6 +103,7 @@ class Ui_TrainQueueDialog(object):
         sizePolicy1.setVerticalStretch(0)
         sizePolicy1.setHeightForWidth(self.summary_text.sizePolicy().hasHeightForWidth())
         self.summary_text.setSizePolicy(sizePolicy1)
+        self.summary_text.setProperty(u"class", u"summaryText")
         self.summary_text.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignVCenter)
 
         self.summary_bar_layout.addWidget(self.summary_text)
@@ -119,21 +123,25 @@ class Ui_TrainQueueDialog(object):
         self.bottom_row.setObjectName(u"bottom_row")
         self.move_up_btn = QPushButton(TrainQueueDialog)
         self.move_up_btn.setObjectName(u"move_up_btn")
+        self.move_up_btn.setProperty(u"class", u"ghost")
 
         self.bottom_row.addWidget(self.move_up_btn)
 
         self.move_down_btn = QPushButton(TrainQueueDialog)
         self.move_down_btn.setObjectName(u"move_down_btn")
+        self.move_down_btn.setProperty(u"class", u"ghost")
 
         self.bottom_row.addWidget(self.move_down_btn)
 
         self.remove_btn = QPushButton(TrainQueueDialog)
         self.remove_btn.setObjectName(u"remove_btn")
+        self.remove_btn.setProperty(u"class", u"ghost")
 
         self.bottom_row.addWidget(self.remove_btn)
 
         self.clear_done_btn = QPushButton(TrainQueueDialog)
         self.clear_done_btn.setObjectName(u"clear_done_btn")
+        self.clear_done_btn.setProperty(u"class", u"ghost")
 
         self.bottom_row.addWidget(self.clear_done_btn)
 
@@ -154,6 +162,7 @@ class Ui_TrainQueueDialog(object):
         self.start_btn = QPushButton(TrainQueueDialog)
         self.start_btn.setObjectName(u"start_btn")
         self.start_btn.setMinimumSize(QSize(120, 38))
+        self.start_btn.setProperty(u"class", u"primary")
 
         self.bottom_row.addWidget(self.start_btn)
 
@@ -169,9 +178,7 @@ class Ui_TrainQueueDialog(object):
     def retranslateUi(self, TrainQueueDialog):
         TrainQueueDialog.setWindowTitle(QCoreApplication.translate("TrainQueueDialog", u"\u8bad\u7ec3\u961f\u5217", None))
         self.title_label.setText(QCoreApplication.translate("TrainQueueDialog", u"\u8bad\u7ec3\u961f\u5217", None))
-        self.title_label.setProperty(u"class", QCoreApplication.translate("TrainQueueDialog", u"dialogTitle", None))
         self.queue_badge.setText(QCoreApplication.translate("TrainQueueDialog", u"\u7a7a\u95f2", None))
-        self.queue_badge.setProperty(u"class", QCoreApplication.translate("TrainQueueDialog", u"taskBadge", None))
         ___qtablewidgetitem = self.queue_table.horizontalHeaderItem(0)
         ___qtablewidgetitem.setText(QCoreApplication.translate("TrainQueueDialog", u"#", None))
         ___qtablewidgetitem1 = self.queue_table.horizontalHeaderItem(1)
@@ -187,20 +194,13 @@ class Ui_TrainQueueDialog(object):
         ___qtablewidgetitem6 = self.queue_table.horizontalHeaderItem(6)
         ___qtablewidgetitem6.setText(QCoreApplication.translate("TrainQueueDialog", u"\u72b6\u6001", None))
         self.summary_icon.setText(QCoreApplication.translate("TrainQueueDialog", u"i", None))
-        self.summary_icon.setProperty(u"class", QCoreApplication.translate("TrainQueueDialog", u"summaryIcon", None))
         self.summary_text.setText(QCoreApplication.translate("TrainQueueDialog", u"\u961f\u5217\u4e3a\u7a7a\uff0c\u53ef\u5728\u8bad\u7ec3\u754c\u9762\u70b9\u300c\u52a0\u5165\u961f\u5217\u300d\u6dfb\u52a0\u4efb\u52a1", None))
-        self.summary_text.setProperty(u"class", QCoreApplication.translate("TrainQueueDialog", u"summaryText", None))
         self.move_up_btn.setText(QCoreApplication.translate("TrainQueueDialog", u"\u4e0a\u79fb", None))
-        self.move_up_btn.setProperty(u"class", QCoreApplication.translate("TrainQueueDialog", u"ghost", None))
         self.move_down_btn.setText(QCoreApplication.translate("TrainQueueDialog", u"\u4e0b\u79fb", None))
-        self.move_down_btn.setProperty(u"class", QCoreApplication.translate("TrainQueueDialog", u"ghost", None))
         self.remove_btn.setText(QCoreApplication.translate("TrainQueueDialog", u"\u79fb\u9664", None))
-        self.remove_btn.setProperty(u"class", QCoreApplication.translate("TrainQueueDialog", u"ghost", None))
         self.clear_done_btn.setText(QCoreApplication.translate("TrainQueueDialog", u"\u6e05\u7406\u5df2\u7ed3\u675f", None))
-        self.clear_done_btn.setProperty(u"class", QCoreApplication.translate("TrainQueueDialog", u"ghost", None))
         self.edit_btn.setText(QCoreApplication.translate("TrainQueueDialog", u"\u7f16\u8f91", None))
         self.close_btn.setText(QCoreApplication.translate("TrainQueueDialog", u"\u5173\u95ed", None))
         self.start_btn.setText(QCoreApplication.translate("TrainQueueDialog", u"\u5f00\u59cb\u961f\u5217", None))
-        self.start_btn.setProperty(u"class", QCoreApplication.translate("TrainQueueDialog", u"primary", None))
     # retranslateUi
 

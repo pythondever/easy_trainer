@@ -5,32 +5,18 @@ import re
 
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
-from PySide6.QtCore import Qt, QEvent, QObject, QTimer
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel,
                                QComboBox)
 
 from app.core.db import load_train_metrics
 from app.core.utils import setup_matplotlib_chinese
+from app.widgets.combo_utils import style_combo
 
 
 def _muted_style(size=13):
     """辅助说明文字: 中性灰 + 指定字号."""
     return "color: #8b93a5; font-size: {}px;".format(size)
-
-
-class _ClickToPopupFilter(QObject):
-    """点击下拉框任意位置展开(与训练界面行为一致)."""
-
-    def __init__(self, combo, parent=None):
-        super().__init__(parent)
-        self._combo = combo
-
-    def eventFilter(self, obj, event):
-        if (event.type() == QEvent.MouseButtonPress
-                and event.button() == Qt.LeftButton):
-            QTimer.singleShot(0, self._combo.showPopup)
-            return True
-        return False
 
 
 class MetricsDialog(QDialog):
@@ -86,7 +72,7 @@ class MetricsDialog(QDialog):
             self._combo.addItem(self._all_r)
         for name in self._labels:
             self._combo.addItem(str(name))
-        self._style_combo(self._combo)
+        style_combo(self._combo, self._combo_filters, self)
         self._combo.currentTextChanged.connect(lambda _: self._rebuild_chart())
         row.addWidget(self._combo)
         # 无 per_class
@@ -95,22 +81,6 @@ class MetricsDialog(QDialog):
             self._hint.setStyleSheet(_muted_style(12))
             row.addWidget(self._hint)
         self._body.addLayout(row)
-
-    def _style_combo(self, combo):
-        """与训练界面下拉一致: 文本居中 + 点击任意位置展开下拉."""
-        combo.setEditable(True)
-        combo.setFocusPolicy(Qt.StrongFocus)
-        le = combo.lineEdit()
-        le.setObjectName("multiComboLineEdit")
-        le.setReadOnly(True)
-        le.setAlignment(Qt.AlignHCenter)
-        # parent=self: dialog 设了 WA_DeleteOnClose, 过滤器必须随之销毁,
-        # 否则延时弹出的 singleShot 会打到已删除的 combo 上.
-        f = _ClickToPopupFilter(combo, self)
-        combo.installEventFilter(f)
-        combo.lineEdit().installEventFilter(f)
-        self._combo_filters.append(f)   # 保引用
-        return combo
 
     def _rebuild_chart(self):
         if self._chart is not None:

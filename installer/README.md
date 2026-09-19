@@ -63,7 +63,8 @@ Python 运行时本身的下载信息仍写死在 `InstallerCore.cs` 常量里�
 1. **一键构建**（需要 cl.exe：开始菜单 → VS 2022 → Developer PowerShell；
    以及 .NET SDK 10）。`builder\build.py` 依次完成：Cython 全量编译 pyd →
    组装 `dist\program` → 打 `dist\program.zip` → 自动 `dotnet publish` 安装器
-   （csproj 构建期把 `program.zip` 与 `builder\requirements-release.txt` 嵌进 exe）：
+   （csproj 构建期把 `program.zip`、`builder\requirements-release.txt` 与
+   `builder\requirements-nodeps.txt` 嵌进 exe）：
 
    ```powershell
    cd D:\code\easy_trainer
@@ -78,6 +79,14 @@ Python 运行时本身的下载信息仍写死在 `InstallerCore.cs` 常量里�
 2. **requirements-release.txt**（内嵌，pip 现场安装用）已随仓库维护在
    `builder\requirements-release.txt`——版本锁定自 rf-detr 开发环境；注意国内 PyPI
    镜像对 PySide6 只同步到 6.9.1。
+
+   同目录还有一份 `builder\requirements-nodeps.txt`，同样内嵌，主清单装完后以
+   `--no-deps` 再装一次。放两份是为了 `ultralytics`（CNN/YOLO 架构的后端）：它声明
+   依赖 `opencv-python`，而本发行版只用 `opencv-python-headless`，pip 把两者当
+   两个发行版、按依赖装会在同一个 `site-packages` 里塞进两份 `cv2`。所以
+   `ultralytics` 本体走 `--no-deps`，它缺的传递依赖（`ultralytics-thop` /
+   `polars` / `cloudpickle`）在 `requirements-release.txt` 里显式钉住。
+   加新包前先确认它不会拖进带 GUI 的 `opencv-python`。
 
 3. **分发**：在线版只发 `dist\release\installer.exe`——勾选运行时从
    华为云下载 Python、从清华源 pip 装依赖，中途网络中断会自动重试（下载 3 次、
@@ -140,7 +149,7 @@ Linux → `.so`），因此**在 Linux 机器上跑同一脚本**即可产出 Li
 | 平台 | 发布动作 | 产物目录 |
 |---|---|---|
 | Windows | `dotnet publish`（现状，program.zip 内嵌 exe） | `dist/release/installer.exe` |
-| Linux | 组四件套：`installer.sh` + `program.zip` + `requirements-release.txt` + `pretrained-assets.txt` | `dist/release-linux/` |
+| Linux | 组五件套：`installer.sh` + `program.zip` + `requirements-release.txt` + `requirements-nodeps.txt` + `pretrained-assets.txt` | `dist/release-linux/` |
 
 ```bash
 # Linux 构建机（需 gcc + python3.10-dev + cython + setuptools）

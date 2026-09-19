@@ -40,11 +40,13 @@ class Ui_TestResultDialog(object):
         self.dim_img_row.setObjectName(u"dim_img_row")
         self.dim_img_tag = QLabel(self.section_img)
         self.dim_img_tag.setObjectName(u"dim_img_tag")
+        self.dim_img_tag.setProperty(u"class", u"dimTag")
 
         self.dim_img_row.addWidget(self.dim_img_tag)
 
         self.dim_img_note = QLabel(self.section_img)
         self.dim_img_note.setObjectName(u"dim_img_note")
+        self.dim_img_note.setProperty(u"class", u"dimNote")
 
         self.dim_img_row.addWidget(self.dim_img_note)
 
@@ -72,20 +74,26 @@ class Ui_TestResultDialog(object):
 
         self.img_total_value = QLabel(self.card_img_total)
         self.img_total_value.setObjectName(u"img_total_value")
-        sizePolicy = QSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.img_total_value.sizePolicy().hasHeightForWidth())
         self.img_total_value.setSizePolicy(sizePolicy)
         self.img_total_value.setAlignment(Qt.AlignCenter)
+        self.img_total_value.setProperty(u"class", u"cardValue")
 
         self.card_img_total_layout.addWidget(self.img_total_value)
 
         self.img_total_lbl = QLabel(self.card_img_total)
         self.img_total_lbl.setObjectName(u"img_total_lbl")
-        sizePolicy.setHeightForWidth(self.img_total_lbl.sizePolicy().hasHeightForWidth())
-        self.img_total_lbl.setSizePolicy(sizePolicy)
+        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(0)
+        sizePolicy1.setHeightForWidth(self.img_total_lbl.sizePolicy().hasHeightForWidth())
+        self.img_total_lbl.setSizePolicy(sizePolicy1)
         self.img_total_lbl.setAlignment(Qt.AlignCenter)
+        self.img_total_lbl.setProperty(u"class", u"cardLabel")
+        self.img_total_lbl.setWordWrap(True)
 
         self.card_img_total_layout.addWidget(self.img_total_lbl)
 
@@ -94,6 +102,7 @@ class Ui_TestResultDialog(object):
         sizePolicy.setHeightForWidth(self.img_total_rate.sizePolicy().hasHeightForWidth())
         self.img_total_rate.setSizePolicy(sizePolicy)
         self.img_total_rate.setAlignment(Qt.AlignCenter)
+        self.img_total_rate.setProperty(u"class", u"cardRate")
 
         self.card_img_total_layout.addWidget(self.img_total_rate)
 
@@ -121,14 +130,17 @@ class Ui_TestResultDialog(object):
         sizePolicy.setHeightForWidth(self.img_ok_value.sizePolicy().hasHeightForWidth())
         self.img_ok_value.setSizePolicy(sizePolicy)
         self.img_ok_value.setAlignment(Qt.AlignCenter)
+        self.img_ok_value.setProperty(u"class", u"cardValue")
 
         self.card_img_ok_layout.addWidget(self.img_ok_value)
 
         self.img_ok_lbl = QLabel(self.card_img_ok)
         self.img_ok_lbl.setObjectName(u"img_ok_lbl")
-        sizePolicy.setHeightForWidth(self.img_ok_lbl.sizePolicy().hasHeightForWidth())
-        self.img_ok_lbl.setSizePolicy(sizePolicy)
+        sizePolicy1.setHeightForWidth(self.img_ok_lbl.sizePolicy().hasHeightForWidth())
+        self.img_ok_lbl.setSizePolicy(sizePolicy1)
         self.img_ok_lbl.setAlignment(Qt.AlignCenter)
+        self.img_ok_lbl.setProperty(u"class", u"cardLabel")
+        self.img_ok_lbl.setWordWrap(True)
 
         self.card_img_ok_layout.addWidget(self.img_ok_lbl)
 
@@ -137,6 +149,7 @@ class Ui_TestResultDialog(object):
         sizePolicy.setHeightForWidth(self.img_ok_rate.sizePolicy().hasHeightForWidth())
         self.img_ok_rate.setSizePolicy(sizePolicy)
         self.img_ok_rate.setAlignment(Qt.AlignCenter)
+        self.img_ok_rate.setProperty(u"class", u"cardRate")
 
         self.card_img_ok_layout.addWidget(self.img_ok_rate)
 
@@ -164,14 +177,17 @@ class Ui_TestResultDialog(object):
         sizePolicy.setHeightForWidth(self.img_fn_value.sizePolicy().hasHeightForWidth())
         self.img_fn_value.setSizePolicy(sizePolicy)
         self.img_fn_value.setAlignment(Qt.AlignCenter)
+        self.img_fn_value.setProperty(u"class", u"cardValue")
 
         self.card_img_fn_layout.addWidget(self.img_fn_value)
 
         self.img_fn_lbl = QLabel(self.card_img_fn)
         self.img_fn_lbl.setObjectName(u"img_fn_lbl")
-        sizePolicy.setHeightForWidth(self.img_fn_lbl.sizePolicy().hasHeightForWidth())
-        self.img_fn_lbl.setSizePolicy(sizePolicy)
+        sizePolicy1.setHeightForWidth(self.img_fn_lbl.sizePolicy().hasHeightForWidth())
+        self.img_fn_lbl.setSizePolicy(sizePolicy1)
         self.img_fn_lbl.setAlignment(Qt.AlignCenter)
+        self.img_fn_lbl.setProperty(u"class", u"cardLabel")
+        self.img_fn_lbl.setWordWrap(True)
 
         self.card_img_fn_layout.addWidget(self.img_fn_lbl)
 
@@ -180,6 +196,7 @@ class Ui_TestResultDialog(object):
         sizePolicy.setHeightForWidth(self.img_fn_rate.sizePolicy().hasHeightForWidth())
         self.img_fn_rate.setSizePolicy(sizePolicy)
         self.img_fn_rate.setAlignment(Qt.AlignCenter)
+        self.img_fn_rate.setProperty(u"class", u"cardRate")
 
         self.card_img_fn_layout.addWidget(self.img_fn_rate)
 
@@ -207,14 +224,17 @@ class Ui_TestResultDialog(object):
         sizePolicy.setHeightForWidth(self.img_fp_value.sizePolicy().hasHeightForWidth())
         self.img_fp_value.setSizePolicy(sizePolicy)
         self.img_fp_value.setAlignment(Qt.AlignCenter)
+        self.img_fp_value.setProperty(u"class", u"cardValue")
 
         self.card_img_fp_layout.addWidget(self.img_fp_value)
 
         self.img_fp_lbl = QLabel(self.card_img_fp)
         self.img_fp_lbl.setObjectName(u"img_fp_lbl")
-        sizePolicy.setHeightForWidth(self.img_fp_lbl.sizePolicy().hasHeightForWidth())
-        self.img_fp_lbl.setSizePolicy(sizePolicy)
+        sizePolicy1.setHeightForWidth(self.img_fp_lbl.sizePolicy().hasHeightForWidth())
+        self.img_fp_lbl.setSizePolicy(sizePolicy1)
         self.img_fp_lbl.setAlignment(Qt.AlignCenter)
+        self.img_fp_lbl.setProperty(u"class", u"cardLabel")
+        self.img_fp_lbl.setWordWrap(True)
 
         self.card_img_fp_layout.addWidget(self.img_fp_lbl)
 
@@ -223,6 +243,7 @@ class Ui_TestResultDialog(object):
         sizePolicy.setHeightForWidth(self.img_fp_rate.sizePolicy().hasHeightForWidth())
         self.img_fp_rate.setSizePolicy(sizePolicy)
         self.img_fp_rate.setAlignment(Qt.AlignCenter)
+        self.img_fp_rate.setProperty(u"class", u"cardRate")
 
         self.card_img_fp_layout.addWidget(self.img_fp_rate)
 
@@ -254,11 +275,13 @@ class Ui_TestResultDialog(object):
         self.dim_lbl_row.setObjectName(u"dim_lbl_row")
         self.dim_lbl_tag = QLabel(self.section_lbl)
         self.dim_lbl_tag.setObjectName(u"dim_lbl_tag")
+        self.dim_lbl_tag.setProperty(u"class", u"dimTag")
 
         self.dim_lbl_row.addWidget(self.dim_lbl_tag)
 
         self.dim_lbl_note = QLabel(self.section_lbl)
         self.dim_lbl_note.setObjectName(u"dim_lbl_note")
+        self.dim_lbl_note.setProperty(u"class", u"dimNote")
 
         self.dim_lbl_row.addWidget(self.dim_lbl_note)
 
@@ -289,14 +312,17 @@ class Ui_TestResultDialog(object):
         sizePolicy.setHeightForWidth(self.tp_value.sizePolicy().hasHeightForWidth())
         self.tp_value.setSizePolicy(sizePolicy)
         self.tp_value.setAlignment(Qt.AlignCenter)
+        self.tp_value.setProperty(u"class", u"cardValue")
 
         self.card_tp_layout.addWidget(self.tp_value)
 
         self.tp_lbl = QLabel(self.card_tp)
         self.tp_lbl.setObjectName(u"tp_lbl")
-        sizePolicy.setHeightForWidth(self.tp_lbl.sizePolicy().hasHeightForWidth())
-        self.tp_lbl.setSizePolicy(sizePolicy)
+        sizePolicy1.setHeightForWidth(self.tp_lbl.sizePolicy().hasHeightForWidth())
+        self.tp_lbl.setSizePolicy(sizePolicy1)
         self.tp_lbl.setAlignment(Qt.AlignCenter)
+        self.tp_lbl.setProperty(u"class", u"cardLabel")
+        self.tp_lbl.setWordWrap(True)
 
         self.card_tp_layout.addWidget(self.tp_lbl)
 
@@ -305,6 +331,7 @@ class Ui_TestResultDialog(object):
         sizePolicy.setHeightForWidth(self.tp_rate.sizePolicy().hasHeightForWidth())
         self.tp_rate.setSizePolicy(sizePolicy)
         self.tp_rate.setAlignment(Qt.AlignCenter)
+        self.tp_rate.setProperty(u"class", u"cardRate")
 
         self.card_tp_layout.addWidget(self.tp_rate)
 
@@ -332,14 +359,17 @@ class Ui_TestResultDialog(object):
         sizePolicy.setHeightForWidth(self.fn_value.sizePolicy().hasHeightForWidth())
         self.fn_value.setSizePolicy(sizePolicy)
         self.fn_value.setAlignment(Qt.AlignCenter)
+        self.fn_value.setProperty(u"class", u"cardValue")
 
         self.card_fn_layout.addWidget(self.fn_value)
 
         self.fn_lbl = QLabel(self.card_fn)
         self.fn_lbl.setObjectName(u"fn_lbl")
-        sizePolicy.setHeightForWidth(self.fn_lbl.sizePolicy().hasHeightForWidth())
-        self.fn_lbl.setSizePolicy(sizePolicy)
+        sizePolicy1.setHeightForWidth(self.fn_lbl.sizePolicy().hasHeightForWidth())
+        self.fn_lbl.setSizePolicy(sizePolicy1)
         self.fn_lbl.setAlignment(Qt.AlignCenter)
+        self.fn_lbl.setProperty(u"class", u"cardLabel")
+        self.fn_lbl.setWordWrap(True)
 
         self.card_fn_layout.addWidget(self.fn_lbl)
 
@@ -348,6 +378,7 @@ class Ui_TestResultDialog(object):
         sizePolicy.setHeightForWidth(self.fn_rate.sizePolicy().hasHeightForWidth())
         self.fn_rate.setSizePolicy(sizePolicy)
         self.fn_rate.setAlignment(Qt.AlignCenter)
+        self.fn_rate.setProperty(u"class", u"cardRate")
 
         self.card_fn_layout.addWidget(self.fn_rate)
 
@@ -375,14 +406,17 @@ class Ui_TestResultDialog(object):
         sizePolicy.setHeightForWidth(self.fp_value.sizePolicy().hasHeightForWidth())
         self.fp_value.setSizePolicy(sizePolicy)
         self.fp_value.setAlignment(Qt.AlignCenter)
+        self.fp_value.setProperty(u"class", u"cardValue")
 
         self.card_fp_layout.addWidget(self.fp_value)
 
         self.fp_lbl = QLabel(self.card_fp)
         self.fp_lbl.setObjectName(u"fp_lbl")
-        sizePolicy.setHeightForWidth(self.fp_lbl.sizePolicy().hasHeightForWidth())
-        self.fp_lbl.setSizePolicy(sizePolicy)
+        sizePolicy1.setHeightForWidth(self.fp_lbl.sizePolicy().hasHeightForWidth())
+        self.fp_lbl.setSizePolicy(sizePolicy1)
         self.fp_lbl.setAlignment(Qt.AlignCenter)
+        self.fp_lbl.setProperty(u"class", u"cardLabel")
+        self.fp_lbl.setWordWrap(True)
 
         self.card_fp_layout.addWidget(self.fp_lbl)
 
@@ -391,6 +425,7 @@ class Ui_TestResultDialog(object):
         sizePolicy.setHeightForWidth(self.fp_rate.sizePolicy().hasHeightForWidth())
         self.fp_rate.setSizePolicy(sizePolicy)
         self.fp_rate.setAlignment(Qt.AlignCenter)
+        self.fp_rate.setProperty(u"class", u"cardRate")
 
         self.card_fp_layout.addWidget(self.fp_rate)
 
@@ -418,14 +453,17 @@ class Ui_TestResultDialog(object):
         sizePolicy.setHeightForWidth(self.precision_value.sizePolicy().hasHeightForWidth())
         self.precision_value.setSizePolicy(sizePolicy)
         self.precision_value.setAlignment(Qt.AlignCenter)
+        self.precision_value.setProperty(u"class", u"cardValue")
 
         self.card_precision_layout.addWidget(self.precision_value)
 
         self.precision_lbl = QLabel(self.card_precision)
         self.precision_lbl.setObjectName(u"precision_lbl")
-        sizePolicy.setHeightForWidth(self.precision_lbl.sizePolicy().hasHeightForWidth())
-        self.precision_lbl.setSizePolicy(sizePolicy)
+        sizePolicy1.setHeightForWidth(self.precision_lbl.sizePolicy().hasHeightForWidth())
+        self.precision_lbl.setSizePolicy(sizePolicy1)
         self.precision_lbl.setAlignment(Qt.AlignCenter)
+        self.precision_lbl.setProperty(u"class", u"cardLabel")
+        self.precision_lbl.setWordWrap(True)
 
         self.card_precision_layout.addWidget(self.precision_lbl)
 
@@ -434,6 +472,7 @@ class Ui_TestResultDialog(object):
         sizePolicy.setHeightForWidth(self.precision_rate.sizePolicy().hasHeightForWidth())
         self.precision_rate.setSizePolicy(sizePolicy)
         self.precision_rate.setAlignment(Qt.AlignCenter)
+        self.precision_rate.setProperty(u"class", u"cardRate")
 
         self.card_precision_layout.addWidget(self.precision_rate)
 
@@ -525,61 +564,33 @@ class Ui_TestResultDialog(object):
     def retranslateUi(self, TestResultDialog):
         TestResultDialog.setWindowTitle(QCoreApplication.translate("TestResultDialog", u"\u6d4b\u8bd5\u7ed3\u679c\u5206\u6790", None))
         self.dim_img_tag.setText(QCoreApplication.translate("TestResultDialog", u"\u56fe\u50cf\u7ef4\u5ea6", None))
-        self.dim_img_tag.setProperty(u"class", QCoreApplication.translate("TestResultDialog", u"dimTag", None))
         self.dim_img_note.setText(QCoreApplication.translate("TestResultDialog", u"\u6309\u300c\u5f20\u300d\u7edf\u8ba1", None))
-        self.dim_img_note.setProperty(u"class", QCoreApplication.translate("TestResultDialog", u"dimNote", None))
         self.img_total_value.setText(QCoreApplication.translate("TestResultDialog", u"0", None))
-        self.img_total_value.setProperty(u"class", QCoreApplication.translate("TestResultDialog", u"cardValue", None))
         self.img_total_lbl.setText(QCoreApplication.translate("TestResultDialog", u"\u6d4b\u8bd5\u5f20\u6570", None))
-        self.img_total_lbl.setProperty(u"class", QCoreApplication.translate("TestResultDialog", u"cardLabel", None))
         self.img_total_rate.setText("")
-        self.img_total_rate.setProperty(u"class", QCoreApplication.translate("TestResultDialog", u"cardRate", None))
         self.img_ok_value.setText(QCoreApplication.translate("TestResultDialog", u"0", None))
-        self.img_ok_value.setProperty(u"class", QCoreApplication.translate("TestResultDialog", u"cardValue", None))
         self.img_ok_lbl.setText(QCoreApplication.translate("TestResultDialog", u"\u5168\u5bf9\u56fe\u50cf", None))
-        self.img_ok_lbl.setProperty(u"class", QCoreApplication.translate("TestResultDialog", u"cardLabel", None))
         self.img_ok_rate.setText("")
-        self.img_ok_rate.setProperty(u"class", QCoreApplication.translate("TestResultDialog", u"cardRate", None))
         self.img_fn_value.setText(QCoreApplication.translate("TestResultDialog", u"0", None))
-        self.img_fn_value.setProperty(u"class", QCoreApplication.translate("TestResultDialog", u"cardValue", None))
         self.img_fn_lbl.setText(QCoreApplication.translate("TestResultDialog", u"\u6709\u6f0f\u68c0\u56fe\u50cf", None))
-        self.img_fn_lbl.setProperty(u"class", QCoreApplication.translate("TestResultDialog", u"cardLabel", None))
         self.img_fn_rate.setText("")
-        self.img_fn_rate.setProperty(u"class", QCoreApplication.translate("TestResultDialog", u"cardRate", None))
         self.img_fp_value.setText(QCoreApplication.translate("TestResultDialog", u"0", None))
-        self.img_fp_value.setProperty(u"class", QCoreApplication.translate("TestResultDialog", u"cardValue", None))
         self.img_fp_lbl.setText(QCoreApplication.translate("TestResultDialog", u"\u6709\u8bef\u68c0\u56fe\u50cf", None))
-        self.img_fp_lbl.setProperty(u"class", QCoreApplication.translate("TestResultDialog", u"cardLabel", None))
         self.img_fp_rate.setText("")
-        self.img_fp_rate.setProperty(u"class", QCoreApplication.translate("TestResultDialog", u"cardRate", None))
         self.dim_lbl_tag.setText(QCoreApplication.translate("TestResultDialog", u"\u6807\u7b7e\u7ef4\u5ea6", None))
-        self.dim_lbl_tag.setProperty(u"class", QCoreApplication.translate("TestResultDialog", u"dimTag", None))
         self.dim_lbl_note.setText(QCoreApplication.translate("TestResultDialog", u"\u6309\u300c\u6807\u6ce8\u6846\u300d\u7edf\u8ba1", None))
-        self.dim_lbl_note.setProperty(u"class", QCoreApplication.translate("TestResultDialog", u"dimNote", None))
         self.tp_value.setText(QCoreApplication.translate("TestResultDialog", u"0", None))
-        self.tp_value.setProperty(u"class", QCoreApplication.translate("TestResultDialog", u"cardValue", None))
         self.tp_lbl.setText(QCoreApplication.translate("TestResultDialog", u"\u6b63\u786e\u68c0\u51fa", None))
-        self.tp_lbl.setProperty(u"class", QCoreApplication.translate("TestResultDialog", u"cardLabel", None))
         self.tp_rate.setText("")
-        self.tp_rate.setProperty(u"class", QCoreApplication.translate("TestResultDialog", u"cardRate", None))
         self.fn_value.setText(QCoreApplication.translate("TestResultDialog", u"0", None))
-        self.fn_value.setProperty(u"class", QCoreApplication.translate("TestResultDialog", u"cardValue", None))
         self.fn_lbl.setText(QCoreApplication.translate("TestResultDialog", u"\u6f0f\u68c0", None))
-        self.fn_lbl.setProperty(u"class", QCoreApplication.translate("TestResultDialog", u"cardLabel", None))
         self.fn_rate.setText("")
-        self.fn_rate.setProperty(u"class", QCoreApplication.translate("TestResultDialog", u"cardRate", None))
         self.fp_value.setText(QCoreApplication.translate("TestResultDialog", u"0", None))
-        self.fp_value.setProperty(u"class", QCoreApplication.translate("TestResultDialog", u"cardValue", None))
         self.fp_lbl.setText(QCoreApplication.translate("TestResultDialog", u"\u8bef\u68c0", None))
-        self.fp_lbl.setProperty(u"class", QCoreApplication.translate("TestResultDialog", u"cardLabel", None))
         self.fp_rate.setText("")
-        self.fp_rate.setProperty(u"class", QCoreApplication.translate("TestResultDialog", u"cardRate", None))
         self.precision_value.setText(QCoreApplication.translate("TestResultDialog", u"0%", None))
-        self.precision_value.setProperty(u"class", QCoreApplication.translate("TestResultDialog", u"cardValue", None))
         self.precision_lbl.setText(QCoreApplication.translate("TestResultDialog", u"\u51c6\u786e\u7387", None))
-        self.precision_lbl.setProperty(u"class", QCoreApplication.translate("TestResultDialog", u"cardLabel", None))
         self.precision_rate.setText("")
-        self.precision_rate.setProperty(u"class", QCoreApplication.translate("TestResultDialog", u"cardRate", None))
         ___qtablewidgetitem = self.result_table.horizontalHeaderItem(0)
         ___qtablewidgetitem.setText(QCoreApplication.translate("TestResultDialog", u"\u7c7b\u522b", None))
         ___qtablewidgetitem1 = self.result_table.horizontalHeaderItem(1)

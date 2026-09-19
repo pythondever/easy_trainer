@@ -1004,15 +1004,12 @@ class ModelDialog(QDialog):
         if self._exp_dlg is not None:
             self._exp_dlg.close()
             self._exp_dlg = None
-        head = (msg or "").strip().splitlines()
-        tip = head[0] if head else self.tr("未知错误")
         write_log(QC.translate("ModelDialog", "导出模型失败: {}").format(
             msg or QC.translate("ModelDialog", "未知错误")))
         print(QC.translate("ModelDialog", "[export] ONNX 导出失败: {}").format(msg), flush=True)
-        MessageBox.warning(
-            self, self.tr("导出模型"),
-            self.tr("ONNX 导出失败: {}\n\n若提示缺少 onnx / onnxsim, "
-                    "请先安装:\n pip install onnx onnxsim").format(tip))
+        # 弹窗只给结论: 原始异常常是 onnx/torch 的堆栈, 不该摆给终端用户
+        MessageBox.warning(self, self.tr("导出模型"),
+                           self.tr("模型导出失败, 详情见日志"))
 
     def _copy_examples(self):
         src = examples_dir()

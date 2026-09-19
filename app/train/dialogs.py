@@ -8,7 +8,7 @@ import uuid
 from datetime import datetime
 from importlib.util import find_spec
 
-from PySide6.QtCore import Qt, QTimer, QEvent, QObject, QThread, Signal
+from PySide6.QtCore import Qt, QTimer, QThread, Signal
 from PySide6.QtCore import QCoreApplication as QC
 from PySide6.QtCore import QT_TRANSLATE_NOOP
 from PySide6.QtGui import QIntValidator, QDoubleValidator
@@ -16,6 +16,7 @@ from PySide6.QtWidgets import (QDialog, QLabel, QFileDialog, QComboBox,
                                QPushButton, QVBoxLayout)
 from PySide6.QtGui import QStandardItem
 
+from app.widgets.combo_utils import style_combo
 from app.widgets.dialog_buttons import apply_icon
 from app.widgets.message_box import MessageBox
 from app.widgets.multi_combo import install_multi_combo
@@ -300,20 +301,6 @@ class _TrainStartDialog(QDialog):
         super().closeEvent(event)
 
 
-class _ClickToPopupFilter(QObject):
-    """事件过滤器: 点击下拉框(或其 lineEdit)任意位置 → 展开下拉."""
-
-    def __init__(self, combo, parent=None):
-        super().__init__(parent)
-        self._combo = combo
-
-    def eventFilter(self, obj, event):
-        if event.type() == QEvent.MouseButtonPress and event.button() == Qt.LeftButton:
-            QTimer.singleShot(0, self._combo.showPopup)
-            return True
-        return False
-
-
 _DEVICES = None
 
 
@@ -554,28 +541,13 @@ class TrainDialog(QDialog):
         self.ui.cancel_btn.clicked.connect(self.reject)
 
     # ---------- 填充 ----------
-    def _style_combo(self, combo):
-        """
-        下拉框文本居中 + 点击框内任意位置打开下拉.
-        """
-        combo.setEditable(True)
-        combo.setFocusPolicy(Qt.StrongFocus)
-        le = combo.lineEdit()
-        le.setObjectName("multiComboLineEdit")
-        le.setReadOnly(True)
-        le.setAlignment(Qt.AlignHCenter)
-        f = _ClickToPopupFilter(combo)
-        combo.installEventFilter(f)
-        le.installEventFilter(f)
-        self._combo_filters.append(f)
-
     def _style_all_combos(self):
         # 多选下拉的编辑区自己画标签(见 _setup_multi_combo), 不套这里的居中和点击展开
         for name in ("task_combo", "network_combo", "device_combo", "arch_combo",
                      "img_size_comboBox", "optimizer_comboBox"):
             combo = getattr(self.ui, name, None)
             if combo is not None:
-                self._style_combo(combo)
+                style_combo(combo, self._combo_filters)
 
     def _setup_multi_combo(self, combo, placeholder=None):
         install_multi_combo(combo, placeholder)
@@ -992,7 +964,9 @@ class TrainDialog(QDialog):
         if self._task() == "classify" or self._arch() != "cnn":
             return True, ""
         if find_spec("ultralytics") is None:
-            return False, self.tr("未安装 ultralytics, 无法使用 CNN 架构")
+            # 不点库名: 这条是给终端用户看的, 正常装好的包不该走到这里
+            return False, self.tr(
+                "当前安装缺少 CNN 架构所需的组件, 无法训练.\n请重新安装软件后再试")
         return True, ""
 
     def _on_start_train(self):

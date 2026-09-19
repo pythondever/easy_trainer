@@ -64,7 +64,7 @@ Shows dataset paths and a label-distribution bar chart (descending by count; Top
 </p>
 
 ### 🚀 Training
-Runs in a **child process without blocking the UI**: live progress bar, ETA, GPU memory usage, manual stop (5-second countdown). Detection/segmentation use RF-DETR; classification uses ResNet (18/34/50/101). All network sizes map from a dropdown. A **training queue** is supported: several configurations run back to back, and it can be paused / resumed / stopped, with one-click re-queue after an interruption or failure.
+Runs in a **child process without blocking the UI**: live progress bar, ETA, GPU memory usage, manual stop (5-second countdown). Detection/segmentation use RF-DETR; classification uses ResNet (18/34/50/101). All network sizes map from a dropdown. A **training queue** is supported: several configurations run back to back, and it can be stopped at any time, with one-click re-queue after an interruption or failure.
 
 <p align="center">
   <img src="docs/images/训练参数设置.png" width="48%" />

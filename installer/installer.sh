@@ -6,8 +6,9 @@
 #   -p  同时安装预训练权重(默认跳过; 官方 GCS 约 880MB, 大陆网络可能失败, 失败仅警告)
 #   -h  显示帮助
 #
-# 需与本脚本同目录放置 program.zip, requirements-release.txt, pretrained-assets.txt
-# (build.py 的 Linux 发布产物). 默认锁定 CUDA 版 torch, 可用 TORCH_INDEX 环境变量换 pytorch 源.
+# 需与本脚本同目录放置 program.zip, requirements-release.txt, requirements-nodeps.txt,
+# pretrained-assets.txt (build.py 的 Linux 发布产物). 默认锁定 CUDA 版 torch,
+# 可用 TORCH_INDEX 环境变量换 pytorch 源.
 # .so 按 Python 3.10(cp310) 编译, 本脚本要求系统 python 恰为 3.10.x, 否则拒绝安装.
 # 重复安装 = 覆盖升级, 装前清掉旧构建产物并查磁盘空间(约需 10GB); venv 与已装依赖保留复用.
 set -u
@@ -116,6 +117,8 @@ log "Python: $($PY --version 2>&1)"
 
 ZIP="$SELF_DIR/program.zip"
 REQ="$SELF_DIR/requirements-release.txt"
+# 需要 --no-deps 装的包(理由见 builder/requirements-nodeps.txt); 允许缺失
+NODEPS_REQ="$SELF_DIR/requirements-nodeps.txt"
 [ -f "$ZIP" ] || die "同目录缺少 program.zip(发布不完整): $ZIP"
 
 prog_kb=$("$PY" -c 'import sys,zipfile;print(sum(i.file_size for i in zipfile.ZipFile(sys.argv[1]).infolist())//1024)' "$ZIP" 2>/dev/null) || prog_kb=0
@@ -152,6 +155,14 @@ log "正在安装 Python 依赖(torch 较大, 可能 5~30 分钟, 进度见 $PIP
 if ! "$VPIP" install --disable-pip-version-check --timeout 60 --retries 10 -r "$REQ" \
      -i "$PIP_INDEX" --extra-index-url "${TORCH_INDEX:-$CUDA_INDEX}" >> "$PIP_LOG" 2>&1; then
   die "pip 安装依赖失败, 详见: $PIP_LOG"
+fi
+# 依赖跟锁版冲突的那几个: 上面已经把它们需要的依赖装齐, 这里只补包本身(--no-deps),
+# 否则 ultralytics 会把带 GUI 的 opencv-python 拖进来跟 headless 抢 cv2
+if [ -f "$NODEPS_REQ" ]; then
+  if ! "$VPIP" install --disable-pip-version-check --timeout 60 --retries 10 --no-deps \
+       -r "$NODEPS_REQ" -i "$PIP_INDEX" --extra-index-url "${TORCH_INDEX:-$CUDA_INDEX}" >> "$PIP_LOG" 2>&1; then
+    die "pip 安装依赖失败, 详见: $PIP_LOG"
+  fi
 fi
 log "Python 依赖安装完成"
 command -v nvidia-smi >/dev/null 2>&1 || log "提示: 未检测到 NVIDIA 显卡, CUDA 版 torch 将只以 CPU 模式运行"

@@ -63,14 +63,14 @@
           <string>目标检测 · Transformer</string>
          </property>
          <property name="class" stdset="0">
-          <string>modelGroupTitle</string>
+          <string notr="true">modelGroupTitle</string>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QFrame" name="detect_frame">
          <property name="class" stdset="0">
-          <string>modelGroup</string>
+          <string notr="true">modelGroup</string>
          </property>
          <layout class="QVBoxLayout" name="detect_layout">
           <property name="spacing">
@@ -97,14 +97,14 @@
           <string>目标检测 · CNN</string>
          </property>
          <property name="class" stdset="0">
-          <string>modelGroupTitle</string>
+          <string notr="true">modelGroupTitle</string>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QFrame" name="detect_cnn_frame">
          <property name="class" stdset="0">
-          <string>modelGroup</string>
+          <string notr="true">modelGroup</string>
          </property>
          <layout class="QVBoxLayout" name="detect_cnn_layout">
           <property name="spacing">
@@ -131,14 +131,14 @@
           <string>图像分割 · Transformer</string>
          </property>
          <property name="class" stdset="0">
-          <string>modelGroupTitle</string>
+          <string notr="true">modelGroupTitle</string>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QFrame" name="segment_frame">
          <property name="class" stdset="0">
-          <string>modelGroup</string>
+          <string notr="true">modelGroup</string>
          </property>
          <layout class="QVBoxLayout" name="segment_layout">
           <property name="spacing">
@@ -165,14 +165,14 @@
           <string>图像分割 · CNN</string>
          </property>
          <property name="class" stdset="0">
-          <string>modelGroupTitle</string>
+          <string notr="true">modelGroupTitle</string>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QFrame" name="segment_cnn_frame">
          <property name="class" stdset="0">
-          <string>modelGroup</string>
+          <string notr="true">modelGroup</string>
          </property>
          <layout class="QVBoxLayout" name="segment_cnn_layout">
           <property name="spacing">
@@ -221,14 +221,14 @@
         <string>下载目录</string>
        </property>
        <property name="class" stdset="0">
-        <string>modelFootLabel</string>
+        <string notr="true">modelFootLabel</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QLabel" name="dir_label">
        <property name="class" stdset="0">
-        <string>modelDir</string>
+        <string notr="true">modelDir</string>
        </property>
       </widget>
      </item>
@@ -255,7 +255,7 @@
      <item>
       <widget class="QLabel" name="total_label">
        <property name="class" stdset="0">
-        <string>modelFootLabel</string>
+        <string notr="true">modelFootLabel</string>
        </property>
       </widget>
      </item>
@@ -265,7 +265,7 @@
         <string>开始下载</string>
        </property>
        <property name="class" stdset="0">
-        <string>primary</string>
+        <string notr="true">primary</string>
        </property>
       </widget>
      </item>

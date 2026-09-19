@@ -40,7 +40,7 @@
                 <string>训练</string>
               </property>
               <property name="class" stdset="0">
-                <string>dialogTitle</string>
+                <string notr="true">dialogTitle</string>
               </property>
             </widget>
           </item>
@@ -50,7 +50,7 @@
                 <string>检测</string>
               </property>
               <property name="class" stdset="0">
-                <string>taskBadge</string>
+                <string notr="true">taskBadge</string>
               </property>
             </widget>
           </item>
@@ -93,7 +93,7 @@
                   <string>模型与数据</string>
                 </property>
                 <property name="class" stdset="0">
-                  <string>dialogSectionTitle</string>
+                  <string notr="true">dialogSectionTitle</string>
                 </property>
               </widget>
             </item>
@@ -112,7 +112,7 @@
                   <enum>QFrame::Sunken</enum>
                 </property>
                 <property name="class" stdset="0">
-                  <string>dialogSectionLine</string>
+                  <string notr="true">dialogSectionLine</string>
                 </property>
               </widget>
             </item>
@@ -261,7 +261,7 @@
                   <string>训练超参</string>
                 </property>
                 <property name="class" stdset="0">
-                  <string>dialogSectionTitle</string>
+                  <string notr="true">dialogSectionTitle</string>
                 </property>
               </widget>
             </item>
@@ -280,7 +280,7 @@
                   <enum>QFrame::Sunken</enum>
                 </property>
                 <property name="class" stdset="0">
-                  <string>dialogSectionLine</string>
+                  <string notr="true">dialogSectionLine</string>
                 </property>
               </widget>
             </item>
@@ -364,7 +364,7 @@
                       <string>连续无提升则提前结束，0 为关闭</string>
                     </property>
                     <property name="class" stdset="0">
-                      <string>fieldNote</string>
+                      <string notr="true">fieldNote</string>
                     </property>
                     <property name="wordWrap">
                       <bool>true</bool>
@@ -417,7 +417,7 @@
                       <string>初始学习率，训练中自动衰减</string>
                     </property>
                     <property name="class" stdset="0">
-                      <string>fieldNote</string>
+                      <string notr="true">fieldNote</string>
                     </property>
                     <property name="wordWrap">
                       <bool>true</bool>
@@ -477,7 +477,7 @@
                       <string>32 的倍数</string>
                     </property>
                     <property name="class" stdset="0">
-                      <string>fieldNote</string>
+                      <string notr="true">fieldNote</string>
                     </property>
                     <property name="alignment">
                       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -530,7 +530,7 @@
                       <string>显存不足时调大，等效批次 × N</string>
                     </property>
                     <property name="class" stdset="0">
-                      <string>fieldNote</string>
+                      <string notr="true">fieldNote</string>
                     </property>
                     <property name="wordWrap">
                       <bool>true</bool>
@@ -579,7 +579,7 @@
                   <string>输出</string>
                 </property>
                 <property name="class" stdset="0">
-                  <string>dialogSectionTitle</string>
+                  <string notr="true">dialogSectionTitle</string>
                 </property>
               </widget>
             </item>
@@ -598,7 +598,7 @@
                   <enum>QFrame::Sunken</enum>
                 </property>
                 <property name="class" stdset="0">
-                  <string>dialogSectionLine</string>
+                  <string notr="true">dialogSectionLine</string>
                 </property>
               </widget>
             </item>
@@ -695,7 +695,7 @@
                   <string>i</string>
                 </property>
                 <property name="class" stdset="0">
-                  <string>summaryIcon</string>
+                  <string notr="true">summaryIcon</string>
                 </property>
               </widget>
             </item>
@@ -711,7 +711,7 @@
                   <string>请选择训练集与验证集</string>
                 </property>
                 <property name="class" stdset="0">
-                  <string>summaryText</string>
+                  <string notr="true">summaryText</string>
                 </property>
                 <property name="alignment">
                   <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>

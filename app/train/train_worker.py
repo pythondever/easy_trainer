@@ -15,10 +15,10 @@ import threading
 import time
 import traceback
 
-from PySide6.QtCore import QThread, Signal
+from PySide6.QtCore import Signal
 
 from app.core.utils import decode_text_bytes, read_text_any
-from app.train.proc_utils import kill_process_tree, runner_bootstrap
+from app.train.proc_utils import SubprocessWorker, runner_bootstrap
 
 try:
     import psutil
@@ -60,7 +60,7 @@ def _is_float(s):
 _PC_TABLE_END = re.compile(r"^\s*[\u2514\u2517\u255A\u2570][\s\u2500-\u257F]*$")
 
 
-class TrainWorker(QThread):
+class TrainWorker(SubprocessWorker):
     """运行一次训练(子进程),通过信号上报进度/指标/完成/错误."""
 
     progress = Signal(int, int)          # epoch, total_epochs
@@ -68,21 +68,6 @@ class TrainWorker(QThread):
     finished_ok = Signal(dict)                  # result.json 内容
     failed = Signal(str)                        # traceback
     log = Signal(str)                           # 子进程 stdout 行
-
-    def __init__(self, config, parent=None):
-        super().__init__(parent)
-        self._config = config
-        self._proc = None
-        self._stop_flag = False
-
-    def stop(self):
-        """请求停止: 置标志并终止子进程及其孙进程."""
-        self._stop_flag = True
-        self._kill_proc()
-
-    def _kill_proc(self):
-        """终止子进程及其孙进程; 不动 _stop_flag(监控循环收尾也要用)."""
-        kill_process_tree(self._proc)
 
     def proc_exited(self):
         """子进程是否已退出(队列据此判断显存是否可回收)."""

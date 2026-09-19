@@ -58,7 +58,7 @@
            <string>图像维度</string>
           </property>
           <property name="class" stdset="0">
-           <string>dimTag</string>
+           <string notr="true">dimTag</string>
           </property>
          </widget>
         </item>
@@ -68,7 +68,7 @@
            <string>按「张」统计</string>
           </property>
           <property name="class" stdset="0">
-           <string>dimNote</string>
+           <string notr="true">dimNote</string>
           </property>
          </widget>
         </item>
@@ -121,31 +121,31 @@
            </property>
            <item>
             <widget class="QLabel" name="img_total_value">
-             <property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
+             <property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
               <string>0</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
              </property>
              <property name="class" stdset="0">
-              <string>cardValue</string>
+              <string notr="true">cardValue</string>
              </property>
             </widget>
            </item>
            <item>
             <widget class="QLabel" name="img_total_lbl">
-             <property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
+             <property name="sizePolicy"><sizepolicy hsizetype="Preferred" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
               <string>测试张数</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
              </property>
              <property name="class" stdset="0">
-              <string>cardLabel</string>
+              <string notr="true">cardLabel</string>
              </property>
-            </widget>
+            <property name="wordWrap"><bool>true</bool></property></widget>
            </item>
-          <item><widget class="QLabel" name="img_total_rate"><property name="text"><string /></property><property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="class" stdset="0"><string>cardRate</string></property></widget></item><item><spacer name="img_total_bottom_spacer"><property name="orientation"><enum>Qt::Vertical</enum></property><property name="sizeHint" stdset="0"><size><width>20</width><height>8</height></size></property></spacer></item></layout>
+          <item><widget class="QLabel" name="img_total_rate"><property name="text"><string /></property><property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="class" stdset="0"><string notr="true">cardRate</string></property></widget></item><item><spacer name="img_total_bottom_spacer"><property name="orientation"><enum>Qt::Vertical</enum></property><property name="sizeHint" stdset="0"><size><width>20</width><height>8</height></size></property></spacer></item></layout>
          </widget>
         </item>
         <item>
@@ -177,31 +177,31 @@
            </property>
            <item>
             <widget class="QLabel" name="img_ok_value">
-             <property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
+             <property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
               <string>0</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
              </property>
              <property name="class" stdset="0">
-              <string>cardValue</string>
+              <string notr="true">cardValue</string>
              </property>
             </widget>
            </item>
            <item>
             <widget class="QLabel" name="img_ok_lbl">
-             <property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
+             <property name="sizePolicy"><sizepolicy hsizetype="Preferred" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
               <string>全对图像</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
              </property>
              <property name="class" stdset="0">
-              <string>cardLabel</string>
+              <string notr="true">cardLabel</string>
              </property>
-            </widget>
+            <property name="wordWrap"><bool>true</bool></property></widget>
            </item>
-          <item><widget class="QLabel" name="img_ok_rate"><property name="text"><string /></property><property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="class" stdset="0"><string>cardRate</string></property></widget></item><item><spacer name="img_ok_bottom_spacer"><property name="orientation"><enum>Qt::Vertical</enum></property><property name="sizeHint" stdset="0"><size><width>20</width><height>8</height></size></property></spacer></item></layout>
+          <item><widget class="QLabel" name="img_ok_rate"><property name="text"><string /></property><property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="class" stdset="0"><string notr="true">cardRate</string></property></widget></item><item><spacer name="img_ok_bottom_spacer"><property name="orientation"><enum>Qt::Vertical</enum></property><property name="sizeHint" stdset="0"><size><width>20</width><height>8</height></size></property></spacer></item></layout>
          </widget>
         </item>
         <item>
@@ -233,31 +233,31 @@
            </property>
            <item>
             <widget class="QLabel" name="img_fn_value">
-             <property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
+             <property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
               <string>0</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
              </property>
              <property name="class" stdset="0">
-              <string>cardValue</string>
+              <string notr="true">cardValue</string>
              </property>
             </widget>
            </item>
            <item>
             <widget class="QLabel" name="img_fn_lbl">
-             <property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
+             <property name="sizePolicy"><sizepolicy hsizetype="Preferred" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
               <string>有漏检图像</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
              </property>
              <property name="class" stdset="0">
-              <string>cardLabel</string>
+              <string notr="true">cardLabel</string>
              </property>
-            </widget>
+            <property name="wordWrap"><bool>true</bool></property></widget>
            </item>
-          <item><widget class="QLabel" name="img_fn_rate"><property name="text"><string /></property><property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="class" stdset="0"><string>cardRate</string></property></widget></item><item><spacer name="img_fn_bottom_spacer"><property name="orientation"><enum>Qt::Vertical</enum></property><property name="sizeHint" stdset="0"><size><width>20</width><height>8</height></size></property></spacer></item></layout>
+          <item><widget class="QLabel" name="img_fn_rate"><property name="text"><string /></property><property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="class" stdset="0"><string notr="true">cardRate</string></property></widget></item><item><spacer name="img_fn_bottom_spacer"><property name="orientation"><enum>Qt::Vertical</enum></property><property name="sizeHint" stdset="0"><size><width>20</width><height>8</height></size></property></spacer></item></layout>
          </widget>
         </item>
         <item>
@@ -289,31 +289,31 @@
            </property>
            <item>
             <widget class="QLabel" name="img_fp_value">
-             <property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
+             <property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
               <string>0</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
              </property>
              <property name="class" stdset="0">
-              <string>cardValue</string>
+              <string notr="true">cardValue</string>
              </property>
             </widget>
            </item>
            <item>
             <widget class="QLabel" name="img_fp_lbl">
-             <property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
+             <property name="sizePolicy"><sizepolicy hsizetype="Preferred" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
               <string>有误检图像</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
              </property>
              <property name="class" stdset="0">
-              <string>cardLabel</string>
+              <string notr="true">cardLabel</string>
              </property>
-            </widget>
+            <property name="wordWrap"><bool>true</bool></property></widget>
            </item>
-          <item><widget class="QLabel" name="img_fp_rate"><property name="text"><string /></property><property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="class" stdset="0"><string>cardRate</string></property></widget></item><item><spacer name="img_fp_bottom_spacer"><property name="orientation"><enum>Qt::Vertical</enum></property><property name="sizeHint" stdset="0"><size><width>20</width><height>8</height></size></property></spacer></item></layout>
+          <item><widget class="QLabel" name="img_fp_rate"><property name="text"><string /></property><property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="class" stdset="0"><string notr="true">cardRate</string></property></widget></item><item><spacer name="img_fp_bottom_spacer"><property name="orientation"><enum>Qt::Vertical</enum></property><property name="sizeHint" stdset="0"><size><width>20</width><height>8</height></size></property></spacer></item></layout>
          </widget>
         </item>
        </layout>
@@ -350,7 +350,7 @@
            <string>标签维度</string>
           </property>
           <property name="class" stdset="0">
-           <string>dimTag</string>
+           <string notr="true">dimTag</string>
           </property>
          </widget>
         </item>
@@ -360,7 +360,7 @@
            <string>按「标注框」统计</string>
           </property>
           <property name="class" stdset="0">
-           <string>dimNote</string>
+           <string notr="true">dimNote</string>
           </property>
          </widget>
         </item>
@@ -413,31 +413,31 @@
            </property>
            <item>
             <widget class="QLabel" name="tp_value">
-             <property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
+             <property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
               <string>0</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
              </property>
              <property name="class" stdset="0">
-              <string>cardValue</string>
+              <string notr="true">cardValue</string>
              </property>
             </widget>
            </item>
            <item>
             <widget class="QLabel" name="tp_lbl">
-             <property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
+             <property name="sizePolicy"><sizepolicy hsizetype="Preferred" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
               <string>正确检出</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
              </property>
              <property name="class" stdset="0">
-              <string>cardLabel</string>
+              <string notr="true">cardLabel</string>
              </property>
-            </widget>
+            <property name="wordWrap"><bool>true</bool></property></widget>
            </item>
-          <item><widget class="QLabel" name="tp_rate"><property name="text"><string /></property><property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="class" stdset="0"><string>cardRate</string></property></widget></item><item><spacer name="tp_bottom_spacer"><property name="orientation"><enum>Qt::Vertical</enum></property><property name="sizeHint" stdset="0"><size><width>20</width><height>8</height></size></property></spacer></item></layout>
+          <item><widget class="QLabel" name="tp_rate"><property name="text"><string /></property><property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="class" stdset="0"><string notr="true">cardRate</string></property></widget></item><item><spacer name="tp_bottom_spacer"><property name="orientation"><enum>Qt::Vertical</enum></property><property name="sizeHint" stdset="0"><size><width>20</width><height>8</height></size></property></spacer></item></layout>
          </widget>
         </item>
         <item>
@@ -469,31 +469,31 @@
            </property>
            <item>
             <widget class="QLabel" name="fn_value">
-             <property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
+             <property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
               <string>0</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
              </property>
              <property name="class" stdset="0">
-              <string>cardValue</string>
+              <string notr="true">cardValue</string>
              </property>
             </widget>
            </item>
            <item>
             <widget class="QLabel" name="fn_lbl">
-             <property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
+             <property name="sizePolicy"><sizepolicy hsizetype="Preferred" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
               <string>漏检</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
              </property>
              <property name="class" stdset="0">
-              <string>cardLabel</string>
+              <string notr="true">cardLabel</string>
              </property>
-            </widget>
+            <property name="wordWrap"><bool>true</bool></property></widget>
            </item>
-          <item><widget class="QLabel" name="fn_rate"><property name="text"><string /></property><property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="class" stdset="0"><string>cardRate</string></property></widget></item><item><spacer name="fn_bottom_spacer"><property name="orientation"><enum>Qt::Vertical</enum></property><property name="sizeHint" stdset="0"><size><width>20</width><height>8</height></size></property></spacer></item></layout>
+          <item><widget class="QLabel" name="fn_rate"><property name="text"><string /></property><property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="class" stdset="0"><string notr="true">cardRate</string></property></widget></item><item><spacer name="fn_bottom_spacer"><property name="orientation"><enum>Qt::Vertical</enum></property><property name="sizeHint" stdset="0"><size><width>20</width><height>8</height></size></property></spacer></item></layout>
          </widget>
         </item>
         <item>
@@ -525,31 +525,31 @@
            </property>
            <item>
             <widget class="QLabel" name="fp_value">
-             <property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
+             <property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
               <string>0</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
              </property>
              <property name="class" stdset="0">
-              <string>cardValue</string>
+              <string notr="true">cardValue</string>
              </property>
             </widget>
            </item>
            <item>
             <widget class="QLabel" name="fp_lbl">
-             <property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
+             <property name="sizePolicy"><sizepolicy hsizetype="Preferred" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
               <string>误检</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
              </property>
              <property name="class" stdset="0">
-              <string>cardLabel</string>
+              <string notr="true">cardLabel</string>
              </property>
-            </widget>
+            <property name="wordWrap"><bool>true</bool></property></widget>
            </item>
-          <item><widget class="QLabel" name="fp_rate"><property name="text"><string /></property><property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="class" stdset="0"><string>cardRate</string></property></widget></item><item><spacer name="fp_bottom_spacer"><property name="orientation"><enum>Qt::Vertical</enum></property><property name="sizeHint" stdset="0"><size><width>20</width><height>8</height></size></property></spacer></item></layout>
+          <item><widget class="QLabel" name="fp_rate"><property name="text"><string /></property><property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="class" stdset="0"><string notr="true">cardRate</string></property></widget></item><item><spacer name="fp_bottom_spacer"><property name="orientation"><enum>Qt::Vertical</enum></property><property name="sizeHint" stdset="0"><size><width>20</width><height>8</height></size></property></spacer></item></layout>
          </widget>
         </item>
         <item>
@@ -581,31 +581,31 @@
            </property>
            <item>
             <widget class="QLabel" name="precision_value">
-             <property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
+             <property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
               <string>0%</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
              </property>
              <property name="class" stdset="0">
-              <string>cardValue</string>
+              <string notr="true">cardValue</string>
              </property>
             </widget>
            </item>
            <item>
             <widget class="QLabel" name="precision_lbl">
-             <property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
+             <property name="sizePolicy"><sizepolicy hsizetype="Preferred" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
               <string>准确率</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
              </property>
              <property name="class" stdset="0">
-              <string>cardLabel</string>
+              <string notr="true">cardLabel</string>
              </property>
-            </widget>
+            <property name="wordWrap"><bool>true</bool></property></widget>
            </item>
-          <item><widget class="QLabel" name="precision_rate"><property name="text"><string /></property><property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="class" stdset="0"><string>cardRate</string></property></widget></item><item><spacer name="precision_bottom_spacer"><property name="orientation"><enum>Qt::Vertical</enum></property><property name="sizeHint" stdset="0"><size><width>20</width><height>8</height></size></property></spacer></item></layout>
+          <item><widget class="QLabel" name="precision_rate"><property name="text"><string /></property><property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="class" stdset="0"><string notr="true">cardRate</string></property></widget></item><item><spacer name="precision_bottom_spacer"><property name="orientation"><enum>Qt::Vertical</enum></property><property name="sizeHint" stdset="0"><size><width>20</width><height>8</height></size></property></spacer></item></layout>
          </widget>
         </item>
        </layout>

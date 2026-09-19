@@ -28,3 +28,9 @@ lightning-utilities==0.15.3
 pyDeprecate==0.9.0
 tqdm==4.70.0
 requests==2.34.2
+
+# ultralytics(CNN/YOLO 架构)的三个传递依赖: ultralytics 本体在
+# requirements-nodeps.txt 里以 --no-deps 装, 缺的这几个必须在这边钉住
+ultralytics-thop==2.1.6
+polars==1.44.2
+cloudpickle==3.1.2

@@ -1,0 +1,12 @@
+# 需要以 `--no-deps` 单独安装的依赖(与 requirements-release.txt 分开维护).
+#
+# 分开放的原因: 这些包自己声明的依赖会跟本发行版的锁版打架, 而 pip 无法按行关掉依赖解析.
+#   ultralytics 要求 opencv-python>=4.7.0, 本发行版只用 opencv-python-headless;
+#   pip 把两者当两个发行版, 按依赖装会在同一个 site-packages 里塞进两份 cv2
+#   (opencv-python 那份还会带整套 Qt5 DLL).
+# ultralytics 内部把 cv2 的发行版名映射成了 opencv-python-headless(ultralytics/utils/checks.py),
+# 所以 headless 能满足它, 不会在运行时反过来补装.
+#
+# 因此 requirements-release.txt 里显式钉住了它缺的三个传递依赖
+# (cloudpickle / polars / ultralytics-thop), 这里用 --no-deps 装是安全的.
+ultralytics==8.4.155
