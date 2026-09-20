@@ -26,10 +26,10 @@ declare -a PRETRAINED=( \
   "transformer/nano.pt|https://storage.googleapis.com/rfdetr/nano_coco/checkpoint_best_regular.pth|D8D6B9EE57D4D0ED2B1F305163624712A0532CB7BCE0C747317984FC5457440D" \
   "transformer/nano-seg.pt|https://storage.googleapis.com/rfdetr/rf-detr-seg-n-ft.pth|A44613A4ECD6B5BA61A62002C600B0B6CB7A9DA2936A45317EC4B62C635FB99B" \
   "transformer/small-seg.pt|https://storage.googleapis.com/rfdetr/rf-detr-seg-s-ft.pth|6DE3DA31B2572CAC214A1C76CCE4A92A13966D56390AC2B3A3DE9A8DC2B2BCA3" \
-  "cnn/nano.pt|https://hf-mirror.com/Ultralytics/YOLO11/resolve/main/yolo11n.pt|0EBBC80D4A7680D14987A577CD21342B65ECFD94632BD9A8DA63AE6417644EE1" \
-  "cnn/small.pt|https://hf-mirror.com/Ultralytics/YOLO11/resolve/main/yolo11s.pt|85A76FE86DD8AFE384648546B56A7A78580C7CB7B404FC595F97969322D502D5" \
-  "cnn/nano-seg.pt|https://hf-mirror.com/Ultralytics/YOLO11/resolve/main/yolo11n-seg.pt|55ED65C56C91713D23E8402371C6C49A6FD84F257F7DCE452E8D70E41DCBE152" \
-  "cnn/small-seg.pt|https://hf-mirror.com/Ultralytics/YOLO11/resolve/main/yolo11s-seg.pt|1CAA81C0195412EFA411B632BCFB8C184939DDDB6AE41F6A80C41B211FF257C3" \
+  "cnn/nano.pt|https://hf-mirror.com/Ultralytics/YOLO26/resolve/main/yolo26n.pt|9B09CC8BF347F0FC8A5F7657480587F25DB09B34BF33B0652110FB03A8AD4FEF" \
+  "cnn/small.pt|https://hf-mirror.com/Ultralytics/YOLO26/resolve/main/yolo26s.pt|646F8BC3FE0A656803D95C294F7852321748CB29D13466A1AF8862E2DB384A1B" \
+  "cnn/nano-seg.pt|https://hf-mirror.com/Ultralytics/YOLO26/resolve/main/yolo26n-seg.pt|361FBFABAB285C3237700B6BB91D7ECFA602CD945FFFDA8DBE1242829B71E73F" \
+  "cnn/small-seg.pt|https://hf-mirror.com/Ultralytics/YOLO26/resolve/main/yolo26s-seg.pt|3DA1D83E31CAEC96F9300EB4064F4F62882C133C7C264D63DFE61A7C197837A4" \
 )
 
 ASSETS_FILE="$SELF_DIR/pretrained-assets.txt"

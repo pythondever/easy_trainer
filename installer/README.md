@@ -44,7 +44,7 @@ Python 走 **embeddable 绿色包**（不装 MSI、不写注册表、不需要�
 不会装一半才发现。
 
 **注意**：rf-detr 那批权重没有国内镜像（官方仅发布在 Google 存储；HuggingFace 上只有
-transformers 格式的 safetensors，rfdetr 包不认），YOLO11 那批走 HuggingFace 镜像
+transformers 格式的 safetensors，rfdetr 包不认），YOLO26 那批走 HuggingFace 镜像
 （hf-mirror.com）可直连。大陆网络下拉不动时改用离线兜底（见下），
 或在软件内"导入权重目录"。
 

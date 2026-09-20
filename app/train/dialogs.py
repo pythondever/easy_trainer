@@ -881,7 +881,7 @@ class TrainDialog(QDialog):
             self.ui.output_line_txt.setText(str(out))
 
     def _fill_network_combo(self):
-        """型号档位: CNN 多一档 x-large(YOLO11 五档), 前四档两边同名同义."""
+        """型号档位: CNN 多一档 x-large(YOLO26 五档), 前四档两边同名同义."""
         combo = self.ui.network_combo
         combo.clear()
         if self._task() != "classify" and self._arch() == "cnn":

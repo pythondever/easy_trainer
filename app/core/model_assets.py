@@ -47,10 +47,9 @@ class ModelAsset(object):
 
 _BASE = "https://storage.googleapis.com/rfdetr/"
 
-# YOLO11 官方权重的国内镜像. GitHub 的 release 资产(走 objects.githubusercontent.com)
-# 在国内直连会超时, 这个镜像给的是同一批文件: 与 gh-proxy 转发官方源下到的
-# 逐条比对过文件名/字节数/MD5, 完全一致.
-_YOLO_BASE = "https://hf-mirror.com/Ultralytics/YOLO11/resolve/main/"
+# YOLO26 官方权重的国内镜像. GitHub 的 release 资产(走 objects.githubusercontent.com)
+# 在国内直连会超时; 这个镜像给的是同一批文件, 字节数与 SHA256 已逐条对上 HF 仓库元数据.
+_YOLO_BASE = "https://hf-mirror.com/Ultralytics/YOLO26/resolve/main/"
 
 # 档位 → 权重名里的尺寸字母, 与训练界面「型号」下拉一一对应
 _YOLO_SIZES = (("nano", "n"), ("small", "s"), ("medium", "m"),
@@ -58,16 +57,16 @@ _YOLO_SIZES = (("nano", "n"), ("small", "s"), ("medium", "m"),
 
 # 文件名 → (字节数, MD5); 从镜像实拉后算出
 _YOLO_FILES = {
-    "yolo11n.pt": (5613764, "261474e91b15f5ef14a63c21ce6c0cbb"),
-    "yolo11s.pt": (19313732, "9637097d5fbdc1002d25d2d3d9f7c435"),
-    "yolo11m.pt": (40684120, "2c2bcbb54c3829b20d31a32524ee0f03"),
-    "yolo11l.pt": (51387343, "92001a3126d6ebf548c1762038698214"),
-    "yolo11x.pt": (114636239, "2f89622f77147e631f1e075e9fc6b795"),
-    "yolo11n-seg.pt": (6182636, "edfa69d9468b2703b185f550e8f26251"),
-    "yolo11s-seg.pt": (20669228, "0a0febcb560f334cb78ae8922382bf74"),
-    "yolo11m-seg.pt": (45400152, "8cc5706386c334b11551d9cd779e304c"),
-    "yolo11l-seg.pt": (56096965, "ca3de7ae1af6e4854c5d8d5eda796e3c"),
-    "yolo11x-seg.pt": (125090821, "4c73cb4ac70d1dd4b104b18fedd862e7"),
+    "yolo26n.pt": (5544453, "cf3cca69f04cf639bafdeb2644bd0843"),
+    "yolo26s.pt": (20422725, "372e5c34064f37eb45dd7ef5cbbe60aa"),
+    "yolo26m.pt": (44255705, "70f16444e4951c78f7e6afbadc3a2ee7"),
+    "yolo26l.pt": (53211173, "33dbebc96173c86168e296f1dca50993"),
+    "yolo26x.pt": (118667365, "84da48ba7b49f98e1c2c85dddb895fcd"),
+    "yolo26n-seg.pt": (6719965, "9f9df23eb27d6ab64512bb670cd0ae96"),
+    "yolo26s-seg.pt": (23467933, "91df624caffc982a5ed76f6061c01bf1"),
+    "yolo26m-seg.pt": (54750385, "df1533ff3807c54301c0f62dfb229e0b"),
+    "yolo26l-seg.pt": (63700037, "36b39a2d00e4a25c22e046673d7f0e7b"),
+    "yolo26x-seg.pt": (142129861, "2da1da97683497fd796f4a980520c123"),
 }
 
 # 前四档的描述与 rf-detr 用同一批文案(同 context 同文本, 共用已有译文)
@@ -88,14 +87,14 @@ _YOLO_SEG_DESC = {
 
 
 def _yolo_assets():
-    """YOLO11 检测/分割各五档; 档位名与 rf-detr 前四档同名同义."""
+    """YOLO26 检测/分割各五档; 档位名与 rf-detr 前四档同名同义."""
     out = []
     for level, letter in _YOLO_SIZES:
         for task, suffix, desc in ((DETECT_CNN, "", _YOLO_DESC[level]),
                                    (SEGMENT_CNN, "-seg",
                                     _YOLO_SEG_DESC[level])):
-            # 远端名(MD5 表按它索引)与本地落盘名分开: 远端带 yolo11 前缀, 本地只用档位名
-            remote = "yolo11{}{}.pt".format(letter, suffix)
+            # 远端名(MD5 表按它索引)与本地落盘名分开: 远端带 yolo26 前缀, 本地只用档位名
+            remote = "yolo26{}{}.pt".format(letter, suffix)
             nbytes, md5 = _YOLO_FILES[remote]
             out.append(ModelAsset(task, level, level + suffix + ".pt",
                                   nbytes, md5, desc, _YOLO_BASE + remote))
@@ -136,7 +135,7 @@ MODELS = (
                "275f7b094909544ed2841c94a677d07e",
                QT_TRANSLATE_NOOP("ModelAssets", "最精细"),
                _BASE + "rf-detr-seg-l-ft.pth"),
-    # YOLO11(CNN 架构)的检测/分割五档
+    # YOLO26(CNN 架构)的检测/分割五档
     *_yolo_assets(),
 )
 
@@ -158,7 +157,7 @@ def default_dir():
 
 
 def family_of(asset):
-    """asset 属于哪套后端: YOLO11 那批是 CNN, 其余是 rf-detr."""
+    """asset 属于哪套后端: YOLO26 那批是 CNN, 其余是 rf-detr."""
     return CNN if asset.task in (DETECT_CNN, SEGMENT_CNN) else TRANSFORMER
 
 
