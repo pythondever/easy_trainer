@@ -34,3 +34,16 @@ requests==2.34.2
 ultralytics-thop==2.1.6
 polars==1.44.2
 cloudpickle==3.1.2
+
+# 导出 ONNX. 三条路径各自要的包不同, 少任何一条那条导出就不可用:
+#   分类   torch.onnx.export            -> onnx
+#   YOLO   ultralytics export(simplify) -> onnx + onnxruntime + onnxslim
+#   rf-detr 自家 export(含 simplify)    -> onnx + onnx_graphsurgeon + polygraphy + onnxsim
+# ultralytics 遇到缺包会自己 pip install(不锁版本, 离线机器上还会直接失败),
+# 所以这里显式钉住, 让它永远走"已满足"那条路
+onnx==1.23.0
+onnxruntime==1.23.2
+onnxslim==0.1.96
+onnxsim==0.7.3
+onnx_graphsurgeon==0.6.1
+polygraphy==0.53.4

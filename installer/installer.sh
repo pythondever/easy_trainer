@@ -26,6 +26,7 @@ declare -a PRETRAINED=( \
   "transformer/nano.pt|https://storage.googleapis.com/rfdetr/nano_coco/checkpoint_best_regular.pth|D8D6B9EE57D4D0ED2B1F305163624712A0532CB7BCE0C747317984FC5457440D" \
   "transformer/nano-seg.pt|https://storage.googleapis.com/rfdetr/rf-detr-seg-n-ft.pth|A44613A4ECD6B5BA61A62002C600B0B6CB7A9DA2936A45317EC4B62C635FB99B" \
   "transformer/small-seg.pt|https://storage.googleapis.com/rfdetr/rf-detr-seg-s-ft.pth|6DE3DA31B2572CAC214A1C76CCE4A92A13966D56390AC2B3A3DE9A8DC2B2BCA3" \
+  "transformer/small.pt|https://storage.googleapis.com/rfdetr/small_coco/checkpoint_best_regular.pth|D81979A9213A2109345158CE9232668DF4C1AE52E9B8DB3F2EC0A8CBAD959B33" \
   "cnn/nano.pt|https://hf-mirror.com/Ultralytics/YOLO26/resolve/main/yolo26n.pt|9B09CC8BF347F0FC8A5F7657480587F25DB09B34BF33B0652110FB03A8AD4FEF" \
   "cnn/small.pt|https://hf-mirror.com/Ultralytics/YOLO26/resolve/main/yolo26s.pt|646F8BC3FE0A656803D95C294F7852321748CB29D13466A1AF8862E2DB384A1B" \
   "cnn/nano-seg.pt|https://hf-mirror.com/Ultralytics/YOLO26/resolve/main/yolo26n-seg.pt|361FBFABAB285C3237700B6BB91D7ECFA602CD945FFFDA8DBE1242829B71E73F" \

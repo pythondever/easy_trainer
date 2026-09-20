@@ -12,6 +12,7 @@
 """
 
 import os
+import shutil
 
 from PySide6.QtCore import QT_TRANSLATE_NOOP
 
@@ -68,6 +69,10 @@ _YOLO_FILES = {
     "yolo26l-seg.pt": (63700037, "36b39a2d00e4a25c22e046673d7f0e7b"),
     "yolo26x-seg.pt": (142129861, "2da1da97683497fd796f4a980520c123"),
 }
+
+# ultralytics 训练前跑 AMP 自检时固定去 WEIGHTS_DIR 找这个文件名, 找不到就联网下一份.
+# 我们 cnn 目录下的 nano.pt 就是它, 所以由 ensure_amp_weight 指过去.
+_AMP_FILENAME = "yolo26n.pt"
 
 # 前四档的描述与 rf-detr 用同一批文案(同 context 同文本, 共用已有译文)
 _YOLO_DESC = {
@@ -249,6 +254,29 @@ def resolve_path(task, level, family="transformer"):
     if asset is None:
         return ""
     return path_of(asset) if is_ready(asset) else ""
+
+
+def ensure_amp_weight(weights_dir):
+    """
+    ultralytics 训练前固定去 weights_dir 找 yolo26n.pt 做 AMP 自检, 缺了就联网下一份 ——
+    它和我们下载的 cnn/nano.pt 是同一个文件. 同卷建硬链接(不占额外空间), 跨卷退回复制;
+    没下 nano 档就返回空串, 让它照原样去下或跳过.
+    """
+    src = path_of(find(DETECT_CNN, "nano"))
+    if not os.path.isfile(src):
+        return ""
+    dst = os.path.join(str(weights_dir), _AMP_FILENAME)
+    if os.path.isfile(dst):
+        return dst
+    try:
+        os.makedirs(str(weights_dir), exist_ok=True)
+        os.link(src, dst)
+    except OSError:
+        try:
+            shutil.copyfile(src, dst)
+        except OSError:
+            return ""
+    return dst
 
 
 def human_size(nbytes):

@@ -157,6 +157,7 @@ def _pretrained_path(cfg, task):
 
 def main():
     from ultralytics import YOLO
+    from ultralytics.utils import WEIGHTS_DIR
 
     cfg_path = sys.argv[1]
     with open(cfg_path, "r", encoding="utf-8") as f:
@@ -178,6 +179,8 @@ def main():
             "TrainRunner",
             "预训练权重缺失: 请先在权重管理里下载 {} 档的模型").format(
             architecture))
+
+    model_assets.ensure_amp_weight(WEIGHTS_DIR)
 
     labels = prepare_dataset(out_root, project=cfg["project"],
                              datasets=cfg["datasets"], task=task)

@@ -90,6 +90,12 @@ Python 运行时本身的下载信息仍写死在 `InstallerCore.cs` 常量里�
    `polars` / `cloudpickle`）在 `requirements-release.txt` 里显式钉住。
    加新包前先确认它不会拖进带 GUI 的 `opencv-python`。
 
+   还有一组包服务于**导出 ONNX**，三条导出路径各自缺的包不同：分类（`torch.onnx.export`）
+   只要 `onnx`；YOLO 那条 `simplify=True` 还要 `onnxruntime` + `onnxslim`；rf-detr 自家
+   `export` 还要 `onnx_graphsurgeon` + `polygraphy` + `onnxsim`。这几个也必须钉在主清单里——
+   `ultralytics` 发现缺包会自己 `pip install`（不锁版本，离线机器上直接失败），钉住后它才走
+   "已满足"那条路。
+
 3. **分发**：在线版只发 `dist\release\installer.exe`——勾选运行时从
    华为云下载 Python、从清华源 pip 装依赖，中途网络中断会自动重试（下载 3 次、
    pip 失败则换备用源整体重试一次）。
