@@ -180,12 +180,12 @@ Building is purely local and **never touches the network**: the Python runtime a
 |---|---|---|
 | Application | Embedded into installer.exe at build time | Unzipped, no network |
 | Runtime | Official Python 3.10 embeddable zip (Huawei Cloud mirror) | Unzip and use (green, no registry writes) |
-| Dependencies (torch, ...) | Tsinghua PyPI + a dedicated torch index | Installed on the spot by pip (~2.5GB download) |
+| Dependencies (torch, ...) | Tsinghua PyPI + a dedicated torch index | Installed on the spot by pip (~3.3GB download) |
 | Pretrained weights | Official sources (Google Storage + HuggingFace mirror) | Downloaded into `pretrained\` (~1.0GB) |
 
-Disk space is estimated and validated up front for the selected components (~10GB with the runtime); downloads retry automatically on failure and pip falls back to a backup index. **Offline fallback**: drop `python-3.10.11-embed-amd64.zip` / `pretrained.zip` next to the installer and it is used preferentially, with no network access at all.
+Disk space is estimated and validated up front for the selected components (~12GB with the runtime); downloads retry automatically on failure and pip falls back to a backup index. **Offline fallback**: drop `python-3.10.11-embed-amd64.zip` / `pretrained.zip` next to the installer and it is used preferentially, with no network access at all.
 
-> On Windows, PyPI's `torch` is CPU-only; a GPU build requires `torch==2.5.1+cu121`, which only exists on the pytorch index — the requirements already pin it and layer the index with `--extra-index-url`.
+> On Windows, PyPI's `torch` is CPU-only; a GPU build requires `torch==2.7.1+cu128`, which only exists on the pytorch index — the requirements already pin it and layer the index with `--extra-index-url`.
 
 Installed layout, startup chain and Linux-specific notes: see [installer/README.md](installer/README.md).
 

@@ -261,7 +261,7 @@ public sealed class MainForm : Form
             }
         }
         _needLabel.Text = cnt > 0
-            ? $"已选 {cnt} 项, 需下载 {FormatSize(total)}, 以及相关依赖约 2.5GB"
+            ? $"已选 {cnt} 项, 需下载 {FormatSize(total)}, 以及相关依赖约 3.3GB"
             : "请至少勾选一个组件.";
     }
 

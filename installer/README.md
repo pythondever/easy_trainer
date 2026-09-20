@@ -18,20 +18,20 @@ installer.exe   双击打开 → 勾选 → 联网下载安装
 |---|---|---|
 | 程序本体 program | 构建期 csproj 嵌入 exe | 直接解压，**不联网** |
 | 运行时 | 官方 python 3.10 embeddable zip（国内镜像） | 下载 → 解压即用（绿色，不写注册表） |
-| torch 等依赖 | PyPI 国内镜像（清华）+ torch 专用源 | pip 现场安装（约 2.5GB 下载） |
+| torch 等依赖 | PyPI 国内镜像（清华）+ torch 专用源 | pip 现场安装（约 3.3GB 下载） |
 | 预训练权重 | 官方源（Google 存储 + HuggingFace 镜像） | 下载 8 个 .pth/.pt 到 `pretrained\`（约 1.0GB） |
 
 Python、pip 依赖是国内可直连的公开地址，**无需自建服务器/OSS**：
 - Python：`https://mirrors.huaweicloud.com/python/3.10.11/python-3.10.11-embed-amd64.zip`
 - pip 引导：**已内嵌**在 exe 里（`builder\get-pip.py`），不再依赖 bootstrap.pypa.io
 - pip 依赖：`https://pypi.tuna.tsinghua.edu.cn/simple`
-- torch/torchvision：**上海交大 pytorch 镜像** `https://mirror.sjtu.edu.cn/pytorch-wheels/cu121/`，
-  失败自动换官方 `https://download.pytorch.org/whl/cu121`
+- torch/torchvision：**上海交大 pytorch 镜像** `https://mirror.sjtu.edu.cn/pytorch-wheels/cu128/`，
+  失败自动换官方 `https://download.pytorch.org/whl/cu128`
 
-> **为什么必须额外指定 torch 源**：Windows 上 PyPI 的 `torch` 是 **CPU-only**（wheel 仅 203MB，
-> 12 个 `nvidia-*` 依赖全带 `platform_system == "Linux"` 条件，Windows 一条都不装）。要拿到
-> CUDA 版必须装 `torch==2.5.1+cu121`，而带 local version 的 wheel 只存在于 pytorch 自己的源里，
-> 所以 requirements 锁定 `+cu121` 并用 `--extra-index-url` 叠源。装完后请确认：
+> **为什么必须额外指定 torch 源**：Windows 上 PyPI 的 `torch` 是 **CPU-only**（wheel 仅 216MB，
+> 14 个 `nvidia-*` 依赖全带 `platform_system == "Linux"` 条件，Windows 一条都不装）。要拿到
+> CUDA 版必须装 `torch==2.7.1+cu128`，而带 local version 的 wheel 只存在于 pytorch 自己的源里，
+> 所以 requirements 锁定 `+cu128` 并用 `--extra-index-url` 叠源。装完后请确认：
 > `runtime\python310\python.exe -c "import torch;print(torch.cuda.is_available())"` 应为 True。
 
 Python 走 **embeddable 绿色包**（不装 MSI、不写注册表、不需要卸载）：解压到
@@ -39,7 +39,7 @@ Python 走 **embeddable 绿色包**（不装 MSI、不写注册表、不需要�
 与安装根 `..\..` 加进 sys.path），pip 装的所有包就在这个目录里，卸载即删除目录。老版本 MSI 装的
 运行时会在安装时自动识别（`python310._pth` 缺失）并整套换成绿色包。
 
-**磁盘要求**：装"运行时"需要约 **10GB**（torch cu121 下载 2.4GB + 落地约 9GB），
+**磁盘要求**：装"运行时"需要约 **12GB**（torch cu128 下载 3.1GB、落盘 5.5GB；整个运行时落盘约 7GB，预检按 11GB 计，留解压峰值余量），
 仅装"程序本体"只要几百 MB。安装器会在开始前按所选组件估算并校验，空间不足直接报错、
 不会装一半才发现。
 
@@ -137,7 +137,7 @@ installer.exe --install D:\EasyTrainer runtime
   与旧明文 `.py`（保留 `__init__.py`、`easy_trainer.py`）——扩展模块导入优先级高于源码，不清会把
   新版已删除的模块"复活"（改了代码没生效/幽灵模块）。`runtime`、`pretrained` 与 Linux 端行为一致。
 - pip 现场安装无断点续传，中途断网重跑安装器即可（已装部分 pip 会跳过/缓存）。
-- torch 装完约占 4.3GB + 权重可选 1.0GB，安装前确认目标盘空间。
+- torch 装完约占 5.5GB + 权重可选 1.0GB，安装前确认目标盘空间。
 - 中文安装路径可用（cv2/PyTorch 均按 UTF-8 处理）；安装器 per-user 安装免 UAC，
   不写系统注册表（Python 本体按用户级安装到安装目录内）。
 - 卸载：运行 `installer.exe` → 「卸载…」选择安装根即可。
@@ -163,7 +163,7 @@ python3 builder/build.py -t dist/program
 ```bash
 ./installer.sh            # 默认装到 ~/EasyTrainer
 ./installer.sh -d /opt/easy_trainer -p   # 换目录 + 安装预训练权重(~1.0GB)
-TORCH_INDEX=https://download.pytorch.org/whl/cu121 ./installer.sh   # torch 换源
+TORCH_INDEX=https://download.pytorch.org/whl/cu128 ./installer.sh   # torch 换源
 ```
 
 脚本与 Windows 安装器职责对应：校验 python3.10 → 空间预检 → 建 venv → 清旧产物 →
@@ -177,11 +177,11 @@ TORCH_INDEX=https://download.pytorch.org/whl/cu121 ./installer.sh   # torch 换�
   （默认 python3 是 3.12，系统工具依赖它，不可替换全局版本），需经 deadsnakes PPA 装
   （`sudo add-apt-repository ppa:deadsnakes/ppa && sudo apt install python3.10 python3.10-venv`）。
   其它发行版或已自备 3.10 时用 `PY=/path/to/python3.10 ./installer.sh` 指定。
-- requirements 锁的是 `torch==2.5.1+cu121`（与 Windows 一致），该版本只存在于 pytorch 源，
+- requirements 锁的是 `torch==2.7.1+cu128`（与 Windows 一致），该版本只存在于 pytorch 源，
   脚本用 `--extra-index-url` 叠源，默认走上海交大等国内镜像可由 `TORCH_INDEX` 覆盖。
 - 预训练权重无国内镜像，大陆网络下不动时同目录放 `pretrained.zip` 走离线。
 - **重复安装 = 覆盖升级**：解压前会清掉 `app/`、`ui/` 下上一版遗留的 `.so`/`.pyd`/`.pyc` 与旧明文 `.py`
   （保留 `__init__.py`、`easy_trainer.py`）——扩展模块导入优先级高于源码，不清会把新版已删除的模块"复活"。
   venv 与已装依赖保留复用（pip 走"已满足即跳过"，秒过）。Windows 安装器行为一致。
-- 装前按 `所需 ≈ 9GB(runtime) + program.zip 解压后大小 + 权重(可选)` 与 `df` 可用量比对，不足直接退出；
+- 装前按 `所需 ≈ 11GB(runtime) + program.zip 解压后大小 + 权重(可选)` 与 `df` 可用量比对，不足直接退出；
   安装根为 `/`、`$HOME` 本身时拒绝执行（避免误清用户目录）。

@@ -10,11 +10,11 @@
 # pretrained-assets.txt (build.py 的 Linux 发布产物). 默认锁定 CUDA 版 torch,
 # 可用 TORCH_INDEX 环境变量换 pytorch 源.
 # .so 按 Python 3.10(cp310) 编译, 本脚本要求系统 python 恰为 3.10.x, 否则拒绝安装.
-# 重复安装 = 覆盖升级, 装前清掉旧构建产物并查磁盘空间(约需 10GB); venv 与已装依赖保留复用.
+# 重复安装 = 覆盖升级, 装前清掉旧构建产物并查磁盘空间(约需 12GB); venv 与已装依赖保留复用.
 set -u
 
 PIP_INDEX="https://pypi.tuna.tsinghua.edu.cn/simple"
-CUDA_INDEX="https://download.pytorch.org/whl/cu121"
+CUDA_INDEX="https://download.pytorch.org/whl/cu128"
 VERSION="1.0.0"
 SELF_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$HOME/EasyTrainer"
@@ -126,7 +126,7 @@ NODEPS_REQ="$SELF_DIR/requirements-nodeps.txt"
 
 prog_kb=$("$PY" -c 'import sys,zipfile;print(sum(i.file_size for i in zipfile.ZipFile(sys.argv[1]).infolist())//1024)' "$ZIP" 2>/dev/null) || prog_kb=0
 case "$prog_kb" in ''|*[!0-9]*) prog_kb=0 ;; esac
-need_kb=$((prog_kb + 9 * 1024 * 1024))
+need_kb=$((prog_kb + 11 * 1024 * 1024))
 [ "$WITH_PRETRAINED" = "1" ] && need_kb=$((need_kb + 1024 * 1024))
 free_kb=$(df -Pk "$ROOT" 2>/dev/null | awk 'NR==2 {print $4}')
 case "$free_kb" in ''|*[!0-9]*) free_kb="" ;; esac
@@ -154,7 +154,7 @@ log "解压程序本体(program.zip)..."
 [ -f "$REQ" ] || die "同目录缺少 requirements-release.txt: $REQ"
 PIP_LOG="$ROOT/pip-install.log"
 log "正在安装 Python 依赖(torch 较大, 可能 5~30 分钟, 进度见 $PIP_LOG)..."
-# torch==2.5.1+cu121 只在 pytorch 源有(默认源给的是 CPU 版), 单叠一个 index; 其余包走国内源.
+# torch==2.7.1+cu128 只在 pytorch 源有(默认源给的是 CPU 版), 单叠一个 index; 其余包走国内源.
 if ! "$VPIP" install --disable-pip-version-check --timeout 60 --retries 10 -r "$REQ" \
      -i "$PIP_INDEX" --extra-index-url "${TORCH_INDEX:-$CUDA_INDEX}" >> "$PIP_LOG" 2>&1; then
   die "pip 安装依赖失败, 详见: $PIP_LOG"

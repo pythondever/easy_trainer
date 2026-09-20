@@ -180,12 +180,12 @@ sudo apt install fonts-noto-cjk   # 中文字体
 |---|---|---|
 | 程序本体 | 构建期嵌入 installer.exe | 解压，不联网 |
 | 运行时 | 华为云官方 Python 3.10 embeddable 包 | 解压即用（绿色，不写注册表） |
-| 依赖（torch 等） | 清华 PyPI + torch 专用源 | pip 现场安装（约 2.5GB 下载） |
+| 依赖（torch 等） | 清华 PyPI + torch 专用源 | pip 现场安装（约 3.3GB 下载） |
 | 预训练权重 | 官方源（Google 存储 + HuggingFace 镜像） | 下载到 `pretrained\`（约 1.0GB） |
 
-安装前按所选组件估算并校验磁盘空间（装运行时约需 10GB）；下载失败自动重试，pip 失败换源重试。**离线兜底**：把 `python-3.10.11-embed-amd64.zip` / `pretrained.zip` 放到安装器同目录即自动优先使用，完全不走网络。
+安装前按所选组件估算并校验磁盘空间（装运行时约需 12GB）；下载失败自动重试，pip 失败换源重试。**离线兜底**：把 `python-3.10.11-embed-amd64.zip` / `pretrained.zip` 放到安装器同目录即自动优先使用，完全不走网络。
 
-> Windows 上 PyPI 的 `torch` 是 CPU-only，要 GPU 必须装 `torch==2.5.1+cu121`（只在 pytorch 源有）——requirements 已锁好并用 `--extra-index-url` 叠源，无需手工处理。
+> Windows 上 PyPI 的 `torch` 是 CPU-only，要 GPU 必须装 `torch==2.7.1+cu128`（只在 pytorch 源有）——requirements 已锁好并用 `--extra-index-url` 叠源，无需手工处理。
 
 安装后的目录、启动链、Linux 特有注意事项等细节见 [installer/README.md](installer/README.md)。
 

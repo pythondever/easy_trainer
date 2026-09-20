@@ -58,8 +58,8 @@ public static class InstallEngine
     private static readonly HttpClient Http = new() { Timeout = Timeout.InfiniteTimeSpan };
     // 固定安装顺序: 运行时先落地(含 pip 依赖), 程序其次, 预训练最后
     private static readonly string[] Order = { "runtime", "program", "pretrained" };
-    // runtime 阶段含 pip 下载约 2.5GB(torch 为主), 进度权重按此估算而非安装器体积
-    private const long RuntimeWeight = 2_600L * 1024 * 1024;
+    // runtime 阶段含 pip 下载约 3.3GB(torch 为主), 进度权重按此估算而非安装器体积
+    private const long RuntimeWeight = 3_400L * 1024 * 1024;
     private const string PipIndex = "https://pypi.tuna.tsinghua.edu.cn/simple";
     private const string PythonFile = "python-3.10.11-embed-amd64.zip";
     private const string PythonUrl =
@@ -69,10 +69,10 @@ public static class InstallEngine
     private const string PipBootstrapUrl = "https://bootstrap.pypa.io/get-pip.py";
     private static readonly string[] TorchIndexUrls =
     {
-        "https://mirror.sjtu.edu.cn/pytorch-wheels/cu121/",   // 上海交大
-        "https://download.pytorch.org/whl/cu121",             // 官方兜底
+        "https://mirror.sjtu.edu.cn/pytorch-wheels/cu128/",   // 上海交大
+        "https://download.pytorch.org/whl/cu128",             // 官方兜底
     };
-    private const long RuntimeInstalledBytes = 9L * 1024 * 1024 * 1024;
+    private const long RuntimeInstalledBytes = 11L * 1024 * 1024 * 1024;
     private const int DownloadAttempts = 3;
     public static Manifest BuiltinManifest(string srcDir)
     {
