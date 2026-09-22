@@ -93,6 +93,7 @@ class Ui_TrainDialog(object):
         self.task_combo.addItem("")
         self.task_combo.addItem("")
         self.task_combo.addItem("")
+        self.task_combo.addItem("")
         self.task_combo.setObjectName(u"task_combo")
 
         self.grid_data.addWidget(self.task_combo, 0, 1, 1, 1)
@@ -486,6 +487,7 @@ class Ui_TrainDialog(object):
         self.task_combo.setItemText(0, QCoreApplication.translate("TrainDialog", u"\u68c0\u6d4b", None))
         self.task_combo.setItemText(1, QCoreApplication.translate("TrainDialog", u"\u5206\u5272", None))
         self.task_combo.setItemText(2, QCoreApplication.translate("TrainDialog", u"\u5206\u7c7b", None))
+        self.task_combo.setItemText(3, QCoreApplication.translate("TrainDialog", u"\u5f02\u5e38\u68c0\u6d4b", None))
 
         self.network_label.setText(QCoreApplication.translate("TrainDialog", u"\u578b\u53f7", None))
         self.dataset_label.setText(QCoreApplication.translate("TrainDialog", u"\u8bad\u7ec3\u96c6", None))

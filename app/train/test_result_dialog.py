@@ -4,12 +4,12 @@
 import datetime
 import os
 import re
-import traceback
 
-from PySide6.QtCore import QThread, Qt, Signal
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, \
     QTableWidgetItem
 from app.core.label_utils import label_sort_key
+from app.train.export_worker import ReportWorker
 from app.widgets.message_box import MessageBox
 from app.widgets.dialog_buttons import apply_icon
 from ui.test_result import Ui_TestResultDialog
@@ -71,32 +71,6 @@ def _default_pdf_name(res):
     return "{}_{}.pdf".format(model, ts)
 
 
-class _PdfExportWorker(QThread):
-    """原图可能 6500 万像素, 重绘缩略图单张就要 1~3 秒, 必须离开 UI 线程."""
-
-    done = Signal(str)
-    failed = Signal(str)
-
-    def __init__(self, res, per_class_limit=None, out_pdf=None, parent=None):
-        super().__init__(parent)
-        self._res = res
-        self._limit = per_class_limit
-        self._out_pdf = out_pdf
-
-    def run(self):
-        try:
-            from app.train.test_report import build_report
-            kwargs = {"out_pdf": self._out_pdf} if self._out_pdf else {}
-            if self._limit is None:
-                self.done.emit(build_report(self._res, **kwargs) or "")
-            else:
-                self.done.emit(
-                    build_report(self._res, per_class_limit=self._limit,
-                                 **kwargs) or "")
-        except Exception as exc:
-            self.failed.emit("{}\n\n{}".format(exc, traceback.format_exc()))
-
-
 class TestResultDialog(QDialog):
     def __init__(self, res, per_class_limit=None, parent=None):
         super().__init__(parent)
@@ -120,8 +94,13 @@ class TestResultDialog(QDialog):
         self._ui.export_pdf_btn.setEnabled(has_detail)
         self._ui.sample_spin.setEnabled(has_detail)
         self._ui.sample_lbl.setEnabled(has_detail)
-        tip = (self.tr("把漏检/误检的图逐张画框导出成 PDF") if has_detail
-               else self.tr("本次测试没有逐图错误明细, 无法导出"))
+        if has_detail:
+            tip = self.tr("把漏检/误检的图逐张画框导出成 PDF")
+        elif self._res.get("task") == "ad":
+            # 异常检测的逐图明细是 CSV(没有框可画), PDF 报告是给带框任务做的
+            tip = self.tr("异常检测的逐图结果已写成 CSV, 不支持导出画框 PDF")
+        else:
+            tip = self.tr("本次测试没有逐图错误明细, 无法导出")
         self._ui.export_pdf_btn.setToolTip(tip)
 
     def _on_export(self):
@@ -142,8 +121,9 @@ class TestResultDialog(QDialog):
         self._ui.export_pdf_btn.setEnabled(False)
         self._ui.export_pdf_btn.setText(self.tr("正在生成..."))
         QApplication.setOverrideCursor(Qt.WaitCursor)
-        self._worker = _PdfExportWorker(
-            self._res, self._ui.sample_spin.value(), path, self)
+        self._worker = ReportWorker(
+            self._res, out_pdf=path,
+            per_class_limit=self._ui.sample_spin.value(), parent=self)
         self._worker.done.connect(self._on_export_done)
         self._worker.failed.connect(self._on_export_failed)
         self._worker.start()
@@ -179,6 +159,9 @@ class TestResultDialog(QDialog):
         u = self._ui
         if res.get("task") == "classify":
             self._fill_cls(res)
+            return
+        if res.get("task") == "ad":
+            self._fill_ad(res)
             return
         total = res.get("total", 0) or 0
         tp = res.get("TP", 0)
@@ -245,6 +228,48 @@ class TestResultDialog(QDialog):
         u.img_fp_lbl.setText(self.tr("精度"))
         u.img_fp_rate.setText("")
         u.img_fp_value.setStyleSheet("color:{}".format(_rate_color(acc)))
+        self._fill_class_table(per_class)
+        if per_class:
+            worst = max(per_class.items(), key=lambda kv: kv[1].get("error", 0))
+            u.conclusion_label.setText(
+                self.tr("整体精度 {:.1f}%, \"{}\"类错误最多({} 张),"
+                        " 是拉低精度的主要原因.").format(
+                    acc * 100, worst[0], worst[1].get("error", 0)))
+        else:
+            u.conclusion_label.setText("")
+
+    def _fill_ad(self, res):
+        """异常检测: 整图判"良品/不良品", 没有标注框也没有类别间混淆."""
+        u = self._ui
+        total = res.get("total", 0)
+        per_class = res.get("per_class") or {}
+        correct = sum(d.get("correct", 0) for d in per_class.values())
+        error = sum(d.get("error", 0) for d in per_class.values())
+        # 分类一张图只判一个类别, 异常检测只判良品/不良品, 都没有"标注框"这一层
+        u.section_lbl.setVisible(False)
+        u.dim_img_note.setText(self.tr("按\"张\"统计 · 整图判良品/不良品"))
+        u.img_total_value.setText(str(total))
+        u.img_total_lbl.setText(self.tr("测试张数"))
+        u.img_total_rate.setText("")
+        u.img_ok_value.setText(str(correct))
+        _card(u, "img_ok", self.tr("判断正确"), _ratio(correct, total))
+        u.img_fn_value.setText(str(error))
+        _card(u, "img_fn", self.tr("判断错误"),
+              _ratio(error, total), lower_better=True)
+        # 这一格让给 AUROC: 它是阈值无关的交付指标, 比卡在某个阈值上的准确率
+        # 更能代表模型水平(准确率换个阈值就变)
+        auroc = res.get("auroc")
+        u.img_fp_value.setText("--" if auroc is None else "{:.4f}".format(auroc))
+        u.img_fp_lbl.setText("AUROC")
+        u.img_fp_rate.setText("")
+        u.img_fp_value.setStyleSheet(
+            "color:{}".format(_rate_color(auroc or 0.0)))
+        self._fill_class_table(per_class)
+        u.conclusion_label.setText(self._conclusion_ad(res, per_class))
+
+    def _fill_class_table(self, per_class):
+        """按类别一行的表格: 总图数/正确/错误/精度(分类与异常检测共用)."""
+        u = self._ui
         u.result_table.setColumnCount(5)
         u.result_table.setHorizontalHeaderLabels(
             [self.tr("类别"), self.tr("总图数"), self.tr("正确"),
@@ -265,14 +290,25 @@ class TestResultDialog(QDialog):
                     else Qt.AlignCenter)
                 u.result_table.setItem(i, j, item)
         _fit_table_width(u.result_table)
-        if per_class:
-            worst = max(per_class.items(), key=lambda kv: kv[1].get("error", 0))
-            u.conclusion_label.setText(
-                self.tr("整体精度 {:.1f}%, \"{}\"类错误最多({} 张),"
-                        " 是拉低精度的主要原因.").format(
-                    acc * 100, worst[0], worst[1].get("error", 0)))
-        else:
-            u.conclusion_label.setText("")
+
+    def _conclusion_ad(self, res, per_class):
+        normal = res.get("normal_class") or self.tr("(根目录散图)")
+        if res.get("single_class"):
+            return self.tr(
+                "本批只有一类样本({}), 定不出判定阈值, 只报告分数;"
+                " 补一些异常样本重新训练才有可交付的阈值.").format(normal)
+        base = self.tr("良品类别: {}, 判定阈值 {:.4f}.").format(
+            normal, float(res.get("threshold") or 0.0))
+        fn = int(res.get("FN") or 0)
+        fp = int(res.get("FP") or 0)
+        if not fn and not fp:
+            return base + self.tr(" 无漏检, 无误检.")
+        worst = max(per_class.items(), key=lambda kv: kv[1].get("error", 0)) \
+            if per_class else ("", {})
+        return base + self.tr(
+            " 漏检 {} 张(不良判成良品), 误检 {} 张(良品判成不良品);"
+            " \"{}\"类错误最多({} 张).").format(
+                fn, fp, worst[0], worst[1].get("error", 0))
 
     def _fill_table(self, per_class):
         u = self._ui

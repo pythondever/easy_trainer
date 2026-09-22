@@ -77,7 +77,13 @@ def best_value(series, base):
 
 
 def best_map50(series):
-    """交付精度: 分类看 accuracy, 检测/分割看 mAP@50 全序列最大."""
+    """交付精度: 异常检测看 AUROC, 分类看 accuracy, 检测/分割看 mAP@50 全序列最大.
+
+    AUROC 排最前是因为它只出现在异常检测的序列里, 而那个精度阈值无关 ——
+    比"按最优 F1 卡出来的准确率"更能代表模型水平.
+    """
+    if "auroc" in series:
+        return best_value(series, "auroc")
     if "accuracy" in series:
         return best_value(series, "accuracy")
     return best_value(series, "mAP@50")

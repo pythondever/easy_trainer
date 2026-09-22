@@ -35,6 +35,7 @@ TASK_TEXT = {
     "detect": QT_TRANSLATE_NOOP("TaskText", "检测"),
     "segment": QT_TRANSLATE_NOOP("TaskText", "分割"),
     "classify": QT_TRANSLATE_NOOP("TaskText", "分类"),
+    "ad": QT_TRANSLATE_NOOP("TaskText", "异常检测"),
 }
 
 STATUS_COLOR = {

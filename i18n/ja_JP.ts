@@ -501,57 +501,57 @@
         <translation>学習依存関係がありません: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/classify_train_runner.py" line="143"/>
+        <location filename="../app/train/classify_train_runner.py" line="132"/>
         <source>输出路径: {}</source>
         <translation>出力パス: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/classify_train_runner.py" line="144"/>
+        <location filename="../app/train/classify_train_runner.py" line="133"/>
         <source>本次训练输出目录(时间戳): {}</source>
         <translation>今回の学習の出力フォルダ(タイムスタンプ): {}</translation>
     </message>
     <message>
-        <location filename="../app/train/classify_train_runner.py" line="160"/>
+        <location filename="../app/train/classify_train_runner.py" line="149"/>
         <source>分类训练: model={} classes={} device={} epochs={} batch={} lr={} img={} optimizer={}</source>
         <translation>分類学習: model={} classes={} device={} epochs={} batch={} lr={} img={} optimizer={}</translation>
     </message>
     <message>
-        <location filename="../app/train/classify_train_runner.py" line="169"/>
+        <location filename="../app/train/classify_train_runner.py" line="158"/>
         <source>数据准备: train={} 张, val={} 张</source>
         <translation>データ準備: train={} 枚, val={} 枚</translation>
     </message>
     <message>
-        <location filename="../app/train/classify_train_runner.py" line="171"/>
+        <location filename="../app/train/classify_train_runner.py" line="160"/>
         <source>训练集无图像, 请检查数据集</source>
         <translation>学習セットに画像がありません。データセットを確認してください</translation>
     </message>
     <message>
-        <location filename="../app/train/classify_train_runner.py" line="173"/>
+        <location filename="../app/train/classify_train_runner.py" line="162"/>
         <source>验证集无图像, 请检查数据集</source>
         <translation>検証セットに画像がありません。データセットを確認してください</translation>
     </message>
     <message>
-        <location filename="../app/train/classify_train_runner.py" line="198"/>
+        <location filename="../app/train/classify_train_runner.py" line="187"/>
         <source>未从数据集中解析到任何类别(子文件夹),无法训练图像分类</source>
         <translation>データセットからクラス(サブフォルダ)を解析できませんでした。画像分類を学習できません</translation>
     </message>
     <message>
-        <location filename="../app/train/classify_train_runner.py" line="208"/>
+        <location filename="../app/train/classify_train_runner.py" line="197"/>
         <source>数据集: train={} val={} 类别({})={}</source>
         <translation>データセット: train={} val={} クラス({})={}</translation>
     </message>
     <message>
-        <location filename="../app/train/classify_train_runner.py" line="295"/>
+        <location filename="../app/train/classify_train_runner.py" line="284"/>
         <source>早停触发: 连续 {} 个 epoch 精度无提升</source>
         <translation>早期終了を発動: {} epoch 連続で精度が向上しませんでした</translation>
     </message>
     <message>
-        <location filename="../app/train/classify_train_runner.py" line="300"/>
+        <location filename="../app/train/classify_train_runner.py" line="289"/>
         <source>训练完成 best_acc={:.4f}</source>
         <translation>学習完了 best_acc={:.4f}</translation>
     </message>
     <message>
-        <location filename="../app/train/classify_train_runner.py" line="308"/>
+        <location filename="../app/train/classify_train_runner.py" line="297"/>
         <source>生成类别文件: {}</source>
         <translation>クラスファイルを生成: {}</translation>
     </message>
@@ -1347,60 +1347,60 @@
 <context>
     <name>ModelAssets</name>
     <message>
-        <location filename="../app/core/model_assets.py" line="75"/>
-        <location filename="../app/core/model_assets.py" line="109"/>
+        <location filename="../app/core/model_assets.py" line="79"/>
+        <location filename="../app/core/model_assets.py" line="113"/>
         <source>速度最快, 精度够用</source>
         <translation>最速で精度も十分</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="76"/>
-        <location filename="../app/core/model_assets.py" line="113"/>
+        <location filename="../app/core/model_assets.py" line="80"/>
+        <location filename="../app/core/model_assets.py" line="117"/>
         <source>精度更好, 稍慢一些</source>
         <translation>精度はより良く、やや遅い</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="77"/>
-        <location filename="../app/core/model_assets.py" line="117"/>
+        <location filename="../app/core/model_assets.py" line="81"/>
+        <location filename="../app/core/model_assets.py" line="121"/>
         <source>精度更高</source>
         <translation>より高精度</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="78"/>
-        <location filename="../app/core/model_assets.py" line="121"/>
+        <location filename="../app/core/model_assets.py" line="82"/>
+        <location filename="../app/core/model_assets.py" line="125"/>
         <source>精度最高, 显存占用大</source>
         <translation>最高精度、VRAM 消費大</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="79"/>
+        <location filename="../app/core/model_assets.py" line="83"/>
         <source>精度极致, 显存占用很大</source>
         <translation>最高精度、VRAM 消費が非常に大きい</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="82"/>
-        <location filename="../app/core/model_assets.py" line="125"/>
+        <location filename="../app/core/model_assets.py" line="86"/>
+        <location filename="../app/core/model_assets.py" line="129"/>
         <source>轻量分割</source>
         <translation>軽量セグメンテーション</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="83"/>
-        <location filename="../app/core/model_assets.py" line="129"/>
+        <location filename="../app/core/model_assets.py" line="87"/>
+        <location filename="../app/core/model_assets.py" line="133"/>
         <source>速度与精度平衡</source>
         <translation>速度と精度のバランス</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="84"/>
-        <location filename="../app/core/model_assets.py" line="133"/>
+        <location filename="../app/core/model_assets.py" line="88"/>
+        <location filename="../app/core/model_assets.py" line="137"/>
         <source>细节更完整</source>
         <translation>細部まで再現</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="85"/>
-        <location filename="../app/core/model_assets.py" line="137"/>
+        <location filename="../app/core/model_assets.py" line="89"/>
+        <location filename="../app/core/model_assets.py" line="141"/>
         <source>最精细</source>
         <translation>最も精密</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="86"/>
+        <location filename="../app/core/model_assets.py" line="90"/>
         <source>最精细, 显存占用很大</source>
         <translation>最も精密、VRAM 消費が非常に大きい</translation>
     </message>
@@ -1475,7 +1475,7 @@
     </message>
     <message>
         <location filename="../ui/model.ui" line="135"/>
-        <location filename="../app/widgets/model_dialog.py" line="545"/>
+        <location filename="../app/widgets/model_dialog.py" line="558"/>
         <source>任务</source>
         <translation>タスク</translation>
     </message>
@@ -1486,25 +1486,25 @@
     </message>
     <message>
         <location filename="../ui/model.ui" line="145"/>
-        <location filename="../app/widgets/model_dialog.py" line="549"/>
+        <location filename="../app/widgets/model_dialog.py" line="562"/>
         <source>精度</source>
         <translation>精度</translation>
     </message>
     <message>
         <location filename="../ui/model.ui" line="150"/>
-        <location filename="../app/widgets/model_dialog.py" line="560"/>
+        <location filename="../app/widgets/model_dialog.py" line="573"/>
         <source>训练时间</source>
         <translation>学習日時</translation>
     </message>
     <message>
         <location filename="../ui/model.ui" line="155"/>
-        <location filename="../app/widgets/model_dialog.py" line="562"/>
+        <location filename="../app/widgets/model_dialog.py" line="575"/>
         <source>耗时</source>
         <translation>所要時間</translation>
     </message>
     <message>
         <location filename="../ui/model.ui" line="160"/>
-        <location filename="../app/widgets/model_dialog.py" line="552"/>
+        <location filename="../app/widgets/model_dialog.py" line="565"/>
         <source>图像尺寸</source>
         <translation>画像サイズ</translation>
     </message>
@@ -1520,7 +1520,7 @@
     </message>
     <message>
         <location filename="../ui/model.ui" line="189"/>
-        <location filename="../app/widgets/model_dialog.py" line="529"/>
+        <location filename="../app/widgets/model_dialog.py" line="542"/>
         <source>选中一行查看详情</source>
         <translation>行を選択すると詳細を表示します</translation>
     </message>
@@ -1560,132 +1560,132 @@
         <translation>次へ</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="369"/>
+        <location filename="../app/widgets/model_dialog.py" line="382"/>
         <source>共 {} 条</source>
         <translation>全 {} 件</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="420"/>
+        <location filename="../app/widgets/model_dialog.py" line="433"/>
         <source> 等 {} 类</source>
         <translation> ほか {} クラス</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="444"/>
+        <location filename="../app/widgets/model_dialog.py" line="457"/>
         <source>测试</source>
         <translation>テスト</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="449"/>
+        <location filename="../app/widgets/model_dialog.py" line="462"/>
         <source>导出</source>
         <translation>エクスポート</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="454"/>
+        <location filename="../app/widgets/model_dialog.py" line="467"/>
         <source>删除</source>
         <translation>削除</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="542"/>
+        <location filename="../app/widgets/model_dialog.py" line="555"/>
         <source>{} × {} 累积</source>
         <translation>{} × {} 累積</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="543"/>
+        <location filename="../app/widgets/model_dialog.py" line="556"/>
         <source>状态</source>
         <translation>状態</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="550"/>
+        <location filename="../app/widgets/model_dialog.py" line="563"/>
         <source>训练集</source>
         <translation>学習セット</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="551"/>
+        <location filename="../app/widgets/model_dialog.py" line="564"/>
         <source>验证集</source>
         <translation>検証セット</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="553"/>
+        <location filename="../app/widgets/model_dialog.py" line="566"/>
         <source>轮数 / 早停</source>
         <translation>エポック / 早期終了</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="555"/>
+        <location filename="../app/widgets/model_dialog.py" line="568"/>
         <source>批大小</source>
         <translation>バッチサイズ</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="556"/>
+        <location filename="../app/widgets/model_dialog.py" line="569"/>
         <source>学习率</source>
         <translation>学習率</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="557"/>
+        <location filename="../app/widgets/model_dialog.py" line="570"/>
         <source>优化器</source>
         <translation>オプティマイザ</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="558"/>
+        <location filename="../app/widgets/model_dialog.py" line="571"/>
         <source>设备</source>
         <translation>デバイス</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="559"/>
+        <location filename="../app/widgets/model_dialog.py" line="572"/>
         <source>标签</source>
         <translation>ラベル</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="563"/>
+        <location filename="../app/widgets/model_dialog.py" line="576"/>
         <source>模型路径</source>
         <translation>モデルパス</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="582"/>
+        <location filename="../app/widgets/model_dialog.py" line="595"/>
         <source>失败原因</source>
         <translation>失敗理由</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="600"/>
+        <location filename="../app/widgets/model_dialog.py" line="613"/>
         <source>暂无曲线</source>
         <translation>曲線なし</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="624"/>
+        <location filename="../app/widgets/model_dialog.py" line="637"/>
         <source>{}  最佳 {:.3f}</source>
         <translation>{}  最良 {:.3f}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="632"/>
-        <location filename="../app/widgets/model_dialog.py" line="643"/>
+        <location filename="../app/widgets/model_dialog.py" line="645"/>
+        <location filename="../app/widgets/model_dialog.py" line="656"/>
         <source>打开目录</source>
         <translation>フォルダを開く</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="633"/>
+        <location filename="../app/widgets/model_dialog.py" line="646"/>
         <source>模型目录不存在:
 {}</source>
         <translation>モデルフォルダが存在しません:
 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="661"/>
+        <location filename="../app/widgets/model_dialog.py" line="674"/>
         <source>[model_dialog] 打开指标失败: {}
 {}</source>
         <translation>[model_dialog] 指標の表示に失敗しました: {}
 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="663"/>
+        <location filename="../app/widgets/model_dialog.py" line="676"/>
         <source>查看指标失败</source>
         <translation>指標の表示に失敗しました</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="670"/>
+        <location filename="../app/widgets/model_dialog.py" line="683"/>
         <source>删除模型记录</source>
         <translation>モデル記録を削除</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="671"/>
+        <location filename="../app/widgets/model_dialog.py" line="684"/>
         <source>确定删除该条模型记录?
 项目={}
 数据集={}
@@ -1698,182 +1698,193 @@
 </translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="675"/>
+        <location filename="../app/widgets/model_dialog.py" line="688"/>
         <source>删除模型记录: 项目={} 数据集={} 任务={} 开始时间={}</source>
         <translation>モデル記録を削除: プロジェクト={} データセット={} タスク={} 開始時刻={}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="689"/>
+        <location filename="../app/widgets/model_dialog.py" line="702"/>
         <source>删除模型记录失败: {} | {}</source>
         <translation>モデル記録の削除に失敗しました: {} | {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="690"/>
+        <location filename="../app/widgets/model_dialog.py" line="703"/>
         <source>[model_dialog] 删除失败: {}
 {}</source>
         <translation>[model_dialog] 削除に失敗しました: {}
 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="699"/>
+        <location filename="../app/widgets/model_dialog.py" line="712"/>
         <source>[model_dialog] 打开训练失败: {}
 {}</source>
         <translation>[model_dialog] 学習画面を開けませんでした: {}
 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="700"/>
+        <location filename="../app/widgets/model_dialog.py" line="713"/>
         <source>打开训练失败</source>
         <translation>学習画面を開けませんでした</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="725"/>
+        <location filename="../app/widgets/model_dialog.py" line="738"/>
         <source>[model_dialog] 打开测试失败: {}
 {}</source>
         <translation>[model_dialog] テスト画面を開けませんでした: {}
 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="727"/>
+        <location filename="../app/widgets/model_dialog.py" line="740"/>
         <source>打开测试失败</source>
         <translation>テスト画面を開けませんでした</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="744"/>
-        <location filename="../app/widgets/model_dialog.py" line="762"/>
-        <location filename="../app/widgets/model_dialog.py" line="778"/>
-        <location filename="../app/widgets/model_dialog.py" line="1001"/>
-        <location filename="../app/widgets/model_dialog.py" line="1011"/>
+        <location filename="../app/widgets/model_dialog.py" line="757"/>
+        <location filename="../app/widgets/model_dialog.py" line="775"/>
+        <location filename="../app/widgets/model_dialog.py" line="791"/>
+        <location filename="../app/widgets/model_dialog.py" line="1025"/>
+        <location filename="../app/widgets/model_dialog.py" line="1035"/>
         <source>导出模型</source>
         <translation>モデルをエクスポート</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="745"/>
+        <location filename="../app/widgets/model_dialog.py" line="758"/>
         <source>模型文件不存在:
 {}</source>
         <translation>モデルファイルが存在しません:
 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="746"/>
+        <location filename="../app/widgets/model_dialog.py" line="759"/>
         <source>导出模型失败: 模型文件不存在 {}</source>
         <translation>モデルのエクスポートに失敗しました: モデルファイルが存在しません {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="748"/>
+        <location filename="../app/widgets/model_dialog.py" line="761"/>
         <source>选择导出目录</source>
         <translation>エクスポート先フォルダを選択</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="763"/>
+        <location filename="../app/widgets/model_dialog.py" line="776"/>
         <source>创建目录失败: {}</source>
         <translation>フォルダの作成に失敗しました: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="764"/>
+        <location filename="../app/widgets/model_dialog.py" line="777"/>
         <source>导出模型失败: 创建目录失败 {} | {}</source>
         <translation>モデルのエクスポートに失敗しました: フォルダの作成に失敗 {} | {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="774"/>
+        <location filename="../app/widgets/model_dialog.py" line="787"/>
         <source>开始导出模型: 项目={} 任务={} 架构={} 尺寸={} | {}</source>
         <translation>モデルのエクスポート開始: プロジェクト={} タスク={} アーキテクチャ={} サイズ={} | {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="775"/>
-        <location filename="../app/widgets/model_dialog.py" line="879"/>
+        <location filename="../app/widgets/model_dialog.py" line="788"/>
+        <location filename="../app/widgets/model_dialog.py" line="892"/>
         <source>未知</source>
         <translation>不明</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="779"/>
+        <location filename="../app/widgets/model_dialog.py" line="792"/>
         <source>正在导出 ONNX...</source>
         <translation>ONNX をエクスポート中...</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="798"/>
+        <location filename="../app/widgets/model_dialog.py" line="811"/>
         <source>ONNX 导出完成: {} ({:.1f} MB)</source>
         <translation>ONNX エクスポート完了: {} ({:.1f} MB)</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="856"/>
+        <location filename="../app/widgets/model_dialog.py" line="869"/>
         <source>生成 classes.txt 失败: {}</source>
         <translation>classes.txt の生成に失敗しました: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="857"/>
+        <location filename="../app/widgets/model_dialog.py" line="870"/>
         <source>[export] 生成 classes.txt 失败: {}</source>
         <translation>[export] classes.txt の生成に失敗しました: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="863"/>
+        <location filename="../app/widgets/model_dialog.py" line="876"/>
         <source>导出模型报告跳过: 分类任务不出评估报告</source>
         <translation>モデルレポートのエクスポートをスキップ: 分類タスクでは評価レポートを出力しません</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="864"/>
+        <location filename="../app/widgets/model_dialog.py" line="877"/>
         <source>分类任务不生成评估报告</source>
         <translation>分類タスクでは評価レポートを生成しません</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="868"/>
+        <location filename="../app/widgets/model_dialog.py" line="881"/>
         <source>导出模型报告跳过: 未找到验证集</source>
         <translation>モデルレポートのエクスポートをスキップ: 検証セットが見つかりません</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="869"/>
+        <location filename="../app/widgets/model_dialog.py" line="882"/>
         <source>未找到验证集, 已跳过评估报告</source>
         <translation>検証セットが見つからないため、評価レポートをスキップしました</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="871"/>
+        <location filename="../app/widgets/model_dialog.py" line="884"/>
+        <location filename="../app/widgets/model_dialog.py" line="958"/>
         <source>正在生成模型报告...</source>
         <translation>モデルレポートを生成中...</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="875"/>
+        <location filename="../app/widgets/model_dialog.py" line="888"/>
         <source>正在生成模型报告 {}/{}</source>
         <translation>モデルレポートを生成中 {}/{}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="878"/>
+        <location filename="../app/widgets/model_dialog.py" line="891"/>
         <source>导出模型评估失败: {}</source>
         <translation>モデルエクスポートの評価に失敗しました: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="881"/>
+        <location filename="../app/widgets/model_dialog.py" line="894"/>
         <source>评估失败, 已跳过报告: {}</source>
         <translation>評価に失敗し、レポートをスキップしました: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="954"/>
+        <location filename="../app/widgets/model_dialog.py" line="977"/>
+        <source>导出模型报告跳过: 验证集没有标注</source>
+        <translation>モデルレポートのエクスポートをスキップ: 検証セットにアノテーションがありません</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/model_dialog.py" line="978"/>
+        <source>验证集没有标注, 已跳过评估报告</source>
+        <translation>検証セットにアノテーションがないため, 評価レポートをスキップしました</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/model_dialog.py" line="984"/>
         <source>[export] 生成评估报告失败:
 {}</source>
         <translation>[export] 評価レポートの生成に失敗しました:
 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="955"/>
+        <location filename="../app/widgets/model_dialog.py" line="981"/>
         <source>生成评估报告失败: {}</source>
         <translation>評価レポートの生成に失敗しました: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="959"/>
+        <location filename="../app/widgets/model_dialog.py" line="973"/>
         <source>导出模型报告完成: {}</source>
         <translation>モデルレポートのエクスポート完了: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="961"/>
+        <location filename="../app/widgets/model_dialog.py" line="985"/>
         <source>评估完成, 但报告生成失败</source>
         <translation>評価は完了しましたが、レポートの生成に失敗しました</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="995"/>
+        <location filename="../app/widgets/model_dialog.py" line="1019"/>
         <source>导出模型完成: {} | 包含: {}</source>
         <translation>モデルのエクスポート完了: {} | 内容: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="997"/>
+        <location filename="../app/widgets/model_dialog.py" line="1021"/>
         <source>已导出到:
 {}
 
@@ -1884,32 +1895,33 @@
 内容: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1008"/>
+        <location filename="../app/widgets/model_dialog.py" line="983"/>
+        <location filename="../app/widgets/model_dialog.py" line="1032"/>
         <source>未知错误</source>
         <translation>不明なエラー</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1012"/>
+        <location filename="../app/widgets/model_dialog.py" line="1036"/>
         <source>模型导出失败, 详情见日志</source>
         <translation>モデルのエクスポートに失敗しました。詳細はログをご確認ください</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1007"/>
+        <location filename="../app/widgets/model_dialog.py" line="1031"/>
         <source>导出模型失败: {}</source>
         <translation>モデルのエクスポートに失敗しました: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1009"/>
+        <location filename="../app/widgets/model_dialog.py" line="1033"/>
         <source>[export] ONNX 导出失败: {}</source>
         <translation>[export] ONNX のエクスポートに失敗しました: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1026"/>
+        <location filename="../app/widgets/model_dialog.py" line="1050"/>
         <source>复制导出示例失败: {}</source>
         <translation>エクスポートサンプルのコピーに失敗しました: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1027"/>
+        <location filename="../app/widgets/model_dialog.py" line="1051"/>
         <source>[export] 复制示例失败: {}</source>
         <translation>[export] サンプルのコピーに失敗しました: {}</translation>
     </message>
@@ -1986,10 +1998,10 @@
     <name>ModelManagerDialog</name>
     <message>
         <location filename="../ui/model_manager.ui" line="14"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="288"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="292"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="341"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="348"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="287"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="291"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="340"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="347"/>
         <source>模型权重</source>
         <translation>モデルの重み</translation>
     </message>
@@ -2025,94 +2037,94 @@
     </message>
     <message>
         <location filename="../ui/model_manager.ui" line="265"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="331"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="330"/>
         <source>开始下载</source>
         <translation>ダウンロード開始</translation>
     </message>
     <message>
         <location filename="../ui/model_manager.ui" line="275"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="172"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="171"/>
         <source>关闭</source>
         <translation>閉じる</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="53"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="52"/>
         <source>还剩 {}s</source>
         <translation>残り {}s</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="54"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="53"/>
         <source>还剩 {}m{}s</source>
         <translation>残り {}m{}s</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="238"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="237"/>
         <source>占用空间 {}</source>
         <translation>使用容量 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="256"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="255"/>
         <source>选择权重目录</source>
         <translation>重みフォルダを選択</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="277"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="276"/>
         <source>权重目录不可写入 {}: {!r}</source>
         <translation>重みフォルダに書き込めません {}: {!r}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="288"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="287"/>
         <source>勾选的模型都已就绪, 不需要下载.</source>
         <translation>チェックしたモデルはすべて準備済みで、ダウンロードは不要です。</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="293"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="292"/>
         <source>当前目录不可写入, 请点&quot;更改&quot;换一个目录:
 {}</source>
         <translation>現在のフォルダに書き込めません。「変更」をクリックして別のフォルダを指定してください:
 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="298"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="297"/>
         <source>下载中...</source>
         <translation>ダウンロード中...</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="342"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="341"/>
         <source>以下权重没能下载完成:
 </source>
         <translation>以下の重みをダウンロードできませんでした:
 </translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="349"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="348"/>
         <source>下载还在进行, 现在关闭会中断下载(已下载部分保留, 下次可续传).
 确定关闭?</source>
         <translation>ダウンロードが進行中です。今閉じるとダウンロードが中断されます(ダウンロード済みの部分は保持され、次回続きから再開できます)。
 閉じますか?</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="381"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="380"/>
         <source>去下载</source>
         <translation>ダウンロードへ</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="390"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="389"/>
         <source>该架构的权重必须先下载好才能开始训练.</source>
         <translation>このアーキテクチャの重みを先にダウンロードしないと学習を開始できません。</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="384"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="383"/>
         <source>本次训练选用 {} {}模型, 需要先下载 {}.</source>
         <translation>今回の学習では {} {} モデルを使用するため、先に {} をダウンロードする必要があります。</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="383"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="382"/>
         <source>缺少模型权重</source>
         <translation>モデルの重みがありません</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="382"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="381"/>
         <source>取消</source>
         <translation>キャンセル</translation>
     </message>
@@ -2761,338 +2773,348 @@
 <context>
     <name>TestReport</name>
     <message>
-        <location filename="../app/train/test_report.py" line="177"/>
+        <location filename="../app/train/test_report.py" line="178"/>
         <source>漏 {}</source>
         <translation>未検出 {}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="179"/>
+        <location filename="../app/train/test_report.py" line="180"/>
         <source>误 {}</source>
         <translation>誤検出 {}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="181"/>
+        <location filename="../app/train/test_report.py" line="182"/>
         <source>认错 {}</source>
         <translation>誤判定 {}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="192"/>
+        <location filename="../app/train/test_report.py" line="193"/>
         <source>(图片无法打开)</source>
         <translation>(画像を開けません)</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="278"/>
+        <location filename="../app/train/test_report.py" line="279"/>
         <source>类别认错: {} → {}</source>
         <translation>クラスの誤判定: {} → {}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="305"/>
+        <location filename="../app/train/test_report.py" line="307"/>
+        <source>本次验证集没有漏检, 也没有误检.</source>
+        <translation>今回の検証セットには未検出も誤検出もありません.</translation>
+    </message>
+    <message>
+        <location filename="../app/train/test_report.py" line="310"/>
         <source>明细抽样: 共 {} 张有问题(漏检 {} / 误检 {}), 本报告抽取 {} 张 - 每个类别每种错误最多 {} 张, 按错误数从多到少取</source>
         <translation>詳細サンプリング: 問題のある画像は計 {} 枚(未検出 {} / 誤検出 {})。本レポートは {} 枚を抽出 - 各クラス各エラー種別につき最大 {} 枚、エラー数の多い順に取得</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="310"/>
+        <location filename="../app/train/test_report.py" line="315"/>
         <source>明细: 共 {} 张有问题(漏检 {} / 误检 {}), 已全部列出</source>
         <translation>詳細: 問題のある画像は計 {} 枚(未検出 {} / 誤検出 {})、すべて掲載しました</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="337"/>
+        <location filename="../app/train/test_report.py" line="342"/>
         <source>漏检 GT: 有标注但模型没检出</source>
         <translation>未検出 GT: アノテーションはあるがモデルが検出しなかったもの</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="339"/>
+        <location filename="../app/train/test_report.py" line="344"/>
         <source>误检预测: 模型检出但标注里没有</source>
         <translation>誤検出予測: モデルは検出したがアノテーションにないもの</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="341"/>
+        <location filename="../app/train/test_report.py" line="346"/>
         <source>正确检出(仅作位置参照)</source>
         <translation>正しく検出(位置参照のみ)</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="343"/>
+        <location filename="../app/train/test_report.py" line="348"/>
         <source>类别认错: 位置对但判错类别(GT → 预测)</source>
         <translation>クラスの誤判定: 位置は正しいがクラスを誤り(GT → 予測)</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="346"/>
+        <location filename="../app/train/test_report.py" line="351"/>
         <source>虚线轮廓: 分割 mask / 标注多边形(判定按外接框 IoU)</source>
         <translation>破線の輪郭: セグメンテーション mask / アノテーションのポリゴン(判定は外接矩形 IoU 基準)</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="444"/>
-        <location filename="../app/train/test_report.py" line="1031"/>
+        <location filename="../app/train/test_report.py" line="449"/>
+        <location filename="../app/train/test_report.py" line="1043"/>
         <source>模型评估报告</source>
         <translation>モデル評価レポート</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="448"/>
+        <location filename="../app/train/test_report.py" line="453"/>
         <source>当前训练模型</source>
         <translation>現在の学習モデル</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="452"/>
-        <location filename="../app/train/test_report.py" line="458"/>
+        <location filename="../app/train/test_report.py" line="457"/>
+        <location filename="../app/train/test_report.py" line="463"/>
         <source>(未记录)</source>
         <translation>(記録なし)</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="457"/>
+        <location filename="../app/train/test_report.py" line="462"/>
         <source>数据集 </source>
         <translation>データセット </translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="460"/>
+        <location filename="../app/train/test_report.py" line="465"/>
         <source>置信度 {}</source>
         <translation>信頼度 {}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="480"/>
+        <location filename="../app/train/test_report.py" line="485"/>
         <source>测试张数</source>
         <translation>テスト枚数</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="481"/>
-        <location filename="../app/train/test_report.py" line="483"/>
+        <location filename="../app/train/test_report.py" line="486"/>
+        <location filename="../app/train/test_report.py" line="488"/>
         <source>{} 张</source>
         <translation>{} 枚</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="482"/>
+        <location filename="../app/train/test_report.py" line="487"/>
         <source>有问题的图片</source>
         <translation>問題のある画像</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="485"/>
+        <location filename="../app/train/test_report.py" line="490"/>
         <source>检出率 (Recall)</source>
         <translation>検出率 (Recall)</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="487"/>
+        <location filename="../app/train/test_report.py" line="492"/>
         <source>准确率 (Precision)</source>
         <translation>正解率 (Precision)</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="489"/>
+        <location filename="../app/train/test_report.py" line="494"/>
         <source>正确检出</source>
         <translation>正しく検出</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="490"/>
+        <location filename="../app/train/test_report.py" line="495"/>
         <source>{} 个</source>
         <translation>{} 個</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="491"/>
+        <location filename="../app/train/test_report.py" line="496"/>
         <source>漏检 (该抓没抓)</source>
         <translation>未検出 (取り逃し)</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="492"/>
-        <location filename="../app/train/test_report.py" line="495"/>
+        <location filename="../app/train/test_report.py" line="497"/>
         <location filename="../app/train/test_report.py" line="500"/>
+        <location filename="../app/train/test_report.py" line="505"/>
         <source>{} 个 / {} 张图</source>
         <translation>{} 個 / {} 枚の画像</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="494"/>
+        <location filename="../app/train/test_report.py" line="499"/>
         <source>误检 (过杀)</source>
         <translation>誤検出 (過剰検出)</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="499"/>
+        <location filename="../app/train/test_report.py" line="504"/>
         <source>类别认错 (位置对, 类别错)</source>
         <translation>クラスの誤判定 (位置は正しいがクラスが違う)</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="502"/>
+        <location filename="../app/train/test_report.py" line="507"/>
         <source>指标</source>
         <translation>指標</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="503"/>
+        <location filename="../app/train/test_report.py" line="508"/>
         <source>值</source>
         <translation>値</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="522"/>
+        <location filename="../app/train/test_report.py" line="527"/>
         <source>按类别</source>
         <translation>クラス別</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="525"/>
+        <location filename="../app/train/test_report.py" line="530"/>
         <source>类别</source>
         <translation>クラス</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="526"/>
+        <location filename="../app/train/test_report.py" line="531"/>
         <source>标注</source>
         <translation>アノテーション</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="527"/>
+        <location filename="../app/train/test_report.py" line="532"/>
         <source>正确</source>
         <translation>正解</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="528"/>
+        <location filename="../app/train/test_report.py" line="533"/>
         <source>漏检</source>
         <translation>未検出</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="529"/>
+        <location filename="../app/train/test_report.py" line="534"/>
         <source>误检</source>
         <translation>誤検出</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="530"/>
+        <location filename="../app/train/test_report.py" line="535"/>
         <source>检出率</source>
         <translation>検出率</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="531"/>
+        <location filename="../app/train/test_report.py" line="536"/>
         <source>准确率</source>
         <translation>正解率</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="558"/>
+        <location filename="../app/train/test_report.py" line="563"/>
         <source>... 另有 {} 类未列出</source>
         <translation>... ほか {} クラスは未掲載</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="579"/>
+        <location filename="../app/train/test_report.py" line="585"/>
         <source>错误样本明细(仅列漏检 / 误检图片, 正确检出不列出)</source>
         <translation>エラーサンプルの詳細(未検出 / 誤検出の画像のみ掲載、正しく検出したものは掲載しません)</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="608"/>
+        <location filename="../app/train/test_report.py" line="614"/>
         <source>本轮检出率 {:.0f}%, 准确率 {:.0f}%.</source>
         <translation>今回の検出率 {:.0f}%, 正解率 {:.0f}%.</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="611"/>
+        <location filename="../app/train/test_report.py" line="617"/>
         <source>没有逐类别统计, 无法定位到具体标签,请先确认标签文件能正常读到.</source>
         <translation>クラス別統計がないため、具体的なラベルを特定できません。先にラベルファイルが正常に読み込めるか確認してください。</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="635"/>
+        <location filename="../app/train/test_report.py" line="641"/>
         <source>漏检分布在</source>
         <translation>未検出は次のクラスに分布しています: </translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="636"/>
+        <location filename="../app/train/test_report.py" line="642"/>
         <source>漏检集中在</source>
         <translation>未検出は次のクラスに集中しています: </translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="639"/>
+        <location filename="../app/train/test_report.py" line="645"/>
         <source>(共 {} 个), 优先补这几类的姿态, 光照样本,并复核标注是否有遗漏.</source>
         <translation>(計 {} 個)。これらのクラスの姿勢・照明サンプルを優先的に補い、アノテーションの漏れがないか確認してください。</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="645"/>
+        <location filename="../app/train/test_report.py" line="651"/>
         <source>误检分布在</source>
         <translation>誤検出は次のクラスに分布しています: </translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="646"/>
+        <location filename="../app/train/test_report.py" line="652"/>
         <source>误检以</source>
         <translation>誤検出は </translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="647"/>
+        <location filename="../app/train/test_report.py" line="653"/>
         <source>({} 个),属过杀, 建议补无缺陷负样本,清理标注噪声.</source>
         <translation>({} 個)、過剰検出に該当します。無欠陥の負サンプルを追加し、アノテーションのノイズを整理することをおすすめします。</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="649"/>
+        <location filename="../app/train/test_report.py" line="655"/>
         <source>({} 个)为主,属过杀, 建议补无缺陷负样本,清理标注噪声.</source>
         <translation>({} 個)が中心です。過剰検出に該当します。無欠陥の負サンプルを追加し、アノテーションのノイズを整理することをおすすめします。</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="658"/>
+        <location filename="../app/train/test_report.py" line="664"/>
+        <source>暂无</source>
+        <translation>なし</translation>
+    </message>
+    <message>
+        <location filename="../app/train/test_report.py" line="668"/>
         <source>此外 {} 处位置对但类别判错</source>
         <translation>ほか {} 箇所で位置は正しいがクラス判定を誤っています</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="660"/>
+        <location filename="../app/train/test_report.py" line="670"/>
         <source>(报告紫框), 属分类能力不足而非定位问题,需补易混淆类别之间的区分性样本.</source>
         <translation>(レポートの紫枠)。位置の問題ではなく分類能力の不足によるものなので、混同しやすいクラス間の識別サンプルを追加する必要があります。</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="665"/>
+        <location filename="../app/train/test_report.py" line="675"/>
         <source>其中</source>
         <translation>うち </translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="667"/>
+        <location filename="../app/train/test_report.py" line="677"/>
         <source>仅 {} 个标注, 样本不足是主要瓶颈, 建议补到 200 个以上.</source>
         <translation>ラベルが {} 個のみで、サンプル不足が主なボトルネックです。200 個以上まで補うことをおすすめします。</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="672"/>
+        <location filename="../app/train/test_report.py" line="682"/>
         <source>各类样本量差距大(最多 {} / 最少 {}),训练时建议做类别均衡采样.</source>
         <translation>クラスごとのサンプル数に大きな差があります(最多 {} / 最少 {})。学習時はクラス均衡サンプリングを行うことをおすすめします。</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="677"/>
+        <location filename="../app/train/test_report.py" line="687"/>
         <source>把本报告中的漏检, 误检图加入训练集复训,再用同参数复测对比.</source>
         <translation>本レポートの未検出・誤検出画像を学習セットに追加して再学習し、同じパラメータで再テストして比較してください。</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="681"/>
+        <location filename="../app/train/test_report.py" line="691"/>
         <source>本轮无漏检, 无误检, 建议用更严的阈值或更难的样本再压一轮, 确认稳定性.</source>
         <translation>今回は未検出も誤検出もありません。より厳しいしきい値か、より難しいサンプルでもう一度検証し、安定性を確認することをおすすめします。</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="882"/>
+        <location filename="../app/train/test_report.py" line="892"/>
         <source>改进建议</source>
         <translation>改善提案</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="887"/>
+        <location filename="../app/train/test_report.py" line="897"/>
         <source>基于本次测试的指标与按类别表现</source>
         <translation>今回のテストの指標とクラス別の結果に基づく</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="889"/>
+        <location filename="../app/train/test_report.py" line="899"/>
         <source>(模型: {})</source>
         <translation>(モデル: {})</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="891"/>
+        <location filename="../app/train/test_report.py" line="901"/>
         <source>, 建议如下:</source>
         <translation>, 提案は以下のとおりです:</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="909"/>
+        <location filename="../app/train/test_report.py" line="919"/>
         <source>标红的标签是需要重点关注的类别.</source>
         <translation>赤字のラベルは重点的に対応が必要なクラスです。</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="914"/>
-        <location filename="../app/train/test_report.py" line="940"/>
+        <location filename="../app/train/test_report.py" line="924"/>
+        <location filename="../app/train/test_report.py" line="950"/>
         <source>第 {} 页</source>
         <translation>{} ページ</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="1002"/>
+        <location filename="../app/train/test_report.py" line="1014"/>
         <source>{}(抽取 {} / 共 {} 张)</source>
         <translation>{}(抽出 {} / 全 {} 枚)</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="1005"/>
+        <location filename="../app/train/test_report.py" line="1017"/>
         <source>{}(共 {} 张)</source>
         <translation>{}(全 {} 枚)</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="1007"/>
+        <location filename="../app/train/test_report.py" line="1019"/>
         <source>漏检样本: 有标注但模型没检出</source>
         <translation>未検出サンプル: アノテーションはあるがモデルが検出しなかったもの</translation>
     </message>
     <message>
-        <location filename="../app/train/test_report.py" line="1010"/>
+        <location filename="../app/train/test_report.py" line="1022"/>
         <source>误检样本: 模型检出但标注里没有</source>
         <translation>誤検出サンプル: モデルは検出したがアノテーションにないもの</translation>
     </message>
@@ -3127,7 +3149,7 @@
     </message>
     <message>
         <location filename="../ui/test_result.ui" line="138"/>
-        <location filename="../app/train/test_result_dialog.py" line="237"/>
+        <location filename="../app/train/test_result_dialog.py" line="212"/>
         <source>测试张数</source>
         <translation>テスト枚数</translation>
     </message>
@@ -3143,7 +3165,7 @@
     </message>
     <message>
         <location filename="../ui/test_result.ui" line="306"/>
-        <location filename="../app/train/test_result_dialog.py" line="206"/>
+        <location filename="../app/train/test_result_dialog.py" line="181"/>
         <source>有误检图像</source>
         <translation>誤検出のある画像</translation>
     </message>
@@ -3160,7 +3182,7 @@
     <message>
         <location filename="../ui/test_result.ui" line="430"/>
         <location filename="../ui/test_result.ui" line="639"/>
-        <location filename="../app/train/test_result_dialog.py" line="214"/>
+        <location filename="../app/train/test_result_dialog.py" line="189"/>
         <source>正确检出</source>
         <translation>正しく検出</translation>
     </message>
@@ -3189,7 +3211,7 @@
     </message>
     <message>
         <location filename="../ui/test_result.ui" line="629"/>
-        <location filename="../app/train/test_result_dialog.py" line="250"/>
+        <location filename="../app/train/test_result_dialog.py" line="225"/>
         <source>类别</source>
         <translation>クラス</translation>
     </message>
@@ -3227,167 +3249,167 @@
     </message>
     <message>
         <location filename="../ui/test_result.ui" line="722"/>
-        <location filename="../app/train/test_result_dialog.py" line="153"/>
+        <location filename="../app/train/test_result_dialog.py" line="128"/>
         <source>导出 PDF 报告</source>
         <translation>PDF レポートをエクスポート</translation>
     </message>
     <message>
         <location filename="../ui/test_result.ui" line="729"/>
-        <location filename="../app/train/test_result_dialog.py" line="105"/>
+        <location filename="../app/train/test_result_dialog.py" line="79"/>
         <source>确定</source>
         <translation>OK</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="123"/>
+        <location filename="../app/train/test_result_dialog.py" line="97"/>
         <source>把漏检/误检的图逐张画框导出成 PDF</source>
         <translation>未検出 / 誤検出の画像に枠を描いて 1 枚ずつ PDF にエクスポートします</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="124"/>
+        <location filename="../app/train/test_result_dialog.py" line="98"/>
         <source>本次测试没有逐图错误明细, 无法导出</source>
         <translation>今回のテストには画像ごとのエラー詳細がないため、エクスポートできません</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="136"/>
+        <location filename="../app/train/test_result_dialog.py" line="110"/>
         <source>保存 PDF 报告</source>
         <translation>PDF レポートを保存</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="137"/>
+        <location filename="../app/train/test_result_dialog.py" line="111"/>
         <source>PDF 文件 (*.pdf)</source>
         <translation>PDF ファイル (*.pdf)</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="143"/>
+        <location filename="../app/train/test_result_dialog.py" line="117"/>
         <source>正在生成...</source>
         <translation>生成中...</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="160"/>
+        <location filename="../app/train/test_result_dialog.py" line="135"/>
         <source>无需导出</source>
         <translation>エクスポート不要</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="161"/>
+        <location filename="../app/train/test_result_dialog.py" line="136"/>
         <source>本次测试没有漏检也没有误检, 没有内容可写.</source>
         <translation>今回のテストには未検出も誤検出もなく、書き出す内容がありません。</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="164"/>
+        <location filename="../app/train/test_result_dialog.py" line="139"/>
         <source>导出完成</source>
         <translation>エクスポート完了</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="165"/>
+        <location filename="../app/train/test_result_dialog.py" line="140"/>
         <source>PDF 报告已保存到:
 {}</source>
         <translation>PDF レポートを保存しました:
 {}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="169"/>
+        <location filename="../app/train/test_result_dialog.py" line="144"/>
         <source>导出失败</source>
         <translation>エクスポート失敗</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="193"/>
+        <location filename="../app/train/test_result_dialog.py" line="168"/>
         <source>按&quot;张&quot;统计 · 检出 1 个即算检出</source>
         <translation>「枚」単位で集計 · 1 つでも検出すれば検出とみなす</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="195"/>
+        <location filename="../app/train/test_result_dialog.py" line="170"/>
         <source> · 有标注 {} 张</source>
         <translation> · ラベル付き {} 枚</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="199"/>
+        <location filename="../app/train/test_result_dialog.py" line="174"/>
         <source>检出图像</source>
         <translation>検出した画像</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="200"/>
-        <location filename="../app/train/test_result_dialog.py" line="215"/>
+        <location filename="../app/train/test_result_dialog.py" line="175"/>
+        <location filename="../app/train/test_result_dialog.py" line="190"/>
         <source>检出率 </source>
         <translation>検出率 </translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="202"/>
+        <location filename="../app/train/test_result_dialog.py" line="177"/>
         <source>未检出图像</source>
         <translation>未検出の画像</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="203"/>
+        <location filename="../app/train/test_result_dialog.py" line="178"/>
         <source>未检出率 </source>
         <translation>未検出率 </translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="207"/>
+        <location filename="../app/train/test_result_dialog.py" line="182"/>
         <source>误检率 </source>
         <translation>誤検出率 </translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="212"/>
+        <location filename="../app/train/test_result_dialog.py" line="187"/>
         <source>按&quot;标注框&quot;统计 · 标注总数 {}</source>
         <translation>「アノテーション枠」単位で集計 · アノテーション総数 {}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="235"/>
+        <location filename="../app/train/test_result_dialog.py" line="210"/>
         <source>按&quot;张&quot;统计 · 每张图判一个类别</source>
         <translation>「枚」単位で集計 · 画像ごとに 1 クラスを判定</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="240"/>
+        <location filename="../app/train/test_result_dialog.py" line="215"/>
         <source>判断正确</source>
         <translation>判定正解</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="242"/>
+        <location filename="../app/train/test_result_dialog.py" line="217"/>
         <source>判断错误</source>
         <translation>判定誤り</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="245"/>
-        <location filename="../app/train/test_result_dialog.py" line="251"/>
+        <location filename="../app/train/test_result_dialog.py" line="220"/>
+        <location filename="../app/train/test_result_dialog.py" line="226"/>
         <source>精度</source>
         <translation>精度</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="250"/>
+        <location filename="../app/train/test_result_dialog.py" line="225"/>
         <source>总图数</source>
         <translation>総画像数</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="250"/>
+        <location filename="../app/train/test_result_dialog.py" line="225"/>
         <source>正确</source>
         <translation>正解</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="251"/>
+        <location filename="../app/train/test_result_dialog.py" line="226"/>
         <source>错误</source>
         <translation>誤り</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="271"/>
+        <location filename="../app/train/test_result_dialog.py" line="246"/>
         <source>整体精度 {:.1f}%, &quot;{}&quot;类错误最多({} 张), 是拉低精度的主要原因.</source>
         <translation>全体の正解率は {:.1f}%、「{}」クラスの誤りが最も多く({} 枚)、正解率を下げる主な原因です。</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="305"/>
+        <location filename="../app/train/test_result_dialog.py" line="280"/>
         <source>整体漏检偏多(漏检 {} 个, 多于误检 {} 个).&quot;{}&quot;类漏检最多({} 个), 是检出率低的主要原因.</source>
         <translation>全体として未検出が多く(未検出 {} 個、誤検出 {} 個より多い)、「{}」クラスの未検出が最も多く({} 個)、検出率が低い主な原因です。</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="311"/>
+        <location filename="../app/train/test_result_dialog.py" line="286"/>
         <source>整体误检偏多(误检 {} 个, 多于漏检 {} 个).&quot;{}&quot;类误检最多({} 个), 是准确率低的主要原因.</source>
         <translation>全体として誤検出が多く(誤検出 {} 個、未検出 {} 個より多い)、「{}」クラスの誤検出が最も多く({} 個)、正解率が低い主な原因です。</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="315"/>
+        <location filename="../app/train/test_result_dialog.py" line="290"/>
         <source>模型表现良好: 无漏检, 无误检.</source>
         <translation>モデルは良好に動作しています。未検出も誤検出もありません。</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="317"/>
+        <location filename="../app/train/test_result_dialog.py" line="292"/>
         <source>另有 {} 处位置对但类别判错(报告里用紫框标出),属分类能力不足, 需补易混淆类别的区分性样本.</source>
         <translation>ほかに位置は正しいがクラスを誤判定した箇所が {} 件あります(レポートでは紫の枠で表示)。分類能力の不足によるもので、紛らわしいクラスの識別用サンプルを追加してください。</translation>
     </message>
@@ -4300,13 +4322,13 @@
     <name>TrainRunner</name>
     <message>
         <location filename="../app/train/train_runner.py" line="78"/>
-        <location filename="../app/train/yolo_train_runner.py" line="170"/>
+        <location filename="../app/train/yolo_train_runner.py" line="171"/>
         <source>输出路径: {}</source>
         <translation>出力パス: {}</translation>
     </message>
     <message>
         <location filename="../app/train/train_runner.py" line="79"/>
-        <location filename="../app/train/yolo_train_runner.py" line="171"/>
+        <location filename="../app/train/yolo_train_runner.py" line="172"/>
         <source>本次训练输出目录(时间戳): {}</source>
         <translation>今回の学習の出力フォルダ(タイムスタンプ): {}</translation>
     </message>
@@ -4322,25 +4344,25 @@
     </message>
     <message>
         <location filename="../app/train/train_runner.py" line="105"/>
-        <location filename="../app/train/yolo_train_runner.py" line="206"/>
+        <location filename="../app/train/yolo_train_runner.py" line="209"/>
         <source>使用模型 {} device={} epochs={} batch={} resolution={}</source>
         <translation>使用モデル {} device={} epochs={} batch={} resolution={}</translation>
     </message>
     <message>
         <location filename="../app/train/train_runner.py" line="174"/>
-        <location filename="../app/train/yolo_train_runner.py" line="234"/>
+        <location filename="../app/train/yolo_train_runner.py" line="237"/>
         <source>训练完成</source>
         <translation>学習完了</translation>
     </message>
     <message>
         <location filename="../app/train/train_runner.py" line="183"/>
-        <location filename="../app/train/yolo_train_runner.py" line="241"/>
+        <location filename="../app/train/yolo_train_runner.py" line="244"/>
         <source>生成类别文件: {}</source>
         <translation>クラスファイルを生成: {}</translation>
     </message>
     <message>
         <location filename="../app/train/train_runner.py" line="90"/>
-        <location filename="../app/train/yolo_train_runner.py" line="177"/>
+        <location filename="../app/train/yolo_train_runner.py" line="178"/>
         <source>预训练权重缺失: 请先在权重管理里下载 {} 档的模型</source>
         <translation>事前学習済みの重みがありません: 先に重み管理で {} のモデルをダウンロードしてください</translation>
     </message>
@@ -4404,22 +4426,22 @@
 <context>
     <name>_ModelRow</name>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="114"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="113"/>
         <source>已就绪</source>
         <translation>準備完了</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="120"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="119"/>
         <source>未下载</source>
         <translation>未ダウンロード</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="125"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="124"/>
         <source>校验中...</source>
         <translation>検証中...</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="141"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="140"/>
         <source>失败</source>
         <translation>失敗</translation>
     </message>

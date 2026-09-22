@@ -31,7 +31,7 @@ from app.widgets.metrics_dialog import MetricsDialog
 from app.widgets.test_dialog import TestDialog
 from app.train.dialogs import TrainDialog
 from app.train.test_worker import TestWorker
-from app.train.export_worker import OnnxExportWorker, examples_dir
+from app.train.export_worker import OnnxExportWorker, ReportWorker, examples_dir
 from ui.model import Ui_ModelDialog
 
 # 导出文件名里的任务段: 与界面语言无关(同一份权重导出到哪台机器都该同名)
@@ -98,9 +98,16 @@ def _load_series(rec, db_path):
 
 def _curve_series(series):
     """曲线数据与精度列同源(优先 ema 列, 见 core.metrics.metric_key)."""
-    key = metric_key(series, "accuracy" if "accuracy" in series else "mAP@50")
+    key = metric_key(series, _metric_base(series))
     ys = [v for v in (series.get(key) or []) if isinstance(v, (int, float))]
     return key, ys
+
+
+def _metric_base(series):
+    """该条训练记录的主指标: 异常检测是 AUROC, 分类是准确率, 其余是 mAP@50."""
+    if "auroc" in series:
+        return "auroc"
+    return "accuracy" if "accuracy" in series else "mAP@50"
 
 
 def _duration_seconds(rec):
@@ -154,6 +161,7 @@ class ModelDialog(QDialog):
         self._exp_dlg = None
         self._onnx_worker = None
         self._eval_worker = None
+        self._report_worker = None
         self._resize_timer = QTimer(self)
         self._resize_timer.setSingleShot(True)
         self._resize_timer.setInterval(150)
@@ -180,6 +188,18 @@ class ModelDialog(QDialog):
         self._calc_page_size()
         if self._page_size != old:
             self._resize_timer.start()
+
+    def closeEvent(self, event):
+        # onnx/评估/出报告都挂在后台线程上, 窗口先关会让 Qt 在线程还跑时销毁对象
+        if any(w is not None and w.isRunning() for w in
+               (self._onnx_worker, self._eval_worker, self._report_worker)):
+            event.ignore()
+            if self._exp_dlg is not None:
+                self._exp_dlg.show()
+                self._exp_dlg.raise_()
+                self._exp_dlg.activateWindow()
+            return
+        super().closeEvent(event)
 
     def _clear_cell_widgets(self, rows):
         """
@@ -303,7 +323,7 @@ class ModelDialog(QDialog):
         if not (rec.get("metrics_file") or rec.get("model_path")):
             return
         series = _load_series(rec, getattr(self.app.db, "db_path", None))
-        key = metric_key(series, "accuracy" if "accuracy" in series else "mAP@50")
+        key = metric_key(series, _metric_base(series))
         v = best_map50(series)
         if v is not None:
             rec["map50" if key != "accuracy" else "accuracy"] = "{:.3f}".format(v)
@@ -940,25 +960,36 @@ class ModelDialog(QDialog):
         return cfg
 
     def _export_on_eval_done(self, res):
-        pdf = ""
-        try:
-            # matplotlib 较重, 只在真的要出报告时才导入
-            from app.train.test_report import build_report
-            self._inject_label_stats(res)
-            pdf = build_report(
-                res, out_pdf=os.path.join(
-                    self._exp["out_dir"],
-                    self._exp["base"] + "_评估报告.pdf"))
-        except Exception:
-            trace = traceback.format_exc()
-            print(QC.translate("ModelDialog", "[export] 生成评估报告失败:\n{}").format(trace), flush=True)
-            write_log(QC.translate("ModelDialog", "生成评估报告失败: {}").format(trace.strip().splitlines()[-1]))
+        """评估跑完了, 出报告这一步要逐张重绘大图, 交给线程跑."""
+        self._inject_label_stats(res)
+        self._exp_dlg.set_text(self.tr("正在生成模型报告..."))
+        self._report_worker = ReportWorker(
+            res,
+            os.path.join(self._exp["out_dir"],
+                         self._exp["base"] + "_评估报告.pdf"),
+            parent=self)
+        self._report_worker.done.connect(self._export_on_report_done)
+        self._report_worker.failed.connect(self._export_on_report_failed)
+        self._report_worker.start()
+
+    def _export_on_report_done(self, pdf):
         if pdf:
-            self._exp["report"] = os.path.basename(pdf)
-            self._exp["copied"].append(os.path.basename(pdf))
-            write_log(QC.translate("ModelDialog", "导出模型报告完成: {}").format(os.path.basename(pdf)))
-        self._export_finish(
-            "" if pdf else self.tr("评估完成, 但报告生成失败"))
+            name = os.path.basename(pdf)
+            self._exp["report"] = name
+            self._exp["copied"].append(name)
+            write_log(QC.translate("ModelDialog", "导出模型报告完成: {}").format(name))
+            self._export_finish()
+            return
+        # build_report 只在没有明细文件时才给空串, 也就是验证集缺标注
+        write_log(QC.translate("ModelDialog", "导出模型报告跳过: 验证集没有标注"))
+        self._export_finish(self.tr("验证集没有标注, 已跳过评估报告"))
+
+    def _export_on_report_failed(self, msg):
+        write_log(QC.translate("ModelDialog", "生成评估报告失败: {}").format(
+            (msg or "").strip().splitlines()[-1] if msg
+            else QC.translate("ModelDialog", "未知错误")))
+        print(QC.translate("ModelDialog", "[export] 生成评估报告失败:\n{}").format(msg), flush=True)
+        self._export_finish(self.tr("评估完成, 但报告生成失败"))
 
     def _inject_label_stats(self, res):
         """把验证集的标注分布塞进 res, PDF 首页才有类别分布图."""

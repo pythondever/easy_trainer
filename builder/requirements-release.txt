@@ -29,6 +29,43 @@ pyDeprecate==0.9.0
 tqdm==4.70.0
 requests==2.34.2
 
+# 异常检测(AD). anomalib 本体 + 它 install_requires 里本发行版还没有的那些包,
+# 版本锁自 rf-detr 开发环境(实测 PatchCore/CFA/STFPM/FastFlow/ReverseDistillation
+# 五个算法都能建库/训练/评估).
+#   * anomalib 只认统一包 lightning, 本文件上面的 pytorch-lightning==2.6.5 正好是
+#     lightning==2.6.6 配套的那一版, 两个不能单独升
+#   * 它要的 opencv 是 headless 版, 与本文件一致, 不会像 ultralytics 那样带进 GUI 版
+#   * 骨干权重不在安装包里: timm 一律从 HuggingFace 取, 首次训练要联网.
+#     离线机器需预置缓存, 路径 %USERPROFILE%\.cache\huggingface\hub\
+#     models--timm--wide_resnet50_2.racm_in1k\snapshots\<sha>\model.safetensors (~263MB)
+anomalib==2.6.2
+lightning==2.6.6
+timm==1.0.29
+kornia==0.8.2
+kornia_rs==0.1.14
+einops==0.8.2
+FrEIA==0.2
+scikit-image==0.25.2
+scikit-learn==1.7.2
+joblib==1.5.3
+threadpoolctl==3.6.0
+imageio==2.37.4
+lazy-loader==0.6
+networkx==3.4.2
+tifffile==2025.5.10
+imagecodecs==2025.3.30
+jsonargparse==4.46.0
+docstring-parser==0.18.0
+typeshed-client==2.13.0
+omegaconf==2.3.1
+antlr4-python3-runtime==4.9.3
+platformdirs==4.11.2
+rich==15.0.0
+rich-argparse==1.8.0
+markdown-it-py==4.2.0
+mdurl==0.1.2
+Pygments==2.20.0
+
 # ultralytics(CNN/YOLO 架构)的三个传递依赖: ultralytics 本体在
 # requirements-nodeps.txt 里以 --no-deps 装, 缺的这几个必须在这边钉住
 ultralytics-thop==2.1.6

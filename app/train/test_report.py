@@ -2,6 +2,7 @@
 """
 测试结果 PDF 报告: 逐图定位漏检/误检样本, 数据源是 details.jsonl.
 页面顺序: 汇总首页(模型 + 标注分布 + 指标 + 按类别)→ 缩略图 → 改进建议.
+零错误时没有缩略图页, 首页与建议页照常.
 """
 
 import json
@@ -301,6 +302,10 @@ def _sample_note(stat):
     shown = stat.get("shown", 0)
     mt, st = stat.get("miss_total", 0), stat.get("spur_total", 0)
     limit = stat.get("limit", 0)
+    if not total:
+        # 零错误: 抽样那句"共 0 张有问题"没意义, 直接给结论
+        return QC.translate(
+            "TestReport", "本次验证集没有漏检, 也没有误检."), C_HIT
     if limit and shown < total:
         return (QC.translate(
             "TestReport",
@@ -576,9 +581,10 @@ def _render_summary_png(summary, out_png, stat, chart_png=None):
                fill="black", font=f_meta)
     y += legend_rows * row_h
 
-    d.text((M, y), QC.translate(
-        "TestReport", "错误样本明细(仅列漏检 / 误检图片, 正确检出不列出)"),
-        fill="#888888", font=f_meta)
+    if stat.get("miss_total") or stat.get("spur_total"):
+        d.text((M, y), QC.translate(
+            "TestReport", "错误样本明细(仅列漏检 / 误检图片, 正确检出不列出)"),
+            fill="#888888", font=f_meta)
 
     img.save(out_png, "PNG", dpi=(dpi, dpi))
 
@@ -600,6 +606,16 @@ def _dash_rect(d, box, color, width=3, dash=9, gap=6):
         y += dash + gap
 
 
+def _advice_lines(parts):
+    """段与段之间插空行: 渲染端把空行当段间距(见 render_advice_pages)."""
+    out = []
+    for i, seg in enumerate(parts):
+        if i:
+            out.append(("\n", False))
+        out.extend(seg)
+    return out
+
+
 def _advice_items(res, stat=None):
     pc = {str(k): (v or {}) for k, v in (res.get("per_class") or {}).items()}
     tp, fp, fn = res.get("TP", 0), res.get("FP", 0), res.get("FN", 0)
@@ -612,7 +628,7 @@ def _advice_items(res, stat=None):
             "TestReport",
             "没有逐类别统计, 无法定位到具体标签,"
             "请先确认标签文件能正常读到."), False)])
-        return [s for p in parts for s in p]
+        return _advice_lines(parts)
 
     gts = {c: int(d.get("gt", 0)) for c, d in pc.items()}
     avg = sum(gts.values()) / float(len(gts)) if gts else 0.0
@@ -653,6 +669,10 @@ def _advice_items(res, stat=None):
                      names(hot_fp) +
                      [(fp_tail.format(sum(v for _, v in hot_fp)), False)])
     n_conf = int((stat or {}).get("conf_total", 0))
+    if not hot_fn and not hot_fp and not n_conf:
+        # 零错误: 逐类推断都没有依据, 别硬凑建议
+        parts.append([(QC.translate("TestReport", "暂无"), False)])
+        return _advice_lines(parts)
     if n_conf:
         parts.append([
             (QC.translate("TestReport",
@@ -684,12 +704,7 @@ def _advice_items(res, stat=None):
 
     # 不按字符数截断: 一个中文字和一段拉丁词组的渲染宽度差好几倍, 按字数砍会让
     # 德/西/法语报告只剩一条建议. 放不放得下由 render_advice_pages 按真实宽度分页.
-    out = []
-    for i, seg in enumerate(parts):
-        if i:
-            out.append(("\n", False))
-        out.extend(seg)
-    return out
+    return _advice_lines(parts)
 
 
 def _char_w(d, ch, font):
@@ -953,15 +968,17 @@ def _page_gallery(pdf, rows, title, thumb_w, page_no,
 def build_report(res, out_pdf=None, thumb_w=480, summary_png=None,
                  per_class_limit=PER_CLASS_LIMIT):
     """
-    生成 PDF. res 需含 detail_path; 返回 pdf 路径, 无明细时返回空串.
+    生成 PDF. res 需含 detail_path; 返回 pdf 路径, 没带标注(无明细文件)时返回空串.
     per_class_limit 每个"类别 × 错误类型"最多列几张, 0/None 表示全列.
     抽样只发生在出报告这一步, details.jsonl 里仍是全量, 后续做难例挖掘不丢数据.
     标注分布优先用 res["label_stats"](统计界面那一套, 带标签颜色),
     取不到就退回 per_class 的 gt, 反正都是这次真正测到的标注数.
+    零错误(既没漏检也没误检)会留一份空的 details.jsonl, 这种情况照样出报告:
+    首页指标 + 标注分布 + 建议页一句"暂无".
     """
     detail_path = res.get("detail_path") or ""
     rows = load_details(detail_path)
-    if not rows:
+    if not rows and not (detail_path and os.path.exists(detail_path)):
         return ""
 
     if out_pdf is None:

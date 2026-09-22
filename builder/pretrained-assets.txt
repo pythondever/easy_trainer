@@ -1,5 +1,9 @@
 # 预训练权重清单:相对 pretrained/ 的路径 <TAB> URL <TAB> SHA256
 # 默认装 transformer 与 cnn 两套架构各 2 档(检测/分割 x nano/small)。
+# 末尾一行是异常检测的骨干: 它不是 easy_trainer 自己加载的, 而是 anomalib 通过
+# timm 去 HuggingFace 取 —— 联网机器首次训练会自己下(约 263MB), 这一行的作用是
+# 让离线机器也有: 装完后程序会按 HF 的缓存约定把它摆进 %USERPROFILE%\.cache
+# (见 app/train/ad_common.py 的 ensure_backbone_cache)
 # 带 # 的行安装器会跳过。
 transformer/nano.pt	https://storage.googleapis.com/rfdetr/nano_coco/checkpoint_best_regular.pth	D8D6B9EE57D4D0ED2B1F305163624712A0532CB7BCE0C747317984FC5457440D
 transformer/nano-seg.pt	https://storage.googleapis.com/rfdetr/rf-detr-seg-n-ft.pth	A44613A4ECD6B5BA61A62002C600B0B6CB7A9DA2936A45317EC4B62C635FB99B
@@ -9,3 +13,4 @@ cnn/small.pt	https://hf-mirror.com/Ultralytics/YOLO26/resolve/main/yolo26s.pt	64
 cnn/nano-seg.pt	https://hf-mirror.com/Ultralytics/YOLO26/resolve/main/yolo26n-seg.pt	361FBFABAB285C3237700B6BB91D7ECFA602CD945FFFDA8DBE1242829B71E73F
 cnn/small-seg.pt	https://hf-mirror.com/Ultralytics/YOLO26/resolve/main/yolo26s-seg.pt	3DA1D83E31CAEC96F9300EB4064F4F62882C133C7C264D63DFE61A7C197837A4
 transformer/small.pt	https://storage.googleapis.com/rfdetr/small_coco/checkpoint_best_regular.pth	D81979A9213A2109345158CE9232668DF4C1AE52E9B8DB3F2EC0A8CBAD959B33
+ad/wide_resnet50_2.racm_in1k.safetensors	https://hf-mirror.com/timm/wide_resnet50_2.racm_in1k/resolve/main/model.safetensors	03B71D65FB2C73BB0DE079A1781009F27A782EC481D2F64AB3BDE9B1CDEC3000

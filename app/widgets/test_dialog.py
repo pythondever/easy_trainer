@@ -227,7 +227,8 @@ class TestDialog(QDialog):
         if metric:
             try:
                 label = {"classify": self.tr("准确率"),
-                         "segment": "mask mAP50"}.get(rec.get("task"), "mAP50")
+                         "segment": "mask mAP50",
+                         "ad": "AUROC"}.get(rec.get("task"), "mAP50")
                 meta.append("{} {:.3f}".format(label, float(metric)))
             except (TypeError, ValueError):
                 pass
@@ -330,7 +331,10 @@ class TestDialog(QDialog):
             MessageBox.warning(self, self.tr("测试"), self.tr("请至少选择一个数据集"))
             return
         cls_mode = getattr(self, "_cls_mode", False)
-        if cls_mode:
+        # 异常检测的真值来自"良品/不良品"子文件夹名, 模型也只看图不看框,
+        # 所以和分类一样不需要置信度/iou, 也不能输出标注文件
+        ad_mode = str(self._record.get("task") or "") == "ad"
+        if cls_mode or ad_mode:
             conf, iou, output_labels = 0.5, 0.5, False
         else:
             try:
@@ -399,7 +403,7 @@ class TestDialog(QDialog):
             "iou_threshold": iou, "confidence": conf,
             "has_label": has_label, "device": device,
             "total": total, "output_labels": output_labels,
-            "task": "classify" if cls_mode else "",
+            "task": self._test_task(cls_mode),
             "family": self._record.get("family") or "",
             "report_dir": report_dir,
             "_cfg_path": cfg_path,
@@ -479,6 +483,15 @@ class TestDialog(QDialog):
             self.app._show_train_task(
                 self.tr("测试中 {}/{}").format(done, total), pct)
 
+    def _test_task(self, cls_mode):
+        """交给 test_worker 的任务键: 它按这个挑 runner, 与数据集格式无关.
+
+        异常检测的数据集也是 cls 格式, 靠 cls_mode 分不开, 得看模型的 task.
+        """
+        if str(self._record.get("task") or "") == "ad":
+            return "ad"
+        return "classify" if cls_mode else ""
+
     def _on_finished(self, res):
         write_log(QC.translate("TestDialog", "[test-dialog] 测试完成, ok={}").format(res.get("ok")))
         if hasattr(self.app, "_hide_train_task"):
@@ -491,7 +504,8 @@ class TestDialog(QDialog):
             MessageBox.warning(self, self.tr("测试结果"),
                                self.tr("测试未正常完成"))
             return
-        if "P" in res or res.get("task") == "classify":
+        # 异常检测没有框也没有"P", 但同样该弹结果面板
+        if "P" in res or res.get("task") in ("classify", "ad"):
             self._fill_label_stats(res)
             TestResultDialog(res, parent=self.app).exec()
         else:

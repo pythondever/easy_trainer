@@ -31,14 +31,18 @@ WORKSPACE = os.path.dirname(os.path.dirname(os.path.dirname(
 TRAIN_RUNNER = "app.train.train_runner"
 CLASSIFY_TRAIN_RUNNER = "app.train.classify_train_runner"
 YOLO_TRAIN_RUNNER = "app.train.yolo_train_runner"
+AD_TRAIN_RUNNER = "app.train.ad_train_runner"
 # 判定一个 epoch 是否已产出指标(val 有了, 或 train 行到了)的列
 _EPOCH_KEYS = ("val/mAP_50", "val/segm_mAP_50", "val/loss", "train/loss")
 
 
 def runner_module(config):
-    """按任务与网络架构选训练脚本: 分类是 resnet, CNN 是 ultralytics, 其余是 rf-detr."""
-    if config.get("task") == "classify":
+    """按任务与网络架构选训练脚本: 分类是 resnet, 异常检测是 anomalib, 其余是 rf-detr."""
+    task = config.get("task")
+    if task == "classify":
         return CLASSIFY_TRAIN_RUNNER
+    if task == "ad":
+        return AD_TRAIN_RUNNER
     if config.get("family") == "cnn":
         return YOLO_TRAIN_RUNNER
     return TRAIN_RUNNER
@@ -379,28 +383,29 @@ class TrainWorker(SubprocessWorker):
                 return
             self.metrics.emit(self._build_payload(series, per_class))
 
-        cls_mode = self._config.get("task") == "classify"
-        cls_json = (os.path.join(self._config.get("timestamp_dir", ""),
-                                 "metrics.json") if cls_mode else "")
-        cls_mtime = 0.0
-        cls_last_poll = 0.0
+        # 分类与异常检测都不落 metrics.csv, 指标由 runner 直接写 metrics.json
+        json_mode = self._config.get("task") in ("classify", "ad")
+        json_path = (os.path.join(self._config.get("timestamp_dir", ""),
+                                  "metrics.json") if json_mode else "")
+        json_mtime = 0.0
+        json_last_poll = 0.0
 
-        def _poll_cls():
-            nonlocal cls_mtime, cls_last_poll
-            if not cls_json:
+        def _poll_json():
+            nonlocal json_mtime, json_last_poll
+            if not json_path:
                 return
             now = time.time()
-            if now - cls_last_poll < 2.0:
+            if now - json_last_poll < 2.0:
                 return
-            cls_last_poll = now
-            if not os.path.exists(cls_json):
+            json_last_poll = now
+            if not os.path.exists(json_path):
                 return
-            mt = os.path.getmtime(cls_json)
-            if mt <= cls_mtime:
+            mt = os.path.getmtime(json_path)
+            if mt <= json_mtime:
                 return
-            cls_mtime = mt
+            json_mtime = mt
             try:
-                with open(cls_json, "r", encoding="utf-8") as f:
+                with open(json_path, "r", encoding="utf-8") as f:
                     m = json.load(f)
             except Exception:
                 return
@@ -457,7 +462,7 @@ class TrainWorker(SubprocessWorker):
                             result_emitted = True
                 _flush_log()
                 _poll_csv()
-                _poll_cls()
+                _poll_json()
                 if self._proc.poll() is not None and out_q.empty():
                     break
             except Exception:

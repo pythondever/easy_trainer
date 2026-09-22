@@ -313,6 +313,9 @@ def _open_detail(cfg):
                         "TestRunner", "明细初始化失败: {}").format(exc),
                         flush=True)
                     return None
+        # 零错误时一条明细都不会写, 但文件本身要留下: 上层靠它在不在
+        # 来区分"带标注测过且零错误"与"这次根本没带标注"
+        open(path, "a", encoding="utf-8").close()
         return path
     except OSError as exc:
         print("[test] " + QC.translate(

@@ -17,6 +17,12 @@ nvidia-ml-py>=11.5.0
 # ultralytics>=8.3.0
 # ultralytics-thop>=2.0
 # polars>=1.0
+# 异常检测(网络架构选算法, 如 PatchCore/CFA)训练另需 anomalib:
+#   pip install anomalib
+#   它要的 opencv 也是 headless 版, 与本文件一致, 不像 ultralytics 那样需要 --no-deps
+#   骨干权重(wide_resnet50_2, 约 263MB)首次训练时联网从 HuggingFace 取; 离线机器
+#   要预置 %USERPROFILE%\.cache\huggingface\hub 下的 timm 缓存
+# anomalib>=2.6.2
 onnx>=1.16
 onnxsim>=0.4.33
 onnxruntime>=1.16

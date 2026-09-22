@@ -154,6 +154,11 @@
                   <string>分类</string>
                 </property>
               </item>
+              <item>
+                <property name="text">
+                  <string>异常检测</string>
+                </property>
+              </item>
             </widget>
           </item>
           <item row="0" column="2">

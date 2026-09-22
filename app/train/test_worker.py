@@ -21,6 +21,13 @@ WORKSPACE = os.path.dirname(os.path.dirname(os.path.dirname(
 
 TEST_RUNNER = "app.train.test_runner"
 CLASSIFY_TEST_RUNNER = "app.train.classify_test_runner"
+AD_TEST_RUNNER = "app.train.ad_test_runner"
+# 分类与异常检测都不走带框的检测分支
+_TASK_RUNNERS = {"classify": CLASSIFY_TEST_RUNNER, "ad": AD_TEST_RUNNER}
+
+
+def runner_module(config):
+    return _TASK_RUNNERS.get(config.get("task") or "", TEST_RUNNER)
 
 
 def _read_new_lines(path, start, final=False):
@@ -77,8 +84,7 @@ class TestWorker(SubprocessWorker):
         env["PYTHONPATH"] = WORKSPACE
         env["PYTHONUNBUFFERED"] = "1"
         env["CUDA_MODULE_LOADING"] = "LAZY"
-        module = (CLASSIFY_TEST_RUNNER
-                  if self._config.get("task") == "classify" else TEST_RUNNER)
+        module = runner_module(self._config)
         bootstrap = runner_bootstrap(module)
         if self._stop_flag:
             # 用户在 Popen 之前就点了停止: 再起进程会立刻脱管

@@ -136,17 +136,20 @@ class TrainMixin(object):
         self._update_eta(epoch, total)
 
     def _on_train_metrics(self, metrics):
-        # 分类看准确率, 检测/分割看 mAP@50
+        # 异常检测看 AUROC, 分类看准确率, 检测/分割看 mAP@50
         s = metrics.get("series", {})
+        auroc = best_value(s, "auroc")
         acc = best_value(s, "accuracy")
         m = best_map50(s)
-        if acc is not None:
-            self._best_map50 = acc
-            self._progress_tip = QC.translate("TrainMixin", "进度 | 当前最好准确率")
-        elif m is not None:
-            self._best_map50 = m
-            self._progress_tip = QC.translate("TrainMixin", "进度 | 当前最好 mAP@50")
-        if acc is not None or m is not None:
+        best = auroc if auroc is not None else (acc if acc is not None else m)
+        if best is not None:
+            self._best_map50 = best
+            if auroc is not None:
+                self._progress_tip = QC.translate("TrainMixin", "进度 | 当前最好 AUROC")
+            elif acc is not None:
+                self._progress_tip = QC.translate("TrainMixin", "进度 | 当前最好准确率")
+            else:
+                self._progress_tip = QC.translate("TrainMixin", "进度 | 当前最好 mAP@50")
             self._apply_progress_format()
         self._pending_metrics = metrics
         if self._training_record_id:

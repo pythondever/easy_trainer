@@ -93,9 +93,9 @@ public static class InstallEngine
                 new()
                 {
                     Id = "pretrained", Title = "预训练权重",
-                    Desc = "检测/分割初始权重(同目录有 pretrained.zip 则离线优先)",
+                    Desc = "检测/分割/异常检测初始权重(同目录有 pretrained.zip 则离线优先)",
                     File = "pretrained.zip", Required = false,
-                    Size = 1_073_699_888, Default = false, OnlineAvailable = true,
+                    Size = 1_349_535_184, Default = false, OnlineAvailable = true,
                 },
             },
         };

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""训练对话框(统一):任务类型下拉 检测/分割/分类,数据集跨项目选择."""
+"""训练对话框(统一):任务类型下拉 检测/分割/分类/异常检测,数据集跨项目选择."""
 
 import os
 import json
@@ -25,6 +25,7 @@ from app.widgets.model_manager_dialog import ensure_weight
 from app.core import i18n
 from app.core.db import get_paths
 from app.core.log import write_log
+from app.train import ad_common as adc
 from app.train.data_prep import timestamp_dir
 from ui.train import Ui_TrainDialog
 
@@ -45,8 +46,8 @@ def collect_dataset_labels(db, ds_pairs):
     return sorted(labels)
 
 
-# 各任务 best 权重的文件名: rf-detr 用 ema track, 分类 runner 只有单一 best
-BEST_CKPT = {"classify": "checkpoint_best.pth"}
+# 各任务 best 权重的文件名: rf-detr 用 ema track, 分类/异常检测的 runner 只有单一产物
+BEST_CKPT = {"classify": "checkpoint_best.pth", "ad": adc.MODEL_FILE}
 BEST_CKPT_DEFAULT = "checkpoint_best_ema.pth"
 BEST_CKPT_CNN = os.path.join("weights", "best.pt")
 
@@ -57,8 +58,8 @@ def best_ckpt_name(config):
     分类也带 family="cnn", 但它的产物名不随架构变, 所以先按任务判.
     """
     task = config.get("task", "")
-    if task == "classify":
-        return BEST_CKPT["classify"]
+    if task in BEST_CKPT:
+        return BEST_CKPT[task]
     if config.get("family") == "cnn":
         return BEST_CKPT_CNN
     return BEST_CKPT_DEFAULT
@@ -195,7 +196,12 @@ def make_train_config(db, params):
                     "TrainDialog",
                     "数据集\"{}/{}\"不是分类数据集(标签格式={}), 无法训练图像分类")
                     .format(proj, name, fmt or QC.translate("TrainDialog", "未知")))
-            if task != "classify" and fmt == "cls":
+            if task == "ad" and fmt != "cls":
+                raise ValueError(QC.translate(
+                    "TrainDialog",
+                    "数据集\"{}/{}\"不是分类数据集(标签格式={}), 无法训练异常检测")
+                    .format(proj, name, fmt or QC.translate("TrainDialog", "未知")))
+            if task not in ("classify", "ad") and fmt == "cls":
                 raise ValueError(QC.translate(
                     "TrainDialog",
                     "数据集\"{}/{}\"是分类数据集, 无法训练{}任务")
@@ -220,13 +226,17 @@ def make_train_config(db, params):
             "nano": "resnet18", "small": "resnet34",
             "medium": "resnet50", "large": "resnet101",
         }.get(architecture, "resnet18")
+    elif task == "ad":
+        # 异常检测的"型号"就是算法代号(patchcore/cfa/...), 上面那套 nano/large 不适用
+        architecture = architecture if architecture in adc.model_codes() \
+            else adc.model_codes()[0]
     config = {
         "task": task,
         "out_root": out_root,
         "project": datasets[0]["project"],
         "timestamp_dir": ts_dir,
         "architecture": architecture,
-        "family": params.get("family") or "transformer",
+        "family": "ad" if task == "ad" else (params.get("family") or "transformer"),
         "model_size": params.get("architecture") or "nano",
         "device": params.get("device") or "",
         "epochs": params.get("epochs", 100),
@@ -242,7 +252,7 @@ def make_train_config(db, params):
         "language": i18n.current(),
     }
     # 分类不传梯度累积(runner 不消费该字段),检测/分割才传
-    if task != "classify":
+    if task not in ("classify", "ad"):
         config["grad_accum"] = params.get("grad_accum", 4)
     cfg_path = os.path.join(ts_dir, "train_config.json")
     with open(cfg_path, "w", encoding="utf-8") as f:
@@ -392,13 +402,15 @@ def detach_device_probe(dialog):
 
 
 class TrainDialog(QDialog):
-    """统一训练对话框: 任务类型(检测/分割/分类) + 跨项目数据集选择."""
+    """统一训练对话框: 任务类型(检测/分割/分类/异常检测) + 跨项目数据集选择."""
 
     # 各任务默认参数:epochs / lr / img_size / grad_accum(分类禁用)
     TASK_DEFAULTS = {
         "detect": (100, 1e-4, 640, 4),
         "segment": (100, 1e-4, 636, 4),
         "classify": (30, 0.001, 224, 4),
+        # 建库型算法(默认的 PatchCore)不看轮次, 这里给的是按轮训练那些算法的默认
+        "ad": (20, 1e-4, 256, 4),
     }
     TASK_TIPS = {
         "detect": QT_TRANSLATE_NOOP(
@@ -409,6 +421,9 @@ class TrainDialog(QDialog):
             "TrainDialog", "CNN 分割推荐尺寸: 640(需为 32 的倍数)"),
         "classify": QT_TRANSLATE_NOOP(
             "TrainDialog", "图像分类推荐尺寸: 224(小图用 224, 较大图可到 256)"),
+        "ad": QT_TRANSLATE_NOOP(
+            "TrainDialog",
+            "异常检测推荐尺寸: 256; 缺陷很小时调到 512 更稳, 显存和耗时随之上升"),
     }
     # 输入框右侧的倍数约束, 写不下整句 tooltip 就靠这几个字
     IMG_NOTE = {
@@ -417,12 +432,16 @@ class TrainDialog(QDialog):
         "classify": QT_TRANSLATE_NOOP("TrainDialog", "建议 224"),
         # 636 那个 12 的倍数来自 rf-detr 的 patch_size*num_windows, CNN 没有这约束
         "cnn_segment": QT_TRANSLATE_NOOP("TrainDialog", "32 的倍数"),
+        "ad": QT_TRANSLATE_NOOP("TrainDialog", "建议 256"),
     }
     # 切架构时要跟着换的推荐值; 没列的沿用任务默认(分类只有 resnet, 不参与)
     ARCH_DEFAULTS = {
         "transformer": {},
         "cnn": {"lr": 0.01, "batch": 16, "optimizer": "sgd", "img_size": 640},
     }
+    # 异常检测不消费这几项(算法自带学习率和优化器, 也没有早停/梯度累积的概念)
+    AD_DISABLED_FIELDS = ("lr_line_txt", "early_stop_line_txt",
+                          "grad_accum_line_txt", "optimizer_comboBox")
 
     def __init__(self, app, project="", dataset="", preset_record=None):
         """project/dataset 可为空(独立入口);preset_record 传入时按记录回填(模型界面训练按钮)."""
@@ -458,7 +477,7 @@ class TrainDialog(QDialog):
 
     def _tag_task_combo(self):
         """任务下拉挂 itemData. 按文本找的话, 界面切英文后 _task() 会全部落空."""
-        for i, code in enumerate(("detect", "segment", "classify")):
+        for i, code in enumerate(("detect", "segment", "classify", "ad")):
             self.ui.task_combo.setItemData(i, code)
 
     def _task(self):
@@ -652,6 +671,7 @@ class TrainDialog(QDialog):
         self.ui.task_combo.setCurrentIndex(0)  # 默认检测
         self.ui.task_combo.currentIndexChanged.connect(self._on_task_changed)
         self.ui.arch_combo.currentIndexChanged.connect(self._on_arch_changed)
+        self.ui.network_combo.currentIndexChanged.connect(self._on_network_changed)
         # 预设记录(模型界面训练按钮)时完整回填;首页进入填任务推荐参数
         if self._preset_record is not None:
             self._restore_record(self._preset_record)
@@ -724,10 +744,16 @@ class TrainDialog(QDialog):
             btn.setToolTip(self.tr("已有训练在进行中, 请先停止") if busy else "")
 
     def _fill_optimizer(self):
-        """优化器下拉: 分类(resnet)与 CNN(YOLO) 推荐 sgd, 检测/分割的 detr 推荐 adamw."""
+        """优化器下拉: 分类(resnet)与 CNN(YOLO) 推荐 sgd, 检测/分割的 detr 推荐 adamw.
+
+        异常检测这一项是置灰的(算法自带优化器), 内容只求别留空.
+        """
         combo = self.ui.optimizer_comboBox
         combo.clear()
-        if self._task() == "classify":
+        if self._task() == "ad":
+            combo.addItems(["adamw"])
+            recommended = "adamw"
+        elif self._task() == "classify":
             combo.addItems(["adamw", "sgd"])
             recommended = "sgd"
         elif self._arch() == "cnn":
@@ -780,6 +806,7 @@ class TrainDialog(QDialog):
         self._sync_arch_combo(task)
         over = {} if task == "classify" else self.ARCH_DEFAULTS.get(self._arch(), {})
         self.ui.grad_accum_line_txt.setEnabled(task != "classify")
+        self._set_ad_fields_enabled(task)
         self.ui.epochs_line_txt.setText(str(epochs))
         self.ui.lr_line_txt.setText(str(over.get("lr", lr)))
         self.ui.img_size_line_txt.setText(str(over.get("img_size", img)))
@@ -794,13 +821,54 @@ class TrainDialog(QDialog):
         self._fill_optimizer()
         self._fill_network_combo()
         self._setup_img_size_tip()
+        self._sync_ad_epochs()
+
+    def _set_ad_fields_enabled(self, task):
+        """异常检测用不上学习率/早停/梯度累积/优化器(算法自带), 置灰而不是留着骗人."""
+        is_ad = task == "ad"
+        for name in self.AD_DISABLED_FIELDS:
+            w = getattr(self.ui, name, None)
+            if w is None:
+                continue
+            w.setEnabled(not is_ad)
+            if is_ad:
+                w.setToolTip(self.tr("异常检测算法自带学习率与优化器, 不需要设置"))
+
+    def _on_network_changed(self):
+        """型号/算法切换: 只有异常检测的轮次可用性跟着算法走, 其余任务不动它."""
+        if self._task() == "ad":
+            self._sync_ad_epochs()
+
+    def _sync_ad_epochs(self, keep_value=False):
+        """建库型算法(PatchCore/CFA)没有训练这一步, 轮次固定 1 并置灰.
+
+        不这么做的话界面显示的是异常检测的默认 20 轮, 而 runner 拿到后强制改成 1,
+        用户在界面上看到的和实际跑的不是一回事.
+        keep_value 留给记录回填: 那条路上的轮次是记录里的真实值, 只置灰不改写.
+        """
+        edit = self.ui.epochs_line_txt
+        if self._task() != "ad":
+            edit.setEnabled(True)
+            edit.setToolTip("")
+            return
+        by_epoch = adc.is_epoch_model(self.ui.network_combo.currentData())
+        edit.setEnabled(by_epoch)
+        if by_epoch:
+            edit.setToolTip("")
+            if not keep_value:
+                edit.setText(str(self.TASK_DEFAULTS["ad"][0]))
+        else:
+            edit.setText("1")
+            edit.setToolTip(self.tr("建库型算法只提取特征建立记忆库, 没有训练轮次"))
 
     def _sync_arch_combo(self, task):
-        """分类只有 resnet(CNN) 一条路, 架构锁死; 锁的时候别触发联动, 否则覆盖回填值."""
+        """分类只有 resnet(CNN) 一条路、异常检测根本不走这条线, 都锁死;
+        锁的时候别触发联动, 否则覆盖回填值."""
         combo = self.ui.arch_combo
-        combo.setEnabled(task != "classify")
-        if task == "classify":
-            idx = combo.findData("cnn")
+        combo.setEnabled(task not in ("classify", "ad"))
+        want = {"classify": "cnn", "ad": "transformer"}.get(task)
+        if want:
+            idx = combo.findData(want)
             if idx >= 0:
                 combo.blockSignals(True)
                 combo.setCurrentIndex(idx)
@@ -873,7 +941,15 @@ class TrainDialog(QDialog):
                 idx = combo.findText(str(img))
                 if idx >= 0:
                     combo.setCurrentIndex(idx)
-        _set_combo("network_combo", rec.get("model_size"))
+        if self._task() == "ad":
+            # 异常检测的型号下拉显示名带后缀, 只能按代号回填
+            idx = self.ui.network_combo.findData(str(rec.get("model_size") or ""))
+            if idx >= 0:
+                self.ui.network_combo.setCurrentIndex(idx)
+            # 算法定下来之后才能定轮次的可用性
+            self._sync_ad_epochs(keep_value=True)
+        else:
+            _set_combo("network_combo", rec.get("model_size"))
         self._set_device(rec.get("device"))
         _set_combo("optimizer_comboBox", rec.get("optimizer"))
         out = rec.get("output_path")
@@ -881,10 +957,19 @@ class TrainDialog(QDialog):
             self.ui.output_line_txt.setText(str(out))
 
     def _fill_network_combo(self):
-        """型号档位: CNN 多一档 x-large(YOLO26 五档), 前四档两边同名同义."""
+        """型号档位: 异常检测列算法, CNN 多一档 x-large(YOLO26 五档),
+        前四档两边同名同义."""
         combo = self.ui.network_combo
         combo.clear()
-        if self._task() != "classify" and self._arch() == "cnn":
+        if self._task() == "ad":
+            # 代号放 itemData: 显示名带中文说明, 直接拿文本当 architecture 会存错
+            for code, text, _cls, _kw, by_epoch in adc.AD_MODELS:
+                if by_epoch:
+                    combo.addItem(text, code)
+                else:
+                    combo.addItem("{} ({})".format(
+                        text, self.tr("仅建库")), code)
+        elif self._task() != "classify" and self._arch() == "cnn":
             combo.addItems(["nano", "small", "medium", "large", "x-large"])
         else:
             combo.addItems(["nano", "small", "medium", "large"])
@@ -935,18 +1020,20 @@ class TrainDialog(QDialog):
                     return False, self.tr("\"{}\"必须是数字(当前: {})").format(
                         name, txt)
         # 任务类型与数据集格式匹配校验(按导入时的 label_fmt 判断:cls=分类,其余=检测/分割)
+        # 异常检测与分类同源: 真值就是"子文件夹名", 所以也必须要 cls 格式的数据集
         task = self._task()
         task_text = self._task_text()
         for proj, name in self._selected_datasets() + self._selected_val_datasets():
             fmt = self.app.db.get_dataset_import(proj, name).get("label_fmt", "")
-            if task != "classify" and fmt == "cls":
+            if task in ("classify", "ad") and fmt != "cls":
+                return False, self.tr(
+                    "数据集\"{}/{}\"不是按分类导入的数据集(标签格式={}),"
+                    "无法训练{}").format(proj, name, fmt or self.tr("未知"),
+                                        task_text)
+            if task not in ("classify", "ad") and fmt == "cls":
                 return False, self.tr(
                     "数据集\"{}/{}\"是分类数据集,无法训练{}任务").format(
                     proj, name, task_text)
-            if task == "classify" and fmt != "cls":
-                return False, self.tr(
-                    "数据集\"{}/{}\"不是分类数据集(标签格式={}),"
-                    "无法训练图像分类").format(proj, name, fmt or self.tr("未知"))
         return True, ""
 
     # ---------- 交互 ----------
@@ -1067,10 +1154,17 @@ class TrainDialog(QDialog):
 
     def collect_train_params(self):
         """纯收集: 只读 UI 与 db, 不建目录, 不落盘(入队与开始训练共用)."""
+        task = self._task()
+        if task == "ad":
+            # 异常检测的"型号"是算法代号, 存在 itemData 里(显示名带中文后缀)
+            architecture = self.ui.network_combo.currentData() \
+                or adc.model_codes()[0]
+        else:
+            architecture = self.ui.network_combo.currentText() or "nano"
         return {
-            "task": self._task(),
-            "architecture": self.ui.network_combo.currentText() or "nano",
-            "family": self._arch(),
+            "task": task,
+            "architecture": architecture,
+            "family": "ad" if task == "ad" else self._arch(),
             "device": self._device(),
             "epochs": self.param_int(self.ui.epochs_line_txt, 100),
             "batch_size": self.param_int(self.ui.batch_size_line_txt, 8),
