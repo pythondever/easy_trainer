@@ -55,6 +55,11 @@ _ASCII_MIN, _ASCII_MAX = 0x20, 0x7E
 # 而阈值是随模型一起交付的判定边界, 每次重训都换一个不能接受.
 DEFAULT_SEED = 42
 
+# 热力图转异常区域多边形的参数(见 anomaly_rings)
+MAP_MIN_AREA_RATIO = 0.0005   # 轮廓面积占整图比例, 低于此当噪声丢掉
+MAP_POLY_EPS = 0.01           # 顶点抽稀容差, 取轮廓周长的比例
+MAP_OPEN_KERNEL = 5           # 形态学开运算核, 去掉零散噪点
+
 
 def seed_everything(seed=DEFAULT_SEED):
     """训练前固定随机种子, 让同一份数据重训得到同一套 coreset/指标."""
@@ -512,11 +517,12 @@ def load_model(code, cls_name, kwargs, img_size, state_dict_path):
 
 # ---------- 打分与评估 ----------
 
-def predict_scores(engine, model, root, img_size=0, on_batch=None):
-    """对 root 目录树逐图打分, 返回 [(图像路径, 分数)].
+def predict_scores(engine, model, root, img_size=0, on_batch=None,
+                   with_maps=False):
+    """对 root 目录树逐图打分, 返回 [(图像路径, 分数, 热力图)].
 
-    用的是一张图一个分数的图像级输出, 不是像素级热力图 —— 训练报告里
-    "这张是良品还是不良品"才是要判的东西.
+    with_maps=False 时热力图为 None: 训练侧只判"这张是良品还是不良品", 没必要
+    把 256×256 的图端出来; 测试侧要写异常区域, 才需要它.
     """
     from anomalib.data import PredictDataset
 
@@ -530,11 +536,56 @@ def predict_scores(engine, model, root, img_size=0, on_batch=None):
         paths = getattr(batch, "image_path", None)
         if ps is None or paths is None:
             continue
+        am = getattr(batch, "anomaly_map", None) if with_maps else None
         for i in range(ps.shape[0]):
-            scored.append((str(paths[i]), float(ps[i].flatten()[0])))
+            heat = None
+            if am is not None:
+                heat = am[i].squeeze().detach().cpu().numpy()
+            scored.append((str(paths[i]), float(ps[i].flatten()[0]), heat))
         if on_batch is not None:
             on_batch(len(scored))
     return scored
+
+
+def anomaly_rings(anomaly_map, score, width, height, threshold):
+    """像素级热力图 → 原图坐标下的多边形顶点列表, 供写成 labelme json 复核.
+
+    threshold 用图像级那个判定阈值, 但先按该图的 score/map.max 折算到像素域:
+    anomalib 的图像分数是 anomaly map 的聚合(带平滑), 两者不严格相等(实测比值
+    中位 1.03, 低分区波动到 1.15), 直接拿图像级阈值切会让"刚过判定线"的图切不出
+    任何区域 —— 51 张测试图里有 1 张这样. 折算后两处才是同一口径.
+
+    也不能逐图 min-max 归一化后取固定阈值: 良品图的 map 分布偏右, 归一化会把
+    过半像素推到 0.5 以上, 实测切出的区域比真缺陷图还大(良品 0.115~0.868,
+    缺陷 0.025~0.274), 人工复核时完全被误导.
+    """
+    import cv2
+    import numpy as np
+
+    if not threshold or threshold <= 0 or score <= 0:
+        return []
+    a = np.asarray(anomaly_map, dtype="float32").squeeze()
+    if a.ndim != 2 or a.size == 0:
+        return []
+    thr = threshold * (float(a.max()) / score)
+    mask = (a >= thr).astype(np.uint8)
+    mask = cv2.morphologyEx(
+        mask, cv2.MORPH_OPEN,
+        cv2.getStructuringElement(cv2.MORPH_ELLIPSE,
+                                  (MAP_OPEN_KERNEL, MAP_OPEN_KERNEL)))
+    cnts, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    sh, sw = a.shape
+    sx, sy = width / sw, height / sh
+    rings = []
+    for c in cnts:
+        if cv2.contourArea(c) * sx * sy / (width * height) < MAP_MIN_AREA_RATIO:
+            continue
+        # 抽稀: 原始轮廓有几百个顶点, 灌进 json 既难读也没必要
+        poly = cv2.approxPolyDP(c, MAP_POLY_EPS * cv2.arcLength(c, True), True)
+        if len(poly) < 3:
+            continue
+        rings.append([[float(p[0][0] * sx), float(p[0][1] * sy)] for p in poly])
+    return rings
 
 
 def pick_threshold(scores, labels):

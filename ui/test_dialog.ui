@@ -406,7 +406,7 @@
         <item>
          <widget class="QLabel" name="out_note">
           <property name="sizePolicy"><sizepolicy hsizetype="Expanding" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
-           <string>把预测框写成 labelme json，便于人工复核</string>
+           <string>会在图像路径下输出标签文件, 可重载数据集查看检出效果</string>
           </property>
           <property name="class" stdset="0">
            <string notr="true">fieldNote</string>

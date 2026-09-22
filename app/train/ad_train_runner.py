@@ -235,7 +235,7 @@ def main():
                                  on_batch=lambda n: print(
                                      "[train] " + _tr("  评估中: {} 张").format(n),
                                      flush=True))
-        for path, score in raw:
+        for path, score, _heat in raw:
             # 铺出来的目录名是 normal / c1, 映回用户的原始类名再算指标
             cls = dir_to_class.get(adc.truth_of_path(path, test_root))
             if cls is not None:

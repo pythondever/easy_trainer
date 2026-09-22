@@ -338,7 +338,7 @@ class Ui_TestDialog(object):
         self.iou_note.setText(QCoreApplication.translate("TestDialog", u"\u4e0e\u6807\u6ce8\u6846\u91cd\u5408\u5ea6\u8fbe\u6807\u624d\u7b97\u6b63\u786e\u68c0\u51fa", None))
         self.output_label_label.setText(QCoreApplication.translate("TestDialog", u"\u8f93\u51fa\u6807\u7b7e\u6587\u4ef6", None))
         self.output_label_file_checkBox.setText("")
-        self.out_note.setText(QCoreApplication.translate("TestDialog", u"\u628a\u9884\u6d4b\u6846\u5199\u6210 labelme json\uff0c\u4fbf\u4e8e\u4eba\u5de5\u590d\u6838", None))
+        self.out_note.setText(QCoreApplication.translate("TestDialog", u"\u4f1a\u5728\u56fe\u50cf\u8def\u5f84\u4e0b\u8f93\u51fa\u6807\u7b7e\u6587\u4ef6, \u53ef\u91cd\u8f7d\u6570\u636e\u96c6\u67e5\u770b\u68c0\u51fa\u6548\u679c", None))
         self.summary_icon.setText(QCoreApplication.translate("TestDialog", u"i", None))
         self.summary_text.setText(QCoreApplication.translate("TestDialog", u"\u8bf7\u9009\u62e9\u6570\u636e\u96c6", None))
         self.cancel_btn.setText(QCoreApplication.translate("TestDialog", u"\u53d6\u6d88", None))

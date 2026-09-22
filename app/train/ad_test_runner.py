@@ -6,7 +6,9 @@ config: model_path(ad_model.pt), items[{image_path,...}], device, task="ad"
 输出:
   - [test] PROGRESS N/M
   - [test] RESULT {"ok", "task":"ad", "total", "accuracy", "auroc",
-                   "threshold", "normal_class", "per_class"}
+                   "threshold", "normal_class", "per_class", "anomaly_json"}
+  - output_labels 为真时, 另给判定为不良品的图写 labelme json 到图像同目录,
+    多边形圈出异常区域, 回首页右键"重载"即可按"异常"类别复核
 
 真值按"子文件夹名"现推(与导入侧一致): 哪个类是良品由算法认, 认不出就报错 ——
 把良品当不良品、或反过来, 都会让评估数字彻底反过来, 宁可拦住.
@@ -30,9 +32,11 @@ for _p in (_WORKSPACE, os.path.join(_WORKSPACE, "app")):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
+from PIL import Image
 from PySide6.QtCore import QCoreApplication as QC
 
 from app.core import i18n
+from app.core.label_utils import shapes_to_labelme_json
 
 try:
     import torch
@@ -66,6 +70,8 @@ def main():
 
     model_path = cfg.get("model_path", "")
     device = cfg.get("device", "cpu")
+    # 异常区域标注: 判定为不良品的图写 labelme json, 回首页"重载"就能看
+    write_labels = bool(cfg.get("output_labels"))
     if str(device).lower().startswith("cuda") and torch.cuda.is_available():
         device = "cuda"
     else:
@@ -116,16 +122,21 @@ def main():
         )
 
         scored = []                   # [(原始类名, 分数, 原图路径)]
+        heats = []                    # [(原图路径, 分数, 热力图)] 写异常区域标注用
         raw = adc.predict_scores(
             engine, model, stage_root, img_size,
             on_batch=lambda n: print(
-                "[test] PROGRESS {}/{}".format(n, staged["total"]), flush=True))
-        for path, score in raw:
+                "[test] PROGRESS {}/{}".format(n, staged["total"]), flush=True),
+            with_maps=write_labels)
+        for path, score, heat in raw:
             cls = dir_to_class.get(adc.truth_of_path(path, stage_root))
             if cls is None:
                 continue
             # 明细里要写用户原本的那张图, 不是暂存副本
-            scored.append((cls, score, origins.get(path, path)))
+            origin = origins.get(path, path)
+            scored.append((cls, score, origin))
+            if heat is not None:
+                heats.append((origin, score, heat))
     finally:
         shutil.rmtree(stage_root, ignore_errors=True)
 
@@ -171,6 +182,8 @@ def main():
         # 逐图明细单独放一个键: detail_path 是检测任务的"带框明细",
         # 报告模块按它画框, AD 没有框, 塞进去会让导出做成一份空报告
         result["ad_detail_path"] = detail
+    if write_labels:
+        result["anomaly_json"] = _write_anomaly_json(heats, metrics)
     if metrics["accuracy"] is None:
         print("[test] " + _tr("完成: {} 张, 没有判定阈值, 只报告分数").format(
             metrics["total"]), flush=True)
@@ -184,6 +197,54 @@ def main():
             metrics["auroc"]), flush=True)
     print("[test] RESULT {}".format(json.dumps(result, ensure_ascii=False)),
           flush=True)
+
+
+def _write_anomaly_json(heats, metrics):
+    """给判定为不良品的图写 labelme json 到图像同目录, 多边形标出异常区域.
+
+    只写不良品: 异常区域 = 像素分数超过判定线的地方, 而良品图一个超阈像素都
+    没有(实测 51 张里 29 张良品全为 0), 写出来只会是空文件. 与检测测试
+    "有预测才写"同一条约定. 类别名统一"异常", 回首页右键重载即能按它筛图复核.
+    """
+    threshold = metrics["threshold"]
+    if threshold <= 0:
+        print("[test] " + _tr("模型里没有判定阈值, 不输出异常区域"), flush=True)
+        return 0
+    label = _tr("异常")
+    written = missed = 0
+    for path, score, heat in heats:
+        if score < threshold:
+            continue
+        try:
+            with Image.open(path) as im:
+                iw, ih = im.size
+            rings = adc.anomaly_rings(heat, score, iw, ih, threshold)
+        except Exception as exc:
+            print("[test] " + _tr("提取异常区域失败 {}: {}").format(
+                os.path.basename(path), exc), flush=True)
+            continue
+        if not rings:
+            # 图像级分数刚过线、热力图却没超阈: 两者不是严格相等(见 anomaly_rings)
+            missed += 1
+            continue
+        try:
+            data = shapes_to_labelme_json([(label, r) for r in rings],
+                                          path, iw, ih)
+            data["imageData"] = None
+            with open(os.path.splitext(path)[0] + ".json", "w",
+                      encoding="utf-8") as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+            written += 1
+        except Exception as exc:
+            print("[test] " + _tr("输出异常区域失败 {}: {}").format(
+                os.path.basename(path), exc), flush=True)
+    if written:
+        print("[test] " + _tr("已为 {} 张不良品图写出异常区域标注(图像同目录)").format(
+            written), flush=True)
+    if missed:
+        print("[test] " + _tr("另有 {} 张判为不良品, 但热力图没超过判定线, 未写标注").format(
+            missed), flush=True)
+    return written
 
 
 def _write_detail(cfg, scored, metrics, normal):

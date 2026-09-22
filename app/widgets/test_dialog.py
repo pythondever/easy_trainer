@@ -303,16 +303,34 @@ class TestDialog(QDialog):
         info = self.app.db.get_dataset_import(self._project, self._dataset) or {}
         cls_mode = info.get("label_fmt", "") == "cls"
         self._cls_mode = cls_mode
-        # 分类模式只保留 数据/设备 两个下拉, 隐藏整个"测试参数"分组
+        # 异常检测的真值同样来自子文件夹, 数据也是 cls 格式, 但"输出标签文件"
+        # 对它恰恰是主要用途: 没有框可比, 只能把异常区域写出来重载复核
+        ad_mode = str(self._record.get("task") or "") == "ad"
+        # 分类模式只保留 数据/设备 两个下拉, 隐藏整个"测试参数"分组;
+        # 异常检测不需要置信度/iou, 但保留"输出标签文件"那一行
         for row in (0, 1, 2):
-            self._set_form_row_visible("form_param", row, not cls_mode)
-        self.ui.group_param_title.setVisible(not cls_mode)
+            self._set_form_row_visible(
+                "form_param", row, not cls_mode or (ad_mode and row == 2))
+        self.ui.group_param_title.setVisible(not cls_mode or ad_mode)
+        box = self.ui.output_label_file_checkBox
+        if ad_mode:
+            box.setToolTip(self.tr(
+                "为判定为不良品的图写 <同名>.json 到图像目录, 多边形标出异常"
+                "区域, 标注工具可直接打开;该处已有人工标注会被覆盖"))
+            # 文字两种任务共用 .ui 里那句, 写的是多边形这点由 tooltip 补
+            self.ui.out_note.setToolTip(self.tr(
+                "把异常区域写成 labelme json, 便于重载复核"))
+            self.ui.iou_treshold_txt.setEnabled(False)
+            box.setEnabled(True)
+            box.setChecked(True)
+            return
+        # 同一个弹窗可能被换数据集复用, 切回检测/分割要把 tooltip 还原
+        box.setToolTip(self.tr("为每张图写 <同名>.json 到图像目录, "
+                               "标注工具可直接打开;该处已有人工标注会被覆盖"))
+        self.ui.out_note.setToolTip(self.ui.out_note.text())
         labeled = int(info.get("labeled") or 0)
         has_label = labeled > 0
         self.ui.iou_treshold_txt.setEnabled(has_label)
-        box = self.ui.output_label_file_checkBox
-        box.setToolTip(self.tr("为每张图写 <同名>.json 到图像目录, "
-                               "标注工具可直接打开;该处已有人工标注会被覆盖"))
         if not has_label:
             # 推理模式: 强制输出标注文件
             box.setChecked(True)
@@ -332,10 +350,13 @@ class TestDialog(QDialog):
             return
         cls_mode = getattr(self, "_cls_mode", False)
         # 异常检测的真值来自"良品/不良品"子文件夹名, 模型也只看图不看框,
-        # 所以和分类一样不需要置信度/iou, 也不能输出标注文件
+        # 所以和分类一样不需要置信度/iou; 但它没有框可比, 输出开关对它
+        # 仍然有意义 —— 写的是异常区域
         ad_mode = str(self._record.get("task") or "") == "ad"
         if cls_mode or ad_mode:
-            conf, iou, output_labels = 0.5, 0.5, False
+            conf, iou = 0.5, 0.5
+            output_labels = (bool(self.ui.output_label_file_checkBox.isChecked())
+                             if ad_mode else False)
         else:
             try:
                 conf = float(self.ui.confidence_txt.text() or "0.5")
