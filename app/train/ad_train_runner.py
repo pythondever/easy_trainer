@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""异常检测(AD)训练执行脚本(由 UI 以子进程方式启动).
+"""
+异常检测(AD)训练执行脚本(由 UI 以子进程方式启动).
 
 用法: main(), 由 train_worker 以 -c 导入后调用(打包后是 pyd, 不能 python -m 启动)
 config 字段见 dialogs.py make_train_config:
@@ -56,13 +57,9 @@ from app.train import ad_common as adc
 MODEL_FILE = adc.MODEL_FILE
 
 
-def _tr(text):
-    return QC.translate("AdTrainRunner", text)
-
-
 class _EpochProbe(pl.Callback):
-    """把 anomalib 的轮次进度转成 easy_trainer 的输出协议.
-
+    """
+    把 anomalib 的轮次进度转成 easy_trainer 的输出协议.
     指标只取 train_loss: anomalib 的 AUROC/F1Score 由它自己的 Evaluator
     回调产出, 而 Evaluator 排在自定义回调之后, 这里读 callback_metrics
     拿不到本轮的值. 最终精度在训练结束后逐图打分另算, 更准也更有用.
@@ -109,7 +106,8 @@ def _build_engine(root, epochs, device, probe):
     use_cuda = str(device).lower().startswith("cuda") and torch.cuda.is_available()
     try:
         import anomalib
-        print("[train] " + _tr("anomalib {} / torch {}").format(
+        print("[train] " + QC.translate(
+            "AdTrainRunner", "anomalib {} / torch {}").format(
             getattr(anomalib, "__version__", "?"), torch.__version__),
             flush=True)
     except Exception:
@@ -122,9 +120,6 @@ def _build_engine(root, epochs, device, probe):
         logger=False,
         enable_progress_bar=False,
         enable_model_summary=False,
-        # barebones 是关掉 anomalib 自动注入 ModelCheckpoint 的开关:
-        # 它每轮存一个 wide_resnet50_2 的 ckpt(300MB 起), 而模型由本脚本自己存;
-        # 光设 enable_checkpointing=False 会与那个回调冲突直接报错
         barebones=True,
         enable_checkpointing=False,
         callbacks=[probe],
@@ -142,8 +137,10 @@ def main():
     os.makedirs(out_root, exist_ok=True)
     os.makedirs(ts_dir, exist_ok=True)
     shutil.copy2(cfg_path, os.path.join(ts_dir, "config.json"))
-    print("[train] " + _tr("输出路径: {}").format(out_root), flush=True)
-    print("[train] " + _tr("本次训练输出目录(时间戳): {}").format(ts_dir),
+    print("[train] " + QC.translate(
+        "AdTrainRunner", "输出路径: {}").format(out_root), flush=True)
+    print("[train] " + QC.translate(
+        "AdTrainRunner", "本次训练输出目录(时间戳): {}").format(ts_dir),
           flush=True)
 
     code = cfg.get("architecture") or "patchcore"
@@ -156,8 +153,8 @@ def main():
     num_workers = max(0, int(cfg.get("num_workers", 4) or 0))
     img_size = int(cfg.get("img_size", 0) or 0)
     device = cfg.get("device", "cpu")
-    print("[train] " + _tr(
-        "异常检测: 算法={} 骨干={} 轮次={} 批次={} 图像尺寸={} device={}").format(
+    print("[train] " + QC.translate(
+        "AdTrainRunner", "异常检测: 算法={} 骨干={} 轮次={} 批次={} 图像尺寸={} device={}").format(
             display, adc.AD_BACKBONE, epochs, batch_size,
             img_size or "原尺寸", device), flush=True)
 
@@ -168,23 +165,24 @@ def main():
                            "ad_" + os.path.basename(ts_dir))
     layout, normal_name = adc.arrange(ad_root, cfg.get("datasets", []))
     dir_to_class = layout["dir_to_class"]
-    print("[train] " + _tr(
-        "数据准备: 建库集 {} 张({}), 测试集 正常 {} 张 / 异常 {} 张").format(
+    print("[train] " + QC.translate(
+        "AdTrainRunner", "数据准备: 建库集 {} 张({}), 测试集 正常 {} 张 / 异常 {} 张").format(
             layout["train"], normal_name, layout["test_normal"],
             sum(layout["abnormal"].values())), flush=True)
     if layout["abnormal"]:
-        print("[train] " + _tr("  异常类别: {}").format(
-            ", ".join("{}×{}".format(k or _tr("(散图)"), v)
+        print("[train] " + QC.translate("AdTrainRunner", "  异常类别: {}").format(
+            ", ".join("{}×{}".format(k or QC.translate(
+                "AdTrainRunner", "(散图)"), v)
                       for k, v in sorted(layout["abnormal"].items()))),
             flush=True)
     if layout["ignored"]:
-        print("[train] " + _tr(
-            "  注意: 建库集里另有 {} 张非正常图, 未参与建库").format(
+        print("[train] " + QC.translate(
+            "AdTrainRunner", "  注意: 建库集里另有 {} 张非正常图, 未参与建库").format(
                 layout["ignored"]), flush=True)
     if layout["train"] == 0:
-        raise RuntimeError(_tr("建库集里没有图像, 请检查数据集"))
+        raise RuntimeError(QC.translate("AdTrainRunner", "建库集里没有图像, 请检查数据集"))
     if layout["test_normal"] == 0 and not layout["abnormal"]:
-        raise RuntimeError(_tr("测试集里没有图像, 请检查数据集"))
+        raise RuntimeError(QC.translate("AdTrainRunner", "测试集里没有图像, 请检查数据集"))
 
     test_root = os.path.join(ad_root, "test")
     abn_dirs = [os.path.join(test_root, d)
@@ -193,7 +191,7 @@ def main():
         name="ad",
         root=ad_root,
         normal_dir=os.path.join("train", adc.DIR_NORMAL),
-        abnormal_dir=abn_dirs,     # 必须逐个列全, 传父目录会把正常类也当异常
+        abnormal_dir=abn_dirs,
         normal_test_dir=os.path.join("test", adc.DIR_NORMAL),
         extensions=IMAGE_EXTS,
         train_batch_size=batch_size,
@@ -203,7 +201,7 @@ def main():
         val_split_mode="same_as_test",
     )
     data.setup()
-    print("[train] " + _tr("数据集: 建库集 {} 张").format(
+    print("[train] " + QC.translate("AdTrainRunner", "数据集: 建库集 {} 张").format(
         len(data.train_data)), flush=True)
 
     # 2) 模型 + 训练
@@ -212,7 +210,8 @@ def main():
     # 同一份数据每次重训都会得到一个不一样的记忆库(阈值跟着变)
     adc.seed_everything()
     model, cls_name, kwargs = adc.build_model(code, img_size, device)
-    print("[train] " + _tr("模型构建完成({:.1f}s): {}").format(
+    print("[train] " + QC.translate(
+        "AdTrainRunner", "模型构建完成({:.1f}s): {}").format(
         time.time() - t0, cls_name), flush=True)
     state = {"series": {}, "ts_dir": ts_dir}
     probe = _EpochProbe(epochs, state)
@@ -221,7 +220,8 @@ def main():
     # 只喂建库集: 不建验证回路, 也就不会触发 anomalib Evaluator 的 mask 校验
     engine.fit(model=model, train_dataloaders=data.train_dataloader())
     fit_secs = time.time() - t1
-    print("[train] " + _tr("建库/训练完成({:.1f}s)").format(fit_secs),
+    print("[train] " + QC.translate(
+        "AdTrainRunner", "建库/训练完成({:.1f}s)").format(fit_secs),
           flush=True)
     # anomalib 会在 default_root_dir 下建一层版本目录, 里面只有它自己的
     # 版本指针; 模型和指标由本脚本按 easy_trainer 的约定落盘, 不留这层
@@ -233,7 +233,8 @@ def main():
     try:
         raw = adc.predict_scores(engine, model, test_root, img_size,
                                  on_batch=lambda n: print(
-                                     "[train] " + _tr("  评估中: {} 张").format(n),
+                                     "[train] " + QC.translate(
+                                         "AdTrainRunner", "  评估中: {} 张").format(n),
                                      flush=True))
         for path, score, _heat in raw:
             # 铺出来的目录名是 normal / c1, 映回用户的原始类名再算指标
@@ -241,27 +242,32 @@ def main():
             if cls is not None:
                 scored.append((cls, score))
     except Exception:
-        print("[train] " + _tr("评估阶段失败, 只交付模型: {}").format(
+        print("[train] " + QC.translate(
+            "AdTrainRunner", "评估阶段失败, 只交付模型: {}").format(
             traceback.format_exc().splitlines()[-1]), flush=True)
     metrics = adc.evaluate(scored, normal_name)
     if metrics["accuracy"] is None:
-        print("[train] " + _tr("评估完成({:.1f}s): {} 张").format(
+        print("[train] " + QC.translate(
+            "AdTrainRunner", "评估完成({:.1f}s): {} 张").format(
             time.time() - t2, metrics["total"]), flush=True)
-        print("[train] " + _tr(
-            "  测试集里只有一类样本, 定不出判定阈值(没有真值反差), "
+        print("[train] " + QC.translate(
+            "AdTrainRunner", "  测试集里只有一类样本, 定不出判定阈值(没有真值反差), "
             "AUROC 和准确率都算不了; 补一些异常样本重新训练才有交付阈值"),
             flush=True)
     else:
-        print("[train] " + _tr("评估完成({:.1f}s): {} 张, 准确率 {:.4f}").format(
+        print("[train] " + QC.translate(
+            "AdTrainRunner", "评估完成({:.1f}s): {} 张, 准确率 {:.4f}").format(
             time.time() - t2, metrics["total"], metrics["accuracy"]), flush=True)
         if metrics["auroc"] is not None:
-            print("[train] " + _tr(
+            print("[train] " + QC.translate("AdTrainRunner",
                 "  image AUROC = {:.4f}  阈值 = {:.6f}(本批最优 F1 处)").format(
                     metrics["auroc"], metrics["threshold"]), flush=True)
-            print("[train] " + _tr("  漏检 {} 张(不良判成良品), 误检 {} 张").format(
+            print("[train] " + QC.translate(
+                "AdTrainRunner", "  漏检 {} 张(不良判成良品), 误检 {} 张").format(
                 metrics["FN"], metrics["FP"]), flush=True)
         else:
-            print("[train] " + _tr("  AUROC 无法计算"), flush=True)
+            print("[train] " + QC.translate(
+                "AdTrainRunner", "  AUROC 无法计算"), flush=True)
 
     # 4) 落盘: 模型 + result.json + metrics.json
     model_path = os.path.join(ts_dir, MODEL_FILE)
@@ -274,7 +280,8 @@ def main():
         "normal_class": normal_name,
         "threshold": metrics["threshold"],
     }, model_path)
-    print("[train] " + _tr("模型已保存: {} ({:.0f} MB)").format(
+    print("[train] " + QC.translate(
+        "AdTrainRunner", "模型已保存: {} ({:.0f} MB)").format(
         model_path, os.path.getsize(model_path) / 1024 ** 2), flush=True)
 
     n_ep = max(probe.done, 1)

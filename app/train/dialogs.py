@@ -402,8 +402,6 @@ def detach_device_probe(dialog):
 
 
 class TrainDialog(QDialog):
-    """统一训练对话框: 任务类型(检测/分割/分类/异常检测) + 跨项目数据集选择."""
-
     # 各任务默认参数:epochs / lr / img_size / grad_accum(分类禁用)
     TASK_DEFAULTS = {
         "detect": (100, 1e-4, 640, 4),

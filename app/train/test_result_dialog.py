@@ -7,7 +7,7 @@ import re
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, \
-    QTableWidgetItem
+    QSizePolicy, QTableWidgetItem
 from app.core.label_utils import label_sort_key
 from app.train.export_worker import ReportWorker
 from app.widgets.message_box import MessageBox
@@ -46,11 +46,14 @@ def _card(u, name, text, rate=None, rate_prefix="", lower_better=False):
                                        _rate_span(rate, lower_better)))
 
 
-def _fit_table_width(table):
-    """按实际列宽给表格顶出下限.
-
+def _fit_table_size(table, stretch_last=False, fit_height=False):
+    """
+    给表格量出贴合内容的下限宽度, 上限高度.
     QTableWidget 不把列宽算进自己的最小宽度, 窗口一窄就冒横向滚动条、
     末列被挡在视野外. 卡片区变窄时(长语言反而会更宽)就会挤到表格.
+    高度正相反: 默认策略会把剩余空间全吃掉, 只有一两行时下面空出一大片.
+    fit_height 只给异常检测用 —— 它的表固定一行, 而检测/分类的行数不定,
+    它们靠表格吃掉剩余高度才不会把卡片撑开.
     """
     table.ensurePolished()          # 列宽要在样式表生效后量, 否则字体字号还没定
     table.resizeColumnsToContents()
@@ -60,6 +63,14 @@ def _fit_table_width(table):
     if not vh.isHidden():
         total += max(vh.width(), vh.sizeHint().width())
     table.setMinimumWidth(total + 4)
+    if fit_height:
+        hh = max(table.horizontalHeader().height(),
+                 table.horizontalHeader().sizeHint().height())
+        rows = sum(table.rowHeight(r) for r in range(table.rowCount()))
+        table.setMaximumHeight(hh + rows + table.frameWidth() * 2 + 4)
+    else:
+        table.setMaximumHeight(16777215)
+    table.horizontalHeader().setStretchLastSection(stretch_last)
 
 
 def _default_pdf_name(res):
@@ -157,6 +168,14 @@ class TestResultDialog(QDialog):
 
     def _fill(self, res):
         u = self._ui
+        # 异常检测会把这两张卡和"每类抽取"收起来、并把几块改成不被拉伸,
+        # 复用同一实例填别的任务时要放回来
+        u.card_img_fn.setVisible(True)
+        u.card_img_fp.setVisible(True)
+        u.sample_lbl.setVisible(True)
+        u.sample_spin.setVisible(True)
+        for w in (u.section_img, u.conclusion_label):
+            w.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         if res.get("task") == "classify":
             self._fill_cls(res)
             return
@@ -239,36 +258,60 @@ class TestResultDialog(QDialog):
             u.conclusion_label.setText("")
 
     def _fill_ad(self, res):
-        """异常检测: 整图判"良品/不良品", 没有标注框也没有类别间混淆."""
+        """
+        异常检测: 只报检出了多少张, 不做良品/不良品的对照统计.
+        测试侧的真值是从挂上来的目录现场推的, 单类批量(现场最常见)时整批都算
+        良品, 准确率/漏检/误检既算不出也没人看. 交付口径就是检出张数 + 逐图明细.
+        """
         u = self._ui
         total = res.get("total", 0)
-        per_class = res.get("per_class") or {}
-        correct = sum(d.get("correct", 0) for d in per_class.values())
-        error = sum(d.get("error", 0) for d in per_class.values())
-        # 分类一张图只判一个类别, 异常检测只判良品/不良品, 都没有"标注框"这一层
+        thr = float(res.get("threshold") or 0.0)
+        # 判定 = 分数 >= 阈值; 模型里没存阈值就判不出, 只能报分数
+        hit = int(res.get("TP", 0)) + int(res.get("FP", 0)) if thr > 0 else None
         u.section_lbl.setVisible(False)
         u.dim_img_note.setText(self.tr("按\"张\"统计 · 整图判良品/不良品"))
         u.img_total_value.setText(str(total))
         u.img_total_lbl.setText(self.tr("测试张数"))
         u.img_total_rate.setText("")
-        u.img_ok_value.setText(str(correct))
-        _card(u, "img_ok", self.tr("判断正确"), _ratio(correct, total))
-        u.img_fn_value.setText(str(error))
-        _card(u, "img_fn", self.tr("判断错误"),
-              _ratio(error, total), lower_better=True)
-        # 这一格让给 AUROC: 它是阈值无关的交付指标, 比卡在某个阈值上的准确率
-        # 更能代表模型水平(准确率换个阈值就变)
-        auroc = res.get("auroc")
-        u.img_fp_value.setText("--" if auroc is None else "{:.4f}".format(auroc))
-        u.img_fp_lbl.setText("AUROC")
-        u.img_fp_rate.setText("")
-        u.img_fp_value.setStyleSheet(
-            "color:{}".format(_rate_color(auroc or 0.0)))
-        self._fill_class_table(per_class)
-        u.conclusion_label.setText(self._conclusion_ad(res, per_class))
+        # 没有"过杀/漏检"的对照量, 这两张卡收起来让前两张占满
+        u.card_img_fn.setVisible(False)
+        u.card_img_fp.setVisible(False)
+        # 每类抽取只影响画框 PDF 的样本数, 而 AD 的明细是 CSV, 导出本就禁用
+        u.sample_lbl.setVisible(False)
+        u.sample_spin.setVisible(False)
+        # 表格只有一行, 卡片与结论行都收住高度, 否则剩余空间会全灌进它们
+        for w in (u.section_img, u.conclusion_label):
+            w.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
+        u.img_ok_value.setText("--" if hit is None else str(hit))
+        _card(u, "img_ok", self.tr("检出异常"))
+        self._fill_ad_table(res.get("per_class") or {})
+        u.conclusion_label.setText(self._conclusion_ad(total, hit, thr))
+        # 内容只有两卡一行, 多余高度集中留到按钮上方, 否则会被均分成几道空隙
+        u.mainLayout.insertStretch(u.mainLayout.count() - 1, 1)
+
+    def _fill_ad_table(self, per_class):
+        """异常检测的类别表: 只有图数与检出数, 没有真值这一层."""
+        u = self._ui
+        u.result_table.setColumnCount(3)
+        u.result_table.setHorizontalHeaderLabels(
+            [self.tr("类别"), self.tr("总图数"), self.tr("检出异常")])
+        rows = sorted(per_class.items(), key=lambda kv: label_sort_key(str(kv[0])))
+        u.result_table.setRowCount(len(rows))
+        for i, (cls, d) in enumerate(rows):
+            # 未具名的散图不叫"(根目录散图)": 与写出的标注同名, 都叫"异常"
+            name = self.tr("异常") if d.get("unnamed") else str(cls)
+            vals = [name, str(d.get("total", 0)), str(d.get("hit", 0))]
+            for j, v in enumerate(vals):
+                item = QTableWidgetItem(v)
+                item.setTextAlignment(
+                    Qt.AlignLeft | Qt.AlignVCenter if j == 0
+                    else Qt.AlignCenter)
+                u.result_table.setItem(i, j, item)
+        # 3 列只有一行, 让最后一列铺满、高度贴合内容, 否则挤在左边、下面空一片
+        _fit_table_size(u.result_table, stretch_last=True, fit_height=True)
 
     def _fill_class_table(self, per_class):
-        """按类别一行的表格: 总图数/正确/错误/精度(分类与异常检测共用)."""
+        """分类的类别表: 总图数/正确/错误/精度."""
         u = self._ui
         u.result_table.setColumnCount(5)
         u.result_table.setHorizontalHeaderLabels(
@@ -289,29 +332,24 @@ class TestResultDialog(QDialog):
                     Qt.AlignLeft | Qt.AlignVCenter if j == 0
                     else Qt.AlignCenter)
                 u.result_table.setItem(i, j, item)
-        _fit_table_width(u.result_table)
+        _fit_table_size(u.result_table)
 
-    def _conclusion_ad(self, res, per_class):
-        normal = res.get("normal_class") or self.tr("(根目录散图)")
-        if res.get("single_class"):
+    def _conclusion_ad(self, total, hit, thr):
+        if thr <= 0:
             return self.tr(
-                "本批只有一类样本({}), 定不出判定阈值, 只报告分数;"
-                " 补一些异常样本重新训练才有可交付的阈值.").format(normal)
-        base = self.tr("良品类别: {}, 判定阈值 {:.4f}.").format(
-            normal, float(res.get("threshold") or 0.0))
-        fn = int(res.get("FN") or 0)
-        fp = int(res.get("FP") or 0)
-        if not fn and not fp:
-            return base + self.tr(" 无漏检, 无误检.")
-        worst = max(per_class.items(), key=lambda kv: kv[1].get("error", 0)) \
-            if per_class else ("", {})
-        return base + self.tr(
-            " 漏检 {} 张(不良判成良品), 误检 {} 张(良品判成不良品);"
-            " \"{}\"类错误最多({} 张).").format(
-                fn, fp, worst[0], worst[1].get("error", 0))
+                "模型里没有判定阈值, 只报告分数, 逐图分数见 CSV 明细.")
+        return self.tr("判定阈值 {:.4f}. 本次 {} 张, 检出异常 {} 张.").format(
+            thr, total, hit)
 
     def _fill_table(self, per_class):
         u = self._ui
+        # 列数与表头在这里显式重设: 异常检测用的是 3 列版本, 同一实例切回来
+        # 不能指望 .ui 里那份默认值还在
+        u.result_table.setColumnCount(7)
+        u.result_table.setHorizontalHeaderLabels(
+            [self.tr("类别"), self.tr("标注数"), self.tr("正确检出"),
+             self.tr("漏检"), self.tr("误检"), self.tr("检出率"),
+             self.tr("准确率")])
         rows = sorted(per_class.items(), key=lambda kv: label_sort_key(str(kv[0])))
         u.result_table.setRowCount(len(rows))
         for i, (cls, d) in enumerate(rows):
@@ -330,7 +368,7 @@ class TestResultDialog(QDialog):
                 else:
                     item.setTextAlignment(Qt.AlignCenter)
                 u.result_table.setItem(i, j, item)
-        _fit_table_width(u.result_table)
+        _fit_table_size(u.result_table)
 
     def _conclusion(self, per_class, tp, fp, fn, conf=None):
         if tp == 0 and fp == 0 and fn == 0:

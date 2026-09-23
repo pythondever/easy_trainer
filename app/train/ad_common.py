@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""AD(异常检测) 两个 runner 的公共部分: 目录收集, 正常类判定, 数据铺设.
+"""
+AD(异常检测) 两个 runner 的公共部分: 目录收集, 正常类判定, 数据铺设.
 
 只被 ad_train_runner / ad_test_runner 在子进程里导入. 主进程不碰 anomalib
 (装不上也要能开界面), 所以这个模块和 classify_common 一样只在子进程生效.
@@ -22,37 +23,25 @@ import shutil
 import tempfile
 
 from PySide6.QtCore import QCoreApplication as QC
-
+import numpy as np
+from sklearn.metrics import roc_auc_score
 from app.core.constants import IMAGE_EXTS
 from app.core.db import get_paths
 
-# 用户目录里"正常品"的常见叫法. 只用来猜; 猜不出直接报错让用户改文件夹名,
-# 不瞎猜也不设界面开关 —— 建库集混进异常样本会静默毁掉模型, 但猜错的代价
-# 只是重命名一次目录, 不值得为它常驻一个控件
 NORMAL_NAMES = ("ok", "good", "normal", "fine", "pass",
                 "良品", "正常", "正品", "正常品", "合格", "合格品",
                 "无缺陷", "无瑕疵")
 
-# 图像平铺在导入根目录(没有子文件夹)时用的类别名. 一摞良品图直接放一个文件夹
-# 是 AD 最常见的用法, 这批图天然全是正常样本
 UNNAMED = ""
 
-# 铺到磁盘上的目录名(必须 ASCII, 见模块头)
 DIR_NORMAL = "normal"
 DIR_ABNORMAL_PREFIX = "c"
 
-# 训练产物的文件名. 放这里而不是 runner 里: 训练界面要拿它当"训练期间先填上"的
-# model_path, 而 runner 模块在导入时就拉 anomalib, 主进程不能碰
 MODEL_FILE = "ad_model.pt"
 
 _ASCII_MIN, _ASCII_MAX = 0x20, 0x7E
 
-# anomalib 选 coreset 有两个随机源, 两个都得压住才可复现(实测见 kcg_seed_probe):
-#   KCenterGreedy.select_coreset_idxs 用 torch.randint 取贪心的起始点 -> torch 全局 RNG
-#   它内部的 SparseRandomProjection(eps=0.9) 不带 random_state     -> numpy 全局 RNG
-# 只设其中一个, coreset 每次仍然不同, 同一份数据重训的阈值就跟着跳(实测
-# PatchCore 在 51 张测试图上阈值跳到 40.6~45.6, AUROC 跟着动 0.002),
-# 而阈值是随模型一起交付的判定边界, 每次重训都换一个不能接受.
+
 DEFAULT_SEED = 42
 
 # 热力图转异常区域多边形的参数(见 anomaly_rings)
@@ -62,7 +51,6 @@ MAP_OPEN_KERNEL = 5           # 形态学开运算核, 去掉零散噪点
 
 
 def seed_everything(seed=DEFAULT_SEED):
-    """训练前固定随机种子, 让同一份数据重训得到同一套 coreset/指标."""
     import random
 
     import numpy as np
@@ -81,8 +69,8 @@ def is_ascii_path(path):
 
 
 def ascii_stage_dir(hint):
-    """给 anomalib 用的暂存目录: 绝对路径纯 ASCII 才建得起来.
-
+    """
+    给 anomalib 用的暂存目录: 绝对路径纯 ASCII 才建得起来.
     优先用调用方给的位置(和输出放一起, 出问题好找); 输出选在"项目\\结果"
     这类中文目录下时退到系统临时目录, 再不行退到盘根 —— 宁可换个地方铺,
     也不要让用户为了跑算法去改自己的目录名.
@@ -105,7 +93,6 @@ def ascii_stage_dir(hint):
 
 
 def collect_classes(datasets, split):
-    """{类别名: [图像路径]}, 类别取自每个导入根目录下的第一级子文件夹."""
     roots = []
     for ds in datasets:
         if ds.get("split") != split:
@@ -115,8 +102,8 @@ def collect_classes(datasets, split):
 
 
 def collect_from_roots(roots):
-    """{类别名: [图像路径]}, 类别取每个根目录下的第一级子文件夹名.
-
+    """
+    {类别名: [图像路径]}, 类别取每个根目录下的第一级子文件夹名.
     图像散在根目录时归到 UNNAMED, 不再往下猜层级 —— 与导入侧
     (import_task.py 的 cls 分支) 取类别的口径一致, 免得同一批图在导入界面
     和训练时属于不同的类. 更深的层级只影响路径, 不产生新的类.
@@ -142,8 +129,8 @@ def _add_tree(out, cls, sub):
 
 
 def _pick_normal(names, configured=""):
-    """在类别集合里认正常类, 认不出返回 None.
-
+    """
+    在类别集合里认正常类, 认不出返回 None.
     不能用空串表示"认不出": 空串是"根目录散图"这个合法类名, 一摞良品图平铺
     一个文件夹时它恰恰就是答案.
     """
@@ -166,8 +153,8 @@ def names_text(names):
 
 
 def guess_normal(names, configured=""):
-    """在类别名集合里认正常类: 显式配置 > 常见叫法 > 只有一类就用它; 认不出返回 None.
-
+    """
+    在类别名集合里认正常类: 显式配置 > 常见叫法 > 只有一类就用它; 认不出返回 None.
     训练侧用不到这条(认不出直接报错, 建库集混进异常样本是致命的), 这里是
     测试侧的口径: 认不出还能退回"不评估真值".
     """
@@ -176,8 +163,8 @@ def guess_normal(names, configured=""):
 
 
 def resolve_normal(train_map, val_map):
-    """定出"哪个类别名代表正常", 返回 (正常类名, 训练侧被忽略的张数).
-
+    """
+    定出"哪个类别名代表正常", 返回 (正常类名, 训练侧被忽略的张数).
     常见叫法自动认 > 训练侧只有一类就用它. 认不出直接报错: 建库集里混进异常样本
     是无监督训练最致命的错误 —— 模型照样训完、指标照样出, 事后从结果里看不出来,
     所以宁可拦住, 让用户把良品类目录改成 NORMAL_NAMES 里的叫法再训.
@@ -197,9 +184,6 @@ def resolve_normal(train_map, val_map):
     if not train_map:
         raise ValueError(QC.translate("AdCommon", "训练集里没有图像"))
     if len(train_map) == 1:
-        # 训练侧只有一类不等于"那批图就是良品": 用户把 训练集/缺陷类 挂上来时
-        # 也只有一类, 那样建库等于拿缺陷当基准. 只放行两种情形 —— 这个类就是
-        # 认出来的良品类, 或它是一摞平铺的散图(天然全是良品)
         only = next(iter(train_map))
         if only not in (name, UNNAMED):
             raise ValueError(QC.translate(
@@ -208,8 +192,6 @@ def resolve_normal(train_map, val_map):
                                 display_name(only), display_name(name)))
         ignored = 0
     elif name in train_map:
-        # 训练侧混进了别的类: 只吃正常类, 异常的图不进建库但也不报错 ——
-        # 允许把 根/{OK,缺陷1} 整个挂到训练集上
         ignored = sum(len(v) for k, v in train_map.items() if k != name)
     else:
         raise ValueError(QC.translate(
@@ -219,8 +201,8 @@ def resolve_normal(train_map, val_map):
 
 
 def _dir_rows(class_map, normal_name):
-    """(目录名, 原始类名) 列表: 正常类固定 normal, 异常类按类名排序编成 c1, c2...
-
+    """
+    (目录名, 原始类名) 列表: 正常类固定 normal, 异常类按类名排序编成 c1, c2...
     编号而不是音译: 用户类名长短和字符集都没法保证, 序号是唯一稳的.
     """
     rows = [(DIR_NORMAL, normal_name)]
@@ -240,14 +222,13 @@ def _drop_empty_dirs(root):
 
 
 def arrange(ad_root, datasets):
-    """把两个 split 的图铺成 anomalib Folder 要的目录, 返回铺设结果与正常类名.
-
+    """
+    把两个 split 的图铺成 anomalib Folder 要的目录, 返回铺设结果与正常类名.
     目录固定为:
       <ad_root>/train/normal/**      建库集, 只有正常图
       <ad_root>/test/normal/**       测试集正常样本
       <ad_root>/test/c1, c2 .../**   测试集异常样本, 一个缺陷类一个目录
     每次整目录重建: 上一轮的类残留在里面会让这一轮凭空多出异常类.
-
     返回 (布局, 正常类名): 布局含 train / test_normal / abnormal{原类名: 张数} /
     ignored(训练侧被忽略的异常图张数) / dir_to_class(目录名 → 原始类名)
     """
@@ -280,8 +261,8 @@ def arrange(ad_root, datasets):
 
 
 def stage_test(ad_root, roots, normal_name=""):
-    """把测试用的原始目录也铺一份, 返回 {dir_to_class, normal, total, origins}.
-
+    """
+    把测试用的原始目录也铺一份, 返回 {dir_to_class, normal, total, origins}.
     测试侧本来可以直接在用户的原始目录上打分, 但 anomalib 不吃中文路径,
     用户的目录叫"数据\\划痕"就当场报错, 所以照样复制一份到 ASCII 目录下.
     origins 是"副本 → 原图", 结果里要显示用户原本那张图.
@@ -313,8 +294,8 @@ def stage_test(ad_root, roots, normal_name=""):
 
 
 def _rebuild(dst, paths, mapping=None):
-    """清空并重建一个类别目录, 复制进 paths, 返回实际张数.
-
+    """
+    清空并重建一个类别目录, 复制进 paths, 返回实际张数.
     mapping 非空时顺带记下"副本 → 原图", 明细和报告要显示用户原本那张图.
     """
     if os.path.isdir(dst):
@@ -344,8 +325,8 @@ def _rebuild(dst, paths, mapping=None):
 
 
 def abnormal_dirs(test_root):
-    """test 铺好的异常目录名: 除正常类目录以外的所有目录, 排序后返回.
-
+    """
+    test 铺好的异常目录名: 除正常类目录以外的所有目录, 排序后返回.
     必须逐个列全再交给 Folder: 传父目录会把正常类也当成一个异常类
     (实测 test/normal 的图被重复计入且真值标成异常).
     """
@@ -356,32 +337,23 @@ def abnormal_dirs(test_root):
 
 
 # ---------- AD 算法清单 ----------
-
-# 骨干统一 wide_resnet50_2: timm 的预训练权重都从 HuggingFace 取, 不进安装包.
-# 选这一档是因为只有它有现成缓存(resnet18.a1_in1k 那份在本机只下到 44MB 就断了),
-# 换别的档首次训练会卡在下载上. 离线机器靠 ensure_backbone_cache 预置缓存
 AD_BACKBONE = "wide_resnet50_2"
 
 # 安装器按 builder/pretrained-assets.txt 把骨干权重放到权重根目录的 ad/ 下
 _BUNDLE_ASSET = os.path.join("ad", AD_BACKBONE + ".racm_in1k.safetensors")
 _BACKBONE_BYTES = 275835296
 
-# HF 缓存的目录约定. 版本目录要用 40 位的 commit, 不能用文件自身的 sha256:
-# 实测(见 timm_offline_probe)只有前者能让 hf 在断网时命中, 后者它当成分支名,
-# 仍要去远端解析. 这个 commit 是该权重文件在上游的版本号, 与 _BACKBONE_BYTES
-# 是一对固定值, 上游重新提交会先让安装器的 sha256 校验失败
 _HF_REPO_DIR = "models--timm--wide_resnet50_2.racm_in1k"
 _HF_REVISION = "30f73aceaaa1911830a9795b83ab1908dba18719"
 _HF_FILENAME = "model.safetensors"
 
 
 def ensure_backbone_cache():
-    """把随安装包分发的骨干权重摆进 HuggingFace 缓存, 返回缓存里的权重路径(没有则空串).
-
+    """
+    把随安装包分发的骨干权重摆进 HuggingFace 缓存, 返回缓存里的权重路径(没有则空串).
     anomalib 建 TimmFeatureExtractor 时写死了 timm.create_model(pretrained=True),
     没有传本地文件的口子, 而 timm 只认 HF 缓存. 所以离线交付只能反过来做:
     安装器把权重要到 pretrained/ad/ 下, 这里在首次训练前按 HF 的目录约定摆好.
-
     缓存里已经有就什么都不做 —— 联网机器自己下过的那份不能被覆盖. 摆不进去也不报错,
     让 timm 照它原来的路子去联网, 失败信息由它给.
     """
@@ -409,7 +381,6 @@ def ensure_backbone_cache():
             os.link(src, dst)
         except OSError:
             pass
-        # 硬链接跨卷会失败, 而且它可能成功建出一个 stat 不到的条目, 所以要看结果
         if not os.path.isfile(dst):
             shutil.copy2(src, dst)
         os.makedirs(os.path.join(repo, "refs"), exist_ok=True)
@@ -419,9 +390,6 @@ def ensure_backbone_cache():
         return ""
     return dst if os.path.isfile(dst) else ""
 
-# (代号, 界面显示名, anomalib 类名, 构造参数, 是否按轮次训练)
-# 只收不需要外部数据集的算法: EfficientAD 要 imagenette、DRAEM 要 DTD,
-# 打包进桌面软件等于把两个数据集也塞进安装包.
 AD_MODELS = (
     ("patchcore", "PatchCore", "Patchcore",
      {"layers": ("layer2", "layer3")}, False),
@@ -462,8 +430,8 @@ def is_epoch_model(code):
 
 
 def build_model(code, img_size=0, device="cpu"):
-    """建 anomalib 模型; 返回 (模型, 类名, 可 JSON 化的构造参数).
-
+    """
+    建 anomalib 模型; 返回 (模型, 类名, 可 JSON 化的构造参数).
     返回的构造参数存进模型文件, 测试时按它把模型原样重建 —— 只靠
     state_dict 恢复不了骨干结构, 而 anomalib 各算法的构造签名差异很大.
     这里顺带把骨干权重备到 HF 缓存(离线机器靠这一步, 见 ensure_backbone_cache).
@@ -473,8 +441,6 @@ def build_model(code, img_size=0, device="cpu"):
     ensure_backbone_cache()
     cls_name, kwargs, _needs = _spec(code)
     kwargs["backbone"] = AD_BACKBONE
-    # visualizer 会把每张测试图的异常热力图写成 PNG 丢进训练输出目录,
-    # 一次评估就多出上百张图, 而交付物里没有它们的位置
     kwargs["visualizer"] = False
     cls = getattr(M, cls_name)
     model = cls(**_with_pre_processor(cls, kwargs, img_size))
@@ -482,8 +448,8 @@ def build_model(code, img_size=0, device="cpu"):
 
 
 def _with_pre_processor(cls, kwargs, img_size):
-    """把图像尺寸塞进预处理器.
-
+    """
+    把图像尺寸塞进预处理器.
     anomalib 的预处理器在构造模型时就定死成 256x256(各算法都一样), 改不了
     之后. 产线图缩到 256 会把小缺陷一起抹掉, 所以这里显式重建一个.
     """
@@ -500,8 +466,8 @@ def _with_pre_processor(cls, kwargs, img_size):
 
 
 def load_model(code, cls_name, kwargs, img_size, state_dict_path):
-    """按落盘的构造参数把模型重建并载入权重.
-
+    """
+    按落盘的构造参数把模型重建并载入权重.
     重建时要先拿到骨干结构, 所以同样要骨干权重在手(见 ensure_backbone_cache).
     """
     import torch
@@ -519,8 +485,8 @@ def load_model(code, cls_name, kwargs, img_size, state_dict_path):
 
 def predict_scores(engine, model, root, img_size=0, on_batch=None,
                    with_maps=False):
-    """对 root 目录树逐图打分, 返回 [(图像路径, 分数, 热力图)].
-
+    """
+    对 root 目录树逐图打分, 返回 [(图像路径, 分数, 热力图)].
     with_maps=False 时热力图为 None: 训练侧只判"这张是良品还是不良品", 没必要
     把 256×256 的图端出来; 测试侧要写异常区域, 才需要它.
     """
@@ -548,8 +514,8 @@ def predict_scores(engine, model, root, img_size=0, on_batch=None,
 
 
 def anomaly_rings(anomaly_map, score, width, height, threshold):
-    """像素级热力图 → 原图坐标下的多边形顶点列表, 供写成 labelme json 复核.
-
+    """
+    像素级热力图 → 原图坐标下的多边形顶点列表, 供写成 labelme json 复核.
     threshold 用图像级那个判定阈值, 但先按该图的 score/map.max 折算到像素域:
     anomalib 的图像分数是 anomaly map 的聚合(带平滑), 两者不严格相等(实测比值
     中位 1.03, 低分区波动到 1.15), 直接拿图像级阈值切会让"刚过判定线"的图切不出
@@ -589,12 +555,11 @@ def anomaly_rings(anomaly_map, score, width, height, threshold):
 
 
 def pick_threshold(scores, labels):
-    """在出现过的分数里挑 F1 最高的那个当阈值, 返回 (阈值, F1).
-
+    """
+    在出现过的分数里挑 F1 最高的那个当阈值, 返回 (阈值, F1).
     与 anomalib 的 AdaptiveThreshold 同一思路. 样本只有一类时无需阈值,
     取分数中位数并返回 F1=0.
     """
-    import numpy as np
 
     s = np.asarray(scores, dtype="float64")
     y = np.asarray(labels, dtype="int64")
@@ -616,8 +581,8 @@ def pick_threshold(scores, labels):
 
 
 def evaluate(scored, normal_name, threshold=None):
-    """把 [(类别名, 分数)] 按类别名推真值后算指标.
-
+    """
+    把 [(类别名, 分数)] 按类别名推真值后算指标.
     两侧传进来的都必须是**原始类名**(不是铺到磁盘上的 normal / c1),
     调用方先用 dir_to_class 映回来; 真值口径就一句话: 类名等于
     normal_name 的是良品, 其余一律不良品.
@@ -629,8 +594,6 @@ def evaluate(scored, normal_name, threshold=None):
     本批只有一类样本时挑不出阈值, 返回 single_class=True 且 accuracy=None,
     不硬凑一个分界.
     """
-    import numpy as np
-    from sklearn.metrics import roc_auc_score
 
     labels, scores, dirs = [], [], []
     for item in scored:
@@ -648,14 +611,12 @@ def evaluate(scored, normal_name, threshold=None):
     y = np.asarray(labels)
     if thr <= 0:
         if int(y.min()) == int(y.max()):
-            # 本批只有一类样本: 挑不出阈值 —— 没有真值反差, 任何分界都"最优".
-            # 硬凑一个中位数会让判定变成随机, 所以宁可交白卷(accuracy=None),
-            # 由调用方去要模型里存的阈值, 或告诉用户补异常样本
             out["single_class"] = True
             for cls_dir in dirs:
                 st = out["per_class"].setdefault(
                     display_name(cls_dir),
-                    {"total": 0, "correct": 0, "error": 0, "accuracy": None})
+                    {"total": 0, "correct": 0, "error": 0, "accuracy": None,
+                     "hit": 0, "unnamed": not cls_dir})
                 st["total"] += 1
             return out
         thr, f1 = pick_threshold(scores, labels)
@@ -674,10 +635,13 @@ def evaluate(scored, normal_name, threshold=None):
     per = {}
     for cls_dir, label, p in zip(dirs, labels, pred.tolist()):
         st = per.setdefault(display_name(cls_dir),
-                            {"total": 0, "correct": 0, "error": 0})
+                            {"total": 0, "correct": 0, "error": 0,
+                             "hit": 0, "unnamed": not cls_dir})
         st["total"] += 1
         st["correct"] += int(int(p) == int(label))
         st["error"] += int(int(p) != int(label))
+        # 结果面板只报"检出了多少张"(测试侧多数没有真值), 单独记一笔
+        st["hit"] += int(p)
     for st in per.values():
         st["accuracy"] = round(st["correct"] / max(st["total"], 1), 4)
     out["per_class"] = per

@@ -349,12 +349,10 @@ class TestDialog(QDialog):
             MessageBox.warning(self, self.tr("测试"), self.tr("请至少选择一个数据集"))
             return
         cls_mode = getattr(self, "_cls_mode", False)
-        # 异常检测的真值来自"良品/不良品"子文件夹名, 模型也只看图不看框,
-        # 所以和分类一样不需要置信度/iou; 但它没有框可比, 输出开关对它
-        # 仍然有意义 —— 写的是异常区域
         ad_mode = str(self._record.get("task") or "") == "ad"
         if cls_mode or ad_mode:
             conf, iou = 0.5, 0.5
+            # 分类的 runner 不接这个键, 只有异常检测按复选框取
             output_labels = (bool(self.ui.output_label_file_checkBox.isChecked())
                              if ad_mode else False)
         else:

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""异常检测(AD)测试执行脚本(由 UI 以子进程方式启动).
+"""
+异常检测(AD)测试执行脚本(由 UI 以子进程方式启动).
 
 用法: main(), 由 test_worker 以 -c 导入后调用(打包后是 pyd, 不能 python -m 启动)
 config: model_path(ad_model.pt), items[{image_path,...}], device, task="ad"
@@ -48,10 +49,6 @@ except Exception as e:
     sys.exit(1)
 
 
-def _tr(text):
-    return QC.translate("AdTestRunner", text)
-
-
 def _collect_roots(items):
     """把 items 里出现过的图像根目录去重(同一份数据可能被勾了多次)."""
     roots = []
@@ -77,7 +74,7 @@ def main():
     else:
         device = "cpu"
     use_cuda = device == "cuda"
-    print("[test] " + _tr("加载异常检测模型: {}").format(
+    print("[test] " + QC.translate("AdTestRunner", "加载异常检测模型: {}").format(
         os.path.basename(model_path)), flush=True)
     ckpt = torch.load(model_path, map_location="cpu", weights_only=False)
     code = ckpt.get("ad_model", "patchcore")
@@ -86,15 +83,17 @@ def main():
     img_size = int(ckpt.get("img_size", 0) or 0)
     normal_ckpt = ckpt.get("normal_class", "")
     threshold = float(ckpt.get("threshold", 0.0) or 0.0)
-    print("[test] " + _tr("算法={} 图像尺寸={} 阈值={:.6f}").format(
-        adc.model_display(code), img_size or _tr("原尺寸"), threshold),
+    print("[test] " + QC.translate(
+        "AdTestRunner", "算法={} 图像尺寸={} 阈值={:.6f}").format(
+        adc.model_display(code), img_size or QC.translate(
+            "AdTestRunner", "原尺寸"), threshold),
         flush=True)
 
     model = adc.load_model(code, cls_name, kwargs, img_size, model_path)
 
     roots = _collect_roots(cfg.get("items") or [])
     if not roots:
-        raise RuntimeError(_tr("没有可用的图像目录, 请检查数据集"))
+        raise RuntimeError(QC.translate("AdTestRunner", "没有可用的图像目录, 请检查数据集"))
 
     stage_root = os.path.join(
         adc.ascii_stage_dir(cfg.get("report_dir") or tempfile.gettempdir()),
@@ -105,7 +104,8 @@ def main():
         dir_to_class = staged["dir_to_class"]
         normal = staged["normal"]
         origins = staged["origins"]
-        print("[test] " + _tr("测试图片 {} 张, 良品类别: {}").format(
+        print("[test] " + QC.translate(
+            "AdTestRunner", "测试图片 {} 张, 良品类别: {}").format(
             staged["total"], adc.display_name(normal)), flush=True)
 
         engine = Engine(
@@ -141,22 +141,23 @@ def main():
         shutil.rmtree(stage_root, ignore_errors=True)
 
     if not scored:
-        raise RuntimeError(_tr("没有取到任何图像, 请检查数据集"))
+        raise RuntimeError(QC.translate("AdTestRunner", "没有取到任何图像, 请检查数据集"))
     print("[test] PROGRESS {}/{}".format(len(scored), len(scored)), flush=True)
 
     # 阈值沿用模型里训练时定好的那个: 换一批数据重挑等于拿测试集调参
     metrics = adc.evaluate([(s[0], s[1]) for s in scored], normal,
                            threshold=threshold)
     if metrics["threshold"] > 0:
-        print("[test] " + _tr("沿用训练时定下的阈值 {:.6f}").format(
+        print("[test] " + QC.translate(
+            "AdTestRunner", "沿用训练时定下的阈值 {:.6f}").format(
             metrics["threshold"]), flush=True)
     elif metrics.get("single_class"):
-        print("[test] " + _tr(
-            "模型里没有阈值, 本批又只有一类样本, 定不出判定阈值, 只报告分数"),
+        print("[test] " + QC.translate(
+            "AdTestRunner", "模型里没有阈值, 本批又只有一类样本, 定不出判定阈值, 只报告分数"),
             flush=True)
     else:
-        print("[test] " + _tr(
-            "模型里没有阈值, 已按本批数据现挑 {:.6f}(精度会偏乐观)").format(
+        print("[test] " + QC.translate(
+            "AdTestRunner", "模型里没有阈值, 已按本批数据现挑 {:.6f}(精度会偏乐观)").format(
                 metrics["threshold"]), flush=True)
 
     result = {
@@ -185,32 +186,41 @@ def main():
     if write_labels:
         result["anomaly_json"] = _write_anomaly_json(heats, metrics)
     if metrics["accuracy"] is None:
-        print("[test] " + _tr("完成: {} 张, 没有判定阈值, 只报告分数").format(
+        print("[test] " + QC.translate(
+            "AdTestRunner", "完成: {} 张, 没有判定阈值, 只报告分数").format(
             metrics["total"]), flush=True)
+    elif not metrics["TP"] + metrics["FN"]:
+        # 本批没有真异常样本, 准确率/漏检都是拿"全部良品"当分母算出来的假数字,
+        # 报检出张数才是这批量要的答案
+        print("[test] " + QC.translate(
+            "AdTestRunner", "完成: {} 张, 检出异常 {} 张").format(
+            metrics["total"], metrics["TP"] + metrics["FP"]), flush=True)
     else:
-        print("[test] " + _tr(
-            "完成: {} 张, 准确率 {:.4f}, 漏检 {} 张, 误检 {} 张").format(
+        print("[test] " + QC.translate(
+            "AdTestRunner", "完成: {} 张, 准确率 {:.4f}, 漏检 {} 张, 误检 {} 张").format(
                 metrics["total"], metrics["accuracy"], metrics["FN"],
                 metrics["FP"]), flush=True)
     if metrics["auroc"] is not None:
-        print("[test] " + _tr("  image AUROC = {:.4f}").format(
+        print("[test] " + QC.translate(
+            "AdTestRunner", "  image AUROC = {:.4f}").format(
             metrics["auroc"]), flush=True)
     print("[test] RESULT {}".format(json.dumps(result, ensure_ascii=False)),
           flush=True)
 
 
 def _write_anomaly_json(heats, metrics):
-    """给判定为不良品的图写 labelme json 到图像同目录, 多边形标出异常区域.
-
+    """
+    给判定为不良品的图写 labelme json 到图像同目录, 多边形标出异常区域.
     只写不良品: 异常区域 = 像素分数超过判定线的地方, 而良品图一个超阈像素都
     没有(实测 51 张里 29 张良品全为 0), 写出来只会是空文件. 与检测测试
     "有预测才写"同一条约定. 类别名统一"异常", 回首页右键重载即能按它筛图复核.
     """
     threshold = metrics["threshold"]
     if threshold <= 0:
-        print("[test] " + _tr("模型里没有判定阈值, 不输出异常区域"), flush=True)
+        print("[test] " + QC.translate(
+            "AdTestRunner", "模型里没有判定阈值, 不输出异常区域"), flush=True)
         return 0
-    label = _tr("异常")
+    label = QC.translate("AdTestRunner", "异常")
     written = missed = 0
     for path, score, heat in heats:
         if score < threshold:
@@ -220,7 +230,8 @@ def _write_anomaly_json(heats, metrics):
                 iw, ih = im.size
             rings = adc.anomaly_rings(heat, score, iw, ih, threshold)
         except Exception as exc:
-            print("[test] " + _tr("提取异常区域失败 {}: {}").format(
+            print("[test] " + QC.translate(
+                "AdTestRunner", "提取异常区域失败 {}: {}").format(
                 os.path.basename(path), exc), flush=True)
             continue
         if not rings:
@@ -236,13 +247,16 @@ def _write_anomaly_json(heats, metrics):
                 json.dump(data, f, ensure_ascii=False, indent=2)
             written += 1
         except Exception as exc:
-            print("[test] " + _tr("输出异常区域失败 {}: {}").format(
+            print("[test] " + QC.translate(
+                "AdTestRunner", "输出异常区域失败 {}: {}").format(
                 os.path.basename(path), exc), flush=True)
     if written:
-        print("[test] " + _tr("已为 {} 张不良品图写出异常区域标注(图像同目录)").format(
+        print("[test] " + QC.translate(
+            "AdTestRunner", "已为 {} 张不良品图写出异常区域标注(图像同目录)").format(
             written), flush=True)
     if missed:
-        print("[test] " + _tr("另有 {} 张判为不良品, 但热力图没超过判定线, 未写标注").format(
+        print("[test] " + QC.translate(
+            "AdTestRunner", "另有 {} 张判为不良品, 但热力图没超过判定线, 未写标注").format(
             missed), flush=True)
     return written
 
@@ -284,7 +298,8 @@ def _write_detail(cfg, scored, metrics, normal):
                     QC.translate("AdTestRunner", "是") if pred == label
                     else QC.translate("AdTestRunner", "否"),
                 ])
-        print("[test] " + _tr("逐图明细: {}").format(path), flush=True)
+        print("[test] " + QC.translate(
+            "AdTestRunner", "逐图明细: {}").format(path), flush=True)
         return path
     except OSError:
         return ""

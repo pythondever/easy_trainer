@@ -4,65 +4,65 @@
 <context>
     <name>AdCommon</name>
     <message>
-        <location filename="../app/train/ad_common.py" line="102"/>
+        <location filename="../app/train/ad_common.py" line="100"/>
         <source>找不到可写的纯英文暂存目录(异常检测的底层库不支持中文路径), 请把输出路径改到纯英文目录下</source>
         <translation>쓸 수 있는 영문(ASCII) 임시 디렉터리를 찾지 못했습니다(이상 검출 하위 라이브러리가 비ASCII 경로를 지원하지 않습니다). 출력 경로를 영문 디렉터리로 변경하세요</translation>
     </message>
     <message>
-        <location filename="../app/train/ad_common.py" line="164"/>
-        <location filename="../app/train/ad_common.py" line="689"/>
+        <location filename="../app/train/ad_common.py" line="161"/>
+        <location filename="../app/train/ad_common.py" line="690"/>
         <source>(根目录散图)</source>
         <translation>(루트 디렉터리 낱개 이미지)</translation>
     </message>
     <message>
-        <location filename="../app/train/ad_common.py" line="187"/>
+        <location filename="../app/train/ad_common.py" line="184"/>
         <source>数据集里没找到图像, 请先导入数据</source>
         <translation>데이터셋에서 이미지를 찾지 못했습니다. 먼저 데이터를 가져오세요</translation>
     </message>
     <message>
-        <location filename="../app/train/ad_common.py" line="192"/>
+        <location filename="../app/train/ad_common.py" line="189"/>
         <source>无法从类别名判断哪个是正常品, 请把放良品图的那个文件夹改名为 {} 之一; 现有类别: {}</source>
         <translation>클래스 이름만으로는 어느 것이 양품인지 판단할 수 없습니다. 양품 이미지가 들어 있는 폴더 이름을 {} 중 하나로 변경하세요. 현재 클래스: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/ad_common.py" line="198"/>
+        <location filename="../app/train/ad_common.py" line="195"/>
         <source>训练集里没有图像</source>
         <translation>학습 세트에 이미지가 없습니다</translation>
     </message>
     <message>
-        <location filename="../app/train/ad_common.py" line="205"/>
+        <location filename="../app/train/ad_common.py" line="202"/>
         <source>训练集里只有&quot;{}&quot;一类, 而良品类是&quot;{}&quot;; 请把良品图所在的类别文件夹挂到训练集上</source>
         <translation>학습 세트에 &quot;{}&quot; 클래스 하나만 있는데 양품 클래스는 &quot;{}&quot;입니다. 양품 이미지가 있는 클래스 폴더를 학습 세트에 연결하세요</translation>
     </message>
     <message>
-        <location filename="../app/train/ad_common.py" line="215"/>
+        <location filename="../app/train/ad_common.py" line="212"/>
         <source>训练集里既没有&quot;{}&quot;类、又不止一类, 无法确定拿哪批图建库; 现有类别: {}</source>
         <translation>학습 세트에 &quot;{}&quot; 클래스가 없고 클래스가 둘 이상이라 어떤 이미지로 메모리 뱅크를 구축할지 결정할 수 없습니다. 현재 클래스: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/ad_common.py" line="257"/>
+        <location filename="../app/train/ad_common.py" line="254"/>
         <source>训练集根目录下既有散图又有子文件夹, 无法确定散图属于哪一类, 请把它们放进同一个类别文件夹</source>
         <translation>학습 세트 루트 디렉터리에 낱개 이미지와 하위 폴더가 함께 있어 낱개 이미지가 어느 클래스인지 결정할 수 없습니다. 하나의 클래스 폴더에 넣어 주세요</translation>
     </message>
     <message>
-        <location filename="../app/train/ad_common.py" line="291"/>
+        <location filename="../app/train/ad_common.py" line="288"/>
         <source>没有找到任何图像, 请检查数据集</source>
         <translation>이미지를 찾지 못했습니다. 데이터셋을 확인하세요</translation>
     </message>
     <message>
-        <location filename="../app/train/ad_common.py" line="293"/>
+        <location filename="../app/train/ad_common.py" line="290"/>
         <source>根目录下既有散图又有子文件夹, 无法确定散图属于哪一类, 请把它们放进同一个类别文件夹</source>
         <translation>루트 디렉터리에 낱개 이미지와 하위 폴더가 함께 있어 낱개 이미지가 어느 클래스인지 결정할 수 없습니다. 하나의 클래스 폴더에 넣어 주세요</translation>
     </message>
     <message>
-        <location filename="../app/train/ad_common.py" line="298"/>
+        <location filename="../app/train/ad_common.py" line="295"/>
         <source>无法判断哪个类别是良品, 现有类别: {}.
 请把良品图放在名为 {} 一类的子文件夹里, 或按训练时的方式重新导入数据集</source>
         <translation>어느 클래스가 양품인지 판단할 수 없습니다. 현재 클래스: {}.
 양품 이미지를 {} 중 하나의 이름을 가진 하위 폴더에 넣거나, 학습할 때와 같은 방식으로 데이터셋을 다시 가져오세요</translation>
     </message>
     <message>
-        <location filename="../app/train/ad_common.py" line="452"/>
+        <location filename="../app/train/ad_common.py" line="449"/>
         <source>未知的异常检测算法: {}</source>
         <translation>알 수 없는 이상 검출 알고리즘: {}</translation>
     </message>
@@ -75,49 +75,149 @@
         <translation>테스트 의존성이 없습니다: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/ad_test_runner.py" line="263"/>
+        <location filename="../app/train/ad_test_runner.py" line="77"/>
+        <source>加载异常检测模型: {}</source>
+        <translation>이상 검출 모델 불러오기: {}</translation>
+    </message>
+    <message>
+        <location filename="../app/train/ad_test_runner.py" line="86"/>
+        <source>算法={} 图像尺寸={} 阈值={:.6f}</source>
+        <translation>알고리즘={} 이미지 크기={} 임계값={:.6f}</translation>
+    </message>
+    <message>
+        <location filename="../app/train/ad_test_runner.py" line="88"/>
+        <source>原尺寸</source>
+        <translation>원본 크기</translation>
+    </message>
+    <message>
+        <location filename="../app/train/ad_test_runner.py" line="96"/>
+        <source>没有可用的图像目录, 请检查数据集</source>
+        <translation>사용할 수 있는 이미지 디렉터리가 없습니다. 데이터셋을 확인하세요</translation>
+    </message>
+    <message>
+        <location filename="../app/train/ad_test_runner.py" line="107"/>
+        <source>测试图片 {} 张, 良品类别: {}</source>
+        <translation>테스트 이미지 {}장, 정상 클래스: {}</translation>
+    </message>
+    <message>
+        <location filename="../app/train/ad_test_runner.py" line="144"/>
+        <source>没有取到任何图像, 请检查数据集</source>
+        <translation>이미지를 하나도 읽지 못했습니다. 데이터셋을 확인하세요</translation>
+    </message>
+    <message>
+        <location filename="../app/train/ad_test_runner.py" line="151"/>
+        <source>沿用训练时定下的阈值 {:.6f}</source>
+        <translation>학습 시 정한 임계값을 그대로 사용합니다: {:.6f}</translation>
+    </message>
+    <message>
+        <location filename="../app/train/ad_test_runner.py" line="155"/>
+        <source>模型里没有阈值, 本批又只有一类样本, 定不出判定阈值, 只报告分数</source>
+        <translation>모델에 임계값이 없고 이번 배치에 클래스가 하나뿐이라 판정 임계값을 정할 수 없습니다. 점수만 보고합니다</translation>
+    </message>
+    <message>
+        <location filename="../app/train/ad_test_runner.py" line="159"/>
+        <source>模型里没有阈值, 已按本批数据现挑 {:.6f}(精度会偏乐观)</source>
+        <translation>모델에 임계값이 없어 이번 배치 데이터에서 임의로 선정했습니다: {:.6f}(정확도가 낙관적입니다)</translation>
+    </message>
+    <message>
+        <location filename="../app/train/ad_test_runner.py" line="189"/>
+        <source>完成: {} 张, 没有判定阈值, 只报告分数</source>
+        <translation>완료: {}장, 판정 임계값 없음, 점수만 보고</translation>
+    </message>
+    <message>
+        <location filename="../app/train/ad_test_runner.py" line="195"/>
+        <source>完成: {} 张, 检出异常 {} 张</source>
+        <translation>완료: {}장, 이상 {}장 검출</translation>
+    </message>
+    <message>
+        <location filename="../app/train/ad_test_runner.py" line="199"/>
+        <source>完成: {} 张, 准确率 {:.4f}, 漏检 {} 张, 误检 {} 张</source>
+        <translation>완료: {}장, 정확도 {:.4f}, 미검출 {}장, 오검출 {}장</translation>
+    </message>
+    <message>
+        <location filename="../app/train/ad_test_runner.py" line="204"/>
+        <source>  image AUROC = {:.4f}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../app/train/ad_test_runner.py" line="220"/>
+        <source>模型里没有判定阈值, 不输出异常区域</source>
+        <translation>모델에 판정 임계값이 없어 이상 영역을 출력하지 않습니다</translation>
+    </message>
+    <message>
+        <location filename="../app/train/ad_test_runner.py" line="223"/>
+        <source>异常</source>
+        <translation>이상</translation>
+    </message>
+    <message>
+        <location filename="../app/train/ad_test_runner.py" line="233"/>
+        <source>提取异常区域失败 {}: {}</source>
+        <translation>이상 영역 추출 실패 {}: {}</translation>
+    </message>
+    <message>
+        <location filename="../app/train/ad_test_runner.py" line="250"/>
+        <source>输出异常区域失败 {}: {}</source>
+        <translation>이상 영역 출력 실패 {}: {}</translation>
+    </message>
+    <message>
+        <location filename="../app/train/ad_test_runner.py" line="254"/>
+        <source>已为 {} 张不良品图写出异常区域标注(图像同目录)</source>
+        <translation>이상 이미지 {}장에 이상 영역 어노테이션을 작성했습니다(이미지와 같은 디렉터리)</translation>
+    </message>
+    <message>
+        <location filename="../app/train/ad_test_runner.py" line="258"/>
+        <source>另有 {} 张判为不良品, 但热力图没超过判定线, 未写标注</source>
+        <translation>그 외 {}장은 이상으로 판정되었지만 히트맵이 판정 임계값을 넘지 않아 어노테이션을 작성하지 않았습니다</translation>
+    </message>
+    <message>
+        <location filename="../app/train/ad_test_runner.py" line="277"/>
         <source>图像</source>
         <translation>이미지</translation>
     </message>
     <message>
-        <location filename="../app/train/ad_test_runner.py" line="264"/>
+        <location filename="../app/train/ad_test_runner.py" line="278"/>
         <source>类别</source>
         <translation>클래스</translation>
     </message>
     <message>
-        <location filename="../app/train/ad_test_runner.py" line="265"/>
+        <location filename="../app/train/ad_test_runner.py" line="279"/>
         <source>真值</source>
         <translation>정답</translation>
     </message>
     <message>
-        <location filename="../app/train/ad_test_runner.py" line="266"/>
+        <location filename="../app/train/ad_test_runner.py" line="280"/>
         <source>判定</source>
         <translation>판정</translation>
     </message>
     <message>
-        <location filename="../app/train/ad_test_runner.py" line="267"/>
+        <location filename="../app/train/ad_test_runner.py" line="281"/>
         <source>分数</source>
         <translation>점수</translation>
     </message>
     <message>
-        <location filename="../app/train/ad_test_runner.py" line="268"/>
+        <location filename="../app/train/ad_test_runner.py" line="282"/>
         <source>阈值</source>
         <translation>임계값</translation>
     </message>
     <message>
-        <location filename="../app/train/ad_test_runner.py" line="269"/>
+        <location filename="../app/train/ad_test_runner.py" line="283"/>
         <source>是否正确</source>
         <translation>정답 여부</translation>
     </message>
     <message>
-        <location filename="../app/train/ad_test_runner.py" line="284"/>
+        <location filename="../app/train/ad_test_runner.py" line="298"/>
         <source>是</source>
         <translation>예</translation>
     </message>
     <message>
-        <location filename="../app/train/ad_test_runner.py" line="285"/>
+        <location filename="../app/train/ad_test_runner.py" line="299"/>
         <source>否</source>
         <translation>아니요</translation>
+    </message>
+    <message>
+        <location filename="../app/train/ad_test_runner.py" line="301"/>
+        <source>逐图明细: {}</source>
+        <translation>이미지별 상세: {}</translation>
     </message>
 </context>
 <context>
@@ -126,6 +226,116 @@
         <location filename="../app/train/ad_train_runner.py" line="48"/>
         <source>缺少训练依赖: {}</source>
         <translation>학습 의존성이 없습니다: {}</translation>
+    </message>
+    <message>
+        <location filename="../app/train/ad_train_runner.py" line="109"/>
+        <source>anomalib {} / torch {}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../app/train/ad_train_runner.py" line="143"/>
+        <source>输出路径: {}</source>
+        <translation>출력 경로: {}</translation>
+    </message>
+    <message>
+        <location filename="../app/train/ad_train_runner.py" line="145"/>
+        <source>本次训练输出目录(时间戳): {}</source>
+        <translation>이번 학습 출력 디렉터리(타임스탬프): {}</translation>
+    </message>
+    <message>
+        <location filename="../app/train/ad_train_runner.py" line="159"/>
+        <source>异常检测: 算法={} 骨干={} 轮次={} 批次={} 图像尺寸={} device={}</source>
+        <translation>이상 검출: 알고리즘={} 백본={} 에포크={} 배치={} 이미지 크기={} device={}</translation>
+    </message>
+    <message>
+        <location filename="../app/train/ad_train_runner.py" line="171"/>
+        <source>数据准备: 建库集 {} 张({}), 测试集 正常 {} 张 / 异常 {} 张</source>
+        <translation>데이터 준비: 메모리 뱅크 {}장({}), 테스트 세트 정상 {}장 / 이상 {}장</translation>
+    </message>
+    <message>
+        <location filename="../app/train/ad_train_runner.py" line="176"/>
+        <source>  异常类别: {}</source>
+        <translation>  이상 클래스: {}</translation>
+    </message>
+    <message>
+        <location filename="../app/train/ad_train_runner.py" line="177"/>
+        <source>(散图)</source>
+        <translation>(낱개 이미지)</translation>
+    </message>
+    <message>
+        <location filename="../app/train/ad_train_runner.py" line="182"/>
+        <source>  注意: 建库集里另有 {} 张非正常图, 未参与建库</source>
+        <translation>  주의: 메모리 뱅크에 정상이 아닌 이미지가 {}장 더 있으나 구축에 사용하지 않았습니다</translation>
+    </message>
+    <message>
+        <location filename="../app/train/ad_train_runner.py" line="186"/>
+        <source>建库集里没有图像, 请检查数据集</source>
+        <translation>메모리 뱅크에 이미지가 없습니다. 데이터셋을 확인하세요</translation>
+    </message>
+    <message>
+        <location filename="../app/train/ad_train_runner.py" line="188"/>
+        <source>测试集里没有图像, 请检查数据集</source>
+        <translation>테스트 세트에 이미지가 없습니다. 데이터셋을 확인하세요</translation>
+    </message>
+    <message>
+        <location filename="../app/train/ad_train_runner.py" line="207"/>
+        <source>数据集: 建库集 {} 张</source>
+        <translation>데이터셋: 메모리 뱅크 {}장</translation>
+    </message>
+    <message>
+        <location filename="../app/train/ad_train_runner.py" line="216"/>
+        <source>模型构建完成({:.1f}s): {}</source>
+        <translation>모델 구성 완료({:.1f}s): {}</translation>
+    </message>
+    <message>
+        <location filename="../app/train/ad_train_runner.py" line="226"/>
+        <source>建库/训练完成({:.1f}s)</source>
+        <translation>메모리 뱅크 구축/학습 완료({:.1f}s)</translation>
+    </message>
+    <message>
+        <location filename="../app/train/ad_train_runner.py" line="239"/>
+        <source>  评估中: {} 张</source>
+        <translation>  평가 중: {}장</translation>
+    </message>
+    <message>
+        <location filename="../app/train/ad_train_runner.py" line="248"/>
+        <source>评估阶段失败, 只交付模型: {}</source>
+        <translation>평가 단계 실패, 모델만 전달합니다: {}</translation>
+    </message>
+    <message>
+        <location filename="../app/train/ad_train_runner.py" line="253"/>
+        <source>评估完成({:.1f}s): {} 张</source>
+        <translation>평가 완료({:.1f}s): {}장</translation>
+    </message>
+    <message>
+        <location filename="../app/train/ad_train_runner.py" line="256"/>
+        <source>  测试集里只有一类样本, 定不出判定阈值(没有真值反差), AUROC 和准确率都算不了; 补一些异常样本重新训练才有交付阈值</source>
+        <translation>  테스트 세트에 클래스가 하나뿐이라 판정 임계값을 정할 수 없고(정답 대비가 없음), AUROC와 정확도도 계산할 수 없습니다. 이상 샘플을 보충해 다시 학습해야 전달할 판정 임계값이 생깁니다</translation>
+    </message>
+    <message>
+        <location filename="../app/train/ad_train_runner.py" line="261"/>
+        <source>评估完成({:.1f}s): {} 张, 准确率 {:.4f}</source>
+        <translation>평가 완료({:.1f}s): {}장, 정확도 {:.4f}</translation>
+    </message>
+    <message>
+        <location filename="../app/train/ad_train_runner.py" line="265"/>
+        <source>  image AUROC = {:.4f}  阈值 = {:.6f}(本批最优 F1 处)</source>
+        <translation>  image AUROC = {:.4f}  임계값 = {:.6f}(이번 배치 최적 F1 지점)</translation>
+    </message>
+    <message>
+        <location filename="../app/train/ad_train_runner.py" line="268"/>
+        <source>  漏检 {} 张(不良判成良品), 误检 {} 张</source>
+        <translation>  미검출 {}장(이상을 정상으로 판정), 오검출 {}장</translation>
+    </message>
+    <message>
+        <location filename="../app/train/ad_train_runner.py" line="272"/>
+        <source>  AUROC 无法计算</source>
+        <translation>  AUROC를 계산할 수 없습니다</translation>
+    </message>
+    <message>
+        <location filename="../app/train/ad_train_runner.py" line="286"/>
+        <source>模型已保存: {} ({:.0f} MB)</source>
+        <translation>모델 저장됨: {} ({:.0f} MB)</translation>
     </message>
 </context>
 <context>
@@ -2830,11 +3040,11 @@
     <message>
         <location filename="../app/widgets/test_dialog.py" line="345"/>
         <location filename="../app/widgets/test_dialog.py" line="349"/>
-        <location filename="../app/widgets/test_dialog.py" line="365"/>
-        <location filename="../app/widgets/test_dialog.py" line="371"/>
-        <location filename="../app/widgets/test_dialog.py" line="384"/>
-        <location filename="../app/widgets/test_dialog.py" line="394"/>
-        <location filename="../app/widgets/test_dialog.py" line="400"/>
+        <location filename="../app/widgets/test_dialog.py" line="363"/>
+        <location filename="../app/widgets/test_dialog.py" line="369"/>
+        <location filename="../app/widgets/test_dialog.py" line="382"/>
+        <location filename="../app/widgets/test_dialog.py" line="392"/>
+        <location filename="../app/widgets/test_dialog.py" line="398"/>
         <source>测试</source>
         <translation>테스트</translation>
     </message>
@@ -2849,73 +3059,73 @@
         <translation>데이터셋을 하나 이상 선택하세요</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="366"/>
+        <location filename="../app/widgets/test_dialog.py" line="364"/>
         <source>置信度/iou阈值必须是数字</source>
         <translation>신뢰도/IoU 임계값은 숫자여야 합니다</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="372"/>
+        <location filename="../app/widgets/test_dialog.py" line="370"/>
         <source>模型文件不存在, 请重新选择</source>
         <translation>모델 파일이 없습니다. 다시 선택하세요</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="385"/>
+        <location filename="../app/widgets/test_dialog.py" line="383"/>
         <source>数据集 {}/{} 未导入图像</source>
         <translation>데이터셋 {}/{}에 이미지가 가져와지지 않았습니다</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="395"/>
+        <location filename="../app/widgets/test_dialog.py" line="393"/>
         <source>分类数据集与检测/分割数据集不能同时测试: {}/{}</source>
         <translation>분류 데이터셋과 검출/세그멘테이션 데이터셋은 함께 테스트할 수 없습니다: {}/{}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="401"/>
+        <location filename="../app/widgets/test_dialog.py" line="399"/>
         <source>已标注与未标注的数据集不能同时测试: {}/{}</source>
         <translation>라벨 있는 데이터셋과 미라벨 데이터셋은 함께 테스트할 수 없습니다: {}/{}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="436"/>
+        <location filename="../app/widgets/test_dialog.py" line="434"/>
         <source>[test] 启动测试 worker: model={} 数据集={} 图像目录={} device={} cfg={}</source>
         <translation>[test] 테스트 worker 시작: model={} 데이터셋={} 이미지 디렉터리={} device={} cfg={}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="441"/>
+        <location filename="../app/widgets/test_dialog.py" line="439"/>
         <source>测试准备中...</source>
         <translation>테스트 준비 중...</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="458"/>
-        <location filename="../app/widgets/test_dialog.py" line="459"/>
+        <location filename="../app/widgets/test_dialog.py" line="456"/>
+        <location filename="../app/widgets/test_dialog.py" line="457"/>
         <source>测试即将开始</source>
         <translation>테스트가 곧 시작됩니다</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="505"/>
+        <location filename="../app/widgets/test_dialog.py" line="503"/>
         <source>测试中 {}/{}</source>
         <translation>테스트 중 {}/{}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="517"/>
+        <location filename="../app/widgets/test_dialog.py" line="515"/>
         <source>[test-dialog] 测试完成, ok={}</source>
         <translation>[test-dialog] 테스트 완료, ok={}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="525"/>
+        <location filename="../app/widgets/test_dialog.py" line="523"/>
         <source>测试结果</source>
         <translation>테스트 결과</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="526"/>
+        <location filename="../app/widgets/test_dialog.py" line="524"/>
         <source>测试未正常完成</source>
         <translation>테스트가 정상적으로 완료되지 않았습니다</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="536"/>
+        <location filename="../app/widgets/test_dialog.py" line="534"/>
         <source>[test-dialog] 测试失败: {}</source>
         <translation>[test-dialog] 테스트 실패: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="543"/>
+        <location filename="../app/widgets/test_dialog.py" line="541"/>
         <source>测试失败</source>
         <translation>테스트 실패</translation>
     </message>
@@ -3299,8 +3509,8 @@
     </message>
     <message>
         <location filename="../ui/test_result.ui" line="138"/>
-        <location filename="../app/train/test_result_dialog.py" line="220"/>
-        <location filename="../app/train/test_result_dialog.py" line="252"/>
+        <location filename="../app/train/test_result_dialog.py" line="239"/>
+        <location filename="../app/train/test_result_dialog.py" line="274"/>
         <source>测试张数</source>
         <translation>테스트 이미지 수</translation>
     </message>
@@ -3316,7 +3526,7 @@
     </message>
     <message>
         <location filename="../ui/test_result.ui" line="306"/>
-        <location filename="../app/train/test_result_dialog.py" line="189"/>
+        <location filename="../app/train/test_result_dialog.py" line="208"/>
         <source>有误检图像</source>
         <translation>오검출 이미지</translation>
     </message>
@@ -3333,19 +3543,22 @@
     <message>
         <location filename="../ui/test_result.ui" line="430"/>
         <location filename="../ui/test_result.ui" line="639"/>
-        <location filename="../app/train/test_result_dialog.py" line="197"/>
+        <location filename="../app/train/test_result_dialog.py" line="216"/>
+        <location filename="../app/train/test_result_dialog.py" line="350"/>
         <source>正确检出</source>
         <translation>정상 검출</translation>
     </message>
     <message>
         <location filename="../ui/test_result.ui" line="486"/>
         <location filename="../ui/test_result.ui" line="644"/>
+        <location filename="../app/train/test_result_dialog.py" line="351"/>
         <source>漏检</source>
         <translation>미검출</translation>
     </message>
     <message>
         <location filename="../ui/test_result.ui" line="542"/>
         <location filename="../ui/test_result.ui" line="649"/>
+        <location filename="../app/train/test_result_dialog.py" line="351"/>
         <source>误检</source>
         <translation>오검출</translation>
     </message>
@@ -3357,22 +3570,27 @@
     <message>
         <location filename="../ui/test_result.ui" line="598"/>
         <location filename="../ui/test_result.ui" line="659"/>
+        <location filename="../app/train/test_result_dialog.py" line="352"/>
         <source>准确率</source>
         <translation>정확도</translation>
     </message>
     <message>
         <location filename="../ui/test_result.ui" line="629"/>
-        <location filename="../app/train/test_result_dialog.py" line="275"/>
+        <location filename="../app/train/test_result_dialog.py" line="297"/>
+        <location filename="../app/train/test_result_dialog.py" line="318"/>
+        <location filename="../app/train/test_result_dialog.py" line="350"/>
         <source>类别</source>
         <translation>클래스</translation>
     </message>
     <message>
         <location filename="../ui/test_result.ui" line="634"/>
+        <location filename="../app/train/test_result_dialog.py" line="350"/>
         <source>标注数</source>
         <translation>어노테이션 수</translation>
     </message>
     <message>
         <location filename="../ui/test_result.ui" line="654"/>
+        <location filename="../app/train/test_result_dialog.py" line="351"/>
         <source>检出率</source>
         <translation>재현율</translation>
     </message>
@@ -3400,204 +3618,199 @@
     </message>
     <message>
         <location filename="../ui/test_result.ui" line="722"/>
-        <location filename="../app/train/test_result_dialog.py" line="133"/>
+        <location filename="../app/train/test_result_dialog.py" line="144"/>
         <source>导出 PDF 报告</source>
         <translation>PDF 보고서 내보내기</translation>
     </message>
     <message>
         <location filename="../ui/test_result.ui" line="729"/>
-        <location filename="../app/train/test_result_dialog.py" line="79"/>
+        <location filename="../app/train/test_result_dialog.py" line="90"/>
         <source>确定</source>
         <translation>확인</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="98"/>
+        <location filename="../app/train/test_result_dialog.py" line="109"/>
         <source>把漏检/误检的图逐张画框导出成 PDF</source>
         <translation>미검출/오검출 이미지에 박스를 그려 PDF로 내보냅니다</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="101"/>
+        <location filename="../app/train/test_result_dialog.py" line="112"/>
         <source>异常检测的逐图结果已写成 CSV, 不支持导出画框 PDF</source>
         <translation>이상 검출의 이미지별 결과를 CSV로 작성했습니다. 박스를 그린 PDF 내보내기는 지원하지 않습니다</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="103"/>
+        <location filename="../app/train/test_result_dialog.py" line="114"/>
         <source>本次测试没有逐图错误明细, 无法导出</source>
         <translation>이번 테스트에는 이미지별 오류 상세가 없어 내보낼 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="115"/>
+        <location filename="../app/train/test_result_dialog.py" line="126"/>
         <source>保存 PDF 报告</source>
         <translation>PDF 보고서 저장</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="116"/>
+        <location filename="../app/train/test_result_dialog.py" line="127"/>
         <source>PDF 文件 (*.pdf)</source>
         <translation>PDF 파일 (*.pdf)</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="122"/>
+        <location filename="../app/train/test_result_dialog.py" line="133"/>
         <source>正在生成...</source>
         <translation>생성 중...</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="140"/>
+        <location filename="../app/train/test_result_dialog.py" line="151"/>
         <source>无需导出</source>
         <translation>내보낼 내용 없음</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="141"/>
+        <location filename="../app/train/test_result_dialog.py" line="152"/>
         <source>本次测试没有漏检也没有误检, 没有内容可写.</source>
         <translation>이번 테스트에는 미검출도 오검출도 없어 작성할 내용이 없습니다.</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="144"/>
+        <location filename="../app/train/test_result_dialog.py" line="155"/>
         <source>导出完成</source>
         <translation>내보내기 완료</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="145"/>
+        <location filename="../app/train/test_result_dialog.py" line="156"/>
         <source>PDF 报告已保存到:
 {}</source>
         <translation>PDF 보고서를 저장했습니다:
 {}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="149"/>
+        <location filename="../app/train/test_result_dialog.py" line="160"/>
         <source>导出失败</source>
         <translation>내보내기 실패</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="176"/>
+        <location filename="../app/train/test_result_dialog.py" line="195"/>
         <source>按&quot;张&quot;统计 · 检出 1 个即算检出</source>
         <translation>&quot;장&quot; 단위 집계 · 1개만 검출되어도 검출로 인정</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="178"/>
+        <location filename="../app/train/test_result_dialog.py" line="197"/>
         <source> · 有标注 {} 张</source>
         <translation> · 라벨 있는 이미지 {}장</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="182"/>
+        <location filename="../app/train/test_result_dialog.py" line="201"/>
         <source>检出图像</source>
         <translation>검출 이미지</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="183"/>
-        <location filename="../app/train/test_result_dialog.py" line="198"/>
+        <location filename="../app/train/test_result_dialog.py" line="202"/>
+        <location filename="../app/train/test_result_dialog.py" line="217"/>
         <source>检出率 </source>
         <translation>재현율 </translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="185"/>
+        <location filename="../app/train/test_result_dialog.py" line="204"/>
         <source>未检出图像</source>
         <translation>미검출 이미지</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="186"/>
+        <location filename="../app/train/test_result_dialog.py" line="205"/>
         <source>未检出率 </source>
         <translation>미검출률 </translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="190"/>
+        <location filename="../app/train/test_result_dialog.py" line="209"/>
         <source>误检率 </source>
         <translation>오검출률 </translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="195"/>
+        <location filename="../app/train/test_result_dialog.py" line="214"/>
         <source>按&quot;标注框&quot;统计 · 标注总数 {}</source>
         <translation>&quot;박스&quot; 단위 집계 · 총 어노테이션 {}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="218"/>
+        <location filename="../app/train/test_result_dialog.py" line="237"/>
         <source>按&quot;张&quot;统计 · 每张图判一个类别</source>
         <translation>&quot;장&quot; 단위 집계 · 이미지마다 클래스 하나 판정</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="223"/>
-        <location filename="../app/train/test_result_dialog.py" line="255"/>
+        <location filename="../app/train/test_result_dialog.py" line="242"/>
         <source>判断正确</source>
         <translation>정확 판정</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="225"/>
-        <location filename="../app/train/test_result_dialog.py" line="257"/>
+        <location filename="../app/train/test_result_dialog.py" line="244"/>
         <source>判断错误</source>
         <translation>오판정</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="228"/>
-        <location filename="../app/train/test_result_dialog.py" line="276"/>
+        <location filename="../app/train/test_result_dialog.py" line="247"/>
+        <location filename="../app/train/test_result_dialog.py" line="319"/>
         <source>精度</source>
         <translation>정확도</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="250"/>
+        <location filename="../app/train/test_result_dialog.py" line="272"/>
         <source>按&quot;张&quot;统计 · 整图判良品/不良品</source>
         <translation>&quot;장&quot; 단위 집계 · 이미지 전체를 양품/불량품으로 판정</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="275"/>
+        <location filename="../app/train/test_result_dialog.py" line="286"/>
+        <location filename="../app/train/test_result_dialog.py" line="297"/>
+        <source>检出异常</source>
+        <translation>검출된 이상</translation>
+    </message>
+    <message>
+        <location filename="../app/train/test_result_dialog.py" line="297"/>
+        <location filename="../app/train/test_result_dialog.py" line="318"/>
         <source>总图数</source>
         <translation>전체 이미지 수</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="275"/>
+        <location filename="../app/train/test_result_dialog.py" line="302"/>
+        <source>异常</source>
+        <translation>이상</translation>
+    </message>
+    <message>
+        <location filename="../app/train/test_result_dialog.py" line="318"/>
         <source>正确</source>
         <translation>정답</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="276"/>
+        <location filename="../app/train/test_result_dialog.py" line="319"/>
         <source>错误</source>
         <translation>오류</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="235"/>
+        <location filename="../app/train/test_result_dialog.py" line="340"/>
+        <source>模型里没有判定阈值, 只报告分数, 逐图分数见 CSV 明细.</source>
+        <translation>모델에 판정 임계값이 없어 점수만 보고합니다. 이미지별 점수는 CSV 상세를 참조하세요.</translation>
+    </message>
+    <message>
+        <location filename="../app/train/test_result_dialog.py" line="341"/>
+        <source>判定阈值 {:.4f}. 本次 {} 张, 检出异常 {} 张.</source>
+        <translation>판정 임계값 {:.4f}. 이번 {}장, 이상 {}장 검출.</translation>
+    </message>
+    <message>
+        <location filename="../app/train/test_result_dialog.py" line="254"/>
         <source>整体精度 {:.1f}%, &quot;{}&quot;类错误最多({} 张), 是拉低精度的主要原因.</source>
         <translation>전체 정확도 {:.1f}%, &quot;{}&quot; 클래스의 오류가 가장 많아({}장) 정확도를 낮추는 주된 원인입니다.</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="295"/>
-        <source>(根目录散图)</source>
-        <translation>(루트 디렉터리 낱개 이미지)</translation>
-    </message>
-    <message>
-        <location filename="../app/train/test_result_dialog.py" line="298"/>
-        <source>本批只有一类样本({}), 定不出判定阈值, 只报告分数; 补一些异常样本重新训练才有可交付的阈值.</source>
-        <translation>이번 배치에는 클래스가 하나뿐({})이라 판정 임계값을 정할 수 없어 점수만 보고합니다. 이상 샘플을 보완해 다시 학습해야 납품 가능한 임계값을 얻을 수 있습니다.</translation>
-    </message>
-    <message>
-        <location filename="../app/train/test_result_dialog.py" line="300"/>
-        <source>良品类别: {}, 判定阈值 {:.4f}.</source>
-        <translation>양품 클래스: {}, 판정 임계값 {:.4f}.</translation>
-    </message>
-    <message>
-        <location filename="../app/train/test_result_dialog.py" line="305"/>
-        <source> 无漏检, 无误检.</source>
-        <translation> 미검출과 오검출이 없습니다.</translation>
-    </message>
-    <message>
-        <location filename="../app/train/test_result_dialog.py" line="309"/>
-        <source> 漏检 {} 张(不良判成良品), 误检 {} 张(良品判成不良品); &quot;{}&quot;类错误最多({} 张).</source>
-        <translation> 미검출 {}장(불량품을 양품으로 판정), 오검출 {}장(양품을 불량품으로 판정); &quot;{}&quot; 클래스의 오류가 가장 많습니다({}장).</translation>
-    </message>
-    <message>
-        <location filename="../app/train/test_result_dialog.py" line="341"/>
+        <location filename="../app/train/test_result_dialog.py" line="379"/>
         <source>整体漏检偏多(漏检 {} 个, 多于误检 {} 个).&quot;{}&quot;类漏检最多({} 个), 是检出率低的主要原因.</source>
         <translation>전체적으로 미검출이 많습니다(미검출 {}개 &gt; 오검출 {}개). &quot;{}&quot; 클래스의 미검출이 가장 많아({}개) 재현율이 낮은 주된 원인입니다.</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="347"/>
+        <location filename="../app/train/test_result_dialog.py" line="385"/>
         <source>整体误检偏多(误检 {} 个, 多于漏检 {} 个).&quot;{}&quot;类误检最多({} 个), 是准确率低的主要原因.</source>
         <translation>전체적으로 오검출이 많습니다(오검출 {}개 &gt; 미검출 {}개). &quot;{}&quot; 클래스의 오검출이 가장 많아({}개) 정밀도가 낮은 주된 원인입니다.</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="351"/>
+        <location filename="../app/train/test_result_dialog.py" line="389"/>
         <source>模型表现良好: 无漏检, 无误检.</source>
         <translation>모델 성능이 양호합니다: 미검출과 오검출이 없습니다.</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="353"/>
+        <location filename="../app/train/test_result_dialog.py" line="391"/>
         <source>另有 {} 处位置对但类别判错(报告里用紫框标出),属分类能力不足, 需补易混淆类别的区分性样本.</source>
         <translation>위치가 맞지만 클래스를 잘못 판정한 박스가 {}개 더 있습니다(보고서에 보라색 박스로 표시). 분류 능력 부족에 해당하므로 혼동하기 쉬운 클래스의 구분 샘플을 보강해야 합니다.</translation>
     </message>
@@ -3731,7 +3944,7 @@
     <message>
         <location filename="../ui/train.ui" line="14"/>
         <location filename="../ui/train.ui" line="40"/>
-        <location filename="../app/train/dialogs.py" line="470"/>
+        <location filename="../app/train/dialogs.py" line="468"/>
         <source>训练</source>
         <translation>학습</translation>
     </message>
@@ -3773,7 +3986,7 @@
     </message>
     <message>
         <location filename="../ui/train.ui" line="180"/>
-        <location filename="../app/train/dialogs.py" line="665"/>
+        <location filename="../app/train/dialogs.py" line="663"/>
         <source>训练集</source>
         <translation>학습 세트</translation>
     </message>
@@ -3799,7 +4012,7 @@
     </message>
     <message>
         <location filename="../ui/train.ui" line="306"/>
-        <location filename="../app/train/dialogs.py" line="546"/>
+        <location filename="../app/train/dialogs.py" line="544"/>
         <source>轮次</source>
         <translation>에포크</translation>
     </message>
@@ -3810,7 +4023,7 @@
     </message>
     <message>
         <location filename="../ui/train.ui" line="332"/>
-        <location filename="../app/train/dialogs.py" line="549"/>
+        <location filename="../app/train/dialogs.py" line="547"/>
         <source>早停</source>
         <translation>조기 중단</translation>
     </message>
@@ -3821,7 +4034,7 @@
     </message>
     <message>
         <location filename="../ui/train.ui" line="385"/>
-        <location filename="../app/train/dialogs.py" line="552"/>
+        <location filename="../app/train/dialogs.py" line="550"/>
         <source>学习率</source>
         <translation>학습률</translation>
     </message>
@@ -3832,26 +4045,26 @@
     </message>
     <message>
         <location filename="../ui/train.ui" line="438"/>
-        <location filename="../app/train/dialogs.py" line="544"/>
+        <location filename="../app/train/dialogs.py" line="542"/>
         <source>批次</source>
         <translation>배치</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="451"/>
-        <location filename="../app/train/dialogs.py" line="548"/>
+        <location filename="../app/train/dialogs.py" line="546"/>
         <source>图像尺寸</source>
         <translation>이미지 크기</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="482"/>
-        <location filename="../app/train/dialogs.py" line="430"/>
-        <location filename="../app/train/dialogs.py" line="434"/>
+        <location filename="../app/train/dialogs.py" line="428"/>
+        <location filename="../app/train/dialogs.py" line="432"/>
         <source>32 的倍数</source>
         <translation>32의 배수</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="498"/>
-        <location filename="../app/train/dialogs.py" line="545"/>
+        <location filename="../app/train/dialogs.py" line="543"/>
         <source>梯度累积</source>
         <translation>그래디언트 누적</translation>
     </message>
@@ -3862,7 +4075,7 @@
     </message>
     <message>
         <location filename="../ui/train.ui" line="551"/>
-        <location filename="../app/train/dialogs.py" line="547"/>
+        <location filename="../app/train/dialogs.py" line="545"/>
         <source>线程数</source>
         <translation>스레드 수</translation>
     </message>
@@ -3893,30 +4106,30 @@
     </message>
     <message>
         <location filename="../ui/train.ui" line="716"/>
-        <location filename="../app/train/dialogs.py" line="631"/>
+        <location filename="../app/train/dialogs.py" line="629"/>
         <source>请选择训练集与验证集</source>
         <translation>학습 세트와 검증 세트를 선택하세요</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="760"/>
-        <location filename="../app/train/dialogs.py" line="559"/>
+        <location filename="../app/train/dialogs.py" line="557"/>
         <source>取消</source>
         <translation>취소</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="773"/>
-        <location filename="../app/train/dialogs.py" line="1114"/>
-        <location filename="../app/train/dialogs.py" line="1123"/>
-        <location filename="../app/train/dialogs.py" line="1131"/>
-        <location filename="../app/train/dialogs.py" line="1150"/>
+        <location filename="../app/train/dialogs.py" line="1112"/>
+        <location filename="../app/train/dialogs.py" line="1121"/>
+        <location filename="../app/train/dialogs.py" line="1129"/>
+        <location filename="../app/train/dialogs.py" line="1148"/>
         <source>加入队列</source>
         <translation>대기열에 추가</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="786"/>
-        <location filename="../app/train/dialogs.py" line="1062"/>
-        <location filename="../app/train/dialogs.py" line="1072"/>
-        <location filename="../app/train/dialogs.py" line="1095"/>
+        <location filename="../app/train/dialogs.py" line="1060"/>
+        <location filename="../app/train/dialogs.py" line="1070"/>
+        <location filename="../app/train/dialogs.py" line="1093"/>
         <source>开始训练</source>
         <translation>학습 시작</translation>
     </message>
@@ -3937,7 +4150,7 @@
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="182"/>
-        <location filename="../app/train/dialogs.py" line="1124"/>
+        <location filename="../app/train/dialogs.py" line="1122"/>
         <source>请先选择输出路径</source>
         <translation>먼저 출력 경로를 선택하세요</translation>
     </message>
@@ -3949,7 +4162,7 @@
     <message>
         <location filename="../app/train/dialogs.py" line="198"/>
         <location filename="../app/train/dialogs.py" line="203"/>
-        <location filename="../app/train/dialogs.py" line="1031"/>
+        <location filename="../app/train/dialogs.py" line="1029"/>
         <source>未知</source>
         <translation>알 수 없음</translation>
     </message>
@@ -3979,193 +4192,193 @@
         <translation>선택된 데이터셋 없음</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="416"/>
+        <location filename="../app/train/dialogs.py" line="414"/>
         <source>目标检测推荐图像尺寸: 640(可设为 32 的倍数如 640/672)</source>
         <translation>객체 검출 권장 이미지 크기: 640(32의 배수로 설정 가능, 예: 640/672)</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="418"/>
+        <location filename="../app/train/dialogs.py" line="416"/>
         <source>图像分割推荐尺寸: 636(必须为 12 的倍数, 如 636/648/660)</source>
         <translation>이미지 세그멘테이션 권장 크기: 636(반드시 12의 배수, 예: 636/648/660)</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="420"/>
+        <location filename="../app/train/dialogs.py" line="418"/>
         <source>CNN 分割推荐尺寸: 640(需为 32 的倍数)</source>
         <translation>CNN 세그멘테이션 권장 크기: 640(32의 배수여야 합니다)</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="422"/>
+        <location filename="../app/train/dialogs.py" line="420"/>
         <source>图像分类推荐尺寸: 224(小图用 224, 较大图可到 256)</source>
         <translation>이미지 분류 권장 크기: 224(작은 이미지는 224, 큰 이미지는 256까지)</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="424"/>
+        <location filename="../app/train/dialogs.py" line="422"/>
         <source>异常检测推荐尺寸: 256; 缺陷很小时调到 512 更稳, 显存和耗时随之上升</source>
         <translation>이상 검출 권장 크기: 256. 결함이 아주 작을 때는 512로 올리면 더 안정적이지만 VRAM과 소요 시간이 늘어납니다</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="431"/>
+        <location filename="../app/train/dialogs.py" line="429"/>
         <source>12 的倍数</source>
         <translation>12의 배수</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="432"/>
+        <location filename="../app/train/dialogs.py" line="430"/>
         <source>建议 224</source>
         <translation>224 권장</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="435"/>
+        <location filename="../app/train/dialogs.py" line="433"/>
         <source>建议 256</source>
         <translation>256 권장</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="641"/>
+        <location filename="../app/train/dialogs.py" line="639"/>
         <source>训练集 {} 个 · 验证集 {} 个 · 共 {} 张图</source>
         <translation>학습 세트 {}개 · 검증 세트 {}개 · 총 {}장</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="644"/>
+        <location filename="../app/train/dialogs.py" line="642"/>
         <source>未选择验证集</source>
         <translation>검증 세트 미선택</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="646"/>
+        <location filename="../app/train/dialogs.py" line="644"/>
         <source>已标注, 可直接训练</source>
         <translation>라벨링 완료, 바로 학습 가능</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="648"/>
+        <location filename="../app/train/dialogs.py" line="646"/>
         <source>有 {} 个数据集尚未标注</source>
         <translation>라벨링되지 않은 데이터셋이 {}개 있습니다</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="662"/>
+        <location filename="../app/train/dialogs.py" line="660"/>
         <source>请选择验证集</source>
         <translation>검증 세트 선택</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="744"/>
+        <location filename="../app/train/dialogs.py" line="742"/>
         <source>已有训练在进行中, 请先停止</source>
         <translation>이미 학습이 진행 중입니다. 먼저 중지하세요</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="835"/>
+        <location filename="../app/train/dialogs.py" line="833"/>
         <source>异常检测算法自带学习率与优化器, 不需要设置</source>
         <translation>이상 검출 알고리즘은 학습률과 옵티마이저를 자체적으로 사용하므로 설정할 필요가 없습니다</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="862"/>
+        <location filename="../app/train/dialogs.py" line="860"/>
         <source>建库型算法只提取特征建立记忆库, 没有训练轮次</source>
         <translation>뱅크 구축형 알고리즘은 특징만 추출해 메모리 뱅크를 구축하며 학습 에포크가 없습니다</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="971"/>
+        <location filename="../app/train/dialogs.py" line="969"/>
         <source>仅建库</source>
         <translation>뱅크 구축만</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1001"/>
+        <location filename="../app/train/dialogs.py" line="999"/>
         <source>请至少选择一个数据集</source>
         <translation>데이터셋을 하나 이상 선택하세요</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1005"/>
-        <location filename="../app/train/dialogs.py" line="1015"/>
+        <location filename="../app/train/dialogs.py" line="1003"/>
+        <location filename="../app/train/dialogs.py" line="1013"/>
         <source>&quot;{}&quot;不能为空</source>
         <translation>&quot;{}&quot;은(는) 비워둘 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1010"/>
+        <location filename="../app/train/dialogs.py" line="1008"/>
         <source>&quot;{}&quot;必须是整数(当前: {})</source>
         <translation>&quot;{}&quot;은(는) 정수여야 합니다(현재: {})</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1020"/>
+        <location filename="../app/train/dialogs.py" line="1018"/>
         <source>&quot;{}&quot;必须是数字(当前: {})</source>
         <translation>&quot;{}&quot;은(는) 숫자여야 합니다(현재: {})</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1030"/>
+        <location filename="../app/train/dialogs.py" line="1028"/>
         <source>数据集&quot;{}/{}&quot;不是按分类导入的数据集(标签格式={}),无法训练{}</source>
         <translation>데이터셋 &quot;{}/{}&quot;은(는) 분류 방식으로 가져온 데이터셋이 아니므로(라벨 형식={}) {}을(를) 학습할 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1035"/>
+        <location filename="../app/train/dialogs.py" line="1033"/>
         <source>数据集&quot;{}/{}&quot;是分类数据集,无法训练{}任务</source>
         <translation>데이터셋 &quot;{}/{}&quot;은(는) 분류 데이터셋이므로 {} 작업을 학습할 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1042"/>
+        <location filename="../app/train/dialogs.py" line="1040"/>
         <source>选择输出目录</source>
         <translation>출력 디렉터리 선택</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1056"/>
+        <location filename="../app/train/dialogs.py" line="1054"/>
         <source>当前安装缺少 CNN 架构所需的组件, 无法训练.
 请重新安装软件后再试</source>
         <translation>현재 설치에 CNN 아키텍처에 필요한 구성 요소가 없어 학습을 시작할 수 없습니다.
 소프트웨어를 다시 설치한 후 시도해 주세요</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1063"/>
+        <location filename="../app/train/dialogs.py" line="1061"/>
         <source>当前已有训练在进行中, 请先停止!</source>
         <translation>현재 학습이 진행 중입니다. 먼저 중지하세요!</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1067"/>
+        <location filename="../app/train/dialogs.py" line="1065"/>
         <source>参数校验未通过: {}</source>
         <translation>파라미터 검증 실패: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1068"/>
-        <location filename="../app/train/dialogs.py" line="1110"/>
+        <location filename="../app/train/dialogs.py" line="1066"/>
+        <location filename="../app/train/dialogs.py" line="1108"/>
         <source>参数校验</source>
         <translation>파라미터 검증</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1085"/>
+        <location filename="../app/train/dialogs.py" line="1083"/>
         <source>训练启动失败: {}
 {}</source>
         <translation>학습 시작 실패: {}
 {}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1088"/>
+        <location filename="../app/train/dialogs.py" line="1086"/>
         <source>训练启动失败</source>
         <translation>학습 시작 실패</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1096"/>
+        <location filename="../app/train/dialogs.py" line="1094"/>
         <source>已有训练在进行中, 请先停止!</source>
         <translation>이미 학습이 진행 중입니다. 먼저 중지하세요!</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1098"/>
+        <location filename="../app/train/dialogs.py" line="1096"/>
         <source>开始训练: 任务类型={} 训练集={} 验证集={}</source>
         <translation>학습 시작: 작업 유형={} 학습 세트={} 검증 세트={}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1136"/>
+        <location filename="../app/train/dialogs.py" line="1134"/>
         <source>队列</source>
         <translation>대기열</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1137"/>
+        <location filename="../app/train/dialogs.py" line="1135"/>
         <source>已更新该队列任务的参数</source>
         <translation>대기열 작업의 파라미터를 업데이트했습니다</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1143"/>
+        <location filename="../app/train/dialogs.py" line="1141"/>
         <source>加入队列失败</source>
         <translation>대기열 추가 실패</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1146"/>
+        <location filename="../app/train/dialogs.py" line="1144"/>
         <source>加入训练队列: {} | {}</source>
         <translation>학습 대기열에 추가: {} | {}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1151"/>
+        <location filename="../app/train/dialogs.py" line="1149"/>
         <source>已加入队列(第 {} 个), 可在首页&quot;队列&quot;中查看或启动.</source>
         <translation>대기열에 추가되었습니다({}번째). 홈 화면의 &quot;대기열&quot;에서 확인하거나 시작할 수 있습니다.</translation>
     </message>
