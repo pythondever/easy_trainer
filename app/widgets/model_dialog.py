@@ -31,11 +31,13 @@ from app.widgets.metrics_dialog import MetricsDialog
 from app.widgets.test_dialog import TestDialog
 from app.train.dialogs import TrainDialog
 from app.train.test_worker import TestWorker
-from app.train.export_worker import OnnxExportWorker, ReportWorker, examples_dir
+from app.train.export_worker import (AdPackageWorker, OnnxExportWorker,
+                                     ReportWorker, examples_dir)
 from ui.model import Ui_ModelDialog
 
 # 导出文件名里的任务段: 与界面语言无关(同一份权重导出到哪台机器都该同名)
-TASK_FILE_TAG = {"detect": "检测", "segment": "分割", "classify": "分类"}
+TASK_FILE_TAG = {"detect": "检测", "segment": "分割", "classify": "分类",
+                 "ad": "异常"}
 COL_TASK, COL_DATA, COL_METRIC, COL_TIME, COL_DUR, COL_IMG, COL_OPS = range(7)
 METRIC_GOOD, METRIC_MID, METRIC_BAD = "#7be39a", "#ffd166", "#ff6b6b"
 
@@ -160,6 +162,7 @@ class ModelDialog(QDialog):
         self._exp = None          # 导出任务上下文
         self._exp_dlg = None
         self._onnx_worker = None
+        self._ad_worker = None
         self._eval_worker = None
         self._report_worker = None
         self._resize_timer = QTimer(self)
@@ -192,7 +195,8 @@ class ModelDialog(QDialog):
     def closeEvent(self, event):
         # onnx/评估/出报告都挂在后台线程上, 窗口先关会让 Qt 在线程还跑时销毁对象
         if any(w is not None and w.isRunning() for w in
-               (self._onnx_worker, self._eval_worker, self._report_worker)):
+               (self._onnx_worker, self._ad_worker, self._eval_worker,
+                self._report_worker)):
             event.ignore()
             if self._exp_dlg is not None:
                 self._exp_dlg.show()
@@ -798,6 +802,9 @@ class ModelDialog(QDialog):
         self._exp_dlg = ProgressDialog(self.tr("导出模型"),
                                        self.tr("正在导出 ONNX..."), self,
                                        maximum=0, cancellable=False)
+        if task == "ad":
+            self._start_ad_export()
+            return
         try:
             size = int(rec.get("img_size") or 0)
         except (TypeError, ValueError):
@@ -811,6 +818,23 @@ class ModelDialog(QDialog):
         self._onnx_worker.finished_ok.connect(self._export_after_onnx)
         self._onnx_worker.failed.connect(self._export_failed)
         self._onnx_worker.start()
+
+    def _start_ad_export(self):
+        """异常检测没有 ONNX 可导, 攒一个模型包: 模型 + 阈值 + 说明 + 示例."""
+        self._exp_dlg.set_text(self.tr("正在导出模型包..."))
+        self._ad_worker = AdPackageWorker(
+            self._exp["model_path"], self._exp["out_dir"], self._exp["base"],
+            parent=self)
+        self._ad_worker.stage.connect(lambda msg: self._exp_dlg.set_text(str(msg)))
+        self._ad_worker.finished_ok.connect(self._export_after_ad_package)
+        self._ad_worker.failed.connect(self._export_failed)
+        self._ad_worker.start()
+
+    def _export_after_ad_package(self, files):
+        self._exp["copied"].extend(files)
+        write_log(QC.translate("ModelDialog", "导出模型包完成: 包含 {}").format(
+            ",".join(files)))
+        self._export_finish()
 
     def _export_after_onnx(self, onnx_path):
         self._exp["copied"].append(os.path.basename(onnx_path))

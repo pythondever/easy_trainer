@@ -190,8 +190,15 @@ QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus, QSpinBox:focus, QDoubleS
     border-color: #4f7dff;
 }
 
-QLineEdit:disabled, QTextEdit:disabled {
+/* 下拉框要单列: 样式表一旦接管了 QComboBox 的颜色, disabled 的自动灰化就失效,
+   不写这条置灰与可用的下拉长得完全一样(实测同为 #8b8f97) */
+QLineEdit:disabled, QTextEdit:disabled, QComboBox:disabled {
     background-color: #1c1e25;
+    color: #5c6270;
+}
+/* 下拉的文字其实画在内部那个只读 lineEdit 上(见 combo_utils.style_combo),
+   只给 QComboBox 上色的话它只被"捎带"着暗一点, 与输入框的置灰色对不齐 */
+QComboBox:disabled QLineEdit {
     color: #5c6270;
 }
 

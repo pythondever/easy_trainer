@@ -100,12 +100,10 @@ def export_onnx(model_path, task, out_file, img_size=0, family="", log=print):
                                     img_size=img_size or 224, log=log)
     if task == "ad":
         # 异常检测的模型文件是一整个 anomalib 模型(骨干 + 记忆库/归一化流),
-        # 不是一条前向网络, 也没有"一张图一个分数"的现成导出入口; 硬导会得到
-        # 一个语义不明的图, 不如直接说清楚
+        # 不是一条前向网络; 交付走 model_dialog 的专用导出包, 到不了这里
         raise ValueError(QC.translate(
             "OnnxExport",
-            "异常检测模型暂不支持导出 ONNX(它是骨干加记忆库的组合结构), "
-            "请直接用模型文件在软件里测试"))
+            "异常检测不导出 ONNX, 请用模型管理的「导出」生成模型包"))
     if uses_cnn({"family": family, "model_path": model_path}):
         return export_yolo_onnx(model_path, out_file, img_size=img_size,
                                 log=log)

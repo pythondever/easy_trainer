@@ -7,7 +7,7 @@ import traceback
 
 from PySide6.QtCore import QThread, Signal
 
-from app.train import onnx_export
+from app.train import ad_package, onnx_export
 
 WORKSPACE = os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__))))
@@ -35,6 +35,28 @@ class OnnxExportWorker(QThread):
                 img_size=self._img_size, family=self._family,
                 log=self.stage.emit)
             self.finished_ok.emit(path)
+        except Exception as e:
+            self.failed.emit("{}\n{}".format(e, traceback.format_exc()))
+
+
+class AdPackageWorker(QThread):
+    """异常检测的导出包: 复制模型 + 落阈值文本与说明."""
+
+    stage = Signal(str)
+    finished_ok = Signal(list)     # 写进导出目录的文件名
+    failed = Signal(str)
+
+    def __init__(self, model_path, out_dir, base, parent=None):
+        super().__init__(parent)
+        self._model_path = model_path
+        self._out_dir = out_dir
+        self._base = base
+
+    def run(self):
+        try:
+            self.finished_ok.emit(ad_package.build(
+                self._model_path, self._out_dir, self._base,
+                log=self.stage.emit))
         except Exception as e:
             self.failed.emit("{}\n{}".format(e, traceback.format_exc()))
 

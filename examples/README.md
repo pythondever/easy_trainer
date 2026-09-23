@@ -58,6 +58,34 @@ Windows 下代码已经绕过两个坑：OpenCV 的 `imread/imwrite` 走 ANSI �
 改为「读字节 + `imdecode` / `imencode` + 字节落盘」），C++ 的 `main(argv)` 已被 CRT 转成 GBK
 （改用 `GetCommandLineW` 直接取宽字符命令行）。Python 侧读图同样没用 `cv2.imread`。
 
+## 异常检测（AD）
+
+异常检测交付的**不是 ONNX**。AD 模型是「骨干 + 良品特征库」的组合结构，不是一条
+前向网络，导不出 ONNX，所以交付的是原模型文件加几份说明：
+
+```
+项目_时间戳/
+├── 项目_异常_尺寸_规模.pt      # 模型（自包含：构造参数 + 全部权重 + 判定阈值）
+├── threshold.txt               # 判定阈值，一行数字
+├── result.json                 # 训练时的验证集指标
+├── README.txt                  # 交付说明（含离线部署的骨干权重要求）
+└── examples/                   # 本目录
+```
+
+调用示例见 `python/ad.py`：
+
+```bash
+pip install anomalib==2.6.2 torch
+python ad.py --model 模型.pt --images D:/待测图像
+```
+
+每张图算出一个**异常分**（特征空间的距离，不是 0~1 的概率，量级几十很正常），
+`分数 >= 阈值` 判为异常。输入尺寸和阈值都从模型文件里读，不用手动传。
+
+> 离线机器上还要备一份骨干权重 `wide_resnet50_2.racm_in1k`（约 275 MB）——
+> anomalib 建模型时就要从 HuggingFace 缓存里取，缺了会直接报
+> `LocalEntryNotFoundError`，哪怕权重已经在模型文件里。放法见导出目录的 `README.txt`。
+
 ## 各语言依赖
 
 | 语言 | 依赖 | 安装 |
