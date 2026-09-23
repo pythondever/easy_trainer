@@ -1396,32 +1396,32 @@ Ubicación: {}</translation>
     <name>LabelFilter</name>
     <message>
         <location filename="../app/widgets/label_filter_popup.py" line="71"/>
-        <location filename="../app/widgets/label_filter_popup.py" line="477"/>
+        <location filename="../app/widgets/label_filter_popup.py" line="479"/>
         <source>所有图像</source>
         <translation>Todas las imágenes</translation>
     </message>
     <message>
-        <location filename="../app/widgets/label_filter_popup.py" line="490"/>
+        <location filename="../app/widgets/label_filter_popup.py" line="492"/>
         <source>显示全部图像</source>
         <translation>Sin filtro</translation>
     </message>
     <message>
-        <location filename="../app/widgets/label_filter_popup.py" line="492"/>
+        <location filename="../app/widgets/label_filter_popup.py" line="494"/>
         <source>按所选标签过滤</source>
         <translation>Filtro por etiqueta</translation>
     </message>
     <message>
-        <location filename="../app/widgets/label_filter_popup.py" line="494"/>
+        <location filename="../app/widgets/label_filter_popup.py" line="496"/>
         <source>未选择标签</source>
         <translation>Sin selección</translation>
     </message>
     <message>
-        <location filename="../app/widgets/label_filter_popup.py" line="595"/>
+        <location filename="../app/widgets/label_filter_popup.py" line="597"/>
         <source>收起</source>
         <translation>Contraer</translation>
     </message>
     <message>
-        <location filename="../app/widgets/label_filter_popup.py" line="596"/>
+        <location filename="../app/widgets/label_filter_popup.py" line="598"/>
         <source>展开全部</source>
         <translation>Mostrar todo</translation>
     </message>
@@ -1760,7 +1760,6 @@ Todas sus anotaciones se eliminarán y no se podrá deshacer.</translation>
     </message>
     <message>
         <location filename="../app/core/model_assets.py" line="91"/>
-        <location filename="../app/core/model_assets.py" line="134"/>
         <source>精度最高, 显存占用大</source>
         <translation>La precisión más alta, pero usa más VRAM</translation>
     </message>
@@ -1771,25 +1770,25 @@ Todas sus anotaciones se eliminarán y no se podrá deshacer.</translation>
     </message>
     <message>
         <location filename="../app/core/model_assets.py" line="95"/>
-        <location filename="../app/core/model_assets.py" line="138"/>
+        <location filename="../app/core/model_assets.py" line="141"/>
         <source>轻量分割</source>
         <translation>Segmentación ligera</translation>
     </message>
     <message>
         <location filename="../app/core/model_assets.py" line="96"/>
-        <location filename="../app/core/model_assets.py" line="142"/>
+        <location filename="../app/core/model_assets.py" line="145"/>
         <source>速度与精度平衡</source>
         <translation>Equilibrio entre velocidad y precisión</translation>
     </message>
     <message>
         <location filename="../app/core/model_assets.py" line="97"/>
-        <location filename="../app/core/model_assets.py" line="146"/>
+        <location filename="../app/core/model_assets.py" line="149"/>
         <source>细节更完整</source>
         <translation>Detalles más completos</translation>
     </message>
     <message>
         <location filename="../app/core/model_assets.py" line="98"/>
-        <location filename="../app/core/model_assets.py" line="150"/>
+        <location filename="../app/core/model_assets.py" line="153"/>
         <source>最精细</source>
         <translation>El más detallado</translation>
     </message>
@@ -1799,37 +1798,42 @@ Todas sus anotaciones se eliminarán y no se podrá deshacer.</translation>
         <translation>El más detallado, pero usa mucho más VRAM</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="293"/>
+        <location filename="../app/core/model_assets.py" line="137"/>
+        <source>结构与 medium 相同</source>
+        <translation>Misma arquitectura que medium</translation>
+    </message>
+    <message>
+        <location filename="../app/core/model_assets.py" line="296"/>
         <source>文件不存在: {}</source>
         <translation>El archivo no existe: {}</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="296"/>
+        <location filename="../app/core/model_assets.py" line="299"/>
         <source>只支持 {} 格式</source>
         <translation>Solo se admite el formato {}</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="301"/>
+        <location filename="../app/core/model_assets.py" line="304"/>
         <source>读不到文件大小: {}</source>
         <translation>No se puede leer el tamaño del archivo: {}</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="303"/>
+        <location filename="../app/core/model_assets.py" line="306"/>
         <source>文件只有 {}, 不像完整的权重</source>
         <translation>El archivo solo ocupa {}, no parece un peso completo</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="314"/>
+        <location filename="../app/core/model_assets.py" line="317"/>
         <source>这看着是 Transformer 权重, 当前档位是 CNN(YOLO)</source>
         <translation>Parece un peso de Transformer, pero la opción actual es CNN (YOLO)</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="318"/>
+        <location filename="../app/core/model_assets.py" line="321"/>
         <source>这看着是 CNN(YOLO) 权重, 当前档位是 Transformer</source>
         <translation>Parece un peso de CNN (YOLO), pero la opción actual es Transformer</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="338"/>
+        <location filename="../app/core/model_assets.py" line="341"/>
         <source>权重目录不可写: {}</source>
         <translation>No se puede escribir en el directorio de pesos: {}</translation>
     </message>
@@ -1943,48 +1947,48 @@ Todas sus anotaciones se eliminarán y no se podrá deshacer.</translation>
         <translation>Acciones</translation>
     </message>
     <message>
-        <location filename="../ui/model.ui" line="182"/>
+        <location filename="../ui/model.ui" line="184"/>
         <source>模型详情</source>
         <translation>Detalles del modelo</translation>
     </message>
     <message>
-        <location filename="../ui/model.ui" line="189"/>
+        <location filename="../ui/model.ui" line="191"/>
         <location filename="../app/widgets/model_dialog.py" line="553"/>
         <source>选中一行查看详情</source>
         <translation>Seleccione una fila para ver los detalles</translation>
     </message>
     <message>
-        <location filename="../ui/model.ui" line="215"/>
+        <location filename="../ui/model.ui" line="217"/>
         <source>查看完整指标</source>
         <translation>Ver métricas completas</translation>
     </message>
     <message>
-        <location filename="../ui/model.ui" line="222"/>
+        <location filename="../ui/model.ui" line="224"/>
         <source>测试此模型</source>
         <translation>Probar este modelo</translation>
     </message>
     <message>
-        <location filename="../ui/model.ui" line="229"/>
+        <location filename="../ui/model.ui" line="231"/>
         <source>按此配置重训</source>
         <translation>Reentrenar con esta configuración</translation>
     </message>
     <message>
-        <location filename="../ui/model.ui" line="236"/>
+        <location filename="../ui/model.ui" line="238"/>
         <source>打开模型目录</source>
         <translation>Abrir directorio del modelo</translation>
     </message>
     <message>
-        <location filename="../ui/model.ui" line="276"/>
+        <location filename="../ui/model.ui" line="278"/>
         <source>上一页</source>
         <translation>Anterior</translation>
     </message>
     <message>
-        <location filename="../ui/model.ui" line="283"/>
+        <location filename="../ui/model.ui" line="285"/>
         <source>1/1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/model.ui" line="290"/>
+        <location filename="../ui/model.ui" line="292"/>
         <source>下一页</source>
         <translation>Siguiente</translation>
     </message>
@@ -4076,7 +4080,7 @@ El informe ocupa unos 120 KB por imagen; con muchas muestras, reducirlo disminuy
     <message>
         <location filename="../ui/train.ui" line="14"/>
         <location filename="../ui/train.ui" line="40"/>
-        <location filename="../app/train/dialogs.py" line="468"/>
+        <location filename="../app/train/dialogs.py" line="473"/>
         <source>训练</source>
         <translation>Entrenar</translation>
     </message>
@@ -4118,7 +4122,7 @@ El informe ocupa unos 120 KB por imagen; con muchas muestras, reducirlo disminuy
     </message>
     <message>
         <location filename="../ui/train.ui" line="180"/>
-        <location filename="../app/train/dialogs.py" line="663"/>
+        <location filename="../app/train/dialogs.py" line="668"/>
         <source>训练集</source>
         <translation>Conjunto de entrenamiento</translation>
     </message>
@@ -4144,7 +4148,7 @@ El informe ocupa unos 120 KB por imagen; con muchas muestras, reducirlo disminuy
     </message>
     <message>
         <location filename="../ui/train.ui" line="306"/>
-        <location filename="../app/train/dialogs.py" line="544"/>
+        <location filename="../app/train/dialogs.py" line="549"/>
         <source>轮次</source>
         <translation>Épocas</translation>
     </message>
@@ -4155,7 +4159,7 @@ El informe ocupa unos 120 KB por imagen; con muchas muestras, reducirlo disminuy
     </message>
     <message>
         <location filename="../ui/train.ui" line="332"/>
-        <location filename="../app/train/dialogs.py" line="547"/>
+        <location filename="../app/train/dialogs.py" line="552"/>
         <source>早停</source>
         <translation>Parada temprana</translation>
     </message>
@@ -4166,7 +4170,7 @@ El informe ocupa unos 120 KB por imagen; con muchas muestras, reducirlo disminuy
     </message>
     <message>
         <location filename="../ui/train.ui" line="385"/>
-        <location filename="../app/train/dialogs.py" line="550"/>
+        <location filename="../app/train/dialogs.py" line="555"/>
         <source>学习率</source>
         <translation>Tasa de aprendizaje</translation>
     </message>
@@ -4177,26 +4181,24 @@ El informe ocupa unos 120 KB por imagen; con muchas muestras, reducirlo disminuy
     </message>
     <message>
         <location filename="../ui/train.ui" line="438"/>
-        <location filename="../app/train/dialogs.py" line="542"/>
+        <location filename="../app/train/dialogs.py" line="547"/>
         <source>批次</source>
         <translation>Lote</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="451"/>
-        <location filename="../app/train/dialogs.py" line="546"/>
+        <location filename="../app/train/dialogs.py" line="551"/>
         <source>图像尺寸</source>
         <translation>Tamaño de imagen</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="482"/>
-        <location filename="../app/train/dialogs.py" line="428"/>
-        <location filename="../app/train/dialogs.py" line="432"/>
         <source>32 的倍数</source>
         <translation>múltiplo de 32</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="498"/>
-        <location filename="../app/train/dialogs.py" line="543"/>
+        <location filename="../app/train/dialogs.py" line="548"/>
         <source>梯度累积</source>
         <translation>Acum. gradiente</translation>
     </message>
@@ -4207,7 +4209,7 @@ El informe ocupa unos 120 KB por imagen; con muchas muestras, reducirlo disminuy
     </message>
     <message>
         <location filename="../ui/train.ui" line="551"/>
-        <location filename="../app/train/dialogs.py" line="545"/>
+        <location filename="../app/train/dialogs.py" line="550"/>
         <source>线程数</source>
         <translation>Número de hilos</translation>
     </message>
@@ -4238,30 +4240,30 @@ El informe ocupa unos 120 KB por imagen; con muchas muestras, reducirlo disminuy
     </message>
     <message>
         <location filename="../ui/train.ui" line="716"/>
-        <location filename="../app/train/dialogs.py" line="629"/>
+        <location filename="../app/train/dialogs.py" line="634"/>
         <source>请选择训练集与验证集</source>
         <translation>Seleccione un conjunto de entrenamiento y uno de validación</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="760"/>
-        <location filename="../app/train/dialogs.py" line="557"/>
+        <location filename="../app/train/dialogs.py" line="562"/>
         <source>取消</source>
         <translation>Cancelar</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="773"/>
-        <location filename="../app/train/dialogs.py" line="1112"/>
-        <location filename="../app/train/dialogs.py" line="1121"/>
-        <location filename="../app/train/dialogs.py" line="1129"/>
-        <location filename="../app/train/dialogs.py" line="1148"/>
+        <location filename="../app/train/dialogs.py" line="1155"/>
+        <location filename="../app/train/dialogs.py" line="1164"/>
+        <location filename="../app/train/dialogs.py" line="1172"/>
+        <location filename="../app/train/dialogs.py" line="1191"/>
         <source>加入队列</source>
         <translation>Añadir a la cola</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="786"/>
-        <location filename="../app/train/dialogs.py" line="1060"/>
-        <location filename="../app/train/dialogs.py" line="1070"/>
-        <location filename="../app/train/dialogs.py" line="1093"/>
+        <location filename="../app/train/dialogs.py" line="1103"/>
+        <location filename="../app/train/dialogs.py" line="1113"/>
+        <location filename="../app/train/dialogs.py" line="1136"/>
         <source>开始训练</source>
         <translation>Iniciar entrenamiento</translation>
     </message>
@@ -4282,7 +4284,7 @@ El informe ocupa unos 120 KB por imagen; con muchas muestras, reducirlo disminuy
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="182"/>
-        <location filename="../app/train/dialogs.py" line="1122"/>
+        <location filename="../app/train/dialogs.py" line="1165"/>
         <source>请先选择输出路径</source>
         <translation>Seleccione primero una ruta de salida</translation>
     </message>
@@ -4294,7 +4296,7 @@ El informe ocupa unos 120 KB por imagen; con muchas muestras, reducirlo disminuy
     <message>
         <location filename="../app/train/dialogs.py" line="198"/>
         <location filename="../app/train/dialogs.py" line="203"/>
-        <location filename="../app/train/dialogs.py" line="1029"/>
+        <location filename="../app/train/dialogs.py" line="1072"/>
         <source>未知</source>
         <translation>desconocido</translation>
     </message>
@@ -4329,11 +4331,6 @@ El informe ocupa unos 120 KB por imagen; con muchas muestras, reducirlo disminuy
         <translation>Tamaño de imagen recomendado para detección: 640 (puede ser múltiplo de 32, p. ej. 640/672)</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="416"/>
-        <source>图像分割推荐尺寸: 636(必须为 12 的倍数, 如 636/648/660)</source>
-        <translation>Tamaño recomendado para segmentación: 636 (debe ser múltiplo de 12, p. ej. 636/648/660)</translation>
-    </message>
-    <message>
         <location filename="../app/train/dialogs.py" line="418"/>
         <source>CNN 分割推荐尺寸: 640(需为 32 的倍数)</source>
         <translation>Tamaño recomendado para segmentación CNN: 640 (debe ser múltiplo de 32)</translation>
@@ -4349,9 +4346,14 @@ El informe ocupa unos 120 KB por imagen; con muchas muestras, reducirlo disminuy
         <translation>Tamaño recomendado para detección de anomalías: 256; con defectos muy pequeños, 512 es más fiable, a costa de más VRAM y tiempo</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="429"/>
-        <source>12 的倍数</source>
-        <translation>múltiplo de 12</translation>
+        <location filename="../app/train/dialogs.py" line="416"/>
+        <source>图像分割推荐尺寸: 648(需为 {} 的倍数)</source>
+        <translation>Tamaño recomendado para segmentación: 648 (debe ser múltiplo de {})</translation>
+    </message>
+    <message>
+        <location filename="../app/train/dialogs.py" line="427"/>
+        <source>{} 的倍数</source>
+        <translation>múltiplo de {}</translation>
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="430"/>
@@ -4359,158 +4361,163 @@ El informe ocupa unos 120 KB por imagen; con muchas muestras, reducirlo disminuy
         <translation>224 recomendado</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="433"/>
+        <location filename="../app/train/dialogs.py" line="431"/>
         <source>建议 256</source>
         <translation>256 recomendado</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="639"/>
+        <location filename="../app/train/dialogs.py" line="644"/>
         <source>训练集 {} 个 · 验证集 {} 个 · 共 {} 张图</source>
         <translation>{} conjuntos de entrenamiento · {} de validación · {} imágenes en total</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="642"/>
+        <location filename="../app/train/dialogs.py" line="647"/>
         <source>未选择验证集</source>
         <translation>sin conjunto de validación seleccionado</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="644"/>
+        <location filename="../app/train/dialogs.py" line="649"/>
         <source>已标注, 可直接训练</source>
         <translation>etiquetado, listo para entrenar</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="646"/>
+        <location filename="../app/train/dialogs.py" line="651"/>
         <source>有 {} 个数据集尚未标注</source>
         <translation>{} conjuntos de datos sin etiquetar por completo</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="660"/>
+        <location filename="../app/train/dialogs.py" line="665"/>
         <source>请选择验证集</source>
         <translation>Seleccione conjuntos de validación</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="742"/>
+        <location filename="../app/train/dialogs.py" line="747"/>
         <source>已有训练在进行中, 请先停止</source>
         <translation>Ya hay un entrenamiento en curso; deténgalo primero</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="833"/>
+        <location filename="../app/train/dialogs.py" line="838"/>
         <source>异常检测算法自带学习率与优化器, 不需要设置</source>
         <translation>Los algoritmos de detección de anomalías ya incluyen tasa de aprendizaje y optimizador; no hay nada que configurar</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="860"/>
+        <location filename="../app/train/dialogs.py" line="866"/>
         <source>建库型算法只提取特征建立记忆库, 没有训练轮次</source>
         <translation>Los algoritmos de tipo banco de memoria solo extraen características para crear el banco de memoria; no hay épocas de entrenamiento</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="969"/>
+        <location filename="../app/train/dialogs.py" line="975"/>
         <source>仅建库</source>
         <translation>Solo crear</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="999"/>
+        <location filename="../app/train/dialogs.py" line="1033"/>
         <source>请至少选择一个数据集</source>
         <translation>Seleccione al menos un conjunto de datos</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1003"/>
-        <location filename="../app/train/dialogs.py" line="1013"/>
+        <location filename="../app/train/dialogs.py" line="1037"/>
+        <location filename="../app/train/dialogs.py" line="1047"/>
         <source>&quot;{}&quot;不能为空</source>
         <translation>&quot;{}&quot; no puede estar vacío</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1008"/>
+        <location filename="../app/train/dialogs.py" line="1042"/>
         <source>&quot;{}&quot;必须是整数(当前: {})</source>
         <translation>&quot;{}&quot; debe ser un número entero (actual: {})</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1018"/>
+        <location filename="../app/train/dialogs.py" line="1052"/>
         <source>&quot;{}&quot;必须是数字(当前: {})</source>
         <translation>&quot;{}&quot; debe ser un número (actual: {})</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1028"/>
+        <location filename="../app/train/dialogs.py" line="1061"/>
+        <source>图像尺寸需为 {} 的倍数(当前 {}), 可改为 {}</source>
+        <translation>El tamaño de imagen debe ser múltiplo de {} (actual {}); puede usar {}</translation>
+    </message>
+    <message>
+        <location filename="../app/train/dialogs.py" line="1071"/>
         <source>数据集&quot;{}/{}&quot;不是按分类导入的数据集(标签格式={}),无法训练{}</source>
         <translation>El conjunto de datos &quot;{}/{}&quot; no se importó como conjunto de datos de clasificación (formato de etiquetas={}); no se puede entrenar {}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1033"/>
+        <location filename="../app/train/dialogs.py" line="1076"/>
         <source>数据集&quot;{}/{}&quot;是分类数据集,无法训练{}任务</source>
         <translation>El conjunto de datos &quot;{}/{}&quot; es un conjunto de datos de clasificación; no se puede entrenar una tarea de {}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1040"/>
+        <location filename="../app/train/dialogs.py" line="1083"/>
         <source>选择输出目录</source>
         <translation>Seleccionar directorio de salida</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1054"/>
+        <location filename="../app/train/dialogs.py" line="1097"/>
         <source>当前安装缺少 CNN 架构所需的组件, 无法训练.
 请重新安装软件后再试</source>
         <translation>Esta instalación no incluye los componentes necesarios para la arquitectura CNN; no se puede entrenar.
 Vuelva a instalar el software e inténtelo de nuevo</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1061"/>
+        <location filename="../app/train/dialogs.py" line="1104"/>
         <source>当前已有训练在进行中, 请先停止!</source>
         <translation>¡Ya hay un entrenamiento en curso; deténgalo primero!</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1065"/>
+        <location filename="../app/train/dialogs.py" line="1108"/>
         <source>参数校验未通过: {}</source>
         <translation>Validación de parámetros fallida: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1066"/>
-        <location filename="../app/train/dialogs.py" line="1108"/>
+        <location filename="../app/train/dialogs.py" line="1109"/>
+        <location filename="../app/train/dialogs.py" line="1151"/>
         <source>参数校验</source>
         <translation>Validación de parámetros</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1083"/>
+        <location filename="../app/train/dialogs.py" line="1126"/>
         <source>训练启动失败: {}
 {}</source>
         <translation>Error al iniciar el entrenamiento: {}
 {}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1086"/>
+        <location filename="../app/train/dialogs.py" line="1129"/>
         <source>训练启动失败</source>
         <translation>Error al iniciar el entrenamiento</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1094"/>
+        <location filename="../app/train/dialogs.py" line="1137"/>
         <source>已有训练在进行中, 请先停止!</source>
         <translation>¡Ya hay un entrenamiento en curso; deténgalo primero!</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1096"/>
+        <location filename="../app/train/dialogs.py" line="1139"/>
         <source>开始训练: 任务类型={} 训练集={} 验证集={}</source>
         <translation>Iniciando entrenamiento: tipo de tarea={} entrenamiento={} validación={}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1134"/>
+        <location filename="../app/train/dialogs.py" line="1177"/>
         <source>队列</source>
         <translation>Cola</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1135"/>
+        <location filename="../app/train/dialogs.py" line="1178"/>
         <source>已更新该队列任务的参数</source>
         <translation>Se actualizaron los parámetros de la tarea en cola</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1141"/>
+        <location filename="../app/train/dialogs.py" line="1184"/>
         <source>加入队列失败</source>
         <translation>Error al añadir a la cola</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1144"/>
+        <location filename="../app/train/dialogs.py" line="1187"/>
         <source>加入训练队列: {} | {}</source>
         <translation>Añadir a la cola de entrenamiento: {} | {}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1149"/>
+        <location filename="../app/train/dialogs.py" line="1192"/>
         <source>已加入队列(第 {} 个), 可在首页&quot;队列&quot;中查看或启动.</source>
         <translation>Añadido a la cola (posición {}). Puede verlo o iniciarlo en &quot;Cola&quot; de la página principal.</translation>
     </message>

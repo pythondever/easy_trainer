@@ -129,10 +129,13 @@ MODELS = (
                "7223f764a87b863f02eb8d52bf0ce2ee",
                QT_TRANSLATE_NOOP("ModelAssets", "精度更高"),
                _BASE + "medium_coco/checkpoint_best_regular.pth"),
-    ModelAsset(DETECT, "large", "large.pt", 1571684963,
-               "992c8e862aa733a7bb2777e45d49f1a0",
-               QT_TRANSLATE_NOOP("ModelAssets", "精度最高, 显存占用大"),
-               _BASE + "rf-detr-large.pth"),
+    # 旧 rf-detr-large.pth 是 hidden_dim=384 的 DINOv2-base 模型, 与 rfdetr 1.9 起的
+    # RFDETRLarge(256 维) 同名键形状冲突, 加载即抛 RuntimeError; 新版与 medium 同结构,
+    # 只差默认分辨率(704 vs 576)
+    ModelAsset(DETECT, "large", "large.pt", 135954129,
+               "5cb72153541cbcb9aa6efa26222acc75",
+               QT_TRANSLATE_NOOP("ModelAssets", "结构与 medium 相同"),
+               _BASE + "rf-detr-large-2026.pth"),
     ModelAsset(SEGMENT, "nano", "nano-seg.pt", 134545398,
                "9995497791d0ff1664a1d9ddee9cfd20",
                QT_TRANSLATE_NOOP("ModelAssets", "轻量分割"),

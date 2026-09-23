@@ -405,7 +405,7 @@ class TrainDialog(QDialog):
     # 各任务默认参数:epochs / lr / img_size / grad_accum(分类禁用)
     TASK_DEFAULTS = {
         "detect": (100, 1e-4, 640, 4),
-        "segment": (100, 1e-4, 636, 4),
+        "segment": (100, 1e-4, 648, 4),
         "classify": (30, 0.001, 224, 4),
         # 建库型算法(默认的 PatchCore)不看轮次, 这里给的是按轮训练那些算法的默认
         "ad": (20, 1e-4, 256, 4),
@@ -414,7 +414,7 @@ class TrainDialog(QDialog):
         "detect": QT_TRANSLATE_NOOP(
             "TrainDialog", "目标检测推荐图像尺寸: 640(可设为 32 的倍数如 640/672)"),
         "segment": QT_TRANSLATE_NOOP(
-            "TrainDialog", "图像分割推荐尺寸: 636(必须为 12 的倍数, 如 636/648/660)"),
+            "TrainDialog", "图像分割推荐尺寸: 648(需为 {} 的倍数)"),
         "cnn_segment": QT_TRANSLATE_NOOP(
             "TrainDialog", "CNN 分割推荐尺寸: 640(需为 32 的倍数)"),
         "classify": QT_TRANSLATE_NOOP(
@@ -423,14 +423,19 @@ class TrainDialog(QDialog):
             "TrainDialog",
             "异常检测推荐尺寸: 256; 缺陷很小时调到 512 更稳, 显存和耗时随之上升"),
     }
-    # 输入框右侧的倍数约束, 写不下整句 tooltip 就靠这几个字
+    # 尺寸输入框右侧的倍数提示, 数字由 _img_block() 现算, 这里只留模板
+    IMG_NOTE_FMT = QT_TRANSLATE_NOOP("TrainDialog", "{} 的倍数")
+    # 没有倍数约束的任务(分类/异常检测)给个建议值, 免得右侧空着
     IMG_NOTE = {
-        "detect": QT_TRANSLATE_NOOP("TrainDialog", "32 的倍数"),
-        "segment": QT_TRANSLATE_NOOP("TrainDialog", "12 的倍数"),
         "classify": QT_TRANSLATE_NOOP("TrainDialog", "建议 224"),
-        # 636 那个 12 的倍数来自 rf-detr 的 patch_size*num_windows, CNN 没有这约束
-        "cnn_segment": QT_TRANSLATE_NOOP("TrainDialog", "32 的倍数"),
         "ad": QT_TRANSLATE_NOOP("TrainDialog", "建议 256"),
+    }
+    # 步长是框架的要求, 不是我们的选择: rf-detr 要 resolution 整除
+    # patch_size * num_windows, YOLO 要 32 的倍数. 检测四档都是 16*2=32;
+    # 分割 nano 是单窗口 12, 其余三档双窗口 24
+    TRANSFORMER_BLOCK = {
+        "detect": {"nano": 32, "small": 32, "medium": 32, "large": 32},
+        "segment": {"nano": 12, "small": 24, "medium": 24, "large": 24},
     }
     # 切架构时要跟着换的推荐值; 没列的沿用任务默认(分类只有 resnet, 不参与)
     ARCH_DEFAULTS = {
@@ -833,9 +838,10 @@ class TrainDialog(QDialog):
                 w.setToolTip(self.tr("异常检测算法自带学习率与优化器, 不需要设置"))
 
     def _on_network_changed(self):
-        """型号/算法切换: 只有异常检测的轮次可用性跟着算法走, 其余任务不动它."""
+        """型号/算法切换: 异常检测的轮次可用性跟算法走, 尺寸步长提示跟档位走."""
         if self._task() == "ad":
             self._sync_ad_epochs()
+        self._setup_img_size_tip()
 
     def _sync_ad_epochs(self, keep_value=False):
         """建库型算法(PatchCore/CFA)没有训练这一步, 轮次固定 1 并置灰.
@@ -977,15 +983,43 @@ class TrainDialog(QDialog):
             combo.setCurrentIndex(0)
 
     def _setup_img_size_tip(self):
+        """尺寸提示按任务/架构/档位现算: 同一任务不同档位的步长不一样(分割只有
+        nano 是 12, 其余三档 24), 写死的话换个档位就成了错话."""
         key = self._img_key()
-        self.ui.img_size_line_txt.setToolTip(self.tr(self.TASK_TIPS.get(key, "")))
-        self.ui.img_note.setText(self.tr(self.IMG_NOTE.get(key, "")))
+        block = self._img_block()
+        if block:
+            self.ui.img_size_line_txt.setToolTip(
+                self.tr(self.TASK_TIPS.get(key, "")).format(block))
+            self.ui.img_note.setText(self.tr(self.IMG_NOTE_FMT).format(block))
+        else:
+            self.ui.img_size_line_txt.setToolTip(
+                self.tr(self.TASK_TIPS.get(key, "")))
+            self.ui.img_note.setText(self.tr(self.IMG_NOTE.get(key, "")))
 
     def _img_key(self):
         """CNN 分割不吃 rf-detr 的 12 的倍数约束, 提示语单独一套."""
         if self._task() == "segment" and self._arch() == "cnn":
             return "cnn_segment"
         return self._task()
+
+    def _network(self):
+        """当前档位名; 异常检测的档位是算法代号, 存在 itemData 里."""
+        if self._task() == "ad":
+            return self.ui.network_combo.currentData() or ""
+        return self.ui.network_combo.currentText() or ""
+
+    def _img_block(self):
+        """当前组合下图像尺寸必须整除的步长; 无约束返回 0(分类/异常检测)."""
+        task = self._task()
+        if task in ("classify", "ad"):
+            return 0
+        if self._arch() == "cnn":
+            return 32
+        table = self.TRANSFORMER_BLOCK.get(task)
+        if not table:
+            return 0
+        # 档位名取不到时按最松的一档算: 漏报好过误报
+        return table.get(self._network()) or min(table.values())
 
     # ---------- 校验 ----------
     def _setup_validators(self):
@@ -1017,6 +1051,15 @@ class TrainDialog(QDialog):
                 except ValueError:
                     return False, self.tr("\"{}\"必须是数字(当前: {})").format(
                         name, txt)
+        # 尺寸不整除框架步长时 rf-detr 会在子进程直接抛错, 拦在界面上更省事
+        block = self._img_block()
+        if block:
+            size = self._img_size()
+            if size % block != 0:
+                near = max(int(size / block + 0.5), 1) * block
+                return False, self.tr(
+                    "图像尺寸需为 {} 的倍数(当前 {}), 可改为 {}").format(
+                    block, size, near)
         # 任务类型与数据集格式匹配校验(按导入时的 label_fmt 判断:cls=分类,其余=检测/分割)
         # 异常检测与分类同源: 真值就是"子文件夹名", 所以也必须要 cls 格式的数据集
         task = self._task()

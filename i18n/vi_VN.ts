@@ -1396,32 +1396,32 @@ Vị trí: {}</translation>
     <name>LabelFilter</name>
     <message>
         <location filename="../app/widgets/label_filter_popup.py" line="71"/>
-        <location filename="../app/widgets/label_filter_popup.py" line="477"/>
+        <location filename="../app/widgets/label_filter_popup.py" line="479"/>
         <source>所有图像</source>
         <translation>Tất cả ảnh</translation>
     </message>
     <message>
-        <location filename="../app/widgets/label_filter_popup.py" line="490"/>
+        <location filename="../app/widgets/label_filter_popup.py" line="492"/>
         <source>显示全部图像</source>
         <translation>Đang hiển thị tất cả ảnh</translation>
     </message>
     <message>
-        <location filename="../app/widgets/label_filter_popup.py" line="492"/>
+        <location filename="../app/widgets/label_filter_popup.py" line="494"/>
         <source>按所选标签过滤</source>
         <translation>Đang lọc theo nhãn đã chọn</translation>
     </message>
     <message>
-        <location filename="../app/widgets/label_filter_popup.py" line="494"/>
+        <location filename="../app/widgets/label_filter_popup.py" line="496"/>
         <source>未选择标签</source>
         <translation>Chưa chọn nhãn</translation>
     </message>
     <message>
-        <location filename="../app/widgets/label_filter_popup.py" line="595"/>
+        <location filename="../app/widgets/label_filter_popup.py" line="597"/>
         <source>收起</source>
         <translation>Thu gọn</translation>
     </message>
     <message>
-        <location filename="../app/widgets/label_filter_popup.py" line="596"/>
+        <location filename="../app/widgets/label_filter_popup.py" line="598"/>
         <source>展开全部</source>
         <translation>Mở rộng tất cả</translation>
     </message>
@@ -1760,7 +1760,6 @@ Mọi chú thích của nhãn này sẽ bị xóa và không thể khôi phục.
     </message>
     <message>
         <location filename="../app/core/model_assets.py" line="91"/>
-        <location filename="../app/core/model_assets.py" line="134"/>
         <source>精度最高, 显存占用大</source>
         <translation>Độ chính xác cao nhất, tốn nhiều bộ nhớ GPU</translation>
     </message>
@@ -1771,25 +1770,25 @@ Mọi chú thích của nhãn này sẽ bị xóa và không thể khôi phục.
     </message>
     <message>
         <location filename="../app/core/model_assets.py" line="95"/>
-        <location filename="../app/core/model_assets.py" line="138"/>
+        <location filename="../app/core/model_assets.py" line="141"/>
         <source>轻量分割</source>
         <translation>Phân đoạn nhẹ</translation>
     </message>
     <message>
         <location filename="../app/core/model_assets.py" line="96"/>
-        <location filename="../app/core/model_assets.py" line="142"/>
+        <location filename="../app/core/model_assets.py" line="145"/>
         <source>速度与精度平衡</source>
         <translation>Cân bằng tốc độ và độ chính xác</translation>
     </message>
     <message>
         <location filename="../app/core/model_assets.py" line="97"/>
-        <location filename="../app/core/model_assets.py" line="146"/>
+        <location filename="../app/core/model_assets.py" line="149"/>
         <source>细节更完整</source>
         <translation>Chi tiết đầy đủ hơn</translation>
     </message>
     <message>
         <location filename="../app/core/model_assets.py" line="98"/>
-        <location filename="../app/core/model_assets.py" line="150"/>
+        <location filename="../app/core/model_assets.py" line="153"/>
         <source>最精细</source>
         <translation>Chi tiết nhất</translation>
     </message>
@@ -1799,37 +1798,42 @@ Mọi chú thích của nhãn này sẽ bị xóa và không thể khôi phục.
         <translation>Chi tiết nhất, tốn rất nhiều bộ nhớ GPU</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="293"/>
+        <location filename="../app/core/model_assets.py" line="137"/>
+        <source>结构与 medium 相同</source>
+        <translation>Cùng kiến trúc với medium</translation>
+    </message>
+    <message>
+        <location filename="../app/core/model_assets.py" line="296"/>
         <source>文件不存在: {}</source>
         <translation>Tệp không tồn tại: {}</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="296"/>
+        <location filename="../app/core/model_assets.py" line="299"/>
         <source>只支持 {} 格式</source>
         <translation>Chỉ hỗ trợ định dạng {}</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="301"/>
+        <location filename="../app/core/model_assets.py" line="304"/>
         <source>读不到文件大小: {}</source>
         <translation>Không đọc được kích thước tệp: {}</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="303"/>
+        <location filename="../app/core/model_assets.py" line="306"/>
         <source>文件只有 {}, 不像完整的权重</source>
         <translation>Tệp chỉ có {}, không giống một tệp trọng số hoàn chỉnh</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="314"/>
+        <location filename="../app/core/model_assets.py" line="317"/>
         <source>这看着是 Transformer 权重, 当前档位是 CNN(YOLO)</source>
         <translation>Có vẻ đây là trọng số Transformer, nhưng mục đang chọn là CNN (YOLO)</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="318"/>
+        <location filename="../app/core/model_assets.py" line="321"/>
         <source>这看着是 CNN(YOLO) 权重, 当前档位是 Transformer</source>
         <translation>Có vẻ đây là trọng số CNN (YOLO), nhưng mục đang chọn là Transformer</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="338"/>
+        <location filename="../app/core/model_assets.py" line="341"/>
         <source>权重目录不可写: {}</source>
         <translation>Không ghi được vào thư mục trọng số: {}</translation>
     </message>
@@ -1943,48 +1947,48 @@ Mọi chú thích của nhãn này sẽ bị xóa và không thể khôi phục.
         <translation>Thao tác</translation>
     </message>
     <message>
-        <location filename="../ui/model.ui" line="182"/>
+        <location filename="../ui/model.ui" line="184"/>
         <source>模型详情</source>
         <translation>Chi tiết mô hình</translation>
     </message>
     <message>
-        <location filename="../ui/model.ui" line="189"/>
+        <location filename="../ui/model.ui" line="191"/>
         <location filename="../app/widgets/model_dialog.py" line="553"/>
         <source>选中一行查看详情</source>
         <translation>Chọn một dòng để xem chi tiết</translation>
     </message>
     <message>
-        <location filename="../ui/model.ui" line="215"/>
+        <location filename="../ui/model.ui" line="217"/>
         <source>查看完整指标</source>
         <translation>Xem chỉ số đầy đủ</translation>
     </message>
     <message>
-        <location filename="../ui/model.ui" line="222"/>
+        <location filename="../ui/model.ui" line="224"/>
         <source>测试此模型</source>
         <translation>Kiểm thử mô hình này</translation>
     </message>
     <message>
-        <location filename="../ui/model.ui" line="229"/>
+        <location filename="../ui/model.ui" line="231"/>
         <source>按此配置重训</source>
         <translation>Huấn luyện lại theo cấu hình này</translation>
     </message>
     <message>
-        <location filename="../ui/model.ui" line="236"/>
+        <location filename="../ui/model.ui" line="238"/>
         <source>打开模型目录</source>
         <translation>Mở thư mục mô hình</translation>
     </message>
     <message>
-        <location filename="../ui/model.ui" line="276"/>
+        <location filename="../ui/model.ui" line="278"/>
         <source>上一页</source>
         <translation>Trang trước</translation>
     </message>
     <message>
-        <location filename="../ui/model.ui" line="283"/>
+        <location filename="../ui/model.ui" line="285"/>
         <source>1/1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/model.ui" line="290"/>
+        <location filename="../ui/model.ui" line="292"/>
         <source>下一页</source>
         <translation>Trang sau</translation>
     </message>
@@ -4076,7 +4080,7 @@ Báo cáo tốn khoảng 120 KB mỗi ảnh; khi có nhiều mẫu, giảm số 
     <message>
         <location filename="../ui/train.ui" line="14"/>
         <location filename="../ui/train.ui" line="40"/>
-        <location filename="../app/train/dialogs.py" line="468"/>
+        <location filename="../app/train/dialogs.py" line="473"/>
         <source>训练</source>
         <translation>Huấn luyện</translation>
     </message>
@@ -4118,7 +4122,7 @@ Báo cáo tốn khoảng 120 KB mỗi ảnh; khi có nhiều mẫu, giảm số 
     </message>
     <message>
         <location filename="../ui/train.ui" line="180"/>
-        <location filename="../app/train/dialogs.py" line="663"/>
+        <location filename="../app/train/dialogs.py" line="668"/>
         <source>训练集</source>
         <translation>Tập huấn luyện</translation>
     </message>
@@ -4144,7 +4148,7 @@ Báo cáo tốn khoảng 120 KB mỗi ảnh; khi có nhiều mẫu, giảm số 
     </message>
     <message>
         <location filename="../ui/train.ui" line="306"/>
-        <location filename="../app/train/dialogs.py" line="544"/>
+        <location filename="../app/train/dialogs.py" line="549"/>
         <source>轮次</source>
         <translation>Số epoch</translation>
     </message>
@@ -4155,7 +4159,7 @@ Báo cáo tốn khoảng 120 KB mỗi ảnh; khi có nhiều mẫu, giảm số 
     </message>
     <message>
         <location filename="../ui/train.ui" line="332"/>
-        <location filename="../app/train/dialogs.py" line="547"/>
+        <location filename="../app/train/dialogs.py" line="552"/>
         <source>早停</source>
         <translation>Dừng sớm</translation>
     </message>
@@ -4166,7 +4170,7 @@ Báo cáo tốn khoảng 120 KB mỗi ảnh; khi có nhiều mẫu, giảm số 
     </message>
     <message>
         <location filename="../ui/train.ui" line="385"/>
-        <location filename="../app/train/dialogs.py" line="550"/>
+        <location filename="../app/train/dialogs.py" line="555"/>
         <source>学习率</source>
         <translation>Tốc độ học</translation>
     </message>
@@ -4177,26 +4181,24 @@ Báo cáo tốn khoảng 120 KB mỗi ảnh; khi có nhiều mẫu, giảm số 
     </message>
     <message>
         <location filename="../ui/train.ui" line="438"/>
-        <location filename="../app/train/dialogs.py" line="542"/>
+        <location filename="../app/train/dialogs.py" line="547"/>
         <source>批次</source>
         <translation>batch</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="451"/>
-        <location filename="../app/train/dialogs.py" line="546"/>
+        <location filename="../app/train/dialogs.py" line="551"/>
         <source>图像尺寸</source>
         <translation>Kích thước ảnh</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="482"/>
-        <location filename="../app/train/dialogs.py" line="428"/>
-        <location filename="../app/train/dialogs.py" line="432"/>
         <source>32 的倍数</source>
         <translation>Bội số của 32</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="498"/>
-        <location filename="../app/train/dialogs.py" line="543"/>
+        <location filename="../app/train/dialogs.py" line="548"/>
         <source>梯度累积</source>
         <translation>Tích lũy gradient</translation>
     </message>
@@ -4207,7 +4209,7 @@ Báo cáo tốn khoảng 120 KB mỗi ảnh; khi có nhiều mẫu, giảm số 
     </message>
     <message>
         <location filename="../ui/train.ui" line="551"/>
-        <location filename="../app/train/dialogs.py" line="545"/>
+        <location filename="../app/train/dialogs.py" line="550"/>
         <source>线程数</source>
         <translation>Số luồng</translation>
     </message>
@@ -4238,30 +4240,30 @@ Báo cáo tốn khoảng 120 KB mỗi ảnh; khi có nhiều mẫu, giảm số 
     </message>
     <message>
         <location filename="../ui/train.ui" line="716"/>
-        <location filename="../app/train/dialogs.py" line="629"/>
+        <location filename="../app/train/dialogs.py" line="634"/>
         <source>请选择训练集与验证集</source>
         <translation>Chọn tập huấn luyện và tập xác thực</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="760"/>
-        <location filename="../app/train/dialogs.py" line="557"/>
+        <location filename="../app/train/dialogs.py" line="562"/>
         <source>取消</source>
         <translation>Hủy</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="773"/>
-        <location filename="../app/train/dialogs.py" line="1112"/>
-        <location filename="../app/train/dialogs.py" line="1121"/>
-        <location filename="../app/train/dialogs.py" line="1129"/>
-        <location filename="../app/train/dialogs.py" line="1148"/>
+        <location filename="../app/train/dialogs.py" line="1155"/>
+        <location filename="../app/train/dialogs.py" line="1164"/>
+        <location filename="../app/train/dialogs.py" line="1172"/>
+        <location filename="../app/train/dialogs.py" line="1191"/>
         <source>加入队列</source>
         <translation>Thêm vào hàng đợi</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="786"/>
-        <location filename="../app/train/dialogs.py" line="1060"/>
-        <location filename="../app/train/dialogs.py" line="1070"/>
-        <location filename="../app/train/dialogs.py" line="1093"/>
+        <location filename="../app/train/dialogs.py" line="1103"/>
+        <location filename="../app/train/dialogs.py" line="1113"/>
+        <location filename="../app/train/dialogs.py" line="1136"/>
         <source>开始训练</source>
         <translation>Bắt đầu huấn luyện</translation>
     </message>
@@ -4282,7 +4284,7 @@ Báo cáo tốn khoảng 120 KB mỗi ảnh; khi có nhiều mẫu, giảm số 
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="182"/>
-        <location filename="../app/train/dialogs.py" line="1122"/>
+        <location filename="../app/train/dialogs.py" line="1165"/>
         <source>请先选择输出路径</source>
         <translation>Chọn đường dẫn đầu ra trước</translation>
     </message>
@@ -4294,7 +4296,7 @@ Báo cáo tốn khoảng 120 KB mỗi ảnh; khi có nhiều mẫu, giảm số 
     <message>
         <location filename="../app/train/dialogs.py" line="198"/>
         <location filename="../app/train/dialogs.py" line="203"/>
-        <location filename="../app/train/dialogs.py" line="1029"/>
+        <location filename="../app/train/dialogs.py" line="1072"/>
         <source>未知</source>
         <translation>Không xác định</translation>
     </message>
@@ -4329,11 +4331,6 @@ Báo cáo tốn khoảng 120 KB mỗi ảnh; khi có nhiều mẫu, giảm số 
         <translation>Kích thước ảnh đề xuất cho phát hiện: 640 (có thể đặt thành bội số của 32 như 640/672)</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="416"/>
-        <source>图像分割推荐尺寸: 636(必须为 12 的倍数, 如 636/648/660)</source>
-        <translation>Kích thước đề xuất cho phân đoạn: 636 (phải là bội số của 12, như 636/648/660)</translation>
-    </message>
-    <message>
         <location filename="../app/train/dialogs.py" line="418"/>
         <source>CNN 分割推荐尺寸: 640(需为 32 的倍数)</source>
         <translation>Kích thước đề xuất cho phân đoạn CNN: 640 (phải là bội số của 32)</translation>
@@ -4349,9 +4346,14 @@ Báo cáo tốn khoảng 120 KB mỗi ảnh; khi có nhiều mẫu, giảm số 
         <translation>Kích thước đề xuất cho phát hiện bất thường: 256; khi khuyết tật rất nhỏ nên đặt 512 sẽ ổn định hơn, bộ nhớ GPU và thời gian cũng tăng theo</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="429"/>
-        <source>12 的倍数</source>
-        <translation>Bội số của 12</translation>
+        <location filename="../app/train/dialogs.py" line="416"/>
+        <source>图像分割推荐尺寸: 648(需为 {} 的倍数)</source>
+        <translation>Kích thước đề xuất cho phân đoạn: 648 (phải là bội số của {})</translation>
+    </message>
+    <message>
+        <location filename="../app/train/dialogs.py" line="427"/>
+        <source>{} 的倍数</source>
+        <translation>bội số của {}</translation>
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="430"/>
@@ -4359,158 +4361,163 @@ Báo cáo tốn khoảng 120 KB mỗi ảnh; khi có nhiều mẫu, giảm số 
         <translation>Đề xuất 224</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="433"/>
+        <location filename="../app/train/dialogs.py" line="431"/>
         <source>建议 256</source>
         <translation>Đề xuất 256</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="639"/>
+        <location filename="../app/train/dialogs.py" line="644"/>
         <source>训练集 {} 个 · 验证集 {} 个 · 共 {} 张图</source>
         <translation>{} tập huấn luyện · {} tập xác thực · tổng {} ảnh</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="642"/>
+        <location filename="../app/train/dialogs.py" line="647"/>
         <source>未选择验证集</source>
         <translation>Chưa chọn tập xác thực</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="644"/>
+        <location filename="../app/train/dialogs.py" line="649"/>
         <source>已标注, 可直接训练</source>
         <translation>Đã gán nhãn, có thể huấn luyện ngay</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="646"/>
+        <location filename="../app/train/dialogs.py" line="651"/>
         <source>有 {} 个数据集尚未标注</source>
         <translation>Có {} bộ dữ liệu chưa gán nhãn</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="660"/>
+        <location filename="../app/train/dialogs.py" line="665"/>
         <source>请选择验证集</source>
         <translation>Chọn tập xác thực</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="742"/>
+        <location filename="../app/train/dialogs.py" line="747"/>
         <source>已有训练在进行中, 请先停止</source>
         <translation>Đang có huấn luyện chạy, hãy dừng trước</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="833"/>
+        <location filename="../app/train/dialogs.py" line="838"/>
         <source>异常检测算法自带学习率与优化器, 不需要设置</source>
         <translation>Thuật toán phát hiện bất thường đã có sẵn tốc độ học và trình tối ưu, không cần thiết lập</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="860"/>
+        <location filename="../app/train/dialogs.py" line="866"/>
         <source>建库型算法只提取特征建立记忆库, 没有训练轮次</source>
         <translation>Thuật toán kiểu ngân hàng bộ nhớ chỉ trích xuất đặc trưng để xây dựng ngân hàng bộ nhớ, không có số epoch huấn luyện</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="969"/>
+        <location filename="../app/train/dialogs.py" line="975"/>
         <source>仅建库</source>
         <translation>Chỉ xây dựng ngân hàng bộ nhớ</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="999"/>
+        <location filename="../app/train/dialogs.py" line="1033"/>
         <source>请至少选择一个数据集</source>
         <translation>Chọn ít nhất một bộ dữ liệu</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1003"/>
-        <location filename="../app/train/dialogs.py" line="1013"/>
+        <location filename="../app/train/dialogs.py" line="1037"/>
+        <location filename="../app/train/dialogs.py" line="1047"/>
         <source>&quot;{}&quot;不能为空</source>
         <translation>&quot;{}&quot; không được để trống</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1008"/>
+        <location filename="../app/train/dialogs.py" line="1042"/>
         <source>&quot;{}&quot;必须是整数(当前: {})</source>
         <translation>&quot;{}&quot; phải là số nguyên (hiện tại: {})</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1018"/>
+        <location filename="../app/train/dialogs.py" line="1052"/>
         <source>&quot;{}&quot;必须是数字(当前: {})</source>
         <translation>&quot;{}&quot; phải là số (hiện tại: {})</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1028"/>
+        <location filename="../app/train/dialogs.py" line="1061"/>
+        <source>图像尺寸需为 {} 的倍数(当前 {}), 可改为 {}</source>
+        <translation>Kích thước ảnh phải là bội số của {} (hiện tại {}); có thể đổi thành {}</translation>
+    </message>
+    <message>
+        <location filename="../app/train/dialogs.py" line="1071"/>
         <source>数据集&quot;{}/{}&quot;不是按分类导入的数据集(标签格式={}),无法训练{}</source>
         <translation>Bộ dữ liệu &quot;{}/{}&quot; không được nhập dưới dạng bộ dữ liệu phân loại (định dạng nhãn={}), không thể huấn luyện {}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1033"/>
+        <location filename="../app/train/dialogs.py" line="1076"/>
         <source>数据集&quot;{}/{}&quot;是分类数据集,无法训练{}任务</source>
         <translation>Bộ dữ liệu &quot;{}/{}&quot; là bộ dữ liệu phân loại, không thể huấn luyện tác vụ {}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1040"/>
+        <location filename="../app/train/dialogs.py" line="1083"/>
         <source>选择输出目录</source>
         <translation>Chọn thư mục đầu ra</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1054"/>
+        <location filename="../app/train/dialogs.py" line="1097"/>
         <source>当前安装缺少 CNN 架构所需的组件, 无法训练.
 请重新安装软件后再试</source>
         <translation>Bản cài đặt này thiếu thành phần cần thiết cho kiến trúc CNN, không thể huấn luyện.
 Vui lòng cài đặt lại phần mềm rồi thử lại</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1061"/>
+        <location filename="../app/train/dialogs.py" line="1104"/>
         <source>当前已有训练在进行中, 请先停止!</source>
         <translation>Đang có huấn luyện chạy, hãy dừng trước!</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1065"/>
+        <location filename="../app/train/dialogs.py" line="1108"/>
         <source>参数校验未通过: {}</source>
         <translation>Kiểm tra tham số không đạt: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1066"/>
-        <location filename="../app/train/dialogs.py" line="1108"/>
+        <location filename="../app/train/dialogs.py" line="1109"/>
+        <location filename="../app/train/dialogs.py" line="1151"/>
         <source>参数校验</source>
         <translation>Kiểm tra tham số</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1083"/>
+        <location filename="../app/train/dialogs.py" line="1126"/>
         <source>训练启动失败: {}
 {}</source>
         <translation>Khởi động huấn luyện thất bại: {}
 {}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1086"/>
+        <location filename="../app/train/dialogs.py" line="1129"/>
         <source>训练启动失败</source>
         <translation>Không khởi động được huấn luyện</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1094"/>
+        <location filename="../app/train/dialogs.py" line="1137"/>
         <source>已有训练在进行中, 请先停止!</source>
         <translation>Đang có huấn luyện chạy, hãy dừng trước!</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1096"/>
+        <location filename="../app/train/dialogs.py" line="1139"/>
         <source>开始训练: 任务类型={} 训练集={} 验证集={}</source>
         <translation>Bắt đầu huấn luyện: loại tác vụ={} tập huấn luyện={} tập xác thực={}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1134"/>
+        <location filename="../app/train/dialogs.py" line="1177"/>
         <source>队列</source>
         <translation>Hàng đợi</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1135"/>
+        <location filename="../app/train/dialogs.py" line="1178"/>
         <source>已更新该队列任务的参数</source>
         <translation>Đã cập nhật tham số của tác vụ trong hàng đợi</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1141"/>
+        <location filename="../app/train/dialogs.py" line="1184"/>
         <source>加入队列失败</source>
         <translation>Thêm vào hàng đợi thất bại</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1144"/>
+        <location filename="../app/train/dialogs.py" line="1187"/>
         <source>加入训练队列: {} | {}</source>
         <translation>Thêm vào hàng đợi huấn luyện: {} | {}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1149"/>
+        <location filename="../app/train/dialogs.py" line="1192"/>
         <source>已加入队列(第 {} 个), 可在首页&quot;队列&quot;中查看或启动.</source>
         <translation>Đã thêm vào hàng đợi (vị trí {}), có thể xem hoặc khởi động trong &quot;Hàng đợi&quot; ở trang chủ.</translation>
     </message>

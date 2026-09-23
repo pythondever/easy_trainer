@@ -274,7 +274,7 @@ easy_trainer/
 6. **Review metrics**: Model management → "Metrics" opens the accuracy curves
 7. **Export model**: Model management → record "Export" produces `project_task_size_scale.pth` + `classes.txt`
 
-> 💡 Training image sizes: detection default **640**, segmentation default **636** (multiple of 12), classification default **224**. Recommended values appear on hover over the input.
+> 💡 Training image sizes: detection default **640** (multiple of 32), segmentation default **648** (multiple of 12 for nano, 24 for the other three scales), classification default **224**. The note beside the input and the hover tooltip show the valid values for the current scale.
 
 ## 💾 Data Storage
 
