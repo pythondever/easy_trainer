@@ -64,8 +64,8 @@ def kill_process_tree(proc):
 
 
 class SubprocessWorker(QThread):
-    """跑子进程的 worker 的公共部分: 配置快照, 进程句柄, 停止标志.
-
+    """
+    跑子进程的 worker 的公共部分: 配置快照, 进程句柄, 停止标志.
     信号留给各自的子类声明 - 训练要报指标, 测试不报.
     """
 

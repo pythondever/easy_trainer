@@ -47,9 +47,10 @@ _CHART_H = 240                     # 标注分布柱状图占位高度
 
 PER_CLASS_LIMIT = 10
 
-def _pick_image_font():
-    """PIL 绘制用的字体文件路径: 取当前界面语言的字体, 找不到返回 None.
 
+def _pick_image_font():
+    """
+    PIL 绘制用的字体文件路径: 取当前界面语言的字体, 找不到返回 None.
     字体探测统一在 core.utils(与 matplotlib 图表同源), 否则 PDF 里 PIL 画的
     标题和 matplotlib 画的坐标轴可能用了两个字体.
     """
@@ -354,8 +355,8 @@ def _legend_items(stat):
 
 
 def _legend_slots(legend, col_w, sw_w, f_meta, tw):
-    """给图例算 (列, 行, 是否独占整行) 位置.
-
+    """
+    给图例算 (列, 行, 是否独占整行) 位置.
     条数会随"认错/轮廓"两条增减, 长语言(西/法/越)的说明半栏放不下,
     这种就让它独占一整行 —— 否则会被省略号吃掉后半句.
     """
@@ -746,8 +747,8 @@ def _split_units(text):
 
 
 def _need_space(prev_ch, cur_ch):
-    """拉丁词后面紧跟引号之类的片段要补个空格; CJK 侧不补(中英混排里反而怪).
-
+    """
+    拉丁词后面紧跟引号之类的片段要补个空格; CJK 侧不补(中英混排里反而怪).
     翻译成拉丁语言时"漏检集中在"会译成以单词结尾的句子, 直接接引号就粘成
     "auf"划痕"" 了, 而中文源串本身不需要空格.
     """
@@ -756,8 +757,8 @@ def _need_space(prev_ch, cur_ch):
 
 
 def _wrap(d, items, font, width):
-    """把 (文本, 是否标签) 序列按真实宽度折行. 空列表代表段间空行.
-
+    """
+    把 (文本, 是否标签) 序列按真实宽度折行. 空列表代表段间空行.
     返回 [[(x, 单元, 是否标签), ...], ...], 每行的 x 是相对内容左边距的偏移.
     """
     def wf(u):
@@ -846,8 +847,8 @@ def _advice_fonts():
 
 
 def render_advice_pages(items, out_dir, first_page_no, model=""):
-    """改进建议渲染成 1..N 页 PNG, 返回 (路径列表, 下一页页码).
-
+    """
+    改进建议渲染成 1..N 页 PNG, 返回 (路径列表, 下一页页码).
     分页放在这里而不是在 _advice_items 里截断: 只有渲染时才拿得到字体和真实宽度.
     """
     dpi = _DPI
