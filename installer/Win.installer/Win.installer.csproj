@@ -8,6 +8,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
     <AssemblyName>installer</AssemblyName>
+    <!-- 布局缩放靠 AutoScaleMode.Font, 这行决定字体度量按哪个显示器的 DPI 取;
+         SystemAware 下窗口移到别的缩放比显示器会被 DWM 拉伸变糊 -->
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
     <ApplicationIcon>..\..\resources\favicon.ico</ApplicationIcon>
     <Version>1.0.0</Version>
     <AssemblyTitle>EasyTrainer 安装程序</AssemblyTitle>

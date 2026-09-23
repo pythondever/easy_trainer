@@ -169,8 +169,10 @@
      </item>
      <item>
       <widget class="QWidget" name="detail_panel" native="true">
+       <!-- 定宽: 详情文本与精度曲线都参与宽度协商, 上下限不相等时
+            面板宽度会随选中行在 250~280 之间跳, 左侧表格列跟着一起抖 -->
        <property name="minimumWidth">
-        <number>250</number>
+        <number>280</number>
        </property>
        <property name="maximumWidth">
         <number>280</number>

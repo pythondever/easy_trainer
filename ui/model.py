@@ -101,7 +101,7 @@ class Ui_ModelDialog(object):
 
         self.detail_panel = QWidget(ModelDialog)
         self.detail_panel.setObjectName(u"detail_panel")
-        self.detail_panel.setMinimumWidth(250)
+        self.detail_panel.setMinimumWidth(280)
         self.detail_panel.setMaximumWidth(280)
         self.detail_layout = QVBoxLayout(self.detail_panel)
         self.detail_layout.setObjectName(u"detail_layout")

@@ -23,14 +23,26 @@ public sealed class MainForm : Form
     private bool _busy;
     private bool _finished;
     private readonly List<ComponentCard> _cards = new();
+    private readonly Panel _scroll = new();   // 内容超出视口时出滚动条, 按钮行另挂在窗口底部
+    private TableLayoutPanel _content = null!;
+
+    // 日志所在的行: 高度由 FitScroll 现算(吃掉富余 / 让给滚动条)
+    private const int LogRowIndex = 7;
+    private const int LogMinHeight = 60;
 
     public MainForm()
     {
+        SuspendLayout();
+        // 手写布局全是像素值, 不打开字体自动缩放就不会跟着 DPI 走;
+        // 基线 7x17 = 96dpi 下 Microsoft YaHei UI 9pt 的字体度量(设计器写出的就是这两个数)
+        AutoScaleMode = AutoScaleMode.Font;
+        AutoScaleDimensions = new SizeF(7F, 17F);
+
         Text = "安装程序";
         Font = new Font("Microsoft YaHei UI", 9f);
         BackColor = PageBg;
-        ClientSize = new Size(820, 764); // 高度须 ≥ 固定行总需求 + header 72 + padding 44, 否则按钮行被挤出
-        MinimumSize = new Size(760, 734);
+        ClientSize = new Size(820, 764);    // 设计尺寸
+        MinimumSize = new Size(560, 420);   // 只是窗体下限: 内容装不下靠滚动条, 不再按内容定死
         StartPosition = FormStartPosition.CenterScreen;
         try { Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath) ?? Icon; } catch { }
 
@@ -145,14 +157,15 @@ public sealed class MainForm : Form
 
         var content = new TableLayoutPanel
         {
-            Dock = DockStyle.Fill,
+            Dock = DockStyle.None,                    // 交给滚动容器, 尺寸由 FitScroll 现算
             ColumnCount = 1,
-            Padding = new Padding(32, 22, 32, 22),
+            Padding = new Padding(32, 22, 32, 0),     // 下留白归按钮条, 否则滚到底会多一块空
             BackColor = PageBg,
         };
+        _content = content;
         content.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
 
-        content.RowCount = 10;
+        content.RowCount = 9;
         content.RowStyles.Add(new RowStyle(SizeType.AutoSize));                                  // 0 提示
         content.RowStyles.Add(new RowStyle(SizeType.AutoSize));                                  // 1 Caption 安装目录
         content.RowStyles.Add(new RowStyle(SizeType.Absolute, 36));                              // 2 dirRow(Absolute 锁死: AutoSize 会被按钮 PreferredSize 撑到 ~100)
@@ -160,9 +173,8 @@ public sealed class MainForm : Form
         content.RowStyles.Add(new RowStyle(SizeType.AutoSize));                                  // 4 cardContainer(高度随卡片数量自适应)
         content.RowStyles.Add(new RowStyle(SizeType.AutoSize));                                  // 5 needLabel
         content.RowStyles.Add(new RowStyle(SizeType.AutoSize));                                  // 6 Caption 日志
-        content.RowStyles.Add(new RowStyle(SizeType.Percent, 100));                              // 7 logPanel
+        content.RowStyles.Add(new RowStyle(SizeType.Absolute, LogMinHeight));                    // 7 logPanel(高度由 FitScroll 现算)
         content.RowStyles.Add(new RowStyle(SizeType.AutoSize));                                  // 8 _bar
-        content.RowStyles.Add(new RowStyle(SizeType.Absolute, 58));                              // 9 btnRow(42 按钮 + 16 上 margin; margin 会从行高里扣)
 
         var sub = new Label
         {
@@ -183,10 +195,28 @@ public sealed class MainForm : Form
         content.Controls.Add(logPanel, 0, 7);
         _bar.Margin = new Padding(0, 10, 0, 0);
         content.Controls.Add(_bar, 0, 8);
-        content.Controls.Add(btnRow, 0, 9);
+        // 按钮条单独挂在窗口底部: 窗口再矮也点得到, 不必先滚动
+        var actionBar = new Panel
+        {
+            Dock = DockStyle.Bottom,
+            Height = 58 + 22,
+            Padding = new Padding(32, 16, 32, 22),
+            BackColor = PageBg,
+        };
+        btnRow.Margin = new Padding(0);
+        actionBar.Controls.Add(btnRow);
 
-        Controls.Add(content);
+        _scroll.Dock = DockStyle.Fill;
+        _scroll.AutoScroll = true;
+        _scroll.BackColor = PageBg;
+        _scroll.Resize += (_, _) => FitScroll();
+        _scroll.Controls.Add(content);
+
+        Controls.Add(_scroll);
+        Controls.Add(actionBar);
         Controls.Add(header);
+        ResumeLayout(performLayout: true);
+        ClampToScreen();
 
         browse.Click += (_, _) =>
         {
@@ -205,10 +235,62 @@ public sealed class MainForm : Form
         Load += (_, _) =>
         {
             PopulateComponents();
+            FitScroll();
             BeginInvoke(Refresh);
         };
     }
 
+
+    // 日志行拿"视口 - 其余行高度", 地板 LogMinHeight; 装不下就整块交给滚动条.
+    // 用绝对高度而不是 Percent: 窗口只有设计尺寸那么高时日志得能被压到自然高度以下(改前就是这么排的),
+    // 否则会平白多出一条滚动条
+    private void FitScroll()
+    {
+        if (_scroll.ClientSize.Width <= 0) return;
+        var vp = _scroll.ClientSize;
+        _content.Width = vp.Width;
+        var fixedH = FixedRows();
+        if (fixedH + LogMinHeight > vp.Height)
+        {
+            _content.Width = vp.Width - SystemInformation.VerticalScrollBarWidth;   // 让开竖条: 它压在客户区右边缘
+            fixedH = FixedRows();      // 变窄后文字可能回流出更多行
+        }
+        var logH = Math.Max(LogMinHeight, vp.Height - fixedH);
+        if ((int)_content.RowStyles[LogRowIndex].Height != logH)
+            _content.RowStyles[LogRowIndex].Height = logH;
+        var want = Math.Max(fixedH + logH, vp.Height);
+        if (_content.Height != want) _content.Height = want;
+    }
+
+    // 除日志行以外所有行的高度之和(含内边距). 逐行取行样式 / 子控件自然高度:
+    // GetRowHeights 会把表格用不完的富余摊进行里, 量出来比实际大(实测固定部分多算了 221px)
+    private int FixedRows()
+    {
+        _content.PerformLayout();   // PreferredSize 依赖当前宽度, 宽度刚改过
+        var sum = _content.Padding.Vertical;
+        for (var i = 0; i < _content.RowCount; i++)
+        {
+            if (i == LogRowIndex) continue;
+            var style = _content.RowStyles[i];
+            if (style.SizeType == SizeType.Absolute)
+            {
+                sum += (int)style.Height;
+                continue;
+            }
+            var child = _content.GetControlFromPosition(0, i);
+            if (child != null) sum += child.PreferredSize.Height + child.Margin.Vertical;
+        }
+        return sum;
+    }
+
+    // 高缩放/小屏上设计尺寸会超出工作区: 夹进去, 剩下的交给滚动条
+    private void ClampToScreen()
+    {
+        var wa = Screen.FromPoint(Cursor.Position).WorkingArea;
+        var w = Math.Min(ClientSize.Width, Math.Max(320, wa.Width - 24));
+        var h = Math.Min(ClientSize.Height, Math.Max(240, wa.Height - 24));
+        if (w != ClientSize.Width || h != ClientSize.Height) ClientSize = new Size(w, h);
+    }
 
     private static Label Caption(string text, int marginTop = 0)
         => new()
@@ -242,10 +324,10 @@ public sealed class MainForm : Form
     private void RecalcCardWidths()
     {
         if (_cardBox.Width <= 0 || _cards.Count == 0) return;
-        var w = (_cardBox.ClientSize.Width - 14 * 2) / 2;
-        if (w < 200) return;
+        var w = (_cardBox.ClientSize.Width - UiScale.Px(this, 14) * 2) / 2;   // 卡片的 Margin 已被自动缩放
+        if (w < UiScale.Px(this, 200)) return;
         foreach (var c in _cards)
-            c.Size = new Size(w, 100);
+            c.Size = new Size(w, UiScale.Px(this, 100));   // 只改宽度: 高度保持设计值的等比缩放
     }
 
     private void UpdateNeedLabel()

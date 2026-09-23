@@ -25,6 +25,18 @@ internal static class BackDrop
     }
 }
 
+/// <summary>自绘常量的折算系数: 布局由 AutoScaleMode.Font 整块缩放, 但 OnPaint 里写死的像素坐标
+/// 不跟着走, 只能按显示器的 DPI 自己折. per-monitor v2 下 DeviceDpi 随窗口所在的显示器变化.</summary>
+internal static class UiScale
+{
+    /// <summary>非 0 时钉死折算系数(渲染非本机 DPI 的界面图时用); 0 = 按控件自身 DPI.</summary>
+    internal static float Force = 0f;
+
+    internal static float Of(Control c) => Force > 0f ? Force : c.DeviceDpi / 96f;
+    internal static float Pf(Control c, float design) => design * Of(c);
+    internal static int Px(Control c, int design) => (int)Math.Round(design * Of(c), MidpointRounding.AwayFromZero);
+}
+
 /// <summary>圆角按钮(主色实心 / 灰底 secondary 两种, 带 hover/按下/禁用态). 纯 GDI+ 自绘.</summary>
 public sealed class RoundedButton : Button
 {
@@ -94,7 +106,7 @@ public sealed class RoundedButton : Button
             text = Color.White;
         }
 
-        using (var path = RoundedRect(rc, 6f))
+        using (var path = RoundedRect(rc, UiScale.Pf(this, 6f)))
         using (var b = new SolidBrush(fill))
             g.FillPath(b, path);
 
@@ -141,19 +153,21 @@ public sealed class HeaderPanel : Panel
     protected override void OnPaint(PaintEventArgs e)
     {
         var g = e.Graphics;
+        var s = UiScale.Of(this);
         g.SmoothingMode = SmoothingMode.AntiAlias;
         using (var b = new LinearGradientBrush(ClientRectangle,
             Color.FromArgb(0x14, 0x39, 0x6B), Color.FromArgb(0x2E, 0x70, 0xE0), 0f))
             BackDrop.Fill(this, g, b);
 
-        using (var pen = new Pen(Color.FromArgb(26, 255, 255, 255), 16f))
-            g.DrawEllipse(pen, Width - 90, -28, 120, 120);
-        using (var pen = new Pen(Color.FromArgb(16, 255, 255, 255), 10f))
-            g.DrawEllipse(pen, Width - 40, 26, 70, 70);
+        using (var pen = new Pen(Color.FromArgb(26, 255, 255, 255), 16f * s))
+            g.DrawEllipse(pen, Width - 90 * s, -28 * s, 120 * s, 120 * s);
+        using (var pen = new Pen(Color.FromArgb(16, 255, 255, 255), 10f * s))
+            g.DrawEllipse(pen, Width - 40 * s, 26 * s, 70 * s, 70 * s);
 
-        TextRenderer.DrawText(g, Title, TitleFont, new Point(28, 16), Color.White);
+        TextRenderer.DrawText(g, Title, TitleFont, new Point(UiScale.Px(this, 28), UiScale.Px(this, 16)), Color.White);
         if (SubTitle.Length > 0)
-            TextRenderer.DrawText(g, SubTitle, SubFont, new Point(30, 44), Color.FromArgb(0xC9, 0xD8, 0xF4));
+            TextRenderer.DrawText(g, SubTitle, SubFont,
+                new Point(UiScale.Px(this, 30), UiScale.Px(this, 44)), Color.FromArgb(0xC9, 0xD8, 0xF4));
     }
 }
 
@@ -174,16 +188,17 @@ public sealed class CardPanel : Panel
     protected override void OnPaint(PaintEventArgs e)
     {
         var g = e.Graphics;
+        var s = UiScale.Of(this);
         g.SmoothingMode = SmoothingMode.AntiAlias;
 
         using (var bg = new SolidBrush(BackDrop.Of(Parent)))
             BackDrop.Fill(this, g, bg);
 
         var rc = new RectangleF(0f, 0f, Width - 1f, Height - 1f);
-        using (var path = RoundedButton.RoundedRect(rc, 8f))
+        using (var path = RoundedButton.RoundedRect(rc, 8f * s))
         using (var b = new SolidBrush(Color.White))
             g.FillPath(b, path);
-        using (var path = RoundedButton.RoundedRect(rc, 8f))
+        using (var path = RoundedButton.RoundedRect(rc, 8f * s))
         using (var pen = new Pen(Color.FromArgb(0xDD, 0xE0, 0xE6), 1f))
             g.DrawPath(pen, path);
     }
@@ -252,23 +267,24 @@ public sealed class SelectCard : Panel
         using (var back = new SolidBrush(BackDrop.Of(Parent)))
             BackDrop.Fill(this, g, back);
 
+        var s = UiScale.Of(this);
         var rc = new RectangleF(0f, 0f, Width - 1f, Height - 1f);
         var bg = !Enabled ? DisabledBg : _hover ? HoverBg : CardBg;
-        using (var path = RoundedButton.RoundedRect(rc, 8f))
+        using (var path = RoundedButton.RoundedRect(rc, 8f * s))
         using (var b = new SolidBrush(bg))
             g.FillPath(b, path);
-        using (var path = RoundedButton.RoundedRect(rc, 8f))
+        using (var path = RoundedButton.RoundedRect(rc, 8f * s))
         using (var pen = new Pen(_selected && Enabled ? AccentBlue : BorderColor, _selected && Enabled ? 1.4f : 1f))
             g.DrawPath(pen, path);
 
         if (_selected && Enabled)
         {
-            using var pen = new Pen(AccentBlue, 3f);
-            g.DrawLine(pen, 4, 12, 4, Height - 12);
+            using var pen = new Pen(AccentBlue, 3f * s);
+            g.DrawLine(pen, 4 * s, 12 * s, 4 * s, Height - 12 * s);
         }
 
-        var box = 18;
-        var circle = new Rectangle(Width - box - 16, (Height - box) / 2, box, box);
+        var box = UiScale.Px(this, 18);
+        var circle = new Rectangle(Width - box - UiScale.Px(this, 16), (Height - box) / 2, box, box);
         using (var path = new GraphicsPath())
         {
             path.AddEllipse(circle);
@@ -283,15 +299,18 @@ public sealed class SelectCard : Panel
         if (_selected && Enabled)
         {
             using var b = new SolidBrush(Color.White);
-            g.FillEllipse(b, circle.X + 6, circle.Y + 6, box - 12, box - 12);
+            var dot = UiScale.Px(this, 6);
+            g.FillEllipse(b, circle.X + dot, circle.Y + dot, box - dot * 2, box - dot * 2);
         }
 
-        var textX = 16;
-        var textW = circle.Left - textX - 12;
-        TextRenderer.DrawText(g, Title, TitleFont, new Rectangle(textX, 20, textW, 22),
+        var textX = UiScale.Px(this, 16);
+        var textW = circle.Left - textX - UiScale.Px(this, 12);
+        TextRenderer.DrawText(g, Title, TitleFont,
+            new Rectangle(textX, UiScale.Px(this, 20), textW, UiScale.Px(this, 22)),
             Enabled ? TitleColor : MutedColor,
             TextFormatFlags.Left | TextFormatFlags.Top | TextFormatFlags.EndEllipsis);
-        TextRenderer.DrawText(g, Description, DescFont, new Rectangle(textX, 44, textW, Height - 50),
+        TextRenderer.DrawText(g, Description, DescFont,
+            new Rectangle(textX, UiScale.Px(this, 44), textW, Height - UiScale.Px(this, 50)),
             MutedColor,
             TextFormatFlags.Left | TextFormatFlags.Top | TextFormatFlags.WordBreak | TextFormatFlags.EndEllipsis);
     }

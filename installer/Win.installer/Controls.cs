@@ -5,6 +5,18 @@ using System.Windows.Forms;
 
 namespace Win.installer;
 
+/// <summary>自绘常量的折算系数: 布局由 AutoScaleMode.Font 整块缩放, 但 OnPaint 里写死的像素坐标
+/// 不跟着走, 只能按显示器的 DPI 自己折. per-monitor v2 下 DeviceDpi 随窗口所在的显示器变化.</summary>
+internal static class UiScale
+{
+    /// <summary>非 0 时钉死折算系数(渲染非本机 DPI 的界面图时用); 0 = 按控件自身 DPI.</summary>
+    internal static float Force = 0f;
+
+    internal static float Of(Control c) => Force > 0f ? Force : c.DeviceDpi / 96f;
+    internal static float Pf(Control c, float design) => design * Of(c);
+    internal static int Px(Control c, int design) => (int)Math.Round(design * Of(c), MidpointRounding.AwayFromZero);
+}
+
 /// <summary>圆角按钮(主色实心 / 灰底 secondary 两种, 带 hover/按下/禁用态). 纯 GDI+ 自绘.</summary>
 public sealed class RoundedButton : Button
 {
@@ -76,7 +88,7 @@ public sealed class RoundedButton : Button
             text = Color.White;
         }
 
-        using (var path = RoundedRect(rc, 6f))
+        using (var path = RoundedRect(rc, UiScale.Pf(this, 6f)))
         using (var b = new SolidBrush(fill))
             g.FillPath(b, path);
 
@@ -123,19 +135,21 @@ public sealed class HeaderPanel : Panel
     protected override void OnPaint(PaintEventArgs e)
     {
         var g = e.Graphics;
+        var s = UiScale.Of(this);
         g.SmoothingMode = SmoothingMode.AntiAlias;
         using (var b = new LinearGradientBrush(ClientRectangle,
             Color.FromArgb(0x14, 0x39, 0x6B), Color.FromArgb(0x2E, 0x70, 0xE0), 0f))
             g.FillRectangle(b, ClientRectangle);
 
-        using (var pen = new Pen(Color.FromArgb(26, 255, 255, 255), 16f))
-            g.DrawEllipse(pen, Width - 90, -28, 120, 120);
-        using (var pen = new Pen(Color.FromArgb(16, 255, 255, 255), 10f))
-            g.DrawEllipse(pen, Width - 40, 26, 70, 70);
+        using (var pen = new Pen(Color.FromArgb(26, 255, 255, 255), 16f * s))
+            g.DrawEllipse(pen, Width - 90 * s, -28 * s, 120 * s, 120 * s);
+        using (var pen = new Pen(Color.FromArgb(16, 255, 255, 255), 10f * s))
+            g.DrawEllipse(pen, Width - 40 * s, 26 * s, 70 * s, 70 * s);
 
-        TextRenderer.DrawText(g, Title, TitleFont, new Point(28, 16), Color.White);
+        TextRenderer.DrawText(g, Title, TitleFont, new Point(UiScale.Px(this, 28), UiScale.Px(this, 16)), Color.White);
         if (SubTitle.Length > 0)
-            TextRenderer.DrawText(g, SubTitle, SubFont, new Point(30, 44), Color.FromArgb(0xC9, 0xD8, 0xF4));
+            TextRenderer.DrawText(g, SubTitle, SubFont,
+                new Point(UiScale.Px(this, 30), UiScale.Px(this, 44)), Color.FromArgb(0xC9, 0xD8, 0xF4));
     }
 }
 
@@ -208,14 +222,15 @@ public sealed class ComponentCard : Panel
     protected override void OnResize(EventArgs e)
     {
         // 重新计算 checkbox 区域(卡片右上角)
-        var box = 20;
-        _checkBoxRect = new Rectangle(Width - box - 16, (Height - box) / 2, box, box);
+        var box = UiScale.Px(this, 20);
+        _checkBoxRect = new Rectangle(Width - box - UiScale.Px(this, 16), (Height - box) / 2, box, box);
         base.OnResize(e);
     }
 
     protected override void OnPaint(PaintEventArgs e)
     {
         var g = e.Graphics;
+        var s = UiScale.Of(this);
         g.SmoothingMode = SmoothingMode.AntiAlias;
         g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
 
@@ -224,25 +239,25 @@ public sealed class ComponentCard : Panel
         // 背景: 白底, hover 时浅蓝
         var bg = _hover && !IsRequired ? HoverBg : CardBg;
         var border = IsRequired ? MutedBorder : CardBorder;
-        using (var path = RoundedRect(rc, 8f))
+        using (var path = RoundedRect(rc, 8f * s))
         using (var b = new SolidBrush(bg))
             g.FillPath(b, path);
         using (var pen = new Pen(border, 1f))
-        using (var path = RoundedRect(rc, 8f))
+        using (var path = RoundedRect(rc, 8f * s))
             g.DrawPath(pen, path);
 
         // 勾选状态: 左侧 3px 蓝色竖条 + 卡片轻微阴影感(用边线加重)
         if (IsChecked)
         {
-            using var pen = new Pen(AccentBlue, 3f);
-            g.DrawLine(pen, 4, 12, 4, Height - 12);
+            using var pen = new Pen(AccentBlue, 3f * s);
+            g.DrawLine(pen, 4 * s, 12 * s, 4 * s, Height - 12 * s);
         }
 
         // 标题 + 描述
-        var textX = 16;
-        var textW = _checkBoxRect.Left - textX - 12;
-        var titleRect = new Rectangle(textX, 20, textW, 22);
-        var descRect = new Rectangle(textX, 44, textW, Height - 50);
+        var textX = UiScale.Px(this, 16);
+        var textW = _checkBoxRect.Left - textX - UiScale.Px(this, 12);
+        var titleRect = new Rectangle(textX, UiScale.Px(this, 20), textW, UiScale.Px(this, 22));
+        var descRect = new Rectangle(textX, UiScale.Px(this, 44), textW, Height - UiScale.Px(this, 50));
         TextRenderer.DrawText(g, Model.Title, TitleFont, titleRect,
             IsRequired ? MutedBorder : TitleColor,
             TextFormatFlags.Left | TextFormatFlags.Top | TextFormatFlags.EndEllipsis);
@@ -257,7 +272,7 @@ public sealed class ComponentCard : Panel
     private void DrawCheckBox(Graphics g, Rectangle box, bool check)
     {
         // 底圆角矩形
-        using (var path = RoundedRect(box, 4f))
+        using (var path = RoundedRect(box, UiScale.Pf(this, 4f)))
         {
             if (check)
             {
@@ -268,14 +283,14 @@ public sealed class ComponentCard : Panel
             {
                 using var b = new SolidBrush(Color.White);
                 g.FillPath(b, path);
-                using var pen = new Pen(CheckBoxBorder, 1.5f);
+                using var pen = new Pen(CheckBoxBorder, UiScale.Pf(this, 1.5f));
                 g.DrawPath(pen, path);
             }
         }
         if (!check) return;
 
         // 白色对勾
-        using var pen2 = new Pen(Color.White, 2.2f) { StartCap = LineCap.Round, EndCap = LineCap.Round };
+        using var pen2 = new Pen(Color.White, UiScale.Pf(this, 2.2f)) { StartCap = LineCap.Round, EndCap = LineCap.Round };
         var p1 = new PointF(box.X + box.Width * 0.22f, box.Y + box.Height * 0.52f);
         var p2 = new PointF(box.X + box.Width * 0.44f, box.Y + box.Height * 0.72f);
         var p3 = new PointF(box.X + box.Width * 0.78f, box.Y + box.Height * 0.30f);
