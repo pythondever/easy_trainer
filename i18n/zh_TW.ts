@@ -686,17 +686,17 @@
 <context>
     <name>App</name>
     <message>
-        <location filename="../app/main_window.py" line="43"/>
+        <location filename="../app/main_window.py" line="45"/>
         <source>软件启动</source>
         <translation>軟體啟動</translation>
     </message>
     <message>
-        <location filename="../app/main_window.py" line="46"/>
+        <location filename="../app/main_window.py" line="48"/>
         <source>软件退出</source>
         <translation>軟體結束</translation>
     </message>
     <message>
-        <location filename="../app/main_window.py" line="48"/>
+        <location filename="../app/main_window.py" line="50"/>
         <source>软件退出前停止训练</source>
         <translation>軟體結束前停止訓練</translation>
     </message>
@@ -968,12 +968,12 @@
 <context>
     <name>DatasetViewMixin</name>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="246"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="247"/>
         <source>删除全部未标注图像({} 张)</source>
         <translation>刪除全部未標註影像({} 張)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="252"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="253"/>
         <source>删除所选图像({} 张)</source>
         <translation>刪除所選影像({} 張)</translation>
     </message>
@@ -1003,48 +1003,48 @@
         <translation>重載資料集: {}/{}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="802"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="821"/>
         <source>第 {} / {} 页</source>
         <translation>第 {} / {} 頁</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="806"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="825"/>
         <source>第 {}/{} 页 · 共 {} 个</source>
         <translation>第 {}/{} 頁 · 共 {} 個</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="808"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="827"/>
         <source>第 {}/{} 页 · 共 {} 张</source>
         <translation>第 {}/{} 頁 · 共 {} 張</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="817"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="836"/>
         <source>暂无数据</source>
         <translation>暫無資料</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="854"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="871"/>
         <source>开始导入: {}/{} | 图像路径={} | 标签路径={} | 格式={}</source>
         <translation>開始匯入: {}/{} | 影像路徑={} | 標籤路徑={} | 格式={}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="855"/>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="925"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="872"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="942"/>
         <source>(无)</source>
         <translation>(無)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="920"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="937"/>
         <source>{}: {}个</source>
         <translation>{}: {}個</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="922"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="939"/>
         <source>数据集导入完成: {}/{} | 图像 {} 张, 已标注 {} 张 | 标签({}类): {}</source>
         <translation>資料集匯入完成: {}/{} | 影像 {} 張, 已標註 {} 張 | 標籤({}類): {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="966"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="983"/>
         <source>数据集 {}/{} 未导入, 右键&quot;导入&quot;选择图像与标签目录</source>
         <translation>資料集 {}/{} 未匯入, 請按右鍵「匯入」選擇影像與標籤目錄</translation>
     </message>
@@ -1127,7 +1127,7 @@
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="501"/>
         <location filename="../app/mixins/import_export_mixin.py" line="277"/>
-        <location filename="../app/mixins/label_mixin.py" line="196"/>
+        <location filename="../app/mixins/label_mixin.py" line="240"/>
         <location filename="../app/mixins/misc_mixin.py" line="122"/>
         <location filename="../app/widgets/dialog_buttons.py" line="104"/>
         <source>确定</source>
@@ -1393,50 +1393,99 @@
     </message>
 </context>
 <context>
+    <name>LabelFilter</name>
+    <message>
+        <location filename="../app/widgets/label_filter_popup.py" line="71"/>
+        <location filename="../app/widgets/label_filter_popup.py" line="477"/>
+        <source>所有图像</source>
+        <translation>所有影像</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/label_filter_popup.py" line="490"/>
+        <source>显示全部图像</source>
+        <translation>顯示全部影像</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/label_filter_popup.py" line="492"/>
+        <source>按所选标签过滤</source>
+        <translation>依所選標籤篩選</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/label_filter_popup.py" line="494"/>
+        <source>未选择标签</source>
+        <translation>未選擇標籤</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/label_filter_popup.py" line="595"/>
+        <source>收起</source>
+        <translation>收合</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/label_filter_popup.py" line="596"/>
+        <source>展开全部</source>
+        <translation>展開全部</translation>
+    </message>
+</context>
+<context>
     <name>LabelMixin</name>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="553"/>
-        <location filename="../app/mixins/label_mixin.py" line="39"/>
-        <location filename="../app/mixins/label_mixin.py" line="55"/>
-        <location filename="../app/mixins/label_mixin.py" line="124"/>
+        <location filename="../app/mixins/label_mixin.py" line="100"/>
+        <source>已选 {} 个</source>
+        <translation>已選 {} 個</translation>
+    </message>
+    <message>
+        <location filename="../app/mixins/label_mixin.py" line="101"/>
+        <location filename="../app/mixins/label_mixin.py" line="106"/>
+        <source>所有图像</source>
+        <translation>所有影像</translation>
+    </message>
+    <message>
+        <location filename="../app/mixins/label_mixin.py" line="102"/>
+        <location filename="../app/mixins/label_mixin.py" line="119"/>
+        <source>未选择标签</source>
+        <translation>未選擇標籤</translation>
+    </message>
+    <message>
+        <location filename="../app/mixins/label_mixin.py" line="111"/>
+        <location filename="../app/mixins/label_mixin.py" line="194"/>
         <source>未标注</source>
         <translation>未標註</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="181"/>
-        <location filename="../app/mixins/label_mixin.py" line="186"/>
-        <location filename="../app/mixins/label_mixin.py" line="203"/>
+        <location filename="../app/mixins/label_mixin.py" line="225"/>
+        <location filename="../app/mixins/label_mixin.py" line="230"/>
+        <location filename="../app/mixins/label_mixin.py" line="247"/>
         <source>重命名</source>
         <translation>重新命名</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="181"/>
-        <location filename="../app/mixins/label_mixin.py" line="434"/>
+        <location filename="../app/mixins/label_mixin.py" line="225"/>
+        <location filename="../app/mixins/label_mixin.py" line="478"/>
         <source>请先在左侧选中一个数据集</source>
         <translation>請先在左側選取一個資料集</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="187"/>
+        <location filename="../app/mixins/label_mixin.py" line="231"/>
         <source>请先在筛选下拉框中选择要重命名的标签</source>
         <translation>請先在篩選下拉選單中選擇要重新命名的標籤</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="190"/>
+        <location filename="../app/mixins/label_mixin.py" line="234"/>
         <source>类别修改</source>
         <translation>類別修改</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="203"/>
+        <location filename="../app/mixins/label_mixin.py" line="247"/>
         <source>标签名称不能为空</source>
         <translation>標籤名稱不能為空</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="212"/>
+        <location filename="../app/mixins/label_mixin.py" line="256"/>
         <source>合并标签</source>
         <translation>合併標籤</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="213"/>
+        <location filename="../app/mixins/label_mixin.py" line="257"/>
         <source>标签&quot;{}&quot;已存在.
 确定把&quot;{}&quot;的所有标注合并到&quot;{}&quot;吗?
 此操作会改写数据集源标签文件, 且不可恢复.</source>
@@ -1445,79 +1494,79 @@
 此操作會改寫資料集來源標籤檔案, 且無法復原.</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="268"/>
+        <location filename="../app/mixins/label_mixin.py" line="312"/>
         <source>合并标签: {} → {} ({}/{}) | 启动后台文件合并, 完成后输出统计</source>
         <translation>合併標籤: {} → {} ({}/{}) | 啟動背景檔案合併, 完成後輸出統計</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="274"/>
+        <location filename="../app/mixins/label_mixin.py" line="318"/>
         <source>重命名标签: {} → {} ({}/{})</source>
         <translation>重新命名標籤: {} → {} ({}/{})</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="346"/>
+        <location filename="../app/mixins/label_mixin.py" line="390"/>
         <source>{}: {}个</source>
         <translation>{}: {}個</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="349"/>
+        <location filename="../app/mixins/label_mixin.py" line="393"/>
         <source>删除标签完成: {} | 修改 {} 个标签文件 | 删除后标签统计({}类): {}</source>
         <translation>刪除標籤完成: {} | 修改 {} 個標籤檔案 | 刪除後標籤統計({}類): {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="352"/>
-        <location filename="../app/mixins/label_mixin.py" line="357"/>
-        <location filename="../app/mixins/label_mixin.py" line="362"/>
+        <location filename="../app/mixins/label_mixin.py" line="396"/>
+        <location filename="../app/mixins/label_mixin.py" line="401"/>
+        <location filename="../app/mixins/label_mixin.py" line="406"/>
         <source>(无)</source>
         <translation>(無)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="354"/>
+        <location filename="../app/mixins/label_mixin.py" line="398"/>
         <source>合并标签: {} → {} | 修改 {} 个标签文件 | 合并后标签统计({}类): {}</source>
         <translation>合併標籤: {} → {} | 修改 {} 個標籤檔案 | 合併後標籤統計({}類): {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="359"/>
+        <location filename="../app/mixins/label_mixin.py" line="403"/>
         <source>合并标签: {} → {} | 无标签文件被修改 | 合并后标签统计({}类): {}</source>
         <translation>合併標籤: {} → {} | 無標籤檔案被修改 | 合併後標籤統計({}類): {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="400"/>
+        <location filename="../app/mixins/label_mixin.py" line="444"/>
         <source>重命名标签</source>
         <translation>重新命名標籤</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="400"/>
+        <location filename="../app/mixins/label_mixin.py" line="444"/>
         <source>正在更新标注文件...</source>
         <translation>正在更新標註檔案...</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="434"/>
-        <location filename="../app/mixins/label_mixin.py" line="439"/>
-        <location filename="../app/mixins/label_mixin.py" line="443"/>
-        <location filename="../app/mixins/label_mixin.py" line="544"/>
+        <location filename="../app/mixins/label_mixin.py" line="478"/>
+        <location filename="../app/mixins/label_mixin.py" line="483"/>
+        <location filename="../app/mixins/label_mixin.py" line="487"/>
+        <location filename="../app/mixins/label_mixin.py" line="589"/>
         <source>删除标签</source>
         <translation>刪除標籤</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="440"/>
+        <location filename="../app/mixins/label_mixin.py" line="484"/>
         <source>请先在筛选下拉框中选择要删除的标签</source>
         <translation>請先在篩選下拉選單中選擇要刪除的標籤</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="444"/>
+        <location filename="../app/mixins/label_mixin.py" line="488"/>
         <source>确定删除标签&quot;{}&quot;吗?
 该标签的所有标注将被删除, 且不可恢复.</source>
         <translation>確定要刪除標籤「{}」嗎?
 該標籤的所有標註將被刪除, 且無法復原.</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="477"/>
+        <location filename="../app/mixins/label_mixin.py" line="522"/>
         <source>删除标签: {} ({}/{})</source>
         <translation>刪除標籤: {} ({}/{})</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="544"/>
+        <location filename="../app/mixins/label_mixin.py" line="589"/>
         <source>正在清理标注文件...</source>
         <translation>正在清理標註檔案...</translation>
     </message>
@@ -1692,62 +1741,97 @@
 <context>
     <name>ModelAssets</name>
     <message>
-        <location filename="../app/core/model_assets.py" line="79"/>
-        <location filename="../app/core/model_assets.py" line="113"/>
+        <location filename="../app/core/model_assets.py" line="88"/>
+        <location filename="../app/core/model_assets.py" line="122"/>
         <source>速度最快, 精度够用</source>
         <translation>速度最快, 精度足夠</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="80"/>
-        <location filename="../app/core/model_assets.py" line="117"/>
+        <location filename="../app/core/model_assets.py" line="89"/>
+        <location filename="../app/core/model_assets.py" line="126"/>
         <source>精度更好, 稍慢一些</source>
         <translation>精度更好, 稍慢一些</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="81"/>
-        <location filename="../app/core/model_assets.py" line="121"/>
+        <location filename="../app/core/model_assets.py" line="90"/>
+        <location filename="../app/core/model_assets.py" line="130"/>
         <source>精度更高</source>
         <translation>精度更高</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="82"/>
-        <location filename="../app/core/model_assets.py" line="125"/>
+        <location filename="../app/core/model_assets.py" line="91"/>
+        <location filename="../app/core/model_assets.py" line="134"/>
         <source>精度最高, 显存占用大</source>
         <translation>精度最高, 顯示記憶體佔用大</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="83"/>
+        <location filename="../app/core/model_assets.py" line="92"/>
         <source>精度极致, 显存占用很大</source>
         <translation>精度極致, 顯示記憶體佔用很大</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="86"/>
-        <location filename="../app/core/model_assets.py" line="129"/>
+        <location filename="../app/core/model_assets.py" line="95"/>
+        <location filename="../app/core/model_assets.py" line="138"/>
         <source>轻量分割</source>
         <translation>輕量分割</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="87"/>
-        <location filename="../app/core/model_assets.py" line="133"/>
+        <location filename="../app/core/model_assets.py" line="96"/>
+        <location filename="../app/core/model_assets.py" line="142"/>
         <source>速度与精度平衡</source>
         <translation>速度與精度平衡</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="88"/>
-        <location filename="../app/core/model_assets.py" line="137"/>
+        <location filename="../app/core/model_assets.py" line="97"/>
+        <location filename="../app/core/model_assets.py" line="146"/>
         <source>细节更完整</source>
         <translation>細節更完整</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="89"/>
-        <location filename="../app/core/model_assets.py" line="141"/>
+        <location filename="../app/core/model_assets.py" line="98"/>
+        <location filename="../app/core/model_assets.py" line="150"/>
         <source>最精细</source>
         <translation>最精細</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="90"/>
+        <location filename="../app/core/model_assets.py" line="99"/>
         <source>最精细, 显存占用很大</source>
         <translation>最精細, 顯示記憶體佔用很大</translation>
+    </message>
+    <message>
+        <location filename="../app/core/model_assets.py" line="293"/>
+        <source>文件不存在: {}</source>
+        <translation>檔案不存在: {}</translation>
+    </message>
+    <message>
+        <location filename="../app/core/model_assets.py" line="296"/>
+        <source>只支持 {} 格式</source>
+        <translation>只支援 {} 格式</translation>
+    </message>
+    <message>
+        <location filename="../app/core/model_assets.py" line="301"/>
+        <source>读不到文件大小: {}</source>
+        <translation>無法讀取檔案大小: {}</translation>
+    </message>
+    <message>
+        <location filename="../app/core/model_assets.py" line="303"/>
+        <source>文件只有 {}, 不像完整的权重</source>
+        <translation>檔案只有 {}, 不像完整的權重</translation>
+    </message>
+    <message>
+        <location filename="../app/core/model_assets.py" line="314"/>
+        <source>这看着是 Transformer 权重, 当前档位是 CNN(YOLO)</source>
+        <translation>這看起來是 Transformer 權重, 但目前檔位是 CNN(YOLO)</translation>
+    </message>
+    <message>
+        <location filename="../app/core/model_assets.py" line="318"/>
+        <source>这看着是 CNN(YOLO) 权重, 当前档位是 Transformer</source>
+        <translation>這看起來是 CNN(YOLO) 權重, 但目前檔位是 Transformer</translation>
+    </message>
+    <message>
+        <location filename="../app/core/model_assets.py" line="338"/>
+        <source>权重目录不可写: {}</source>
+        <translation>權重目錄不可寫入: {}</translation>
     </message>
 </context>
 <context>
@@ -2353,10 +2437,13 @@
     <name>ModelManagerDialog</name>
     <message>
         <location filename="../ui/model_manager.ui" line="14"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="287"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="291"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="340"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="347"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="395"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="399"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="404"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="439"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="443"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="494"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="501"/>
         <source>模型权重</source>
         <translation>模型權重</translation>
     </message>
@@ -2392,94 +2479,121 @@
     </message>
     <message>
         <location filename="../ui/model_manager.ui" line="265"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="330"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="277"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="482"/>
         <source>开始下载</source>
         <translation>開始下載</translation>
     </message>
     <message>
         <location filename="../ui/model_manager.ui" line="275"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="171"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="264"/>
         <source>关闭</source>
         <translation>關閉</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="52"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="56"/>
         <source>还剩 {}s</source>
         <translation>還剩 {}s</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="53"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="57"/>
         <source>还剩 {}m{}s</source>
         <translation>還剩 {}m{}s</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="237"/>
-        <source>占用空间 {}</source>
-        <translation>佔用空間 {}</translation>
-    </message>
-    <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="255"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="371"/>
         <source>选择权重目录</source>
         <translation>選擇權重目錄</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="276"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="389"/>
+        <source>选择预训练权重</source>
+        <translation>選擇預訓練權重</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/model_manager_dialog.py" line="390"/>
+        <source>权重文件 (*.pt *.pth *.ckpt)</source>
+        <translation>權重檔案 (*.pt *.pth *.ckpt)</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/model_manager_dialog.py" line="400"/>
+        <source>仍要用这个文件吗?</source>
+        <translation>仍要使用這個檔案嗎?</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/model_manager_dialog.py" line="428"/>
         <source>权重目录不可写入 {}: {!r}</source>
         <translation>權重目錄不可寫入 {}: {!r}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="287"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="439"/>
         <source>勾选的模型都已就绪, 不需要下载.</source>
         <translation>勾選的模型都已就緒, 不需要下載.</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="292"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="444"/>
         <source>当前目录不可写入, 请点&quot;更改&quot;换一个目录:
 {}</source>
         <translation>目前目錄無法寫入, 請點「變更」換一個目錄:
 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="297"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="277"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="449"/>
         <source>下载中...</source>
         <translation>下載中...</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="341"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="495"/>
         <source>以下权重没能下载完成:
 </source>
         <translation>以下權重未能下載完成:
 </translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="348"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="502"/>
         <source>下载还在进行, 现在关闭会中断下载(已下载部分保留, 下次可续传).
 确定关闭?</source>
         <translation>下載仍在進行中, 現在關閉會中斷下載(已下載的部分會保留, 下次可續傳).
 確定要關閉嗎?</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="380"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="534"/>
         <source>去下载</source>
         <translation>前往下載</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="389"/>
-        <source>该架构的权重必须先下载好才能开始训练.</source>
-        <translation>該架構的權重必須先下載好才能開始訓練.</translation>
+        <location filename="../app/widgets/model_manager_dialog.py" line="543"/>
+        <source>该架构的权重必须先下载好才能开始训练, 也可以在权重管理里指定本地的权重文件.</source>
+        <translation>此架構的權重必須先下載完成才能開始訓練, 也可以在模型權重中指定本機的權重檔案.</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="383"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="537"/>
         <source>本次训练选用 {} {}模型, 需要先下载 {}.</source>
         <translation>本次訓練選用 {} {}模型, 需要先下載 {}.</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="382"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="536"/>
         <source>缺少模型权重</source>
         <translation>缺少模型權重</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="381"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="349"/>
+        <source>待下载 {}</source>
+        <translation>待下載 {}</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/model_manager_dialog.py" line="351"/>
+        <source>无需下载</source>
+        <translation>無需下載</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/model_manager_dialog.py" line="353"/>
+        <source>本地 {} 项</source>
+        <translation>本機 {} 項</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/model_manager_dialog.py" line="535"/>
         <source>取消</source>
         <translation>取消</translation>
     </message>
@@ -4886,22 +5000,65 @@
 <context>
     <name>_ModelRow</name>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="113"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="109"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="155"/>
+        <source>本地</source>
+        <translation>本機</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/model_manager_dialog.py" line="131"/>
+        <source>取消本地绑定</source>
+        <translation>取消本機綁定</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/model_manager_dialog.py" line="161"/>
         <source>已就绪</source>
         <translation>已就緒</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="119"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="168"/>
         <source>未下载</source>
         <translation>未下載</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="124"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="177"/>
+        <source>更换</source>
+        <translation>更換</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/model_manager_dialog.py" line="185"/>
+        <source>本地权重</source>
+        <translation>本機權重</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/model_manager_dialog.py" line="194"/>
+        <source>重选</source>
+        <translation>重選</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/model_manager_dialog.py" line="195"/>
+        <source>(路径未记录)</source>
+        <translation>(未記錄路徑)</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/model_manager_dialog.py" line="197"/>
+        <source>本地失效</source>
+        <translation>本機權重失效</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/model_manager_dialog.py" line="199"/>
+        <source>登记的本地权重文件已不在这个位置:
+{}</source>
+        <translation>登記的本機權重檔案已不在這個位置:
+{}</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/model_manager_dialog.py" line="204"/>
         <source>校验中...</source>
         <translation>驗證中...</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="140"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="223"/>
         <source>失败</source>
         <translation>失敗</translation>
     </message>

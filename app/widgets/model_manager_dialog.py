@@ -7,11 +7,12 @@
 
 import os
 
-from PySide6.QtCore import Qt, QTimer
+from PySide6.QtCore import Qt, QTimer, Signal
 from PySide6.QtCore import QCoreApplication as QC
 from PySide6.QtGui import QFontMetrics
 from PySide6.QtWidgets import (QCheckBox, QDialog, QFileDialog, QFrame,
-                               QHBoxLayout, QLabel, QProgressBar)
+                               QHBoxLayout, QLabel, QMenu, QProgressBar,
+                               QPushButton)
 
 from app.core import model_assets
 from app.core.log import write_log
@@ -22,13 +23,16 @@ from app.widgets.status_style import task_text
 from ui.model_manager import Ui_ModelManagerDialog
 
 ROW_H = 38
-BAR_W = 158
+BAR_W = 144
 BAR_H = 14
 W_NAME = 54
 W_SIZE = 62
-W_DESC = 136
-W_STATUS = 160
+# 描述列原 136: '精度极致, 显存占用很大' 实测 137px. 进度条让 8px 给状态列,
+# 否则下载中 '1.2 MB/s · 还剩 12m30s' 这种长 ETA 会贴边被裁
+W_DESC = 140
+W_STATUS = 158
 W_DIR = 220
+BTN_W = 72
 
 
 def _set_state(widget, state):
@@ -55,11 +59,16 @@ def _fmt_eta(secs):
 
 
 class _ModelRow(QFrame):
-    """一行: 勾选 / 名称 / 大小 / 描述 / 进度条(下载时才显示) / 状态."""
+    """一行: 勾选 / 名称 / 大小 / 描述 / 进度条或本地路径 / 状态 / 本地按钮."""
+
+    pick_requested = Signal(object)
+    unbind_requested = Signal(object)
 
     def __init__(self, asset, parent=None):
         super().__init__(parent)
         self.asset = asset
+        self.local_src = ""
+        self.local_broken = False
         self.setObjectName("modelRow")
         self.setFixedHeight(ROW_H)
         lay = QHBoxLayout(self)
@@ -71,35 +80,64 @@ class _ModelRow(QFrame):
         self.check.setCursor(Qt.PointingHandCursor)
         lay.addWidget(self.check)
 
-        lay.addWidget(self._label(asset.level, "modelName", W_NAME, 13))
+        self.size_label = self._label(
+            model_assets.human_size(asset.nbytes), "modelSize", W_SIZE)
+        lay.addWidget(self._label(asset.level, "modelName", W_NAME))
+        lay.addWidget(self.size_label)
         lay.addWidget(self._label(
-            model_assets.human_size(asset.nbytes), "modelSize", W_SIZE, 12))
-        lay.addWidget(self._label(
-            QC.translate("ModelAssets", asset.desc), "modelDesc", W_DESC, 12))
+            QC.translate("ModelAssets", asset.desc), "modelDesc", W_DESC))
 
         self.bar = QProgressBar()
         self.bar.setObjectName("modelProgress")
         self.bar.setRange(0, 1000)
         self.bar.setFixedSize(BAR_W, BAR_H)
         self.bar.setVisible(False)
-        holder = QHBoxLayout()
-        holder.setContentsMargins(0, 0, 0, 0)
-        holder.addWidget(self.bar)
-        holder.addStretch(1)
-        lay.addLayout(holder, 1)
+        # 本地权重在进度条的位置显示源文件路径, 两者等宽互斥. 这格必须定宽:
+        # 让它自适应就得占住全部弹性, 一隐藏空间回流给勾选框, 整行列位全右移
+        self.path_label = QLabel()
+        self.path_label.setProperty("class", "modelLocalPath")
+        self.path_label.setFixedWidth(BAR_W)
+        self.path_label.setVisible(False)
+        lay.addWidget(self.bar)
+        lay.addWidget(self.path_label)
+        lay.addStretch(1)
 
-        self.status = self._label("", "modelStatus", W_STATUS, 12)
+        self.status = self._label("", "modelStatus", W_STATUS)
         self.status.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         lay.addWidget(self.status)
 
-    def _label(self, text, cls, width, size):
+        self.local_btn = QPushButton(self.tr("本地"))
+        self.local_btn.setProperty("class", "modelLocal")
+        self.local_btn.setFixedWidth(BTN_W)
+        self.local_btn.setCursor(Qt.PointingHandCursor)
+        self.local_btn.clicked.connect(
+            lambda: self.pick_requested.emit(self))
+        lay.addWidget(self.local_btn)
+
+        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.customContextMenuRequested.connect(self._on_menu)
+
+    def _label(self, text, cls, width):
         lbl = QLabel(text)
         lbl.setProperty("class", cls)
         lbl.setFixedWidth(width)
-        font = lbl.font()
-        font.setPixelSize(size)
-        lbl.setFont(font)
         return lbl
+
+    # ---------- 本地权重 ----------
+    def _on_menu(self, pos):
+        if not (self.local_src or self.local_broken):
+            return
+        menu = QMenu(self)
+        act = menu.addAction(self.tr("取消本地绑定"))
+        if menu.exec(self.mapToGlobal(pos)) == act:
+            self.unbind_requested.emit(self)
+
+    def _show_path(self, text):
+        fm = QFontMetrics(self.path_label.font())
+        self.path_label.setToolTip(text)
+        self.path_label.setText(
+            fm.elidedText(text, Qt.ElideMiddle, BAR_W))
+        self.path_label.setVisible(True)
 
     # ---------- 状态 ----------
     def is_checked(self):
@@ -108,24 +146,68 @@ class _ModelRow(QFrame):
     def set_checked(self, value):
         self.check.setChecked(bool(value))
 
+    def _clear_local(self):
+        self.local_src = ""
+        self.local_broken = False
+        self.path_label.setVisible(False)
+        self.path_label.setText("")
+        self.size_label.setText(model_assets.human_size(self.asset.nbytes))
+        self.local_btn.setText(self.tr("本地"))
+        self.local_btn.setVisible(True)
+
     def mark_ready(self):
         self.bar.setVisible(False)
+        self._clear_local()
         self.status.setText(self.tr("已就绪"))
         self.status.setToolTip("")
         _set_state(self.status, "ready")
 
     def mark_idle(self):
         self.bar.setVisible(False)
+        self._clear_local()
         self.status.setText(self.tr("未下载"))
         self.status.setToolTip("")
         _set_state(self.status, "idle")
 
+    def mark_local(self, src):
+        self.bar.setVisible(False)
+        self.local_src = src
+        self.local_broken = False
+        self.local_btn.setVisible(True)
+        self.local_btn.setText(self.tr("更换"))
+        self._show_path(src)
+        try:
+            size = os.path.getsize(src)
+        except OSError:
+            size = 0
+        self.size_label.setText(
+            model_assets.human_size(size) if size else "—")
+        self.status.setText(self.tr("本地权重"))
+        self.status.setToolTip(src)
+        _set_state(self.status, "local")
+
+    def mark_local_broken(self, src):
+        self.bar.setVisible(False)
+        self.local_src = ""
+        self.local_broken = True
+        self.local_btn.setVisible(True)
+        self.local_btn.setText(self.tr("重选"))
+        self._show_path(src or self.tr("(路径未记录)"))
+        self.size_label.setText("—")
+        self.status.setText(self.tr("本地失效"))
+        self.status.setToolTip(
+            self.tr("登记的本地权重文件已不在这个位置:\n{}").format(src))
+        _set_state(self.status, "broken")
+
     def mark_verifying(self):
+        self.local_btn.setVisible(False)
         self.status.setText(self.tr("校验中..."))
         _set_state(self.status, "busy")
 
     def mark_busy(self, done, total, bps):
         frac = 0.0 if not total else min(1.0, float(done) / total)
+        self.path_label.setVisible(False)
+        self.local_btn.setVisible(False)
         self.bar.setVisible(True)
         self.bar.setValue(int(frac * 1000))
         if bps > 0:
@@ -137,12 +219,20 @@ class _ModelRow(QFrame):
 
     def mark_failed(self, reason):
         self.bar.setVisible(False)
+        self.local_btn.setVisible(True)
         self.status.setText(self.tr("失败"))
         self.status.setToolTip(reason)
         _set_state(self.status, "failed")
 
     def refresh(self, directory):
-        if model_assets.is_ready(self.asset, directory):
+        # 本地绑定优先于官方文件: resolve_path 也是先给本地那份
+        item = model_assets.local_entry(self.asset, directory)
+        src = (item or {}).get("src") or ""
+        if item and src and os.path.isfile(src):
+            self.mark_local(src)
+        elif item:
+            self.mark_local_broken(src)
+        elif model_assets.is_downloaded(self.asset, directory):
             self.mark_ready()
         else:
             self.mark_idle()
@@ -168,12 +258,27 @@ class ModelManagerDialog(QDialog):
             self._check_key(key)
             if self._focus_row is None:
                 self._focus_row = self._row_of(key)
+        for row in self._rows:
+            row.pick_requested.connect(self._on_pick_local)
+            row.unbind_requested.connect(self._on_unbind_local)
         apply_icon(self.ui.close_btn, self.tr("关闭"))
         self.ui.close_btn.clicked.connect(self.reject)
         self.ui.change_dir_btn.clicked.connect(self._on_change_dir)
         self.ui.start_btn.clicked.connect(self._on_start)
         self._refresh_total()
         self._fit_height()
+        self._fit_start_btn()
+
+    def _fit_start_btn(self):
+        """按当前语言最长的那条按钮文案定宽: QSS 的 min-width 装不下德/法语的译文."""
+        btn = self.ui.start_btn
+        cur = btn.text()
+        widest = 0
+        for text in (self.tr("开始下载"), self.tr("下载中...")):
+            btn.setText(text)
+            widest = max(widest, btn.sizeHint().width())
+        btn.setText(cur)
+        btn.setFixedWidth(max(btn.minimumSizeHint().width(), widest))
 
     def _fit_height(self):
         """十八行权重全展开约 900px, 小屏上会顶出去: 按内容高度开窗, 上限留给屏幕."""
@@ -215,7 +320,7 @@ class ModelManagerDialog(QDialog):
                     # 最后一行不画分隔线, 否则和分组框的下边框叠成粗线
                     row.setProperty("last", True)
                 row.refresh(self._dir)
-                # 已有的权重默认勾上: 底部"占用空间"一进来就是当前实际占用
+                # 已有的权重(含本地绑定)默认勾上: 底部计数一进来就是当前实况
                 row.set_checked(model_assets.is_ready(asset, self._dir))
                 row.check.toggled.connect(self._refresh_total)
                 layout.addWidget(row)
@@ -233,9 +338,20 @@ class ModelManagerDialog(QDialog):
         return self._rows_by_key.get(key)
 
     def _refresh_total(self, *_):
-        total = sum(r.asset.nbytes for r in self._rows if r.is_checked())
-        self.ui.total_label.setText(self.tr("占用空间 {}").format(
-            model_assets.human_size(total)))
+        pending = 0
+        n_local = 0
+        for r in self._rows:
+            if r.local_src or r.local_broken:
+                n_local += 1
+            elif r.is_checked() and not model_assets.is_downloaded(
+                    r.asset, self._dir):
+                pending += r.asset.nbytes
+        text = (self.tr("待下载 {}").format(
+            model_assets.human_size(pending)) if pending
+            else self.tr("无需下载"))
+        if n_local:
+            text += " · " + self.tr("本地 {} 项").format(n_local)
+        self.ui.total_label.setText(text)
         if self._downloader is None:
             self.ui.start_btn.setEnabled(True)
 
@@ -263,6 +379,42 @@ class ModelManagerDialog(QDialog):
         for row in self._rows:
             row.refresh(self._dir)
         self._refresh_total()
+
+    def _on_pick_local(self, row):
+        start = ""
+        item = model_assets.local_entry(row.asset, self._dir)
+        if item:
+            start = os.path.dirname(item.get("src") or "")
+        path, _ = QFileDialog.getOpenFileName(
+            self, self.tr("选择预训练权重"), start,
+            self.tr("权重文件 (*.pt *.pth *.ckpt)"))
+        if not path:
+            return
+        reason = model_assets.check_local_file(path)
+        if reason:
+            MessageBox.warning(self, self.tr("模型权重"), reason)
+            return
+        hint = model_assets.mismatch_hint(row.asset, path)
+        if hint and not MessageBox.question(
+                self, self.tr("模型权重"),
+                "{}\n\n{}".format(hint, self.tr("仍要用这个文件吗?"))):
+            return
+        ok, reason = model_assets.bind_local(row.asset, path, self._dir)
+        if not ok:
+            MessageBox.warning(self, self.tr("模型权重"), reason)
+            return
+        # 目录里现在有可用权重了, 立刻把 RF_HOME 指过来: 不然界面显示就绪,
+        # 训练子进程还按上次记的位置找
+        model_assets.set_models_dir(self._dir, sync_rf_home=True)
+        if self._db is not None:
+            self._db.set_models_dir(self._dir)
+        row.refresh(self._dir)
+        self._refresh_total()
+
+    def _on_unbind_local(self, row):
+        if model_assets.unbind_local(row.asset, self._dir):
+            row.refresh(self._dir)
+            self._refresh_total()
 
     def _writable(self):
         probe = os.path.join(self._dir, ".et_write_test")
@@ -333,7 +485,9 @@ class ModelManagerDialog(QDialog):
         self._refresh_total()
         # 目录始终记下, RF_HOME 只在真下成了才指过来: 取消或失败时该目录里还没有
         # 可用权重, 指过去会把它原本"回落 C 盘缓存"的兜底堵掉
-        model_assets.set_models_dir(self._dir, sync_rf_home=ok)
+        model_assets.set_models_dir(
+            self._dir,
+            sync_rf_home=ok or any(r.local_src for r in self._rows))
         if self._failed:
             # 同一原因在多个文件上重复时只报一次; 是哪几个文件看列表里标红的行
             reasons = list(dict.fromkeys(self._failed.values()))
@@ -387,7 +541,8 @@ def ensure_weight(parent, db, task, level, family="transformer"):
         parent, title, text,
         [(btn_down, "primary"), (btn_cancel, "normal")],
         informative=QC.translate(
-            "ModelManagerDialog", "该架构的权重必须先下载好才能开始训练."))
+            "ModelManagerDialog",
+        "该架构的权重必须先下载好才能开始训练, 也可以在权重管理里指定本地的权重文件."))
     if choice == btn_down:
         open_model_manager(parent, db,
                            preselect=(model_assets.rel_path(asset),))

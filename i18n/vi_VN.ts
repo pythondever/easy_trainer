@@ -686,17 +686,17 @@ Xác nhận xóa?</translation>
 <context>
     <name>App</name>
     <message>
-        <location filename="../app/main_window.py" line="43"/>
+        <location filename="../app/main_window.py" line="45"/>
         <source>软件启动</source>
         <translation>Khởi động phần mềm</translation>
     </message>
     <message>
-        <location filename="../app/main_window.py" line="46"/>
+        <location filename="../app/main_window.py" line="48"/>
         <source>软件退出</source>
         <translation>Thoát phần mềm</translation>
     </message>
     <message>
-        <location filename="../app/main_window.py" line="48"/>
+        <location filename="../app/main_window.py" line="50"/>
         <source>软件退出前停止训练</source>
         <translation>Dừng huấn luyện trước khi thoát phần mềm</translation>
     </message>
@@ -968,12 +968,12 @@ Xác nhận xóa?</translation>
 <context>
     <name>DatasetViewMixin</name>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="246"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="247"/>
         <source>删除全部未标注图像({} 张)</source>
         <translation>Xóa tất cả ảnh chưa gán nhãn ({} ảnh)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="252"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="253"/>
         <source>删除所选图像({} 张)</source>
         <translation>Xóa ảnh đã chọn ({} ảnh)</translation>
     </message>
@@ -1003,48 +1003,48 @@ Xác nhận xóa?</translation>
         <translation>Tải lại bộ dữ liệu: {}/{}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="802"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="821"/>
         <source>第 {} / {} 页</source>
         <translation>Trang {} / {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="806"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="825"/>
         <source>第 {}/{} 页 · 共 {} 个</source>
         <translation>Trang {}/{} · tổng {} mục</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="808"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="827"/>
         <source>第 {}/{} 页 · 共 {} 张</source>
         <translation>Trang {}/{} · tổng {} ảnh</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="817"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="836"/>
         <source>暂无数据</source>
         <translation>Không có dữ liệu</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="854"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="871"/>
         <source>开始导入: {}/{} | 图像路径={} | 标签路径={} | 格式={}</source>
         <translation>Bắt đầu nhập: {}/{} | Đường dẫn ảnh={} | Đường dẫn nhãn={} | Định dạng={}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="855"/>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="925"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="872"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="942"/>
         <source>(无)</source>
         <translation>(không có)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="920"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="937"/>
         <source>{}: {}个</source>
         <translation>{}: {} khung</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="922"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="939"/>
         <source>数据集导入完成: {}/{} | 图像 {} 张, 已标注 {} 张 | 标签({}类): {}</source>
         <translation>Nhập bộ dữ liệu xong: {}/{} | {} ảnh, đã gán nhãn {} ảnh | Nhãn ({} lớp): {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="966"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="983"/>
         <source>数据集 {}/{} 未导入, 右键&quot;导入&quot;选择图像与标签目录</source>
         <translation>Bộ dữ liệu {}/{} chưa nhập, bấm chuột phải &quot;Nhập&quot; để chọn thư mục ảnh và nhãn</translation>
     </message>
@@ -1127,7 +1127,7 @@ Xác nhận xóa?</translation>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="501"/>
         <location filename="../app/mixins/import_export_mixin.py" line="277"/>
-        <location filename="../app/mixins/label_mixin.py" line="196"/>
+        <location filename="../app/mixins/label_mixin.py" line="240"/>
         <location filename="../app/mixins/misc_mixin.py" line="122"/>
         <location filename="../app/widgets/dialog_buttons.py" line="104"/>
         <source>确定</source>
@@ -1393,50 +1393,99 @@ Vị trí: {}</translation>
     </message>
 </context>
 <context>
+    <name>LabelFilter</name>
+    <message>
+        <location filename="../app/widgets/label_filter_popup.py" line="71"/>
+        <location filename="../app/widgets/label_filter_popup.py" line="477"/>
+        <source>所有图像</source>
+        <translation>Tất cả ảnh</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/label_filter_popup.py" line="490"/>
+        <source>显示全部图像</source>
+        <translation>Đang hiển thị tất cả ảnh</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/label_filter_popup.py" line="492"/>
+        <source>按所选标签过滤</source>
+        <translation>Đang lọc theo nhãn đã chọn</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/label_filter_popup.py" line="494"/>
+        <source>未选择标签</source>
+        <translation>Chưa chọn nhãn</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/label_filter_popup.py" line="595"/>
+        <source>收起</source>
+        <translation>Thu gọn</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/label_filter_popup.py" line="596"/>
+        <source>展开全部</source>
+        <translation>Mở rộng tất cả</translation>
+    </message>
+</context>
+<context>
     <name>LabelMixin</name>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="553"/>
-        <location filename="../app/mixins/label_mixin.py" line="39"/>
-        <location filename="../app/mixins/label_mixin.py" line="55"/>
-        <location filename="../app/mixins/label_mixin.py" line="124"/>
+        <location filename="../app/mixins/label_mixin.py" line="100"/>
+        <source>已选 {} 个</source>
+        <translation>Đã chọn {}</translation>
+    </message>
+    <message>
+        <location filename="../app/mixins/label_mixin.py" line="101"/>
+        <location filename="../app/mixins/label_mixin.py" line="106"/>
+        <source>所有图像</source>
+        <translation>Tất cả ảnh</translation>
+    </message>
+    <message>
+        <location filename="../app/mixins/label_mixin.py" line="102"/>
+        <location filename="../app/mixins/label_mixin.py" line="119"/>
+        <source>未选择标签</source>
+        <translation>Chưa chọn nhãn</translation>
+    </message>
+    <message>
+        <location filename="../app/mixins/label_mixin.py" line="111"/>
+        <location filename="../app/mixins/label_mixin.py" line="194"/>
         <source>未标注</source>
         <translation>Chưa gán nhãn</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="181"/>
-        <location filename="../app/mixins/label_mixin.py" line="186"/>
-        <location filename="../app/mixins/label_mixin.py" line="203"/>
+        <location filename="../app/mixins/label_mixin.py" line="225"/>
+        <location filename="../app/mixins/label_mixin.py" line="230"/>
+        <location filename="../app/mixins/label_mixin.py" line="247"/>
         <source>重命名</source>
         <translation>Đổi tên</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="181"/>
-        <location filename="../app/mixins/label_mixin.py" line="434"/>
+        <location filename="../app/mixins/label_mixin.py" line="225"/>
+        <location filename="../app/mixins/label_mixin.py" line="478"/>
         <source>请先在左侧选中一个数据集</source>
         <translation>Chọn một bộ dữ liệu ở bên trái trước</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="187"/>
+        <location filename="../app/mixins/label_mixin.py" line="231"/>
         <source>请先在筛选下拉框中选择要重命名的标签</source>
         <translation>Chọn nhãn cần đổi tên trong hộp lọc trước</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="190"/>
+        <location filename="../app/mixins/label_mixin.py" line="234"/>
         <source>类别修改</source>
         <translation>Sửa lớp</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="203"/>
+        <location filename="../app/mixins/label_mixin.py" line="247"/>
         <source>标签名称不能为空</source>
         <translation>Tên nhãn không được để trống</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="212"/>
+        <location filename="../app/mixins/label_mixin.py" line="256"/>
         <source>合并标签</source>
         <translation>Hợp nhất nhãn</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="213"/>
+        <location filename="../app/mixins/label_mixin.py" line="257"/>
         <source>标签&quot;{}&quot;已存在.
 确定把&quot;{}&quot;的所有标注合并到&quot;{}&quot;吗?
 此操作会改写数据集源标签文件, 且不可恢复.</source>
@@ -1445,79 +1494,79 @@ Hợp nhất tất cả chú thích của &quot;{}&quot; vào &quot;{}&quot;?
 Thao tác này ghi đè tệp nhãn nguồn của bộ dữ liệu và không thể khôi phục.</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="268"/>
+        <location filename="../app/mixins/label_mixin.py" line="312"/>
         <source>合并标签: {} → {} ({}/{}) | 启动后台文件合并, 完成后输出统计</source>
         <translation>Hợp nhất nhãn: {} → {} ({}/{}) | khởi động hợp nhất tệp chạy nền, xuất thống kê khi xong</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="274"/>
+        <location filename="../app/mixins/label_mixin.py" line="318"/>
         <source>重命名标签: {} → {} ({}/{})</source>
         <translation>Đổi tên nhãn: {} → {} ({}/{})</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="346"/>
+        <location filename="../app/mixins/label_mixin.py" line="390"/>
         <source>{}: {}个</source>
         <translation>{}: {} khung</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="349"/>
+        <location filename="../app/mixins/label_mixin.py" line="393"/>
         <source>删除标签完成: {} | 修改 {} 个标签文件 | 删除后标签统计({}类): {}</source>
         <translation>Xóa nhãn xong: {} | sửa {} tệp nhãn | thống kê nhãn sau khi xóa ({} lớp): {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="352"/>
-        <location filename="../app/mixins/label_mixin.py" line="357"/>
-        <location filename="../app/mixins/label_mixin.py" line="362"/>
+        <location filename="../app/mixins/label_mixin.py" line="396"/>
+        <location filename="../app/mixins/label_mixin.py" line="401"/>
+        <location filename="../app/mixins/label_mixin.py" line="406"/>
         <source>(无)</source>
         <translation>(không có)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="354"/>
+        <location filename="../app/mixins/label_mixin.py" line="398"/>
         <source>合并标签: {} → {} | 修改 {} 个标签文件 | 合并后标签统计({}类): {}</source>
         <translation>Hợp nhất nhãn: {} → {} | sửa {} tệp nhãn | thống kê nhãn sau khi hợp nhất ({} lớp): {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="359"/>
+        <location filename="../app/mixins/label_mixin.py" line="403"/>
         <source>合并标签: {} → {} | 无标签文件被修改 | 合并后标签统计({}类): {}</source>
         <translation>Hợp nhất nhãn: {} → {} | không có tệp nhãn nào bị sửa | thống kê nhãn sau khi hợp nhất ({} lớp): {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="400"/>
+        <location filename="../app/mixins/label_mixin.py" line="444"/>
         <source>重命名标签</source>
         <translation>Đổi tên nhãn</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="400"/>
+        <location filename="../app/mixins/label_mixin.py" line="444"/>
         <source>正在更新标注文件...</source>
         <translation>Đang cập nhật tệp nhãn...</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="434"/>
-        <location filename="../app/mixins/label_mixin.py" line="439"/>
-        <location filename="../app/mixins/label_mixin.py" line="443"/>
-        <location filename="../app/mixins/label_mixin.py" line="544"/>
+        <location filename="../app/mixins/label_mixin.py" line="478"/>
+        <location filename="../app/mixins/label_mixin.py" line="483"/>
+        <location filename="../app/mixins/label_mixin.py" line="487"/>
+        <location filename="../app/mixins/label_mixin.py" line="589"/>
         <source>删除标签</source>
         <translation>Xóa nhãn</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="440"/>
+        <location filename="../app/mixins/label_mixin.py" line="484"/>
         <source>请先在筛选下拉框中选择要删除的标签</source>
         <translation>Chọn nhãn cần xóa trong hộp lọc trước</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="444"/>
+        <location filename="../app/mixins/label_mixin.py" line="488"/>
         <source>确定删除标签&quot;{}&quot;吗?
 该标签的所有标注将被删除, 且不可恢复.</source>
         <translation>Xóa nhãn &quot;{}&quot;?
 Mọi chú thích của nhãn này sẽ bị xóa và không thể khôi phục.</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="477"/>
+        <location filename="../app/mixins/label_mixin.py" line="522"/>
         <source>删除标签: {} ({}/{})</source>
         <translation>Xóa nhãn: {} ({}/{})</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="544"/>
+        <location filename="../app/mixins/label_mixin.py" line="589"/>
         <source>正在清理标注文件...</source>
         <translation>Đang dọn tệp chú thích...</translation>
     </message>
@@ -1692,62 +1741,97 @@ Mọi chú thích của nhãn này sẽ bị xóa và không thể khôi phục.
 <context>
     <name>ModelAssets</name>
     <message>
-        <location filename="../app/core/model_assets.py" line="79"/>
-        <location filename="../app/core/model_assets.py" line="113"/>
+        <location filename="../app/core/model_assets.py" line="88"/>
+        <location filename="../app/core/model_assets.py" line="122"/>
         <source>速度最快, 精度够用</source>
         <translation>Nhanh nhất, độ chính xác đủ dùng</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="80"/>
-        <location filename="../app/core/model_assets.py" line="117"/>
+        <location filename="../app/core/model_assets.py" line="89"/>
+        <location filename="../app/core/model_assets.py" line="126"/>
         <source>精度更好, 稍慢一些</source>
         <translation>Độ chính xác tốt hơn, hơi chậm</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="81"/>
-        <location filename="../app/core/model_assets.py" line="121"/>
+        <location filename="../app/core/model_assets.py" line="90"/>
+        <location filename="../app/core/model_assets.py" line="130"/>
         <source>精度更高</source>
         <translation>Độ chính xác cao hơn</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="82"/>
-        <location filename="../app/core/model_assets.py" line="125"/>
+        <location filename="../app/core/model_assets.py" line="91"/>
+        <location filename="../app/core/model_assets.py" line="134"/>
         <source>精度最高, 显存占用大</source>
         <translation>Độ chính xác cao nhất, tốn nhiều bộ nhớ GPU</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="83"/>
+        <location filename="../app/core/model_assets.py" line="92"/>
         <source>精度极致, 显存占用很大</source>
         <translation>Độ chính xác tối đa, tốn rất nhiều bộ nhớ GPU</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="86"/>
-        <location filename="../app/core/model_assets.py" line="129"/>
+        <location filename="../app/core/model_assets.py" line="95"/>
+        <location filename="../app/core/model_assets.py" line="138"/>
         <source>轻量分割</source>
         <translation>Phân đoạn nhẹ</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="87"/>
-        <location filename="../app/core/model_assets.py" line="133"/>
+        <location filename="../app/core/model_assets.py" line="96"/>
+        <location filename="../app/core/model_assets.py" line="142"/>
         <source>速度与精度平衡</source>
         <translation>Cân bằng tốc độ và độ chính xác</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="88"/>
-        <location filename="../app/core/model_assets.py" line="137"/>
+        <location filename="../app/core/model_assets.py" line="97"/>
+        <location filename="../app/core/model_assets.py" line="146"/>
         <source>细节更完整</source>
         <translation>Chi tiết đầy đủ hơn</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="89"/>
-        <location filename="../app/core/model_assets.py" line="141"/>
+        <location filename="../app/core/model_assets.py" line="98"/>
+        <location filename="../app/core/model_assets.py" line="150"/>
         <source>最精细</source>
         <translation>Chi tiết nhất</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="90"/>
+        <location filename="../app/core/model_assets.py" line="99"/>
         <source>最精细, 显存占用很大</source>
         <translation>Chi tiết nhất, tốn rất nhiều bộ nhớ GPU</translation>
+    </message>
+    <message>
+        <location filename="../app/core/model_assets.py" line="293"/>
+        <source>文件不存在: {}</source>
+        <translation>Tệp không tồn tại: {}</translation>
+    </message>
+    <message>
+        <location filename="../app/core/model_assets.py" line="296"/>
+        <source>只支持 {} 格式</source>
+        <translation>Chỉ hỗ trợ định dạng {}</translation>
+    </message>
+    <message>
+        <location filename="../app/core/model_assets.py" line="301"/>
+        <source>读不到文件大小: {}</source>
+        <translation>Không đọc được kích thước tệp: {}</translation>
+    </message>
+    <message>
+        <location filename="../app/core/model_assets.py" line="303"/>
+        <source>文件只有 {}, 不像完整的权重</source>
+        <translation>Tệp chỉ có {}, không giống một tệp trọng số hoàn chỉnh</translation>
+    </message>
+    <message>
+        <location filename="../app/core/model_assets.py" line="314"/>
+        <source>这看着是 Transformer 权重, 当前档位是 CNN(YOLO)</source>
+        <translation>Có vẻ đây là trọng số Transformer, nhưng mục đang chọn là CNN (YOLO)</translation>
+    </message>
+    <message>
+        <location filename="../app/core/model_assets.py" line="318"/>
+        <source>这看着是 CNN(YOLO) 权重, 当前档位是 Transformer</source>
+        <translation>Có vẻ đây là trọng số CNN (YOLO), nhưng mục đang chọn là Transformer</translation>
+    </message>
+    <message>
+        <location filename="../app/core/model_assets.py" line="338"/>
+        <source>权重目录不可写: {}</source>
+        <translation>Không ghi được vào thư mục trọng số: {}</translation>
     </message>
 </context>
 <context>
@@ -2353,10 +2437,13 @@ Bao gồm: {}</translation>
     <name>ModelManagerDialog</name>
     <message>
         <location filename="../ui/model_manager.ui" line="14"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="287"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="291"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="340"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="347"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="395"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="399"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="404"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="439"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="443"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="494"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="501"/>
         <source>模型权重</source>
         <translation>Trọng số mô hình</translation>
     </message>
@@ -2392,94 +2479,121 @@ Bao gồm: {}</translation>
     </message>
     <message>
         <location filename="../ui/model_manager.ui" line="265"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="330"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="277"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="482"/>
         <source>开始下载</source>
         <translation>Bắt đầu tải</translation>
     </message>
     <message>
         <location filename="../ui/model_manager.ui" line="275"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="171"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="264"/>
         <source>关闭</source>
         <translation>Đóng</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="52"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="56"/>
         <source>还剩 {}s</source>
         <translation>Còn {}s</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="53"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="57"/>
         <source>还剩 {}m{}s</source>
         <translation>Còn {}m{}s</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="237"/>
-        <source>占用空间 {}</source>
-        <translation>Chiếm {}</translation>
-    </message>
-    <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="255"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="371"/>
         <source>选择权重目录</source>
         <translation>Chọn thư mục trọng số</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="276"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="389"/>
+        <source>选择预训练权重</source>
+        <translation>Chọn trọng số đã huấn luyện trước</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/model_manager_dialog.py" line="390"/>
+        <source>权重文件 (*.pt *.pth *.ckpt)</source>
+        <translation>Tệp trọng số (*.pt *.pth *.ckpt)</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/model_manager_dialog.py" line="400"/>
+        <source>仍要用这个文件吗?</source>
+        <translation>Vẫn dùng tệp này?</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/model_manager_dialog.py" line="428"/>
         <source>权重目录不可写入 {}: {!r}</source>
         <translation>Không ghi được vào thư mục trọng số {}: {!r}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="287"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="439"/>
         <source>勾选的模型都已就绪, 不需要下载.</source>
         <translation>Các mô hình đã chọn đều sẵn sàng, không cần tải.</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="292"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="444"/>
         <source>当前目录不可写入, 请点&quot;更改&quot;换一个目录:
 {}</source>
         <translation>Thư mục hiện tại không ghi được, bấm &quot;Thay đổi&quot; để chọn thư mục khác:
 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="297"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="277"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="449"/>
         <source>下载中...</source>
         <translation>Đang tải...</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="341"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="495"/>
         <source>以下权重没能下载完成:
 </source>
         <translation>Các trọng số sau chưa tải xong:
 </translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="348"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="502"/>
         <source>下载还在进行, 现在关闭会中断下载(已下载部分保留, 下次可续传).
 确定关闭?</source>
         <translation>Đang tải, đóng bây giờ sẽ ngắt quá trình tải (phần đã tải được giữ lại, lần sau tải tiếp).
 Đóng?</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="380"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="534"/>
         <source>去下载</source>
         <translation>Tải về</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="389"/>
-        <source>该架构的权重必须先下载好才能开始训练.</source>
-        <translation>Phải tải trọng số của kiến trúc này trước khi có thể bắt đầu huấn luyện.</translation>
+        <location filename="../app/widgets/model_manager_dialog.py" line="543"/>
+        <source>该架构的权重必须先下载好才能开始训练, 也可以在权重管理里指定本地的权重文件.</source>
+        <translation>Trọng số của kiến trúc này phải được tải xuống trước khi bắt đầu huấn luyện. Bạn cũng có thể chỉ định tệp trọng số cục bộ trong Trọng số mô hình.</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="383"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="537"/>
         <source>本次训练选用 {} {}模型, 需要先下载 {}.</source>
         <translation>Lần huấn luyện này dùng mô hình {} {}, cần tải {} trước.</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="382"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="536"/>
         <source>缺少模型权重</source>
         <translation>Thiếu trọng số mô hình</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="381"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="349"/>
+        <source>待下载 {}</source>
+        <translation>Cần tải: {}</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/model_manager_dialog.py" line="351"/>
+        <source>无需下载</source>
+        <translation>Không cần tải</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/model_manager_dialog.py" line="353"/>
+        <source>本地 {} 项</source>
+        <translation>Cục bộ: {}</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/model_manager_dialog.py" line="535"/>
         <source>取消</source>
         <translation>Hủy</translation>
     </message>
@@ -4886,22 +5000,65 @@ Chờ chạy lại: {}
 <context>
     <name>_ModelRow</name>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="113"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="109"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="155"/>
+        <source>本地</source>
+        <translation>Cục bộ</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/model_manager_dialog.py" line="131"/>
+        <source>取消本地绑定</source>
+        <translation>Hủy liên kết cục bộ</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/model_manager_dialog.py" line="161"/>
         <source>已就绪</source>
         <translation>Sẵn sàng</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="119"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="168"/>
         <source>未下载</source>
         <translation>Chưa tải xuống</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="124"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="177"/>
+        <source>更换</source>
+        <translation>Thay đổi</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/model_manager_dialog.py" line="185"/>
+        <source>本地权重</source>
+        <translation>Trọng số cục bộ</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/model_manager_dialog.py" line="194"/>
+        <source>重选</source>
+        <translation>Chọn lại</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/model_manager_dialog.py" line="195"/>
+        <source>(路径未记录)</source>
+        <translation>(chưa ghi đường dẫn)</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/model_manager_dialog.py" line="197"/>
+        <source>本地失效</source>
+        <translation>Trọng số cục bộ không còn</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/model_manager_dialog.py" line="199"/>
+        <source>登记的本地权重文件已不在这个位置:
+{}</source>
+        <translation>Tệp trọng số cục bộ đã đăng ký không còn ở vị trí này:
+{}</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/model_manager_dialog.py" line="204"/>
         <source>校验中...</source>
         <translation>Đang kiểm tra...</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="140"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="223"/>
         <source>失败</source>
         <translation>Thất bại</translation>
     </message>

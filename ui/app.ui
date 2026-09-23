@@ -391,7 +391,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QComboBox" name="label_comboBox"/>
+              <widget class="LabelFilterButton" name="label_filter_btn"/>
              </item>
              <item>
               <widget class="QPushButton" name="rename_label_btn">
@@ -609,6 +609,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>LabelFilterButton</class>
+   <extends>QToolButton</extends>
+   <header>app.widgets.label_filter_popup</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

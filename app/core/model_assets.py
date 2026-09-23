@@ -11,15 +11,24 @@
 重名也不会互相扫到.
 """
 
+import json
 import os
 import shutil
 
+from PySide6.QtCore import QCoreApplication as QC
 from PySide6.QtCore import QT_TRANSLATE_NOOP
 
 from app.core.utils import project_root
 
 ENV_MODELS_DIR = "EASY_TRAINER_MODELS"
 _SUBDIR = "pretrained"
+
+# 本地权重清单(放权重根目录, 跟着目录一起搬): 根下相对路径 -> {src, size, name}.
+# 用户的文件原地引用不进权重目录, 所以清单是唯一的来源记录
+LOCAL_MANIFEST = ".local_weights.json"
+LOCAL_EXTS = (".pt", ".pth", ".ckpt")
+MIN_LOCAL_BYTES = 1 << 20
+_LOCAL_CACHE = {}
 
 CNN = "cnn"
 TRANSFORMER = "transformer"
@@ -213,17 +222,140 @@ def rel_path(asset):
     return "{}/{}".format(family_of(asset), asset.filename)
 
 
+def local_manifest_path(directory=None):
+    return os.path.join(directory or models_dir(), LOCAL_MANIFEST)
+
+
+def _read_local(directory=None):
+    """按 mtime+大小缓存: 界面刷一次要问 18 行, 不缓存就是 18 次读盘."""
+    p = local_manifest_path(directory)
+    try:
+        st = os.stat(p)
+        stamp = (st.st_mtime_ns, st.st_size)
+    except OSError:
+        _LOCAL_CACHE.pop(p, None)
+        return {}
+    hit = _LOCAL_CACHE.get(p)
+    if hit is not None and hit[0] == stamp:
+        return hit[1]
+    try:
+        with open(p, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        if not isinstance(data, dict):
+            data = {}
+    except (OSError, ValueError):
+        data = {}
+    _LOCAL_CACHE[p] = (stamp, data)
+    return data
+
+
+def _write_local(data, directory=None):
+    p = local_manifest_path(directory)
+    try:
+        os.makedirs(os.path.dirname(p), exist_ok=True)
+        tmp = p + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+        os.replace(tmp, p)
+    except OSError:
+        return False
+    _LOCAL_CACHE.pop(p, None)
+    return True
+
+
+def local_entry(asset, directory=None):
+    """该档位登记了什么本地权重; 未登记返回 None(不查源文件是否还在)."""
+    item = _read_local(directory).get(rel_path(asset))
+    return item if isinstance(item, dict) else None
+
+
+def local_src(asset, directory=None):
+    """可用的本地权重源文件绝对路径; 没登记或源文件已不在返回空串."""
+    src = (local_entry(asset, directory) or {}).get("src") or ""
+    return src if src and os.path.isfile(src) else ""
+
+
+def is_downloaded(asset, directory=None):
+    """权重目录里那份官方文件是否完整(不认本地登记)."""
+    try:
+        return os.path.getsize(path_of(asset, directory)) == asset.nbytes
+    except OSError:
+        return False
+
+
+def check_local_file(path):
+    """挑本地权重时的弱校验: 通过返回空串, 否则返回给用户看的原因.
+
+    不试读 torch.load: 1.4GB 读一次要几十秒, 而且后端加载时自己会报结构错误,
+    这里只挡住明显选错的文件.
+    """
+    if not os.path.isfile(path):
+        return QC.translate("ModelAssets", "文件不存在: {}").format(path)
+    ext = os.path.splitext(path)[1].lower()
+    if ext not in LOCAL_EXTS:
+        return QC.translate("ModelAssets", "只支持 {} 格式").format(
+            " / ".join(LOCAL_EXTS))
+    try:
+        size = os.path.getsize(path)
+    except OSError as exc:
+        return QC.translate("ModelAssets", "读不到文件大小: {}").format(exc)
+    if size < MIN_LOCAL_BYTES:
+        return QC.translate(
+            "ModelAssets", "文件只有 {}, 不像完整的权重").format(
+            human_size(size))
+    return ""
+
+
+def mismatch_hint(asset, path):
+    """按文件名看架构对不对得上, 对得上返回空串. 只提醒, 用不用由用户定."""
+    name = os.path.basename(path).lower()
+    if family_of(asset) == CNN:
+        if "rf-detr" in name or "rfdetr" in name or name.endswith(".pth"):
+            return QC.translate(
+                "ModelAssets",
+                "这看着是 Transformer 权重, 当前档位是 CNN(YOLO)")
+    elif "yolo" in name:
+        return QC.translate(
+            "ModelAssets",
+            "这看着是 CNN(YOLO) 权重, 当前档位是 Transformer")
+    return ""
+
+
+def bind_local(asset, path, directory=None):
+    """把 path 登记为该档位的权重来源(原地引用). 返回 (ok, 原因)."""
+    full = os.path.abspath(path)
+    reason = check_local_file(full)
+    if reason:
+        return False, reason
+    try:
+        size = os.path.getsize(full)
+    except OSError:
+        size = 0
+    data = dict(_read_local(directory))
+    data[rel_path(asset)] = {"src": full, "size": size,
+                             "name": os.path.basename(full)}
+    if not _write_local(data, directory):
+        return False, QC.translate(
+            "ModelAssets", "权重目录不可写: {}").format(
+            local_manifest_path(directory))
+    return True, ""
+
+
+def unbind_local(asset, directory=None):
+    """取消本地绑定; 返回是否真的取消了登记."""
+    data = dict(_read_local(directory))
+    if data.pop(rel_path(asset), None) is None:
+        return False
+    return _write_local(data, directory)
+
+
 def is_ready(asset, directory=None):
     """
-    就绪 = 文件存在且字节数相符.
+    就绪 = 官方文件字节数相符, 或者登记了本地权重且源文件还在.
     不校验 MD5: 1.4GB 的文件算一次要好几秒, 每次开界面都算不划算, 而且
     rfdetr 加载时自己会校验(哈希不符只警告, 不会重下).
     """
-    p = path_of(asset, directory)
-    try:
-        return os.path.getsize(p) == asset.nbytes
-    except OSError:
-        return False
+    return is_downloaded(asset, directory) or bool(local_src(asset, directory))
 
 
 def asset_task(task, family="transformer"):
@@ -248,12 +380,16 @@ def missing(task, level, saved="", family="transformer"):
 def resolve_path(task, level, family="transformer"):
     """
     训练子进程要传给后端的权重绝对路径; 没就绪返回空串.
-    子进程拿不到 db, 靠父进程传下来的 EASY_TRAINER_MODELS 定位(models_dir 无参即可).
+    子进程拿不到 db, 靠父进程传下来的 EASY_TRAINER_MODELS 定位(models_dir 无参即可);
+    本地权重是原地引用, 这里给的是源文件路径而不是权重目录里那个.
     """
     asset = find(asset_task(task, family), level)
     if asset is None:
         return ""
-    return path_of(asset) if is_ready(asset) else ""
+    src = local_src(asset)
+    if src:
+        return src
+    return path_of(asset) if is_downloaded(asset) else ""
 
 
 def ensure_amp_weight(weights_dir):
@@ -280,6 +416,8 @@ def ensure_amp_weight(weights_dir):
 
 
 def human_size(nbytes):
+    if nbytes < 1048576:
+        return "{} KB".format(max(1, int(round(nbytes / 1024.0))))
     mb = nbytes / 1048576.0
     if mb >= 1024:
         return "{:.2f} GB".format(mb / 1024)

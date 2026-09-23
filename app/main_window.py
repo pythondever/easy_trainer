@@ -32,7 +32,9 @@ class App(QWidget, MainUI, LabelMixin, ProjectMixin, ImportExportMixin,
         self._loading_tasks = {}
         self.page_size = PAGE_SIZE
         self.current_page = 0
-        self.current_label = "__unlabeled__"
+        # 首页筛选默认"所有图像"= 该数据集导入的全部图像(见 LabelMixin)
+        self.filter_all = True
+        self.filter_labels = []
         # 全局装一次即可覆盖所有对话框里的下拉框; 引用要留着, 否则被回收
         self._combo_popup_flat = ComboPopupFlattener()
         QApplication.instance().installEventFilter(self._combo_popup_flat)

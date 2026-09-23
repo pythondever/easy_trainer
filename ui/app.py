@@ -20,6 +20,8 @@ from PySide6.QtWidgets import (QApplication, QComboBox, QDialog, QFrame,
     QScrollArea, QSizePolicy, QSpacerItem, QTabWidget,
     QTimeEdit, QVBoxLayout, QWidget)
 
+from app.widgets.label_filter_popup import LabelFilterButton
+
 class Ui_AppUI(object):
     def setupUi(self, AppUI):
         if not AppUI.objectName():
@@ -184,10 +186,10 @@ class Ui_AppUI(object):
 
         self.datasetHeaderLayout.addWidget(self.gpu_memory_use_btn)
 
-        self.label_comboBox = QComboBox(self.datasetHeader)
-        self.label_comboBox.setObjectName(u"label_comboBox")
+        self.label_filter_btn = LabelFilterButton(self.datasetHeader)
+        self.label_filter_btn.setObjectName(u"label_filter_btn")
 
-        self.datasetHeaderLayout.addWidget(self.label_comboBox)
+        self.datasetHeaderLayout.addWidget(self.label_filter_btn)
 
         self.rename_label_btn = QPushButton(self.datasetHeader)
         self.rename_label_btn.setObjectName(u"rename_label_btn")

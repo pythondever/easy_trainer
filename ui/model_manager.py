@@ -23,7 +23,7 @@ class Ui_ModelManagerDialog(object):
     def setupUi(self, ModelManagerDialog):
         if not ModelManagerDialog.objectName():
             ModelManagerDialog.setObjectName(u"ModelManagerDialog")
-        ModelManagerDialog.resize(720, 560)
+        ModelManagerDialog.resize(800, 560)
         self.root_layout = QVBoxLayout(ModelManagerDialog)
         self.root_layout.setSpacing(10)
         self.root_layout.setObjectName(u"root_layout")

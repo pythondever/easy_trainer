@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import json
+import time
 
 from app.core.db import get_paths
 from ui.edit_label import Ui_Dialog as EditLabelUI
@@ -8,64 +9,139 @@ from app.core.label_utils import (normalize_label, label_sort_key,
                                   rec_is_labeled)
 from app.annotation.box_item import assign_label_color
 from app.widgets.dialog_buttons import apply_icon
+from app.widgets.label_filter_popup import (ALL_COLOR, DIM_DOT,
+                                            LabelFilterPanel)
 from app.widgets.message_box import MessageBox, ProgressDialog
 from app.tasks.merge_task import MergeLabelsTask
-from PySide6.QtGui import QIcon, QPixmap, QColor
 from PySide6.QtCore import QCoreApplication as QC
-from PySide6.QtWidgets import QDialog, QComboBox
+from PySide6.QtWidgets import QDialog
 
 # "未标注"不是真实类别, 用黑块占位, 与真实标签的彩色块对齐
 UNLABELED_COLOR = "#000000"
-
-# 下拉框得放得下最长的标签名, 但这一排控件很挤, 撑太宽会顶掉后面的按钮
-LABEL_FILTER_MAX_WIDTH = 180
-
-
-def _color_icon(color):
-    """14x14 纯色块, 下拉框里标签前的色标."""
-    pix = QPixmap(14, 14)
-    pix.fill(QColor(color))
-    return QIcon(pix)
+UNLABELED_KEY = "__unlabeled__"
 
 
 class LabelMixin(object):
+    @property
+    def current_label(self):
+        """筛选里唯一选中的那个标签; "所有图像"和多选都返回 None.
+
+        重命名/删除这类只作用于单个标签的入口靠它判断能不能执行, 它不代表
+        当前视图在看什么(视图口径见 _filter_records).
+        """
+        if self.filter_all or len(self.filter_labels) != 1:
+            return None
+        return self.filter_labels[0]
+
+    def _unlabeled_selected(self):
+        """筛选里是否含未标注 - 首页批量删未标注图的门槛."""
+        return (not self.filter_all) and UNLABELED_KEY in self.filter_labels
+
+    def _by_box_mode(self):
+        """选了真实标签就按 box 展开(命中一框出一个 ROI); 全部/只选未标注看整图."""
+        return (not self.filter_all
+                and any(k != UNLABELED_KEY for k in self.filter_labels))
+
+    def _set_filter_all(self):
+        self.filter_all = True
+        self.filter_labels = []
+
+    def _replace_filter_label(self, old_name, new_name):
+        """标签改名/合并后同步勾选: 勾着旧名的换成新名, 名字空了就回所有图像."""
+        if old_name not in self.filter_labels:
+            return
+        kept = [k for k in self.filter_labels if k != old_name]
+        if new_name and new_name not in kept:
+            kept.append(new_name)
+        self.filter_labels = kept
+        if not kept:
+            self._set_filter_all()
+
     def _init_label_filter(self):
-        self.label_filter_combo = self.label_comboBox
-        self.label_filter_combo.clear()
-        # 显式给 context: mixin 里 self.tr() 挂的是实例的类(App), 与 lupdate
-        # 按定义处抽出来的 "LabelMixin" 对不上, 译文永远匹配不到
-        self.label_filter_combo.addItem(
-            _color_icon(UNLABELED_COLOR),
-            QC.translate("LabelMixin", "未标注"), "__unlabeled__")
-        self._fit_label_filter_width()
-        self.label_filter_combo.currentIndexChanged.connect(self._on_label_filter_changed)
+        self.filter_all = True
+        self.filter_labels = []
+        self._label_filter_items = []
+        self.label_filter_panel = LabelFilterPanel(self)
+        self.label_filter_panel.filterChanged.connect(self._on_label_filter_changed)
+        self.label_filter_btn.clicked.connect(self._toggle_label_filter_panel)
+        self._sync_filter_ui()
 
-    def _fit_label_filter_width(self):
-        combo = getattr(self, "label_filter_combo", None)
-        if combo is None:
+    def _toggle_label_filter_panel(self):
+        """点筛选按钮: 收起态展开, 展开态收起."""
+        panel = self.label_filter_panel
+        if panel.isVisible():
+            panel.hide()
+            self._filter_closed_at = time.monotonic()
             return
-        combo.setSizeAdjustPolicy(QComboBox.AdjustToContents)
-        combo.setMinimumWidth(min(combo.sizeHint().width(), LABEL_FILTER_MAX_WIDTH))
-
-    def _reset_label_filter_text(self):
-        """没打开数据集时下拉里只有"未标注"一项, 换语言要把它的文案重设一遍."""
-        combo = getattr(self, "label_filter_combo", None)
-        if combo is None:
+        # popup 被点外部关掉时, 那一下点击有时会顺带落到按钮上, 别立刻再弹开
+        if time.monotonic() - getattr(self, "_filter_closed_at", 0.0) < 0.25:
             return
-        text = QC.translate("LabelMixin", "未标注")
-        for i in range(combo.count()):
-            if combo.itemData(i) == "__unlabeled__":
-                combo.setItemText(i, text)
-        self._fit_label_filter_width()
+        panel.popup_below(self.label_filter_btn)
+        self._filter_closed_at = 0.0
 
-    def _on_label_filter_changed(self, idx):
-        """标签下拉框变更:重新渲染场景(按标签筛选)."""
-        self.current_label = self.label_filter_combo.itemData(idx) or "__unlabeled__"
-        self.current_page = 0   # 切换筛选后从第一页开始
+    def _on_label_filter_changed(self, all_mode, selected):
+        """面板勾选变化: 重置分页并按新筛选重渲(分页数据跟着筛选走)."""
+        self.filter_all = bool(all_mode)
+        self.filter_labels = list(selected)
+        self.current_page = 0
+        self._sync_filter_ui()
         cur_ds = getattr(self, "_current_dataset", None)
         if cur_ds:
-            proj, ds = cur_ds
-            self.show_dataset_images(proj, ds)
+            self.show_dataset_images(cur_ds[0], cur_ds[1])
+
+    def _sync_filter_ui(self):
+        """按当前筛选刷新收起态按钮(色点 + 文案)与面板勾选态."""
+        btn = getattr(self, "label_filter_btn", None)
+        if btn is None:
+            return
+        items = getattr(self, "_label_filter_items", [])
+        names = {k: n for n, _c, k in items}
+        colors = {k: c for n, c, k in items}
+        count_text = QC.translate("LabelMixin", "已选 {} 个")
+        candidates = [QC.translate("LabelMixin", "所有图像"),
+                      QC.translate("LabelMixin", "未选择标签"),
+                      count_text.format(99)]
+        candidates.extend(names.values())
+        if self.filter_all:
+            text, color = QC.translate("LabelMixin", "所有图像"), ALL_COLOR
+            dim = False
+        elif len(self.filter_labels) == 1:
+            key = self.filter_labels[0]
+            if key == UNLABELED_KEY:
+                text, color = QC.translate("LabelMixin", "未标注"), UNLABELED_COLOR
+            else:
+                text, color = names.get(key, key), colors.get(key, DIM_DOT)
+            dim = False
+        elif self.filter_labels:
+            text = count_text.format(len(self.filter_labels))
+            color, dim = DIM_DOT, True
+        else:
+            text, color = QC.translate("LabelMixin", "未选择标签"), DIM_DOT
+            dim = True
+        btn.set_candidates(candidates)
+        btn.set_state(text, color, dim)
+        panel = getattr(self, "label_filter_panel", None)
+        if panel is not None:
+            panel.set_state(self.filter_all, self.filter_labels)
+        self._update_label_action_buttons()
+
+    def _update_label_action_buttons(self):
+        """编辑/删除只认单个标签: 所有图像、多选、只选未标注 都置灰."""
+        label = self.current_label
+        enabled = bool(label) and label != UNLABELED_KEY
+        for name in ("rename_label_btn", "delete_label_btn"):
+            btn = getattr(self, name, None)
+            if btn is not None:
+                btn.setEnabled(enabled)
+
+    def _reset_label_filter_text(self):
+        """没打开数据集: 面板没有可选项, 收起态回到所有图像."""
+        self._label_filter_items = []
+        self._set_filter_all()
+        panel = getattr(self, "label_filter_panel", None)
+        if panel is not None:
+            panel.set_labels([])
+        self._sync_filter_ui()
 
     def _sync_labels_to_db(self, project_name, dataset_name, labels=None):
         """
@@ -93,74 +169,39 @@ class LabelMixin(object):
 
     def _refresh_label_filter(self, project_name, dataset_name):
         """
-        切换数据集时刷新首页标签下拉框选项.
-        "未标注"固定排最后; 数据集全标注时默认选中第一个标签, 否则默认"未标注".
-        db.labels 可能比 cache 滞后(用户标新图后没同步), 合并 cache 实际标签
-        补全下拉,避免下拉只剩"未标注".
+        切换数据集时重建筛选面板的选项, 并尽量保留用户已勾的标签.
+        选项 = db.labels 并上 cache 实际标签(db 可能滞后: 用户标了新图还没同步,
+        不并会让选项缺项), 末尾追加未标注. 默认所有图像; 原来勾的标签若还在就
+        继续勾着, 一个都不剩则回所有图像.
         """
-        if not hasattr(self, "label_filter_combo"):
+        if not hasattr(self, "label_filter_panel"):
             return
-        self.label_filter_combo.blockSignals(True)
-        try:
-            self.label_filter_combo.clear()
-            labels = {normalize_label(k): v for k, v in
-                      self.db.get_dataset_labels(project_name, dataset_name).items()}
-            if labels != self.db.get_dataset_labels(project_name, dataset_name):
-                self.db.save_dataset_labels(project_name, dataset_name, labels)
-            # 兜底: db 写入失败时用 cache 实际标签补全下拉, 避免只剩"未标注"
-            cache = self.dataset_cache.get(project_name, {}).get(dataset_name) or {}
-            used = set(labels.values())
-            for lbl in sorted((cache.get("labels") or {}).keys()):
-                if lbl not in labels:
-                    color = assign_label_color(lbl, used)
-                    labels[lbl] = color
-                    used.add(color)
-            # 标签按排序放前面,"未标注"固定排最后
-            for name, color in sorted(labels.items(),
-                                      key=lambda kv: label_sort_key(kv[0])):
-                self.label_filter_combo.addItem(_color_icon(color), name, name)
-            self.label_filter_combo.addItem(
-                _color_icon(UNLABELED_COLOR),
-                QC.translate("LabelMixin", "未标注"), "__unlabeled__")
-            if (self.current_label
-                    and self.current_label != "__unlabeled__"
-                    and self.current_label in labels):
-                for i in range(self.label_filter_combo.count()):
-                    if self.label_filter_combo.itemData(i) == self.current_label:
-                        self.label_filter_combo.setCurrentIndex(i)
-                        break
-                else:
-                    self._set_label_filter_default(project_name, dataset_name, labels)
-            else:
-                self._set_label_filter_default(project_name, dataset_name, labels)
-        finally:
-            self.label_filter_combo.blockSignals(False)
-        self._fit_label_filter_width()
-
-    def _set_label_filter_default(self, project_name, dataset_name, labels):
-        """
-        数据集全标注 → 默认选第一个标签; 否则默认"未标注"(在下拉最后).
-        labels 来自 db; 再并上 cache 的 index["labels"] keys 兜底, 防止 db
-        写入失败时全标注数据集被误判为"未标注"而视图空白.
-        """
-        binding = self.db.get_dataset_import(project_name, dataset_name)
-        total = binding.get("total", 0) or 0
-        labeled = binding.get("labeled", 0) or 0
+        labels = {normalize_label(k): v for k, v in
+                  self.db.get_dataset_labels(project_name, dataset_name).items()}
+        if labels != self.db.get_dataset_labels(project_name, dataset_name):
+            self.db.save_dataset_labels(project_name, dataset_name, labels)
+        # 兜底: db 写入失败时用 cache 实际标签补全选项
         cache = self.dataset_cache.get(project_name, {}).get(dataset_name) or {}
-        cache_labels = list((cache.get("labels") or {}).keys())
-        merged = set(labels) | set(cache_labels)
-        if total > 0 and labeled >= total and merged:
-            ordered = sorted(merged, key=label_sort_key)
-            first = ordered[0]
-            self.current_label = first
-            for i in range(self.label_filter_combo.count()):
-                if self.label_filter_combo.itemData(i) == first:
-                    self.label_filter_combo.setCurrentIndex(i)
-                    break
+        used = set(labels.values())
+        for lbl in sorted((cache.get("labels") or {}).keys()):
+            if lbl not in labels:
+                color = assign_label_color(lbl, used)
+                labels[lbl] = color
+                used.add(color)
+        # 标签按排序放前面, 未标注固定排最后
+        items = [(name, color, name) for name, color in
+                 sorted(labels.items(), key=lambda kv: label_sort_key(kv[0]))]
+        items.append((QC.translate("LabelMixin", "未标注"), UNLABELED_COLOR,
+                      UNLABELED_KEY))
+        valid = {key for _n, _c, key in items}
+        kept = [k for k in self.filter_labels if k in valid]
+        if self.filter_all or not kept:
+            self._set_filter_all()
         else:
-            self.current_label = "__unlabeled__"
-            self.label_filter_combo.setCurrentIndex(
-                self.label_filter_combo.count() - 1)
+            self.filter_labels = kept
+        self._label_filter_items = items
+        self.label_filter_panel.set_labels(items)
+        self._sync_filter_ui()
 
     def _rebuild_index_labels(self, project_name, dataset_name):
         """按 rec.labels 重建 dataset_cache 的 labels 分组索引."""
@@ -169,12 +210,15 @@ class LabelMixin(object):
             return
         index["labels"] = {}
         for rec in index.get("all", []):
-            for lbl in (rec.get("labels") or []):
+            lbls = rec.get("labels") or ()
+            rec["_lbl_set"] = frozenset(lbls)
+            for lbl in lbls:
                 index["labels"].setdefault(lbl, []).append(rec)
 
     def _on_rename_label(self):
         """
-        首页"编辑"按钮: 重命名当前筛选下拉选中的标签.
+        首页"编辑"按钮: 重命名筛选里唯一选中的那个标签.
+        多选或"所有图像"时按钮已置灰, 走不到这里.
         弹 ui/edit_label.py 对话框(类别 + 批量修改为 + 确定).
         """
         if not self._current_dataset:
@@ -264,13 +308,13 @@ class LabelMixin(object):
                 self.db.save_dataset_label_ids(
                     project_name, dataset_name, changed)
         if merge_mode:
-            self.current_label = new_name
+            self._replace_filter_label(old_name, new_name)
             self._log(QC.translate("LabelMixin", "合并标签: {} → {} ({}/{}) | 启动后台文件合并, 完成后输出统计").format(
                 old_name, new_name, project_name, dataset_name))
             self._merge_label_files(project_name, dataset_name,
                                     old_name, new_name)
             return  # 文件合并是异步的,完成后回调里刷新
-        self.current_label = new_name
+        self._replace_filter_label(old_name, new_name)
         self._log(QC.translate("LabelMixin", "重命名标签: {} → {} ({}/{})").format(
             old_name, new_name, project_name, dataset_name))
         self._refresh_label_filter(project_name, dataset_name)
@@ -429,7 +473,7 @@ class LabelMixin(object):
                 progress.close()
 
     def _on_delete_label(self):
-        """首页"删除"按钮: 删除当前筛选下拉选中的标签(含确认弹窗)."""
+        """首页"删除"按钮: 删除筛选里唯一选中的那个标签(含确认弹窗)."""
         if not self._current_dataset:
             MessageBox.warning(self, QC.translate("LabelMixin", "删除标签"), QC.translate("LabelMixin", "请先在左侧选中一个数据集"))
             return
@@ -472,8 +516,9 @@ class LabelMixin(object):
             self.db.save_dataset_label_ids(
                 project_name, dataset_name,
                 {k: v for k, v in ids.items() if k not in set(old_ids)})
-        if self.current_label == label_name:
-            self.current_label = "__unlabeled__"
+        if label_name in self.filter_labels:
+            self.filter_labels = [k for k in self.filter_labels
+                                  if k != label_name]
         self._log(QC.translate("LabelMixin", "删除标签: {} ({}/{})").format(
             label_name, project_name, dataset_name))
         # YOLO txt 文件层删除: 后台删行首==旧 id 的行(否则重新导入标签复活)
@@ -615,5 +660,7 @@ class LabelMixin(object):
             rec["rois_by_idx"] = {}
         index["labels"] = {}
         for rec in recs:
-            for lbl in set(rec.get("labels") or []):
+            lbls = rec.get("labels") or ()
+            rec["_lbl_set"] = frozenset(lbls)
+            for lbl in set(lbls):
                 index["labels"].setdefault(lbl, []).append(rec)

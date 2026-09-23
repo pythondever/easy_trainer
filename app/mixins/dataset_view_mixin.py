@@ -6,6 +6,7 @@ from app.annotation.annotation_dialog import AnnotationDialog
 from app.widgets.paginator import Paginator
 from app.core.constants import (PAGE_SIZE, THUMB_CACHE_MAX,
                                 ROI_CACHE_MAX)
+from app.mixins.label_mixin import UNLABELED_KEY
 from app.core.label_utils import (normalize_label, label_sort_key,
                                   rec_is_labeled, same_dir_json)
 from app.core.image_utils import pil_to_qimage, make_uniform_thumb
@@ -191,7 +192,7 @@ class DatasetViewMixin(object):
             elif ev.button() == Qt.RightButton:
                 hit = _self.graphics_view.itemAt(ev.pos())
                 if (isinstance(hit, SelectablePixmapItem)
-                        and _self.current_label == "__unlabeled__"):
+                        and _self._unlabeled_selected()):
                     if not hit.isSelected():
                         _self.graphics_view.scene().clearSelection()
                         hit.setSelected(True)
@@ -205,7 +206,7 @@ class DatasetViewMixin(object):
         orig_key = self.graphics_view.keyPressEvent
 
         def _gv_key(ev, _o=orig_key, _self=self):
-            if _self.current_label != "__unlabeled__":
+            if not _self._unlabeled_selected():
                 _o(ev)
                 return
             if ev.key() == Qt.Key_A and (ev.modifiers() & Qt.ControlModifier):
@@ -229,7 +230,7 @@ class DatasetViewMixin(object):
         def _gv_ctx_menu(ev, _o=orig_ctx, _self=self):
             hit = _self.graphics_view.itemAt(ev.pos())
             if (isinstance(hit, SelectablePixmapItem)
-                    and _self.current_label == "__unlabeled__"):
+                    and _self._unlabeled_selected()):
                 if not hit.isSelected():
                     _self.graphics_view.scene().clearSelection()
                     hit.setSelected(True)
@@ -240,7 +241,7 @@ class DatasetViewMixin(object):
                     cur_ds = _self._current_dataset
                     index = (_self.dataset_cache.get(cur_ds[0], {}).get(cur_ds[1], {})
                              if cur_ds else {})
-                    unlabeled = _self._view_data_by_label(index)
+                    unlabeled = _self._filter_records(index)
                     all_paths = [r.get("image_path", "") for r in unlabeled if r.get("image_path")]
                     act = menu.addAction(
                         QC.translate("DatasetViewMixin",
@@ -275,7 +276,7 @@ class DatasetViewMixin(object):
             return
         proj, ds = cur_ds
         index = self.dataset_cache.get(proj, {}).get(ds, {})
-        view_data = self._view_data_by_label(index)
+        view_data = self._filter_records(index)
         image_list = [r.get("image_path", "") for r in view_data]
         try:
             cur = image_list.index(image_path)
@@ -307,8 +308,7 @@ class DatasetViewMixin(object):
                                      only_paths=modified or None)
         self._refresh_label_filter(proj, ds)
         self._refresh_dataset_stats(proj, ds)
-        if self.current_label:
-            self.show_dataset_images(proj, ds)
+        self.show_dataset_images(proj, ds)
         self._sync_label_paths_from_json(proj, ds)
 
     def _sync_label_paths_from_json(self, project_name, dataset_name):
@@ -361,7 +361,7 @@ class DatasetViewMixin(object):
     def _load_dataset_view(self, project, dataset):
         """丢缓存强制重扫并显示, 推理/标注新写的 json 靠它读入."""
         self._current_dataset = (project, dataset)
-        self.current_label = "__unlabeled__"
+        self._set_filter_all()
         self.current_page = 0
         proj_cache = self.dataset_cache.setdefault(project, {})
         proj_cache.pop(dataset, None)
@@ -369,41 +369,56 @@ class DatasetViewMixin(object):
         self._refresh_label_filter(project, dataset)
         self.show_dataset_images(project, dataset, update_stats=True)
 
-    def _view_data_by_label(self, data):
+    def _filter_records(self, data):
         """
-        按当前筛选 current_label 取 view_data(未标注 / 具体标签 / 全部).
-        用于分页和渲染:分页按筛选后 view_data 计算(不再是全量).
+        当前筛选命中的图像记录, 保持 index["all"] 的原始顺序.
+        所有图像 → 全部; 否则是所选各项的并集(未标注按"没有有效框"判).
+        分页与渲染都以它的长度为准, 所以勾选一变页数就跟着变.
         """
-        cur = self.current_label
         all_records = data.get("all", [])
-        if not cur:
+        if self.filter_all:
             return all_records
-        if cur == "__unlabeled__":
-            if any(r.get("cls") for r in all_records):
-                return []
-            return [r for r in all_records if not rec_is_labeled(r)]
-        if cur in data.get("labels", {}):
-            return data["labels"][cur]
-        return []
+        picked = self.filter_labels
+        if not picked:
+            return []
+        want_unlabeled = UNLABELED_KEY in picked
+        wanted = {k for k in picked if k != UNLABELED_KEY}
+        out = []
+        for rec in all_records:
+            # _lbl_set 由索引重建处收口预存, 省掉逐条新建 set 的分配;
+            # 万一某条没经过重建(新建/兜底路径), 现场构造保证不漏图.
+            lbls = rec.get("_lbl_set")
+            if lbls is None:
+                lbls = frozenset(rec.get("labels") or ())
+            hit = bool(wanted & lbls)
+            if not hit and want_unlabeled and not rec_is_labeled(rec):
+                hit = True
+            if hit:
+                out.append(rec)
+        return out
 
-    def _expand_by_label(self, data):
-        """按标签把图像列表按 box 展开为 (rec, box_idx);未标注/全部/分类原样返回."""
-        cur = self.current_label
-        if not cur or cur == "__unlabeled__":
-            return data
-        expanded = []
-        for rec in data:
+    def _expand_by_label_filter(self, records):
+        """
+        标签筛选下把记录按 box 展开成 (rec, box_idx), 一个命中框占一个格子;
+        多选时各标签的格子就混在同一页里, 顺序仍是图像顺序.
+        所有图像 / 只选未标注 / 分类数据集 原样返回(一图一格).
+        """
+        if not self._by_box_mode():
+            return records
+        wanted = {k for k in self.filter_labels if k != UNLABELED_KEY}
+        out = []
+        for rec in records:
             if rec.get("cls"):
-                expanded.append(rec)
+                out.append(rec)
                 continue
-            matched = False
-            for box_idx, box in enumerate(rec.get("boxes") or []):
-                if len(box) >= 5 and box[4] == cur:
-                    expanded.append((rec, box_idx))
-                    matched = True
-            if not matched and not (rec.get("boxes") or []):
-                expanded.append(rec)
-        return expanded
+            boxes = rec.get("boxes") or []
+            if not boxes:
+                out.append(rec)
+                continue
+            for box_idx, box in enumerate(boxes):
+                if len(box) >= 5 and box[4] in wanted:
+                    out.append((rec, box_idx))
+        return out
 
     def show_dataset_images(self, project_name, dataset_name, update_stats=False):
         """
@@ -422,7 +437,7 @@ class DatasetViewMixin(object):
                     "ds": (project_name, dataset_name),
                     "map": {r.get("image_path"): r for r in data.get("all", [])},
                 }
-            self._render_scene(self._view_data_by_label(data))
+            self._render_scene(self._filter_records(data))
             return
         binding = self.db.get_dataset_import(project_name, dataset_name)
         if binding:
@@ -456,7 +471,9 @@ class DatasetViewMixin(object):
                 rec["boxes"] = [tuple(b[:-1]) + (normalize_label(b[-1]),)
                                 for b in rec["boxes"]]
             index["all"].append(rec)
-            for label in set(rec.get("labels") or []):
+            lbls = rec.get("labels") or ()
+            rec["_lbl_set"] = frozenset(lbls)
+            for label in set(lbls):
                 index["labels"].setdefault(label, []).append(rec)
         return index
 
@@ -520,7 +537,9 @@ class DatasetViewMixin(object):
                                 for b in rec["boxes"]]
         index["labels"] = {}
         for rec in index.get("all", []):
-            for label in set(rec.get("labels") or []):
+            lbls = rec.get("labels") or ()
+            rec["_lbl_set"] = frozenset(lbls)
+            for label in set(lbls):
                 index["labels"].setdefault(label, []).append(rec)
         proj_cache[dataset_name] = index
         # 构建/刷新 path->rec 索引(一次性 O(N), 供缩略图/ROI 回调 O(1) 定位,
@@ -539,21 +558,14 @@ class DatasetViewMixin(object):
     def _reset_image_area(self):
         """
         切到非数据集状态(点项目级别 / 删除数据集)时统一清空图像区
-        及所有相关 UI 状态: 分页信息, 当前页码, 标签筛选下拉框,
+        及所有相关 UI 状态: 分页信息, 当前页码, 标签筛选按钮与面板,
         标注统计 labelStatsLabel.
         与图像显示区(_clear_scene)一起重置,避免显示残留的旧数据集状态.
         """
         self._clear_scene()
         self._reset_page_info()
         self.current_page = 0
-        if hasattr(self, "label_filter_combo"):
-            self.label_filter_combo.blockSignals(True)
-            self.label_filter_combo.clear()
-            self.label_filter_combo.addItem(
-                QC.translate("LabelMixin", "未标注"), "__unlabeled__")
-            self.label_filter_combo.setCurrentIndex(0)
-            self.label_filter_combo.blockSignals(False)
-        self.current_label = "__unlabeled__"
+        self._reset_label_filter_text()
         if hasattr(self, "labelStatsLabel"):
             self.labelStatsLabel.setVisible(False)
 
@@ -627,23 +639,25 @@ class DatasetViewMixin(object):
                 lambda: self._roi_redraw())
         return self._roi_worker
 
-    def _roi_for_render(self, rec, label, box_idx):
-        """按类筛选渲染取 ROI: 缓存命中直接返回; 未命中直接返回灰块占位
-        (不显示/不触发整图缩略图, 避免"灰块→整图闪现→ROI"三段式),
-        后台解码完成后自动重渲当前页."""
+    def _roi_for_render(self, rec, box_idx):
+        """按 box 取 ROI: 缓存命中直接返回; 未命中先给灰块占位并提交后台解码
+        (不显示整图缩略图, 避免"灰块→整图闪现→ROI"三段式), 解好自动重渲当前页.
+        缓存按 box 自己的标签分桶, 多标签混排时各框互不串图.
+        """
+        boxes = rec.get("boxes") or []
+        if not (0 <= box_idx < len(boxes)) or len(boxes[box_idx]) < 5:
+            return _thumb_placeholder()
+        label = boxes[box_idx][4]
         cache = rec.setdefault("rois_by_idx", {}).setdefault(label, {})
         if box_idx in cache:
             rec["_roi_t"] = self._img_clock_now()
             # 解码失败缓存为 None: 回退灰块占位, 不显示空白 cell
             return cache[box_idx] if cache[box_idx] is not None else _thumb_placeholder()
-        boxes = rec.get("boxes") or []
-        if 0 <= box_idx < len(boxes) and len(boxes[box_idx]) >= 5:
-            key = (rec.get("image_path", ""), label, box_idx)
-            if key not in getattr(self, "_roi_pending", set()):
-                self._ensure_roi_worker()
-                self._roi_pending.add(key)
-                self._roi_worker.submit(
-                    [(key[0], label, box_idx, boxes[box_idx])])
+        key = (rec.get("image_path", ""), label, box_idx)
+        if key not in getattr(self, "_roi_pending", set()):
+            self._ensure_roi_worker()
+            self._roi_pending.add(key)
+            self._roi_worker.submit([(key[0], label, box_idx, boxes[box_idx])])
         return _thumb_placeholder()
 
     def _on_roi_batch_done(self, results):
@@ -701,6 +715,9 @@ class DatasetViewMixin(object):
         """
         QImage 图像缓存 LRU 淘汰: thumb/ROI 超过各自上限时,
         释放最久未访问且不在当前页的缓存(置 None / 清空 rois_by_idx).
+        收集时只 append rec 本身, 不建 (时间, rec) 元组; 且只有真超上限才 sort
+        (稳态下缓存贴着上限, 多一轮排序纯属浪费; 实测 Python 层 nsmallest
+        拼不过 C 层 sort).
         淘汰后渲染时懒重建(与 label_mixin 主动失效 rec["thumb"]=None 同机制),
         保证大图集翻页/按类筛选下内存有界, 不持续增长.
         只动 QImage 缓存, 不碰 rec 元数据与 labels 索引, 分页/统计/标注不受影响.
@@ -713,36 +730,43 @@ class DatasetViewMixin(object):
             return
         t_max = getattr(self, "_thumb_cache_max", THUMB_CACHE_MAX)
         r_max = getattr(self, "_roi_cache_max", ROI_CACHE_MAX)
+        records = index.get("all", [])
+        # 全部装得下时必定不超限, 连遍历都免了(几千张以内的小数据集常见)
+        if len(records) <= t_max and len(records) <= r_max:
+            return
         protected = getattr(self, "_current_page_paths", None) or set()
+        placeholder = _thumb_placeholder()
         thumbs = []
         rois = []
-        for rec in index.get("all", []):
+        for rec in records:
             if rec.get("image_path", "") in protected:
                 continue
             th = rec.get("thumb")
-            if th is not None and th is not _thumb_placeholder():
-                thumbs.append((rec.get("_thumb_t", 0), rec))
+            if th is not None and th is not placeholder:
+                thumbs.append(rec)
             if rec.get("rois_by_idx"):
-                rois.append((rec.get("_roi_t", 0), rec))
-        thumbs.sort(key=lambda t: t[0], reverse=True)
-        rois.sort(key=lambda t: t[0], reverse=True)
-        for _, rec in thumbs[t_max:]:
-            rec["thumb"] = None
-        for _, rec in rois[r_max:]:
-            rec["rois_by_idx"] = {}
+                rois.append(rec)
+        if len(thumbs) > t_max:
+            thumbs.sort(key=lambda r: r.get("_thumb_t", 0), reverse=True)
+            for rec in thumbs[t_max:]:
+                rec["thumb"] = None
+        if len(rois) > r_max:
+            rois.sort(key=lambda r: r.get("_roi_t", 0), reverse=True)
+            for rec in rois[r_max:]:
+                rec["rois_by_idx"] = {}
 
-    def _render_scene(self, data):
+    def _render_scene(self, records):
         """
-        渲染当前页图像网格. 按具体标签筛选时每个 cell 一个 ROI(box 计数),
-        未标注/全部按整图缩略(图像计数).
+        渲染当前页图像网格. 选到真实标签时每个 cell 一个 ROI(按命中框计数),
+        所有图像/未标注按整图缩略(按图像计数); 多选时两者混在同一页.
         """
         scene = self.graphics_view.scene()
         scene.clear()
         page_size = getattr(self, "page_size", PAGE_SIZE)
-        cur_label = getattr(self, "current_label", None)
-        view_data = self._expand_by_label(data)
+        view_data = self._expand_by_label_filter(records)
         total_pages = max(1, (len(view_data) + page_size - 1) // page_size)
-        self.current_page = max(0, min(getattr(self, "current_page", 0), total_pages - 1))
+        self.current_page = max(0, min(getattr(self, "current_page", 0),
+                                       total_pages - 1))
         page_data = list(Paginator(view_data, page_size)[self.current_page])
         self._current_page_paths = set()
         for entry in page_data:
@@ -756,45 +780,40 @@ class DatasetViewMixin(object):
         for entry in page_data:
             if isinstance(entry, tuple):
                 rec, box_idx = entry
-                single_box = True
+                qimg = self._roi_for_render(rec, box_idx)
             else:
-                rec, box_idx = entry, None
-                single_box = False
-            if (cur_label and cur_label != "__unlabeled__"
-                    and not rec.get("cls")):
-                if single_box:
-                    # ROI 未缓存时用缩略图占位 + 后台解码(不阻塞 UI), 完成后自动重渲
-                    qimg = self._roi_for_render(rec, cur_label, box_idx)
-                else:
-                    qimg = self._get_thumb(rec)
-                qimgs = [qimg] if qimg is not None else []
-            else:
+                rec = entry
                 qimg = self._get_thumb(rec)
-                qimgs = [qimg] if qimg is not None else []
-            for qimg in qimgs:
-                pix = QPixmap.fromImage(qimg)
-                if pix.isNull():
-                    continue
-                item = SelectablePixmapItem(pix, rec.get("image_path", ""),
-                                            labels=rec.get("labels") or [])
-                scene.addItem(item)
-                row = pos // cols
-                col = pos % cols
-                x = col * (cell_w + pad) + pad
-                y = row * (cell_h + pad) + pad
-                card_w = pix.width() + 2 * 4
-                card_h = pix.height() + 2 * 4 + 22
-                item.setPos(x + (cell_w - card_w) // 2, y + (cell_h - card_h) // 2)
-                item.setToolTip(rec.get("image_path", ""))
-                item.setData(0, rec.get("image_path", ""))  # 双击定位用
-                pos += 1
+            if qimg is None:
+                continue
+            pix = QPixmap.fromImage(qimg)
+            if pix.isNull():
+                continue
+            item = SelectablePixmapItem(pix, rec.get("image_path", ""),
+                                        labels=rec.get("labels") or [])
+            scene.addItem(item)
+            row = pos // cols
+            col = pos % cols
+            x = col * (cell_w + pad) + pad
+            y = row * (cell_h + pad) + pad
+            card_w = pix.width() + 2 * 4
+            card_h = pix.height() + 2 * 4 + 22
+            item.setPos(x + (cell_w - card_w) // 2, y + (cell_h - card_h) // 2)
+            item.setToolTip(rec.get("image_path", ""))
+            item.setData(0, rec.get("image_path", ""))  # 双击定位用
+            pos += 1
         scene.setSceneRect(scene.itemsBoundingRect().adjusted(-10, -10, 20, 20))
-        self._evict_img_cache()
-        self._set_page_info(cur_label, total_pages, len(view_data))
+        # 同页重复重绘(批次解码完成后回渲)不做全量淘汰: 缓存增长只来自当前页,
+        # 有 _throttled_evict 兜底; 换页/换筛选才是缓存规模真会变的时机.
+        paths = self._current_page_paths
+        if paths != getattr(self, "_evict_page_paths", None):
+            self._evict_page_paths = paths
+            self._evict_img_cache()
+        self._set_page_info(self._by_box_mode(), total_pages, len(view_data))
 
-    def _set_page_info(self, cur_label, total_pages, count):
+    def _set_page_info(self, by_box, total_pages, count):
         """底栏只放"第 N / M 页", 当前页数字化亮; 总数与量词进 tooltip, 免得居中那组随内容横移."""
-        self._page_info_state = (cur_label, total_pages, count)
+        self._page_info_state = (by_box, total_pages, count)
         if not count:
             self._reset_page_info()
             return
@@ -802,7 +821,7 @@ class DatasetViewMixin(object):
             QC.translate("DatasetViewMixin", "第 {} / {} 页").format(
                 '<span style="color:#e8eaf0">{}</span>'.format(self.current_page + 1),
                 total_pages))
-        if cur_label and cur_label != "__unlabeled__":
+        if by_box:
             tip = QC.translate("DatasetViewMixin", "第 {}/{} 页 · 共 {} 个")
         else:
             tip = QC.translate("DatasetViewMixin", "第 {}/{} 页 · 共 {} 张")
@@ -832,14 +851,12 @@ class DatasetViewMixin(object):
         cur_ds = getattr(self, "_current_dataset", None)
         if not cur_ds:
             return
-        proj, ds = cur_ds
-        data = self.dataset_cache.get(proj, {}).get(ds)
+        data = self.dataset_cache.get(cur_ds[0], {}).get(cur_ds[1])
         if not data:
             return
-        view_data = self._expand_by_label(self._view_data_by_label(data))
-        total_pages = max(1, (len(view_data) + self.page_size - 1) // self.page_size)
-        self.current_page = max(0, min(self.current_page + offset, total_pages - 1))
-        self._render_scene(self._view_data_by_label(data))
+        # 越界交给 _render_scene 夹到合法页, 这里不必先算一遍总页数
+        self.current_page += offset
+        self._render_scene(self._filter_records(data))
 
     def pre_page(self):
         self._show_page(-1)
@@ -941,8 +958,8 @@ class DatasetViewMixin(object):
     def _on_sidebar_dataset_clicked(self, project, dataset):
         """
         点击数据集行: 仅记录选中; 已缓存的数据集切换显示, 未缓存不触发加载.
-        不强制覆盖 current_label - 由 _refresh_label_filter 根据新数据集的实际
-        labels 决定保留/回退,避免 100% 标注数据集被强制选"未标注"导致视图空白.
+        不强制覆盖筛选 - 由 _refresh_label_filter 按新数据集的实际 labels
+        决定保留已勾项还是回退到"所有图像".
         """
         self._current_dataset = (project, dataset)
         if self.dataset_cache.get(project, {}).get(dataset):

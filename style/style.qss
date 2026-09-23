@@ -141,6 +141,12 @@ QPushButton[class="danger"]:hover {
     background-color: #4d2a32;
     border-color: #a04a55;
 }
+/* 属性选择器与 :disabled 特异性相同, 不补这条时"删除"禁用后仍是危险色 */
+QPushButton[class="danger"]:disabled {
+    background-color: #1c1e25;
+    border-color: #2a2d37;
+    color: #5c6270;
+}
 
 QPushButton[class="ghost"] {
     background-color: transparent;
@@ -270,7 +276,6 @@ QComboBox QAbstractItemView::item:selected {
 /* 展开时抹平下拉框的下圆角, 与弹层拼成一整块(标记由 widgets/popup_flat.py 打上).
    选择器要覆盖各处单独定义过 border-radius 的下拉框 */
 QComboBox[popupOpen="true"],
-#label_comboBox[popupOpen="true"],
 QDialog#MoveTargetDialog QComboBox[popupOpen="true"] {
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
@@ -1123,34 +1128,8 @@ QFrame#headerSeparator {
     width: 1px;
 }
 
-/* 标签筛选下拉: 胶囊化, 与按钮总高一致(32px) */
-#label_comboBox {
-    background-color: #23262f;
-    border: 1px solid #353a48;
-    border-radius: 14px;
-    min-height: 32px;
-    padding: 0 14px;
-    color: #e8eaf0;
-    font-size: 13px;
-}
-#label_comboBox:hover {
-    border-color: #4a5164;
-}
-#label_comboBox::drop-down {
-    border: none;
-    width: 20px;
-}
-#label_comboBox QAbstractItemView {
-    background-color: #23262f;
-    border: 1px solid #353a48;
-    border-radius: 8px;
-    border-top-left-radius: 0;
-    border-top-right-radius: 0;
-    selection-background-color: #2c3a5e;
-    selection-color: #ffffff;
-    padding: 4px;
-    outline: none;
-}
+/* 标签筛选按钮与它弹出的平铺面板都自绘(app/widgets/label_filter_popup.py),
+   走不上 QSS, 这里不再给它们配色 */
 
 /* ---------------- 数据集行内迷你进度条（导入/标签合并时显示） ---------------- */
 QProgressBar#miniProgressBar {
@@ -1352,6 +1331,8 @@ QLabel[class~="modelStatus"] { color: #8b93a5; }
 QLabel[class~="modelStatus"][state="busy"] { color: #4f7dff; }
 QLabel[class~="modelStatus"][state="ready"] { color: #7be39a; }
 QLabel[class~="modelStatus"][state="failed"] { color: #ff6b6b; }
+QLabel[class~="modelStatus"][state="local"] { color: #33c2da; }
+QLabel[class~="modelStatus"][state="broken"] { color: #ff6b6b; }
 
 QProgressBar#modelProgress {
     background-color: #10131a;
@@ -1376,6 +1357,27 @@ QLabel[class~="modelFootLabel"] {
 QLabel[class~="modelDir"] {
     color: #b9c0d0;
     font-size: 12px;
+}
+
+QLabel[class~="modelLocalPath"] {
+    color: #7a8194;
+    font-size: 12px;
+}
+
+QPushButton[class~="modelLocal"] {
+    background-color: transparent;
+    border: 1px solid #353a48;
+    border-radius: 6px;
+    padding: 0px;
+    min-height: 22px;
+    color: #8b93a5;
+    font-size: 12px;
+}
+
+QPushButton[class~="modelLocal"]:hover {
+    background-color: #2b2f3b;
+    border-color: #454b5e;
+    color: #e8eaf0;
 }
 
 QDialog#ModelManagerDialog QPushButton#start_btn {
