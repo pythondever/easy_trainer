@@ -38,6 +38,45 @@ from ui.model import Ui_ModelDialog
 # 导出文件名里的任务段: 与界面语言无关(同一份权重导出到哪台机器都该同名)
 TASK_FILE_TAG = {"detect": "检测", "segment": "分割", "classify": "分类",
                  "ad": "异常"}
+
+
+def _parse_classes_txt(path):
+    """classes.txt → [(id, 类名)]. 兼容 "id 类名" 与 只有类名(行号即 id) 两种."""
+    out = []
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            lines = f.read().splitlines()
+    except OSError:
+        return out
+    for idx, line in enumerate(lines):
+        line = line.strip()
+        if not line:
+            continue
+        # 类名本身可能带空格, 只把首个 token 当 id 才不丢后半段
+        head, _, rest = line.partition(" ")
+        if head.isdigit() and rest.strip():
+            out.append((int(head), rest.strip()))
+        else:
+            out.append((idx, line))
+    return out
+
+
+def _parse_data_yaml_names(path):
+    """data.yaml 的 names 段 → [(id, 类名)]."""
+    out = []
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line.startswith("names:") or not line:
+                    continue
+                if ":" in line:
+                    k, _, v = line.partition(":")
+                    if k.strip().isdigit():
+                        out.append((int(k.strip()), v.strip().strip('"')))
+    except OSError:
+        pass
+    return out
 COL_TASK, COL_DATA, COL_METRIC, COL_TIME, COL_DUR, COL_IMG, COL_OPS = range(7)
 METRIC_GOOD, METRIC_MID, METRIC_BAD = "#7be39a", "#ffd166", "#ff6b6b"
 
@@ -753,7 +792,8 @@ class ModelDialog(QDialog):
     # ---------------- 导出 ----------------
     def _export(self, rec):
         """
-        导出模型到时间戳文件夹: onnx + classes.txt + 验证集评估报告 PDF + 调用示例.
+        导出模型到时间戳文件夹: onnx + classes.txt + label_map.json
+        + 验证集评估报告 PDF + 调用示例.
         """
         model_path = rec.get("model_path", "") if isinstance(rec, dict) else rec
         if not model_path or not os.path.exists(model_path):
@@ -845,26 +885,32 @@ class ModelDialog(QDialog):
         self._export_start_eval()
 
     def _write_export_classes(self):
-        """classes.txt: 模型目录已有则复制, 否则从 data.yaml(检测/分割)或 ckpt(分类)生成."""
+        """
+        classes.txt + label_map.json: 模型目录已有 classes.txt 则原样复制,
+        否则从 data.yaml(检测/分割)或 ckpt(分类)生成.
+        """
         out_dir = self._exp["out_dir"]
         model_dir = self._exp["model_dir"]
         model_path = self._exp["model_path"]
         task = self._exp["task"]
         # ultralytics 的权重在 <ts_dir>/weights/ 下, classes.txt 却在上一级
         dirs = [model_dir, os.path.dirname(model_dir)]
-        src = ""
+        src, pairs = "", []
         for d in dirs:
-            if d and os.path.exists(os.path.join(d, "classes.txt")):
-                src = os.path.join(d, "classes.txt")
+            cand = os.path.join(d, "classes.txt") if d else ""
+            if cand and os.path.exists(cand):
+                src = cand
+                pairs = _parse_classes_txt(cand)
                 break
         if src:
             shutil.copy2(src, os.path.join(out_dir, "classes.txt"))
             self._exp["copied"].append("classes.txt")
+            self._write_label_map(pairs)
             return
         yaml_src = ""
         for d in dirs:
-            cand = os.path.join(d, "data.yaml")
-            if os.path.exists(cand):
+            cand = os.path.join(d, "data.yaml") if d else ""
+            if cand and os.path.exists(cand):
                 yaml_src = cand
                 break
         try:
@@ -877,16 +923,7 @@ class ModelDialog(QDialog):
                     return
                 pairs = list(enumerate(classes))
             elif yaml_src:
-                pairs = []
-                with open(yaml_src, "r", encoding="utf-8") as f:
-                    for line in f:
-                        line = line.strip()
-                        if line.startswith("names:") or not line:
-                            continue
-                        if ":" in line:
-                            k, _, v = line.partition(":")
-                            if k.strip().isdigit():
-                                pairs.append((int(k.strip()), v.strip().strip('"')))
+                pairs = _parse_data_yaml_names(yaml_src)
             else:
                 return
             if not pairs:
@@ -896,9 +933,26 @@ class ModelDialog(QDialog):
                 for i, name in sorted(pairs):
                     f.write("{} {}\n".format(i, name))
             self._exp["copied"].append("classes.txt")
+            self._write_label_map(pairs)
         except Exception as e:
             write_log(QC.translate("ModelDialog", "生成 classes.txt 失败: {}").format(e))
             print(QC.translate("ModelDialog", "[export] 生成 classes.txt 失败: {}").format(e), flush=True)
+
+    def _write_label_map(self, pairs):
+        """
+        label_map.json = {类名: id}, 与 classes.txt 并存.
+        下游按名字查 id 就不受训练时重编号影响 —— 类名是身份, 序号只是当次编号.
+        """
+        if not pairs:
+            return
+        path = os.path.join(self._exp["out_dir"], "label_map.json")
+        try:
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump({name: i for i, name in sorted(pairs)}, f,
+                          ensure_ascii=False, indent=2)
+            self._exp["copied"].append("label_map.json")
+        except OSError as e:
+            write_log(QC.translate("ModelDialog", "生成 label_map.json 失败: {}").format(e))
 
     def _export_start_eval(self):
         """用验证集跑一次评估, 结果交给 build_report 出 PDF."""
