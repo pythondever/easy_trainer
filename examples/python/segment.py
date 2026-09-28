@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """实例分割推理示例：在检测基础上多取一个 masks 输出。
 
-用法: python segment.py --model xxx.onnx --image test.jpg --classes classes.txt
+用法: python segment.py --model xxx.onnx --image test.jpg --classes label_map.json
 """
 
 import argparse
@@ -22,7 +22,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--model", required=True)
     ap.add_argument("--image", required=True)
-    ap.add_argument("--classes", default="classes.txt")
+    ap.add_argument("--classes", default="label_map.json")
     ap.add_argument("--size", type=int, default=None)
     ap.add_argument("--thr", type=float, default=SCORE_THR)
     ap.add_argument("--save", default="")

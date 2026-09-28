@@ -5,18 +5,18 @@ namespace EasyTrainerOnnx
 {
     internal static class Program
     {
-        // 用法: EasyTrainerOnnx <detect|segment|classify> <model.onnx> <image> [classes.txt]
+        // 用法: EasyTrainerOnnx <detect|segment|classify> <model.onnx> <image> [label_map.json]
         private static int Main(string[] args)
         {
             // 默认跟随系统代码页, 重定向到 UTF-8 终端时中文类别名会乱码
             Console.OutputEncoding = Encoding.UTF8;
             if (args.Length < 3)
             {
-                Console.WriteLine("用法: EasyTrainerOnnx <detect|segment|classify> <model.onnx> <image> [classes.txt]");
+                Console.WriteLine("用法: EasyTrainerOnnx <detect|segment|classify> <model.onnx> <image> [label_map.json]");
                 return 1;
             }
             string task = args[0], model = args[1], image = args[2];
-            string classes = args.Length > 3 ? args[3] : "classes.txt";
+            string classes = args.Length > 3 ? args[3] : "label_map.json";
             try
             {
                 switch (task)

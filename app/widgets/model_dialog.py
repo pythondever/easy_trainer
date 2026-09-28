@@ -792,7 +792,7 @@ class ModelDialog(QDialog):
     # ---------------- 导出 ----------------
     def _export(self, rec):
         """
-        导出模型到时间戳文件夹: onnx + classes.txt + label_map.json
+        导出模型到时间戳文件夹: onnx + label_map.json
         + 验证集评估报告 PDF + 调用示例.
         """
         model_path = rec.get("model_path", "") if isinstance(rec, dict) else rec
@@ -881,15 +881,14 @@ class ModelDialog(QDialog):
         size_mb = os.path.getsize(onnx_path) / 1048576.0 if os.path.exists(onnx_path) else 0
         write_log(QC.translate("ModelDialog", "ONNX 导出完成: {} ({:.1f} MB)").format(
             os.path.basename(onnx_path), size_mb))
-        self._write_export_classes()
+        self._write_export_label_map()
         self._export_start_eval()
 
-    def _write_export_classes(self):
+    def _write_export_label_map(self):
         """
-        classes.txt + label_map.json: 模型目录已有 classes.txt 则原样复制,
-        否则从 data.yaml(检测/分割)或 ckpt(分类)生成.
+        类别来源按优先级取: 模型目录的 classes.txt → data.yaml 的 names(检测/分割)
+        → ckpt 的 classes(分类). 三种取法都最终写成 label_map.json.
         """
-        out_dir = self._exp["out_dir"]
         model_dir = self._exp["model_dir"]
         model_path = self._exp["model_path"]
         task = self._exp["task"]
@@ -902,45 +901,31 @@ class ModelDialog(QDialog):
                 src = cand
                 pairs = _parse_classes_txt(cand)
                 break
-        if src:
-            shutil.copy2(src, os.path.join(out_dir, "classes.txt"))
-            self._exp["copied"].append("classes.txt")
-            self._write_label_map(pairs)
-            return
-        yaml_src = ""
-        for d in dirs:
-            cand = os.path.join(d, "data.yaml") if d else ""
-            if cand and os.path.exists(cand):
-                yaml_src = cand
-                break
-        try:
-            if task == "classify":
-                import torch
-                ckpt = torch.load(model_path, map_location="cpu",
-                                  weights_only=False)
-                classes = ckpt.get("classes") if isinstance(ckpt, dict) else None
-                if not classes:
-                    return
-                pairs = list(enumerate(classes))
-            elif yaml_src:
-                pairs = _parse_data_yaml_names(yaml_src)
-            else:
+        if not src:
+            yaml_src = ""
+            for d in dirs:
+                cand = os.path.join(d, "data.yaml") if d else ""
+                if cand and os.path.exists(cand):
+                    yaml_src = cand
+                    break
+            try:
+                if task == "classify":
+                    import torch
+                    ckpt = torch.load(model_path, map_location="cpu",
+                                      weights_only=False)
+                    classes = ckpt.get("classes") if isinstance(ckpt, dict) else None
+                    pairs = list(enumerate(classes)) if classes else []
+                elif yaml_src:
+                    pairs = _parse_data_yaml_names(yaml_src)
+            except Exception as e:
+                write_log(QC.translate("ModelDialog", "读取类别表失败: {}").format(e))
+                print(QC.translate("ModelDialog", "[export] 读取类别表失败: {}").format(e), flush=True)
                 return
-            if not pairs:
-                return
-            with open(os.path.join(out_dir, "classes.txt"), "w",
-                      encoding="utf-8") as f:
-                for i, name in sorted(pairs):
-                    f.write("{} {}\n".format(i, name))
-            self._exp["copied"].append("classes.txt")
-            self._write_label_map(pairs)
-        except Exception as e:
-            write_log(QC.translate("ModelDialog", "生成 classes.txt 失败: {}").format(e))
-            print(QC.translate("ModelDialog", "[export] 生成 classes.txt 失败: {}").format(e), flush=True)
+        self._write_label_map(pairs)
 
     def _write_label_map(self, pairs):
         """
-        label_map.json = {类名: id}, 与 classes.txt 并存.
+        label_map.json = {类名: id}.
         下游按名字查 id 就不受训练时重编号影响 —— 类名是身份, 序号只是当次编号.
         """
         if not pairs:

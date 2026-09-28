@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """检测/分割/分类共用的预处理与后处理。"""
 
+import json
+
 import cv2
 import numpy as np
 
@@ -47,9 +49,15 @@ def decode_dets(dets, labels, orig_wh, score_thr=0.5):
 
 
 def load_classes(path):
-    """classes.txt: 每行 'id name' 或只有 name, 行号即类别 id。"""
+    """类别表 → 按 id 下标排列的类名列表。
+
+    认两种格式: label_map.json（{"类名": id}，导出包默认给这个）
+    与 classes.txt（每行 'id name' 或只有 name, 行号即类别 id, 旧包与训练目录里还有）。
+    """
     if not path:
         return []
+    if path.lower().endswith(".json"):
+        return _load_label_map(path)
     names = []
     with open(path, "r", encoding="utf-8") as f:
         for line in f:
@@ -59,3 +67,27 @@ def load_classes(path):
             parts = line.split(None, 1)
             names.append(parts[1] if len(parts) > 1 else parts[0])
     return names
+
+
+def _load_label_map(path):
+    """{"类名": id} → 按下标展开的类名列表(缺号留空串, 保证 names[id] 取得到)。"""
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except (OSError, ValueError):
+        return []
+    if not isinstance(data, dict):
+        return []
+    items = []
+    for name, cid in data.items():
+        try:
+            items.append((int(cid), str(name)))
+        except (TypeError, ValueError):
+            continue
+    items = [(i, n) for i, n in items if i >= 0]
+    if not items:
+        return []
+    out = [""] * (max(i for i, _ in items) + 1)
+    for i, name in items:
+        out[i] = name
+    return out

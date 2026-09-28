@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 图像分类推理示例：输出 scores [1, C] 的 softmax 概率。
-用法: python classify.py --model xxx.onnx --image test.jpg --classes classes.txt
+用法: python classify.py --model xxx.onnx --image test.jpg --classes label_map.json
 """
 
 import argparse
@@ -27,7 +27,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--model", required=True)
     ap.add_argument("--image", required=True)
-    ap.add_argument("--classes", default="classes.txt")
+    ap.add_argument("--classes", default="label_map.json")
     ap.add_argument("--size", type=int, default=None)
     ap.add_argument("--topk", type=int, default=TOP_K)
     args = ap.parse_args()

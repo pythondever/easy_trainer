@@ -20,6 +20,15 @@ from app.mixins import (LabelMixin, ProjectMixin, ImportExportMixin,
                         DatasetViewMixin, TrainMixin, QueueMixin, MiscMixin)
 
 
+_pretrained_dir = os.path.join(project_root(), "pretrained")
+_rfdetr_dir = os.path.join(_pretrained_dir, "transformer")
+if "RF_HOME" not in os.environ:
+    try:
+        os.makedirs(_rfdetr_dir, exist_ok=True)
+        os.environ["RF_HOME"] = _rfdetr_dir
+    except OSError:
+        pass
+
 DB_DIR = os.path.join(os.path.expanduser("~"), ".easy_trainer")
 
 

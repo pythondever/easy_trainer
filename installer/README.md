@@ -117,7 +117,7 @@ Python 运行时本身的下载信息仍写死在 `InstallerCore.cs` 常量里�
 
 启动链：桌面/开始菜单快捷方式 → `runtime\python310\pythonw.exe "安装根\app\easy_trainer.py"`。
 `PYTHONPATH` 由 easy_trainer.py 文件头自行 append 安装根；`RF_HOME` 在
-`安装根\pretrained` 存在时由程序启动早期 setdefault（用户显式设过环境变量则不覆盖）。
+`安装根\pretrained` 存在时由 main_window 导入时 setdefault（用户显式设过环境变量则不覆盖）。
 训练/测试子进程走 `pythonw.exe -c "…from app.train.*_runner import main; main()"`。
 **不能用 `-m`**：打包后 runner 是 pyd，runpy 取不到 code object，会直接报
 `No code object available`。安装根由 `-c` 里的 `sys.path.insert` 兜底，另在

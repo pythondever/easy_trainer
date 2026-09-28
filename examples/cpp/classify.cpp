@@ -1,5 +1,5 @@
 // 图像分类推理示例：输出 scores [1, C], 取 softmax 后的 top-k
-// 运行: classify.exe <model.onnx> <image> [classes.txt]
+// 运行: classify.exe <model.onnx> <image> [label_map.json]
 
 #include <algorithm>
 #include <cmath>
@@ -18,11 +18,11 @@ int main(int argc, char** argv) {
     initConsoleUtf8();
     std::vector<std::string> args = utf8Args(argc, argv);
     if (args.size() < 2) {
-        std::cout << "用法: classify <model.onnx> <image> [classes.txt]\n";
+        std::cout << "用法: classify <model.onnx> <image> [label_map.json]\n";
         return 1;
     }
     std::string modelPath = args[0], imagePath = args[1];
-    std::string classesPath = args.size() > 2 ? args[2] : "classes.txt";
+    std::string classesPath = args.size() > 2 ? args[2] : "label_map.json";
 
     cv::Mat img = imreadUtf8(imagePath);
     if (img.empty()) {

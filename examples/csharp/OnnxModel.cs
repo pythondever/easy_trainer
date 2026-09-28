@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
+using System.Text.Json;
 using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
 using OpenCvSharp;
@@ -94,17 +96,54 @@ namespace EasyTrainerOnnx
             return res;
         }
 
-        /// classes.txt: 每行 "id name" 或只有 name, 行号即类别 id
+        /// 类别表 → 按 id 下标排列的类名列表。
+        /// 认两种格式: label_map.json（{"类名": id}，导出包默认给这个）
+        /// 与 classes.txt（每行 "id name" 或只有 name, 行号即类别 id, 旧包与训练目录里还有）。
         public static List<string> LoadClasses(string path)
         {
             var names = new List<string>();
             if (!File.Exists(path)) return names;
+            if (path.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+                return ExpandLabelMap(path);
             foreach (var line in File.ReadAllLines(path))
             {
                 if (string.IsNullOrWhiteSpace(line)) continue;
                 var parts = line.Trim().Split(new[] { ' ', '\t' }, 2);
                 names.Add(parts.Length > 1 ? parts[1].Trim() : parts[0]);
             }
+            return names;
+        }
+
+        /// {"类名": id} → 按下标展开的类名列表(缺号留空串, 保证 names[id] 取得到)
+        private static List<string> ExpandLabelMap(string path)
+        {
+            var items = new List<KeyValuePair<int, string>>();
+            try
+            {
+                using (var doc = JsonDocument.Parse(
+                           File.ReadAllText(path, Encoding.UTF8)))
+                {
+                    if (doc.RootElement.ValueKind != JsonValueKind.Object)
+                        return new List<string>();
+                    foreach (var prop in doc.RootElement.EnumerateObject())
+                    {
+                        int id;
+                        if (prop.Value.ValueKind == JsonValueKind.Number &&
+                            prop.Value.TryGetInt32(out id))
+                            items.Add(new KeyValuePair<int, string>(id, prop.Name));
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                return new List<string>();
+            }
+            int max = -1;
+            foreach (var it in items) if (it.Key > max) max = it.Key;
+            if (max < 0) return new List<string>();
+            var names = new List<string>(max + 1);
+            for (int k = 0; k <= max; ++k) names.Add("");
+            foreach (var it in items) if (it.Key >= 0) names[it.Key] = it.Value;
             return names;
         }
 

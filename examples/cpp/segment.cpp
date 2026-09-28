@@ -1,5 +1,5 @@
 // 实例分割推理示例：在检测基础上多取一个 masks 输出
-// 运行: segment.exe <model.onnx> <image> [classes.txt]
+// 运行: segment.exe <model.onnx> <image> [label_map.json]
 
 #include <iostream>
 #include <string>
@@ -17,11 +17,11 @@ int main(int argc, char** argv) {
     initConsoleUtf8();
     std::vector<std::string> args = utf8Args(argc, argv);
     if (args.size() < 2) {
-        std::cout << "用法: segment <model.onnx> <image> [classes.txt]\n";
+        std::cout << "用法: segment <model.onnx> <image> [label_map.json]\n";
         return 1;
     }
     std::string modelPath = args[0], imagePath = args[1];
-    std::string classesPath = args.size() > 2 ? args[2] : "classes.txt";
+    std::string classesPath = args.size() > 2 ? args[2] : "label_map.json";
 
     cv::Mat img = imreadUtf8(imagePath);
     if (img.empty()) {

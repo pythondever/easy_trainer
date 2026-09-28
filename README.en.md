@@ -194,8 +194,8 @@ Installed layout, startup chain and Linux-specific notes: see [installer/README.
 ```
 easy_trainer/
 ├── app/                    # Application
-│   ├── easy_trainer.py     # Bootstrap: sets sys.path/RF_HOME then hands over to main_window
-│   ├── main_window.py      # Main window: projects/datasets, annotation, training/testing
+│   ├── easy_trainer.py     # Bootstrap: sets sys.path then hands over to main_window
+│   ├── main_window.py      # Main window: projects/datasets, annotation, training/testing (sets RF_HOME at import)
 │   ├── core/               # Data layer & common utilities
 │   │   ├── db.py           # LMDB data access (YOLO label_ids, rename/merge, ...)
 │   │   ├── utils.py        # CJK fonts, QSS loading, project-root lookup, text decoding
@@ -272,7 +272,7 @@ easy_trainer/
 4. **Train**: toolbar "Train" → pick task type (detect/segment/classify) → configure parameters → start (5-second countdown, then runs in background)
 5. **Test**: Model management → record "Test" → configure → run evaluation
 6. **Review metrics**: Model management → "Metrics" opens the accuracy curves
-7. **Export model**: Model management → record "Export" produces `project_task_size_scale.pth` + `classes.txt` + `label_map.json`
+7. **Export model**: Model management → record "Export". Detect/segment/classify produce `project_task_size_scale.onnx` + `label_map.json` + evaluation report PDF + usage examples; anomaly detection cannot export ONNX and ships a `.pt` package (`threshold.txt` / `result.json`)
 
 > 💡 Training image sizes: detection default **640** (multiple of 32), segmentation default **648** (multiple of 12 for nano, 24 for the other three scales), classification default **224**. The note beside the input and the hover tooltip show the valid values for the current scale.
 

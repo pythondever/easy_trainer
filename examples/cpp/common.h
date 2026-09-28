@@ -2,11 +2,13 @@
 #pragma once
 
 #include <algorithm>
+#include <cctype>
 #include <cmath>
 #include <cstdio>
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <opencv2/opencv.hpp>
@@ -194,14 +196,141 @@ inline Ort::Value makeInput(std::vector<float>& data,
                                            shape.data(), shape.size());
 }
 
-// classes.txt: 每行 "id name" 或只有 name, 行号即类别 id
+// ---- label_map.json 的极简解析 ----
+// 导出格式固定是 {"类名": 数字, ...} 这种平铺对象, 不为此引入 JSON 库.
+inline bool endsWithNoCase(const std::string& s, const std::string& suf) {
+    if (s.size() < suf.size()) return false;
+    size_t off = s.size() - suf.size();
+    for (size_t k = 0; k < suf.size(); ++k)
+        if (tolower((unsigned char)s[off + k]) != tolower((unsigned char)suf[k]))
+            return false;
+    return true;
+}
+
+inline void appendUtf8(std::string& out, unsigned int cp) {
+    if (cp < 0x80) {
+        out.push_back((char)cp);
+    } else if (cp < 0x800) {
+        out.push_back((char)(0xC0 | (cp >> 6)));
+        out.push_back((char)(0x80 | (cp & 0x3F)));
+    } else if (cp < 0x10000) {
+        out.push_back((char)(0xE0 | (cp >> 12)));
+        out.push_back((char)(0x80 | ((cp >> 6) & 0x3F)));
+        out.push_back((char)(0x80 | (cp & 0x3F)));
+    } else {
+        out.push_back((char)(0xF0 | (cp >> 18)));
+        out.push_back((char)(0x80 | ((cp >> 12) & 0x3F)));
+        out.push_back((char)(0x80 | ((cp >> 6) & 0x3F)));
+        out.push_back((char)(0x80 | (cp & 0x3F)));
+    }
+}
+
+inline unsigned int hexDigit(char c) {
+    if (c >= '0' && c <= '9') return (unsigned int)(c - '0');
+    if (c >= 'a' && c <= 'f') return (unsigned int)(c - 'a' + 10);
+    if (c >= 'A' && c <= 'F') return (unsigned int)(c - 'A' + 10);
+    return 0;
+}
+
+// 从 text 的 i 处(开引号已消费)读一个 JSON 字符串, i 落到收尾引号之后
+inline std::string readJsonString(const std::string& t, size_t& i, bool& ok) {
+    std::string out;
+    while (i < t.size() && t[i] != '"') {
+        if (t[i] != '\\') {
+            out.push_back(t[i++]);
+            continue;
+        }
+        if (i + 1 >= t.size()) break;
+        char e = t[++i];
+        switch (e) {
+            case 'n': out.push_back('\n'); break;
+            case 't': out.push_back('\t'); break;
+            case 'r': out.push_back('\r'); break;
+            case 'b': out.push_back('\b'); break;
+            case 'f': out.push_back('\f'); break;
+            case 'u': {
+                if (i + 4 >= t.size()) { ok = false; return out; }
+                unsigned int cp = 0;
+                for (int k = 1; k <= 4; ++k) cp = (cp << 4) | hexDigit(t[i + k]);
+                i += 4;
+                // 代理对: 高半区后面紧跟 \uDC00-\uDFFF 时合成一个码点
+                if (cp >= 0xD800 && cp <= 0xDBFF && i + 6 < t.size() &&
+                    t[i + 1] == '\\' && t[i + 2] == 'u') {
+                    unsigned int lo = 0;
+                    for (int k = 3; k <= 6; ++k)
+                        lo = (lo << 4) | hexDigit(t[i + k]);
+                    if (lo >= 0xDC00 && lo <= 0xDFFF) {
+                        cp = 0x10000 + ((cp - 0xD800) << 10) + (lo - 0xDC00);
+                        i += 6;
+                    }
+                }
+                appendUtf8(out, cp);
+                break;
+            }
+            default: out.push_back(e); break;   // \" \\ \/ 等原样
+        }
+        ++i;
+    }
+    if (i >= t.size()) { ok = false; return out; }
+    ++i;                                        // 跳过收尾引号
+    ok = true;
+    return out;
+}
+
+// {"类名": id} → 按 id 下标展开的类名列表(缺号留空串, 保证 names[id] 取得到)
+inline std::vector<std::string> parseLabelMapJson(const std::string& t) {
+    std::vector<std::pair<int, std::string> > items;
+    size_t i = t.find('{');
+    if (i == std::string::npos) return std::vector<std::string>();
+    ++i;
+    while (i < t.size()) {
+        while (i < t.size() &&
+               (isspace((unsigned char)t[i]) || t[i] == ',')) ++i;
+        if (i >= t.size() || t[i] == '}') break;
+        if (t[i] != '"') break;                 // 不是平铺对象就不猜了
+        ++i;
+        bool ok = false;
+        std::string name = readJsonString(t, i, ok);
+        if (!ok) break;
+        while (i < t.size() && isspace((unsigned char)t[i])) ++i;
+        if (i >= t.size() || t[i] != ':') break;
+        ++i;
+        while (i < t.size() && isspace((unsigned char)t[i])) ++i;
+        bool neg = false;
+        if (i < t.size() && (t[i] == '-' || t[i] == '+')) {
+            neg = (t[i] == '-');
+            ++i;
+        }
+        if (i >= t.size() || !isdigit((unsigned char)t[i])) break;
+        int id = 0;
+        while (i < t.size() && isdigit((unsigned char)t[i]))
+            id = id * 10 + (t[i++] - '0');
+        items.push_back(std::make_pair(neg ? -id : id, name));
+    }
+    int mx = -1;
+    for (size_t k = 0; k < items.size(); ++k)
+        if (items[k].first > mx) mx = items[k].first;
+    if (mx < 0) return std::vector<std::string>();
+    std::vector<std::string> out((size_t)mx + 1);
+    for (size_t k = 0; k < items.size(); ++k)
+        if (items[k].first >= 0) out[(size_t)items[k].first] = items[k].second;
+    return out;
+}
+
+// 类别表: label_map.json({"类名": id}) 或 classes.txt(每行 "id name" 或只有 name, 行号即类别 id)
 inline std::vector<std::string> loadClasses(const std::string& path) {
-    std::vector<std::string> names;
     // 走字节流解析, 中文路径和内容(UTF-8)都能正常读
     std::vector<char> buf = readFileBytes(path);
-    std::istringstream f(std::string(buf.begin(), buf.end()));
+    if (buf.empty()) return std::vector<std::string>();
+    std::string text(buf.begin(), buf.end());
+    if (endsWithNoCase(path, ".json")) return parseLabelMapJson(text);
+    std::vector<std::string> names;
+    std::istringstream f(text);
     std::string line;
     while (std::getline(f, line)) {
+        // Windows 上手改过的 txt 可能是 CRLF, 不留 \r 在类名末尾
+        if (!line.empty() && line[line.size() - 1] == '\r')
+            line.erase(line.size() - 1);
         if (line.empty()) continue;
         auto pos = line.find_first_of(" \t");
         if (pos == std::string::npos)
