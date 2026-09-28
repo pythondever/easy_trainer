@@ -57,12 +57,30 @@ from app.train import ad_common as adc
 MODEL_FILE = adc.MODEL_FILE
 
 
+def _batch_loss(outputs):
+    """从 training_step 的返回值里取出这一个批次的 loss, 取不到返回 None.
+    anomalib 各算法统一 return {"loss": tensor}, 只有它是各算法共有的口子."""
+    v = outputs.get("loss") if isinstance(outputs, dict) else outputs
+    if v is None:
+        return None
+    try:
+        return float(v.detach())
+    except AttributeError:
+        try:
+            return float(v)
+        except (TypeError, ValueError):
+            return None
+
+
 class _EpochProbe(pl.Callback):
     """
     把 anomalib 的轮次进度转成 easy_trainer 的输出协议.
-    指标只取 train_loss: anomalib 的 AUROC/F1Score 由它自己的 Evaluator
-    回调产出, 而 Evaluator 排在自定义回调之后, 这里读 callback_metrics
-    拿不到本轮的值. 最终精度在训练结束后逐图打分另算, 更准也更有用.
+
+    loss 自己在 on_train_batch_end 里累, 不读 trainer.callback_metrics:
+    barebones 模式下 Lightning 的日志全被丢掉(loggers=[] 且
+    log_every_n_steps=0), callback_metrics 恒为空, 读它一个值都拿不到.
+    精度仍然在训练结束后逐图打分另算 —— anomalib 的 Evaluator 回调排在自定义
+    回调之后, 训练回路里本来也读不到本轮的 AUROC.
     """
 
     def __init__(self, epochs, state):
@@ -70,22 +88,27 @@ class _EpochProbe(pl.Callback):
         self.epochs = epochs
         self.state = state          # {"series": {...}, "ts_dir": ...}
         self.done = 0
+        self._sum = 0.0
+        self._n = 0
 
     def on_train_epoch_start(self, trainer, pl_module):
+        self._sum = 0.0
+        self._n = 0
         print("[train] EPOCH {}/{}".format(trainer.current_epoch + 1,
                                            self.epochs), flush=True)
 
+    def on_train_batch_end(self, trainer, pl_module, outputs, batch, batch_idx):
+        loss = _batch_loss(outputs)
+        if loss is None:
+            return
+        self._sum += loss
+        self._n += 1
+
     def on_train_epoch_end(self, trainer, pl_module):
-        if self.epochs <= 1:
+        # 单轮不画曲线: 界面上一个点没有意义, 也省掉一次无用的落盘
+        if self.epochs <= 1 or self._n == 0:
             return
-        cm = getattr(trainer, "callback_metrics", None) or {}
-        v = cm.get("train_loss_epoch", cm.get("train_loss"))
-        if v is None:
-            return
-        try:
-            loss = round(float(v), 6)
-        except (TypeError, ValueError):
-            return
+        loss = round(self._sum / self._n, 6)
         series = self.state["series"]
         series.setdefault("train_loss", []).append(loss)
         self.done += 1
@@ -101,8 +124,13 @@ class _EpochProbe(pl.Callback):
             pass
 
 
-def _build_engine(root, epochs, device, probe):
-    """root 要传纯 ASCII 的目录(见 ascii_stage_dir)."""
+def _build_engine(root, epochs, device, probe, skip_val=False):
+    """root 要传纯 ASCII 的目录(见 ascii_stage_dir).
+
+    skip_val 给 CFA 用: 它得走 fit(datamodule=...) 才起得来(见 main), 而传
+    datamodule 就一定会起验证回路, 这里把验证批次数压成 0 挡掉 —— anomalib
+    的 Evaluator 要求验证集每张图带 mask, 放它跑会在验证回路里抛错.
+    """
     use_cuda = str(device).lower().startswith("cuda") and torch.cuda.is_available()
     try:
         import anomalib
@@ -112,6 +140,7 @@ def _build_engine(root, epochs, device, probe):
             flush=True)
     except Exception:
         pass
+    extra = {"limit_val_batches": 0} if skip_val else {}
     return Engine(
         max_epochs=epochs,
         accelerator="gpu" if use_cuda else "cpu",
@@ -123,6 +152,7 @@ def _build_engine(root, epochs, device, probe):
         barebones=True,
         enable_checkpointing=False,
         callbacks=[probe],
+        **extra,
     )
 
 
@@ -215,10 +245,18 @@ def main():
         time.time() - t0, cls_name), flush=True)
     state = {"series": {}, "ts_dir": ts_dir}
     probe = _EpochProbe(epochs, state)
-    engine = _build_engine(ad_root, epochs, device, probe)
+    # CFA 的 on_train_start 要读 trainer.datamodule.train_dataloader() 初始化记忆库
+    # 中心, 拿不到 datamodule 当场 AttributeError; 而 Lightning 的 fit 不允许
+    # datamodule 和 train_dataloaders 同时传, 所以它只能单独走 datamodule= 那条路
+    # (附带的验证回路由 skip_val 压掉, 见 _build_engine).
+    # 其余算法照旧只喂建库集: 不起验证回路, 也就不会触发 Evaluator 的 mask 校验
+    engine = _build_engine(ad_root, epochs, device, probe,
+                           skip_val=(code == "cfa"))
     t1 = time.time()
-    # 只喂建库集: 不建验证回路, 也就不会触发 anomalib Evaluator 的 mask 校验
-    engine.fit(model=model, train_dataloaders=data.train_dataloader())
+    if code == "cfa":
+        engine.fit(model=model, datamodule=data)
+    else:
+        engine.fit(model=model, train_dataloaders=data.train_dataloader())
     fit_secs = time.time() - t1
     print("[train] " + QC.translate(
         "AdTrainRunner", "建库/训练完成({:.1f}s)").format(fit_secs),

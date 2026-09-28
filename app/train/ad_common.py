@@ -393,7 +393,7 @@ def ensure_backbone_cache():
 AD_MODELS = (
     ("patchcore", "PatchCore", "Patchcore",
      {"layers": ("layer2", "layer3")}, False),
-    ("cfa", "CFA", "Cfa", {}, False),
+    ("cfa", "CFA", "Cfa", {}, True),
     ("stfpm", "STFPM", "Stfpm",
      {"layers": ["layer1", "layer2", "layer3"]}, True),
     ("fastflow", "FastFlow", "Fastflow", {}, True),

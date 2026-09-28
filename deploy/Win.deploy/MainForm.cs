@@ -7,6 +7,20 @@ namespace Win.deploy;
 
 public sealed class MainForm : Form
 {
+    /// <summary>「输入尺寸」那一行的三种形态: 手写框 / 只读形状 / 动态维数字框.</summary>
+    private enum ShapeMode { Manual, ReadOnly, Boxes }
+
+    /// <summary>
+    /// 动态维的数字框怎么拼回 shape: Template 是已经定好的完整形状(固定维取模型值,
+    /// batch 维按 1, 其余动态维先给默认值), Boxes 只覆盖用户能改的那几维.
+    /// </summary>
+    private sealed class DynPlan
+    {
+        public string Name = "";
+        public int[] Template = Array.Empty<int>();
+        public readonly List<(int Dim, NumericUpDown Box)> Boxes = new();
+    }
+
     private static readonly Color PageBg = Color.FromArgb(0xF4, 0xF6, 0xFA);
     private static readonly Color CaptionColor = Color.FromArgb(0x33, 0x3B, 0x4A);
     private static readonly Color MutedColor = Color.FromArgb(0x6B, 0x72, 0x80);
@@ -32,6 +46,12 @@ public sealed class MainForm : Form
     private readonly TextBox _onnxBox = new();
     private readonly TextBox _outBox = new();
     private readonly TextBox _shapeBox = new();
+    private readonly Label _shapeInfo = new();
+    private readonly FlowLayoutPanel _shapeDyn = new();
+    private readonly List<DynPlan> _dynPlans = new();
+    private List<InputShapeInfo> _probed = new();
+    private string _probedOnnx = "";
+    private bool _probing;
     private readonly RichTextBox _log = new();
     private readonly ProgressBar _bar = new();
     private readonly RoundedButton _run = new();
@@ -97,7 +117,7 @@ public sealed class MainForm : Form
         content.Controls.Add(Caption("文件"), 0, 4);
         content.Controls.Add(BuildFileRow(_onnxBox, "onnx 模型", "选择训练导出的 .onnx", PickOnnx), 0, 5);
         content.Controls.Add(BuildFileRow(_outBox, "输出目录", "留空则与模型同目录", PickOutDir), 0, 6);
-        content.Controls.Add(BuildFileRow(_shapeBox, "输入尺寸", "模型的输入是动态尺寸时才填, 如 images:1x3x640x640", null), 0, 7);
+        content.Controls.Add(BuildShapeRow(), 0, 7);
         content.Controls.Add(BuildOptionsRow(), 0, 8);
         content.Controls.Add(Caption("日志"), 0, 9);
         content.Controls.Add(BuildLogPanel(), 0, 10);
@@ -362,7 +382,7 @@ public sealed class MainForm : Form
         box.PlaceholderText = placeholder;
 
         row.Controls.Add(box, 1, 0);
-        if (onBrowse is null) return row;   // 纯输入行(输入尺寸), 不给浏览按钮
+        if (onBrowse is null) return row;   // 没有浏览回调就不放按钮
 
         var browse = new RoundedButton
         {
@@ -377,6 +397,204 @@ public sealed class MainForm : Form
 
         row.Controls.Add(browse, 2, 0);
         return row;
+    }
+
+    /// <summary>「输入尺寸」那一行: 手写框 / 只读形状 / 动态维数字框 三种形态共用一格.</summary>
+    private Control BuildShapeRow()
+    {
+        var row = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 2,
+            RowCount = 1,
+            Margin = new Padding(0),
+            BackColor = PageBg,
+        };
+        row.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 68));
+        row.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        row.RowStyles.Add(new RowStyle(SizeType.Absolute, 34));
+
+        row.Controls.Add(new Label
+        {
+            Text = "输入尺寸",
+            ForeColor = MutedColor,
+            Dock = DockStyle.Fill,
+            TextAlign = ContentAlignment.MiddleLeft,
+            Margin = new Padding(0, 0, 0, 0),
+        }, 0, 0);
+
+        _shapeBox.BorderStyle = BorderStyle.FixedSingle;
+        _shapeBox.Font = new Font("Microsoft YaHei UI", 9.5f);
+        _shapeBox.Dock = DockStyle.Fill;
+        _shapeBox.Margin = new Padding(0, 6, 8, 6);
+        _shapeBox.PlaceholderText = "模型的输入是动态尺寸时才填, 如 images:1x3x640x640";
+
+        _shapeInfo.AutoSize = false;
+        _shapeInfo.Dock = DockStyle.Fill;
+        _shapeInfo.AutoEllipsis = true;
+        _shapeInfo.TextAlign = ContentAlignment.MiddleLeft;
+        _shapeInfo.Margin = new Padding(0, 0, 8, 0);
+
+        _shapeDyn.Dock = DockStyle.Fill;
+        _shapeDyn.Margin = new Padding(0);
+        _shapeDyn.WrapContents = false;   // 行高固定, 换行会被裁掉; 铺不下时改走手写框(见 ApplyProbed)
+        _shapeDyn.AutoScroll = false;
+
+        var host = new Panel { Dock = DockStyle.Fill, Margin = new Padding(0), BackColor = PageBg };
+        host.Controls.Add(_shapeBox);
+        host.Controls.Add(_shapeInfo);
+        host.Controls.Add(_shapeDyn);
+        row.Controls.Add(host, 1, 0);
+        return row;
+    }
+
+    private void SetShapeMode(ShapeMode mode)
+    {
+        _shapeBox.Visible = mode == ShapeMode.Manual;
+        _shapeInfo.Visible = mode == ShapeMode.ReadOnly;
+        _shapeDyn.Visible = mode == ShapeMode.Boxes;
+    }
+
+    /// <summary>按"当前目标格式 + 探测结果"决定这一行长什么样.</summary>
+    private void RefreshShapeRow()
+    {
+        if (_format != "engine")
+        {
+            _shapeInfo.ForeColor = MutedColor;
+            _shapeInfo.Text = "OpenVINO IR 保留动态形状, 转换时不需定尺寸(运行时 reshape 即可), 这一行对 IR 不生效";
+            SetShapeMode(ShapeMode.ReadOnly);
+            return;
+        }
+        if (_probed.Count > 0 && _probedOnnx == _onnxBox.Text.Trim())
+        {
+            ApplyProbed();
+            return;
+        }
+        SetShapeMode(ShapeMode.Manual);   // 还没读到形状: 留着输入框, 用户手填仍然算数
+    }
+
+    private void ApplyProbed()
+    {
+        _shapeDyn.Controls.Clear();
+        _dynPlans.Clear();      // 切到别的形态时靠这里清掉, 否则 CollectShapes 会拿旧框的值
+
+        var need = _probed.Where(x => x.NeedsValue).ToList();
+        if (need.Count == 0)
+        {
+            _shapeInfo.ForeColor = MutedColor;
+            _shapeInfo.Text = string.Join("   ", _probed.Select(x => x.Name + "  " + x.Text
+                + (x.DynamicAt.Length > 0 ? "  (batch 维动态, 按 1 处理)" : "")))
+                + "  — 输入是固定尺寸, 无需指定";
+            SetShapeMode(ShapeMode.ReadOnly);
+            return;
+        }
+        // 数字框铺不下"多个输入 + 长维度"这类情形(行高固定, 超宽会被裁):
+        // 退回手写框, 但把输入名与固定维都填好, 用户只可能改数字
+        if (need.Count > 1 || need[0].Dims.Length > 4)
+        {
+            _shapeBox.Text = string.Join("; ", need.Select(x => x.Name + ":" + PrefillDims(x)));
+            SetShapeMode(ShapeMode.Manual);
+            return;
+        }
+
+        var inp = need[0];
+        var plan = new DynPlan { Name = inp.Name, Template = new int[inp.Dims.Length] };
+        for (var k = 0; k < inp.Dims.Length; k++)
+            plan.Template[k] = inp.Dims[k] > 0 ? inp.Dims[k] : (k == 0 ? 1 : 640);
+
+        _shapeDyn.Controls.Add(DimLabel(inp.Name + " :"));
+        for (var k = 0; k < inp.Dims.Length; k++)
+        {
+            if (k > 0) _shapeDyn.Controls.Add(DimLabel("x"));
+            if (inp.Dims[k] > 0)
+            {
+                _shapeDyn.Controls.Add(DimLabel(inp.Dims[k].ToString()));
+                continue;
+            }
+            // batch 维动态时构建期本来就按 1 处理, 不开放给用户改(改大吃显存)
+            if (k == 0)
+            {
+                _shapeDyn.Controls.Add(DimLabel("1"));
+                continue;
+            }
+            var box = new NumericUpDown
+            {
+                Minimum = 1,
+                Maximum = 8192,
+                Value = 640,
+                Width = 64,
+                Font = new Font("Microsoft YaHei UI", 9.5f),
+                Margin = new Padding(0, 4, 6, 0),
+            };
+            _shapeDyn.Controls.Add(box);
+            plan.Boxes.Add((k, box));
+        }
+        _dynPlans.Add(plan);
+        SetShapeMode(ShapeMode.Boxes);
+    }
+
+    private static Label DimLabel(string text)
+        => new()
+        {
+            Text = text,
+            ForeColor = MutedColor,
+            AutoSize = true,
+            Margin = new Padding(0, 8, 6, 0),
+        };
+
+    /// <summary>退回手写框时的预填值: batch 维按 1, 其余动态维先按 640; 输入名与固定维都从模型里来.</summary>
+    private static string PrefillDims(InputShapeInfo x)
+        => string.Join("x", x.Dims.Select((d, k) => d > 0 ? d.ToString() : k == 0 ? "1" : "640"));
+
+    /// <summary>把手写框或数字框里的值收成 engine 要的 Shapes; 没有需要用户给的维时返回空.</summary>
+    private string[] CollectShapes()
+    {
+        if (_dynPlans.Count > 0 && _shapeDyn.Visible)
+        {
+            return _dynPlans.Select(p =>
+            {
+                var dims = (int[])p.Template.Clone();
+                foreach (var (dim, box) in p.Boxes) dims[dim] = (int)box.Value;
+                return p.Name + ":" + string.Join("x", dims);
+            }).ToArray();
+        }
+        // 分号分隔多个输入: ParseShapes 的逗号是 min/opt/max 的分隔, 两个输入必须给两个元素
+        return _shapeBox.Text.Split(';', StringSplitOptions.RemoveEmptyEntries)
+            .Select(s => s.Trim())
+            .Where(s => s.Length > 0)
+            .ToArray();
+    }
+
+    /// <summary>读 onnx 的输入形状. 读不出来不算错: 手写框仍是有效入口, 只记一行日志.</summary>
+    private async Task ProbeOnnxAsync(string onnx)
+    {
+        if (_probing || _busy) return;
+        if (onnx.Length == 0 || !File.Exists(onnx)) return;
+        if (_probedOnnx == onnx) return;                 // 同一个文件不重复探
+        if (!(_gpu.Available && _tc.Ready)) return;      // 没有 TensorRT 就只能手写
+        _probing = true;
+        try
+        {
+            var r = await Task.Run(() => EngineConverter.ProbeInputs(onnx, AppendLog));
+            if (!r.Ok)
+            {
+                AppendLog("读不出输入形状(不影响手工填写): " + r.Error);
+                return;
+            }
+            _probed = r.Inputs;
+            _probedOnnx = onnx;
+            AppendLog("输入形状: " + string.Join(", ", r.Inputs.Select(x => x.Name + " [" + x.Text + "]"))
+                + (_probed.Any(x => x.NeedsValue) ? " — 有动态维, 请在「输入尺寸」里填" : " — 尺寸固定, 无需指定"));
+            RefreshShapeRow();
+        }
+        catch (Exception ex)
+        {
+            AppendLog("读输入形状出错(不影响手工填写): " + ex.Message);
+        }
+        finally
+        {
+            _probing = false;
+        }
     }
 
     private Control BuildOptionsRow()
@@ -509,19 +727,19 @@ public sealed class MainForm : Form
         _fp16Btn.Enabled = _fp32Btn.Enabled = true;
         SyncCrossArch(format == "engine");
         SyncShapeBox(format == "engine");
-        _run.Text = format == "engine" ? "开始转换" : "转成 OpenVINO IR";
     }
 
     private bool IrUsable => OpenVinoConverter.Ready().Length == 0;
 
     /// <summary>IR 保留动态形状, 尺寸留到运行时 reshape 就行, 转换期不需要定死.</summary>
-    private void SyncShapeBox(bool enabled)
+    private void SyncShapeBox(bool engineSelected)
     {
-        _shapeBox.Enabled = enabled;
-        _tips.SetToolTip(_shapeBox, enabled
-            ? "onnx 的输入是动态尺寸时才要填: 输入名:1x3x640x640, 多个输入各写一条分开; "
-              + "也可以给三段 输入名:min,opt,max. 模型输入是固定尺寸时填了不生效."
-            : "OpenVINO IR 保留动态形状, 转换时不需定尺寸(运行时 reshape 即可), 这一行对 IR 不生效");
+        _shapeBox.Enabled = _shapeDyn.Enabled = engineSelected;
+        _tips.SetToolTip(_shapeBox, "onnx 的输入是动态尺寸时才要填: 输入名:1x3x640x640; "
+            + "多个输入用分号隔开; 也可以给三段 输入名:min,opt,max. 模型输入是固定尺寸时填了不生效.");
+        _tips.SetToolTip(_shapeInfo, "从 onnx 里读到的输入形状");
+        _tips.SetToolTip(_shapeDyn, "方框是动态维的取值(填部署时实际要用的输入尺寸), 灰字维是模型里固定的; batch 维按 1 构建");
+        RefreshShapeRow();
     }
 
     /// <summary>跨架构要 sm80 起每一代 + ptx 的 builder resource 齐备(约 2.1 GB), 缺了只好禁掉.</summary>
@@ -569,6 +787,7 @@ public sealed class MainForm : Form
                 : "工具链不可用: " + _tc.Diagnostic);
             // 用户没主动选过就默认 engine; 环境不支持时 SelectFormat 内部会落回 onnx
             SelectFormat(_formatPickedByUser ? _format : "engine", byUser: false);
+            _ = ProbeOnnxAsync(_onnxBox.Text.Trim());
         }
         finally
         {
@@ -650,6 +869,7 @@ public sealed class MainForm : Form
         if (_outBox.Text.Trim().Length == 0)
             _outBox.Text = Path.GetDirectoryName(dlg.FileName) ?? "";
         SelectFormat(_format, byUser: false);
+        _ = ProbeOnnxAsync(_onnxBox.Text.Trim());
     }
 
     private void PickOutDir()
@@ -699,6 +919,8 @@ public sealed class MainForm : Form
             MessageBox.Show(this, "请先选择存在的 onnx 模型.", "模型转换", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return;
         }
+        // 手改过路径(没走选文件那条路)时在这里补探一次: 不探就不知道该不该让用户填尺寸
+        if (_format == "engine") await ProbeOnnxAsync(onnx);
         var outDir = OutputDirFor(onnx);
         if (outDir.Length == 0)
         {
@@ -746,9 +968,7 @@ public sealed class MainForm : Form
                     EnginePath = Path.Combine(outDir, name + ".engine"),
                     Fp16 = Fp16,
                     CrossArch = _crossArch.Checked,
-                    Shapes = _shapeBox.Text.Trim().Length == 0
-                        ? Array.Empty<string>()
-                        : new[] { _shapeBox.Text.Trim() },
+                    Shapes = CollectShapes(),
                 };
                 Directory.CreateDirectory(outDir);
                 var result = await Task.Run(() => EngineConverter.Run(req, AppendLog));

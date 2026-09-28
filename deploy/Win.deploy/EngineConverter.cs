@@ -28,6 +28,30 @@ public sealed class ConvertResult
     public string Error { get; set; } = "";
 }
 
+/// <summary>onnx 的一个输入: 名字 + 各维形状, 值小于 0 的维是动态维.</summary>
+public sealed class InputShapeInfo
+{
+    public string Name { get; init; } = "";
+    public int[] Dims { get; init; } = Array.Empty<int>();
+    public int[] DynamicAt { get; init; } = Array.Empty<int>();
+
+    /// <summary>形状文本, 动态维写成 ?.</summary>
+    public string Text => string.Join("x", Dims.Select(d => d < 0 ? "?" : d.ToString()));
+
+    /// <summary>
+    /// 构建期真的需要用户给尺寸的情况. 只有 batch 维(第 0 维)动态时 SetupInputProfiles
+    /// 会自动按 1 处理, 用户填不填都一样, 不算"需要给值".
+    /// </summary>
+    public bool NeedsValue => DynamicAt.Length > 0 && !(DynamicAt.Length == 1 && DynamicAt[0] == 0);
+}
+
+public sealed class ProbeResult
+{
+    public bool Ok { get; set; }
+    public List<InputShapeInfo> Inputs { get; } = new();
+    public string Error { get; set; } = "";
+}
+
 /// <summary>
 /// onnx -> engine. 走 JYPPX 的 C ABI 桥接在进程内建 engine, 不用 trtexec
 /// (trtexec 是 developer tool, 许可上不能随产品分发, 见 skill 第 7.3 节).
@@ -57,6 +81,93 @@ public static class EngineConverter
         catch (Exception ex)
         {
             return ex.Message;
+        }
+    }
+
+    /// <summary>
+    /// 只读 onnx 的输入形状(不 build engine), 给界面判断"这一行要不要用户填".
+    /// 走的是构建期同一套 TensorRT 解析: 换别的解析器去读, 判断可能与 TensorRT 不一致.
+    /// </summary>
+    public static ProbeResult ProbeInputs(string onnxPath, Action<string> log)
+    {
+        log ??= _ => { };
+        var res = new ProbeResult();
+        if (!File.Exists(onnxPath))
+        {
+            res.Error = "找不到 onnx 文件: " + onnxPath;
+            return res;
+        }
+        var stage = AsciiStageDir(onnxPath, onnxPath, log);
+        string? box = null;
+        var parsePath = onnxPath;
+        try
+        {
+            if (stage is not null)
+            {
+                var origName = Path.GetFileName(onnxPath);
+                var side = ExternalDataFiles(onnxPath).ToList();
+                if (!IsAscii(origName) && side.Count > 0)
+                {
+                    res.Error = "onnx 文件名含中文, 而它又是外部数据格式(权重在同目录的 .data 里), "
+                                + "TensorRT 只认窄字符文件名, 改名会让它找不到权重";
+                    return res;
+                }
+                box = Path.Combine(stage, "probe-" + Guid.NewGuid().ToString("N"));
+                Directory.CreateDirectory(box);
+                parsePath = Path.Combine(box, IsAscii(origName)
+                    ? origName
+                    : Guid.NewGuid().ToString("N") + ".onnx");
+                File.Copy(onnxPath, parsePath, overwrite: true);
+                foreach (var f in side)
+                    File.Copy(f, Path.Combine(box, Path.GetFileName(f)), overwrite: true);
+            }
+
+            // 解析期的日志一律不要: 这里只想知道形状, 报错另走 Error 字段
+            using var logger = new TensorRtLogger(Line,
+                new TensorRtLogHandler((_, _) => { }), TensorRtLogSeverity.Error);
+            var dep = TensorRtEnvironmentProbe.ProbeNativeDependencies(Line);
+            if (dep is null || !dep.BridgeInitialized)
+            {
+                res.Error = "TensorRT 桥接初始化失败: " + (dep?.BridgeDiagnostic ?? "未知原因");
+                return res;
+            }
+            using var builder = new TensorRtBuilder(logger);
+            using var network = builder.CreateNetwork();
+            using var parser = new TensorRtOnnxParser(logger, network);
+            if (!parser.ParseFromFile(parsePath))
+            {
+                var summary = string.Join("; ", parser.GetErrors().Select(e => e.ToString()));
+                if (summary.Length == 0) summary = parser.GetErrorSummary();
+                res.Error = "解析 onnx 失败: " + summary;
+                return res;
+            }
+            for (var i = 0; i < network.InputCount; i++)
+            {
+                var t = network.GetInput(i);
+                var dims = t?.Shape?.Values;
+                if (dims is null || dims.Length == 0) continue;
+                var copy = dims.ToArray();
+                res.Inputs.Add(new InputShapeInfo
+                {
+                    Name = t!.Name,
+                    Dims = copy,
+                    DynamicAt = Enumerable.Range(0, copy.Length).Where(k => copy[k] < 0).ToArray(),
+                });
+            }
+            res.Ok = true;
+            return res;
+        }
+        catch (Exception ex)
+        {
+            res.Error = ex.Message;
+            return res;
+        }
+        finally
+        {
+            if (box is not null)
+            {
+                try { Directory.Delete(box, true); } catch { }
+            }
         }
     }
 

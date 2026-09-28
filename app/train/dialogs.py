@@ -844,7 +844,7 @@ class TrainDialog(QDialog):
         self._setup_img_size_tip()
 
     def _sync_ad_epochs(self, keep_value=False):
-        """建库型算法(PatchCore/CFA)没有训练这一步, 轮次固定 1 并置灰.
+        """建库型算法(PatchCore)没有训练这一步, 轮次固定 1 并置灰.
 
         不这么做的话界面显示的是异常检测的默认 20 轮, 而 runner 拿到后强制改成 1,
         用户在界面上看到的和实际跑的不是一回事.
@@ -947,9 +947,16 @@ class TrainDialog(QDialog):
                     combo.setCurrentIndex(idx)
         if self._task() == "ad":
             # 异常检测的型号下拉显示名带后缀, 只能按代号回填
-            idx = self.ui.network_combo.findData(str(rec.get("model_size") or ""))
+            combo = self.ui.network_combo
+            idx = combo.findData(str(rec.get("model_size") or ""))
             if idx >= 0:
-                self.ui.network_combo.setCurrentIndex(idx)
+                # 挡掉信号: currentIndexChanged 走的是 _on_network_changed, 那条路
+                # 按"用户换算法"处理, 会把轮次重置成默认值, 盖掉刚回填的记录值.
+                # 被挡掉的尺寸提示联动在这里补回来
+                combo.blockSignals(True)
+                combo.setCurrentIndex(idx)
+                combo.blockSignals(False)
+                self._setup_img_size_tip()
             # 算法定下来之后才能定轮次的可用性
             self._sync_ad_epochs(keep_value=True)
         else:
