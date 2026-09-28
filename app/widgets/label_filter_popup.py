@@ -1,12 +1,6 @@
 # -*- coding: utf-8 -*-
-"""首页标签筛选: 收起态按钮 + 点击弹出的平铺多选面板.
-
-QComboBox 自带弹层是单列 item view, 画不出"圆形色块 + 名字 + 圆形勾选框"的平铺
-网格; 收起态也没法按当前选择换色点. 于是两者都自绘:
-  LabelFilterButton - .ui 里 promote 成它, 收起态 = 色点 + 文案 + 下箭头
-  LabelFilterPanel  - Qt.Popup 浮层, "全选"整行 + 标签网格 + 自绘滚动条
-"全选"是批量开关: 点它勾上全部标签, 再点一次全部取消, 与单个标签不互斥.
-勾选态不单独存, 由已勾集合与全部选项是否一致现算.
+"""
+首页标签筛选: 收起态按钮 + 点击弹出的平铺多选面板.
 """
 
 from PySide6.QtCore import QPoint, QPointF, QRect, QRectF, Qt, Signal
@@ -157,8 +151,8 @@ class LabelFilterButton(QToolButton):
 
 
 class LabelFilterPanel(QWidget):
-    """点击筛选按钮弹出的平铺标签面板, 勾选互不影响(多选).
-
+    """
+    点击筛选按钮弹出的平铺标签面板, 勾选互不影响(多选).
     filterChanged(keys): keys 为空即"未选择标签"(首页图区空白).
     顶行"全选"只把 keys 一次设为全部, 不占用独立状态.
     """
@@ -166,7 +160,6 @@ class LabelFilterPanel(QWidget):
     filterChanged = Signal(list)
 
     def __init__(self, parent=None):
-        # 少了 Frameless 这一位, Windows 上透明属性不生效, 圆角外会显示成不透明黑块
         super().__init__(parent, Qt.Popup | Qt.FramelessWindowHint
                          | Qt.NoDropShadowWindowHint)
         self.setObjectName("labelFilterPanel")

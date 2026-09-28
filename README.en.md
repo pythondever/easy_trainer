@@ -211,7 +211,9 @@ easy_trainer/
 │   ├── annotation/         # Annotation canvas & annotation dialog
 │   │   ├── scene.py        # Annotation scene (drag-to-draw, hit testing, undo stack)
 │   │   ├── box_item.py     # Annotation items (boxes / polygons + label chips)
-│   │   ├── annotation_dialog.py  # Annotation dialog (zoom/pan, rect/polygon/format painter/class/color)
+│   │   ├── annotation_dialog.py  # Annotation dialog (shell + side label/annotation lists)
+│   │   ├── annotation_canvas.py  # Annotation canvas (zoom/pan, rect/polygon/format painter, params & clipboard)
+│   │   ├── annotation_io.py      # Annotation I/O (image loading/cache, labelme JSON, template import/export)
 │   │   ├── blend.py        # Format-painter paste blending (Lab luminance match + feathering)
 │   │   └── scene_items.py  # Auxiliary scene items
 │   ├── widgets/            # Shared UI widgets

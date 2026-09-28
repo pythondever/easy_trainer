@@ -123,8 +123,10 @@ def _status(rec):
 
 
 def _load_series(rec, db_path):
-    """显示用曲线数据: 优先训练目录的 metrics.csv(rf-detr 真源);
-    指标 json 只是训练中的节流快照, 可能缺列或缺尾轮. 分类无 csv, 走 json."""
+    """
+    显示用曲线数据: 优先训练目录的 metrics.csv(rf-detr 真源);
+    指标 json 只是训练中的节流快照, 可能缺列或缺尾轮. 分类无 csv, 走 json.
+    """
     model_path = rec.get("model_path") or ""
     csv_path = os.path.join(os.path.dirname(model_path), "metrics.csv") if model_path else ""
     if csv_path and os.path.isfile(csv_path):

@@ -61,11 +61,11 @@ _BASE = "https://storage.googleapis.com/rfdetr/"
 # 在国内直连会超时; 这个镜像给的是同一批文件, 字节数与 SHA256 已逐条对上 HF 仓库元数据.
 _YOLO_BASE = "https://hf-mirror.com/Ultralytics/YOLO26/resolve/main/"
 
-# 档位 → 权重名里的尺寸字母, 与训练界面「型号」下拉一一对应
+# 档位,权重名里的尺寸字母, 与训练界面「型号」下拉一一对应
 _YOLO_SIZES = (("nano", "n"), ("small", "s"), ("medium", "m"),
                ("large", "l"), ("x-large", "x"))
 
-# 文件名 → (字节数, MD5); 从镜像实拉后算出
+# 文件名(字节数, MD5); 从镜像实拉后算出
 _YOLO_FILES = {
     "yolo26n.pt": (5544453, "cf3cca69f04cf639bafdeb2644bd0843"),
     "yolo26s.pt": (20422725, "372e5c34064f37eb45dd7ef5cbbe60aa"),
@@ -202,7 +202,6 @@ def set_models_dir(path, sync_rf_home=True):
     用户刚点完"更改"还没下载时不能设 RF_HOME: 目标目录可能不可写, 设了 rfdetr 就会
     一直在那儿找. RF_HOME 只在目录里确实有可用权重时才同步
     (sync_rf_home() / 下载完成).
-
     RF_HOME 指向 <根>/transformer: rfdetr 只认一个目录, 而它的权重都在那一支.
     """
     full = os.path.abspath(os.path.expanduser(path))
@@ -287,8 +286,8 @@ def is_downloaded(asset, directory=None):
 
 
 def check_local_file(path):
-    """挑本地权重时的弱校验: 通过返回空串, 否则返回给用户看的原因.
-
+    """
+    挑本地权重时的弱校验: 通过返回空串, 否则返回给用户看的原因.
     不试读 torch.load: 1.4GB 读一次要几十秒, 而且后端加载时自己会报结构错误,
     这里只挡住明显选错的文件.
     """

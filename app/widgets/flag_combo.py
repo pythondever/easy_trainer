@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
-"""语言下拉: 国旗与语言名作为一组绘制.
-
-QComboBox 默认"图标钉左, 文本在剩余区居中", 中间空一大块; 收起态与弹层若各用一套
-规则, 展开瞬间旗会横跳. 这里统一从控件左缘 CONTENT_LEFT 起排, 两个状态位置一致.
+"""
+语言下拉: 国旗与语言名作为一组绘制.
 """
 
 from PySide6.QtCore import QEvent, QObject, QRect, Qt
@@ -10,8 +8,8 @@ from PySide6.QtGui import QFontMetrics, QIcon, QPalette
 from PySide6.QtWidgets import (QStyle, QStyledItemDelegate, QStyleOptionComboBox,
                                QStylePainter)
 
-ICON_GAP = 6        # 国旗与语言名的间距. 默认两者隔了十几到二十几像素
-CONTENT_LEFT = 12   # 旗左缘距控件左缘, 收起态与弹层共用
+ICON_GAP = 6        # 国旗与语言名的间距.
+CONTENT_LEFT = 12   # 旗左缘距控件左缘
 
 # 弹层的列表视口比弹层窗口左右各内缩这么多, 所以项里再退掉它, 旗落在同一个屏幕位置
 POPUP_INSET = 5
@@ -34,9 +32,8 @@ def _draw_icon_text(painter, clip_rect, x, icon, text, icon_size, color, gap):
 
 
 class _CollapsedPainter(QObject):
-    """收起态自绘图标与文字, 背景/边框/箭头仍交给样式(免得 QSS 失效).
-
-    拦整个 Paint 事件, 而不是改 currentText - 后者是 model 数据, 改不了.
+    """
+    收起态自绘图标与文字
     """
 
     def __init__(self, combo, gap):
@@ -97,7 +94,7 @@ class _ItemDelegate(QStyledItemDelegate):
 
 
 def install_flag_combo(combo, gap=ICON_GAP):
-    """就地改造, 重复调用无副作用."""
+    """就地改造"""
     if combo.property("flagCombo"):
         return combo
     combo.setProperty("flagCombo", True)

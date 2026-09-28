@@ -52,10 +52,10 @@ class ModelDownloader(QThread):
     """
 
     progress = Signal(str, int, int, float)   # 权重标识, 已完成字节, 总字节, 字节/秒
-    verifying = Signal(str)                   # 权重标识(正在校验)
+    verifying = Signal(str)                          # 权重标识(正在校验)
     one_done = Signal(str)
     one_failed = Signal(str, str)             # 权重标识, 业务语言原因
-    all_finished = Signal(bool)               # 是否全部成功
+    all_finished = Signal(bool)                      # 是否全部成功
 
     # 信号里的"权重标识"一律是根目录下的相对路径(cnn/nano.pt): 本地文件名只到档位,
     # 两套架构下的 nano.pt 同名, 只用文件名分不出是哪一行

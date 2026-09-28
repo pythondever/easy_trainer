@@ -50,19 +50,19 @@ class AnnotationScene(QGraphicsScene):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        # 图像
         self.image_item = None
         self.image_rect = None
+        self.image_modified = False
+        # 绘制中间态
         self.draw_mode = False
         self.draw_shape = "rect"
         self.current_label = "object"
-        self._preview_item = None
-        self._preview_close_item = None   # 轨迹首尾靠拢时的闭合提示虚线
         self._draw_start = None
         self._free_track = []   # 画笔轨迹(手绘多边形采样点)
         self._last_box = None
-        self.label_colors = {}
-        self.image_modified = False
-        self.selectionChanged.connect(self._on_selection_changed)
+        self._preview_item = None
+        self._preview_close_item = None   # 轨迹首尾靠拢时的闭合提示虚线
         # 格式刷
         self.fp_mode = None
         self.fp_track = []
@@ -70,17 +70,22 @@ class AnnotationScene(QGraphicsScene):
         self.fp_preview_item = None
         self.fp_ghost_item = None
         self._fp_undo_stack = []
+        # 模板粘贴
         self._paste_pos = None           # 复制/粘贴: 左键点击空白处记录的粘贴锚点
-        self.angle_range = (-180, 180)   # 粘贴随机旋转角度范围(由标注界面输入框设置)
-        self.blend_strength = 0.7        # 粘贴融合力度 0~1(由标注界面输入框设置)
-        self._bright_edit = None         # 正在调亮度的区域基准, 见 set_polygon_brightness
-        self._bright_cache = {}          # 多边形 -> 亮度基准, 切回同一个框再调时不叠加
-        # "显示标注"开关状态(由标注界面同步): 只影响粘贴出来的框, 手绘的照常显示
-        self.show_annotations = True
         self._pending_pastes = []   # 浮动粘贴: 图案还没写进图像像素的多边形
         # 剪切板选中后的落点预览: 跟鼠标走的多边形虚线, 角度此刻定死, 预览即落点
         self._stamp_ghost = None
         self._stamp_angle = None
+        self.angle_range = (-180, 180)   # 粘贴随机旋转角度范围(由标注界面输入框设置)
+        self.blend_strength = 0.7        # 粘贴融合力度 0~1(由标注界面输入框设置)
+        # 亮度编辑
+        self._bright_edit = None         # 正在调亮度的区域基准, 见 set_polygon_brightness
+        self._bright_cache = {}          # 多边形 -> 亮度基准, 切回同一个框再调时不叠加
+        # 外观
+        self.label_colors = {}
+        # "显示标注"开关状态(由标注界面同步): 只影响粘贴出来的框, 手绘的照常显示
+        self.show_annotations = True
+        self.selectionChanged.connect(self._on_selection_changed)
 
     def set_image(self, pixmap):
         self.clear()

@@ -211,7 +211,9 @@ easy_trainer/
 │   ├── annotation/         # 标注画布与标注弹窗
 │   │   ├── scene.py        # 标注场景（拖拽绘制、命中判定、撤销栈）
 │   │   ├── box_item.py     # 标注图形项（矩形框 / 多边形 + 标签 chip）
-│   │   ├── annotation_dialog.py  # 标注弹窗（画布缩放平移、画框/多边形/格式刷/改类/取色）
+│   │   ├── annotation_dialog.py  # 标注弹窗（弹窗骨架、左右两侧标签/标注列表）
+│   │   ├── annotation_canvas.py  # 标注画布（缩放平移、画框/多边形/格式刷、参数与剪切板面板）
+│   │   ├── annotation_io.py      # 标注读写（图像装载与像素缓存、labelme json 存取、模板导入导出）
 │   │   ├── blend.py        # 格式刷粘贴融合（Lab 亮度补偿 + 边缘羽化）
 │   │   └── scene_items.py  # 场景辅助图形项
 │   ├── widgets/            # 通用 UI 组件

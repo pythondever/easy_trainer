@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-弹窗确认/取消按钮: 统一用 resources 图标, 不再各写各的文字.
-纯图标按钮一律补 tooltip, 否则用户只能靠猜.
+弹窗确认/取消按钮: 统一用 resources 图标
 """
 
 import os
@@ -39,8 +38,9 @@ def _icon_path(name):
 
 
 def resource_icon(name):
-    """绝对路径取 resources 图标. uic 从 .ui 生成的 ../resources 相对路径
-    按 cwd 解析, 安装版 cwd 是安装根, 上一级没有 resources, 图标必空白."""
+    """
+    绝对路径取 resources 图标
+    """
     path = _icon_path(name)
     return QIcon(path) if path else QIcon()
 
@@ -48,8 +48,7 @@ def resource_icon(name):
 @lru_cache(maxsize=128)
 def _tinted(path, color):
     """
-    按颜色染色的图标. 缓存: 列表/菜单里同一图标会反复取(每行都新建
-    QPixmap+QPainter 很贵), 图标本身是只读资源, 复用安全.
+    按颜色染色的图标.
     """
     src = QPixmap(path)
     if src.isNull():
