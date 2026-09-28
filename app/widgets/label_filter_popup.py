@@ -4,8 +4,9 @@
 QComboBox 自带弹层是单列 item view, 画不出"圆形色块 + 名字 + 圆形勾选框"的平铺
 网格; 收起态也没法按当前选择换色点. 于是两者都自绘:
   LabelFilterButton - .ui 里 promote 成它, 收起态 = 色点 + 文案 + 下箭头
-  LabelFilterPanel  - Qt.Popup 浮层, "所有图像"整行 + 标签网格 + 自绘滚动条
-"所有图像"与标签互斥: 选它则标签整体置灰不可点, 选了标签则它置灰不可点.
+  LabelFilterPanel  - Qt.Popup 浮层, "全选"整行 + 标签网格 + 自绘滚动条
+"全选"是批量开关: 点它勾上全部标签, 再点一次全部取消, 与单个标签不互斥.
+勾选态不单独存, 由已勾集合与全部选项是否一致现算.
 """
 
 from PySide6.QtCore import QPoint, QPointF, QRect, QRectF, Qt, Signal
@@ -52,7 +53,6 @@ SLIDER = "#55555f"
 SLIDER_HOVER = "#6a6a75"
 CHECK_BORDER = "#464d5e"
 CHECK_BORDER_HOVER = "#5a6379"
-CHECK_BORDER_DIM = "#3a3a40"
 ARROW_DIM = "#4a5164"
 
 
@@ -68,7 +68,7 @@ class LabelFilterButton(QToolButton):
         super().__init__(parent)
         self.setCursor(Qt.PointingHandCursor)
         self.setFocusPolicy(Qt.NoFocus)
-        self._text = QC.translate("LabelFilter", "所有图像")
+        self._text = QC.translate("LabelFilter", "全选")
         self._color = QColor(ALL_COLOR)
         self._dim = False
         self._candidates = [self._text]
@@ -96,7 +96,8 @@ class LabelFilterButton(QToolButton):
     def _fit_width(self):
         fm = QFontMetrics(self._font())
         widest = max(fm.horizontalAdvance(t) for t in self._candidates)
-        w = 2 * BTN_PAD + DOT + BTN_GAP + widest + BTN_GAP + BTN_ARROW
+        # +4: 绘制端能用的宽度与 horizontalAdvance 有 1~2px 出入, 卡满会被省略号截掉
+        w = 2 * BTN_PAD + DOT + BTN_GAP + widest + BTN_GAP + BTN_ARROW + 4
         self.setFixedWidth(min(max(w, BTN_H), BTN_MAX_W))
 
     def enterEvent(self, event):
@@ -158,10 +159,11 @@ class LabelFilterButton(QToolButton):
 class LabelFilterPanel(QWidget):
     """点击筛选按钮弹出的平铺标签面板, 勾选互不影响(多选).
 
-    filterChanged(all_mode, keys): all_mode 为真表示"所有图像", 此时 keys 为空.
+    filterChanged(keys): keys 为空即"未选择标签"(首页图区空白).
+    顶行"全选"只把 keys 一次设为全部, 不占用独立状态.
     """
 
-    filterChanged = Signal(bool, list)
+    filterChanged = Signal(list)
 
     def __init__(self, parent=None):
         # 少了 Frameless 这一位, Windows 上透明属性不生效, 圆角外会显示成不透明黑块
@@ -171,8 +173,7 @@ class LabelFilterPanel(QWidget):
         self.setMouseTracking(True)
         self.setAttribute(Qt.WA_TranslucentBackground, True)
         self._items = []            # [(名字, 颜色, key)]
-        self._all = True
-        self._sel = []
+        self._sel = []              # 已勾的 key; 空 = 未选择标签
         self._top_row = 0
         self._expanded = False
         self._hover = None
@@ -191,15 +192,16 @@ class LabelFilterPanel(QWidget):
         self._items = list(items)
         valid = {key for _n, _c, key in self._items}
         self._sel = [k for k in self._sel if k in valid]
-        if not self._sel and not self._all:
-            self._all = True
         self._rebuild_geom()
         self.update()
 
-    def set_state(self, all_mode, selected):
-        self._all = bool(all_mode)
-        self._sel = [] if self._all else list(selected)
+    def set_state(self, selected):
+        self._sel = list(selected or [])
         self.update()
+
+    def _all_selected(self):
+        """"全选"行的勾选态 = 已勾集合恰好等于全部选项; 没有选项时不算全选."""
+        return bool(self._items) and len(self._sel) == len(self._items)
 
     def popup_below(self, btn):
         """贴按钮下沿展开, 右边/下边放不下就往回收, 再不行翻到按钮上方."""
@@ -301,16 +303,11 @@ class LabelFilterPanel(QWidget):
     # ---------------- 交互 ----------------
 
     def _toggle_all(self):
-        if not (self._all or not self._sel):
-            return                      # 已选标签时"所有图像"置灰不可点
-        self._all = not self._all
-        if self._all:
-            self._sel = []
+        self._sel = ([] if self._all_selected() else
+                     [key for _n, _c, key in self._items])
         self._emit()
 
     def _toggle_chip(self, idx):
-        if self._all:
-            return                      # "所有图像"模式下标签整体置灰
         key = self._items[idx][2]
         if key in self._sel:
             self._sel.remove(key)
@@ -320,7 +317,7 @@ class LabelFilterPanel(QWidget):
 
     def _emit(self):
         self.update()
-        self.filterChanged.emit(self._all, list(self._sel))
+        self.filterChanged.emit(list(self._sel))
 
     def _scroll(self, rows):
         room = self._scroll_room()
@@ -461,34 +458,31 @@ class LabelFilterPanel(QWidget):
 
     def _paint_all_row(self, p):
         rect = self._geo["all"]
-        enabled = self._all or not self._sel
-        hovered = self._hover == ("all",) and enabled
+        hovered = self._hover == ("all",)
         if hovered:
             p.setPen(Qt.NoPen)
             p.setBrush(QColor(HOVER_BG))
             p.drawRoundedRect(QRectF(rect).adjusted(0, 1, 0, -1), 5, 5)
         cy = rect.center().y() + 0.5
-        fill = QColor(ALL_COLOR)
-        if not enabled:
-            fill.setAlpha(80)
         p.setPen(Qt.NoPen)
-        p.setBrush(fill)
+        p.setBrush(QColor(ALL_COLOR))
         p.drawEllipse(QRectF(rect.x() + 2, cy - DOT / 2.0, DOT, DOT))
 
         mark_cx = rect.right() - 2 - CHECK / 2.0
-        text = QC.translate("LabelFilter", "所有图像")
+        text = QC.translate("LabelFilter", "全选")
         tx = rect.x() + 2 + DOT + 6
         fm = QFontMetrics(p.font())
-        p.setPen(QColor(TEXT if enabled else TEXT_DIM))
+        p.setPen(QColor(TEXT))
         p.drawText(QRectF(tx, rect.y(),
                           mark_cx - CHECK / 2.0 - 10 - tx, rect.height()),
                    Qt.AlignVCenter | Qt.AlignLeft, text)
         self._paint_status(p, fm, tx + fm.horizontalAdvance(text) + 8,
                            mark_cx - CHECK / 2.0 - 10)
-        self._paint_mark(p, mark_cx, cy, ALL_COLOR, self._all, enabled, hovered)
+        self._paint_mark(p, mark_cx, cy, ALL_COLOR, self._all_selected(),
+                         hovered)
 
     def _paint_status(self, p, fm, left, right):
-        if self._all:
+        if self._all_selected():
             text = QC.translate("LabelFilter", "显示全部图像")
         elif self._sel:
             text = QC.translate("LabelFilter", "按所选标签过滤")
@@ -504,9 +498,8 @@ class LabelFilterPanel(QWidget):
 
     def _paint_chip(self, p, idx, rect):
         name, color, key = self._items[idx]
-        enabled = not self._all
         checked = key in self._sel
-        hovered = enabled and self._hover == ("chip", idx)
+        hovered = self._hover == ("chip", idx)
         if hovered:
             p.setPen(Qt.NoPen)
             p.setBrush(QColor(HOVER_BG))
@@ -514,13 +507,10 @@ class LabelFilterPanel(QWidget):
 
         cy = rect.center().y() + 0.5
         dot = QRectF(rect.x() + 2, cy - DOT / 2.0, DOT, DOT)
-        fill = QColor(color)
-        if not enabled:
-            fill.setAlpha(70)
         p.setPen(Qt.NoPen)
-        p.setBrush(fill)
+        p.setBrush(QColor(color))
         p.drawEllipse(dot)
-        if _is_dark(color) and enabled:
+        if _is_dark(color):
             p.setPen(QPen(QColor(CHECK_BORDER), 1))
             p.setBrush(Qt.NoBrush)
             p.drawEllipse(dot)
@@ -533,20 +523,17 @@ class LabelFilterPanel(QWidget):
         avail = max(10, mark_limit - 6 - tx)
         text = fm.elidedText(name, Qt.ElideRight, int(avail))
         mark_cx = min(mark_limit, tx + fm.horizontalAdvance(text) + 6) + CHECK / 2.0
-        p.setPen(QColor(TEXT_DIM if not enabled else TEXT))
+        p.setPen(QColor(TEXT))
         p.drawText(QRectF(tx, rect.y(), avail, rect.height()),
                    Qt.AlignVCenter | Qt.AlignLeft, text)
-        self._paint_mark(p, mark_cx, cy, color, checked, enabled, hovered)
+        self._paint_mark(p, mark_cx, cy, color, checked, hovered)
 
     @staticmethod
-    def _paint_mark(p, cx, cy, color, checked, enabled, hovered):
+    def _paint_mark(p, cx, cy, color, checked, hovered):
         mark = QRectF(cx - CHECK / 2.0, cy - CHECK / 2.0, CHECK, CHECK)
         if checked:
-            fill = QColor(color)
-            if not enabled:
-                fill.setAlpha(70)
             p.setPen(Qt.NoPen)
-            p.setBrush(fill)
+            p.setBrush(QColor(color))
             p.drawEllipse(mark)
             pen = QPen(QColor("#ffffff"), 1.8)
             pen.setCapStyle(Qt.RoundCap)
@@ -557,8 +544,7 @@ class LabelFilterPanel(QWidget):
                 QPointF(cx - 3.4, cy), QPointF(cx - 1.0, cy + 2.5),
                 QPointF(cx + 3.5, cy - 2.4)]))
             return
-        border = CHECK_BORDER_DIM if not enabled else (
-            CHECK_BORDER_HOVER if hovered else CHECK_BORDER)
+        border = CHECK_BORDER_HOVER if hovered else CHECK_BORDER
         p.setPen(QPen(QColor(border), 1.5))
         p.setBrush(Qt.NoBrush)
         p.drawEllipse(mark)

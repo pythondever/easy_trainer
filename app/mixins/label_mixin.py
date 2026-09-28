@@ -24,41 +24,45 @@ UNLABELED_KEY = "__unlabeled__"
 class LabelMixin(object):
     @property
     def current_label(self):
-        """筛选里唯一选中的那个标签; "所有图像"和多选都返回 None.
+        """筛选里唯一选中的那个标签; 全选/未选择/多选都返回 None.
 
         重命名/删除这类只作用于单个标签的入口靠它判断能不能执行, 它不代表
         当前视图在看什么(视图口径见 _filter_records).
         """
-        if self.filter_all or len(self.filter_labels) != 1:
+        if len(self.filter_labels) != 1:
             return None
         return self.filter_labels[0]
 
     def _unlabeled_selected(self):
         """筛选里是否含未标注 - 首页批量删未标注图的门槛."""
-        return (not self.filter_all) and UNLABELED_KEY in self.filter_labels
+        return UNLABELED_KEY in self.filter_labels
 
     def _by_box_mode(self):
-        """选了真实标签就按 box 展开(命中一框出一个 ROI); 全部/只选未标注看整图."""
-        return (not self.filter_all
-                and any(k != UNLABELED_KEY for k in self.filter_labels))
+        """选了真实标签就按 box 展开(命中一框出一个 ROI); 未选择/只选未标注看整图."""
+        return any(k != UNLABELED_KEY for k in self.filter_labels)
 
-    def _set_filter_all(self):
-        self.filter_all = True
-        self.filter_labels = []
+    def _all_filter_keys(self):
+        """筛选面板当前全部可选项的 key(含未标注), 顺序与网格一致."""
+        return [k for _n, _c, k in getattr(self, "_label_filter_items", [])]
+
+    def _filter_all_selected(self):
+        """是否处于全选态. 面板还没建选项时不算, 否则空集会被判成相等."""
+        items = getattr(self, "_label_filter_items", [])
+        return bool(items) and set(self.filter_labels) == {k for _n, _c, k in items}
+
+    def _select_all_labels(self):
+        self.filter_labels = self._all_filter_keys()
 
     def _replace_filter_label(self, old_name, new_name):
-        """标签改名/合并后同步勾选: 勾着旧名的换成新名, 名字空了就回所有图像."""
+        """标签改名/合并后同步勾选: 勾着旧名的换成新名, 名字空了勾选一并清掉."""
         if old_name not in self.filter_labels:
             return
         kept = [k for k in self.filter_labels if k != old_name]
         if new_name and new_name not in kept:
             kept.append(new_name)
         self.filter_labels = kept
-        if not kept:
-            self._set_filter_all()
 
     def _init_label_filter(self):
-        self.filter_all = True
         self.filter_labels = []
         self._label_filter_items = []
         self.label_filter_panel = LabelFilterPanel(self)
@@ -79,9 +83,8 @@ class LabelMixin(object):
         panel.popup_below(self.label_filter_btn)
         self._filter_closed_at = 0.0
 
-    def _on_label_filter_changed(self, all_mode, selected):
+    def _on_label_filter_changed(self, selected):
         """面板勾选变化: 重置分页并按新筛选重渲(分页数据跟着筛选走)."""
-        self.filter_all = bool(all_mode)
         self.filter_labels = list(selected)
         self.current_page = 0
         self._sync_filter_ui()
@@ -98,12 +101,13 @@ class LabelMixin(object):
         names = {k: n for n, _c, k in items}
         colors = {k: c for n, c, k in items}
         count_text = QC.translate("LabelMixin", "已选 {} 个")
-        candidates = [QC.translate("LabelMixin", "所有图像"),
+        all_text = QC.translate("LabelMixin", "全选")
+        candidates = [all_text,
                       QC.translate("LabelMixin", "未选择标签"),
                       count_text.format(99)]
         candidates.extend(names.values())
-        if self.filter_all:
-            text, color = QC.translate("LabelMixin", "所有图像"), ALL_COLOR
+        if self._filter_all_selected():
+            text, color = all_text, ALL_COLOR
             dim = False
         elif len(self.filter_labels) == 1:
             key = self.filter_labels[0]
@@ -122,11 +126,11 @@ class LabelMixin(object):
         btn.set_state(text, color, dim)
         panel = getattr(self, "label_filter_panel", None)
         if panel is not None:
-            panel.set_state(self.filter_all, self.filter_labels)
+            panel.set_state(self.filter_labels)
         self._update_label_action_buttons()
 
     def _update_label_action_buttons(self):
-        """编辑/删除只认单个标签: 所有图像、多选、只选未标注 都置灰."""
+        """编辑/删除只认单个标签: 未选、多选、只选未标注 都置灰."""
         label = self.current_label
         enabled = bool(label) and label != UNLABELED_KEY
         for name in ("rename_label_btn", "delete_label_btn"):
@@ -135,9 +139,9 @@ class LabelMixin(object):
                 btn.setEnabled(enabled)
 
     def _reset_label_filter_text(self):
-        """没打开数据集: 面板没有可选项, 收起态回到所有图像."""
+        """没打开数据集: 面板没有可选项, 收起态回到未选择标签."""
         self._label_filter_items = []
-        self._set_filter_all()
+        self.filter_labels = []
         panel = getattr(self, "label_filter_panel", None)
         if panel is not None:
             panel.set_labels([])
@@ -167,12 +171,13 @@ class LabelMixin(object):
             self.db.save_dataset_labels(project_name, dataset_name, merged)
         return merged
 
-    def _refresh_label_filter(self, project_name, dataset_name):
+    def _refresh_label_filter(self, project_name, dataset_name, reset=False):
         """
         切换数据集时重建筛选面板的选项, 并尽量保留用户已勾的标签.
         选项 = db.labels 并上 cache 实际标签(db 可能滞后: 用户标了新图还没同步,
-        不并会让选项缺项), 末尾追加未标注. 默认所有图像; 原来勾的标签若还在就
-        继续勾着, 一个都不剩则回所有图像.
+        不并会让选项缺项), 末尾追加未标注. reset=True(进入/重新载入数据集)回全选;
+        同一数据集内的刷新(标注返回/改名/删图)不传, 保留用户勾选;
+        本就在全选态时也维持全选, 这样新标注出的标签会被自动带上.
         """
         if not hasattr(self, "label_filter_panel"):
             return
@@ -195,11 +200,12 @@ class LabelMixin(object):
                       UNLABELED_KEY))
         valid = {key for _n, _c, key in items}
         kept = [k for k in self.filter_labels if k in valid]
-        if self.filter_all or not kept:
-            self._set_filter_all()
+        was_all = self._filter_all_selected()   # 要用重建前的选项判定
+        self._label_filter_items = items
+        if reset or was_all:
+            self._select_all_labels()
         else:
             self.filter_labels = kept
-        self._label_filter_items = items
         self.label_filter_panel.set_labels(items)
         self._sync_filter_ui()
 
@@ -218,7 +224,7 @@ class LabelMixin(object):
     def _on_rename_label(self):
         """
         首页"编辑"按钮: 重命名筛选里唯一选中的那个标签.
-        多选或"所有图像"时按钮已置灰, 走不到这里.
+        多选或未选标签时按钮已置灰, 走不到这里.
         弹 ui/edit_label.py 对话框(类别 + 批量修改为 + 确定).
         """
         if not self._current_dataset:

@@ -686,17 +686,17 @@ Xác nhận xóa?</translation>
 <context>
     <name>App</name>
     <message>
-        <location filename="../app/main_window.py" line="45"/>
+        <location filename="../app/main_window.py" line="44"/>
         <source>软件启动</source>
         <translation>Khởi động phần mềm</translation>
     </message>
     <message>
-        <location filename="../app/main_window.py" line="48"/>
+        <location filename="../app/main_window.py" line="47"/>
         <source>软件退出</source>
         <translation>Thoát phần mềm</translation>
     </message>
     <message>
-        <location filename="../app/main_window.py" line="50"/>
+        <location filename="../app/main_window.py" line="49"/>
         <source>软件退出前停止训练</source>
         <translation>Dừng huấn luyện trước khi thoát phần mềm</translation>
     </message>
@@ -968,83 +968,88 @@ Xác nhận xóa?</translation>
 <context>
     <name>DatasetViewMixin</name>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="247"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="251"/>
         <source>删除全部未标注图像({} 张)</source>
         <translation>Xóa tất cả ảnh chưa gán nhãn ({} ảnh)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="253"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="257"/>
         <source>删除所选图像({} 张)</source>
         <translation>Xóa ảnh đã chọn ({} ảnh)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="349"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="353"/>
         <source>重载跳过: 数据集 {}/{} 无图像目录</source>
         <translation>Bỏ qua tải lại: bộ dữ liệu {}/{} không có thư mục ảnh</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="350"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="354"/>
         <source>重载</source>
         <translation>Tải lại</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="351"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="355"/>
         <source>该数据集还没有图像目录, 请先右键&quot;导入&quot;</source>
         <translation>Bộ dữ liệu này chưa có thư mục ảnh, bấm chuột phải &quot;Nhập&quot; trước</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="355"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="359"/>
         <source>重载跳过: 数据集 {}/{} 正在载入</source>
         <translation>Bỏ qua tải lại: bộ dữ liệu {}/{} đang tải</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="357"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="361"/>
         <source>重载数据集: {}/{}</source>
         <translation>Tải lại bộ dữ liệu: {}/{}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="821"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="822"/>
         <source>第 {} / {} 页</source>
         <translation>Trang {} / {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="825"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="826"/>
         <source>第 {}/{} 页 · 共 {} 个</source>
         <translation>Trang {}/{} · tổng {} mục</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="827"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="828"/>
         <source>第 {}/{} 页 · 共 {} 张</source>
         <translation>Trang {}/{} · tổng {} ảnh</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="836"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="841"/>
+        <source>未选择标签</source>
+        <translation>Chưa chọn nhãn</translation>
+    </message>
+    <message>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="843"/>
         <source>暂无数据</source>
         <translation>Không có dữ liệu</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="871"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="881"/>
         <source>开始导入: {}/{} | 图像路径={} | 标签路径={} | 格式={}</source>
         <translation>Bắt đầu nhập: {}/{} | Đường dẫn ảnh={} | Đường dẫn nhãn={} | Định dạng={}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="872"/>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="942"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="882"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="952"/>
         <source>(无)</source>
         <translation>(không có)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="937"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="947"/>
         <source>{}: {}个</source>
         <translation>{}: {} khung</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="939"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="949"/>
         <source>数据集导入完成: {}/{} | 图像 {} 张, 已标注 {} 张 | 标签({}类): {}</source>
         <translation>Nhập bộ dữ liệu xong: {}/{} | {} ảnh, đã gán nhãn {} ảnh | Nhãn ({} lớp): {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="983"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="993"/>
         <source>数据集 {}/{} 未导入, 右键&quot;导入&quot;选择图像与标签目录</source>
         <translation>Bộ dữ liệu {}/{} chưa nhập, bấm chuột phải &quot;Nhập&quot; để chọn thư mục ảnh và nhãn</translation>
     </message>
@@ -1127,7 +1132,7 @@ Xác nhận xóa?</translation>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="501"/>
         <location filename="../app/mixins/import_export_mixin.py" line="277"/>
-        <location filename="../app/mixins/label_mixin.py" line="240"/>
+        <location filename="../app/mixins/label_mixin.py" line="245"/>
         <location filename="../app/mixins/misc_mixin.py" line="122"/>
         <location filename="../app/widgets/dialog_buttons.py" line="104"/>
         <source>确定</source>
@@ -1396,32 +1401,32 @@ Vị trí: {}</translation>
     <name>LabelFilter</name>
     <message>
         <location filename="../app/widgets/label_filter_popup.py" line="71"/>
-        <location filename="../app/widgets/label_filter_popup.py" line="479"/>
-        <source>所有图像</source>
-        <translation>Tất cả ảnh</translation>
+        <location filename="../app/widgets/label_filter_popup.py" line="471"/>
+        <source>全选</source>
+        <translation>Chọn tất cả</translation>
     </message>
     <message>
-        <location filename="../app/widgets/label_filter_popup.py" line="492"/>
+        <location filename="../app/widgets/label_filter_popup.py" line="485"/>
         <source>显示全部图像</source>
         <translation>Đang hiển thị tất cả ảnh</translation>
     </message>
     <message>
-        <location filename="../app/widgets/label_filter_popup.py" line="494"/>
+        <location filename="../app/widgets/label_filter_popup.py" line="487"/>
         <source>按所选标签过滤</source>
         <translation>Đang lọc theo nhãn đã chọn</translation>
     </message>
     <message>
-        <location filename="../app/widgets/label_filter_popup.py" line="496"/>
+        <location filename="../app/widgets/label_filter_popup.py" line="489"/>
         <source>未选择标签</source>
         <translation>Chưa chọn nhãn</translation>
     </message>
     <message>
-        <location filename="../app/widgets/label_filter_popup.py" line="597"/>
+        <location filename="../app/widgets/label_filter_popup.py" line="582"/>
         <source>收起</source>
         <translation>Thu gọn</translation>
     </message>
     <message>
-        <location filename="../app/widgets/label_filter_popup.py" line="598"/>
+        <location filename="../app/widgets/label_filter_popup.py" line="583"/>
         <source>展开全部</source>
         <translation>Mở rộng tất cả</translation>
     </message>
@@ -1429,63 +1434,62 @@ Vị trí: {}</translation>
 <context>
     <name>LabelMixin</name>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="100"/>
+        <location filename="../app/mixins/label_mixin.py" line="103"/>
         <source>已选 {} 个</source>
         <translation>Đã chọn {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="101"/>
-        <location filename="../app/mixins/label_mixin.py" line="106"/>
-        <source>所有图像</source>
-        <translation>Tất cả ảnh</translation>
+        <location filename="../app/mixins/label_mixin.py" line="104"/>
+        <source>全选</source>
+        <translation>Chọn tất cả</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="102"/>
-        <location filename="../app/mixins/label_mixin.py" line="119"/>
+        <location filename="../app/mixins/label_mixin.py" line="106"/>
+        <location filename="../app/mixins/label_mixin.py" line="123"/>
         <source>未选择标签</source>
         <translation>Chưa chọn nhãn</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="111"/>
-        <location filename="../app/mixins/label_mixin.py" line="194"/>
+        <location filename="../app/mixins/label_mixin.py" line="115"/>
+        <location filename="../app/mixins/label_mixin.py" line="198"/>
         <source>未标注</source>
         <translation>Chưa gán nhãn</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="225"/>
         <location filename="../app/mixins/label_mixin.py" line="230"/>
-        <location filename="../app/mixins/label_mixin.py" line="247"/>
+        <location filename="../app/mixins/label_mixin.py" line="235"/>
+        <location filename="../app/mixins/label_mixin.py" line="252"/>
         <source>重命名</source>
         <translation>Đổi tên</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="225"/>
-        <location filename="../app/mixins/label_mixin.py" line="478"/>
+        <location filename="../app/mixins/label_mixin.py" line="230"/>
+        <location filename="../app/mixins/label_mixin.py" line="483"/>
         <source>请先在左侧选中一个数据集</source>
         <translation>Chọn một bộ dữ liệu ở bên trái trước</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="231"/>
+        <location filename="../app/mixins/label_mixin.py" line="236"/>
         <source>请先在筛选下拉框中选择要重命名的标签</source>
         <translation>Chọn nhãn cần đổi tên trong hộp lọc trước</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="234"/>
+        <location filename="../app/mixins/label_mixin.py" line="239"/>
         <source>类别修改</source>
         <translation>Sửa lớp</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="247"/>
+        <location filename="../app/mixins/label_mixin.py" line="252"/>
         <source>标签名称不能为空</source>
         <translation>Tên nhãn không được để trống</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="256"/>
+        <location filename="../app/mixins/label_mixin.py" line="261"/>
         <source>合并标签</source>
         <translation>Hợp nhất nhãn</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="257"/>
+        <location filename="../app/mixins/label_mixin.py" line="262"/>
         <source>标签&quot;{}&quot;已存在.
 确定把&quot;{}&quot;的所有标注合并到&quot;{}&quot;吗?
 此操作会改写数据集源标签文件, 且不可恢复.</source>
@@ -1494,79 +1498,79 @@ Hợp nhất tất cả chú thích của &quot;{}&quot; vào &quot;{}&quot;?
 Thao tác này ghi đè tệp nhãn nguồn của bộ dữ liệu và không thể khôi phục.</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="312"/>
+        <location filename="../app/mixins/label_mixin.py" line="317"/>
         <source>合并标签: {} → {} ({}/{}) | 启动后台文件合并, 完成后输出统计</source>
         <translation>Hợp nhất nhãn: {} → {} ({}/{}) | khởi động hợp nhất tệp chạy nền, xuất thống kê khi xong</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="318"/>
+        <location filename="../app/mixins/label_mixin.py" line="323"/>
         <source>重命名标签: {} → {} ({}/{})</source>
         <translation>Đổi tên nhãn: {} → {} ({}/{})</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="390"/>
+        <location filename="../app/mixins/label_mixin.py" line="395"/>
         <source>{}: {}个</source>
         <translation>{}: {} khung</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="393"/>
+        <location filename="../app/mixins/label_mixin.py" line="398"/>
         <source>删除标签完成: {} | 修改 {} 个标签文件 | 删除后标签统计({}类): {}</source>
         <translation>Xóa nhãn xong: {} | sửa {} tệp nhãn | thống kê nhãn sau khi xóa ({} lớp): {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="396"/>
         <location filename="../app/mixins/label_mixin.py" line="401"/>
         <location filename="../app/mixins/label_mixin.py" line="406"/>
+        <location filename="../app/mixins/label_mixin.py" line="411"/>
         <source>(无)</source>
         <translation>(không có)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="398"/>
+        <location filename="../app/mixins/label_mixin.py" line="403"/>
         <source>合并标签: {} → {} | 修改 {} 个标签文件 | 合并后标签统计({}类): {}</source>
         <translation>Hợp nhất nhãn: {} → {} | sửa {} tệp nhãn | thống kê nhãn sau khi hợp nhất ({} lớp): {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="403"/>
+        <location filename="../app/mixins/label_mixin.py" line="408"/>
         <source>合并标签: {} → {} | 无标签文件被修改 | 合并后标签统计({}类): {}</source>
         <translation>Hợp nhất nhãn: {} → {} | không có tệp nhãn nào bị sửa | thống kê nhãn sau khi hợp nhất ({} lớp): {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="444"/>
+        <location filename="../app/mixins/label_mixin.py" line="449"/>
         <source>重命名标签</source>
         <translation>Đổi tên nhãn</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="444"/>
+        <location filename="../app/mixins/label_mixin.py" line="449"/>
         <source>正在更新标注文件...</source>
         <translation>Đang cập nhật tệp nhãn...</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="478"/>
         <location filename="../app/mixins/label_mixin.py" line="483"/>
-        <location filename="../app/mixins/label_mixin.py" line="487"/>
-        <location filename="../app/mixins/label_mixin.py" line="589"/>
+        <location filename="../app/mixins/label_mixin.py" line="488"/>
+        <location filename="../app/mixins/label_mixin.py" line="492"/>
+        <location filename="../app/mixins/label_mixin.py" line="594"/>
         <source>删除标签</source>
         <translation>Xóa nhãn</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="484"/>
+        <location filename="../app/mixins/label_mixin.py" line="489"/>
         <source>请先在筛选下拉框中选择要删除的标签</source>
         <translation>Chọn nhãn cần xóa trong hộp lọc trước</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="488"/>
+        <location filename="../app/mixins/label_mixin.py" line="493"/>
         <source>确定删除标签&quot;{}&quot;吗?
 该标签的所有标注将被删除, 且不可恢复.</source>
         <translation>Xóa nhãn &quot;{}&quot;?
 Mọi chú thích của nhãn này sẽ bị xóa và không thể khôi phục.</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="522"/>
+        <location filename="../app/mixins/label_mixin.py" line="527"/>
         <source>删除标签: {} ({}/{})</source>
         <translation>Xóa nhãn: {} ({}/{})</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="589"/>
+        <location filename="../app/mixins/label_mixin.py" line="594"/>
         <source>正在清理标注文件...</source>
         <translation>Đang dọn tệp chú thích...</translation>
     </message>

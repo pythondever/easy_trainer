@@ -686,17 +686,17 @@
 <context>
     <name>App</name>
     <message>
-        <location filename="../app/main_window.py" line="45"/>
+        <location filename="../app/main_window.py" line="44"/>
         <source>软件启动</source>
         <translation>軟體啟動</translation>
     </message>
     <message>
-        <location filename="../app/main_window.py" line="48"/>
+        <location filename="../app/main_window.py" line="47"/>
         <source>软件退出</source>
         <translation>軟體結束</translation>
     </message>
     <message>
-        <location filename="../app/main_window.py" line="50"/>
+        <location filename="../app/main_window.py" line="49"/>
         <source>软件退出前停止训练</source>
         <translation>軟體結束前停止訓練</translation>
     </message>
@@ -968,83 +968,88 @@
 <context>
     <name>DatasetViewMixin</name>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="247"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="251"/>
         <source>删除全部未标注图像({} 张)</source>
         <translation>刪除全部未標註影像({} 張)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="253"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="257"/>
         <source>删除所选图像({} 张)</source>
         <translation>刪除所選影像({} 張)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="349"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="353"/>
         <source>重载跳过: 数据集 {}/{} 无图像目录</source>
         <translation>重載略過: 資料集 {}/{} 無影像目錄</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="350"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="354"/>
         <source>重载</source>
         <translation>重新載入</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="351"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="355"/>
         <source>该数据集还没有图像目录, 请先右键&quot;导入&quot;</source>
         <translation>該資料集還沒有影像目錄, 請先按右鍵「匯入」</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="355"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="359"/>
         <source>重载跳过: 数据集 {}/{} 正在载入</source>
         <translation>重載略過: 資料集 {}/{} 正在載入</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="357"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="361"/>
         <source>重载数据集: {}/{}</source>
         <translation>重載資料集: {}/{}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="821"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="822"/>
         <source>第 {} / {} 页</source>
         <translation>第 {} / {} 頁</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="825"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="826"/>
         <source>第 {}/{} 页 · 共 {} 个</source>
         <translation>第 {}/{} 頁 · 共 {} 個</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="827"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="828"/>
         <source>第 {}/{} 页 · 共 {} 张</source>
         <translation>第 {}/{} 頁 · 共 {} 張</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="836"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="841"/>
+        <source>未选择标签</source>
+        <translation>未選擇標籤</translation>
+    </message>
+    <message>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="843"/>
         <source>暂无数据</source>
         <translation>暫無資料</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="871"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="881"/>
         <source>开始导入: {}/{} | 图像路径={} | 标签路径={} | 格式={}</source>
         <translation>開始匯入: {}/{} | 影像路徑={} | 標籤路徑={} | 格式={}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="872"/>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="942"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="882"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="952"/>
         <source>(无)</source>
         <translation>(無)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="937"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="947"/>
         <source>{}: {}个</source>
         <translation>{}: {}個</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="939"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="949"/>
         <source>数据集导入完成: {}/{} | 图像 {} 张, 已标注 {} 张 | 标签({}类): {}</source>
         <translation>資料集匯入完成: {}/{} | 影像 {} 張, 已標註 {} 張 | 標籤({}類): {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="983"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="993"/>
         <source>数据集 {}/{} 未导入, 右键&quot;导入&quot;选择图像与标签目录</source>
         <translation>資料集 {}/{} 未匯入, 請按右鍵「匯入」選擇影像與標籤目錄</translation>
     </message>
@@ -1127,7 +1132,7 @@
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="501"/>
         <location filename="../app/mixins/import_export_mixin.py" line="277"/>
-        <location filename="../app/mixins/label_mixin.py" line="240"/>
+        <location filename="../app/mixins/label_mixin.py" line="245"/>
         <location filename="../app/mixins/misc_mixin.py" line="122"/>
         <location filename="../app/widgets/dialog_buttons.py" line="104"/>
         <source>确定</source>
@@ -1396,32 +1401,32 @@
     <name>LabelFilter</name>
     <message>
         <location filename="../app/widgets/label_filter_popup.py" line="71"/>
-        <location filename="../app/widgets/label_filter_popup.py" line="479"/>
-        <source>所有图像</source>
-        <translation>所有影像</translation>
+        <location filename="../app/widgets/label_filter_popup.py" line="471"/>
+        <source>全选</source>
+        <translation>全選</translation>
     </message>
     <message>
-        <location filename="../app/widgets/label_filter_popup.py" line="492"/>
+        <location filename="../app/widgets/label_filter_popup.py" line="485"/>
         <source>显示全部图像</source>
         <translation>顯示全部影像</translation>
     </message>
     <message>
-        <location filename="../app/widgets/label_filter_popup.py" line="494"/>
+        <location filename="../app/widgets/label_filter_popup.py" line="487"/>
         <source>按所选标签过滤</source>
         <translation>依所選標籤篩選</translation>
     </message>
     <message>
-        <location filename="../app/widgets/label_filter_popup.py" line="496"/>
+        <location filename="../app/widgets/label_filter_popup.py" line="489"/>
         <source>未选择标签</source>
         <translation>未選擇標籤</translation>
     </message>
     <message>
-        <location filename="../app/widgets/label_filter_popup.py" line="597"/>
+        <location filename="../app/widgets/label_filter_popup.py" line="582"/>
         <source>收起</source>
         <translation>收合</translation>
     </message>
     <message>
-        <location filename="../app/widgets/label_filter_popup.py" line="598"/>
+        <location filename="../app/widgets/label_filter_popup.py" line="583"/>
         <source>展开全部</source>
         <translation>展開全部</translation>
     </message>
@@ -1429,63 +1434,62 @@
 <context>
     <name>LabelMixin</name>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="100"/>
+        <location filename="../app/mixins/label_mixin.py" line="103"/>
         <source>已选 {} 个</source>
         <translation>已選 {} 個</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="101"/>
-        <location filename="../app/mixins/label_mixin.py" line="106"/>
-        <source>所有图像</source>
-        <translation>所有影像</translation>
+        <location filename="../app/mixins/label_mixin.py" line="104"/>
+        <source>全选</source>
+        <translation>全選</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="102"/>
-        <location filename="../app/mixins/label_mixin.py" line="119"/>
+        <location filename="../app/mixins/label_mixin.py" line="106"/>
+        <location filename="../app/mixins/label_mixin.py" line="123"/>
         <source>未选择标签</source>
         <translation>未選擇標籤</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="111"/>
-        <location filename="../app/mixins/label_mixin.py" line="194"/>
+        <location filename="../app/mixins/label_mixin.py" line="115"/>
+        <location filename="../app/mixins/label_mixin.py" line="198"/>
         <source>未标注</source>
         <translation>未標註</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="225"/>
         <location filename="../app/mixins/label_mixin.py" line="230"/>
-        <location filename="../app/mixins/label_mixin.py" line="247"/>
+        <location filename="../app/mixins/label_mixin.py" line="235"/>
+        <location filename="../app/mixins/label_mixin.py" line="252"/>
         <source>重命名</source>
         <translation>重新命名</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="225"/>
-        <location filename="../app/mixins/label_mixin.py" line="478"/>
+        <location filename="../app/mixins/label_mixin.py" line="230"/>
+        <location filename="../app/mixins/label_mixin.py" line="483"/>
         <source>请先在左侧选中一个数据集</source>
         <translation>請先在左側選取一個資料集</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="231"/>
+        <location filename="../app/mixins/label_mixin.py" line="236"/>
         <source>请先在筛选下拉框中选择要重命名的标签</source>
         <translation>請先在篩選下拉選單中選擇要重新命名的標籤</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="234"/>
+        <location filename="../app/mixins/label_mixin.py" line="239"/>
         <source>类别修改</source>
         <translation>類別修改</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="247"/>
+        <location filename="../app/mixins/label_mixin.py" line="252"/>
         <source>标签名称不能为空</source>
         <translation>標籤名稱不能為空</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="256"/>
+        <location filename="../app/mixins/label_mixin.py" line="261"/>
         <source>合并标签</source>
         <translation>合併標籤</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="257"/>
+        <location filename="../app/mixins/label_mixin.py" line="262"/>
         <source>标签&quot;{}&quot;已存在.
 确定把&quot;{}&quot;的所有标注合并到&quot;{}&quot;吗?
 此操作会改写数据集源标签文件, 且不可恢复.</source>
@@ -1494,79 +1498,79 @@
 此操作會改寫資料集來源標籤檔案, 且無法復原.</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="312"/>
+        <location filename="../app/mixins/label_mixin.py" line="317"/>
         <source>合并标签: {} → {} ({}/{}) | 启动后台文件合并, 完成后输出统计</source>
         <translation>合併標籤: {} → {} ({}/{}) | 啟動背景檔案合併, 完成後輸出統計</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="318"/>
+        <location filename="../app/mixins/label_mixin.py" line="323"/>
         <source>重命名标签: {} → {} ({}/{})</source>
         <translation>重新命名標籤: {} → {} ({}/{})</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="390"/>
+        <location filename="../app/mixins/label_mixin.py" line="395"/>
         <source>{}: {}个</source>
         <translation>{}: {}個</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="393"/>
+        <location filename="../app/mixins/label_mixin.py" line="398"/>
         <source>删除标签完成: {} | 修改 {} 个标签文件 | 删除后标签统计({}类): {}</source>
         <translation>刪除標籤完成: {} | 修改 {} 個標籤檔案 | 刪除後標籤統計({}類): {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="396"/>
         <location filename="../app/mixins/label_mixin.py" line="401"/>
         <location filename="../app/mixins/label_mixin.py" line="406"/>
+        <location filename="../app/mixins/label_mixin.py" line="411"/>
         <source>(无)</source>
         <translation>(無)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="398"/>
+        <location filename="../app/mixins/label_mixin.py" line="403"/>
         <source>合并标签: {} → {} | 修改 {} 个标签文件 | 合并后标签统计({}类): {}</source>
         <translation>合併標籤: {} → {} | 修改 {} 個標籤檔案 | 合併後標籤統計({}類): {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="403"/>
+        <location filename="../app/mixins/label_mixin.py" line="408"/>
         <source>合并标签: {} → {} | 无标签文件被修改 | 合并后标签统计({}类): {}</source>
         <translation>合併標籤: {} → {} | 無標籤檔案被修改 | 合併後標籤統計({}類): {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="444"/>
+        <location filename="../app/mixins/label_mixin.py" line="449"/>
         <source>重命名标签</source>
         <translation>重新命名標籤</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="444"/>
+        <location filename="../app/mixins/label_mixin.py" line="449"/>
         <source>正在更新标注文件...</source>
         <translation>正在更新標註檔案...</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="478"/>
         <location filename="../app/mixins/label_mixin.py" line="483"/>
-        <location filename="../app/mixins/label_mixin.py" line="487"/>
-        <location filename="../app/mixins/label_mixin.py" line="589"/>
+        <location filename="../app/mixins/label_mixin.py" line="488"/>
+        <location filename="../app/mixins/label_mixin.py" line="492"/>
+        <location filename="../app/mixins/label_mixin.py" line="594"/>
         <source>删除标签</source>
         <translation>刪除標籤</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="484"/>
+        <location filename="../app/mixins/label_mixin.py" line="489"/>
         <source>请先在筛选下拉框中选择要删除的标签</source>
         <translation>請先在篩選下拉選單中選擇要刪除的標籤</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="488"/>
+        <location filename="../app/mixins/label_mixin.py" line="493"/>
         <source>确定删除标签&quot;{}&quot;吗?
 该标签的所有标注将被删除, 且不可恢复.</source>
         <translation>確定要刪除標籤「{}」嗎?
 該標籤的所有標註將被刪除, 且無法復原.</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="522"/>
+        <location filename="../app/mixins/label_mixin.py" line="527"/>
         <source>删除标签: {} ({}/{})</source>
         <translation>刪除標籤: {} ({}/{})</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="589"/>
+        <location filename="../app/mixins/label_mixin.py" line="594"/>
         <source>正在清理标注文件...</source>
         <translation>正在清理標註檔案...</translation>
     </message>

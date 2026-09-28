@@ -9,15 +9,17 @@ from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsPolygonItem, QGraphics
 from app.core.utils import ui_font_family
 
 # 深色背景下鲜艳的标签配色.
+# CIEDE2000 最远点贪心(MaxMin)从 HSV 候选池挑的 32 色, 表内任意两色 dE00 >= 11,
+# 与三个固定色(全选红 #e03737 / 未标注黑 #000000 / 灰点 #5c6270)也 >= 12.
 LABEL_COLORS = [
-    "#4f7dff", "#3DDC97", "#F5B942", "#F0646E", "#C08BFF",
-    "#4FC3F7", "#FF8A65", "#81C784", "#F06292", "#AED581",
-    "#4DD0E1", "#FFD54F",
-    "#F9779A", "#F97E72", "#E68026", "#D98A26",
-    "#CC9226", "#B39F26", "#A3A626", "#72B436",
-    "#52B852", "#30C391", "#30C1A5", "#32C5DC",
-    "#43BFF9", "#69B9F9", "#80B4F9", "#A2A9F9",
-    "#B2A2F9", "#C49AF9", "#DA8DF9", "#DF7DDE",
+    "#ffff00", "#00f2ff", "#ff73ff", "#b88100",
+    "#00b853", "#73a4ff", "#ff9d73", "#1ca0b8",
+    "#f00084", "#73ffc7", "#66ff00", "#9d4dff",
+    "#aeb853", "#ffbf00", "#37b8a4", "#d66000",
+    "#ff7381", "#6072d6", "#4dc9ff", "#1c81b8",
+    "#b853ae", "#ff8c00", "#ff73b2", "#b86c53",
+    "#d6a760", "#ff674d", "#cff06c", "#f000f0",
+    "#ffe373", "#6eb800", "#b8a01c", "#00f078",
 ]
 
 

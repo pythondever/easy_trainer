@@ -241,13 +241,17 @@ class DatasetViewMixin(object):
                     cur_ds = _self._current_dataset
                     index = (_self.dataset_cache.get(cur_ds[0], {}).get(cur_ds[1], {})
                              if cur_ds else {})
-                    unlabeled = _self._filter_records(index)
-                    all_paths = [r.get("image_path", "") for r in unlabeled if r.get("image_path")]
-                    act = menu.addAction(
-                        QC.translate("DatasetViewMixin",
-                                     "删除全部未标注图像({} 张)").format(len(all_paths)))
-                    act.triggered.connect(
-                        lambda: _self._delete_paths_with_confirm(all_paths))
+                    # 只取真未标注的: 勾了未标注又勾着别的标签时, _filter_records
+                    # 会把带那些标签的图一并带进来, 照搬会误删有标注的图
+                    view = _self._filter_records(index)
+                    all_paths = [r.get("image_path", "") for r in view
+                                 if r.get("image_path") and not rec_is_labeled(r)]
+                    if all_paths:
+                        act = menu.addAction(
+                            QC.translate("DatasetViewMixin",
+                                         "删除全部未标注图像({} 张)").format(len(all_paths)))
+                        act.triggered.connect(
+                            lambda: _self._delete_paths_with_confirm(all_paths))
                 else:
                     act = menu.addAction(
                         QC.translate("DatasetViewMixin",
@@ -361,23 +365,20 @@ class DatasetViewMixin(object):
     def _load_dataset_view(self, project, dataset):
         """丢缓存强制重扫并显示, 推理/标注新写的 json 靠它读入."""
         self._current_dataset = (project, dataset)
-        self._set_filter_all()
         self.current_page = 0
         proj_cache = self.dataset_cache.setdefault(project, {})
         proj_cache.pop(dataset, None)
         self.project_tree.set_row_loaded(project, dataset, False)
-        self._refresh_label_filter(project, dataset)
+        self._refresh_label_filter(project, dataset, reset=True)
         self.show_dataset_images(project, dataset, update_stats=True)
 
     def _filter_records(self, data):
         """
         当前筛选命中的图像记录, 保持 index["all"] 的原始顺序.
-        所有图像 → 全部; 否则是所选各项的并集(未标注按"没有有效框"判).
+        未选择标签 → 空(图区空白); 否则是所勾各项的并集(未标注按"没有有效框"判).
         分页与渲染都以它的长度为准, 所以勾选一变页数就跟着变.
         """
         all_records = data.get("all", [])
-        if self.filter_all:
-            return all_records
         picked = self.filter_labels
         if not picked:
             return []
@@ -401,7 +402,7 @@ class DatasetViewMixin(object):
         """
         标签筛选下把记录按 box 展开成 (rec, box_idx), 一个命中框占一个格子;
         多选时各标签的格子就混在同一页里, 顺序仍是图像顺序.
-        所有图像 / 只选未标注 / 分类数据集 原样返回(一图一格).
+        只选未标注 / 分类数据集 原样返回(一图一格).
         """
         if not self._by_box_mode():
             return records
@@ -758,7 +759,7 @@ class DatasetViewMixin(object):
     def _render_scene(self, records):
         """
         渲染当前页图像网格. 选到真实标签时每个 cell 一个 ROI(按命中框计数),
-        所有图像/未标注按整图缩略(按图像计数); 多选时两者混在同一页.
+        未标注按整图缩略(按图像计数); 多选时两种混在同一页.
         """
         scene = self.graphics_view.scene()
         scene.clear()
@@ -815,7 +816,7 @@ class DatasetViewMixin(object):
         """底栏只放"第 N / M 页", 当前页数字化亮; 总数与量词进 tooltip, 免得居中那组随内容横移."""
         self._page_info_state = (by_box, total_pages, count)
         if not count:
-            self._reset_page_info()
+            self._reset_page_info(empty_by_filter=not self.filter_labels)
             return
         self.pageInfoLabel.setText(
             QC.translate("DatasetViewMixin", "第 {} / {} 页").format(
@@ -830,10 +831,17 @@ class DatasetViewMixin(object):
         self.pre_page_btn.setEnabled(self.current_page > 0)
         self.next_page_btn.setEnabled(self.current_page < total_pages - 1)
 
-    def _reset_page_info(self):
-        """图像区清空 / 空数据集: 没有页可翻, 文案与两个按钮一起复位."""
-        self._page_info_state = None
-        self.pageInfoLabel.setText(QC.translate("DatasetViewMixin", "暂无数据"))
+    def _reset_page_info(self, empty_by_filter=False):
+        """图像区清空 / 空数据集: 没有页可翻, 文案与两个按钮一起复位.
+
+        empty_by_filter=True 是"有图但一个标签都没勾", 与"数据集本来就没图"分开说.
+        """
+        self._page_info_state = ("empty", bool(empty_by_filter))
+        if empty_by_filter:
+            text = QC.translate("DatasetViewMixin", "未选择标签")
+        else:
+            text = QC.translate("DatasetViewMixin", "暂无数据")
+        self.pageInfoLabel.setText(text)
         self.pageInfoLabel.setToolTip("")
         self.pre_page_btn.setEnabled(False)
         self.next_page_btn.setEnabled(False)
@@ -841,10 +849,12 @@ class DatasetViewMixin(object):
     def _refresh_page_info(self):
         """换语言后重刷底栏分页文案(retranslateUi 管不到运行时拼的这行)."""
         state = getattr(self, "_page_info_state", None)
-        if state:
-            self._set_page_info(*state)
-        else:
+        if state is None:
             self._reset_page_info()
+        elif state[0] == "empty":
+            self._reset_page_info(state[1])
+        else:
+            self._set_page_info(*state)
 
     def _show_page(self, offset):
         """当前数据集翻页(offset: +1/-1). 分页数据与显示时一致(应用标签筛选)."""
@@ -941,8 +951,9 @@ class DatasetViewMixin(object):
                 project_name, dataset_name, total, labeled,
                 len(label_counts), counts_str or QC.translate("DatasetViewMixin", "(无)")))
             self._refresh_dataset_labels(project_name, dataset_name, rescan=False)
+            # 新导入的内容默认全部可见; 标注/改名后的刷新不重置, 那条路保留用户勾选
             if self._current_dataset == (project_name, dataset_name):
-                self._refresh_label_filter(project_name, dataset_name)
+                self._refresh_label_filter(project_name, dataset_name, reset=True)
             if getattr(self, "_current_dataset", None) == (project_name, dataset_name):
                 self.show_dataset_images(project_name, dataset_name)
             # ImportTask 完成后刷新树行 chip 颜色/文本(do_import 预写阶段颜色陈旧, 此时才准确)
@@ -958,12 +969,12 @@ class DatasetViewMixin(object):
     def _on_sidebar_dataset_clicked(self, project, dataset):
         """
         点击数据集行: 仅记录选中; 已缓存的数据集切换显示, 未缓存不触发加载.
-        不强制覆盖筛选 - 由 _refresh_label_filter 按新数据集的实际 labels
-        决定保留已勾项还是回退到"所有图像".
+        换了数据集回全选(还没在这个数据集上勾过), 同一数据集重复点击保留勾选.
         """
+        switched = getattr(self, "_current_dataset", None) != (project, dataset)
         self._current_dataset = (project, dataset)
         if self.dataset_cache.get(project, {}).get(dataset):
-            self._refresh_label_filter(project, dataset)
+            self._refresh_label_filter(project, dataset, reset=switched)
             self.show_dataset_images(project, dataset)
         else:
             self._reset_image_area()
