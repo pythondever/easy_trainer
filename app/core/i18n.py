@@ -10,8 +10,7 @@ from PySide6.QtCore import QCoreApplication, QTranslator
 
 from app.core.utils import project_root
 
-# (代码, 下拉框里显示的名字). 名字本身不翻译: 各语言用户都看自己母语那一项,
-# 认得出该选哪个. 名字用本地写法且尽量短, 下拉框前面还挂着国旗.
+
 LANGUAGES = (
     ("zh_CN", "中文"),
     ("en_US", "English"),
@@ -24,8 +23,7 @@ LANGUAGES = (
     ("vi_VN", "Tiếng Việt"),
 )
 
-# 国旗图标: 自绘 SVG 而非 emoji. Windows 的 Segoe UI Emoji 不含区域指示符,
-# 🇺🇸 这种会退化成 "US" 两个字母摆在界面上.
+# 国旗图标: 自绘 SVG 而非 emoji
 _FLAG = {
     "zh_CN": "cn",
     "en_US": "us",
@@ -87,8 +85,8 @@ def current():
 
 
 def apply(app, code):
-    """装翻译, 返回真正生效的语言代码(.qm 缺失或损坏时退回默认语言).
-
+    """
+    装翻译, 返回真正生效的语言代码(.qm 缺失或损坏时退回默认语言).
     必须在建任何界面对象(含 setupUi)之前调用, 才对静态文案生效; 已经在显示的窗口
     不会自己变, 调用方要自己再走一遍 retranslateUi.
     """
