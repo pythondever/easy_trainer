@@ -43,6 +43,13 @@ public sealed class MainForm : Form
     private const int LogRowIndex = 10;
     private const int LogMinHeight = 60;
 
+    // 输入框 / 浏览按钮那一行的高度, 与 installer 对齐.
+    // 手写单行 TextBox 默认 AutoSize, 高度锁死在字体度量上, 得先关掉它才吃这个值
+    private const int FieldHeight = 36;
+    // 行高要比控件多出这段净空, 否则上下两行的边框会贴在一起
+    private const int FieldGap = 10;
+    private const int FieldRow = FieldHeight + FieldGap;
+
     private readonly TextBox _onnxBox = new();
     private readonly TextBox _outBox = new();
     private readonly TextBox _shapeBox = new();
@@ -81,7 +88,8 @@ public sealed class MainForm : Form
         Text = "模型转换";
         Font = new Font("Microsoft YaHei UI", 9f);
         BackColor = PageBg;
-        ClientSize = new Size(880, 802);    // 设计尺寸
+        // 高度按 FieldGap 撑出来的空间加过: 不加的话日志会被压到地板值并平白多一条滚动条
+        ClientSize = new Size(880, 838);    // 设计尺寸
         MinimumSize = new Size(560, 420);   // 只是窗体下限: 内容装不下靠滚动条, 不再按内容定死
         StartPosition = FormStartPosition.CenterScreen;
         try { Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath) ?? Icon; } catch { }
@@ -105,9 +113,9 @@ public sealed class MainForm : Form
         content.RowCount = 12;
         for (var i = 0; i < 12; i++) content.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         content.RowStyles[0] = new RowStyle(SizeType.Absolute, 40);   // 环境标题行(锁死, 免得被按钮撑高)
-        content.RowStyles[5] = new RowStyle(SizeType.Absolute, 34);   // 输入 onnx
-        content.RowStyles[6] = new RowStyle(SizeType.Absolute, 34);   // 输出目录
-        content.RowStyles[7] = new RowStyle(SizeType.Absolute, 34);   // 输入尺寸
+        content.RowStyles[5] = new RowStyle(SizeType.Absolute, FieldRow);   // 输入 onnx
+        content.RowStyles[6] = new RowStyle(SizeType.Absolute, FieldRow);   // 输出目录
+        content.RowStyles[7] = new RowStyle(SizeType.Absolute, FieldRow);   // 输入尺寸
         content.RowStyles[10] = new RowStyle(SizeType.Absolute, LogMinHeight);  // 日志(高度由 FitScroll 现算)
 
         content.Controls.Add(BuildEnvHeader(), 0, 0);
@@ -356,13 +364,13 @@ public sealed class MainForm : Form
             Dock = DockStyle.Fill,
             ColumnCount = 3,
             RowCount = 1,
-            Margin = new Padding(0),
+            Margin = new Padding(0, FieldGap / 2, 0, FieldGap / 2),
             BackColor = PageBg,
         };
         row.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 68));
         row.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         row.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, onBrowse is null ? 0 : 92));
-        row.RowStyles.Add(new RowStyle(SizeType.Absolute, 34));
+        row.RowStyles.Add(new RowStyle(SizeType.Absolute, FieldHeight));
 
         var tag = new Label
         {
@@ -377,8 +385,9 @@ public sealed class MainForm : Form
         box.BorderStyle = BorderStyle.FixedSingle;
         box.Font = new Font("Microsoft YaHei UI", 9.5f);
         box.Dock = DockStyle.Fill;
-        // 单行 TextBox 高度固定, margin 要按按钮高度反推, 否则两者差一截不齐平
-        box.Margin = new Padding(0, 6, 8, 6);
+        box.AutoSize = false;      // 不关掉它 Height 会被字体度量重算回去
+        box.Height = FieldHeight;
+        box.Margin = new Padding(0, 0, 8, 0);
         box.PlaceholderText = placeholder;
 
         row.Controls.Add(box, 1, 0);
@@ -391,7 +400,7 @@ public sealed class MainForm : Form
             Accent = MutedColor,
             Font = new Font("Microsoft YaHei UI", 9f),
             Dock = DockStyle.Fill,
-            Margin = new Padding(0, 6, 0, 6),
+            Margin = new Padding(0),
         };
         browse.Click += (_, _) => onBrowse();
 
@@ -407,12 +416,12 @@ public sealed class MainForm : Form
             Dock = DockStyle.Fill,
             ColumnCount = 2,
             RowCount = 1,
-            Margin = new Padding(0),
+            Margin = new Padding(0, FieldGap / 2, 0, FieldGap / 2),
             BackColor = PageBg,
         };
         row.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 68));
         row.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-        row.RowStyles.Add(new RowStyle(SizeType.Absolute, 34));
+        row.RowStyles.Add(new RowStyle(SizeType.Absolute, FieldHeight));
 
         row.Controls.Add(new Label
         {
@@ -426,7 +435,9 @@ public sealed class MainForm : Form
         _shapeBox.BorderStyle = BorderStyle.FixedSingle;
         _shapeBox.Font = new Font("Microsoft YaHei UI", 9.5f);
         _shapeBox.Dock = DockStyle.Fill;
-        _shapeBox.Margin = new Padding(0, 6, 8, 6);
+        _shapeBox.AutoSize = false;
+        _shapeBox.Height = FieldHeight;
+        _shapeBox.Margin = new Padding(0, 0, 8, 0);
         _shapeBox.PlaceholderText = "模型的输入是动态尺寸时才填, 如 images:1x3x640x640";
 
         _shapeInfo.AutoSize = false;

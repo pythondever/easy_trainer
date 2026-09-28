@@ -55,6 +55,8 @@ public sealed class MainForm : Form
 
         _dirBox.BorderStyle = BorderStyle.FixedSingle;
         _dirBox.Font = new Font("Microsoft YaHei UI", 9.5f);
+        // 单行 TextBox 默认 AutoSize, 高度锁死在字体度量上, 光设 Height 没用
+        _dirBox.AutoSize = false;
         _dirBox.Height = 36;
 
         var browse = new RoundedButton
@@ -129,7 +131,7 @@ public sealed class MainForm : Form
         dirRow.RowStyles.Add(new RowStyle(SizeType.Absolute, 36));
         _dirBox.Dock = DockStyle.Fill;
 
-        _dirBox.Margin = new Padding(0, 6, 8, 6);
+        _dirBox.Margin = new Padding(0, 0, 8, 0);
         browse.Dock = DockStyle.Fill;
         dirRow.Controls.Add(_dirBox, 0, 0);
         dirRow.Controls.Add(browse, 1, 0);
