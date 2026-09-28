@@ -17,8 +17,8 @@ from PySide6.QtGui import (QColor, QPixmap, QKeySequence, QShortcut,
                            QPainter, QIcon, QCursor, QIntValidator,
                            QDoubleValidator)
 from PySide6.QtWidgets import (QDialog, QWidget, QApplication, QVBoxLayout,
-                               QHBoxLayout, QLabel, QPushButton, QFrame,
-                               QMenu)
+                               QHBoxLayout, QLabel, QLineEdit, QPushButton,
+                               QFrame, QMenu)
 
 from ui.annotation import Ui_annotationDialog as AnnotationUI
 from ui.add_label import Ui_addLabelDialog as AddLabelUI
@@ -38,7 +38,8 @@ from app.annotation.box_item import (AnnotationBoxItem, LABEL_COLORS,
                                      assign_label_color, label_color)
 from app.core.label_utils import (label_sort_key, normalize_label,
                                   same_dir_json)
-from app.widgets.dialog_buttons import apply_icon, _icon_path, _tinted
+from app.widgets.dialog_buttons import (add_ok_cancel, apply_icon,
+                                        _icon_path, _tinted)
 from app.widgets.message_box import MessageBox, ProgressDialog
 from app.core.log import write_log
 
@@ -47,6 +48,22 @@ from app.core.log import write_log
 ROW_BG_SELECTED = "#2a3f6b"
 ROW_BG_NORMAL = "#23262f"
 _ROW_QSS = "QFrame {{ background: {0}; border-radius: 6px; }}"
+
+# 像素精度(mm/像素), None = 用户没设过. 只活在进程里, 不落库
+_PX_SCALE = None
+
+
+def _fmt_area_mm2(v):
+    """小数位随量级走: 0.05mm/px 下一块杂质可能只有零点几 mm²."""
+    if v >= 1000:
+        return "{:,}".format(int(round(v)))
+    if v >= 100:
+        txt = "{:.1f}".format(v)
+    elif v >= 1:
+        txt = "{:.2f}".format(v)
+    else:
+        txt = "{:.3f}".format(v)
+    return txt.rstrip("0").rstrip(".") if "." in txt else txt
 
 
 @lru_cache(maxsize=128)
@@ -81,6 +98,59 @@ def _set_row_background(row, selected):
         row.setStyleSheet(_ROW_QSS.format(want))
     except RuntimeError:
         pass    # 行已被 deleteLater 回收, 忽略
+
+
+class _PixelScaleDialog(QDialog):
+    """像素精度输入: 1 像素 = ? mm(mm/px)."""
+
+    def __init__(self, current=None, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle(self.tr("像素精度"))
+        self._value = 1.0 if current is None else float(current)
+
+        layout = QVBoxLayout(self)
+        layout.setSpacing(8)
+        layout.setContentsMargins(18, 16, 18, 14)
+        layout.addWidget(QLabel(self.tr("1 像素代表的实际长度")))
+        row = QHBoxLayout()
+        row.setSpacing(8)
+        self._edit = QLineEdit()
+        self._edit.setFixedWidth(120)
+        self._edit.setAlignment(Qt.AlignCenter)
+        self._edit.setValidator(QDoubleValidator(0.0, 1e6, 6, self))
+        self._edit.setText("{:g}".format(self._value))
+        row.addWidget(self._edit)
+        row.addWidget(QLabel("mm / px"))
+        row.addStretch(1)
+        layout.addLayout(row)
+        self._hint = QLabel("")
+        self._hint.setStyleSheet("color: #e5677a; font-size: 12px;")
+        layout.addWidget(self._hint)
+        btns = QHBoxLayout()
+        btns.addStretch(1)
+        add_ok_cancel(btns, self._try_accept, self.reject)
+        layout.addLayout(btns)
+
+        self._edit.textChanged.connect(lambda _="": self._hint.setText(""))
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        self._edit.setFocus()
+        self._edit.selectAll()
+
+    def _try_accept(self):
+        try:
+            v = float(self._edit.text().strip())
+        except ValueError:
+            v = 0.0
+        if v <= 0:
+            self._hint.setText(self.tr("请输入大于 0 的数字"))
+            return
+        self._value = v
+        self.accept()
+
+    def value(self):
+        return self._value
 
 
 class AddLabelDialog(QDialog):
@@ -316,6 +386,9 @@ class AnnotationDialog(QDialog, AnnotationCanvasMixin, AnnotationIOMixin):
                 btn.setIconSize(QSize(18, 18))
         u.label_list.setText(self.tr("标签列表"))
         u.labeled_list.setText(self.tr("标注信息"))
+        u.px_scale_btn.setCursor(Qt.PointingHandCursor)
+        u.px_scale_btn.clicked.connect(self._edit_px_scale)
+        self._sync_px_scale_btn()
         u.pre_page_btn.setText(self.tr("上一张"))
         u.next_page_btn.setText(self.tr("下一张"))
         u.lineEdit.hide()
@@ -779,12 +852,12 @@ class AnnotationDialog(QDialog, AnnotationCanvasMixin, AnnotationIOMixin):
                 kind = self.tr("矩形")
                 size_text = "{} × {}".format(int(round(x2 - x1)),
                                              int(round(y2 - y1)))
-                area_text = "{:,} px²".format(int(round((x2 - x1) * (y2 - y1))))
+                area_text = self._area_text((x2 - x1) * (y2 - y1))
             else:  # AnnotationPolygonItem
                 pts = item.points()
                 kind = self.tr("多边形")
                 size_text = self.tr("{} 个顶点").format(len(pts))
-                area_text = "{:,} px²".format(int(round(area))) if area else "-"
+                area_text = self._area_text(area) if area else "-"
             color = self._resolve_item_color(item)
             rows_data.append((item, kind, size_text, area_text, color))
         old_rows = list(getattr(self, "_labeled_rows", {}).values())
@@ -919,6 +992,39 @@ class AnnotationDialog(QDialog, AnnotationCanvasMixin, AnnotationIOMixin):
             x2, y2 = points[(i + 1) % n]
             s += x1 * y2 - x2 * y1
         return abs(s) / 2.0
+
+    def _area_text(self, px_area):
+        """像素面积; 设过像素精度就在后面补一段物理面积."""
+        txt = "{:,} px²".format(int(round(px_area)))
+        if _PX_SCALE:
+            txt += " · {} mm²".format(_fmt_area_mm2(px_area * _PX_SCALE ** 2))
+        return txt
+
+    def _sync_px_scale_btn(self):
+        btn = self.ui.px_scale_btn
+        icon = _resource_path("编辑.png")
+        if icon:
+            btn.setIcon(_tinted(icon, "#b8c0d0"))
+            btn.setIconSize(QSize(13, 13))
+        if _PX_SCALE is None:
+            btn.setText(self.tr("转换"))
+            btn.setToolTip(self.tr("设置像素精度, 在像素面积后显示物理面积"))
+        else:
+            txt = "{:g} mm/px".format(_PX_SCALE)
+            btn.setText(txt)
+            btn.setToolTip(self.tr("当前像素精度 {}, 点击修改").format(txt))
+        btn.setProperty("pxScaleSet", "true" if _PX_SCALE is not None else "false")
+        btn.style().unpolish(btn)
+        btn.style().polish(btn)
+
+    def _edit_px_scale(self):
+        global _PX_SCALE
+        dlg = _PixelScaleDialog(_PX_SCALE, self)
+        if dlg.exec() != QDialog.Accepted:
+            return
+        _PX_SCALE = dlg.value()
+        self._sync_px_scale_btn()
+        self._refresh_labeled_list()
 
 
 

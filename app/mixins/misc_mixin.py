@@ -277,12 +277,11 @@ class MiscMixin(object):
         labeled = binding.get("labeled", 0) or 0
         self.project_tree.set_row_progress(project_name, dataset_name, labeled, total)
 
-    def _delete_images_core(self, project, dataset, paths, delete_local, log_msg=None):
+    def _delete_images_core(self, project, dataset, paths, log_msg=None):
         """
         删除图像核心逻辑(被首页多选删除 + 标注界面单张删除共用):
-        - delete_local=True: 删磁盘文件(图像 + 同名 .json/.txt 标注)
-        - delete_local=False: 仅 db 记录 add_deleted_images(下次加载跳过)
-        - 同步更新: 缓存 index, label_counts, db total/labeled, 刷新显示与进度
+        删磁盘文件(图像 + 同名 .json/.txt 标注),
+        并同步更新缓存 index, label_counts, db total/labeled, 刷新显示与进度.
         """
         norm = lambda p: os.path.normcase(os.path.normpath(p))
         norm_set = {norm(p) for p in paths}
@@ -290,8 +289,6 @@ class MiscMixin(object):
         label_fmt = binding.get("label_fmt", "")
         delete_local_count = 0
         for p in paths:
-            if not delete_local:
-                continue        # 仅标记模式: 统一走下面的批量接口
             try:
                 if os.path.exists(p):
                     os.remove(p)
@@ -306,8 +303,6 @@ class MiscMixin(object):
                         delete_local_count += 1
                 except OSError:
                     pass
-        if not delete_local and paths:
-            self.db.add_deleted_images(project, dataset, paths)
         index = self.dataset_cache.get(project, {}).get(dataset)
         if index:
             keep = []
@@ -339,9 +334,8 @@ class MiscMixin(object):
                             if lbl in lc:
                                 lc[lbl] = max(0, lc[lbl] - 1)
                 self.db.save_dataset_label_counts(project, dataset, lc)
-        self._write_log(log_msg or QC.translate("MiscMixin", "删除图像: {} 张 | 方式={} | 本地删除文件={} | 项目={}, 数据集={}").format(
-            len(paths), QC.translate("MiscMixin", "删除本地文件") if delete_local else QC.translate("MiscMixin", "仅标记不加载"),
-            delete_local_count, project, dataset))
+        self._write_log(log_msg or QC.translate("MiscMixin", "删除图像: {} 张 | 本地删除文件={} | 项目={}, 数据集={}").format(
+            len(paths), delete_local_count, project, dataset))
         self.show_dataset_images(project, dataset)
         self._refresh_dataset_stats(project, dataset)
         self._refresh_label_filter(project, dataset)
@@ -372,7 +366,7 @@ class MiscMixin(object):
     def _delete_paths_with_confirm(self, paths):
         """
         删除路径列表(首页多选/跨页全选共用):
-        弹窗仅确认"从系统删除,不可恢复", 确认后真删(不走"仅标记").
+        弹窗仅确认从系统删除且不可恢复, 确认后真删.
         """
         cur_ds = getattr(self, "_current_dataset", None)
         if not cur_ds or not paths:
@@ -390,4 +384,4 @@ class MiscMixin(object):
             informative=QC.translate("MiscMixin", "图像与同名标注文件将从磁盘删除, 不可恢复"))
         if clicked is None or clicked != btn_delete:
             return
-        self._delete_images_core(proj, ds, paths, delete_local=True)
+        self._delete_images_core(proj, ds, paths)

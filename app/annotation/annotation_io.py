@@ -360,10 +360,9 @@ class AnnotationIOMixin:
             MessageBox.warning(self, QC.translate("AnnotationDialog", "删除图像"),
                                QC.translate("AnnotationDialog", "无法访问主窗口, 删除失败"))
             return
-        main._delete_images_core(self.project, self.dataset, [cur_path], True,
-                                 log_msg="标注界面删除图像: {} | 方式={} | 项目={}, 数据集={}".format(
+        main._delete_images_core(self.project, self.dataset, [cur_path],
+                                 log_msg="标注界面删除图像: {} | 项目={}, 数据集={}".format(
                                      os.path.basename(cur_path),
-                                     "删除本地文件",
                                      self.project, self.dataset))
         self.image_list.pop(self.index)
         self._pix_cache.pop(cur_path, None)

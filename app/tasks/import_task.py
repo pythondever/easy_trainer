@@ -23,14 +23,13 @@ class ImportTask(QThread):
     finished_signal = Signal(list)
 
     def __init__(self, image_path, label_path="", fmt="", parent=None,
-                 excluded=None, label_ids=None):
+                 label_ids=None):
         super().__init__(parent)
         self.image_paths = [image_path] if isinstance(image_path, (str,)) else list(image_path or [])
         self.label_paths = [label_path] if isinstance(label_path, (str,)) else list(label_path or [])
         self.image_paths = [p for p in self.image_paths if p]
         self.label_paths = [p for p in self.label_paths if p]
         self.fmt = fmt  # '' 无标签 / '.txt' / '.json'
-        self.excluded = set(excluded or [])
         self._cancel = False
         self._id_names = dict(label_ids or {})
         self._seen_ids = {}
@@ -38,10 +37,6 @@ class ImportTask(QThread):
     def cancel(self):
         """请求停止: 置取消标志, run 循环内检查后退出."""
         self._cancel = True
-
-    @staticmethod
-    def _norm(path):
-        return os.path.normcase(os.path.normpath(path))
 
     def run(self):
         # 预校验标签目录: 剔除无效目录, 避免 _label_of 每张图重复 os.path.isdir
@@ -60,8 +55,6 @@ class ImportTask(QThread):
                 for fn in sorted(files):
                     if fn.lower().endswith(IMAGE_EXTS):
                         p = os.path.join(root, fn)
-                        if self._norm(p) in self.excluded:
-                            continue
                         if cls_mode:
                             # 类别 = 根目录下第一级子文件夹名; 图像直接在根目录则用根目录名
                             rel = os.path.relpath(root, base_dir)

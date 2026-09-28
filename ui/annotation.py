@@ -296,6 +296,11 @@ class Ui_annotationDialog(object):
 
         self.horizontalLayout_4.addItem(self.horizontalSpacer)
 
+        self.px_scale_btn = QPushButton(annotationDialog)
+        self.px_scale_btn.setObjectName(u"px_scale_btn")
+
+        self.horizontalLayout_4.addWidget(self.px_scale_btn)
+
 
         self.verticalLayout_2.addLayout(self.horizontalLayout_4)
 
@@ -427,6 +432,7 @@ class Ui_annotationDialog(object):
 #endif // QT_CONFIG(tooltip)
         self.add_label.setText(QCoreApplication.translate("annotationDialog", u"+", None))
         self.labeled_list.setText(QCoreApplication.translate("annotationDialog", u"\u6807\u6ce8\u4fe1\u606f", None))
+        self.px_scale_btn.setText(QCoreApplication.translate("annotationDialog", u"\u8f6c\u6362", None))
         self.image_info_label.setText(QCoreApplication.translate("annotationDialog", u"\u56fe\u50cf\u4fe1\u606f", None))
         self.clipboard_label.setText(QCoreApplication.translate("annotationDialog", u"\u526a\u5207\u677f", None))
         self.pre_page_btn.setText(QCoreApplication.translate("annotationDialog", u"\u4e0a\u4e00\u5f20(A)", None))

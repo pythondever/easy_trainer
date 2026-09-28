@@ -446,12 +446,10 @@ class DatasetViewMixin(object):
             label_paths = get_paths(binding, "label")
             valid_images = [p for p in image_paths if p and os.path.isdir(p)]
             if valid_images:
-                excluded = self.db.get_deleted_images(project_name, dataset_name)
                 self._start_import_thread(project_name, dataset_name,
                                           valid_images, label_paths,
                                           binding.get("label_fmt", ""),
-                                          update_stats=update_stats,
-                                          excluded=excluded)
+                                          update_stats=update_stats)
                 return
         self._clear_scene()
 
@@ -876,8 +874,7 @@ class DatasetViewMixin(object):
 
     def _start_import_thread(self, project_name, dataset_name,
                              image_path, label_path="", fmt="",
-                             update_stats=False, excluded=None,
-                             write_db=True):
+                             update_stats=False, write_db=True):
         self._log(QC.translate("DatasetViewMixin", "开始导入: {}/{} | 图像路径={} | 标签路径={} | 格式={}").format(
             project_name, dataset_name, image_path, label_path or QC.translate("DatasetViewMixin", "(无)"), fmt))
         key = (project_name, dataset_name)
@@ -887,7 +884,6 @@ class DatasetViewMixin(object):
             return
         self.project_tree.set_row_task(project_name, dataset_name, 0)
         task = ImportTask(image_path, label_path, fmt, parent=self,
-                          excluded=excluded,
                           label_ids=self.db.get_dataset_label_ids(
                               project_name, dataset_name))
         self._loading_tasks[key] = task

@@ -1,9 +1,7 @@
 import lmdb
 import json
 import os
-from PySide6.QtCore import QCoreApplication as QC
 from . import keys
-from .log import write_log
 
 DEFAULT_MAP_SIZE = 128 * 1024 * 1024
 METRICS_DIR_NAME = "metrics"
@@ -131,7 +129,6 @@ class DataBase:
         if changed:
             self.update_project_info(info_list)
         self._rename_records_project(old_name, new_name)
-        self._rename_deleted_project(old_name, new_name)
 
     def _rename_records_project(self, old_name, new_name):
         """训练/模型记录中项目名替换(含 dataset/val_dataset/dataset_info 的"项目/"前缀)."""
@@ -240,50 +237,6 @@ class DataBase:
             txn.put(key, json.dumps(keep_info, ensure_ascii=False).encode())
         self._invalidate_info_cache()
 
-    def _get_deleted_maps(self):
-        key = keys.deleted_images
-        with self.mdb.begin(write=False) as txn:
-            data = txn.get(key)
-        if data is None:
-            return {}
-        try:
-            return json.loads(data.decode())
-        except Exception:
-            return {}
-
-    def add_deleted_images(self, project_name, dataset_name, image_paths):
-        """
-        批量记录被删除/不加载的图像(单次事务), 返回新增条数
-        """
-        paths = list(image_paths or [])
-        if not paths:
-            return 0
-        key = keys.deleted_images
-        maps = self._read_deleted_maps()
-        if maps is None:
-            return 0
-        existing = maps.setdefault(project_name, {}).setdefault(dataset_name, [])
-        seen = set(existing)
-        added = 0
-        for p in paths:
-            if not p:
-                continue
-            norm = os.path.normcase(os.path.normpath(p))
-            if norm not in seen:
-                seen.add(norm)
-                existing.append(norm)
-                added += 1
-        if added:
-            with self.mdb.begin(write=True) as txn:
-                txn.put(key, json.dumps(maps, ensure_ascii=False).encode())
-        return added
-
-    def get_deleted_images(self, project_name, dataset_name):
-        """返回该数据集的已删除/不加载图像路径集合(归一化)."""
-        maps = self._get_deleted_maps()
-        project_data = maps.get(project_name, {})
-        return set(project_data.get(dataset_name, []))
-
     def get_datasets(self, project_name):
         """返回某项目的数据集列表 [{'dataset_name','dataset_type','labeled','total'}, ...]."""
         result = []
@@ -333,7 +286,6 @@ class DataBase:
             target['dataset_type'] = dataset_type
         self.update_project_info(info_list)
         self._rename_records_dataset(project_name, old_name, new_name)
-        self._rename_deleted_dataset(project_name, old_name, new_name)
         return True
 
     def _rename_records_dataset(self, project_name, old_name, new_name):
@@ -373,22 +325,6 @@ class DataBase:
                     and info.get('dataset_name') == dataset_name):
                 keep.append(info)
         self.update_project_info(keep)
-        # 同步清理该数据集的自定义标签 / 已删除图像记录
-        self.delete_dataset_deleted(project_name, dataset_name)
-
-    def delete_dataset_deleted(self, project_name, dataset_name):
-        """删除数据集时清理其已删除图像记录."""
-        key = keys.deleted_images
-        with self.mdb.begin(write=True) as txn:
-            maps = txn.get(key)
-            if maps is not None:
-                maps = json.loads(maps.decode())
-                project_data = maps.get(project_name)
-                if project_data is not None:
-                    project_data.pop(dataset_name, None)
-                    if not project_data:
-                        maps.pop(project_name, None)
-                    txn.put(key, json.dumps(maps, ensure_ascii=False).encode())
 
     def update_dataset_import(self, project_name, dataset_name, image_path, label_path='',
                               label_fmt='', labeled=None, total=None, append=False):
@@ -462,75 +398,6 @@ class DataBase:
                 self.update_project_info(info_list)
                 return True
         return False
-
-    def _read_deleted_maps(self):
-        """
-        读 deleted_images 全表. 损坏时返回 None(调用方须放弃写入).
-        只读事务取数据: 有了这份副本就能在开写事务前判断是否需要放弃,
-        不必在写事务里 abort 后再 return.
-        """
-        with self.mdb.begin(write=False) as txn:
-            data = txn.get(keys.deleted_images)
-        if data is None:
-            return {}
-        try:
-            return json.loads(data.decode())
-        except Exception as e:
-            write_log(QC.translate(
-                "DataBase",
-                "已删除图像记录解析失败, 跳过迁移以免覆盖丢失 "
-                "({}): {}").format(keys.deleted_images, e))
-            return None
-
-    def _rename_deleted_project(self, old_name, new_name):
-        """项目改名时迁移排除记录, 否则重命名后这些图会全部重新出现."""
-        maps = self._read_deleted_maps()
-        if maps is None or old_name not in maps:
-            return
-        dst = maps.setdefault(new_name, {})
-        for ds, paths in maps.pop(old_name).items():
-            cur = dst.setdefault(ds, [])
-            for p in paths:
-                if p not in cur:
-                    cur.append(p)
-        with self.mdb.begin(write=True) as txn:
-            txn.put(keys.deleted_images,
-                    json.dumps(maps, ensure_ascii=False).encode())
-
-    def _rename_deleted_dataset(self, project_name, old_name, new_name):
-        """数据集改名时迁移排除记录, 否则重命名后这些图会全部重新出现."""
-        maps = self._read_deleted_maps()
-        if maps is None or old_name not in maps.get(project_name, {}):
-            return
-        proj = maps[project_name]
-        cur = proj.setdefault(new_name, [])
-        for p in proj.pop(old_name):
-            if p not in cur:
-                cur.append(p)
-        with self.mdb.begin(write=True) as txn:
-            txn.put(keys.deleted_images,
-                    json.dumps(maps, ensure_ascii=False).encode())
-
-    def move_deleted_images(self, src_project, src_dataset,
-                            dst_project, dst_dataset):
-        """迁移"已删除/不加载"图像记录: src → dst(dst 追加, src 清空)."""
-        key = keys.deleted_images
-        with self.mdb.begin(write=True) as txn:
-            maps = txn.get(key)
-            if maps is None:
-                maps = {}
-            else:
-                maps = json.loads(maps.decode())
-            src_set = list(maps.get(src_project, {}).get(src_dataset, []))
-            if src_set:
-                dst_set = maps.setdefault(dst_project, {}).setdefault(dst_dataset, [])
-                for p in src_set:
-                    if p not in dst_set:
-                        dst_set.append(p)
-            maps.get(src_project, {}).pop(src_dataset, None)
-            if not maps.get(src_project, {}):
-                maps.pop(src_project, None)
-            txn.put(key, json.dumps(maps, ensure_ascii=False).encode())
 
     def get_dataset_import(self, project_name, dataset_name):
         """

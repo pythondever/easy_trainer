@@ -292,10 +292,7 @@ class ProjectMixin(object):
             self.db.save_dataset_label_ids(dst_proj, dst_ds, merged)
             self.db.save_dataset_label_ids(src_proj, src_ds, {})
 
-        # ---- 5. 已删除图像记录迁移 ----
-        self.db.move_deleted_images(src_proj, src_ds, dst_proj, dst_ds)
-
-        # ---- 6. 日志: 目标标签统计(按框数)----
+        # ---- 5. 日志: 目标标签统计(按框数)----
         label_counts = {}
         for r in dst_recs:
             for b in (r.get("boxes") or []):
@@ -309,7 +306,7 @@ class ProjectMixin(object):
             src_proj, src_ds, dst_proj, dst_ds, len(moved),
             len(label_counts), counts_str or QC.translate("ProjectMixin", "(无)")))
 
-        # ---- 7. 刷新: 树 / 显示区 / 标签筛选 ----
+        # ---- 6. 刷新: 树 / 显示区 / 标签筛选 ----
         self.refresh_project_list()
         if getattr(self, "_current_dataset", None) == (src_proj, src_ds):
             # 源数据集已清空: 完整重置图像区/分页/筛选下拉/标注统计
