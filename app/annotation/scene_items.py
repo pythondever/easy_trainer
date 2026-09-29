@@ -4,6 +4,7 @@ from PySide6.QtGui import QColor, QPen, QFontMetricsF
 from PySide6.QtCore import Qt, QRectF
 from PySide6.QtWidgets import QGraphicsPixmapItem, QGraphicsItem
 from app.annotation.box_item import label_color
+from app.core import theme
 
 # 卡片内边距 / 底部信息条高度
 CARD_PAD = 4
@@ -32,7 +33,7 @@ class SelectablePixmapItem(QGraphicsPixmapItem):
         self.setShapeMode(QGraphicsPixmapItem.BoundingRectShape)
         self._hover = False
         self._labels = list(labels or [])
-        self._sel_color = QColor("#4f7dff")
+        self._sel_color = theme.color("accent")
 
     def boundingRect(self):
         pm = self.pixmap()
@@ -60,12 +61,12 @@ class SelectablePixmapItem(QGraphicsPixmapItem):
         pm = self.pixmap()
         card = self._card_rect()
         if self.isSelected():
-            bg = QColor("#2c3a5e")
+            bg = theme.color("accent_dim")
         elif self._hover:
             bg = QColor("#2b2f3b")
         else:
-            bg = QColor("#23262f")
-        painter.setPen(QPen(QColor("#353a48"), 1))
+            bg = theme.color("bg_control")
+        painter.setPen(QPen(theme.color("border"), 1))
         painter.setBrush(bg)
         painter.drawRoundedRect(card, 6, 6)
         painter.drawPixmap(CARD_PAD, CARD_PAD, pm)
@@ -110,6 +111,6 @@ class SelectablePixmapItem(QGraphicsPixmapItem):
             painter.setPen(Qt.NoPen)
             painter.setBrush(QColor(60, 66, 82))
             painter.drawRoundedRect(QRectF(cx, y, tw, chip_h), 3, 3)
-            painter.setPen(QColor("#c3c9d6"))
+            painter.setPen(theme.color("text_2"))
             painter.drawText(QRectF(cx, y, tw, chip_h), Qt.AlignCenter, more)
         painter.restore()

@@ -11,16 +11,17 @@ from PySide6.QtWidgets import (QApplication, QDialog, QFrame, QVBoxLayout,
                                QPushButton, QProgressBar, QToolTip)
 from PySide6.QtWidgets import QGraphicsDropShadowEffect
 
+from app.core import theme
 from app.core.utils import project_root
 from app.widgets.dialog_buttons import BTN_WIDTH, apply_icon
 
 
-# 图标: (resources 文件名, 颜色)
+# 图标: (resources 文件名, 染色)
 _ICONS = {
-    "warning": ("msg_warning.svg", "#f5b84b"),
-    "information": ("msg_information.svg", "#4f7dff"),
-    "critical": ("msg_critical.svg", "#f2645a"),
-    "question": ("msg_question.svg", "#4f7dff"),
+    "warning": ("msg_warning.svg", theme.hexof("icon_warning")),
+    "information": ("msg_information.svg", theme.hexof("accent")),
+    "critical": ("msg_critical.svg", theme.hexof("icon_critical")),
+    "question": ("msg_question.svg", theme.hexof("accent")),
 }
 _ICON_PX = 22
 _ICON_COL_W = 34          # 图标列宽固定, 保证正文左边界与标题下的对齐

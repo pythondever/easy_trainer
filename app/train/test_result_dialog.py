@@ -8,6 +8,7 @@ import re
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, \
     QSizePolicy, QTableWidgetItem
+from app.core import theme
 from app.core.label_utils import label_sort_key
 from app.train.export_worker import ReportWorker
 from app.widgets.message_box import MessageBox
@@ -28,7 +29,7 @@ def _rate_color(v, lower_better=False):
     score = 1.0 - v if lower_better else v
     if score >= 0.85:
         return "#7be39a"
-    return "#e8eaf0" if score >= 0.6 else "#ffb46b"
+    return theme.hexof("text") if score >= 0.6 else theme.hexof("st_err_soft")
 
 
 def _rate_span(v, lower_better=False):

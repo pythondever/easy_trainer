@@ -5,15 +5,20 @@
 导入/合并标签的任务进度也走 delegate(QStyleOptionProgressBar), 不再往行里塞控件.
 """
 from PySide6.QtCore import Qt, QRectF, QPointF, QSize, Signal
-from PySide6.QtGui import (QColor, QFont, QFontMetrics, QPainter, QPainterPath,
+from PySide6.QtGui import (QFont, QFontMetrics, QPainter, QPainterPath,
                            QPen, QWheelEvent)
 from PySide6.QtWidgets import (QApplication, QWidget, QFrame, QLabel,
                                QVBoxLayout, QListWidget, QListWidgetItem,
                                QStyledItemDelegate, QStyle, QSizePolicy,
                                QScrollArea)
 
+from app.core import theme
+
+
 ROW_H = 28
 CARD_RADIUS = 10
+HOVER_ALPHA = 18    # 悬停叠加白底的不透明度, 卡片头与数据集行共用同一档
+SELECT_ALPHA = 36   # 选中叠加主色的不透明度
 ROW_PAD_X = 12      # 行内容距卡片左右的内边距
 NUM_PAD_R = 16      # 进度数值右缘距行内边的留白
 TASK_BAR_W = 116    # 行内任务进度条宽度
@@ -27,12 +32,6 @@ ROLE = Qt.UserRole
 
 DOT_SIZE = 6        # 数据集行缓存状态圆点直径
 DOT_GAP = 5         # 圆点与进度色块的间距
-
-
-def _alpha_color(hex_color, alpha):
-    c = QColor(hex_color)
-    c.setAlpha(alpha)
-    return c
 
 
 def _draw_photo_icon(p, x, y, color):
@@ -62,6 +61,20 @@ def _draw_chevron(p, cx, cy, expanded, color):
     p.restore()
 
 
+def _header_hover_path(w, h):
+    """卡片头的悬停底色: 只圆上面两个角, 下面两角要贴住卡片正文."""
+    r = CARD_RADIUS - 2
+    path = QPainterPath()
+    path.moveTo(0, h)
+    path.lineTo(0, r)
+    path.quadTo(0, 0, r, 0)
+    path.lineTo(w - r, 0)
+    path.quadTo(w, 0, w, r)
+    path.lineTo(w, h)
+    path.closeSubpath()
+    return path
+
+
 class DatasetRowDelegate(QStyledItemDelegate):
     def sizeHint(self, option, index):
         return QSize(100, ROW_H)
@@ -78,9 +91,9 @@ class DatasetRowDelegate(QStyledItemDelegate):
         path = QPainterPath()
         path.addRoundedRect(QRectF(row), 6, 6)
         if selected:
-            p.fillPath(path, _alpha_color("#4f7dff", 36))
+            p.fillPath(path, theme.alpha("accent", SELECT_ALPHA))
         elif hovered:
-            p.fillPath(path, _alpha_color("#ffffff", 13))
+            p.fillPath(path, theme.alpha("text_strong", HOVER_ALPHA))
 
         total = int(data.get("total") or 0)
         labeled = int(data.get("labeled") or 0)
@@ -89,9 +102,9 @@ class DatasetRowDelegate(QStyledItemDelegate):
         cx = row.x() + 8
         cy = option.rect.center().y()
         if total:
-            icon_c = QColor("#cfd6e4") if selected else QColor("#8b93a5")
+            icon_c = theme.color("text_2") if selected else theme.color("text_3")
         else:
-            icon_c = QColor("#6f7789")
+            icon_c = theme.color("text_faint")
         _draw_photo_icon(p, cx, cy - 6.5, icon_c)
 
         name_font = QFont()
@@ -118,11 +131,11 @@ class DatasetRowDelegate(QStyledItemDelegate):
             avail = avail_full
         name = nfm.elidedText(data.get("dataset", ""), Qt.ElideRight, max(avail, 30))
         if selected:
-            name_c = QColor("#ffffff")
+            name_c = theme.color("text_strong")
         elif total == 0:
-            name_c = QColor("#9aa2b4")
+            name_c = theme.color("text_dim")
         else:
-            name_c = QColor("#c9cfdc")
+            name_c = theme.color("text_2")
         p.setPen(name_c)
         p.drawText(QRectF(text_x, row.y(), avail, row.height()),
                    Qt.AlignVCenter | Qt.AlignLeft, name)
@@ -132,33 +145,34 @@ class DatasetRowDelegate(QStyledItemDelegate):
                          TASK_BAR_W, row.height() - 14)
             path2 = QPainterPath()
             path2.addRoundedRect(QRectF(bar), 3, 3)
-            p.fillPath(path2, _alpha_color("#5b8cff", 64))
+            p.fillPath(path2, theme.alpha("accent", 64))
             w = bar.width() * max(0, min(int(task), 100)) / 100.0
             if w > 0.5:
                 chunk = QPainterPath()
                 chunk.addRoundedRect(QRectF(bar.x(), bar.y(), w, bar.height()), 3, 3)
-                p.fillPath(chunk, QColor("#4f7dff"))
+                p.fillPath(chunk, theme.color("accent"))
             p.setFont(num_font)
-            p.setPen(QColor("#ffffff"))
+            p.setPen(theme.color("text_strong"))
             p.drawText(QRectF(bar), Qt.AlignCenter, "{}%".format(int(task)))
         else:
             # labeled/total 整块: 标完绿底绿字, 未标完/未标黄底黄字
             done = total > 0 and labeled >= total
-            chip_hex = "#7be39a" if done else "#ffd166"
+            chip_token = "st_ok" if done else "st_warn"
             chip_w = w_num + CHIP_PAD_X * 2
             chip = QRectF(num_right - chip_w, option.rect.center().y() - 8,
                           chip_w, 16)
             chip_path = QPainterPath()
             chip_path.addRoundedRect(chip, 4, 4)
-            p.fillPath(chip_path, _alpha_color(chip_hex, 72))
+            p.fillPath(chip_path, theme.alpha(chip_token, 72))
             # 缓存状态圆点: 已加载进内存绿, 未加载红
             p.setPen(Qt.NoPen)
-            p.setBrush(QColor("#7be39a") if data.get("loaded") else QColor("#ff6b6b"))
+            p.setBrush(theme.color("st_ok") if data.get("loaded")
+                       else theme.color("st_err"))
             p.drawEllipse(QRectF(chip.x() - DOT_GAP - DOT_SIZE,
                                  option.rect.center().y() - DOT_SIZE / 2,
                                  DOT_SIZE, DOT_SIZE))
-            c_lab = QColor(chip_hex)
-            c_dim = _alpha_color(chip_hex, 150)
+            c_lab = theme.color(chip_token)
+            c_dim = theme.alpha(chip_token, 150)
             x = num_right - CHIP_PAD_X
             p.setFont(num_font)
             self._draw_right(p, x, option.rect, str(total), c_dim)
@@ -257,6 +271,13 @@ class ProjectCardHeader(QWidget):
         self.count = n
         self.update()
 
+    def enterEvent(self, event):
+        # 没写这条时悬停要等别的重绘才变色(QWidget 的 enter/leave 默认不 update)
+        self.update()
+
+    def leaveEvent(self, event):
+        self.update()
+
     def mouseReleaseEvent(self, event):
         if event.button() == Qt.LeftButton:
             self.clicked.emit()
@@ -264,13 +285,16 @@ class ProjectCardHeader(QWidget):
     def paintEvent(self, event):
         p = QPainter(self)
         p.setRenderHint(QPainter.Antialiasing)
+        if self.underMouse():
+            p.fillPath(_header_hover_path(self.width(), self.height()),
+                       theme.alpha("text_strong", HOVER_ALPHA))
         cy = self.height() / 2
-        hover_c = QColor("#8b93a5") if self.underMouse() else QColor("#5a6273")
+        hover_c = theme.color("text_3") if self.underMouse() else theme.color("text_faint")
         _draw_chevron(p, 20, cy, self.expanded, hover_c)
         f = QFont()
         f.setPixelSize(13)
         p.setFont(f)
-        p.setPen(QColor("#e8eaf0"))
+        p.setPen(theme.color("text"))
         fm = QFontMetrics(f)
         # 数据集计数徽标: 宽度按文字自适应, 固定 20px 放不下两位数
         fs = QFont()
@@ -285,9 +309,9 @@ class ProjectCardHeader(QWidget):
         rect = QRectF(badge_x, cy - 8, badge_w, 16)
         path = QPainterPath()
         path.addRoundedRect(rect, 4, 4)
-        p.fillPath(path, _alpha_color("#ffffff", 15))
+        p.fillPath(path, theme.alpha("text_strong", 15))
         p.setFont(fs)
-        p.setPen(QColor("#8b93a5"))
+        p.setPen(theme.color("text_3"))
         p.drawText(rect, Qt.AlignCenter, str(self.count))
 
 

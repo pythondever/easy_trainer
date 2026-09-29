@@ -9,6 +9,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel,
                                QComboBox, QSizePolicy, QSpacerItem)
 
+from app.core import theme
 from app.core.db import load_train_metrics
 from app.core.utils import setup_matplotlib_chinese
 from app.widgets.combo_utils import style_combo
@@ -16,7 +17,7 @@ from app.widgets.combo_utils import style_combo
 
 def _muted_style(size=13):
     """辅助说明文字: 中性灰 + 指定字号."""
-    return "color: #8b93a5; font-size: {}px;".format(size)
+    return "color: {}; font-size: {}px;".format(theme.hexof("text_3"), size)
 
 
 class MetricsDialog(QDialog):
@@ -122,10 +123,10 @@ class MetricsDialog(QDialog):
         groups = [g for g in (loss_items, score_items) if g]
         setup_matplotlib_chinese()
         fig = Figure(figsize=(8, 3.6 * len(groups)), dpi=100,
-                     facecolor="#1c1e25")
+                     facecolor=theme.hexof("bg_panel"))
         for idx, g in enumerate(groups):
             axes = fig.add_subplot(len(groups), 1, idx + 1,
-                                   facecolor="#1c1e25")
+                                   facecolor=theme.hexof("bg_panel"))
             for name, values in g.items():
                 n = min(len(epochs), len(values))
                 # 缺值在 worker 侧补了 None 占位以保持与 epochs 对齐,
@@ -141,24 +142,24 @@ class MetricsDialog(QDialog):
                     axes.annotate("{:.4f}".format(ve[0]),
                                   xy=(xe[0], ve[0]),
                                   xytext=(8, 0), textcoords="offset points",
-                                  color="#e8eaf0", fontsize=10,
+                                  color=theme.hexof("text"), fontsize=10,
                                   va="center")
                 else:
                     # 点多时去掉逐点 marker(50类×300epoch=1.5万对象拖慢重绘), 仅画线
                     axes.plot(xe, ve, label=name, linewidth=1.5,
                               marker="o" if len(xe) <= 100 else None,
                               markersize=4)
-            axes.set_xlabel("epoch", color="#c3c9d6")
+            axes.set_xlabel("epoch", color=theme.hexof("text_2"))
             group_label = (self.tr("loss 值") if g is loss_items
                            else self.tr("指标值 (mAP/P/R)"))
-            axes.set_ylabel(group_label, color="#c3c9d6")
-            axes.tick_params(axis="x", colors="#c3c9d6")
-            axes.tick_params(axis="y", colors="#c3c9d6")
+            axes.set_ylabel(group_label, color=theme.hexof("text_2"))
+            axes.tick_params(axis="x", colors=theme.hexof("text_2"))
+            axes.tick_params(axis="y", colors=theme.hexof("text_2"))
             for spine in axes.spines.values():
-                spine.set_color("#3a3f4e")
-            axes.grid(True, color="#2a2e38", linestyle="--", linewidth=0.5)
-            axes.legend(loc="lower right", facecolor="#23262f", edgecolor="#3a3f4e",
-                        labelcolor="#e8eaf0")
+                spine.set_color(theme.hexof("border_strong"))
+            axes.grid(True, color=theme.hexof("bg_control_2"), linestyle="--", linewidth=0.5)
+            axes.legend(loc="lower right", facecolor=theme.hexof("bg_control"), edgecolor=theme.hexof("border_strong"),
+                        labelcolor=theme.hexof("text"))
             if epochs:
                 all_vals = [v for vs in g.values() for v in vs
                             if v is not None]

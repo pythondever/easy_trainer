@@ -9,6 +9,8 @@ status_color. 调用方拿到的键(如 model_dialog._status 的返回值)始终
 from PySide6.QtCore import QCoreApplication as QC
 from PySide6.QtCore import QT_TRANSLATE_NOOP
 
+from app.core import theme
+
 # 表里的中文原文用 QT_TRANSLATE_NOOP 登记(运行时原样返回), 只为让 lupdate 抽得到译文.
 # 注意必须写全名: 别名(如 NOOP = QT_TRANSLATE_NOOP)lupdate 认不出来, 条目不进 .ts.
 STATUS_TEXT = {
@@ -42,23 +44,23 @@ TASK_TEXT = {
 }
 
 STATUS_COLOR = {
-    "waiting": "#8b93a5",
-    "running": "#4f7dff",
-    "done": "#7be39a",
-    "failed": "#ff6b6b",
-    "skipped": "#ffd166",
-    "stopped": "#ffd166",
-    "interrupted": "#ffd166",
-    "训练中": "#4f7dff",
-    "已完成": "#7be39a",
-    "失败": "#ff6b6b",
-    "已停止": "#ffd166",
-    "失败/已停止": "#ff9f6b",
-    "已跳过": "#ffd166",
-    "已中断": "#ffd166",
+    "waiting": theme.hexof("text_3"),
+    "running": theme.hexof("accent"),
+    "done": theme.hexof("st_ok"),
+    "failed": theme.hexof("st_err"),
+    "skipped": theme.hexof("st_warn"),
+    "stopped": theme.hexof("st_warn"),
+    "interrupted": theme.hexof("st_warn"),
+    "训练中": theme.hexof("accent"),
+    "已完成": theme.hexof("st_ok"),
+    "失败": theme.hexof("st_err"),
+    "已停止": theme.hexof("st_warn"),
+    "失败/已停止": theme.hexof("st_err_soft"),
+    "已跳过": theme.hexof("st_warn"),
+    "已中断": theme.hexof("st_warn"),
 }
 
-DEFAULT_COLOR = "#e8eaf0"
+DEFAULT_COLOR = theme.hexof("text")
 
 
 def status_text(status):

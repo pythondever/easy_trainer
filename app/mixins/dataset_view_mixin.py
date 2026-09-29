@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import json
+from app.core import theme
 from app.core.db import get_paths
 from app.annotation.annotation_dialog import AnnotationDialog
 from app.widgets.paginator import Paginator
@@ -175,7 +176,7 @@ class DatasetViewMixin(object):
         self.graphics_view.setScene(QGraphicsScene(self.graphics_view))
         self.graphics_view.setRenderHint(QPainter.Antialiasing)
         self.graphics_view.setRenderHint(QPainter.SmoothPixmapTransform)
-        self.graphics_view.setBackgroundBrush(QColor("#13151a"))
+        self.graphics_view.setBackgroundBrush(theme.color("bg_deep"))
         self.graphics_view.setDragMode(QGraphicsView.NoDrag)
         self.graphics_view.setCursor(Qt.ArrowCursor)
         self.graphics_view.setMouseTracking(True)
@@ -849,7 +850,7 @@ class DatasetViewMixin(object):
             return
         self.pageInfoLabel.setText(
             QC.translate("DatasetViewMixin", "第 {} / {} 页").format(
-                '<span style="color:#e8eaf0">{}</span>'.format(self.current_page + 1),
+                '<span style="color:' + theme.hexof("text") + '">{}</span>'.format(self.current_page + 1),
                 total_pages))
         if by_box:
             tip = QC.translate("DatasetViewMixin", "第 {}/{} 页 · 共 {} 个")

@@ -4,6 +4,7 @@ import json
 import shutil
 import traceback
 from PySide6.QtGui import QFontMetrics
+from app.core import theme
 from app.core.db import get_paths
 from app.core.constants import IMAGE_EXTS
 from ui.import_data import Ui_ImportData
@@ -187,7 +188,7 @@ class ImportExportMixin(object):
             if btn is not None:
                 btn.setFixedHeight(40)
                 btn.setStyleSheet(
-                    "QPushButton{padding:0px;border:1px solid #353a48;border-radius:6px;}")
+                    "QPushButton{padding:0px;border:1px solid " + theme.hexof("border") + ";border-radius:6px;}")
                 btn.setIcon(resource_icon("打开.png"))
                 btn.setIconSize(QSize(28, 28))
 

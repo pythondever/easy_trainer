@@ -8,6 +8,7 @@ from PySide6.QtCore import QCoreApplication as QC
 from PySide6.QtGui import (QColor, QFont, QFontMetrics, QPainter, QPainterPath,
                            QPen, QPolygonF)
 from PySide6.QtWidgets import QApplication, QToolButton, QWidget
+from app.core import theme
 
 BTN_H = 32
 BTN_PAD = 12
@@ -33,13 +34,13 @@ CHECK = 15
 LIST_FONT_PX = 12
 
 ALL_COLOR = "#e03737"
-DIM_DOT = "#5c6270"
+DIM_DOT = theme.hexof("text_disabled")
 
-BG = "#23262f"
-BORDER = "#3a3f4e"
+BG = theme.hexof("bg_control")
+BORDER = theme.hexof("border_strong")
 SEP = "#31353f"
-TEXT = "#e8eaf0"
-TEXT_SUB = "#8b93a5"
+TEXT = theme.hexof("text")
+TEXT_SUB = theme.hexof("text_3")
 TEXT_DIM = "#55555e"
 HOVER_BG = "#2b2f3b"
 TRACK = "#1e1e26"
@@ -47,7 +48,7 @@ SLIDER = "#55555f"
 SLIDER_HOVER = "#6a6a75"
 CHECK_BORDER = "#464d5e"
 CHECK_BORDER_HOVER = "#5a6379"
-ARROW_DIM = "#4a5164"
+ARROW_DIM = theme.hexof("border_strong")
 
 
 def _is_dark(color):
@@ -111,7 +112,7 @@ class LabelFilterButton(QToolButton):
         path = QPainterPath()
         path.addRoundedRect(rect, 14, 14)
         p.fillPath(path, QColor(BG))
-        p.setPen(QPen(QColor("#4a5164" if self._hover else "#353a48"), 1))
+        p.setPen(QPen(theme.color("border_hover" if self._hover else "border"), 1))
         p.setBrush(Qt.NoBrush)
         p.drawPath(path)
 

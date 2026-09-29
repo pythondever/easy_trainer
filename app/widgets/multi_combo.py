@@ -11,6 +11,7 @@ from PySide6.QtCore import QCoreApplication as QC
 from PySide6.QtGui import (QColor, QFont, QFontMetrics, QPainter, QPainterPath,
                            QPen, QPolygonF)
 from PySide6.QtWidgets import QLineEdit, QStyle, QStyledItemDelegate
+from app.core import theme
 
 ROLE_DATASET = Qt.UserRole
 CHECKED_VALUE = Qt.CheckState.Checked.value
@@ -51,7 +52,7 @@ SEP_TEXT = "#525a6b"
 NAME_TEXT = "#c8cdd8"
 NAME_TEXT_CHECKED = "#e3e7f0"
 HOVER_BG = "#262a34"
-PLACEHOLDER_TEXT = "#5c6270"
+PLACEHOLDER_TEXT = theme.hexof("text_disabled")
 MARK_BORDER = "#464d5e"
 MARK_BORDER_HOVER = "#5a6379"
 

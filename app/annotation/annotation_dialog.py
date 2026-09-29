@@ -34,6 +34,7 @@ from app.annotation.annotation_canvas import (ANGLE_RANGE_DEFAULT,
                                               _resource_path,
                                               _upgrade_graphics_view)
 from app.annotation.annotation_io import AnnotationIOMixin, _PrefetchWorker
+from app.core import theme
 from app.annotation.box_item import (AnnotationBoxItem, LABEL_COLORS,
                                      assign_label_color, label_color)
 from app.core.label_utils import (TEXT_LABEL, label_sort_key, normalize_label,
@@ -46,7 +47,7 @@ from app.core.log import write_log
 
 # 左右两个列表行的高亮底色(左侧标签列表 / 右侧标注列表同款)
 ROW_BG_SELECTED = "#2a3f6b"
-ROW_BG_NORMAL = "#23262f"
+ROW_BG_NORMAL = theme.hexof("bg_control")
 _ROW_QSS = "QFrame {{ background: {0}; border-radius: 6px; }}"
 
 # 像素精度(mm/像素)
@@ -201,8 +202,10 @@ class AddLabelDialog(QDialog):
             btn.clicked.connect(lambda _=False, c=color, b=btn: self._select_color(c, b))
         self.ui.custom_color.setFixedSize(30, 30)
         self.ui.custom_color.setStyleSheet(
-            "QPushButton {{ background-color: #2a2e3a; border: 2px solid #3a3f4e;{0} }}"
-            "QPushButton:hover {{ border-color: #4f7dff; }}".format(CIRCLE_CSS))
+            "QPushButton {{ background-color: {ctl}; border: 2px solid {bd};{0} }}"
+            "QPushButton:hover {{ border-color: {ac}; }}".format(
+                CIRCLE_CSS, ctl=theme.hexof("bg_control_2"),
+                bd=theme.hexof("border_strong"), ac=theme.hexof("accent")))
         icon_path = _resource_path("颜色选择器.png")
         if icon_path:
             self.ui.custom_color.setIcon(QIcon(icon_path))
@@ -283,7 +286,7 @@ class AddLabelDialog(QDialog):
                     break
 
     def _pick_custom_color(self):
-        color = ColorPickerDialog.get_color(QColor(self._selected_color or "#4f7dff"), self)
+        color = ColorPickerDialog.get_color(QColor(self._selected_color or theme.hexof("accent")), self)
         if color.isValid():
             self._select_color(color.name())
 
@@ -651,9 +654,10 @@ class AnnotationDialog(QDialog, AnnotationCanvasMixin, AnnotationIOMixin):
             color_btn.setFixedSize(18, 18)
             color_btn.setCursor(Qt.PointingHandCursor)
             color_btn.setStyleSheet(
-                "QPushButton {{ background-color: {0}; border: 1px solid #3a3f4e;"
+                "QPushButton {{ background-color: {0}; border: 1px solid {bd};"
                 " border-radius: 9px; padding: 0px; margin: 0px;"
-                " min-width: 0px; max-width: 18px; min-height: 0px; max-height: 18px; }}".format(color))
+                " min-width: 0px; max-width: 18px; min-height: 0px; max-height: 18px; }}".format(
+                    color, bd=theme.hexof("border_strong")))
             color_btn.setToolTip(name)
             color_btn.clicked.connect(lambda _=False, n=name, r=row: self._select_label(n, r))
             rl.addWidget(color_btn)
@@ -666,7 +670,7 @@ class AnnotationDialog(QDialog, AnnotationCanvasMixin, AnnotationIOMixin):
                 "QPushButton { background: transparent; border: none; padding: 0;"
                 " margin: 0; min-width: 0; max-width: 22px; min-height: 0;"
                 " max-height: 22px; border-radius: 4px; }"
-                "QPushButton:hover { background: #2c303c; }")
+                "QPushButton:hover { background: " + theme.hexof("bg_hover") + "; }")
             for icon_file, tip, handler in (
                     ("编辑.png", self.tr("编辑"), self._edit_label),
                     ("删除.png", self.tr("删除"), self._delete_label_from_list)):

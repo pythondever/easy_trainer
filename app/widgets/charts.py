@@ -5,6 +5,7 @@ from matplotlib.figure import Figure
 from PySide6.QtCore import QCoreApplication as QC
 from PySide6.QtCore import QT_TRANSLATE_NOOP
 
+from app.core import theme
 from app.core.utils import setup_matplotlib_chinese
 
 # 图表里的文案: 存中文原文, 显示时按界面语言翻. NOOP 只为让 lupdate 抽得到译文
@@ -30,14 +31,14 @@ def render_label_chart(label_counts, label_colors=None, dark=True,
     if figsize is None:
         figsize = (max(4.0, num_bars * 0.3), 6.0)
     if dark:
-        fig = Figure(figsize=figsize, dpi=100, facecolor="#1c1e25")
-        axes = fig.add_subplot(111, facecolor="#1c1e25")
+        fig = Figure(figsize=figsize, dpi=100, facecolor=theme.hexof("bg_panel"))
+        axes = fig.add_subplot(111, facecolor=theme.hexof("bg_panel"))
     else:
         fig = Figure(figsize=figsize, dpi=100, facecolor="white")
         axes = fig.add_subplot(111, facecolor="white")
     if not label_counts:
         axes.text(0.5, 0.5, _tr(TEXT_NO_LABEL), ha="center",
-                  va="center", color="#8b93a5", transform=axes.transAxes,
+                  va="center", color=theme.hexof("text_3"), transform=axes.transAxes,
                   fontsize=14)
         axes.set_xticks([])
         axes.set_yticks([])
@@ -47,7 +48,7 @@ def render_label_chart(label_counts, label_colors=None, dark=True,
     items = sorted(label_counts.items(), key=lambda kv: kv[1], reverse=True)
     labels = [str(k) for k, _ in items]
     values = [int(v) for _, v in items]
-    colors = [(label_colors or {}).get(name, "#4f7dff") for name in labels]
+    colors = [(label_colors or {}).get(name, theme.hexof("accent")) for name in labels]
     # 柱宽(数据单位)≈ n/15.5:使柱宽像素 = 图宽/20;多标签时收紧防重叠
     bar_width = max(0.05, min(0.15, num_bars / 15.5))
     x_positions = np.arange(num_bars)
@@ -59,11 +60,11 @@ def render_label_chart(label_counts, label_colors=None, dark=True,
                                    (7.5 if num_bars <= 16 else 6.5))
     rot = 0 if num_bars <= 10 else 20
     if dark:
-        txt_color = "#e8eaf0"
-        tick_color = "#c3c9d6"
-        label_color = "#c3c9d6"
-        grid_color = "#2a2e38"
-        spine_color = "#3a3f4e"
+        txt_color = theme.hexof("text")
+        tick_color = theme.hexof("text_2")
+        label_color = theme.hexof("text_2")
+        grid_color = theme.hexof("bg_control_2")
+        spine_color = theme.hexof("border_strong")
     else:
         txt_color = "#333333"
         tick_color = "#666666"

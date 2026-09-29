@@ -5,6 +5,8 @@ import sys
 
 from PySide6.QtCore import QCoreApplication as QC
 
+from app.core.theme import substitute
+
 import matplotlib.pyplot as plt
 from matplotlib import font_manager
 
@@ -179,13 +181,14 @@ def read_text_any(path):
 
 
 def load_style_sheet():
-    """加载 style/style.qss, 并把素材占位符替换为绝对路径(QSS 的 url 相对路径按 cwd 解析, 不可靠)"""
+    """加载 style/style.qss, 返回 (样式表, 未定义的令牌名列表)."""
     here = project_root()
     qss_path = os.path.join(here, "style", "style.qss")
     try:
         with open(qss_path, "r", encoding="utf-8") as f:
             qss = f.read()
     except OSError:
-        return ""
+        return "", []
+    # QSS 里的 url 按 cwd 解析, 素材路径必须给绝对路径
     res_dir = os.path.join(here, "resources").replace("\\", "/")
-    return qss.replace("{{RES_DIR}}", res_dir)
+    return substitute(qss, {"RES_DIR": res_dir})

@@ -21,6 +21,7 @@ import traceback
 from PySide6.QtCore import QTimer
 
 from app.core import i18n
+from app.core import theme
 from app.core.db import get_paths, load_train_metrics
 from app.core.label_utils import TEXT_LABEL
 from app.core.log import write_log
@@ -81,22 +82,24 @@ def _parse_data_yaml_names(path):
         pass
     return out
 COL_TASK, COL_DATA, COL_METRIC, COL_TIME, COL_DUR, COL_IMG, COL_OPS = range(7)
-METRIC_GOOD, METRIC_MID, METRIC_BAD = "#7be39a", "#ffd166", "#ff6b6b"
+METRIC_GOOD, METRIC_MID, METRIC_BAD = (theme.hexof("st_ok"), theme.hexof("st_warn"),
+                                       theme.hexof("st_err"))
 
 # 操作列按钮配色: 测试/导出绿, 删除红. 行内样式会盖掉全局, 故 disabled 态要自己补
 _OPS_BTN = "QPushButton{font-size:12px;padding:2px 4px;background-color:%s;" \
            "border:1px solid %s;color:%s;}" \
            "QPushButton:hover{background-color:%s;border-color:%s;}" \
            "QPushButton:pressed{background-color:%s;}" \
-           "QPushButton:disabled{background-color:#1c1e25;border-color:#2a2d37;" \
-           "color:#5c6270;}"
+           "QPushButton:disabled{background-color:" + theme.hexof("bg_panel") + \
+           ";border-color:" + theme.hexof("border_subtle") + \
+           ";color:" + theme.hexof("text_disabled") + ";}"
 OPS_BTN_QSS = {
     "opsGo": _OPS_BTN % ("#2b6b4a", "#3d8c62", "#d6f5e4",
                          "#357f58", "#4ba376", "#245c40"),
     "opsDel": _OPS_BTN % ("#7a3336", "#a3454b", "#ffd9d9",
                           "#8f3d41", "#bd5359", "#6a2c2f"),
 }
-CURVE_BG, CURVE_LINE = QColor("#181a20"), QColor("#4f7dff")
+CURVE_BG, CURVE_LINE = theme.color("bg_base"), theme.color("accent")
 
 
 def _metric_value(rec):
@@ -566,7 +569,7 @@ class ModelDialog(QDialog):
         bar.setTextVisible(False)
         bar.setFixedHeight(5)
         bar.setStyleSheet(
-            "QProgressBar{border:none;background:#2c303c;border-radius:2px;}"
+            "QProgressBar{border:none;background:" + theme.hexof("border_subtle") + ";border-radius:2px;}"
             "QProgressBar::chunk{background:%s;border-radius:2px;}" % color)
         v.addWidget(lbl)
         v.addWidget(bar)

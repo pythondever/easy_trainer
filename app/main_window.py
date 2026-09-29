@@ -9,6 +9,7 @@ from app.core import i18n
 from app.core.constants import PAGE_SIZE
 from app.core.utils import (setup_matplotlib_chinese, load_style_sheet,
                             project_root)
+from app.core.log import write_log
 from app.core.db import DataBase
 from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtCore import Qt, QSize, QTimer, QEvent
@@ -223,7 +224,10 @@ class App(QWidget, MainUI, LabelMixin, ProjectMixin, ImportExportMixin,
 def main():
     setup_matplotlib_chinese()
     myapp = QApplication(sys.argv)
-    myapp.setStyleSheet(load_style_sheet())
+    qss, missing_token = load_style_sheet()
+    if missing_token:
+        write_log("style.qss 引用了未定义的令牌: " + ", ".join(missing_token))
+    myapp.setStyleSheet(qss)
     # db 提前建一次: 界面语言要在 setupUi 之前装好, 否则静态文案已经按中文生成了
     db = DataBase(DB_DIR)
     i18n.apply(myapp, db.get_language())

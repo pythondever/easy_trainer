@@ -10,6 +10,7 @@ from PySide6.QtWidgets import (QGraphicsScene, QGraphicsPixmapItem, QGraphicsIte
                                QGraphicsPathItem, QGraphicsPolygonItem)
 from app.annotation.blend import blend_patch
 from app.annotation.box_item import AnnotationBoxItem, AnnotationPolygonItem, label_color
+from app.core import theme
 from app.core.label_utils import TEXT_LABEL
 
 # 文本框(OCR)固定配色: 走标签哈希色会和用户自己的类别撞色, 一眼分不出哪个是文本框
@@ -149,7 +150,7 @@ class AnnotationScene(QGraphicsScene):
     def _update_fp_track_preview(self):
         if self.fp_preview_item is None:
             self.fp_preview_item = QGraphicsPathItem()
-            self.fp_preview_item.setPen(QPen(QColor("#4f7dff"), 1.5))
+            self.fp_preview_item.setPen(QPen(theme.color("accent"), 1.5))
             self.fp_preview_item.setBrush(Qt.NoBrush)
             self.fp_preview_item.setZValue(20)
             self.addItem(self.fp_preview_item)

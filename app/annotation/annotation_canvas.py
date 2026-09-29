@@ -16,6 +16,7 @@ from PySide6.QtWidgets import (QDialog, QWidget, QApplication, QVBoxLayout,
 
 from app.annotation.scene import AnnotationScene
 from app.annotation.box_item import AnnotationPolygonItem
+from app.core import theme
 from app.core.label_utils import TEXT_LABEL
 from app.core.utils import project_root, ui_font_family
 from app.widgets.dialog_buttons import add_ok_cancel
@@ -372,7 +373,7 @@ class SwitchButton(QWidget):
     def paintEvent(self, event):
         p = QPainter(self)
         p.setRenderHint(QPainter.Antialiasing)
-        track = QColor("#4f7dff") if self._checked else QColor("#3a3f4e")
+        track = theme.color("accent") if self._checked else theme.color("border_strong")
         p.setPen(Qt.NoPen)
         p.setBrush(track)
         p.drawRoundedRect(0, 0, 36, 20, 10, 10)
@@ -389,10 +390,10 @@ class ColorPickerDialog(QDialog):
         "#808080", "#C0C0C0", "#FF8800", "#8800FF",
     ]
 
-    def __init__(self, initial=QColor("#4f7dff"), parent=None):
+    def __init__(self, initial=theme.color("accent"), parent=None):
         super().__init__(parent)
         self.setWindowTitle(self.tr("选择颜色"))
-        self._color = QColor(initial) if initial.isValid() else QColor("#4f7dff")
+        self._color = QColor(initial) if initial.isValid() else theme.color("accent")
 
         layout = QVBoxLayout(self)
         layout.setSpacing(10)
@@ -431,7 +432,7 @@ class ColorPickerDialog(QDialog):
             btn = QPushButton()
             btn.setFixedSize(32, 32)
             btn.setCursor(Qt.PointingHandCursor)
-            btn.setStyleSheet("QPushButton { background: %s; border: 1px solid #3a3f4e; border-radius: 3px; }" % c)
+            btn.setStyleSheet("QPushButton { background: %s; border: 1px solid " + theme.hexof("border_strong") + "; border-radius: 3px; }" % c)
             btn.clicked.connect(lambda checked=False, _c=c: self._set_color(QColor(_c)))
             grid.addWidget(btn, i // 6, i % 6)
         layout.addLayout(grid)
@@ -460,7 +461,7 @@ class ColorPickerDialog(QDialog):
     def _update_widgets_from_color(self):
         c = self._color
         self._preview.setStyleSheet(
-            "QFrame { background: %s; border: 1px solid #3a3f4e; border-radius: 4px; }" % c.name())
+            "QFrame { background: %s; border: 1px solid " + theme.hexof("border_strong") + "; border-radius: 4px; }" % c.name())
         self._html_edit.blockSignals(True)
         self._html_edit.setText(c.name())
         self._html_edit.blockSignals(False)
@@ -805,13 +806,15 @@ class AnnotationCanvasMixin:
 
     def _clip_qss(self):
         w, h = self.CLIP_W - 4, self.CLIP_H - 4
-        return ("QPushButton#clipThumb {{ border: 2px solid #3a3f4e;"
+        return ("QPushButton#clipThumb {{ border: 2px solid {bd};"
                 " border-radius: 4px; padding: 0px; background: #22252d;"
                 " min-width: {w}px; max-width: {w}px;"
                 " min-height: {h}px; max-height: {h}px; }}"
-                "QPushButton#clipThumb:hover {{ border-color: #6b8bff; }}"
-                "QPushButton#clipThumb:checked {{ border-color: #4f7dff;"
-                " background: #1d2735; }}").format(w=w, h=h)
+                "QPushButton#clipThumb:hover {{ border-color: {ah}; }}"
+                "QPushButton#clipThumb:checked {{ border-color: {ac};"
+                " background: #1d2735; }}").format(
+                    w=w, h=h, bd=theme.hexof("border_strong"),
+                    ah=theme.hexof("accent_hover"), ac=theme.hexof("accent"))
 
     def _copy_template(self, item):
         """右键"复制"入口: 抠模板入全局剪切板并选中最新缩略图."""

@@ -1,52 +1,55 @@
 /* ============================================================
    现代深色主题
-   色阶：新增样式请先复用，不要自造相近色（历史上有过 #3a3f4e/#3a3f4d
-   只差 1 的两套边框色，肉眼无差别但会越积越多）
-     底色 #181a20  面板 #1c1e25  表头 #1f2129
-     控件 #23262f  次级控件 #2a2e38  分隔线 #2c303c
-     主色 #4f7dff (hover #638cff / pressed #3f6ceb)
-     正文 #e8eaf0  次要 #c3c9d6  弱化 #8b93a5
-   标注对话框是独立子主题（底色 #13151a），有意比全局更暗
+   取值不写死：双花括号里的令牌名由 app/core/theme.py 提供，加载时替换
+   （见 utils.load_style_sheet）。改配色、字号、圆角只改那一处。
+   新增样式一律引用已有令牌，不要再写十六进制 —— 同一层级的近似色各自写死，
+   想整体调深一档就得改十几处（历史上有过 #3a3f4e/#3a3f4d 只差 1 的两套边框色）。
+   表面由深到浅：bg_sunken / bg_base / bg_panel / bg_raised / bg_control /
+   bg_control_2 / bg_hover；描边 border_subtle → border → border_strong →
+   border_hover；文字 text → text_2 → text_3 → text_faint → text_disabled。
+   控件盒模型：总高 = 内容高 + 上下 padding 6 + 边框 2。
+   主窗口 h_ctrl 18 → 32；弹窗 h_ctrl_dialog 22 → 36。
+   标注对话框是独立子主题（底色 bg_deep），有意比全局更暗。
    ============================================================ */
 
 * {
     font-family: "Microsoft YaHei UI", "Microsoft YaHei", "Noto Sans CJK SC", "Segoe UI", sans-serif;
-    font-size: 13px;
-    color: #e8eaf0;
+    font-size: {{font_base}};
+    color: {{text}};
     outline: none;
 }
 
 QWidget {
-    background-color: #181a20;
-    color: #e8eaf0;
+    background-color: {{bg_base}};
+    color: {{text}};
 }
 
 /* ---------------- 主窗口 / 对话框 ---------------- */
 QMainWindow, QDialog {
-    background-color: #181a20;
+    background-color: {{bg_base}};
 }
 
 /* ---------------- 顶部标题栏 ---------------- */
 QFrame#headerBar {
-    background-color: #1f2129;
-    border-bottom: 1px solid #2c303c;
+    background-color: {{bg_raised}};
+    border-bottom: 1px solid {{border_subtle}};
 }
 
 QLabel#appTitle {
-    font-size: 17px;
+    font-size: {{font_2xl}};
     font-weight: bold;
-    color: #ffffff;
+    color: {{text_strong}};
 }
 
 /* ---------------- 侧边栏 ---------------- */
 QFrame#sidebarPanel {
-    background-color: #1a1c23;
-    border-right: 1px solid #2c303c;
+    background-color: {{bg_panel}};
+    border-right: 1px solid {{border_subtle}};
 }
 
 QLabel#sidebarTitle {
-    color: #6c7385;
-    font-size: 11px;
+    color: {{text_faint}};
+    font-size: {{font_sm}};
     font-weight: 700;
     letter-spacing: 2px;
     padding: 2px 0 4px 2px;
@@ -55,172 +58,174 @@ QLabel#sidebarTitle {
 /* 侧栏「+」ghost 小按钮（24x24, 覆盖全局 padding 避免文字被挤出） */
 QPushButton#add_project_btn {
     background: transparent;
-    border: 1px solid #353a48;
-    border-radius: 6px;
+    border: 1px solid {{border}};
+    border-radius: {{r_md}};
     padding: 0;
     min-height: 0;
-    color: #8b93a5;
-    font-size: 15px;
+    color: {{text_3}};
+    font-size: {{font_xl}};
 }
 QPushButton#add_project_btn:hover {
-    color: #e8eaf0;
-    border-color: #4a5164;
-    background-color: #23262f;
+    color: {{text}};
+    border-color: {{border_hover}};
+    background-color: {{bg_control}};
 }
 
 /* ---------------- 按钮 ---------------- */
 QPushButton {
-    background-color: #23262f;
-    border: 1px solid #353a48;
-    border-radius: 6px;
-    padding: 6px 14px;
-    color: #e8eaf0;
-    min-height: 20px;
+    background-color: {{bg_control}};
+    border: 1px solid {{border}};
+    border-radius: {{r_md}};
+    padding: {{pad_btn}};
+    color: {{text}};
+    min-height: {{h_ctrl}};
 }
 
-/* 弹窗内按钮统一 36 高（内容 22 + padding 12 + 边框 2），与输入框同高 */
+/* 弹窗内按钮统一 36 高（内容 22 + padding 12 + 边框 2），与同排输入框同高 */
 QDialog QPushButton {
-    min-height: 22px;
+    min-height: {{h_ctrl_dialog}};
 }
 
 QPushButton:hover {
-    background-color: #2b2f3b;
-    border-color: #454b5e;
+    background-color: {{bg_hover}};
+    border-color: {{border_hover}};
 }
 
 QPushButton:pressed {
-    background-color: #1d2027;
+    background-color: {{bg_pressed}};
 }
 
 QPushButton:disabled {
-    background-color: #1c1e25;
-    border-color: #2a2d37;
-    color: #5c6270;
+    background-color: {{bg_panel}};
+    border-color: {{border_subtle}};
+    color: {{text_disabled}};
 }
 
 /* #msgBtn 是 ID 选择器，特异性高于属性选择器，弹窗按钮要带 ID 才盖得住 */
 QPushButton[class~="primary"],
 QPushButton#msgBtn[class~="primary"] {
-    background-color: #4f7dff;
-    border: 1px solid #4f7dff;
-    color: #ffffff;
+    background-color: {{accent}};
+    border: 1px solid {{accent}};
+    color: {{text_strong}};
     font-weight: bold;
 }
 
 QPushButton[class~="primary"]:hover,
 QPushButton#msgBtn[class~="primary"]:hover {
-    background-color: #638cff;
-    border-color: #638cff;
+    background-color: {{accent_hover}};
+    border-color: {{accent_hover}};
 }
 
 QPushButton[class~="primary"]:pressed,
 QPushButton#msgBtn[class~="primary"]:pressed {
-    background-color: #3f6ceb;
+    background-color: {{accent_pressed}};
 }
 
 QPushButton[class~="primary"]:disabled,
 QPushButton#msgBtn[class~="primary"]:disabled {
-    background-color: #2c3a5e;
-    border-color: #2c3a5e;
-    color: #7d879c;
+    background-color: {{accent_dim}};
+    border-color: {{accent_dim}};
+    color: {{text_3}};
 }
 
 QPushButton[class~="danger"] {
-    background-color: #3a2329;
-    border: 1px solid #6e3a42;
-    color: #ff9aa2;
+    background-color: {{danger_bg}};
+    border: 1px solid {{danger_border}};
+    color: {{danger_text}};
 }
 
 QPushButton[class~="danger"]:hover {
-    background-color: #4d2a32;
-    border-color: #a04a55;
+    background-color: {{danger_bg_hover}};
+    border-color: {{danger_border_hover}};
 }
 /* 属性选择器与 :disabled 特异性相同, 不补这条时"删除"禁用后仍是危险色 */
 QPushButton[class~="danger"]:disabled {
-    background-color: #1c1e25;
-    border-color: #2a2d37;
-    color: #5c6270;
+    background-color: {{bg_panel}};
+    border-color: {{border_subtle}};
+    color: {{text_disabled}};
 }
 
-QPushButton[class="ghost"] {
+QPushButton[class~="ghost"] {
     background-color: transparent;
-    border: 1px solid #3a3f4e;
-    color: #c3c9d6;
+    border: 1px solid {{border_strong}};
+    color: {{text_2}};
 }
 
-QPushButton[class="ghost"]:hover {
-    background-color: #23262f;
-    border-color: #4a5164;
+QPushButton[class~="ghost"]:hover {
+    background-color: {{bg_control}};
+    border-color: {{border_hover}};
 }
 
 /* 工具栏按钮 */
 QToolButton {
     background-color: transparent;
     border: none;
-    border-radius: 6px;
+    border-radius: {{r_md}};
     padding: 5px;
-    color: #c3c9d6;
+    color: {{text_2}};
 }
 
 QToolButton:hover {
-    background-color: #262a35;
+    background-color: {{bg_hover}};
 }
 
 QToolButton:checked {
-    background-color: #2c3a5e;
+    background-color: {{accent_dim}};
 }
 
 /* ---------------- 输入框 ---------------- */
 QLineEdit, QTextEdit, QPlainTextEdit, QSpinBox, QDoubleSpinBox {
-    background-color: #181a20;
-    border: 1px solid #333845;
-    border-radius: 6px;
-    padding: 5px 10px;
-    selection-background-color: #4f7dff;
-    selection-color: #ffffff;
+    background-color: {{bg_base}};
+    border: 1px solid {{border}};
+    border-radius: {{r_md}};
+    padding: {{pad_field}};
+    min-height: {{h_ctrl}};
+    selection-background-color: {{accent}};
+    selection-color: {{text_strong}};
 }
 
-/* 弹窗内输入类控件统一 36 高（内容 24 + padding 10 + 边框 2），
-   与按钮同高；min-height 只算内容区，主界面不受影响 */
+/* 弹窗内输入类控件统一 36 高（内容 22 + padding 12 + 边框 2），与按钮同高；
+   min-height 只算内容区，主界面不受影响 */
 QDialog QLineEdit, QDialog QComboBox, QDialog QSpinBox, QDialog QDoubleSpinBox {
-    min-height: 24px;
+    min-height: {{h_ctrl_dialog}};
 }
 
 QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus {
-    border-color: #4f7dff;
+    border-color: {{accent}};
 }
 
 /* 下拉框要单列: 样式表一旦接管了 QComboBox 的颜色, disabled 的自动灰化就失效,
    不写这条置灰与可用的下拉长得完全一样(实测同为 #8b8f97) */
 QLineEdit:disabled, QTextEdit:disabled, QComboBox:disabled {
-    background-color: #1c1e25;
-    color: #5c6270;
+    background-color: {{bg_panel}};
+    color: {{text_disabled}};
 }
 /* 下拉的文字其实画在内部那个只读 lineEdit 上(见 combo_utils.style_combo),
    只给 QComboBox 上色的话它只被"捎带"着暗一点, 与输入框的置灰色对不齐 */
 QComboBox:disabled QLineEdit {
-    color: #5c6270;
+    color: {{text_disabled}};
 }
 
 /* ---------------- 下拉框 ---------------- */
 QComboBox {
-    background-color: #181a20;
-    border: 1px solid #333845;
-    border-radius: 6px;
-    padding: 5px 10px;
+    background-color: {{bg_base}};
+    border: 1px solid {{border}};
+    border-radius: {{r_md}};
+    padding: {{pad_field}};
+    min-height: {{h_ctrl}};
 }
 
 QComboBox:hover {
-    border-color: #454b5e;
+    border-color: {{border_hover}};
 }
 
 QComboBox:focus {
-    border-color: #4f7dff;
+    border-color: {{accent}};
 }
 
 /* 语言下拉要装九种语言名里最长的那个(Tiếng Việt), 左右内边距比通用下拉紧一点 */
 #language_comboBox {
-    padding: 5px 6px;
+    padding: 6px 6px;
 }
 
 /* 箭头区默认占 24px, 而箭头图只用 11px + 8px 右边距, 富余的宽度让给文字区:
@@ -246,25 +251,25 @@ QComboBox::down-arrow {
 }
 
 QComboBox QAbstractItemView {
-    background-color: #20232b;
-    border: 1px solid #3a3f4e;
-    border-radius: 6px;
+    background-color: {{bg_control}};
+    border: 1px solid {{border_strong}};
+    border-radius: {{r_md}};
     /* 贴合下拉框的一边不画圆角, 由 popupOpen 抹平控件侧后拼成一整块 */
     border-top-left-radius: 0;
     border-top-right-radius: 0;
-    selection-background-color: #2c3a5e;
-    selection-color: #ffffff;
+    selection-background-color: {{accent_dim}};
+    selection-color: {{text_strong}};
     padding: 4px;
 }
 
 QComboBox QAbstractItemView::item {
     min-height: 28px;
-    border-radius: 4px;
+    border-radius: {{r_sm}};
     padding-left: 8px;
 }
 
 QComboBox QAbstractItemView::item:selected {
-    background-color: #2c3a5e;
+    background-color: {{accent_dim}};
 }
 
 /* 展开时抹平下拉框的下圆角, 与弹层拼成一整块(标记由 widgets/popup_flat.py 打上).
@@ -276,10 +281,10 @@ QDialog#MoveTargetDialog QComboBox[popupOpen="true"] {
 }
 
 QHeaderView::section {
-    background-color: #1f2129;
+    background-color: {{bg_raised}};
     border: none;
     padding: 6px;
-    color: #8b93a5;
+    color: {{text_3}};
 }
 
 /* ---------------- 滚动条 ---------------- */
@@ -290,13 +295,13 @@ QScrollBar:vertical {
 }
 
 QScrollBar::handle:vertical {
-    background: #3a3f4e;
-    border-radius: 4px;
+    background: {{border_strong}};
+    border-radius: {{r_sm}};
     min-height: 30px;
 }
 
 QScrollBar::handle:vertical:hover {
-    background: #4a5164;
+    background: {{border_hover}};
 }
 
 QScrollBar:horizontal {
@@ -306,13 +311,13 @@ QScrollBar:horizontal {
 }
 
 QScrollBar::handle:horizontal {
-    background: #3a3f4e;
-    border-radius: 4px;
+    background: {{border_strong}};
+    border-radius: {{r_sm}};
     min-width: 30px;
 }
 
 QScrollBar::handle:horizontal:hover {
-    background: #4a5164;
+    background: {{border_hover}};
 }
 
 QScrollBar::add-line, QScrollBar::sub-line {
@@ -326,42 +331,42 @@ QScrollBar::add-page, QScrollBar::sub-page {
 
 /* ---------------- 进度条 ---------------- */
 QProgressBar {
-    background-color: #10131a;
-    border: 1px solid #2e323e;
-    border-radius: 8px;
+    background-color: {{bg_sunken}};
+    border: 1px solid {{border_subtle}};
+    border-radius: {{r_lg}};
     text-align: center;
-    color: #ffffff;
-    font-size: 12px;
+    color: {{text_strong}};
+    font-size: {{font_md}};
     font-weight: 600;
     min-height: 18px;
 }
 
 QProgressBar::chunk {
     background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-        stop:0 #4f7dff, stop:1 #7ba2ff);
-    border-radius: 7px;
+        stop:0 {{accent}}, stop:1 {{accent_soft}});
+    border-radius: {{r_lg}};
 }
 
 /* ---------------- 剩余时间 / 显存（训练时显示） ---------------- */
 QTimeEdit#time_count_edit {
-    background-color: #10131a;
-    border: 1px solid #2e323e;
-    border-radius: 6px;
-    color: #ffffff;
-    font-size: 12px;
+    background-color: {{bg_sunken}};
+    border: 1px solid {{border_subtle}};
+    border-radius: {{r_md}};
+    color: {{text_strong}};
+    font-size: {{font_md}};
     font-weight: 600;
     padding: 2px 8px;
     min-height: 18px;
-    selection-background-color: #4f7dff;
+    selection-background-color: {{accent}};
 }
 
 QTimeEdit#time_count_edit:focus {
-    border-color: #4f7dff;
+    border-color: {{accent}};
 }
 
 QLabel#time_count_label, QLabel#gpu_memory_label {
-    color: #8b93a5;
-    font-size: 12px;
+    color: {{text_3}};
+    font-size: {{font_md}};
     background: transparent;
     padding: 0 2px;
 }
@@ -374,32 +379,32 @@ QLabel {
 /* ---------------- 选项卡 ---------------- */
 QTabWidget::pane {
     border: none;
-    background-color: #14151a;
+    background-color: {{bg_sunken}};
 }
 
 QTabBar::tab {
     background: transparent;
-    color: #8b93a5;
+    color: {{text_3}};
     border: none;
     padding: 8px 22px;
-    font-size: 14px;
+    font-size: {{font_lg}};
     font-weight: bold;
 }
 
 QTabBar::tab:selected {
-    color: #ffffff;
-    border-bottom: 2px solid #4f7dff;
+    color: {{text_strong}};
+    border-bottom: 2px solid {{accent}};
 }
 
 QTabBar::tab:hover:!selected {
-    color: #c3c9d6;
+    color: {{text_2}};
 }
 
 /* ---------------- 分组框 ---------------- */
 QGroupBox {
-    background-color: #1c1e25;
-    border: 1px solid #2c303c;
-    border-radius: 8px;
+    background-color: {{bg_panel}};
+    border: 1px solid {{border_subtle}};
+    border-radius: {{r_lg}};
     margin-top: 12px;
     padding-top: 8px;
     font-weight: bold;
@@ -409,39 +414,39 @@ QGroupBox::title {
     subcontrol-origin: margin;
     left: 12px;
     padding: 0 6px;
-    color: #c3c9d6;
+    color: {{text_2}};
 }
 
 /* ---------------- 列表 ---------------- */
 QListWidget {
-    background-color: #181a20;
-    border: 1px solid #333845;
-    border-radius: 8px;
+    background-color: {{bg_base}};
+    border: 1px solid {{border}};
+    border-radius: {{r_lg}};
     outline: none;
 }
 
 QListWidget::item {
     padding: 2px 4px;
-    border-radius: 5px;
+    border-radius: {{r_md}};
     margin: 1px 3px;
 }
 
 QListWidget::item:hover {
-    background-color: #23262f;
+    background-color: {{bg_control}};
 }
 
 QListWidget::item:selected {
-    background-color: #2c3a5e;
-    color: #ffffff;
+    background-color: {{accent_dim}};
+    color: {{text_strong}};
 }
 
 /* ---------------- 表格 ---------------- */
 QTableWidget, QTableView {
-    background-color: #181a20;
-    border: 1px solid #333845;
-    border-radius: 8px;
-    gridline-color: #2c303c;
-    alternate-background-color: #1c1e25;
+    background-color: {{bg_base}};
+    border: 1px solid {{border}};
+    border-radius: {{r_lg}};
+    gridline-color: {{border_subtle}};
+    alternate-background-color: {{bg_panel}};
 }
 
 QTableWidget::item, QTableView::item {
@@ -449,19 +454,19 @@ QTableWidget::item, QTableView::item {
 }
 
 QTableWidget::item:selected, QTableView::item:selected {
-    background-color: #2c3a5e;
-    color: #ffffff;
+    background-color: {{accent_dim}};
+    color: {{text_strong}};
 }
 
 QTableCornerButton::section {
-    background-color: #1f2129;
+    background-color: {{bg_raised}};
     border: none;
 }
 
 /* ---------------- 单选 / 复选 ---------------- */
 QRadioButton, QCheckBox {
     spacing: 12px;
-    color: #e8eaf0;
+    color: {{text}};
     /* Qt 在 QCheckBox/QFormLayout 等场景会把 ::indicator 的 background-color
        当作 widget 的 background 涂到整行（见 test_dialog 复现），
        显式置 transparent 让背景跟随父 widget */
@@ -471,19 +476,19 @@ QRadioButton, QCheckBox {
 QCheckBox::indicator {
     width: 14px;
     height: 14px;
-    border: 1px solid #454b5e;
-    border-radius: 3px;
-    background-color: #181a20;
+    border: 1px solid {{border_hover}};
+    border-radius: {{r_sm}};
+    background-color: {{bg_base}};
 }
 QCheckBox::indicator:checked {
-    background-color: #4f7dff;
-    border-color: #4f7dff;
+    background-color: {{accent}};
+    border-color: {{accent}};
     /* 勾形是预渲染 PNG(28px 给 14px, 与 radio 同样的 2 倍图):
        QSS 画不出勾, 直接给图在分数缩放下比缩放矢量更可控 */
     image: url({{RES_DIR}}/check_mark.png);
 }
 QCheckBox::indicator:hover {
-    border-color: #4f7dff;
+    border-color: {{accent}};
 }
 
 /* 单选指示器用预渲染 PNG(QPainter 反锯齿正圆):
@@ -504,7 +509,7 @@ QRadioButton::indicator:checked {
 
 /* ---------------- 分割条 ---------------- */
 QSplitter::handle {
-    background-color: #2c303c;
+    background-color: {{border_subtle}};
 }
 
 QSplitter::handle:horizontal {
@@ -513,33 +518,33 @@ QSplitter::handle:horizontal {
 
 /* ---------------- 提示气泡 ---------------- */
 QToolTip {
-    background-color: #262a35;
-    color: #e8eaf0;
-    border: 1px solid #454b5e;
-    border-radius: 4px;
+    background-color: {{bg_hover}};
+    color: {{text}};
+    border: 1px solid {{border_hover}};
+    border-radius: {{r_sm}};
     padding: 4px 8px;
-    font-size: 12px;
+    font-size: {{font_md}};
 }
 
 /* ---------------- 滑条 ---------------- */
 QSlider::groove:horizontal {
     height: 6px;
-    background: #39404f;
-    border-radius: 3px;
+    background: {{border_strong}};
+    border-radius: {{r_sm}};
 }
 
 QSlider::handle:horizontal {
     width: 14px;
     height: 14px;
     margin: -4px 0;
-    border-radius: 7px;
-    background: #4f7dff;
+    border-radius: {{r_lg}};
+    background: {{accent}};
 }
-QSlider::handle:horizontal:hover { background: #638cff; }
+QSlider::handle:horizontal:hover { background: {{accent_hover}}; }
 
 QSlider::sub-page:horizontal {
-    background: #4f7dff;
-    border-radius: 3px;
+    background: {{accent}};
+    border-radius: {{r_sm}};
 }
 
 /* ---------------- 键盘焦点 ---------------- */
@@ -556,16 +561,16 @@ QCheckBox:focus, QRadioButton:focus {
     outline: none;
 }
 QCheckBox:focus::indicator {
-    border-color: #4f7dff;
+    border-color: {{accent}};
 }
 QListWidget:focus, QTreeWidget:focus,
 QSlider:focus {
-    outline: 2px solid #4f7dff;
+    outline: 2px solid {{accent}};
     outline-offset: 1px;
 }
 QTableWidget:focus, QTableView:focus {
     outline: none;
-    selection-background-color: #2c3a5e;
+    selection-background-color: {{accent_dim}};
 }
 QTableWidget::item:focus, QTableView::item:focus {
     border: none;
@@ -573,22 +578,22 @@ QTableWidget::item:focus, QTableView::item:focus {
 }
 /* 点完按钮鼠标通常还在上面，hover 特异性更高会盖掉 :focus，必须并列写 */
 QPushButton:focus, QPushButton:hover:focus {
-    border-color: #4f7dff;
+    border-color: {{accent}};
 }
 /* 工具栏按钮常态无边框，用背景提示焦点，避免加边框导致图标位移 */
 QToolButton:focus, QToolButton:hover:focus {
-    background-color: #2b2f3b;
+    background-color: {{bg_hover}};
 }
 /* Primary/Danger 背景本身接近主色，边框换成对比色才看得出 */
 QPushButton[class~="primary"]:focus,
 QPushButton[class~="primary"]:hover:focus,
 QPushButton#msgBtn[class~="primary"]:focus,
 QPushButton#msgBtn[class~="primary"]:hover:focus {
-    border-color: #ffffff;
+    border-color: {{text_strong}};
 }
 QPushButton[class~="danger"]:focus,
 QPushButton[class~="danger"]:hover:focus {
-    border-color: #ff9aa2;
+    border-color: {{danger_text}};
 }
 
 /* ---------------- 项目侧边栏（卡片式，行内容由 delegate 手绘） ---------------- */
@@ -596,14 +601,18 @@ QWidget#projectSidebar {
     background: transparent;
 }
 QFrame#projectCard {
-    background-color: #20232b;
-    border: 1px solid #292d38;
-    border-radius: 10px;
+    background-color: {{bg_control}};
+    border: 1px solid {{border_strong}};
+    border-radius: {{r_xl}};
 }
-/* 侧栏数据集列表: 背景与卡片同色(全局 QListWidget 是深底 #181a20);
+/* 卡头在 Python 侧画悬停底色, 这里只提亮描边 */
+QFrame#projectCard:hover {
+    border-color: {{border_hover}};
+}
+/* 侧栏数据集列表: 背景与卡片同色(全局 QListWidget 是深底 bg_base);
    item 的背景/边距全部归零, hover/选中态由 DatasetRowDelegate 手绘, 避免叠加 */
 QListWidget#datasetList {
-    background-color: #20232b;
+    background-color: {{bg_control}};
     border: none;
     outline: none;
 }
@@ -618,32 +627,32 @@ QListWidget#datasetList::item:selected {
     background: transparent;
 }
 QFrame#sidebarStatsLine {
-    background-color: #242832;
+    background-color: {{bg_raised}};
     border: none;
 }
 QLabel#sidebarStats {
-    color: #5a6273;
-    font-size: 11px;
+    color: {{text_disabled}};
+    font-size: {{font_sm}};
     background: transparent;
 }
 
 /* ---------------- 数据集对话框（ui/add_dataset） ---------------- */
 QDialog#AddDatasets {
-    background-color: #1c1e25;
+    background-color: {{bg_panel}};
 }
 QPushButton#done_btn {
-    background-color: #4f7dff;
-    color: #ffffff;
+    background-color: {{accent}};
+    color: {{text_strong}};
     border: none;
-    border-radius: 6px;
+    border-radius: {{r_md}};
     padding: 8px 20px;
-    font-size: 13px;
+    font-size: {{font_base}};
 }
 QPushButton#done_btn:hover {
-    background-color: #638cff;
+    background-color: {{accent_hover}};
 }
 QPushButton#done_btn:pressed {
-    background-color: #3f6ceb;
+    background-color: {{accent_pressed}};
 }
 
 /* ================ 标注对话框（AnnotationDialog） ================
@@ -651,26 +660,26 @@ QPushButton#done_btn:pressed {
  * 全部用 #AnnotationDialog 作用域限定：只作用于标注对话框及其后代，
  * 不污染主窗口 / 其他弹窗（对象名在 AnnotationDialog.__init__ 设置）。 */
 #AnnotationDialog {
-    background-color: #13151a;
-    color: #e8eaf0;
+    background-color: {{bg_deep}};
+    color: {{text}};
 }
 #AnnotationDialog QWidget {
-    background-color: #13151a;
-    color: #e8eaf0;
+    background-color: {{bg_deep}};
+    color: {{text}};
     font-family: "Microsoft YaHei", "Noto Sans CJK SC";
-    font-size: 13px;
+    font-size: {{font_base}};
 }
 #AnnotationDialog QLabel {
     background: transparent;
-    color: #e8eaf0;
+    color: {{text}};
 }
 #AnnotationDialog QLineEdit {
-    background-color: #1d2028;
-    border: 1px solid #3a3f4e;
-    border-radius: 6px;
-    padding: 6px 10px;
-    color: #e8eaf0;
-    selection-background-color: #2c3a5e;
+    background-color: {{bg_deep_2}};
+    border: 1px solid {{border_strong}};
+    border-radius: {{r_md}};
+    padding: {{pad_field}};
+    color: {{text}};
+    selection-background-color: {{accent_dim}};
 }
 /* 工具栏输入框高度锁成和按钮一致: QSS 尺寸按内容盒算(22+padding12+边框2=36,
    与 QPushButton 的 min-height:22 同一套盒模型), 代码里不再 setFixedSize 高度 */
@@ -692,54 +701,54 @@ QPushButton#done_btn:pressed {
     padding: 6px 4px;
 }
 #AnnotationDialog QPushButton {
-    background-color: #2a2e3a;
-    border: 1px solid #3a3f4e;
-    border-radius: 6px;
-    padding: 6px 14px;
-    color: #cfd6e4;
+    background-color: {{bg_control_2}};
+    border: 1px solid {{border_strong}};
+    border-radius: {{r_md}};
+    padding: {{pad_btn}};
+    color: {{text_2}};
 }
 #AnnotationDialog QPushButton:hover {
-    background-color: #333948;
-    border-color: #4f7dff;
+    background-color: {{bg_hover}};
+    border-color: {{accent}};
 }
 #AnnotationDialog QPushButton:pressed {
-    background-color: #242834;
+    background-color: {{bg_pressed}};
 }
 #AnnotationDialog QPushButton[drawActive="true"] {
-    background-color: #2c3a5e;
-    color: #ffffff;
-    border: 1px solid #4f7dff;
+    background-color: {{accent_dim}};
+    color: {{text_strong}};
+    border: 1px solid {{accent}};
 }
 /* "标注信息"标题旁的小按钮: 比工具条按钮矮一档, 免得把标题行撑高 */
 #AnnotationDialog QPushButton#px_scale_btn {
     min-height: 0;
     padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-    color: #c3c9d6;
+    border-radius: {{r_sm}};
+    font-size: {{font_md}};
+    color: {{text_2}};
 }
 #AnnotationDialog QPushButton#px_scale_btn[pxScaleSet="true"] {
-    background-color: #2c3a5e;
-    border-color: #4f7dff;
-    color: #ffffff;
+    background-color: {{accent_dim}};
+    border-color: {{accent}};
+    color: {{text_strong}};
 }
 /* ---------- 标注参数弹层 ----------
    特异性必须高于上面的 `#AnnotationDialog QWidget`(底色 #13151a), 否则浮层和画布同色,
    看起来就是一块没有边框的空白. */
 #AnnotationDialog QFrame#paramsPanel {
-    background-color: #1c1e25;
-    border: 1px solid #3a4152;
-    border-radius: 10px;
+    background-color: {{bg_panel}};
+    border: 1px solid {{border_strong}};
+    border-radius: {{r_xl}};
 }
 #AnnotationDialog QLabel#params_title {
-    color: #8b93a5;
-    font-size: 12px;
+    color: {{text_3}};
+    font-size: {{font_md}};
 }
 #AnnotationDialog QFrame#paramsPanel QLabel {
-    color: #c3c9d6;
+    color: {{text_2}};
 }
 #AnnotationDialog QFrame#params_sep {
-    background-color: #2c303c;
+    background-color: {{border_subtle}};
     border: none;
 }
 /* 弹层里的输入框比工具条矮一档(工具条 36, 这里 16+6*2+2=30) */
@@ -749,8 +758,8 @@ QPushButton#done_btn:pressed {
 }
 #AnnotationDialog QPushButton#fill_color_btn {
     padding: 0;
-    border: 1px solid #4a5164;
-    border-radius: 6px;
+    border: 1px solid {{border_hover}};
+    border-radius: {{r_md}};
 }
 /* 与同行色块同尺寸(28x28 = 内容盒 26 + 边框 2). 尺寸必须写进按钮自身的 QSS:
    全局 QPushButton 的 min-height 内边距会架空 setFixedSize 的下限 */
@@ -760,16 +769,16 @@ QPushButton#done_btn:pressed {
     max-width: 26px;
     min-height: 26px;
     max-height: 26px;
-    border: 1px solid #4a5164;
-    border-radius: 6px;
-    background-color: #2a2e3a;
+    border: 1px solid {{border_hover}};
+    border-radius: {{r_md}};
+    background-color: {{bg_control_2}};
 }
 #AnnotationDialog QPushButton#custom_color_btn:hover {
-    border-color: #4f7dff;
-    background-color: #333846;
+    border-color: {{accent}};
+    background-color: {{bg_hover}};
 }
-/* 滑块会被上面的 `#AnnotationDialog QWidget`(底色 #13151a) 刷成比弹层底
-   (#1c1e25) 更黑的一条, 这里只保留中间的 groove */
+/* 滑块会被上面的 `#AnnotationDialog QWidget`(底色 bg_deep) 刷成比弹层底
+   (bg_panel) 更黑的一条, 这里只保留中间的 groove */
 #AnnotationDialog QFrame#paramsPanel QSlider {
     background: transparent;
 }
@@ -778,24 +787,24 @@ QPushButton#done_btn:pressed {
     min-width: 72px;
 }
 #AnnotationDialog QScrollArea {
-    background-color: #1d2028;
-    border: 1px solid #3a3f4e;
-    border-radius: 6px;
+    background-color: {{bg_deep_2}};
+    border: 1px solid {{border_strong}};
+    border-radius: {{r_md}};
 }
 #AnnotationDialog QScrollArea > QWidget > QWidget {
-    background-color: #1d2028;
+    background-color: {{bg_deep_2}};
 }
 #AnnotationDialog QScrollBar:vertical {
-    background: #1d2028;
+    background: {{bg_deep_2}};
     width: 8px;
     border: none;
 }
 #AnnotationDialog QScrollBar::handle:vertical {
-    background: #3a3f4e;
-    border-radius: 4px;
+    background: {{border_strong}};
+    border-radius: {{r_sm}};
     min-height: 24px;
 }
-#AnnotationDialog QScrollBar::handle:vertical:hover { background: #4f7dff; }
+#AnnotationDialog QScrollBar::handle:vertical:hover { background: {{accent}}; }
 #AnnotationDialog QScrollBar::add-line:vertical,
 #AnnotationDialog QScrollBar::sub-line:vertical { height: 0; }
 
@@ -804,113 +813,113 @@ QPushButton#done_btn:pressed {
    平手时按出现顺序决胜, 排在前面的话菜单底色会被那条刷掉 */
 QMenu,
 #AnnotationDialog QMenu {
-    background-color: #1b1e25;
-    border: 1px solid #3a3f4e;
-    border-radius: 6px;
+    background-color: {{bg_panel}};
+    border: 1px solid {{border_strong}};
+    border-radius: {{r_md}};
     padding: 5px;
 }
 
 QMenu::item,
 #AnnotationDialog QMenu::item {
     padding: 6px 24px 6px 12px;
-    border-radius: 4px;
+    border-radius: {{r_sm}};
 }
 
 QMenu::item:selected,
 #AnnotationDialog QMenu::item:selected {
-    background-color: #33405e;
-    color: #ffffff;
+    background-color: {{accent_dim}};
+    color: {{text_strong}};
 }
 
 /* QSS 下禁用项默认沿用正常文字色, 不设就分不出能不能点 */
 QMenu::item:disabled,
 #AnnotationDialog QMenu::item:disabled {
-    color: #6a7080;
+    color: {{text_faint}};
 }
 
 QMenu::separator,
 #AnnotationDialog QMenu::separator {
     height: 1px;
-    background: #2e3340;
+    background: {{border_subtle}};
     margin: 4px 8px;
 }
 
 /* ================ 训练对话框 ================ */
 QDialog#TrainDialog,
-QDialog#TrainQueueDialog { background-color: #1c1e25; }
+QDialog#TrainQueueDialog { background-color: {{bg_panel}}; }
 
 /* 队列面板:状态徽标跟随队列状态变色 */
-QDialog#TrainQueueDialog QLabel#queue_badge { color: #8b93a5; }
+QDialog#TrainQueueDialog QLabel#queue_badge { color: {{text_3}}; }
 
-/* 面板内控件比对话框底亮一档(#1c1e25 → #2a2e38)，聚焦只换边框色不改变盒子尺寸 */
+/* 面板内控件比对话框底亮一档(bg_panel → bg_control_2)，聚焦只换边框色不改变盒子尺寸 */
 QDialog#TrainDialog QLineEdit,
 QDialog#TrainDialog QComboBox {
-    background-color: #2a2e38;
-    border: 1px solid transparent;
+    background-color: {{bg_control_2}};
+    border: 1px solid {{border}};
 }
 QDialog#TrainDialog QLineEdit:hover,
-QDialog#TrainDialog QComboBox:hover { border-color: #454b5e; }
+QDialog#TrainDialog QComboBox:hover { border-color: {{border_hover}}; }
 QDialog#TrainDialog QLineEdit:focus,
-QDialog#TrainDialog QComboBox:focus { border-color: #4f7dff; }
+QDialog#TrainDialog QComboBox:focus { border-color: {{accent}}; }
 QDialog#TrainDialog QComboBox QAbstractItemView {
-    background-color: #23262f;
-    border-color: #3a3f4e;
+    background-color: {{bg_control}};
+    border-color: {{border_strong}};
 }
 QDialog#TrainDialog QPushButton#select_output_path_btn { min-width: 90px; }
 QDialog#TrainDialog QPushButton#start_train {
-    background-color: #4f7dff;
-    color: #ffffff;
+    background-color: {{accent}};
+    color: {{text_strong}};
     font-weight: 500;
     min-width: 120px;
     padding: 6px 22px;
 }
-QDialog#TrainDialog QPushButton#start_train:hover { background-color: #638cff; }
-QDialog#TrainDialog QPushButton#start_train:pressed { background-color: #3f6ceb; }
+QDialog#TrainDialog QPushButton#start_train:hover { background-color: {{accent_hover}}; }
+QDialog#TrainDialog QPushButton#start_train:pressed { background-color: {{accent_pressed}}; }
 QDialog#TrainDialog QPushButton#start_train:disabled {
-    background-color: #2a2e38;
-    color: #6b7280;
+    background-color: {{bg_control_2}};
+    color: {{text_faint}};
 }
 
 /* ---------------- 测试参数对话框 ---------------- */
-QDialog#TestDialog { background-color: #1c1e25; }
+QDialog#TestDialog { background-color: {{bg_panel}}; }
 QDialog#TestDialog QComboBox,
 QDialog#TestDialog QLineEdit {
-    background-color: #2a2e38;
-    border: 1px solid transparent;
+    background-color: {{bg_control_2}};
+    border: 1px solid {{border}};
 }
 QDialog#TestDialog QComboBox:focus,
-QDialog#TestDialog QLineEdit:focus { border-color: #4f7dff; }
+QDialog#TestDialog QLineEdit:focus { border-color: {{accent}}; }
 QDialog#TestDialog QPushButton#start_test_btn {
-    background-color: #4f7dff; color: #ffffff; font-weight: 500;
+    background-color: {{accent}}; color: {{text_strong}}; font-weight: 500;
     min-width: 110px; padding: 6px 22px;
 }
 QDialog#TestDialog QPushButton#start_test_btn:hover {
-    background-color: #638cff;
+    background-color: {{accent_hover}};
 }
 QDialog#TestDialog QPushButton#start_test_btn:pressed {
-    background-color: #3f6ceb;
+    background-color: {{accent_pressed}};
 }
 
 /* 顶部模型信息卡 */
 QDialog#TestDialog QFrame#model_card {
-    background-color: #181a20;
-    border: 1px solid #2c303c;
-    border-radius: 8px;
+    background-color: {{bg_base}};
+    border: 1px solid {{border_subtle}};
+    border-radius: {{r_lg}};
 }
 QDialog#TestDialog QLabel[class~="modelName"] {
-    color: #ffffff;
-    font-size: 15px;
+    color: {{text_strong}};
+    font-size: {{font_xl}};
     font-weight: 600;
 }
 QDialog#TestDialog QLabel[class~="modelMeta"] {
-    color: #8b93a5;
-    font-size: 12px;
+    color: {{text_3}};
+    font-size: {{font_md}};
 }
 
 /* ---------------- 通用弹窗组件（训练 / 测试对话框共用） ----------------
    一律按 class 匹配，不绑具体对话框 ID，两个弹窗改版不用各写一份 */
-/* 参数行的原生 QWidget 包裹容器必须透明：全局 QWidget 底色 #181a20
-   比弹窗底色 #1c1e25 暗一档，不透明会整行拖出“黑条” */
+/* 参数行的原生 QWidget 包裹容器必须透明：全局 QWidget 底色 bg_base
+   比弹窗底色 bg_panel 暗一档，不透明会整行拖出“黑条” */
 QDialog#TrainDialog QWidget#section_data_wrap,
 QDialog#TrainDialog QWidget#section_hyper_wrap,
 QDialog#TrainDialog QWidget#early_wrap,
@@ -924,213 +933,213 @@ QDialog#TestDialog QWidget#out_wrap {
     background-color: transparent;
 }
 QLabel[class~="dialogTitle"] {
-    color: #ffffff;
-    font-size: 15px;
+    color: {{text_strong}};
+    font-size: {{font_xl}};
     font-weight: bold;
 }
 /* 分组标题：比字段名的 13px 大两号，撑起「组 → 字段」的层次 */
 QLabel[class~="dialogSectionTitle"] {
-    color: #8fb0ff;
-    font-size: 15px;
+    color: {{accent_text}};
+    font-size: {{font_xl}};
     font-weight: 600;
     margin-top: 2px;
 }
 QLabel[class~="taskBadge"] {
-    background-color: #2c3a5e;
-    color: #8fb0ff;
-    border-radius: 4px;
+    background-color: {{accent_dim}};
+    color: {{accent_text}};
+    border-radius: {{r_sm}};
     padding: 2px 8px;
-    font-size: 12px;
+    font-size: {{font_md}};
     font-weight: 600;
 }
 /* 参数说明：比 tooltip 更容易被看到 */
 QLabel[class~="fieldNote"] {
-    color: #7d879c;
-    font-size: 12px;
+    color: {{text_3}};
+    font-size: {{font_md}};
 }
 
 /* 底部概要条 */
 QFrame#summary_bar {
-    background-color: #181a20;
-    border: 1px solid #2c303c;
-    border-radius: 8px;
+    background-color: {{bg_base}};
+    border: 1px solid {{border_subtle}};
+    border-radius: {{r_lg}};
 }
 QLabel[class~="summaryIcon"] {
-    color: #4f7dff;
-    font-size: 13px;
+    color: {{accent}};
+    font-size: {{font_base}};
     font-weight: bold;
 }
 QLabel[class~="summaryText"] {
-    color: #c3c9d6;
-    font-size: 13px;
+    color: {{text_2}};
+    font-size: {{font_base}};
 }
 /* 分组标题后 / 底栏上方的细分隔线 */
 QFrame[class~="dialogSectionLine"],
 QFrame#button_line {
-    background-color: #2c303c;
+    background-color: {{border_subtle}};
     border: none;
     max-height: 1px;
 }
 QFrame#button_line { margin-top: 2px; }
-QLabel#dialogConfirmPrompt { font-size: 15px; }
+QLabel#dialogConfirmPrompt { font-size: {{font_xl}}; }
 
 /* ---------------- 模型管理对话框 ---------------- */
-QDialog#ModelDialog { background-color: #1c1e25; }
+QDialog#ModelDialog { background-color: {{bg_panel}}; }
 QDialog#ModelDialog QTableWidget {
-    background-color: #181a20;
-    alternate-background-color: #1f222a;
-    border: 1px solid #2c303c;
-    border-radius: 8px;
-    gridline-color: #2c303c;
-    color: #e8eaf0;
-    font-size: 12px;
+    background-color: {{bg_base}};
+    alternate-background-color: {{bg_raised}};
+    border: 1px solid {{border_subtle}};
+    border-radius: {{r_lg}};
+    gridline-color: {{border_subtle}};
+    color: {{text}};
+    font-size: {{font_md}};
 }
 QDialog#ModelDialog QTableWidget::item { padding: 4px 6px; }
 QDialog#ModelDialog QTableWidget::item:hover {
-    background-color: #232838;
+    background-color: {{bg_hover}};
 }
 QDialog#ModelDialog QTableWidget::item:selected {
-    background-color: #2c3a5e;
-    color: #ffffff;
+    background-color: {{accent_dim}};
+    color: {{text_strong}};
 }
 QDialog#ModelDialog QHeaderView::section {
-    background-color: #23262f;
-    color: #c3c9d6;
+    background-color: {{bg_control}};
+    color: {{text_2}};
     border: none;
-    border-right: 1px solid #2c303c;
-    border-bottom: 1px solid #2c303c;
+    border-right: 1px solid {{border_subtle}};
+    border-bottom: 1px solid {{border_subtle}};
     padding: 6px 8px;
-    font-size: 12px;
+    font-size: {{font_md}};
     font-weight: 500;
 }
 QDialog#ModelDialog QPushButton {
-    background-color: #2a2e38; color: #e8eaf0; border: none;
-    border-radius: 6px; padding: 4px 12px; font-size: 12px;
+    background-color: {{bg_control_2}}; color: {{text}}; border: 1px solid {{border}};
+    border-radius: {{r_md}}; padding: 4px 12px; font-size: {{font_md}};
 }
-QDialog#ModelDialog QPushButton:hover { background-color: #343a48; }
+QDialog#ModelDialog QPushButton:hover { background-color: {{bg_hover}}; }
 QDialog#ModelDialog QPushButton:disabled {
-    background-color: #23262f; color: #5c6270;
+    background-color: {{bg_control}}; color: {{text_disabled}};
 }
 QDialog#ModelDialog QScrollBar:vertical {
-    background: #181a20; width: 10px; border: none;
+    background: {{bg_base}}; width: 10px; border: none;
 }
 QDialog#ModelDialog QScrollBar::handle:vertical {
-    background: #3a3f4e; border-radius: 5px; min-height: 30px;
+    background: {{border_strong}}; border-radius: {{r_md}}; min-height: 30px;
 }
 QDialog#ModelDialog QScrollBar::add-line:vertical,
 QDialog#ModelDialog QScrollBar::sub-line:vertical { height: 0; }
 
 /* ---------------- 测试结果对话框 ---------------- */
-QDialog#TestResultDialog { background-color: #181a20; }
+QDialog#TestResultDialog { background-color: {{bg_base}}; }
 QFrame#card_img_total, QFrame#card_img_ok, QFrame#card_img_fn,
 QFrame#card_img_fp, QFrame#card_tp, QFrame#card_fn, QFrame#card_fp,
 QFrame#card_precision {
-    background-color: #1c1e25;
-    border: 1px solid #2c303c;
-    border-radius: 8px;
+    background-color: {{bg_panel}};
+    border: 1px solid {{border_subtle}};
+    border-radius: {{r_lg}};
 }
 QDialog#TestResultDialog QLabel[class~="dimTag"] {
-    color: #4f7dff;
-    font-size: 12px;
+    color: {{accent}};
+    font-size: {{font_md}};
     font-weight: 600;
 }
 QDialog#TestResultDialog QLabel[class~="dimNote"] {
-    color: #8b93a5;
-    font-size: 12px;
+    color: {{text_3}};
+    font-size: {{font_md}};
 }
 QDialog#TestResultDialog QLabel[class~="cardValue"] {
-    color: #ffffff;
-    font-size: 22px;
+    color: {{text_strong}};
+    font-size: {{font_3xl}};
     font-weight: 600;
 }
 QDialog#TestResultDialog QLabel[class~="cardLabel"] {
-    color: #8b93a5;
-    font-size: 12px;
+    color: {{text_3}};
+    font-size: {{font_md}};
 }
 QDialog#TestResultDialog QLabel[class~="cardRate"] {
-    font-size: 12px;
+    font-size: {{font_md}};
 }
 QDialog#TestResultDialog QLabel#conclusion_label {
-    color: #c3c9d6;
-    font-size: 13px;
-    background-color: #1c1e25;
-    border: 1px solid #2c303c;
-    border-radius: 8px;
+    color: {{text_2}};
+    font-size: {{font_base}};
+    background-color: {{bg_panel}};
+    border: 1px solid {{border_subtle}};
+    border-radius: {{r_lg}};
     padding: 12px 14px;
 }
 QDialog#TestResultDialog QTableWidget {
-    background-color: #181a20;
-    alternate-background-color: #1f222a;
-    border: 1px solid #2c303c;
-    border-radius: 8px;
-    gridline-color: #2c303c;
-    color: #e8eaf0;
-    font-size: 12px;
+    background-color: {{bg_base}};
+    alternate-background-color: {{bg_raised}};
+    border: 1px solid {{border_subtle}};
+    border-radius: {{r_lg}};
+    gridline-color: {{border_subtle}};
+    color: {{text}};
+    font-size: {{font_md}};
 }
 QDialog#TestResultDialog QHeaderView::section {
-    background-color: #23262f;
-    color: #c3c9d6;
+    background-color: {{bg_control}};
+    color: {{text_2}};
     border: none;
-    border-right: 1px solid #2c303c;
-    border-bottom: 1px solid #2c303c;
+    border-right: 1px solid {{border_subtle}};
+    border-bottom: 1px solid {{border_subtle}};
     padding: 6px 8px;
-    font-size: 12px;
+    font-size: {{font_md}};
 }
 
 /* ---------------- 日志对话框 ---------------- */
-QDialog#LogDialog { background-color: #1c1e25; }
+QDialog#LogDialog { background-color: {{bg_panel}}; }
 QDialog#LogDialog QTextEdit {
-    background-color: #0e0f13;
-    border: 1px solid #2c303c;
-    border-radius: 8px;
+    background-color: {{bg_sunken}};
+    border: 1px solid {{border_subtle}};
+    border-radius: {{r_lg}};
     font-family: "Consolas", "Microsoft YaHei UI", monospace;
-    font-size: 12px;
+    font-size: {{font_md}};
     padding: 8px;
-    color: #e8eaf0;
-    selection-background-color: #4f7dff;
-    selection-color: #ffffff;
+    color: {{text}};
+    selection-background-color: {{accent}};
+    selection-color: {{text_strong}};
 }
 QDialog#LogDialog QPushButton#clr_log_btn {
-    background-color: #2a2e38; color: #e8eaf0; border: none;
-    border-radius: 6px; padding: 6px 18px; font-size: 13px;
+    background-color: {{bg_control_2}}; color: {{text}}; border: 1px solid {{border}};
+    border-radius: {{r_md}}; padding: 6px 18px; font-size: {{font_base}};
 }
-QDialog#LogDialog QPushButton#clr_log_btn:hover { background-color: #343a48; }
+QDialog#LogDialog QPushButton#clr_log_btn:hover { background-color: {{bg_hover}}; }
 
 /* ---------------- 消息框 ---------------- */
-QMessageBox { background-color: #1c1e25; }
+QMessageBox { background-color: {{bg_panel}}; }
 QMessageBox QLabel {
-    color: #e8eaf0; font-size: 13px; min-width: 280px;
+    color: {{text}}; font-size: {{font_base}}; min-width: 280px;
     qproperty-alignment: AlignCenter;
 }
 QMessageBox QPushButton {
-    background-color: #2a2e38; color: #e8eaf0; border: none;
-    border-radius: 6px; padding: 6px 18px; font-size: 13px;
+    background-color: {{bg_control_2}}; color: {{text}}; border: 1px solid {{border}};
+    border-radius: {{r_md}}; padding: 6px 18px; font-size: {{font_base}};
 }
-QMessageBox QPushButton:hover { background-color: #343a48; }
+QMessageBox QPushButton:hover { background-color: {{bg_hover}}; }
 QMessageBox QPushButton:default {
-    background-color: #4f7dff; color: #ffffff; font-weight: 600;
+    background-color: {{accent}}; color: {{text_strong}}; font-weight: 600;
 }
-QMessageBox QPushButton:default:hover { background-color: #638cff; }
+QMessageBox QPushButton:default:hover { background-color: {{accent_hover}}; }
 
 /* ---------------- 移动目标数据集对话框 ---------------- */
-QDialog#MoveTargetDialog { background-color: #1c1e25; }
-QDialog#MoveTargetDialog QLabel { color: #e8eaf0; font-size: 13px; }
+QDialog#MoveTargetDialog { background-color: {{bg_panel}}; }
+QDialog#MoveTargetDialog QLabel { color: {{text}}; font-size: {{font_base}}; }
 QDialog#MoveTargetDialog QComboBox {
-    background-color: #2a2e38; color: #e8eaf0; border: none;
-    border-radius: 6px; padding: 6px 10px; font-size: 13px;
+    background-color: {{bg_control_2}}; color: {{text}}; border: 1px solid {{border}};
+    border-radius: {{r_md}}; padding: 6px 10px; font-size: {{font_base}};
 }
 QDialog#MoveTargetDialog QComboBox::drop-down { border: none; }
 QDialog#MoveTargetDialog QPushButton {
-    background-color: #2a2e38; color: #e8eaf0; border: none;
-    border-radius: 6px; padding: 6px 18px; font-size: 13px;
+    background-color: {{bg_control_2}}; color: {{text}}; border: 1px solid {{border}};
+    border-radius: {{r_md}}; padding: 6px 18px; font-size: {{font_base}};
 }
-QDialog#MoveTargetDialog QPushButton:hover { background-color: #343a48; }
+QDialog#MoveTargetDialog QPushButton:hover { background-color: {{bg_hover}}; }
 
 /* ---------------- 首页顶部工具栏分组 ---------------- */
 QFrame#headerSeparator {
     background: transparent;
     border: none;
-    border-right: 1px solid #2c303c;
+    border-right: 1px solid {{border_subtle}};
     margin: 6px 4px;
     width: 1px;
 }
@@ -1140,15 +1149,15 @@ QFrame#headerSeparator {
 
 /* ---------------- 数据集行内迷你进度条（导入/标签合并时显示） ---------------- */
 QProgressBar#miniProgressBar {
-    background-color: rgba(91,140,255,0.25);
+    background-color: rgba({{accent_rgb}},0.25);
     border: none;
-    border-radius: 3px;
-    color: #ffffff;
-    font-size: 10px;
+    border-radius: {{r_sm}};
+    color: {{text_strong}};
+    font-size: {{font_xs}};
 }
 QProgressBar#miniProgressBar::chunk {
-    background-color: #4f7dff;
-    border-radius: 3px;
+    background-color: {{accent}};
+    border-radius: {{r_sm}};
 }
 
 /* ---------------- 多选下拉框只读 lineEdit（统计/训练界面） ---------------- */
@@ -1166,61 +1175,61 @@ QComboBox[multiCombo="true"] QLineEdit#multiComboLineEdit:focus {
 
 /* ---------------- 训练对话框开始按钮(主操作) ---------------- */
 QPushButton#start_train {
-    background-color: #4f7dff;
-    border: 1px solid #4f7dff;
-    border-radius: 6px;
-    color: #ffffff;
+    background-color: {{accent}};
+    border: 1px solid {{accent}};
+    border-radius: {{r_md}};
+    color: {{text_strong}};
     font-weight: bold;
     padding: 6px 22px;
 }
 QPushButton#start_train:hover {
-    background-color: #638cff;
-    border-color: #638cff;
+    background-color: {{accent_hover}};
+    border-color: {{accent_hover}};
 }
 QPushButton#start_train:pressed {
-    background-color: #3f6ceb;
+    background-color: {{accent_pressed}};
 }
 QPushButton#start_train:disabled {
-    background-color: #2c3a5e;
-    border-color: #2c3a5e;
-    color: #7d879c;
+    background-color: {{accent_dim}};
+    border-color: {{accent_dim}};
+    color: {{text_3}};
 }
 
 /* ---------------- 停止训练按钮(红色) ---------------- */
 QPushButton#stop_train_btn {
-    background-color: #d64545;
-    color: white;
+    background-color: {{danger_solid}};
+    color: {{text_strong}};
     border: none;
-    border-radius: 6px;
+    border-radius: {{r_md}};
     padding: 4px 12px;
-    font-size: 13px;
+    font-size: {{font_base}};
 }
 QPushButton#stop_train_btn:hover {
-    background-color: #e05555;
+    background-color: {{danger_solid_hover}};
 }
 
 /* ---------------- 标注对话框标签列表 ---------------- */
 QLabel#show_boxes_label, QLabel#text_switch_label {
-    color: #cfd6e4;
-    font-size: 13px;
+    color: {{text_2}};
+    font-size: {{font_base}};
 }
 QFrame#labelRow {
-    background: #23262f;
-    border-radius: 6px;
+    background: {{bg_control}};
+    border-radius: {{r_md}};
 }
 QLabel#labelRowName {
-    color: #e8eaf0;
+    color: {{text}};
     background: transparent;
     font-weight: 600;
 }
 QLabel#labelRowKind {
-    color: #8b93a5;
+    color: {{text_3}};
     background: transparent;
 }
 QLabel#labelRowInfo {
-    color: #8b93a5;
+    color: {{text_3}};
     background: transparent;
-    font-size: 11px;
+    font-size: {{font_sm}};
 }
 
 /* ---------------- message_box 自绘弹窗 ---------------- */
@@ -1228,88 +1237,86 @@ QLabel#labelRowInfo {
    弹窗 parent 挂在 ModelDialog 等对话框上时, QDialog#Xxx QPushButton(1 ID+2 类型)
    会污染关闭/确认按钮(如删除模型记录弹窗的 ✕ 变小方块), 必须稳压它 */
 QFrame#msgFrame {
-    background-color: #1c1e25;
-    border: 1px solid #353a48;
-    border-radius: 12px;
+    background-color: {{bg_panel}};
+    border: 1px solid {{border}};
+    border-radius: {{r_2xl}};
 }
 QFrame#msgFrame QLabel#msgTitle {
-    color: #e8eaf0;
-    font-size: 14px;
+    color: {{text}};
+    font-size: {{font_lg}};
     font-weight: 600;
 }
 QFrame#msgFrame QPushButton#msgClose {
-    background-color: transparent; color: #8b93a5; border: none;
-    border-radius: 6px; font-size: 17px; padding: 2px 8px;
+    background-color: transparent; color: {{text_3}}; border: none;
+    border-radius: {{r_md}}; font-size: {{font_2xl}}; padding: 2px 8px;
 }
-QFrame#msgFrame QPushButton#msgClose:hover { background-color: #3a3f4e; color: #e8eaf0; }
-/* border 不能是 none: 它决定高度(内容 22 + padding 12 + 边框 2 = 36),
-   省了会比同排按钮矮 2px, 与 primary 对不齐 */
+QFrame#msgFrame QPushButton#msgClose:hover { background-color: {{bg_hover}}; color: {{text}}; }
+/* border 不能是 none: 它参与高度, 省了会比同排按钮矮 2px, 与 primary 对不齐 */
 QFrame#msgFrame QPushButton#msgBtn {
-    background-color: #2a2e38; color: #e8eaf0;
+    background-color: {{bg_control_2}}; color: {{text}};
     border: 1px solid transparent;
-    border-radius: 6px; padding: 6px 18px; font-size: 13px;
+    border-radius: {{r_md}}; padding: 6px 18px; font-size: {{font_base}};
 }
-QFrame#msgFrame QPushButton#msgBtn:hover { background-color: #343a48; }
-QFrame#msgFrame QPushButton#msgBtn:pressed { background-color: #3d4556; }
+QFrame#msgFrame QPushButton#msgBtn:hover { background-color: {{bg_hover}}; }
+QFrame#msgFrame QPushButton#msgBtn:pressed { background-color: {{bg_pressed_2}}; }
 /* primary 必须再带一层 QFrame#msgFrame 前缀: 上面两条是双 ID 选择器, 通用段那套
    QPushButton#msgBtn[class~="primary"] 只挂一个 ID, 特异性不够, 主按钮会静默变灰.
-   border 不能省: 它同时决定高度(内容 22 + padding 12 + 边框 2 = 36), 省了就比
-   同排按钮矮 2px */
+   border 不能省: 它参与高度, 省了就比同排按钮矮 2px */
 QFrame#msgFrame QPushButton#msgBtn[class~="primary"] {
-    background-color: #4f7dff; color: #ffffff; border: 1px solid #4f7dff;
+    background-color: {{accent}}; color: {{text_strong}}; border: 1px solid {{accent}};
     font-weight: bold;
 }
 QFrame#msgFrame QPushButton#msgBtn[class~="primary"]:hover {
-    background-color: #638cff; border-color: #638cff;
+    background-color: {{accent_hover}}; border-color: {{accent_hover}};
 }
 QFrame#msgFrame QPushButton#msgBtn[class~="primary"]:pressed {
-    background-color: #3f6ceb; border-color: #3f6ceb;
+    background-color: {{accent_pressed}}; border-color: {{accent_pressed}};
 }
 QFrame#msgFrame QPushButton#msgBtn[class~="primary"]:disabled {
-    background-color: #2c3a5e; border-color: #2c3a5e; color: #7d879c;
+    background-color: {{accent_dim}}; border-color: {{accent_dim}}; color: {{text_3}};
 }
 QFrame#msgFrame QPushButton#msgBtn[class~="primary"]:focus,
 QFrame#msgFrame QPushButton#msgBtn[class~="primary"]:hover:focus {
-    border-color: #ffffff;
+    border-color: {{text_strong}};
 }
 QFrame#msgFrame QLabel#msgText {
-    color: #cfd6e4; font-size: 13px; background: transparent;
+    color: {{text_2}}; font-size: {{font_base}}; background: transparent;
 }
 /* 通用段的 QPushButton[class~="danger"] 只有一个属性选择器, 特异性低于
    上面的双 ID 规则, 不在这里重复一份弹窗里还是普通灰按钮 */
 QFrame#msgFrame QPushButton#msgBtn[class~="danger"] {
-    background-color: #3a2329; border: 1px solid #6e3a42; color: #ff9aa2;
+    background-color: {{danger_bg}}; border: 1px solid {{danger_border}}; color: {{danger_text}};
 }
 QFrame#msgFrame QPushButton#msgBtn[class~="danger"]:hover {
-    background-color: #4d2a32; border-color: #a04a55;
+    background-color: {{danger_bg_hover}}; border-color: {{danger_border_hover}};
 }
 QFrame#msgFrame QPushButton#msgBtn[class~="danger"]:pressed {
-    background-color: #2e1b20; border-color: #a04a55;
+    background-color: {{danger_bg_pressed}}; border-color: {{danger_border_hover}};
 }
 QFrame#msgFrame QPushButton#msgBtn[class~="danger"]:disabled {
-    background-color: #1c1e25; border-color: #2a2d37; color: #5c6270;
+    background-color: {{bg_panel}}; border-color: {{border_subtle}}; color: {{text_disabled}};
 }
 /* 报错详情: 等宽 + 可选中, 长行横向滚动而不是把窗口撑宽 */
 QFrame#msgFrame QPlainTextEdit#msgDetail {
-    background-color: #14161c;
-    border: 1px solid #2a2d37;
-    border-radius: 6px;
-    color: #b8c0d0;
+    background-color: {{bg_sunken}};
+    border: 1px solid {{border_subtle}};
+    border-radius: {{r_md}};
+    color: {{text_2}};
     font-family: Consolas, "Cascadia Mono", "Courier New", monospace;
-    font-size: 12px;
+    font-size: {{font_md}};
     padding: 6px 8px;
-    selection-background-color: #4f7dff;
+    selection-background-color: {{accent}};
 }
 
 /* ---------------- ProgressDialog ---------------- */
 /* 进度框也走 message_box 的无边框外壳, 样式挂 msgFrame 前缀, 按钮复用 msgBtn */
-QFrame#msgFrame QLabel#progressText { color: #e8eaf0; font-size: 13px; }
+QFrame#msgFrame QLabel#progressText { color: {{text}}; font-size: {{font_base}}; }
 QFrame#msgFrame QProgressBar#progressBar {
-    background: #2a2e38; border: none; border-radius: 4px;
+    background: {{bg_control_2}}; border: none; border-radius: {{r_sm}};
     height: 10px; color: transparent;
 }
 QFrame#msgFrame QProgressBar#progressBar::chunk {
-    background: #4f7dff; border-radius: 4px;
+    background: {{accent}}; border-radius: {{r_sm}};
 }
 
 /* 标注界面"添加标签"与首页"+"同款 ghost 样式。
@@ -1317,35 +1324,35 @@ QFrame#msgFrame QProgressBar#progressBar::chunk {
    放前面会被它的 padding:6px 14px 把加号挤出 24px 方块 */
 QPushButton#add_label {
     background: transparent;
-    border: 1px solid #353a48;
-    border-radius: 6px;
+    border: 1px solid {{border}};
+    border-radius: {{r_md}};
     padding: 0;
     min-height: 0;
-    color: #8b93a5;
-    font-size: 15px;
+    color: {{text_3}};
+    font-size: {{font_xl}};
 }
 QPushButton#add_label:hover {
-    color: #e8eaf0;
-    border-color: #4a5164;
-    background-color: #23262f;
+    color: {{text}};
+    border-color: {{border_hover}};
+    background-color: {{bg_control}};
 }
 
 /* ---------------- 模型权重对话框 ---------------- */
 QLabel[class~="modelGroupTitle"] {
-    color: #8b93a5;
-    font-size: 12px;
+    color: {{text_3}};
+    font-size: {{font_md}};
     padding-left: 2px;
 }
 
 QFrame[class~="modelGroup"] {
-    background-color: #1f222a;
-    border: 1px solid #2e323e;
-    border-radius: 8px;
+    background-color: {{bg_raised}};
+    border: 1px solid {{border_subtle}};
+    border-radius: {{r_lg}};
 }
 
 QFrame#modelRow {
     border: none;
-    border-bottom: 1px solid #262a34;
+    border-bottom: 1px solid {{border_subtle}};
     background: transparent;
 }
 
@@ -1354,60 +1361,60 @@ QFrame#modelRow[last="true"] {
     border-bottom: none;
 }
 
-QLabel[class~="modelName"] { color: #e6e9f0; }
-QLabel[class~="modelSize"] { color: #7a8194; }
-QLabel[class~="modelDesc"] { color: #8b93a5; }
-QLabel[class~="modelStatus"] { color: #8b93a5; }
-QLabel[class~="modelStatus"][state="busy"] { color: #4f7dff; }
-QLabel[class~="modelStatus"][state="ready"] { color: #7be39a; }
-QLabel[class~="modelStatus"][state="failed"] { color: #ff6b6b; }
-QLabel[class~="modelStatus"][state="local"] { color: #33c2da; }
-QLabel[class~="modelStatus"][state="broken"] { color: #ff6b6b; }
+QLabel[class~="modelName"] { color: {{text}}; }
+QLabel[class~="modelSize"] { color: {{text_3}}; }
+QLabel[class~="modelDesc"] { color: {{text_3}}; }
+QLabel[class~="modelStatus"] { color: {{text_3}}; }
+QLabel[class~="modelStatus"][state="busy"] { color: {{accent}}; }
+QLabel[class~="modelStatus"][state="ready"] { color: {{st_ok}}; }
+QLabel[class~="modelStatus"][state="failed"] { color: {{st_err}}; }
+QLabel[class~="modelStatus"][state="local"] { color: {{st_info}}; }
+QLabel[class~="modelStatus"][state="broken"] { color: {{st_err}}; }
 
 QProgressBar#modelProgress {
-    background-color: #10131a;
-    border: 1px solid #2e323e;
-    border-radius: 7px;
+    background-color: {{bg_sunken}};
+    border: 1px solid {{border_subtle}};
+    border-radius: {{r_lg}};
     text-align: center;
-    color: #ffffff;
-    font-size: 11px;
+    color: {{text_strong}};
+    font-size: {{font_sm}};
     min-height: 0px;
     max-height: 14px;
 }
 
 QProgressBar#modelProgress::chunk {
-    border-radius: 6px;
+    border-radius: {{r_md}};
 }
 
 QLabel[class~="modelFootLabel"] {
-    color: #8b93a5;
-    font-size: 12px;
+    color: {{text_3}};
+    font-size: {{font_md}};
 }
 
 QLabel[class~="modelDir"] {
-    color: #b9c0d0;
-    font-size: 12px;
+    color: {{text_2}};
+    font-size: {{font_md}};
 }
 
 QLabel[class~="modelLocalPath"] {
-    color: #7a8194;
-    font-size: 12px;
+    color: {{text_3}};
+    font-size: {{font_md}};
 }
 
 QPushButton[class~="modelLocal"] {
     background-color: transparent;
-    border: 1px solid #353a48;
-    border-radius: 6px;
+    border: 1px solid {{border}};
+    border-radius: {{r_md}};
     padding: 0px;
     min-height: 22px;
-    color: #8b93a5;
-    font-size: 12px;
+    color: {{text_3}};
+    font-size: {{font_md}};
 }
 
 QPushButton[class~="modelLocal"]:hover {
-    background-color: #2b2f3b;
-    border-color: #454b5e;
-    color: #e8eaf0;
+    background-color: {{bg_hover}};
+    border-color: {{border_hover}};
+    color: {{text}};
 }
 
 QDialog#ModelManagerDialog QPushButton#start_btn {
@@ -1425,22 +1432,28 @@ QPushButton#pre_page_btn, QPushButton#next_page_btn {
     padding: 0;
 }
 
+/* 标注对话框底栏是同名的文字按钮, 不能跟着清内边距(会比同界面按钮矮 12px) */
+#AnnotationDialog QPushButton#pre_page_btn,
+#AnnotationDialog QPushButton#next_page_btn {
+    padding: {{pad_btn}};
+}
+
 QPushButton#pre_page_btn:hover, QPushButton#next_page_btn:hover {
-    background-color: #2b2f3b;
-    border-color: #4a5164;
+    background-color: {{bg_hover}};
+    border-color: {{border_hover}};
 }
 
 QPushButton#pre_page_btn:pressed, QPushButton#next_page_btn:pressed {
-    background-color: #1d2027;
+    background-color: {{bg_pressed}};
 }
 
 QPushButton#pre_page_btn:disabled, QPushButton#next_page_btn:disabled {
-    background-color: #1c1e25;
-    border-color: #2a2d37;
+    background-color: {{bg_panel}};
+    border-color: {{border_subtle}};
 }
 
 /* 页码夹在两个箭头中间当视觉中心, 当前页数字化亮见 _set_page_info */
 #pageInfoLabel {
-    color: #8b93a5;
+    color: {{text_3}};
     padding: 0 12px;
 }

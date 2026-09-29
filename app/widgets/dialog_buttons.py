@@ -11,6 +11,7 @@ from PySide6.QtCore import QCoreApplication as QC
 from PySide6.QtGui import QIcon, QPainter, QPixmap, QColor
 from PySide6.QtWidgets import QPushButton
 
+from app.core import theme
 from app.core.utils import project_root
 
 CONFIRM_ICON = "确定.png"
@@ -18,7 +19,7 @@ REJECT_ICON = "取消.png"
 
 ICON_SIZE = 16
 BTN_WIDTH = 84
-BTN_HEIGHT = 36  # 与 style.qss 的 QDialog 控件统一高度一致(CONTROL_H)
+BTN_HEIGHT = theme.BTN_HEIGHT   # 与 style.qss 的 h_ctrl_dialog 同源
 
 # 调用方传进来的文案可能已经是英文了(界面语言切换后), 两套都要认
 CONFIRM_TEXTS = ("确定", "确认", "是", "好", "ok", "yes", "导出", "保存", "应用",
@@ -27,8 +28,8 @@ REJECT_TEXTS = ("取消", "否", "关闭", "no", "cancel", "退出",
                 "no", "cancel", "close", "dismiss")
 
 # 深色底上的图标色
-REJECT_COLOR = "#9aa3b5"
-CONFIRM_COLOR = "#ffffff"
+REJECT_COLOR = theme.hexof("text_dim")
+CONFIRM_COLOR = theme.hexof("text_strong")
 
 
 @lru_cache(maxsize=64)
