@@ -1,7 +1,8 @@
 # 模型调用示例（ONNX Runtime）
 
 本目录由 EasyTrainer 导出模型时自动复制到导出目录，包含 **C++ / C# / Python** 三种语言调用
-ONNX 模型做 **目标检测 / 实例分割 / 图像分类** 推理的完整示例。
+ONNX 模型做 **目标检测 / 实例分割 / 图像分类** 推理的完整示例。**OCR** 导出的是两段
+模型、后处理也另成一套，见下面单独一节（目前只提供 Python 版）。
 
 ## 导出产物
 
@@ -84,6 +85,56 @@ label_map["脏污"]        # → 3，始终是当前这份模型里「脏污」�
 
 > 300 个候选已经是端到端去重结果，**不需要再做 NMS**。
 
+## OCR（字符检测 + 字符识别）
+
+OCR 和其他任务不同：它导出**两份 ONNX**。检测段只出文字框，识别段只读框里的字，
+两段串起来才是完整的 OCR。
+
+```
+项目_时间戳/
+├── 项目_字符检测_尺寸_规模.onnx   # 检测段：概率图 → 文字框
+├── 项目_字符识别_尺寸_规模.onnx   # 识别段：字条 → 文字
+├── vocab.txt                     # 识别段的词表（一行字符，顺序即类别 id）
+└── examples/                     # 本目录
+```
+
+**字符检测**
+
+| 项 | 名称 | 形状 | 说明 |
+|---|---|---|---|
+| 输入 | `images` | `[1, 3, H, W]` | H=W=训练分辨率（默认 1024），RGB 顺序 |
+| 输出 | `logits` | `[1, 1, H, W]` | **没过 sigmoid 的** logits，不是概率图 |
+
+**字符识别**
+
+| 项 | 名称 | 形状 | 说明 |
+|---|---|---|---|
+| 输入 | `images` | `[1, 3, 32, 128]` | 固定 32×128，与训练一致，不随检测尺寸走 |
+| 输出 | `logits` | `[1, T, C]` | T 个时间步，C = 词表长度 + 1，**最后一列是 blank** |
+
+后处理两段都要自己做（官方 predictor 里那套带着 numpy 与动态控制流，进不了 ONNX）：
+
+1. **检测**：`sigmoid` → 按 0.3 二值化 → **3×3 开运算**（不做的话概率图边缘的零星
+   激活会碎成一堆 1~2 像素的假框）→ 找外轮廓 → 取外接框（宽或高 < 2 像素的丢掉）
+   → 框内概率均值低于 0.1 的丢掉 → 坐标按 `原图 / 输入` 的比例还原（方形缩放，
+   宽高各按各的比例）
+2. **识别**：按框从原图裁出字条 → 拉伸到 32×128 → `softmax` → `argmax` 取每步字符
+   → **合并连续重复、去掉 blank** → 按词表映射成文字
+
+调用见 `python/ocr.py`：
+
+```bash
+python ocr.py --det 检测.onnx --image test.jpg                    # 只做检测，画框
+python ocr.py --det 检测.onnx --rec 识别.onnx --image test.jpg --save out.jpg
+python ocr.py --det 检测.onnx --rec 识别.onnx --image test.jpg --json
+```
+
+`--json` 写出的 labelme 标注带 `"ocr": true` 标志位，拖回软件会被自动认成字符检测
+数据集，可直接用来核对结果或补标。
+
+> 两段是**分开训练、分开导出**的：检测段照常出评估报告（漏检/误检分析），识别段只
+> 有 CER 一个结论，不生成评估报告。
+
 ## 中文路径
 
 三种语言的示例都支持**中文的模型路径、图像路径、类别表路径，以及中文工作目录**，无需额外设置。
@@ -127,3 +178,6 @@ python ad.py --model 模型.pt --images D:/待测图像
 | Python | `onnxruntime opencv-python numpy` | `pip install onnxruntime opencv-python numpy` |
 | C++ | OpenCV 4.x、ONNX Runtime 1.16+（C API） | 见 `cpp/README.md` |
 | C# | `Microsoft.ML.OnnxRuntime`、`OpenCvSharp4` | `dotnet add package Microsoft.ML.OnnxRuntime OpenCvSharp4` |
+
+> 上表的依赖连 OCR 一起覆盖（CTC 解码与开运算都只用 OpenCV + numpy）。C++ / C# 目前
+> 只给了检测 / 分割 / 分类的示例，OCR 示例只有 Python 版。

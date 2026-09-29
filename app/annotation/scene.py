@@ -79,7 +79,7 @@ class AnnotationScene(QGraphicsScene):
         self._fp_undo_stack = []
         # 模板粘贴
         self._paste_pos = None           # 复制/粘贴: 左键点击空白处记录的粘贴锚点
-        self._pending_pastes = []   # 浮动粘贴: 图案还没写进图像像素的多边形
+        self._pending_pastes = []        # 浮动粘贴: 图案还没写进图像像素的多边形
         # 剪切板选中后的落点预览: 跟鼠标走的多边形虚线, 角度此刻定死, 预览即落点
         self._stamp_ghost = None
         self._stamp_angle = None
@@ -162,8 +162,8 @@ class AnnotationScene(QGraphicsScene):
 
     @staticmethod
     def mask_polygon(patch, pts):
-        """按多边形把 patch 外部擦成透明(pts 为 patch 局部坐标), 就地修改.
-
+        """
+        按多边形把 patch 外部擦成透明(pts 为 patch 局部坐标), 就地修改.
         从外部导入的 png 可能已经被压平成不透明白底, 不重裁一次贴上去就是整块方形.
         """
         w, h = patch.width(), patch.height()

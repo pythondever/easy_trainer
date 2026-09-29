@@ -202,9 +202,11 @@ class AnnotationIOMixin:
         self._labeled_refresh_timer.start()
 
     def _load_pixmap(self, image_path):
-        """全尺寸加载图像(缓存命中直接返回; 未命中 QImageReader 解码后入 LRU).
+        """
+        全尺寸加载图像(缓存命中直接返回; 未命中 QImageReader 解码后入 LRU).
         缓存 key 用 image_path(不用 self.index) - 删除图像后列表前移, index 会指向别的图,
-        若按 index 缓存会把"已删图/错位图"显示出来."""
+        若按 index 缓存会把"已删图/错位图"显示出来.
+        """
         pix = self._pix_cache.get(image_path)
         if pix is None:
             reader = QImageReader(image_path)

@@ -53,6 +53,7 @@
     <li data-page-node-id="xOg1ivJtfhn4B2I6inzpt7"><a href="#train" data-page-node-id="En0I6UBE9R0Y3Il1H6P5Tp">训练与训练队列</a></li>
     <li data-page-node-id="PsjjYtHBn8xnut7uznHPq1"><a href="#model" data-page-node-id="S2zd3lA1BKnOGaSInMLNFl">模型管理</a></li>
     <li data-page-node-id="S6FlC2RC16XjbzOQ0s8CwI"><a href="#test" data-page-node-id="FzToPpQXIqBstVbHdXA7LK">模型测试与评估报告</a></li>
+    <li><a href="#ocr">OCR（字符检测 + 字符识别）</a></li>
     <li data-page-node-id="fRNU8niHvjOjmKW25dmw56"><a href="#log" data-page-node-id="h0R7PLetJ38HABIiGjtmFy">日志</a></li>
   </ol>
 </div>
@@ -112,11 +113,11 @@
 <ul data-page-node-id="REz7btnpdONHO5OJTQEyCX">
   <li data-page-node-id="TygDqLj5rIo6MM7vOG7XAr"><strong data-page-node-id="zRYzRm42ShUAkP0uOJmon0">图像路径</strong>：选择图片所在文件夹</li>
   <li data-page-node-id="TJaJnP85JPNin0NIkWxrJ8"><strong data-page-node-id="EE1qmiXKeAuR8xsPp0pbYS">标签路径</strong>：选择标注文件所在文件夹</li>
-  <li data-page-node-id="eTMBVDDaD8ylUY0N6TqRYG"><strong data-page-node-id="Nll6NKeZrP0aoeek3Aq4JA">标签格式</strong>：Yolo txt / Labelme json / 按子文件夹分类导入</li>
+  <li data-page-node-id="eTMBVDDaD8ylUY0N6TqRYG"><strong data-page-node-id="Nll6NKeZrP0aoeek3Aq4JA">标签格式</strong>：Yolo txt / Labelme json / 按子文件夹分类导入（OCR 用 Labelme json）</li>
 </ul>
 
 <div class="note" data-page-node-id="yF3lLJEVC3AMS0Vyz59mKj">
-  <strong data-page-node-id="zhpiEHQ2YYuxJw3kYdXltQ">分类数据集</strong>选择"按子文件夹分类导入"：每个子文件夹名作为一个类别，<strong data-page-node-id="ZeZ6JZHCxS0Cg7MZHtWKtZ">无需标注文件</strong>。
+  <strong data-page-node-id="zhpiEHQ2YYuxJw3kYdXltQ">分类数据集</strong>选择"按子文件夹分类导入"：每个子文件夹名作为一个类别，<strong data-page-node-id="ZeZ6JZHCxS0Cg7MZHtWKtZ">无需标注文件</strong>；OCR 用 Labelme json，文本框的标签固定为“文本”，导入后自动标成字符检测数据集。
 </div>
 
 <figure data-page-node-id="vhK7Yn38q8xhBG8u6gkUyD">
@@ -176,13 +177,14 @@
 
 <p data-page-node-id="XpCdCCTEMCS7wmYh42ZrCH">在左侧树选中具体数据集后，右键缩略图选择“标注”，或直接双击缩略图进入。</p>
 
-<h3 data-page-node-id="BuvJ5N08hnLlpEri2OFqBA">4.2 矩形与多边形标注</h3>
+<h3 data-page-node-id="BuvJ5N08hnLlpEri2OFqBA">4.2 矩形、多边形与文本标注</h3>
 
-<p data-page-node-id="xwmjuCSCAMKUVBQpsQrmzG">标注界面顶部工具栏提供两种绘制工具：</p>
+<p data-page-node-id="xwmjuCSCAMKUVBQpsQrmzG">标注界面顶部工具栏提供三种绘制工具：</p>
 
 <ul data-page-node-id="mMmzgnonc8prHDJMTLwz20">
   <li data-page-node-id="onxqvYMS0cAyAeWLEb1qrc"><strong data-page-node-id="bAgtEZ0h3cOhMx5QPGaCEC">矩形</strong>：拖拽鼠标画矩形框</li>
   <li data-page-node-id="AefCAJAN0P4QtcB3Sa30jx"><strong data-page-node-id="xC6sGjSNMWFFzsoBB2eIzF">多边形</strong>：依次点击顶点，双击或回车结束（分割任务用）</li>
+  <li><strong>文本</strong>：先打开顶部“文本标注”开关再拖拽画框，松开即弹出输入框录入文字，双击可改（OCR 任务用）</li>
   <li data-page-node-id="cAZIqZIx91r6GTMMo5r26K"><strong data-page-node-id="sdjJYEm6Ji7OUBexXASKFZ">删除图像</strong>：删除当前这张图</li>
 </ul>
 
@@ -271,7 +273,7 @@
 <p data-page-node-id="Ag1ExVz5LSWmFsdCu55cov">点击首页或模型界面的<strong data-page-node-id="crrBsB7ENTFg5N4INdsgFL">训练</strong>按钮，弹出训练参数配置：</p>
 
 <ul data-page-node-id="1RgEJeuqqwEukGs2s5NZ5B">
-  <li data-page-node-id="GhQd4Iq558CSKJlf2IOvqd"><strong data-page-node-id="GTQJGwNWvpDEfgEG3S76YK">任务类型</strong>：检测 / 分割 / 分类（按数据集格式自动联动）</li>
+  <li data-page-node-id="GhQd4Iq558CSKJlf2IOvqd"><strong data-page-node-id="GTQJGwNWvpDEfgEG3S76YK">任务类型</strong>：检测 / 分割 / 分类 / 异常检测 / OCR（按数据集格式自动联动）</li>
   <li data-page-node-id="LoSnqLgYTVPsb8AJxiOPmu"><strong data-page-node-id="9dOG349Yy5R7XT3jx9qIXx">训练集 / 验证集</strong>：多选数据集，可跨项目组合</li>
   <li data-page-node-id="enC3ZQdJD1qWqxZBUrZlSA"><strong data-page-node-id="n1CE7q6ZIRbYeA3XA8qHWF">设备</strong>：自动列出可用 GPU（如 NVIDIA GeForce RTX 4060 Ti）</li>
   <li data-page-node-id="D9CK8QwPNchtkBx9a1JEmp"><strong data-page-node-id="rn5SvsLNeeAA3hwPUHmd3N">训练超参</strong>：轮次、优化器（检测/分割=adamw、分类=sgd）、早停
@@ -291,7 +293,7 @@
 继续配置下一个。点击首页 <strong data-page-node-id="z3UeCBgpRZT5GvTYKy2M47">训练队列</strong>（或训练窗口入口）打开队列窗口：</p>
 
 <ul data-page-node-id="Z0Bzo2KGWUYUa8DWDk3Z7y">
-  <li data-page-node-id="8svVaSY6gdmb4RSKZVBODV">队列按顺序依次执行，<strong data-page-node-id="D96QvbIbiVOojYnL96mkwO">支持检测 / 分割 / 分类任务混排</strong>，自动逐项切换</li>
+  <li data-page-node-id="8svVaSY6gdmb4RSKZVBODV">队列按顺序依次执行，<strong data-page-node-id="D96QvbIbiVOojYnL96mkwO">支持检测 / 分割 / 分类 / 异常检测 / OCR 任务混排</strong>，自动逐项切换</li>
   <li data-page-node-id="QpVH0ZziIXOgjWR69RErB2"><strong data-page-node-id="aEQw5fd8yPox9pRecaicze">上移 / 下移 / 移除</strong>：调整执行顺序或删除任务</li>
   <li data-page-node-id="DinLB8Yk1r3OL2iDisOav3"><strong data-page-node-id="mfBkLKjl3Y0SkKiDCnDGSy">编辑</strong>：修改选中任务的参数</li>
   <li data-page-node-id="pnbCArF3D9IpIwKCF5qsFG"><strong data-page-node-id="tAaxk1Ur5NQsV1fRbRoIHn">清理已完成</strong>：移除已跑完的记录</li>
@@ -348,7 +350,7 @@
 
 <ul data-page-node-id="cq1eCUvH63TACPIWjX3xS0">
   <li data-page-node-id="ip4xbT3Y7M1lJpb0QEkAL3"><strong data-page-node-id="l6dZgSczXN7pG79Qk5HH2w">搜索框</strong>：按项目 / 数据集 / 标签关键字过滤</li>
-  <li data-page-node-id="fxUfGCFoBUCgCitGRvjfia"><strong data-page-node-id="5wmsgoa2lYLeNQ9pe2gtC0">任务 / 状态下拉</strong>：只看检测 / 分割 / 分类，或训练中 / 已完成 / 失败 / 已停止</li>
+  <li data-page-node-id="fxUfGCFoBUCgCitGRvjfia"><strong data-page-node-id="5wmsgoa2lYLeNQ9pe2gtC0">任务 / 状态下拉</strong>：只看检测 / 分割 / 分类 / 异常检测 / 字符检测 / 字符识别，或训练中 / 已完成 / 失败 / 已停止</li>
   <li data-page-node-id="GJdUUP73FXdejXSn448wG6"><strong data-page-node-id="Z6iH1A70AZbz36DOzPfzqg">仅看每个数据集最佳</strong>：同一数据集只保留精度最高的一条</li>
   <li data-page-node-id="ijwHkSdGUCBZwxnvb6jGDA">列表列：任务、数据集·标签、精度、训练时间、耗时、图像尺寸、操作</li>
   <li data-page-node-id="6UNQDaMVMLaMZRI79RC1On"><strong data-page-node-id="6iyqOHk1Vuo5cyghc07cwY">精度</strong>列带色条：绿 ≥0.8、黄 0.5～0.8、红 &lt;0.5；
@@ -359,16 +361,16 @@
 <p>点击<strong>导出</strong>选择目录后，会生成「项目_时间戳」文件夹，里面包含：</p>
 
 <ul>
-  <li><strong>模型 .onnx</strong>：检测/分割由 RF-DETR 导出，分类由 torch 导出，命名
+  <li><strong>模型 .onnx</strong>：检测/分割由 RF-DETR 导出，分类与 OCR 由 torch 导出，命名
       「项目_任务_图像尺寸_模型规模.onnx」</li>
-  <li><strong>classes.txt</strong>：类别 id 与名称对照</li>
+  <li><strong>classes.txt</strong>：类别 id 与名称对照（OCR 识别段是 <code>vocab.txt</code>，一行字符即词表）</li>
   <li><strong>评估报告 PDF</strong>：自动在验证集上跑一遍评估，复用测试报告的模板，
       命名「…_评估报告.pdf」</li>
-  <li><strong>examples/</strong>：C++ / C# / Python 三种语言调用 ONNX 做检测、分割、分类的示例代码</li>
+  <li><strong>examples/</strong>：C++ / C# / Python 三种语言调用 ONNX 做检测、分割、分类的示例代码（OCR 目前只有 Python 版）</li>
 </ul>
 
 <p>导出过程有进度提示；ONNX 转换需要 <code>onnx</code> / <code>onnxsim</code>，
-未安装会在弹窗里提示。分类任务不生成评估报告（检测/分割的漏检误检报告不适用）。</p>
+未安装会在弹窗里提示。分类任务不生成评估报告（检测/分割的漏检误检报告不适用），OCR 的字符识别同理（结论只有 CER）。</p>
 
 <h3 data-page-node-id="RLy0BBwABnMwvjpRzyy8Bn">6.2 右侧详情面板</h3>
 
@@ -402,10 +404,11 @@
   <li data-page-node-id="yBx23K99N1p74WM1RKKc0D"><strong data-page-node-id="Vk5rWEEZZFHbeU1U1pD2UK">置信度</strong>：低于该分数的预测直接丢弃</li>
   <li data-page-node-id="32SQkJbdqnpvXP5z5Fq2l2"><strong data-page-node-id="PWnhkqfIGZssXCBAGDUOWP">IoU 阈值</strong>：预测框与标注框重合度达标才算正确检出</li>
   <li data-page-node-id="0kU3qv1sKn7ocu5hysHvt1"><strong data-page-node-id="FX2rm42KdtRiyldgemMVnB">输出标签文件</strong>：勾选后把预测框写成 labelme json，便于人工复核</li>
+  <li><strong>OCR</strong>：字符检测分“推理 / 评估”两条路 —— 推理把结果写成标注 json，评估统计 P/R；字符识别不输出标注文件，只报告字条识别率</li>
 </ul>
 
 <div class="note" data-page-node-id="RRpu3jHy4Fa3uGl13858zp">
-  数据集已标注时自动进入<strong data-page-node-id="mp46glzu3pBDmcOKDTVt3A">评估模式</strong>：统计检出率 / 漏检 / 误检。
+  数据集已标注时自动进入<strong data-page-node-id="mp46glzu3pBDmcOKDTVt3A">评估模式</strong>：统计检出率 / 漏检 / 误检；字符检测若选推理模式，则无视标注、直接把预测框写成 json。
 </div>
 
 <figure data-page-node-id="IaywnKZOpCk2iQ0V3UqAI0">
@@ -423,6 +426,7 @@
       未检出图像、有误检图像</li>
   <li data-page-node-id="fWTsEDeK1UzUmCRrFcQNnc"><strong data-page-node-id="VQGHBDMIPPAfN5ka1ytmnc">标注维度</strong>（按标注框统计）：正确检出、漏检、误检、准确率</li>
   <li data-page-node-id="BG4S0v5W7WmwuDOuHV77nJ"><strong data-page-node-id="FRrgkSVjfgN0UXPs0Q7lW8">按类别表格</strong>：每类的标注数 / 正确检出 / 漏检 / 误检 / 检出率 / 准确率</li>
+  <li><strong>字符识别</strong>：不按框统计，报告字条总数、CER（字符错误率）与全对条数</li>
   <li data-page-node-id="FdCmj2JjXEpBhSLsTX3dc9"><strong data-page-node-id="CZ831wpUzJbU7k28lK9wsp">底部结论</strong>：一句话点出整体偏漏检还是偏误检、拖累最大的类别</li>
 </ul>
 
@@ -446,7 +450,47 @@
   抽样只发生在出报告这一步，明细数据仍是全量，后续做难例挖掘不会丢数据。
 </div>
 
-<h2 id="log" data-page-node-id="OPqMorKvoOAkxzDZvlbcRM">8. 日志</h2>
+<h2 id="ocr">8. OCR（字符检测 + 字符识别）</h2>
+
+<p>OCR 与其它任务不同：它由<strong>两个模型</strong>串联完成 —— 字符检测负责找出文字框，
+字符识别负责读出框里的字。训练、测试、导出都是两段分开进行的，模型管理里会留下两条记录。</p>
+
+<h3>8.1 标注文本</h3>
+
+<p>在标注界面打开顶部的<strong>文本标注</strong>开关，类别会自动固定为保留标签“文本”（不必先建标签），
+像画矩形一样框住文字，松开鼠标即弹出输入框录入内容；双击已有的文本框可以随时修改。
+带文本框的 labelme json 在导入时会自动把数据集标成<strong>字符检测数据集</strong>，
+后续只有这类数据集会出现在 OCR 的训练集下拉里。</p>
+
+<h3>8.2 训练</h3>
+
+<p>任务类型选 <strong>OCR</strong>。图像尺寸对应检测段的输入（默认 1024，需为 32 的倍数），
+识别段固定 32×128，不受这一项影响。点“开始训练”后会<strong>自动拆成两项排队</strong>：
+先字符检测、再字符识别；前一项跑完，等显存回落到开训前的水平再起下一项，
+这期间进度区显示“等待显存释放 · 下一项:字符识别”，中间不会有空白。</p>
+
+<div class="note">
+  识别段的词表直接取标注里出现过的字符，所以标注文本要覆盖现场实际会遇到的字符集。
+</div>
+
+<h3>8.3 测试：字符检测两条路，字符识别一条路</h3>
+
+<ul>
+  <li><strong>字符检测 · 推理</strong>：不比对标注，直接把预测框（连同识别出的文字）写成 labelme json。
+      写出的 json 带 OCR 标志位，拖回软件会被认成字符检测数据集，可用来核对结果或补标。</li>
+  <li><strong>字符检测 · 评估</strong>：数据集已标注时自动进入，统计正确检出 / 漏检 / 误检与按类 P/R，和检测任务一致。</li>
+  <li><strong>字符识别</strong>：拿标注框裁出的字条来测，报告字条总数、CER（字符错误率）与全对条数，不输出标注文件。</li>
+</ul>
+
+<h3>8.4 导出</h3>
+
+<p>两段各导一份 ONNX：<code>项目_字符检测_尺寸_规模.onnx</code> 与
+<code>项目_字符识别_尺寸_规模.onnx</code>，识别段额外带 <code>vocab.txt</code> 词表。
+字符检测照常生成评估报告；字符识别只有 CER 一个结论，不生成报告。
+调用示例见导出目录下的 <code>examples/python/ocr.py</code>（检测段输出的 logits 没过 sigmoid，
+后处理要自己做，示例里都写好了）。</p>
+
+<h2 id="log" data-page-node-id="OPqMorKvoOAkxzDZvlbcRM">9. 日志</h2>
 
 <p data-page-node-id="X0x5AlqFj0pAQ6lhztxDy8">点击首页顶部 <strong data-page-node-id="ATwaGKk9dQLeereMLl87Nt">日志</strong> 按钮，打开日志窗口，实时显示：</p>
 <ul data-page-node-id="hq5uUhXmIr0sivJCJbhg0n">

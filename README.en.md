@@ -17,7 +17,7 @@ Project tree on the left of the home page: create / add / delete / rename / impo
 </p>
 
 ### 📥 Data Import
-Single or batch import. For detection/segmentation choose an image directory + a label directory (labelme / YOLO txt); for classification enable "import by sub-folder" (sub-folder name = class). Large datasets lazy-load thumbnails for near-instant display.
+Single or batch import. For detection/segmentation/OCR choose an image directory + a label directory (labelme / YOLO txt); for classification enable "import by sub-folder" (sub-folder name = class). OCR labels are recognized by the text flag in the labelme json, and the dataset is marked as text-detection on import. Large datasets lazy-load thumbnails for near-instant display.
 
 <p align="center">
   <img src="docs/images/导入数据.png" width="60%" />
@@ -41,6 +41,7 @@ Single or batch import. For detection/segmentation choose an image directory + a
 ### ✏️ Annotation
 - **Rectangle**: drag to draw (label chips stay a constant pixel size while zooming)
 - **Polygon**: freehand tracing + automatic point thinning on close (trace color follows the selected label)
+- **Text**: for OCR — draw a box then type its content (the label is fixed to "文本", kept out of the class list)
 - **Format painter**: select a template region → paint copies anywhere (pixel copy, undoable)
 - **Zoom / pan**: mouse-wheel zoom, Space + drag pan, resize handles, delete, show/hide boxes
 - Shortcuts: A/D for prev/next, Q / Ctrl+Z, etc.
@@ -64,7 +65,7 @@ Shows dataset paths and a label-distribution bar chart (descending by count; Top
 </p>
 
 ### 🚀 Training
-Runs in a **child process without blocking the UI**: live progress bar, ETA, GPU memory usage, manual stop (5-second countdown). Detection/segmentation use RF-DETR; classification uses ResNet (18/34/50/101). All network sizes map from a dropdown. A **training queue** is supported: several configurations run back to back, and it can be stopped at any time, with one-click re-queue after an interruption or failure.
+Runs in a **child process without blocking the UI**: live progress bar, ETA, GPU memory usage, manual stop (5-second countdown). Detection/segmentation use RF-DETR; classification uses ResNet (18/34/50/101); anomaly detection uses PatchCore (normal samples only, no labelling needed); OCR uses docTR in two stages (detection DB / LinkNet + recognition CRNN). All network sizes map from a dropdown. A **training queue** is supported: several configurations run back to back, and it can be stopped at any time, with one-click re-queue after an interruption or failure. OCR enqueues two items at once (text detection + text recognition); the second starts once GPU memory falls back to the pre-run level.
 
 <p align="center">
   <img src="docs/images/训练参数设置.png" width="48%" />
@@ -86,7 +87,7 @@ Training history list, filterable by project / task / model size / metric / imag
 </p>
 
 ### 🧪 Model Testing
-Configure data / device / model / confidence / IoU thresholds and run evaluation. Detection/segmentation output per-class P/R plus a global missed/false-positive analysis; classification outputs per-class correct/incorrect stats.
+Configure data / device / model / confidence / IoU thresholds and run evaluation. Detection/segmentation output per-class P/R plus a global missed/false-positive analysis; classification outputs per-class correct/incorrect stats; anomaly detection gives an image-level verdict; OCR has two routes — text detection can either infer (writing label json) or evaluate (P/R + missed/false-positive), and text recognition reports CER plus the exact-match rate.
 
 <p align="center">
   <img src="docs/images/测试参数设置.png" width="48%" />
@@ -118,7 +119,8 @@ Real-time training / testing / operation logs; errors pop up automatically. Logs
 
 ```bash
 pip install torch torchvision
-pip install "rfdetr>=1.9.2"
+pip install "rfdetr>=1.9.2"        # detection / segmentation
+pip install "python-doctr>=1.0.1"  # OCR (text detection + recognition)
 ```
 
 **Additional dependencies for ONNX export** (only needed by Model Manager → Export):
@@ -134,7 +136,7 @@ pip install onnx onnxsim onnxruntime
 pip install -r requirements.txt
 
 # 2. Install training dependencies (Python 3.10+)
-pip install torch torchvision "rfdetr>=1.9.2"
+pip install torch torchvision "rfdetr>=1.9.2" "python-doctr>=1.0.1"
 
 # 3. Install export dependencies (optional, for ONNX export)
 pip install onnx onnxsim onnxruntime
@@ -206,7 +208,7 @@ easy_trainer/
 │   │   ├── log.py          # Rotating daily logs
 │   │   └── keys.py         # LMDB key constants
 │   ├── tasks/              # Background tasks (import / merge)
-│   │   ├── import_task.py  # Dataset scan & import (detect/segment/classify)
+│   │   ├── import_task.py  # Dataset scan & import (detect/segment/classify/OCR)
 │   │   └── merge_task.py   # Label merging
 │   ├── annotation/         # Annotation canvas & annotation dialog
 │   │   ├── scene.py        # Annotation scene (drag-to-draw, hit testing, undo stack)
@@ -233,7 +235,11 @@ easy_trainer/
 │   └── train/              # Training & testing execution
 │       ├── train_worker.py # Training subprocess thread (progress/metrics/result signals)
 │       ├── train_runner.py # Detect/segment training script (RF-DETR)
-│       ├── classify_train_runner.py  # Classification training script (ResNet + per-class accuracy)
+│       ├── classify_common.py / classify_train_runner.py  # Classification architecture table / training script (ResNet + per-class accuracy)
+│       ├── ad_common.py / ad_package.py    # Anomaly detection: backbone cache & model packaging
+│       ├── ad_train_runner.py / ad_test_runner.py     # Anomaly detection training / testing
+│       ├── ocr_common.py / ocr_data.py / ocr_weights.py   # OCR architecture table / data layout / weight provisioning
+│       ├── ocr_train_runner.py / ocr_test_runner.py       # OCR two-stage training / testing
 │       ├── data_prep.py    # Training data prep (YOLO conversion, class collection)
 │       ├── test_worker.py  # Test subprocess thread
 │       ├── test_runner.py  # Detect/segment test script
@@ -241,7 +247,7 @@ easy_trainer/
 │       ├── test_errors.py  # Missed/false-positive analysis
 │       ├── test_report.py  # Evaluation report (PDF)
 │       ├── test_result_dialog.py  # Evaluation result dialog
-│       ├── onnx_export.py  # ONNX export (rfdetr for detect/segment, torch.onnx for classify)
+│       ├── onnx_export.py  # ONNX export (rfdetr for detect/segment, torch.onnx for classify/OCR)
 │       ├── export_worker.py  # Export background thread
 │       └── dialogs.py      # Training/testing dialogs
 ├── examples/               # ONNX usage examples (copied to the export directory on export)
@@ -269,14 +275,14 @@ easy_trainer/
 ## 🧭 Workflow
 
 1. **Create a project** → add a dataset under it
-2. **Import data**: right-click the dataset → Import. For detection/segmentation pick an image directory + a label directory (labelme/yolo); for classification enable "import by sub-folder"
-3. **Annotate**: double-click an image in the dataset to enter the annotation view (rectangle/polygon/format painter), A/D to flip pages, labelme json is saved automatically
-4. **Train**: toolbar "Train" → pick task type (detect/segment/classify) → configure parameters → start (5-second countdown, then runs in background)
+2. **Import data**: right-click the dataset → Import. For detection/segmentation/OCR pick an image directory + a label directory (labelme/yolo); for classification enable "import by sub-folder"
+3. **Annotate**: double-click an image in the dataset to enter the annotation view (rectangle/polygon/text/format painter), A/D to flip pages, labelme json is saved automatically
+4. **Train**: toolbar "Train" → pick task type (detect/segment/classify/anomaly detection/OCR) → configure parameters → start (5-second countdown, then runs in background)
 5. **Test**: Model management → record "Test" → configure → run evaluation
 6. **Review metrics**: Model management → "Metrics" opens the accuracy curves
-7. **Export model**: Model management → record "Export". Detect/segment/classify produce `project_task_size_scale.onnx` + `label_map.json` + evaluation report PDF + usage examples; anomaly detection cannot export ONNX and ships a `.pt` package (`threshold.txt` / `result.json`)
+7. **Export model**: Model management → record "Export". Detect/segment/classify produce `project_task_size_scale.onnx` + `label_map.json` + evaluation report PDF + usage examples; OCR exports one ONNX per stage (the recognition stage also ships `vocab.txt`); anomaly detection cannot export ONNX and ships a `.pt` package (`threshold.txt` / `result.json`)
 
-> 💡 Training image sizes: detection default **640** (multiple of 32), segmentation default **648** (multiple of 12 for nano, 24 for the other three scales), classification default **224**. The note beside the input and the hover tooltip show the valid values for the current scale.
+> 💡 Training image sizes: detection default **640** (multiple of 32), segmentation default **648** (multiple of 12 for nano, 24 for the other three scales), classification default **224**, text detection default **1024** (multiple of 32; the recognition stage is fixed at 32×128 and ignores this). The note beside the input and the hover tooltip show the valid values for the current scale.
 
 ## 💾 Data Storage
 

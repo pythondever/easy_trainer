@@ -97,8 +97,8 @@ def _chip_screen_width(text):
 
 
 def chip_text(item):
-    """chip 上显示的文字: 文本框(OCR)显示所录内容, 其它标注显示类别名.
-
+    """
+    chip 上显示的文字: 文本框(OCR)显示所录内容, 其它标注显示类别名.
     文本框的类别固定是保留标签名("文本"), 显示它等于没说; 录进去的内容
     才是要核对的东西, 所以有文字就优先显示文字.
     """
@@ -247,7 +247,8 @@ class AnnotationBoxItem(QGraphicsRectItem):
         """
         当前 view 的缩放系数(无 view 时 1.0).
         chip 绘制在屏幕坐标(恒定像素大小), 点击检测在局部坐标,
-        必须把屏幕宽度按 scale 换算回局部坐标, 否则缩小视图时点不中."""
+        必须把屏幕宽度按 scale 换算回局部坐标, 否则缩小视图时点不中.
+        """
         scene = self.scene()
         if scene is None:
             return 1.0
@@ -280,9 +281,11 @@ class AnnotationBoxItem(QGraphicsRectItem):
         return QPointF(self.pos().x() + c.x(), self.pos().y() + c.y())
 
     def _chip_hit_pad(self, base=3.0):
-        """chip 命中扩展: 屏幕恒定像素换算回局部坐标.
+        """
+        chip 命中扩展: 屏幕恒定像素换算回局部坐标.
         若不除 scale, 放大视图后命中区膨胀成 base*scale 屏幕像素,
-        菜单关闭后点击外部易误中 chip 导致菜单反复弹出(一直展开)."""
+        菜单关闭后点击外部易误中 chip 导致菜单反复弹出(一直展开).
+        """
         s = self._view_scale()
         return base / s if s > 1e-6 else base
 
@@ -573,8 +576,10 @@ class AnnotationPolygonItem(QGraphicsPolygonItem):
         self.update()
 
     def points(self):
-        """返回 [[x, y], ...](场景/像素坐标, 含 pos 偏移).
-        拖动后保存必须叠加 pos, 否则关闭再打开位置丢失."""
+        """
+        返回 [[x, y], ...](场景/像素坐标, 含 pos 偏移).
+        拖动后保存必须叠加 pos, 否则关闭再打开位置丢失.
+        """
         pos = self.pos()
         return [[p.x() + pos.x(), p.y() + pos.y()] for p in self.polygon()]
 

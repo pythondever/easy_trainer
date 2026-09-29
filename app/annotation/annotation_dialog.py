@@ -49,7 +49,7 @@ ROW_BG_SELECTED = "#2a3f6b"
 ROW_BG_NORMAL = "#23262f"
 _ROW_QSS = "QFrame {{ background: {0}; border-radius: 6px; }}"
 
-# 像素精度(mm/像素), None = 用户没设过. 只活在进程里, 不落库
+# 像素精度(mm/像素)
 _PX_SCALE = None
 
 
