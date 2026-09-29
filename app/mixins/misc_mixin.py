@@ -18,7 +18,7 @@ from app.core.log import write_log
 from PySide6.QtGui import QIcon, QPixmap, QImage, QStandardItem
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtCore import QCoreApplication as QC
-from PySide6.QtWidgets import QApplication, QDialog, QMessageBox, QGraphicsScene
+from PySide6.QtWidgets import QApplication, QDialog, QGraphicsScene
 
 
 class MiscMixin(object):
@@ -379,8 +379,7 @@ class MiscMixin(object):
             QC.translate("MiscMixin",
                          "将从系统删除所选 {} 张图像?\n\n(图像与同名标注文件不可恢复)")
             .format(len(paths)),
-            [(btn_delete, QMessageBox.YesRole),
-             (btn_cancel, QMessageBox.RejectRole)],
+            [(btn_delete, "danger"), (btn_cancel, "normal")],
             informative=QC.translate("MiscMixin", "图像与同名标注文件将从磁盘删除, 不可恢复"))
         if clicked is None or clicked != btn_delete:
             return

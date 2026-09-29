@@ -305,12 +305,11 @@ class ImportExportMixin(object):
         ui.export_path_txt.setReadOnly(True)
         ui.exp_labelme_fmt.setChecked(True)  # 默认 labelme 格式
         for btn in (ui.select_path_btn, ui.do_export_btn):
-            btn.setFixedSize(BTN_WIDTH, BTN_HEIGHT)
-            btn.setIconSize(QSize(ICON_SIZE, ICON_SIZE))
-            btn.setStyleSheet(
-                "QPushButton{padding:0px;border:1px solid #353a48;"
-                "border-radius:6px;}")
+            btn.setMinimumSize(BTN_WIDTH, BTN_HEIGHT)
+        # "打开" 不在 dialog_buttons 的分类表里, 这里手动补成图标 + 文字
+        ui.select_path_btn.setText(QC.translate("ImportExportMixin", "打开"))
         ui.select_path_btn.setIcon(resource_icon("打开.png"))
+        ui.select_path_btn.setIconSize(QSize(ICON_SIZE, ICON_SIZE))
         apply_icon(ui.do_export_btn, QC.translate("ImportExportMixin", "导出"))
         ui.select_path_btn.clicked.connect(
             lambda: self._pick_export_path(dlg, ui))

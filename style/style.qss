@@ -83,12 +83,6 @@ QDialog QPushButton {
     min-height: 22px;
 }
 
-/* 纯图标按钮(确定/取消)尺寸由 dialog_buttons.setFixedSize(56,36) 决定，
-   min-height 22 的样式约束会和它打架顶到 38，这里压回 20 豁免 */
-QPushButton[class~="iconBtn"] {
-    min-height: 20px;
-}
-
 QPushButton:hover {
     background-color: #2b2f3b;
     border-color: #454b5e;
@@ -131,18 +125,18 @@ QPushButton#msgBtn[class~="primary"]:disabled {
     color: #7d879c;
 }
 
-QPushButton[class="danger"] {
+QPushButton[class~="danger"] {
     background-color: #3a2329;
     border: 1px solid #6e3a42;
     color: #ff9aa2;
 }
 
-QPushButton[class="danger"]:hover {
+QPushButton[class~="danger"]:hover {
     background-color: #4d2a32;
     border-color: #a04a55;
 }
 /* 属性选择器与 :disabled 特异性相同, 不补这条时"删除"禁用后仍是危险色 */
-QPushButton[class="danger"]:disabled {
+QPushButton[class~="danger"]:disabled {
     background-color: #1c1e25;
     border-color: #2a2d37;
     color: #5c6270;
@@ -592,8 +586,8 @@ QPushButton#msgBtn[class~="primary"]:focus,
 QPushButton#msgBtn[class~="primary"]:hover:focus {
     border-color: #ffffff;
 }
-QPushButton[class="danger"]:focus,
-QPushButton[class="danger"]:hover:focus {
+QPushButton[class~="danger"]:focus,
+QPushButton[class~="danger"]:hover:focus {
     border-color: #ff9aa2;
 }
 
@@ -1245,19 +1239,22 @@ QFrame#msgFrame QLabel#msgTitle {
 }
 QFrame#msgFrame QPushButton#msgClose {
     background-color: transparent; color: #8b93a5; border: none;
-    border-radius: 6px; font-size: 15px; padding: 2px 8px;
+    border-radius: 6px; font-size: 17px; padding: 2px 8px;
 }
 QFrame#msgFrame QPushButton#msgClose:hover { background-color: #3a3f4e; color: #e8eaf0; }
+/* border 不能是 none: 它决定高度(内容 22 + padding 12 + 边框 2 = 36),
+   省了会比同排按钮矮 2px, 与 primary 对不齐 */
 QFrame#msgFrame QPushButton#msgBtn {
-    background-color: #2a2e38; color: #e8eaf0; border: none;
+    background-color: #2a2e38; color: #e8eaf0;
+    border: 1px solid transparent;
     border-radius: 6px; padding: 6px 18px; font-size: 13px;
 }
 QFrame#msgFrame QPushButton#msgBtn:hover { background-color: #343a48; }
 QFrame#msgFrame QPushButton#msgBtn:pressed { background-color: #3d4556; }
 /* primary 必须再带一层 QFrame#msgFrame 前缀: 上面两条是双 ID 选择器, 通用段那套
    QPushButton#msgBtn[class~="primary"] 只挂一个 ID, 特异性不够, 主按钮会静默变灰.
-   border 不能省: 它同时决定高度(内容 22 + padding 12 + 边框 2 = 36), 省了会比同排的
-   iconBtn 矮 2px */
+   border 不能省: 它同时决定高度(内容 22 + padding 12 + 边框 2 = 36), 省了就比
+   同排按钮矮 2px */
 QFrame#msgFrame QPushButton#msgBtn[class~="primary"] {
     background-color: #4f7dff; color: #ffffff; border: 1px solid #4f7dff;
     font-weight: bold;
@@ -1278,22 +1275,42 @@ QFrame#msgFrame QPushButton#msgBtn[class~="primary"]:hover:focus {
 QFrame#msgFrame QLabel#msgText {
     color: #cfd6e4; font-size: 13px; background: transparent;
 }
+/* 通用段的 QPushButton[class~="danger"] 只有一个属性选择器, 特异性低于
+   上面的双 ID 规则, 不在这里重复一份弹窗里还是普通灰按钮 */
+QFrame#msgFrame QPushButton#msgBtn[class~="danger"] {
+    background-color: #3a2329; border: 1px solid #6e3a42; color: #ff9aa2;
+}
+QFrame#msgFrame QPushButton#msgBtn[class~="danger"]:hover {
+    background-color: #4d2a32; border-color: #a04a55;
+}
+QFrame#msgFrame QPushButton#msgBtn[class~="danger"]:pressed {
+    background-color: #2e1b20; border-color: #a04a55;
+}
+QFrame#msgFrame QPushButton#msgBtn[class~="danger"]:disabled {
+    background-color: #1c1e25; border-color: #2a2d37; color: #5c6270;
+}
+/* 报错详情: 等宽 + 可选中, 长行横向滚动而不是把窗口撑宽 */
+QFrame#msgFrame QPlainTextEdit#msgDetail {
+    background-color: #14161c;
+    border: 1px solid #2a2d37;
+    border-radius: 6px;
+    color: #b8c0d0;
+    font-family: Consolas, "Cascadia Mono", "Courier New", monospace;
+    font-size: 12px;
+    padding: 6px 8px;
+    selection-background-color: #4f7dff;
+}
 
 /* ---------------- ProgressDialog ---------------- */
-/* 同样挂 ID 前缀防通配按钮规则污染(见 message_box 段注释) */
-QDialog#ProgressDialog QLabel#progressText { color: #e8eaf0; font-size: 13px; }
-QDialog#ProgressDialog QProgressBar#progressBar {
+/* 进度框也走 message_box 的无边框外壳, 样式挂 msgFrame 前缀, 按钮复用 msgBtn */
+QFrame#msgFrame QLabel#progressText { color: #e8eaf0; font-size: 13px; }
+QFrame#msgFrame QProgressBar#progressBar {
     background: #2a2e38; border: none; border-radius: 4px;
     height: 10px; color: transparent;
 }
-QDialog#ProgressDialog QProgressBar#progressBar::chunk {
+QFrame#msgFrame QProgressBar#progressBar::chunk {
     background: #4f7dff; border-radius: 4px;
 }
-QDialog#ProgressDialog QPushButton#msgBtn {
-    background-color: #2a2e38; color: #e8eaf0; border: none;
-    border-radius: 6px; padding: 6px 18px; font-size: 13px;
-}
-QDialog#ProgressDialog QPushButton#msgBtn:hover { background-color: #343a48; }
 
 /* 标注界面"添加标签"与首页"+"同款 ghost 样式。
    必须放在 #AnnotationDialog QPushButton 之后: 两者特异性相同, 靠后者胜,

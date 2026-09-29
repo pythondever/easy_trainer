@@ -16,8 +16,8 @@ from app.core.utils import project_root
 CONFIRM_ICON = "确定.png"
 REJECT_ICON = "取消.png"
 
-ICON_SIZE = 26
-BTN_WIDTH = 56
+ICON_SIZE = 16
+BTN_WIDTH = 84
 BTN_HEIGHT = 36  # 与 style.qss 的 QDialog 控件统一高度一致(CONTROL_H)
 
 # 调用方传进来的文案可能已经是英文了(界面语言切换后), 两套都要认
@@ -74,26 +74,32 @@ def classify(text):
 
 
 def apply_icon(btn, text, tooltip=None):
-    """归不了类的按钮(如"覆盖")保持文字, 不动它."""
+    """归不了类的按钮(如"覆盖")保持纯文字, 不动它.
+
+    图标放左侧、文字保留: 早先版本用图标顶掉文字, 弹窗里只剩 ✓ / ✕,
+    和右上角的关闭 ✕ 撞脸又没法看出是"确定"还是"取消".
+    """
     kind = classify(text)
     if not kind:
         return btn
     if kind == "confirm":
         path = _icon_path(CONFIRM_ICON)
         color = CONFIRM_COLOR
-        btn.setProperty("class", "primary")
     else:
         path = _icon_path(REJECT_ICON)
         color = REJECT_COLOR
     if not path:
         return btn
-    btn.setText("")
+    btn.setText(text)
     btn.setIcon(_tinted(path, color))
     btn.setIconSize(QSize(ICON_SIZE, ICON_SIZE))
-    prev = btn.property("class") or ""
-    btn.setProperty("class", (prev + " " if prev else "") + "iconBtn")
-    btn.setFixedSize(BTN_WIDTH, BTN_HEIGHT)
-    btn.setToolTip(tooltip or text)
+    if kind == "confirm":
+        roles = (btn.property("class") or "").split()
+        # danger 是调用方指定的破坏性语义, 不能被"确定"文案顶成主色
+        if not {"primary", "danger"} & set(roles):
+            btn.setProperty("class", " ".join(roles + ["primary"]))
+    if tooltip:
+        btn.setToolTip(tooltip)
     return btn
 
 

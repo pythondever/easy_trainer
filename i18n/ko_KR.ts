@@ -485,28 +485,28 @@
         <translation>밝기 조절은 다각형에만 적용됩니다</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="324"/>
+        <location filename="../app/annotation/annotation_io.py" line="326"/>
         <source>    类别: {}</source>
         <translation>    클래스: {}</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="352"/>
+        <location filename="../app/annotation/annotation_io.py" line="354"/>
         <source>删除本地文件</source>
         <translation>로컬 파일 삭제</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="353"/>
+        <location filename="../app/annotation/annotation_io.py" line="355"/>
         <source>取消</source>
         <translation>취소</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="355"/>
-        <location filename="../app/annotation/annotation_io.py" line="365"/>
+        <location filename="../app/annotation/annotation_io.py" line="357"/>
+        <location filename="../app/annotation/annotation_io.py" line="366"/>
         <source>删除图像</source>
         <translation>이미지 삭제</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="356"/>
+        <location filename="../app/annotation/annotation_io.py" line="358"/>
         <source>是否删除当前图像?
 
 {}</source>
@@ -515,17 +515,17 @@
 {}</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="360"/>
+        <location filename="../app/annotation/annotation_io.py" line="361"/>
         <source>图像与同名标注文件将从磁盘删除, 不可恢复</source>
         <translation>이미지와 같은 이름의 라벨 파일이 디스크에서 삭제되며 복구할 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="366"/>
+        <location filename="../app/annotation/annotation_io.py" line="367"/>
         <source>无法访问主窗口, 删除失败</source>
         <translation>메인 창에 접근할 수 없어 삭제에 실패했습니다</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="379"/>
+        <location filename="../app/annotation/annotation_io.py" line="380"/>
         <source>(无图像)</source>
         <translation>(이미지 없음)</translation>
     </message>
@@ -584,72 +584,72 @@
         <translation>비우기</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="418"/>
-        <location filename="../app/annotation/annotation_io.py" line="447"/>
-        <location filename="../app/annotation/annotation_io.py" line="452"/>
+        <location filename="../app/annotation/annotation_io.py" line="419"/>
+        <location filename="../app/annotation/annotation_io.py" line="448"/>
+        <location filename="../app/annotation/annotation_io.py" line="453"/>
         <source>导出剪切板</source>
         <translation>클립보드 내보내기</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="419"/>
+        <location filename="../app/annotation/annotation_io.py" line="420"/>
         <source>剪切板是空的, 没有可导出的模板</source>
         <translation>클립보드가 비어 있어 내보낼 템플릿이 없습니다</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="422"/>
+        <location filename="../app/annotation/annotation_io.py" line="423"/>
         <source>选择导出目录</source>
         <translation>내보내기 디렉터리 선택</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="448"/>
+        <location filename="../app/annotation/annotation_io.py" line="449"/>
         <source>导出中断: {}
 (已写出 {} 个)</source>
         <translation>내보내기 중단: {}
 ({}개 작성됨)</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="453"/>
+        <location filename="../app/annotation/annotation_io.py" line="454"/>
         <source>已导出 {} 个模板(png + 同名 json)到:
 {}</source>
         <translation>템플릿 {}개(png + 같은 이름 json)를 다음 위치로 내보냈습니다:
 {}</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="459"/>
+        <location filename="../app/annotation/annotation_io.py" line="460"/>
         <source>选择导入目录</source>
         <translation>가져오기 디렉터리 선택</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="466"/>
-        <location filename="../app/annotation/annotation_io.py" line="470"/>
-        <location filename="../app/annotation/annotation_io.py" line="504"/>
+        <location filename="../app/annotation/annotation_io.py" line="467"/>
+        <location filename="../app/annotation/annotation_io.py" line="471"/>
+        <location filename="../app/annotation/annotation_io.py" line="505"/>
         <source>导入剪切板</source>
         <translation>클립보드 가져오기</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="467"/>
+        <location filename="../app/annotation/annotation_io.py" line="468"/>
         <source>读取目录失败: {}</source>
         <translation>디렉터리를 읽지 못했습니다: {}</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="471"/>
+        <location filename="../app/annotation/annotation_io.py" line="472"/>
         <source>这个目录里没有 png 文件</source>
         <translation>이 디렉터리에 png 파일이 없습니다</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="499"/>
+        <location filename="../app/annotation/annotation_io.py" line="500"/>
         <source>已导入 {} 个模板到剪切板</source>
         <translation>템플릿 {}개를 클립보드로 가져왔습니다</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="501"/>
+        <location filename="../app/annotation/annotation_io.py" line="502"/>
         <source>
 其中 {} 个没有同名 json, 按矩形导入</source>
         <translation>
 그중 {}개는 같은 이름의 json이 없어 사각형으로 가져왔습니다</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="503"/>
+        <location filename="../app/annotation/annotation_io.py" line="504"/>
         <source>
 {} 个文件读不出来, 已跳过</source>
         <translation>
@@ -676,12 +676,12 @@
         <location filename="../app/annotation/annotation_dialog.py" line="748"/>
         <location filename="../app/annotation/annotation_dialog.py" line="755"/>
         <location filename="../app/annotation/annotation_dialog.py" line="764"/>
-        <location filename="../app/annotation/annotation_io.py" line="522"/>
+        <location filename="../app/annotation/annotation_io.py" line="523"/>
         <source>删除标签</source>
         <translation>라벨 삭제</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="523"/>
+        <location filename="../app/annotation/annotation_io.py" line="524"/>
         <source>正在统计标注文件...</source>
         <translation>라벨 파일 집계 중...</translation>
     </message>
@@ -1161,12 +1161,12 @@
         <location filename="../app/mixins/import_export_mixin.py" line="277"/>
         <location filename="../app/mixins/label_mixin.py" line="247"/>
         <location filename="../app/mixins/misc_mixin.py" line="122"/>
-        <location filename="../app/widgets/dialog_buttons.py" line="103"/>
+        <location filename="../app/widgets/dialog_buttons.py" line="109"/>
         <source>确定</source>
         <translation>확인</translation>
     </message>
     <message>
-        <location filename="../app/widgets/dialog_buttons.py" line="109"/>
+        <location filename="../app/widgets/dialog_buttons.py" line="115"/>
         <source>取消</source>
         <translation>취소</translation>
     </message>
@@ -1311,12 +1311,12 @@
     <message>
         <location filename="../app/mixins/import_export_mixin.py" line="297"/>
         <location filename="../app/mixins/import_export_mixin.py" line="302"/>
-        <location filename="../app/mixins/import_export_mixin.py" line="314"/>
-        <location filename="../app/mixins/import_export_mixin.py" line="322"/>
-        <location filename="../app/mixins/import_export_mixin.py" line="339"/>
-        <location filename="../app/mixins/import_export_mixin.py" line="349"/>
-        <location filename="../app/mixins/import_export_mixin.py" line="362"/>
-        <location filename="../app/mixins/import_export_mixin.py" line="371"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="313"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="321"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="338"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="348"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="361"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="370"/>
         <source>导出</source>
         <translation>내보내기</translation>
     </message>
@@ -1326,92 +1326,97 @@
         <translation>먼저 왼쪽에서 내보낼 데이터셋을 선택하세요</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="322"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="310"/>
+        <source>打开</source>
+        <translation>열기</translation>
+    </message>
+    <message>
+        <location filename="../app/mixins/import_export_mixin.py" line="321"/>
         <source>请先选择导出保存位置</source>
         <translation>먼저 내보낼 저장 위치를 선택하세요</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="333"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="332"/>
         <source>开始导出: 项目={} | 源路径={} | 保存路径={} | 格式={}</source>
         <translation>내보내기 시작: 프로젝트={} | 원본 경로={} | 저장 경로={} | 형식={}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="339"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="338"/>
         <source>正在导出项目...</source>
         <translation>프로젝트 내보내는 중...</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="350"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="349"/>
         <source>项目&quot;{}&quot;导出完成, 共复制 {} 张图像
 位置: {}</source>
         <translation>프로젝트 &quot;{}&quot; 내보내기 완료, 이미지 {}장 복사됨
 위치: {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="352"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="351"/>
         <source>导出项目完成: {} | {} 张图像 | 标签({}) | 格式={} | → {}</source>
         <translation>프로젝트 내보내기 완료: {} | 이미지 {}장 | 라벨({}) | 형식={} | → {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="358"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="357"/>
         <source>开始导出: 数据集={}/{} | 源路径={} | 保存路径={} | 格式={}</source>
         <translation>내보내기 시작: 데이터셋={}/{} | 원본 경로={} | 저장 경로={} | 형식={}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="362"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="361"/>
         <source>正在导出数据集...</source>
         <translation>데이터셋 내보내는 중...</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="372"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="371"/>
         <source>数据集&quot;{}&quot;导出完成, 共复制 {} 张图像
 位置: {}</source>
         <translation>데이터셋 &quot;{}&quot; 내보내기 완료, 이미지 {}장 복사됨
 위치: {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="375"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="374"/>
         <source>导出数据集完成: {}/{} | {} 张图像 | 标签({}) | 格式={} | → {}</source>
         <translation>데이터셋 내보내기 완료: {}/{} | 이미지 {}장 | 라벨({}) | 형식={} | → {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="380"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="379"/>
         <source>导出失败: 项目={} 数据集={} | {}</source>
         <translation>내보내기 실패: 프로젝트={} 데이터셋={} | {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="381"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="380"/>
         <source>(整个项目)</source>
         <translation>(프로젝트 전체)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="382"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="381"/>
         <source>导出失败</source>
         <translation>내보내기 실패</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="385"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="384"/>
         <source>选择导出保存位置</source>
         <translation>내보낼 저장 위치 선택</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="411"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="410"/>
         <source>{} =&gt; 标签:{}</source>
         <translation>{} =&gt; 라벨:{}</translation>
     </message>
     <message>
+        <location filename="../app/mixins/import_export_mixin.py" line="411"/>
         <location filename="../app/mixins/import_export_mixin.py" line="412"/>
-        <location filename="../app/mixins/import_export_mixin.py" line="413"/>
         <source>(无)</source>
         <translation>(없음)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="420"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="419"/>
         <source>(无标签)</source>
         <translation>(라벨 없음)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="463"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="462"/>
         <source>正在导出: {}</source>
         <translation>내보내는 중: {}</translation>
     </message>
@@ -1624,27 +1629,34 @@
 <context>
     <name>MessageBox</name>
     <message>
-        <location filename="../app/widgets/message_box.py" line="146"/>
+        <location filename="../app/widgets/message_box.py" line="271"/>
+        <location filename="../app/widgets/message_box.py" line="299"/>
         <source>确定</source>
         <translation>확인</translation>
     </message>
     <message>
-        <location filename="../app/widgets/message_box.py" line="170"/>
-        <source>是</source>
-        <translation>예</translation>
+        <location filename="../app/widgets/message_box.py" line="95"/>
+        <source>详情已复制到剪贴板</source>
+        <translation>세부 정보를 클립보드에 복사했습니다</translation>
     </message>
     <message>
-        <location filename="../app/widgets/message_box.py" line="171"/>
-        <source>否</source>
-        <translation>아니요</translation>
+        <location filename="../app/widgets/message_box.py" line="264"/>
+        <source>关闭</source>
+        <translation>닫기</translation>
     </message>
     <message>
-        <location filename="../app/widgets/message_box.py" line="226"/>
+        <location filename="../app/widgets/message_box.py" line="266"/>
+        <source>复制详情</source>
+        <translation>세부 정보 복사</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/message_box.py" line="300"/>
+        <location filename="../app/widgets/message_box.py" line="347"/>
         <source>取消</source>
         <translation>취소</translation>
     </message>
     <message>
-        <location filename="../app/widgets/message_box.py" line="258"/>
+        <location filename="../app/widgets/message_box.py" line="371"/>
         <source>取消中...</source>
         <translation>취소 중...</translation>
     </message>
@@ -1782,7 +1794,7 @@
 (이미지와 같은 이름의 라벨 파일은 복구할 수 없습니다)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="384"/>
+        <location filename="../app/mixins/misc_mixin.py" line="383"/>
         <source>图像与同名标注文件将从磁盘删除, 不可恢复</source>
         <translation>이미지와 같은 이름의 라벨 파일이 디스크에서 삭제되며 복구할 수 없습니다</translation>
     </message>
@@ -4933,7 +4945,7 @@
         <translation>학습 지표 업데이트: record={} 완료 epoch={} {}={} 클래스 수={}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/train_mixin.py" line="309"/>
+        <location filename="../app/mixins/train_mixin.py" line="310"/>
         <source>等待显存释放 · 下一项:{}</source>
         <translation>VRAM 해제 대기 · 다음:{}</translation>
     </message>

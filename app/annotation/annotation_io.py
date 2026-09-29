@@ -7,7 +7,7 @@ from PIL import Image
 from PySide6.QtCore import Signal, QTimer, QThread, QMutex, QMutexLocker
 from PySide6.QtCore import QCoreApplication as QC
 from PySide6.QtGui import QColor, QPixmap, QImage, QImageReader
-from PySide6.QtWidgets import QMessageBox, QFileDialog
+from PySide6.QtWidgets import QFileDialog
 
 
 from app.annotation.scene import AnnotationScene
@@ -357,8 +357,7 @@ class AnnotationIOMixin:
             self, QC.translate("AnnotationDialog", "删除图像"),
             QC.translate("AnnotationDialog", "是否删除当前图像?\n\n{}").format(
                 os.path.basename(cur_path)),
-            [(btn_delete, QMessageBox.YesRole),
-             (btn_cancel, QMessageBox.RejectRole)],
+            [(btn_delete, "danger"), (btn_cancel, "normal")],
             informative=QC.translate("AnnotationDialog", "图像与同名标注文件将从磁盘删除, 不可恢复"))
         if clicked is None or clicked == btn_cancel:
             return

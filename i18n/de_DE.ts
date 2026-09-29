@@ -485,28 +485,28 @@ Bitte die Gutbilder in einen Unterordner mit einem der Namen {} legen oder den D
         <translation>Helligkeitsanpassung wirkt nur auf Polygone</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="324"/>
+        <location filename="../app/annotation/annotation_io.py" line="326"/>
         <source>    类别: {}</source>
         <translation>    Klasse: {}</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="352"/>
+        <location filename="../app/annotation/annotation_io.py" line="354"/>
         <source>删除本地文件</source>
         <translation>Lokale Datei löschen</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="353"/>
+        <location filename="../app/annotation/annotation_io.py" line="355"/>
         <source>取消</source>
         <translation>Abbrechen</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="355"/>
-        <location filename="../app/annotation/annotation_io.py" line="365"/>
+        <location filename="../app/annotation/annotation_io.py" line="357"/>
+        <location filename="../app/annotation/annotation_io.py" line="366"/>
         <source>删除图像</source>
         <translation>Bild löschen</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="356"/>
+        <location filename="../app/annotation/annotation_io.py" line="358"/>
         <source>是否删除当前图像?
 
 {}</source>
@@ -515,17 +515,17 @@ Bitte die Gutbilder in einen Unterordner mit einem der Namen {} legen oder den D
 {}</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="360"/>
+        <location filename="../app/annotation/annotation_io.py" line="361"/>
         <source>图像与同名标注文件将从磁盘删除, 不可恢复</source>
         <translation>Bild und gleichnamige Labeldatei werden von der Festplatte gelöscht. Nicht wiederherstellbar</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="366"/>
+        <location filename="../app/annotation/annotation_io.py" line="367"/>
         <source>无法访问主窗口, 删除失败</source>
         <translation>Kein Zugriff auf das Hauptfenster; Löschen fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="379"/>
+        <location filename="../app/annotation/annotation_io.py" line="380"/>
         <source>(无图像)</source>
         <translation>(kein Bild)</translation>
     </message>
@@ -584,72 +584,72 @@ Linksklick zum Auswählen fürs Einfügen; Rechtsklick: Löschen / Importieren /
         <translation>Leeren</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="418"/>
-        <location filename="../app/annotation/annotation_io.py" line="447"/>
-        <location filename="../app/annotation/annotation_io.py" line="452"/>
+        <location filename="../app/annotation/annotation_io.py" line="419"/>
+        <location filename="../app/annotation/annotation_io.py" line="448"/>
+        <location filename="../app/annotation/annotation_io.py" line="453"/>
         <source>导出剪切板</source>
         <translation>Zwischenablage exportieren</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="419"/>
+        <location filename="../app/annotation/annotation_io.py" line="420"/>
         <source>剪切板是空的, 没有可导出的模板</source>
         <translation>Die Zwischenablage ist leer; keine Vorlagen zum Exportieren</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="422"/>
+        <location filename="../app/annotation/annotation_io.py" line="423"/>
         <source>选择导出目录</source>
         <translation>Exportordner wählen</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="448"/>
+        <location filename="../app/annotation/annotation_io.py" line="449"/>
         <source>导出中断: {}
 (已写出 {} 个)</source>
         <translation>Export abgebrochen: {}
 ({} geschrieben)</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="453"/>
+        <location filename="../app/annotation/annotation_io.py" line="454"/>
         <source>已导出 {} 个模板(png + 同名 json)到:
 {}</source>
         <translation>{} Vorlage(n) exportiert (png + gleichnamige json) nach:
 {}</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="459"/>
+        <location filename="../app/annotation/annotation_io.py" line="460"/>
         <source>选择导入目录</source>
         <translation>Importordner wählen</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="466"/>
-        <location filename="../app/annotation/annotation_io.py" line="470"/>
-        <location filename="../app/annotation/annotation_io.py" line="504"/>
+        <location filename="../app/annotation/annotation_io.py" line="467"/>
+        <location filename="../app/annotation/annotation_io.py" line="471"/>
+        <location filename="../app/annotation/annotation_io.py" line="505"/>
         <source>导入剪切板</source>
         <translation>Zwischenablage importieren</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="467"/>
+        <location filename="../app/annotation/annotation_io.py" line="468"/>
         <source>读取目录失败: {}</source>
         <translation>Ordner konnte nicht gelesen werden: {}</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="471"/>
+        <location filename="../app/annotation/annotation_io.py" line="472"/>
         <source>这个目录里没有 png 文件</source>
         <translation>In diesem Ordner gibt es keine png-Dateien</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="499"/>
+        <location filename="../app/annotation/annotation_io.py" line="500"/>
         <source>已导入 {} 个模板到剪切板</source>
         <translation>{} Vorlage(n) in die Zwischenablage importiert</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="501"/>
+        <location filename="../app/annotation/annotation_io.py" line="502"/>
         <source>
 其中 {} 个没有同名 json, 按矩形导入</source>
         <translation>
 Davon {} ohne gleichnamige json, als Rechteck importiert</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="503"/>
+        <location filename="../app/annotation/annotation_io.py" line="504"/>
         <source>
 {} 个文件读不出来, 已跳过</source>
         <translation>
@@ -676,12 +676,12 @@ Davon {} ohne gleichnamige json, als Rechteck importiert</translation>
         <location filename="../app/annotation/annotation_dialog.py" line="748"/>
         <location filename="../app/annotation/annotation_dialog.py" line="755"/>
         <location filename="../app/annotation/annotation_dialog.py" line="764"/>
-        <location filename="../app/annotation/annotation_io.py" line="522"/>
+        <location filename="../app/annotation/annotation_io.py" line="523"/>
         <source>删除标签</source>
         <translation>Label löschen</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="523"/>
+        <location filename="../app/annotation/annotation_io.py" line="524"/>
         <source>正在统计标注文件...</source>
         <translation>Labeldateien werden gezählt...</translation>
     </message>
@@ -1161,12 +1161,12 @@ Trotzdem löschen?</translation>
         <location filename="../app/mixins/import_export_mixin.py" line="277"/>
         <location filename="../app/mixins/label_mixin.py" line="247"/>
         <location filename="../app/mixins/misc_mixin.py" line="122"/>
-        <location filename="../app/widgets/dialog_buttons.py" line="103"/>
+        <location filename="../app/widgets/dialog_buttons.py" line="109"/>
         <source>确定</source>
         <translation>OK</translation>
     </message>
     <message>
-        <location filename="../app/widgets/dialog_buttons.py" line="109"/>
+        <location filename="../app/widgets/dialog_buttons.py" line="115"/>
         <source>取消</source>
         <translation>Abbrechen</translation>
     </message>
@@ -1311,12 +1311,12 @@ Trotzdem löschen?</translation>
     <message>
         <location filename="../app/mixins/import_export_mixin.py" line="297"/>
         <location filename="../app/mixins/import_export_mixin.py" line="302"/>
-        <location filename="../app/mixins/import_export_mixin.py" line="314"/>
-        <location filename="../app/mixins/import_export_mixin.py" line="322"/>
-        <location filename="../app/mixins/import_export_mixin.py" line="339"/>
-        <location filename="../app/mixins/import_export_mixin.py" line="349"/>
-        <location filename="../app/mixins/import_export_mixin.py" line="362"/>
-        <location filename="../app/mixins/import_export_mixin.py" line="371"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="313"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="321"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="338"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="348"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="361"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="370"/>
         <source>导出</source>
         <translation>Exportieren</translation>
     </message>
@@ -1326,92 +1326,97 @@ Trotzdem löschen?</translation>
         <translation>Zuerst links den zu exportierenden Datensatz auswählen</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="322"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="310"/>
+        <source>打开</source>
+        <translation>Öffnen</translation>
+    </message>
+    <message>
+        <location filename="../app/mixins/import_export_mixin.py" line="321"/>
         <source>请先选择导出保存位置</source>
         <translation>Zuerst den Speicherort für den Export wählen</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="333"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="332"/>
         <source>开始导出: 项目={} | 源路径={} | 保存路径={} | 格式={}</source>
         <translation>Export starten: Projekt={} | Quellpfad={} | Speicherpfad={} | Format={}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="339"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="338"/>
         <source>正在导出项目...</source>
         <translation>Projekt wird exportiert...</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="350"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="349"/>
         <source>项目&quot;{}&quot;导出完成, 共复制 {} 张图像
 位置: {}</source>
         <translation>Projekt „{}&quot; exportiert: {} Bilder kopiert
 Ort: {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="352"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="351"/>
         <source>导出项目完成: {} | {} 张图像 | 标签({}) | 格式={} | → {}</source>
         <translation>Projektexport abgeschlossen: {} | {} Bilder | Labels({}) | Format={} | → {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="358"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="357"/>
         <source>开始导出: 数据集={}/{} | 源路径={} | 保存路径={} | 格式={}</source>
         <translation>Export starten: Datensatz={}/{} | Quellpfad={} | Speicherpfad={} | Format={}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="362"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="361"/>
         <source>正在导出数据集...</source>
         <translation>Datensatz wird exportiert...</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="372"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="371"/>
         <source>数据集&quot;{}&quot;导出完成, 共复制 {} 张图像
 位置: {}</source>
         <translation>Datensatz „{}&quot; exportiert: {} Bilder kopiert
 Ort: {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="375"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="374"/>
         <source>导出数据集完成: {}/{} | {} 张图像 | 标签({}) | 格式={} | → {}</source>
         <translation>Datensatzexport abgeschlossen: {}/{} | {} Bilder | Labels({}) | Format={} | → {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="380"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="379"/>
         <source>导出失败: 项目={} 数据集={} | {}</source>
         <translation>Export fehlgeschlagen: Projekt={} Datensatz={} | {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="381"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="380"/>
         <source>(整个项目)</source>
         <translation>(gesamtes Projekt)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="382"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="381"/>
         <source>导出失败</source>
         <translation>Export fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="385"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="384"/>
         <source>选择导出保存位置</source>
         <translation>Ziel für Export wählen</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="411"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="410"/>
         <source>{} =&gt; 标签:{}</source>
         <translation>{} =&gt; Labels:{}</translation>
     </message>
     <message>
+        <location filename="../app/mixins/import_export_mixin.py" line="411"/>
         <location filename="../app/mixins/import_export_mixin.py" line="412"/>
-        <location filename="../app/mixins/import_export_mixin.py" line="413"/>
         <source>(无)</source>
         <translation>(keine)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="420"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="419"/>
         <source>(无标签)</source>
         <translation>(keine Labels)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="463"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="462"/>
         <source>正在导出: {}</source>
         <translation>Export läuft: {}</translation>
     </message>
@@ -1624,27 +1629,34 @@ Alle seine Annotationen werden gelöscht und können nicht wiederhergestellt wer
 <context>
     <name>MessageBox</name>
     <message>
-        <location filename="../app/widgets/message_box.py" line="146"/>
+        <location filename="../app/widgets/message_box.py" line="271"/>
+        <location filename="../app/widgets/message_box.py" line="299"/>
         <source>确定</source>
         <translation>OK</translation>
     </message>
     <message>
-        <location filename="../app/widgets/message_box.py" line="170"/>
-        <source>是</source>
-        <translation>Ja</translation>
+        <location filename="../app/widgets/message_box.py" line="95"/>
+        <source>详情已复制到剪贴板</source>
+        <translation>Details in die Zwischenablage kopiert</translation>
     </message>
     <message>
-        <location filename="../app/widgets/message_box.py" line="171"/>
-        <source>否</source>
-        <translation>Nein</translation>
+        <location filename="../app/widgets/message_box.py" line="264"/>
+        <source>关闭</source>
+        <translation>Schließen</translation>
     </message>
     <message>
-        <location filename="../app/widgets/message_box.py" line="226"/>
+        <location filename="../app/widgets/message_box.py" line="266"/>
+        <source>复制详情</source>
+        <translation>Details kopieren</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/message_box.py" line="300"/>
+        <location filename="../app/widgets/message_box.py" line="347"/>
         <source>取消</source>
         <translation>Abbrechen</translation>
     </message>
     <message>
-        <location filename="../app/widgets/message_box.py" line="258"/>
+        <location filename="../app/widgets/message_box.py" line="371"/>
         <source>取消中...</source>
         <translation>Wird abgebrochen...</translation>
     </message>
@@ -1782,7 +1794,7 @@ Alle seine Annotationen werden gelöscht und können nicht wiederhergestellt wer
 (Bilder und gleichnamige Labeldateien können nicht wiederhergestellt werden)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="384"/>
+        <location filename="../app/mixins/misc_mixin.py" line="383"/>
         <source>图像与同名标注文件将从磁盘删除, 不可恢复</source>
         <translation>Bilder und gleichnamige Labeldateien werden von der Festplatte gelöscht. Nicht wiederherstellbar</translation>
     </message>
@@ -4933,7 +4945,7 @@ Vor dem nächsten Task besser kurz warten.</translation>
         <translation>Trainingsmetriken aktualisieren: record={} abgeschlossene epoch={} {}={} Klassenanzahl={}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/train_mixin.py" line="309"/>
+        <location filename="../app/mixins/train_mixin.py" line="310"/>
         <source>等待显存释放 · 下一项:{}</source>
         <translation>Warte auf freien VRAM · Nächstes:{}</translation>
     </message>

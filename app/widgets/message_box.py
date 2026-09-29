@@ -1,46 +1,126 @@
 # -*- coding: utf-8 -*-
 """统一消息框 + 进度对话框(深色主题, 自绘无边框窗口, 与 app QSS 一致)."""
 
-from PySide6.QtCore import Qt
+import os
+
+from PySide6.QtCore import Qt, QSize
 from PySide6.QtCore import QCoreApplication as QC
+from PySide6.QtGui import QColor, QIcon, QPainter, QPixmap
 from PySide6.QtWidgets import (QApplication, QDialog, QFrame, QVBoxLayout,
-                               QHBoxLayout, QLabel, QPushButton, QProgressBar)
+                               QHBoxLayout, QLabel, QMessageBox, QPlainTextEdit,
+                               QPushButton, QProgressBar, QToolTip)
 from PySide6.QtWidgets import QGraphicsDropShadowEffect
 
-from app.widgets.dialog_buttons import apply_icon
+from app.core.utils import project_root
+from app.widgets.dialog_buttons import BTN_WIDTH, apply_icon
 
 
-# 图标: (符号, 颜色)
+# 图标: (resources 文件名, 颜色)
 _ICONS = {
-    "warning": ("⚠", "#f5b84b"),
-    "information": ("ⓘ", "#4f7dff"),
-    "critical": ("✕", "#f2645a"),
-    "question": ("?", "#4f7dff"),
+    "warning": ("msg_warning.svg", "#f5b84b"),
+    "information": ("msg_information.svg", "#4f7dff"),
+    "critical": ("msg_critical.svg", "#f2645a"),
+    "question": ("msg_question.svg", "#4f7dff"),
+}
+_ICON_PX = 22
+_ICON_COL_W = 34          # 图标列宽固定, 保证正文左边界与标题下的对齐
+TEXT_MAX_W = 420          # 正文限宽: 不限时一条长 traceback 能把窗口撑到屏幕外
+DETAIL_MIN_H = 96         # 详情区按行数自适应高度, 两行也占满 180 会留一大片空
+DETAIL_MAX_H = 180
+DETAIL_LINE_H = 17
+
+# QMessageBox 的 Role 枚举 → QSS 里的 class
+_ROLE_MAP = {
+    QMessageBox.AcceptRole: "primary",
+    QMessageBox.YesRole: "primary",
+    QMessageBox.DestructiveRole: "danger",
 }
 
 
-class _FramelessBox(QDialog):
-    """自绘无边框弹窗: 圆角+阴影+自绘标题栏, 支持拖拽移动."""
+def _icon_pixmap(name, color):
+    """加载 resources 图标并按当前主题色染色."""
+    path = os.path.join(project_root(), "resources", name)
+    if not os.path.exists(path):
+        return QPixmap()
+    src = QIcon(path).pixmap(QSize(_ICON_PX, _ICON_PX))
+    if src.isNull():
+        return src
+    out = QPixmap(src.size())
+    out.fill(Qt.transparent)
+    painter = QPainter(out)
+    painter.drawPixmap(0, 0, src)
+    painter.setCompositionMode(QPainter.CompositionMode_SourceIn)
+    painter.fillRect(out.rect(), QColor(color))
+    painter.end()
+    return out
 
-    def __init__(self, title, icon_key, parent=None):
+
+def _normalize_role(role):
+    """调用方传 QMessageBox.Role 枚举或 "primary"/"danger"/"normal" 字符串都认.
+
+    早先写成 "normal" if b[1] != "primary" else "primary", danger 与
+    DestructiveRole 被一律压成 normal, 破坏性按钮和普通按钮一个颜色.
+    """
+    if isinstance(role, str):
+        return role if role in ("primary", "danger", "normal") else "normal"
+    return _ROLE_MAP.get(role, "normal")
+
+
+def _split_detail(text):
+    """多行或超长的错误内容才值得折叠进详情区, 单行短消息直接当正文."""
+    if not text:
+        return None
+    lines = [ln for ln in text.splitlines() if ln.strip()]
+    if len(lines) < 2 and len(text) <= 160:
+        return None
+    return text
+
+
+def _summary_of(text):
+    lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
+    if not lines:
+        return text
+    # traceback 开头是 "Traceback (most recent call last):", 有信息量的是末行异常
+    if lines[0].startswith("Traceback (most recent call last)"):
+        return lines[-1]
+    # "训练过程中发生错误, Err:" 这类引导语本身不带信息, 摘要取它后面第一行
+    if len(lines) > 1 and lines[0].endswith((":", "：")):
+        return lines[1]
+    return lines[0]
+
+
+def _copy_detail(edit, btn):
+    QApplication.clipboard().setText(edit.toPlainText())
+    QToolTip.showText(btn.mapToGlobal(btn.rect().center()),
+                      QC.translate("MessageBox", "详情已复制到剪贴板"), btn)
+
+
+class _FramelessBox(QDialog):
+    """自绘无边框弹窗: 圆角+阴影+自绘标题栏, 支持拖拽移动.
+
+    内容塞 self._content(QVBoxLayout), 按钮塞 self._btn_row(QHBoxLayout, 右对齐).
+    """
+
+    # 阴影是画在窗口外圈的 graphics effect, 内容边距为 0 时会被窗口边界裁掉
+    SHADOW_MARGIN = 16
+
+    def __init__(self, title, parent=None):
         super().__init__(parent)
         self.setWindowFlags(Qt.Dialog | Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
         self.setModal(True)
-        self.setMinimumWidth(380)
 
-        # 外层透明容器(放圆角+阴影)
+        margin = self.SHADOW_MARGIN
         outer = QVBoxLayout(self)
-        outer.setContentsMargins(0, 0, 0, 0)
+        outer.setContentsMargins(margin, margin, margin, margin)
         self._frame = QFrame(self)
         self._frame.setObjectName("msgFrame")
+        self._frame.setMinimumWidth(380)
         outer.addWidget(self._frame)
 
-        # 阴影
         shadow = QGraphicsDropShadowEffect(self._frame)
         shadow.setBlurRadius(24)
         shadow.setOffset(0, 4)
-        from PySide6.QtGui import QColor
         shadow.setColor(QColor(0, 0, 0, 140))
         self._frame.setGraphicsEffect(shadow)
 
@@ -54,7 +134,8 @@ class _FramelessBox(QDialog):
         self._title_lbl.setObjectName("msgTitle")
         title_row.addWidget(self._title_lbl)
         title_row.addStretch(1)
-        close_btn = QPushButton("✕")
+        # 用 U+00D7 而不是 U+2715: 后者的字形中文字体多半没有, 会渲染成方块
+        close_btn = QPushButton("×")
         close_btn.setObjectName("msgClose")
         close_btn.setFixedSize(28, 24)
         close_btn.clicked.connect(self.reject)
@@ -62,22 +143,10 @@ class _FramelessBox(QDialog):
         layout.addLayout(title_row)
         layout.addSpacing(10)
 
-        # ---- 内容区: 图标 + 文本 ----
-        body = QHBoxLayout()
-        body.setSpacing(16)
-        sym, color = _ICONS.get(icon_key, ("ⓘ", "#4f7dff"))
-        self._icon_lbl = QLabel(sym)
-        self._icon_lbl.setStyleSheet(
-            "color: {}; font-size: 30px; font-weight: 700;".format(color))
-        self._icon_lbl.setFixedWidth(44)
-        self._icon_lbl.setAlignment(Qt.AlignCenter)
-        body.addWidget(self._icon_lbl, 0, Qt.AlignVCenter)
-        self._text_lbl = QLabel("")
-        self._text_lbl.setObjectName("msgText")
-        self._text_lbl.setWordWrap(True)
-        self._text_lbl.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-        body.addWidget(self._text_lbl, 1)
-        layout.addLayout(body)
+        # ---- 内容区(子类往 _content 里加) ----
+        self._content = QVBoxLayout()
+        self._content.setSpacing(0)
+        layout.addLayout(self._content)
         layout.addSpacing(18)
 
         # ---- 按钮区 ----
@@ -109,17 +178,62 @@ class _FramelessBox(QDialog):
         else:
             super().keyPressEvent(event)
 
+    # ---- 内容 ----
+    def add_icon_text(self, icon_key, text):
+        row = QHBoxLayout()
+        row.setSpacing(12)
+        name, color = _ICONS.get(icon_key, _ICONS["information"])
+        pixmap = _icon_pixmap(name, color)
+        icon_lbl = QLabel()
+        icon_lbl.setFixedWidth(_ICON_COL_W)
+        icon_lbl.setAlignment(Qt.AlignCenter)
+        if pixmap.isNull():
+            # 资源缺失时退化成字形, 不留空白
+            icon_lbl.setText("!")
+            icon_lbl.setStyleSheet(
+                "color: {}; font-size: {}px; font-weight: 700;".format(color, _ICON_PX))
+        else:
+            icon_lbl.setPixmap(pixmap)
+        row.addWidget(icon_lbl, 0, Qt.AlignVCenter)
+        self._text_lbl = QLabel(text)
+        self._text_lbl.setObjectName("msgText")
+        self._text_lbl.setWordWrap(True)
+        self._text_lbl.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+        self._text_lbl.setMaximumWidth(TEXT_MAX_W)
+        row.addWidget(self._text_lbl, 1)
+        self._content.addLayout(row)
+        return self._text_lbl
+
+    def add_detail(self, text):
+        """只读等宽文本区: 报错堆栈能选中能复制能滚动, 也不会把窗口撑宽."""
+        edit = QPlainTextEdit()
+        edit.setObjectName("msgDetail")
+        edit.setPlainText(text)
+        edit.setReadOnly(True)
+        edit.setLineWrapMode(QPlainTextEdit.NoWrap)
+        rows = max(1, len(text.splitlines()))
+        height = max(DETAIL_MIN_H,
+                     min(DETAIL_MAX_H, rows * DETAIL_LINE_H + 26))
+        edit.setFixedSize(TEXT_MAX_W, height)
+        row = QHBoxLayout()
+        row.setContentsMargins(_ICON_COL_W + 12, 0, 0, 0)
+        row.addWidget(edit)
+        self._content.addLayout(row)
+        return edit
+
     # ---- 按钮 ----
-    def _add_button(self, text, role, default=False):
+    def _add_button(self, text, role="normal", default=False, accept=True):
         btn = QPushButton(text)
         btn.setObjectName("msgBtn")
         btn.setProperty("originText", text)
-        if role == "primary":
-            btn.setProperty("class", "primary")
+        # class 要在 apply_icon 之前设: 它按已有 class 决定要不要补 primary
+        btn.setProperty("class", role)
         apply_icon(btn, text)
         btn.setCursor(Qt.PointingHandCursor)
-        btn.clicked.connect(lambda: setattr(self, "_clicked", btn))
-        btn.clicked.connect(self.accept)
+        btn.setMinimumWidth(BTN_WIDTH)
+        if accept:
+            btn.clicked.connect(lambda: setattr(self, "_clicked", btn))
+            btn.clicked.connect(self.accept)
         self._btn_row.addWidget(btn)
         if default:
             btn.setFocus()
@@ -131,16 +245,27 @@ class MessageBox:
     """统一消息框静态封装: warning / information / question / critical."""
 
     @staticmethod
-    def _show(icon, title, text, parent=None, buttons=None, default_idx=0):
-        """buttons=[(文本, 角色, default?)], 返回点击的按钮对象."""
-        box = _FramelessBox(title, icon, parent)
-        box._text_lbl.setText(text)
+    def _show(icon, title, text, parent=None, buttons=None, default_idx=0, detail=None):
+        """buttons=[(文本, 角色, default?)], 返回 (box, 已添加按钮列表)."""
+        box = _FramelessBox(title, parent)
+        box.add_icon_text(icon, text)
+        edit = None
+        if detail:
+            box._content.addSpacing(12)
+            edit = box.add_detail(detail)
         added = []
         if buttons:
             for b in buttons:
-                text_b, role_b = b[0], b[1]
-                default = len(b) > 2 and b[2]
-                added.append(box._add_button(text_b, role_b, default))
+                added.append(box._add_button(
+                    b[0], _normalize_role(b[1] if len(b) > 1 else "normal"),
+                    len(b) > 2 and b[2]))
+        elif edit is not None:
+            added.append(box._add_button(
+                QC.translate("MessageBox", "关闭"), "primary", True))
+            copy_btn = box._add_button(
+                QC.translate("MessageBox", "复制详情"), "normal", accept=False)
+            copy_btn.clicked.connect(lambda: _copy_detail(edit, copy_btn))
+            added.append(copy_btn)
         else:
             added.append(box._add_button(
                 QC.translate("MessageBox", "确定"), "primary", True))
@@ -160,17 +285,21 @@ class MessageBox:
 
     @staticmethod
     def critical(parent, title, text):
-        MessageBox._show("critical", title, text, parent)
+        """错误弹窗: 多行/超长内容(如 traceback)拆成摘要 + 可复制的详情区."""
+        detail = _split_detail(text)
+        if detail is not None:
+            text = _summary_of(text)
+        MessageBox._show("critical", title, text, parent, detail=detail)
 
     @staticmethod
     def question(parent, title, text, default_yes=True):
-        """返回 True=是 / False=否; Esc 或 ✕ 关闭等同"否", 不按默认键算."""
+        """返回 True=是 / False=否; Esc 或 × 关闭等同"否", 不按默认键算."""
         box, btns = MessageBox._show(
             "question", title, text, parent,
-            [(QC.translate("MessageBox", "是"), "primary", default_yes),
-             (QC.translate("MessageBox", "否"), "normal", not default_yes)])
+            [(QC.translate("MessageBox", "确定"), "primary", default_yes),
+             (QC.translate("MessageBox", "取消"), "normal", not default_yes)])
         clicked = getattr(box, "_clicked", None)
-        if clicked is None:                # Esc / ✕关闭
+        if clicked is None:                # Esc / ×关闭
             return False
         return clicked is btns[0]
 
@@ -180,8 +309,7 @@ class MessageBox:
         if informative:
             text = "{}\n\n{}".format(text, informative)
         box, btns = MessageBox._show(
-            "question", title, text, parent,
-            [(b[0], "normal" if b[1] != "primary" else "primary") for b in buttons])
+            "question", title, text, parent, [(b[0], b[1]) for b in buttons])
         clicked = getattr(box, "_clicked", None)
         if clicked is None:
             return None
@@ -191,53 +319,38 @@ class MessageBox:
         return None
 
 
-class ProgressDialog(QDialog):
+class ProgressDialog(_FramelessBox):
     """带进度条 + 文本 + 可选取消按钮的模态对话框(导出/批量删除长任务)."""
 
     def __init__(self, title, text, parent=None, maximum=100, cancellable=True):
-        super().__init__(parent)
-        # objectName 供 QSS 用 QDialog#ProgressDialog 前缀锁样式, 防止弹窗
-        # parent 挂在 ModelDialog 等对话框上时被其通配按钮规则污染
-        self.setObjectName("ProgressDialog")
+        super().__init__(title, parent)
         self.setWindowTitle(title)
-        self.setModal(True)
         self.setWindowModality(Qt.ApplicationModal)
-        self.setFixedWidth(430)
         self._cancelled = False
-
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(24, 20, 24, 20)
-        layout.setSpacing(14)
 
         self._text_lbl = QLabel(text)
         self._text_lbl.setObjectName("progressText")
         self._text_lbl.setWordWrap(True)
-        layout.addWidget(self._text_lbl)
+        self._text_lbl.setMinimumWidth(382)   # 加上左右内边距约 430 宽
+        self._content.addWidget(self._text_lbl)
+        self._content.addSpacing(14)
 
         self._bar = QProgressBar()
         self._bar.setObjectName("progressBar")
         self._bar.setRange(0, maximum)
         self._bar.setValue(0)
-        layout.addWidget(self._bar)
+        self._content.addWidget(self._bar)
 
+        self._cancel_btn = None
         if cancellable:
-            row = QHBoxLayout()
-            row.addStretch(1)
-            cancel_text = QC.translate("MessageBox", "取消")
-            self._cancel_btn = QPushButton(cancel_text)
-            self._cancel_btn.setObjectName("msgBtn")
-            apply_icon(self._cancel_btn, cancel_text)
+            self._cancel_btn = self._add_button(
+                QC.translate("MessageBox", "取消"), "normal", accept=False)
             self._cancel_btn.clicked.connect(self._on_cancel)
-            row.addWidget(self._cancel_btn)
-            layout.addLayout(row)
-        else:
-            self._cancel_btn = None
 
         # 立即显示并置顶避免 processEvents 时还没 show 导致用户看不到进度
         self.show()
         self.raise_()
         self.activateWindow()
-
 
     def set_progress(self, value, text=None):
         self._bar.setValue(value)
