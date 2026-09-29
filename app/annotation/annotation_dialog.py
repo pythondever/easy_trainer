@@ -36,7 +36,7 @@ from app.annotation.annotation_canvas import (ANGLE_RANGE_DEFAULT,
 from app.annotation.annotation_io import AnnotationIOMixin, _PrefetchWorker
 from app.annotation.box_item import (AnnotationBoxItem, LABEL_COLORS,
                                      assign_label_color, label_color)
-from app.core.label_utils import (label_sort_key, normalize_label,
+from app.core.label_utils import (TEXT_LABEL, label_sort_key, normalize_label,
                                   same_dir_json)
 from app.widgets.dialog_buttons import (add_ok_cancel, apply_icon,
                                         _icon_path, _tinted)

@@ -56,8 +56,9 @@ transformers 格式的 safetensors，rfdetr 包不认），YOLO26 那批走 Hugg
 `builder\pretrained-assets.txt`：`相对 pretrained/ 的路径 \t URL \t SHA256`，**C# 安装器、
 installer.sh、builder\build.py 三端共用**，改这一处即可换源或添加国内镜像（同一路径写多行 =
 多个候选源，安装器按顺序尝试）。第一列带架构子目录（`transformer/nano.pt`、`cnn/nano.pt`），
-与软件内的架构分目录（transformer / cnn）一一对应 —— 少了这一层，装完软件仍会认为权重缺失。
-当前默认装 8 个：`transformer` 与 `cnn` 各 4 个（检测/分割 × nano/small）。
+与软件内的架构分目录（transformer / cnn / ad / ocr）一一对应 —— 少了这一层，装完软件仍会认为权重缺失。
+当前默认装 16 个：`transformer` 与 `cnn` 各 4 个（检测/分割 × nano/small）、`ad` 1 个（异常检测骨干）、
+`ocr` 7 个（检测四档 + 识别骨干三档）。
 Python 运行时本身的下载信息仍写死在 `InstallerCore.cs` 常量里。
 
 ## 构建步骤（Windows）

@@ -50,7 +50,7 @@ public sealed class MainForm : Form
         {
             Dock = DockStyle.Top,
             Title = "安装向导",
-            SubTitle = "检测 / 分割 / 分类 模型训练工具",
+            SubTitle = "检测 / 分割 / 分类 / 异常检测 / OCR 模型训练工具",
         };
 
         _dirBox.BorderStyle = BorderStyle.FixedSingle;
