@@ -263,6 +263,15 @@ class DataBase:
         })
         return True
 
+    def set_dataset_type(self, project_name, dataset_name, dataset_type):
+        """给数据集打类型标记; True = 真的改了. OCR 数据集靠它驱动首页与训练."""
+        info = self._find_info(project_name, dataset_name)
+        if info is None or info.get('dataset_type', '') == dataset_type:
+            return False
+        info['dataset_type'] = dataset_type
+        self.update_project_info(self.get_project_info())
+        return True
+
     def rename_dataset(self, project_name, old_name, new_name, dataset_type=None):
         """修改数据集名称/类型. 返回 True 成功 / False 重名或不存在."""
         if not new_name:
@@ -412,6 +421,7 @@ class DataBase:
             'image_path': info.get('image_path', ''),
             'label_path': info.get('label_path', ''),
             'label_fmt': info.get('label_fmt', ''),
+            'dataset_type': info.get('dataset_type', ''),
             'labeled': info.get('labeled', 0),
             'total': info.get('total', 0),
             'image_paths': list(info.get('image_paths') or [])

@@ -84,3 +84,21 @@ onnxslim==0.1.96
 onnxsim==0.7.3
 onnx_graphsurgeon==0.6.1
 polygraphy==0.53.4
+
+# 字符识别(OCR, docTR). python-doctr 本体走 requirements-nodeps.txt 以 --no-deps 装,
+# 理由与 ultralytics 一样(它声明 opencv-python, 会往 site-packages 塞第二份 cv2),
+# 它真正缺的传递依赖在这里钉住. torch/torchvision/onnx/numpy/scipy/pillow/tqdm
+# 上面都已锁过且落在它的区间内, 不重复列.
+# 检测段的官方预训练权重不在安装包里: 首次训练联网从 doctr-static.mindee.com 取,
+# 缓存落在 %USERPROFILE%\.cache\doctr(可用 DOCTR_CACHE_DIR 改). 离线机器要预置该目录,
+# 否则检测段会退化成从零训(代码里有兜底, 但收敛很差).
+h5py==3.16.0
+pypdfium2==5.13.0
+pyclipper==1.4.0
+shapely==2.1.2
+langdetect==1.0.9
+rapidfuzz==3.14.5
+anyascii==0.3.3
+defusedxml==0.7.1
+validators==0.35.0
+huggingface-hub==1.27.0

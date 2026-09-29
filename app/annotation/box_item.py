@@ -96,6 +96,15 @@ def _chip_screen_width(text):
     return max(_CHIP_MIN_W, sum(13 if ord(c) > 127 else 7 for c in text) + 12)
 
 
+def chip_text(item):
+    """chip 上显示的文字: 文本框(OCR)显示所录内容, 其它标注显示类别名.
+
+    文本框的类别固定是保留标签名("文本"), 显示它等于没说; 录进去的内容
+    才是要核对的东西, 所以有文字就优先显示文字.
+    """
+    return (item.text or item.label)[:12]
+
+
 class AnnotationBoxItem(QGraphicsRectItem):
     """场景坐标下的标注框(rect 即像素坐标)."""
 
@@ -108,10 +117,11 @@ class AnnotationBoxItem(QGraphicsRectItem):
         H_BL: Qt.SizeBDiagCursor, H_BM: Qt.SizeVerCursor, H_BR: Qt.SizeFDiagCursor,
     }
 
-    def __init__(self, rect, label, editable=True, color=None):
+    def __init__(self, rect, label, editable=True, color=None, text=""):
         super().__init__(rect)
         self.label = label
         self.editable = editable
+        self.text = text
         self._handles = {}
         self._handle_selected = None
         self._press_pos = None
@@ -252,7 +262,7 @@ class AnnotationBoxItem(QGraphicsRectItem):
         与 _draw_label 的屏幕锚定保持一致, 否则放大视图时 chip 会离框越来越远.
         """
         r = self.rect()
-        text = self.label[:12]
+        text = chip_text(self)
         scale = self._view_scale()
         key = (text, r.right(), r.bottom())
         cached = self._chip_cache
@@ -421,7 +431,7 @@ class AnnotationBoxItem(QGraphicsRectItem):
         transform = painter.transform()
         painter.resetTransform()
         painter.setFont(_chip_font())
-        text = self.label[:12]
+        text = chip_text(self)
         w = _chip_text_width(text)
         h = 20
         r = self.rect()
@@ -445,10 +455,11 @@ class AnnotationPolygonItem(QGraphicsPolygonItem):
 
     HANDLE_SIZE = 8.0
 
-    def __init__(self, points, label, editable=True, color=None):
+    def __init__(self, points, label, editable=True, color=None, text=""):
         super().__init__()
         self.label = label
         self.editable = editable
+        self.text = text
         self._color = color
         # points: [[x, y], ...](场景/像素坐标)
         poly = QPolygonF([QPointF(p[0], p[1]) for p in points])
@@ -581,7 +592,7 @@ class AnnotationPolygonItem(QGraphicsPolygonItem):
     def _chip_rect_local(self):
         """chip 点击区域, 锚定外接矩形中心, 尺寸按缩放换算(记忆化, 同矩形版)."""
         r = self.polygon().boundingRect()
-        text = self.label[:12]
+        text = chip_text(self)
         scale = self._view_scale()
         key = (text, r.left(), r.top(), r.width(), r.height())
         cached = self._chip_cache
@@ -760,7 +771,7 @@ class AnnotationPolygonItem(QGraphicsPolygonItem):
         scale = transform.m11() if abs(transform.m11()) > 1e-6 else 1.0
         painter.resetTransform()
         painter.setFont(_chip_font())
-        text = self.label[:12]
+        text = chip_text(self)
         w = _chip_text_width(text)
         h = 20
         anchor = transform.map(QPointF(label_rect.left(), label_rect.top()))

@@ -12,9 +12,10 @@ from PySide6.QtWidgets import QMessageBox, QFileDialog
 
 from app.annotation.scene import AnnotationScene
 from app.annotation.box_item import assign_label_color, label_color
-from app.core.label_utils import (load_json_shapes, load_yolo_shapes,
-                                  normalize_label, same_dir_json,
-                                  shapes_to_boxes, shapes_to_labelme_json)
+from app.core.label_utils import (TEXT_LABEL, load_json_shapes,
+                                  load_yolo_shapes, normalize_label,
+                                  same_dir_json, shapes_to_boxes,
+                                  shapes_to_labelme_json)
 from app.widgets.message_box import MessageBox, ProgressDialog
 from app.core.log import write_log
 
@@ -387,7 +388,12 @@ class AnnotationIOMixin:
         """
         missing = {}
         used = set(self.label_colors.values())
-        for lbl in sorted({normalize_label(b.get("label")) for b in boxes}):
+        names = {normalize_label(b.get("label")) for b in boxes}
+        if TEXT_LABEL in names:
+            # 图里出现过文本框就把数据集标成 OCR: 首页筛选与训练集过滤都认这个标记
+            self.db.set_dataset_type(self.project, self.dataset, "ocr")
+        # "文本"是 OCR 的保留标签, 混进标签表会让首页下拉和训练类别多出一类
+        for lbl in sorted(names - {TEXT_LABEL}):
             if lbl and lbl not in self.label_colors:
                 color = assign_label_color(lbl, used)
                 missing[lbl] = color
@@ -471,7 +477,7 @@ class AnnotationIOMixin:
             label, pts = "", None
             shapes = load_json_shapes(os.path.splitext(path)[0] + ".json")
             if shapes:
-                label, pts = shapes[0]
+                label, pts, _text = shapes[0]
                 pts = _fit_points_to_patch(pts, path, patch)
                 # 外部 png 可能是压平过的白底, 按多边形重裁一遍才只贴出形状那块
                 AnnotationScene.mask_polygon(patch, pts)
@@ -576,17 +582,21 @@ class AnnotationIOMixin:
         shapes = []
         for box in self.scene.boxes():
             if box.get("shape_type") == "polygon":
-                shapes.append({
+                shape = {
                     "label": box["label"], "points": box["points"],
                     "group_id": None, "shape_type": "polygon", "flags": {},
-                })
+                }
             else:
                 x1, y1, x2, y2 = box["x1"], box["y1"], box["x2"], box["y2"]
-                shapes.append({
+                shape = {
                     "label": box["label"],
                     "points": [[x1, y1], [x2, y2]],
                     "group_id": None, "shape_type": "rectangle", "flags": {},
-                })
+                }
+            # 文字只在有内容时写, 普通检测/分割的 json 不因此多一个空字段
+            if box.get("text"):
+                shape["text"] = box["text"]
+            shapes.append(shape)
         cur_pix = self.scene.image_item.pixmap()
         img_w = cur_pix.width() if cur_pix is not None else None
         img_h = cur_pix.height() if cur_pix is not None else None

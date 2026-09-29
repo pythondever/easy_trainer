@@ -32,6 +32,7 @@ TRAIN_RUNNER = "app.train.train_runner"
 CLASSIFY_TRAIN_RUNNER = "app.train.classify_train_runner"
 YOLO_TRAIN_RUNNER = "app.train.yolo_train_runner"
 AD_TRAIN_RUNNER = "app.train.ad_train_runner"
+OCR_TRAIN_RUNNER = "app.train.ocr_train_runner"
 # 判定一个 epoch 是否已产出指标(val 有了, 或 train 行到了)的列
 _EPOCH_KEYS = ("val/mAP_50", "val/segm_mAP_50", "val/loss", "train/loss")
 
@@ -43,9 +44,12 @@ def runner_module(config):
         return CLASSIFY_TRAIN_RUNNER
     if task == "ad":
         return AD_TRAIN_RUNNER
+    if task in ("ocr", "ocr_det", "ocr_rec"):
+        return OCR_TRAIN_RUNNER
     if config.get("family") == "cnn":
         return YOLO_TRAIN_RUNNER
     return TRAIN_RUNNER
+
 
 CSV_POLL_INTERVAL = 5   # 定时检查 metrics.csv 修改时间的间隔(秒)
 LOG_FLUSH_SECS = 0.1
@@ -384,7 +388,8 @@ class TrainWorker(SubprocessWorker):
             self.metrics.emit(self._build_payload(series, per_class))
 
         # 分类与异常检测都不落 metrics.csv, 指标由 runner 直接写 metrics.json
-        json_mode = self._config.get("task") in ("classify", "ad")
+        json_mode = self._config.get("task") in (
+            "classify", "ad", "ocr", "ocr_det", "ocr_rec")
         json_path = (os.path.join(self._config.get("timestamp_dir", ""),
                                   "metrics.json") if json_mode else "")
         json_mtime = 0.0

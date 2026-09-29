@@ -3,7 +3,7 @@
 #
 # 用法: ./installer.sh [-d 安装目录] [-p] [-h]
 #   -d  安装根目录(默认 ~/EasyTrainer)
-#   -p  同时安装预训练权重(默认跳过; 约 1.0GB, 大陆网络可能失败, 失败仅警告)
+#   -p  同时安装预训练权重(默认跳过; 约 1.6GB, 大陆网络可能失败, 失败仅警告)
 #   -h  显示帮助
 #
 # 需与本脚本同目录放置 program.zip, requirements-release.txt, requirements-nodeps.txt,
@@ -128,7 +128,7 @@ NODEPS_REQ="$SELF_DIR/requirements-nodeps.txt"
 prog_kb=$("$PY" -c 'import sys,zipfile;print(sum(i.file_size for i in zipfile.ZipFile(sys.argv[1]).infolist())//1024)' "$ZIP" 2>/dev/null) || prog_kb=0
 case "$prog_kb" in ''|*[!0-9]*) prog_kb=0 ;; esac
 need_kb=$((prog_kb + 11 * 1024 * 1024))
-[ "$WITH_PRETRAINED" = "1" ] && need_kb=$((need_kb + 1024 * 1024))
+[ "$WITH_PRETRAINED" = "1" ] && need_kb=$((need_kb + 1700 * 1024))
 free_kb=$(df -Pk "$ROOT" 2>/dev/null | awk 'NR==2 {print $4}')
 case "$free_kb" in ''|*[!0-9]*) free_kb="" ;; esac
 if [ -n "$free_kb" ] && [ "$free_kb" -lt "$need_kb" ]; then

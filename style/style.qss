@@ -1206,7 +1206,7 @@ QPushButton#stop_train_btn:hover {
 }
 
 /* ---------------- 标注对话框标签列表 ---------------- */
-QLabel#show_boxes_label {
+QLabel#show_boxes_label, QLabel#text_switch_label {
     color: #cfd6e4;
     font-size: 13px;
 }

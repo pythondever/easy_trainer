@@ -331,6 +331,9 @@ class AnnotationDialog(QDialog, AnnotationCanvasMixin, AnnotationIOMixin):
         self.label_ids = (db.get_dataset_label_ids(project, dataset)
                           if db else {})
         self.cls_mode = cls_mode
+        # "文本标注"开关(OCR): 打开后免建标签直接拉框, 类别固定为保留标签"文本"
+        self.text_mode = False
+        self._label_before_text_mode = ""
         self._cls_changes = []
         self._deleted_labels = []
         self.image_list = list(image_list) if image_list else []
@@ -465,10 +468,19 @@ class AnnotationDialog(QDialog, AnnotationCanvasMixin, AnnotationIOMixin):
         u.switchButton.toggled.connect(self._toggle_show_boxes)
         u.show_boxes_label = QLabel(self.tr("显示标注"), self)
         u.show_boxes_label.setObjectName("show_boxes_label")
-        # 参数收进"设置"弹层后, 工具条右侧只剩开关和设置按钮
+        u.text_switch = SwitchButton(self)
+        u.text_switch.setObjectName("textSwitchButton")
+        u.text_switch.setChecked(False)
+        u.text_switch.toggled.connect(self._toggle_text_mode)
+        u.text_switch_label = QLabel(self.tr("文本标注"), self)
+        u.text_switch_label.setObjectName("text_switch_label")
+        # 参数收进"设置"弹层后, 工具条右侧只剩两个开关和设置按钮
         idx = u.horizontalLayout.indexOf(u.settings_btn)
         u.horizontalLayout.insertWidget(idx, u.switchButton)
         u.horizontalLayout.insertWidget(idx + 1, u.show_boxes_label)
+        u.horizontalLayout.insertSpacing(idx + 2, 10)
+        u.horizontalLayout.insertWidget(idx + 3, u.text_switch)
+        u.horizontalLayout.insertWidget(idx + 4, u.text_switch_label)
         u.settings_btn.clicked.connect(self._toggle_params_panel)
         u.close_params_btn.clicked.connect(self._hide_params_panel)
         u.reset_params_btn.clicked.connect(self._reset_params)
@@ -481,6 +493,7 @@ class AnnotationDialog(QDialog, AnnotationCanvasMixin, AnnotationIOMixin):
         u.next_page_btn.clicked.connect(lambda: self._switch(1))
         u.delete_image_btn.clicked.connect(self._delete_current_image)
         self.scene.box_drawn.connect(self._on_box_drawn)
+        self.scene.box_edit_requested.connect(self._on_box_edit_requested)
         self.scene.draw_cancel_requested.connect(self._cancel_draw_mode)
         self._labeled_refresh_timer = QTimer(self)
         self._labeled_refresh_timer.setSingleShot(True)
@@ -606,8 +619,11 @@ class AnnotationDialog(QDialog, AnnotationCanvasMixin, AnnotationIOMixin):
     def _refresh_labels(self):
         """刷新左侧标签列表(颜色块 + 名称), 点击切换当前标签."""
         self.label_colors = dict(self.db.get_dataset_labels(self.project, self.dataset))
+        if self.text_mode:
+            # 文本标注的类别是保留标签, 与数据集有没有自建标签无关
+            self.scene.current_label = TEXT_LABEL
         if not self.label_colors:
-            self.scene.current_label = ""
+            self.scene.current_label = "" if not self.text_mode else TEXT_LABEL
             self._update_draw_buttons()
             return
         self._update_draw_buttons()

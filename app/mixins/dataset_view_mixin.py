@@ -7,8 +7,9 @@ from app.widgets.paginator import Paginator
 from app.core.constants import (PAGE_SIZE, THUMB_CACHE_MAX,
                                 ROI_CACHE_MAX)
 from app.mixins.label_mixin import UNLABELED_KEY
-from app.core.label_utils import (normalize_label, label_sort_key,
-                                  rec_is_labeled, same_dir_json)
+from app.core.label_utils import (TEXT_LABEL, normalize_label,
+                                  label_sort_key, rec_is_labeled,
+                                  same_dir_json)
 from app.core.image_utils import pil_to_qimage, make_uniform_thumb
 from app.annotation.scene_items import SelectablePixmapItem
 from app.tasks.import_task import ImportTask
@@ -119,6 +120,14 @@ try:
     import PIL.Image as PILImage
 except ImportError:
     PILImage = None
+
+
+def _thumb_labels(rec):
+    """缩略图标签条: 文本框用所录内容顶掉类别名("文本"本身没信息量)."""
+    labels = [lb for lb in (rec.get("labels") or []) if lb != TEXT_LABEL]
+    texts = [str(b[4]) for b in (rec.get("boxes") or [])
+             if len(b) >= 6 and b[-1] == TEXT_LABEL and b[4]]
+    return labels + texts
 
 
 def _decode_roi(path, box, size=200):
@@ -417,7 +426,7 @@ class DatasetViewMixin(object):
                 out.append(rec)
                 continue
             for box_idx, box in enumerate(boxes):
-                if len(box) >= 5 and box[4] in wanted:
+                if len(box) >= 5 and box[-1] in wanted:
                     out.append((rec, box_idx))
         return out
 
@@ -646,7 +655,7 @@ class DatasetViewMixin(object):
         boxes = rec.get("boxes") or []
         if not (0 <= box_idx < len(boxes)) or len(boxes[box_idx]) < 5:
             return _thumb_placeholder()
-        label = boxes[box_idx][4]
+        label = boxes[box_idx][-1]
         cache = rec.setdefault("rois_by_idx", {}).setdefault(label, {})
         if box_idx in cache:
             rec["_roi_t"] = self._img_clock_now()
@@ -789,7 +798,7 @@ class DatasetViewMixin(object):
             if pix.isNull():
                 continue
             item = SelectablePixmapItem(pix, rec.get("image_path", ""),
-                                        labels=rec.get("labels") or [])
+                                        labels=_thumb_labels(rec))
             scene.addItem(item)
             row = pos // cols
             col = pos % cols

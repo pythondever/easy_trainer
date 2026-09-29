@@ -5,8 +5,8 @@ import time
 
 from app.core.db import get_paths
 from ui.edit_label import Ui_Dialog as EditLabelUI
-from app.core.label_utils import (normalize_label, label_sort_key,
-                                  rec_is_labeled)
+from app.core.label_utils import (TEXT_LABEL, normalize_label,
+                                  label_sort_key, rec_is_labeled)
 from app.annotation.box_item import assign_label_color
 from app.widgets.dialog_buttons import apply_icon
 from app.widgets.label_filter_popup import (ALL_COLOR, DIM_DOT,
@@ -163,7 +163,8 @@ class LabelMixin(object):
         # sorted 保证同一批标签名无论遍历顺序如何都分到同样的颜色
         for name in sorted(labels):
             key = normalize_label(name)
-            if key and key not in merged:
+            # "文本"是 OCR 保留标签
+            if key and key != TEXT_LABEL and key not in merged:
                 color = assign_label_color(key, used)
                 merged[key] = color
                 used.add(color)

@@ -10,3 +10,8 @@
 # 因此 requirements-release.txt 里显式钉住了它缺的三个传递依赖
 # (cloudpickle / polars / ultralytics-thop), 这里用 --no-deps 装是安全的.
 ultralytics==8.4.155
+
+# OCR(字符检测/识别)用的 docTR. 发行名 python-doctr, import 名是 doctr.
+# 它声明 opencv-python>=4.5(GUI 版), 与本发行版的 opencv-python-headless 抢同一个
+# cv2/ 目录, 故同样用 --no-deps; 缺的传递依赖在 requirements-release.txt 里钉住.
+python-doctr==1.0.1

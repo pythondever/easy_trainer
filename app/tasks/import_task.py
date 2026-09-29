@@ -94,7 +94,7 @@ class ImportTask(QThread):
                     result.append({
                         "image_path": img_path,
                         "label_path": label_path,
-                        "boxes": boxes if boxes else None,   # [(x, y, w, h, label)] 或 None
+                        "boxes": boxes if boxes else None,   # [(x, y, w, h, text, label)] 或 None
                         "labels": labels,
                         "thumb": thumb,
                         "rois": {},
@@ -128,7 +128,7 @@ class ImportTask(QThread):
     def _read_boxes(self, img_path, label_path=""):
         """
         读取标签, 返回 (boxes, labels, from_same_json, has_label_file):
-        boxes = 像素坐标 [(x, y, w, h, label)]; labels = 对应类别列表
+        boxes = 像素坐标 [(x, y, w, h, text, label)]; labels = 对应类别列表
         无标签返回 (None, [], False, False).
         has_label_file = 标签文件存在且非空; 图像解码失败时仍可能为 True,
         供"已标注"统计使用(见 label_utils.rec_is_labeled).
@@ -165,8 +165,8 @@ class ImportTask(QThread):
                                       self._seen_ids)
         else:
             shapes = load_json_shapes(label_file)
-        for x, y, w, h, lbl in shapes_to_xywh(shapes):
-            boxes.append((x, y, w, h, lbl))
+        for x, y, w, h, txt, lbl in shapes_to_xywh(shapes):
+            boxes.append((x, y, w, h, txt, lbl))
             labels.append(lbl)
         return (boxes, labels, from_same,
                 bool(boxes) or label_file_has_content(label_file, fmt))

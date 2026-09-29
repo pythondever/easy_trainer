@@ -26,6 +26,7 @@ from app.core import i18n
 from app.core.db import get_paths
 from app.core.log import write_log
 from app.train import ad_common as adc
+from app.train import ocr_common as occ
 from app.train.data_prep import timestamp_dir
 from ui.train import Ui_TrainDialog
 
@@ -205,6 +206,11 @@ def make_train_config(db, params):
                 raise ValueError(QC.translate(
                     "TrainDialog",
                     "数据集\"{}/{}\"是分类数据集, 无法训练{}任务")
+                    .format(proj, name, task_text(task)))
+            if occ.is_ocr(task) and str(info.get("dataset_type", "") or "") != "ocr":
+                raise ValueError(QC.translate(
+                    "TrainDialog",
+                    "数据集\"{}/{}\"没有文本标注, 无法训练{}")
                     .format(proj, name, task_text(task)))
             datasets.append({
                 "dataset_name": name, "project": proj, "split": split,
@@ -409,6 +415,8 @@ class TrainDialog(QDialog):
         "classify": (30, 0.001, 224, 4),
         # 建库型算法(默认的 PatchCore)不看轮次, 这里给的是按轮训练那些算法的默认
         "ad": (20, 1e-4, 256, 4),
+        # 检测段按 1024 训(docTR 的默认输入), 识别段固定 32x128 不吃这个值
+        "ocr": (50, 1e-4, 1024, 4),
     }
     TASK_TIPS = {
         "detect": QT_TRANSLATE_NOOP(
@@ -422,6 +430,9 @@ class TrainDialog(QDialog):
         "ad": QT_TRANSLATE_NOOP(
             "TrainDialog",
             "异常检测推荐尺寸: 256; 缺陷很小时调到 512 更稳, 显存和耗时随之上升"),
+        "ocr": QT_TRANSLATE_NOOP(
+            "TrainDialog",
+            "字符检测推荐尺寸: 1024(需为 {} 的倍数); 识别段固定 32x128, 不受此项影响"),
     }
     # 尺寸输入框右侧的倍数提示, 数字由 _img_block() 现算, 这里只留模板
     IMG_NOTE_FMT = QT_TRANSLATE_NOOP("TrainDialog", "{} 的倍数")
@@ -480,7 +491,7 @@ class TrainDialog(QDialog):
 
     def _tag_task_combo(self):
         """任务下拉挂 itemData. 按文本找的话, 界面切英文后 _task() 会全部落空."""
-        for i, code in enumerate(("detect", "segment", "classify", "ad")):
+        for i, code in enumerate(("detect", "segment", "classify", "ad", "ocr")):
             self.ui.task_combo.setItemData(i, code)
 
     def _task(self):
@@ -585,10 +596,14 @@ class TrainDialog(QDialog):
         """
         model = combo.model()
         model.clear()
+        want_ocr = occ.is_ocr(self._task())
         for proj in self.app.db.get_projects():
             for ds_info in self.app.db.get_datasets(proj):
                 ds = str(ds_info.get("dataset_name", "") or "")
                 if not ds:
+                    continue
+                # 文本真值只有打过 ocr 标记的数据集才有, 两边互不混用
+                if want_ocr != (str(ds_info.get("dataset_type", "") or "") == "ocr"):
                     continue
                 text = "{}/{}".format(proj, ds)
                 item = QStandardItem(text)
@@ -823,6 +838,7 @@ class TrainDialog(QDialog):
             self.ui.grad_accum_line_txt.setText("4")
         self._fill_optimizer()
         self._fill_network_combo()
+        self._refill_dataset_combos()
         self._setup_img_size_tip()
         self._sync_ad_epochs()
 
@@ -836,6 +852,13 @@ class TrainDialog(QDialog):
             w.setEnabled(not is_ad)
             if is_ad:
                 w.setToolTip(self.tr("异常检测算法自带学习率与优化器, 不需要设置"))
+
+    def _refill_dataset_combos(self):
+        """切任务时重列两个数据集下拉, 还列得出来的勾选保留."""
+        for combo in (self.ui.dataset_combo, self.ui.val_combo):
+            keep = ["{}/{}".format(p[0], p[1])
+                    for p in self._selected_checked(combo)]
+            self._fill_dataset_multi(combo, keep)
 
     def _on_network_changed(self):
         """型号/算法切换: 异常检测的轮次可用性跟算法走, 尺寸步长提示跟档位走."""
@@ -869,7 +892,7 @@ class TrainDialog(QDialog):
         """分类只有 resnet(CNN) 一条路、异常检测根本不走这条线, 都锁死;
         锁的时候别触发联动, 否则覆盖回填值."""
         combo = self.ui.arch_combo
-        combo.setEnabled(task not in ("classify", "ad"))
+        combo.setEnabled(task not in ("classify", "ad") and not occ.is_ocr(task))
         want = {"classify": "cnn", "ad": "transformer"}.get(task)
         if want:
             idx = combo.findData(want)
@@ -972,6 +995,14 @@ class TrainDialog(QDialog):
         前四档两边同名同义."""
         combo = self.ui.network_combo
         combo.clear()
+        if occ.is_ocr(self._task()):
+            # 档位取自 occ.OCR_MODELS, 不能跟下面 else 共用: arch_combo 在 OCR 下只是
+            # 置灰不清空, 残留的 cnn 会让 cnn 分支多给一档表里没有的 x-large
+            # collect_train_params 读的是 currentData, 显示名必须同时写进 itemData
+            for code in occ.model_codes():
+                combo.addItem(code, code)
+            self._center_combo_items(combo)
+            return
         if self._task() == "ad":
             # 代号放 itemData: 显示名带中文说明, 直接拿文本当 architecture 会存错
             for code, text, _cls, _kw, by_epoch in adc.AD_MODELS:
@@ -1010,8 +1041,8 @@ class TrainDialog(QDialog):
         return self._task()
 
     def _network(self):
-        """当前档位名; 异常检测的档位是算法代号, 存在 itemData 里."""
-        if self._task() == "ad":
+        """当前档位名; 异常检测与字符检测都把代号存在 itemData 里."""
+        if self._task() == "ad" or occ.is_ocr(self._task()):
             return self.ui.network_combo.currentData() or ""
         return self.ui.network_combo.currentText() or ""
 
@@ -1020,6 +1051,8 @@ class TrainDialog(QDialog):
         task = self._task()
         if task in ("classify", "ad"):
             return 0
+        if occ.is_ocr(task):
+            return 32
         if self._arch() == "cnn":
             return 32
         table = self.TRANSFORMER_BLOCK.get(task)
@@ -1082,6 +1115,11 @@ class TrainDialog(QDialog):
                 return False, self.tr(
                     "数据集\"{}/{}\"是分类数据集,无法训练{}任务").format(
                     proj, name, task_text)
+            if occ.is_ocr(task) and str(self.app.db.get_dataset_import(
+                    proj, name).get("dataset_type", "") or "") != "ocr":
+                return False, self.tr(
+                    "数据集\"{}/{}\"没有文本标注, 无法训练{}").format(
+                    proj, name, task_text)
         return True, ""
 
     # ---------- 交互 ----------
@@ -1125,6 +1163,9 @@ class TrainDialog(QDialog):
                              self._arch()):
             return
         params = self.collect_train_params()
+        if occ.is_ocr(params.get("task")):
+            self._start_ocr(params)
+            return
         try:
             config = make_train_config(self.app.db, params)
         except Exception as exc:
@@ -1151,6 +1192,20 @@ class TrainDialog(QDialog):
         self.accept()
         _TrainStartDialog(parent=self).exec()
 
+    def _start_ocr(self, params):
+        """字符检测一次起两段: 检测段与识别段各入队一项, 各留一条训练记录."""
+        names = []
+        for stage in (occ.DET_TASK, occ.RECO_TASK):
+            stage_params = dict(params)
+            stage_params["task"] = stage
+            names.append(self.app.enqueue_train(stage_params)["name"])
+        self.app.start_train_queue()
+        write_log(QC.translate(
+            "TrainDialog",
+            "开始训练: 字符检测分两段入队 | {} | {}").format(*names))
+        self.accept()
+        _TrainStartDialog(parent=self).exec()
+
     def _on_add_to_queue(self):
         """把当前参数快照存入队列(不建目录, 不启动训练)."""
         ok, msg = self._validate()
@@ -1170,6 +1225,9 @@ class TrainDialog(QDialog):
         if not params["out_root"]:
             MessageBox.warning(self, self.tr("加入队列"),
                                self.tr("请先选择输出路径"))
+            return
+        if occ.is_ocr(params.get("task")):
+            self._enqueue_ocr(params)
             return
         for proj, name in params["train_ds"] + params["val_ds"]:
             info = self.app.db.get_dataset_import(proj, name)
@@ -1200,6 +1258,19 @@ class TrainDialog(QDialog):
             .format(item["order"] + 1))
         self.accept()
 
+    def _enqueue_ocr(self, params):
+        """字符检测入队两段, 队列里是两项, 跑完各自留一条记录."""
+        orders = []
+        for stage in (occ.DET_TASK, occ.RECO_TASK):
+            stage_params = dict(params)
+            stage_params["task"] = stage
+            orders.append(self.app.enqueue_train(stage_params)["order"] + 1)
+        MessageBox.information(
+            self, self.tr("加入队列"),
+            self.tr("字符检测已拆成检测段与识别段, 分别排在第 {} 和第 {} 个")
+            .format(*orders))
+        self.accept()
+
     def collect_train_params(self):
         """纯收集: 只读 UI 与 db, 不建目录, 不落盘(入队与开始训练共用)."""
         task = self._task()
@@ -1207,12 +1278,16 @@ class TrainDialog(QDialog):
             # 异常检测的"型号"是算法代号, 存在 itemData 里(显示名带中文后缀)
             architecture = self.ui.network_combo.currentData() \
                 or adc.model_codes()[0]
+        elif occ.is_ocr(task):
+            architecture = self.ui.network_combo.currentData() \
+                or occ.model_codes()[0]
         else:
             architecture = self.ui.network_combo.currentText() or "nano"
         return {
             "task": task,
             "architecture": architecture,
-            "family": "ad" if task == "ad" else self._arch(),
+            "family": "ocr" if occ.is_ocr(task) else (
+                "ad" if task == "ad" else self._arch()),
             "device": self._device(),
             "epochs": self.param_int(self.ui.epochs_line_txt, 100),
             "batch_size": self.param_int(self.ui.batch_size_line_txt, 8),

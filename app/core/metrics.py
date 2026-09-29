@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-训练指标读取: metrics.csv 解析
+训练指标: metrics.csv 解析, 各任务主指标的取值口径, 错误率计算
 """
 import csv
 import io
+from collections import namedtuple
+
+from PySide6.QtCore import QT_TRANSLATE_NOOP
 
 from app.core.utils import read_text_any
 
@@ -18,6 +21,28 @@ CSV_KEYS = (
     ("mask_ema_mAP@50-95", "val/ema_segm_mAP_50_95"),
     ("train_loss", "train/loss"), ("val_loss", "val/loss"),
 )
+
+# 任务 → 主指标. base 交给 metric_key 解析实际列(分割的 mask_ 前缀, ema 优先都在那);
+# field 是训练记录里存这个值的字段名 —— 异常检测的 AUROC 落在 map50 字段上是历史包袱,
+# 换字段名老记录就读不出精度了; direction 1=越大越好, -1=越小越好, 错误率类指标取
+# max 不报错, 只会静默把最差的那一轮当成最好.
+Primary = namedtuple("Primary", "base field label direction decimals")
+
+PRIMARY = {
+    "detect": Primary(
+        "mAP@50", "map50", QT_TRANSLATE_NOOP("MetricLabel", "mAP@50"), 1, 3),
+    "segment": Primary(
+        "mAP@50", "map50", QT_TRANSLATE_NOOP("MetricLabel", "mask mAP50"), 1, 3),
+    "classify": Primary(
+        "accuracy", "accuracy", QT_TRANSLATE_NOOP("MetricLabel", "准确率"), 1, 4),
+    "ad": Primary(
+        "auroc", "map50", QT_TRANSLATE_NOOP("MetricLabel", "AUROC"), 1, 3),
+    # 检测段的预测不带置信度, 排不出 AP, 只能给 IoU@0.5 下的 F1
+    "ocr_det": Primary(
+        "F1@0.5", "map50", QT_TRANSLATE_NOOP("MetricLabel", "F1@0.5"), 1, 3),
+    "ocr_rec": Primary(
+        "CER", "cer", QT_TRANSLATE_NOOP("MetricLabel", "CER"), -1, 4),
+}
 
 
 def series_from_csv(csv_path):
@@ -67,26 +92,40 @@ def metric_key(series, base):
     return ""
 
 
-def best_value(series, base):
-    """该指标的全序列最大值; 无数据返回 None(序列尾部常有补齐的 None 占位)."""
+def primary_for(task):
+    """任务键 → 主指标定义; 未登记返回 None."""
+    return PRIMARY.get(str(task or ""))
+
+
+def primary_of(series, task=""):
+    """
+    该 series 的主指标定义: 有 task 一律用 task, 否则按 series 内容推断.
+
+    推断只认得出 auroc/accuracy —— CER 这类错误率指标在 series 里没有特征,
+    不靠 task 就会被当成 mAP@50 取不到值, 所以新任务必须登记进 PRIMARY.
+    """
+    p = primary_for(task)
+    if p is not None:
+        return p
+    if "auroc" in series:
+        return PRIMARY["ad"]
+    if "accuracy" in series:
+        return PRIMARY["classify"]
+    return PRIMARY["detect"]
+
+
+def best_value(series, base, direction=1):
+    """该指标的全序列最优值; 无数据返回 None(序列尾部常有补齐的 None 占位).
+
+    direction=-1 取最小: CER/WER 这类错误率越小越好.
+    """
     key = metric_key(series, base)
     if not key:
         return None
     vals = [float(v) for v in (series.get(key) or []) if v is not None]
-    return max(vals) if vals else None
-
-
-def best_map50(series):
-    """
-    交付精度: 异常检测看 AUROC, 分类看 accuracy, 检测/分割看 mAP@50 全序列最大.
-    AUROC 排最前是因为它只出现在异常检测的序列里, 而那个精度阈值无关 ——
-    比"按最优 F1 卡出来的准确率"更能代表模型水平.
-    """
-    if "auroc" in series:
-        return best_value(series, "auroc")
-    if "accuracy" in series:
-        return best_value(series, "accuracy")
-    return best_value(series, "mAP@50")
+    if not vals:
+        return None
+    return max(vals) if direction >= 0 else min(vals)
 
 
 def best_map50_from_csv(csv_path):
@@ -98,3 +137,37 @@ def best_map50_from_csv(csv_path):
         if v is not None:
             out[key] = round(v, 4)
     return out
+
+
+def edit_distance(a, b):
+    """字符级编辑距离(Levenshtein); 两行滚动数组, 内存 O(len(b))."""
+    if a == b:
+        return 0
+    if not a:
+        return len(b)
+    if not b:
+        return len(a)
+    prev = list(range(len(b) + 1))
+    for i, ca in enumerate(a, 1):
+        cur = [i]
+        for j, cb in enumerate(b, 1):
+            cur.append(min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (ca != cb)))
+        prev = cur
+    return prev[-1]
+
+
+def cer(refs, hyps):
+    """
+    字符错误率(微平均): 所有框的编辑距离之和 ÷ 参考字符总数.
+
+    微平均让长串权重更大, 口径是"这批字整体有多少读错", 与产线报数一致;
+    宏平均(逐框算 CER 再取平均)会把只错一个字的短串放大成 100% 后拉平.
+    参考总长为 0 时返回 None, 不返回 0 —— 0 会被当成完美.
+    """
+    if len(refs) != len(hyps):
+        raise ValueError("CER 要求参考与预测成对: {} vs {}".format(
+            len(refs), len(hyps)))
+    total = sum(len(r) for r in refs)
+    if not total:
+        return None
+    return sum(edit_distance(r, h) for r, h in zip(refs, hyps)) / float(total)

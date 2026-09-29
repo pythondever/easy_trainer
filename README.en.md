@@ -2,7 +2,7 @@
 
 [**中文**](README.md) | [**English**](README.en.md)
 
-> A local image annotation and deep-learning training tool built on PySide6. Supports the full pipeline for **object detection / image segmentation / image classification**: annotation, training, testing, and model management. All data is stored in a local LMDB — the **annotate → train → evaluate** loop works fully offline.
+> A local image annotation and deep-learning training tool. Supports the full pipeline for **object detection / image segmentation / image classification**: annotation, training, testing, and model management. All data is stored in a local LMDB — the **annotate → train → evaluate** loop works fully offline.
 
 ![Home](docs/images/主页.png)
 
@@ -174,14 +174,14 @@ Building is purely local and **never touches the network**: the Python runtime a
   ```powershell
   installer.exe --install D:\EasyTrainer runtime     # components: runtime / program / pretrained, comma-separated
   ```
-- **Linux**: `./installer.sh [-d install_dir] [-p]` (`-p` also installs the pretrained weights, ~1.0GB)
+- **Linux**: `./installer.sh [-d install_dir] [-p]` (`-p` also installs the pretrained weights, ~1.6GB)
 
 | Component | Source | How |
 |---|---|---|
 | Application | Embedded into installer.exe at build time | Unzipped, no network |
 | Runtime | Official Python 3.10 embeddable zip (Huawei Cloud mirror) | Unzip and use (green, no registry writes) |
 | Dependencies (torch, ...) | Tsinghua PyPI + a dedicated torch index | Installed on the spot by pip (~3.3GB download) |
-| Pretrained weights | Official sources (Google Storage + HuggingFace mirror) | Downloaded into `pretrained\` (~1.0GB) |
+| Pretrained weights | Official sources (Google Storage + HuggingFace mirror) | Downloaded into `pretrained\` (~1.6GB) |
 
 Disk space is estimated and validated up front for the selected components (~12GB with the runtime); downloads retry automatically on failure and pip falls back to a backup index. **Offline fallback**: drop `python-3.10.11-embed-amd64.zip` / `pretrained.zip` next to the installer and it is used preferentially, with no network access at all.
 

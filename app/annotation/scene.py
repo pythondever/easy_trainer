@@ -10,6 +10,10 @@ from PySide6.QtWidgets import (QGraphicsScene, QGraphicsPixmapItem, QGraphicsIte
                                QGraphicsPathItem, QGraphicsPolygonItem)
 from app.annotation.blend import blend_patch
 from app.annotation.box_item import AnnotationBoxItem, AnnotationPolygonItem, label_color
+from app.core.label_utils import TEXT_LABEL
+
+# 文本框(OCR)固定配色: 走标签哈希色会和用户自己的类别撞色, 一眼分不出哪个是文本框
+TEXT_COLOR = "#2ec4b6"
 
 
 def _simplify_track(pts, max_pts=32):
@@ -41,7 +45,10 @@ class AnnotationScene(QGraphicsScene):
     CLOSE_TOLERANCE = 15.0
 
     boxes_changed = Signal()
-    box_drawn = Signal()
+    # 带 item: 文本标注画完要拿到刚建的那个框, 才能把录的字写回去
+    box_drawn = Signal(object)
+    # 双击已画好的文本框改文字(录错了不必删了重画)
+    box_edit_requested = Signal(object)
     selection_changed = Signal(object)
     label_change_requested = Signal(object)
     fp_mode_changed = Signal(str)
@@ -699,30 +706,34 @@ class AnnotationScene(QGraphicsScene):
         return items
 
     def _resolve_color(self, label):
+        if label == TEXT_LABEL:
+            # 必须给 QColor: 这个返回值一路喂给 QPen/QBrush, 给字符串会炸在里面
+            return QColor(TEXT_COLOR)
         color = self.label_colors.get(label)
         if color is None:
             color = label_color(label)
             self.label_colors[label] = color
         return color
 
-    def add_box(self, x1, y1, x2, y2, label):
+    def add_box(self, x1, y1, x2, y2, label, text=""):
         rect = QRectF(x1, y1, x2 - x1, y2 - y1)
         if rect.width() < 2 or rect.height() < 2:
             return None
         color = self._resolve_color(label)
-        item = AnnotationBoxItem(rect.normalized(), label, color=color)
+        item = AnnotationBoxItem(rect.normalized(), label, color=color,
+                                 text=text)
         item.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, not self.draw_mode)
         self.addItem(item)
         self._last_box = item
         self.boxes_changed.emit()
         return item
 
-    def add_polygon(self, points, label):
+    def add_polygon(self, points, label, text=""):
         """添加多边形标注. points: [[x, y], ...](像素坐标), 至少 3 个顶点."""
         if len(points) < 3:
             return None
         color = self._resolve_color(label)
-        item = AnnotationPolygonItem(points, label, color=color)
+        item = AnnotationPolygonItem(points, label, color=color, text=text)
         item.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, not self.draw_mode)
         self.addItem(item)
         self._last_box = item
@@ -730,22 +741,27 @@ class AnnotationScene(QGraphicsScene):
         return item
 
     def boxes(self):
-        """返回标注列表: 矩形 {label,x1,y1,x2,y2} / 多边形 {label,points,shape_type}(像素坐标)."""
+        """返回标注列表: 矩形 {label,x1,y1,x2,y2,text} / 多边形
+        {label,points,shape_type,text}(像素坐标); 非文本标注的 text 为空串."""
         result = []
         for item in self.box_items():
             x1, y1, x2, y2 = item.boxes()
-            result.append({"label": item.label, "x1": x1, "y1": y1, "x2": x2, "y2": y2})
+            result.append({"label": item.label, "x1": x1, "y1": y1,
+                           "x2": x2, "y2": y2, "text": item.text})
         for item in self.polygon_items():
-            result.append({"label": item.label, "points": item.points(), "shape_type": "polygon"})
+            result.append({"label": item.label, "points": item.points(),
+                           "shape_type": "polygon", "text": item.text})
         return result
 
     def load_boxes(self, boxes):
         self.clear_boxes()
         for box in boxes:
             if box.get("shape_type") == "polygon":
-                self.add_polygon(box.get("points") or [], box["label"])
+                self.add_polygon(box.get("points") or [], box["label"],
+                                 box.get("text", ""))
             else:
-                self.add_box(box["x1"], box["y1"], box["x2"], box["y2"], box["label"])
+                self.add_box(box["x1"], box["y1"], box["x2"], box["y2"],
+                             box["label"], box.get("text", ""))
         self.boxes_changed.emit()
 
     def _reset_draw_state(self):
@@ -993,7 +1009,7 @@ class AnnotationScene(QGraphicsScene):
             # 画完后立即可选中(绘制模式下其余标注不可选)
             item.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, True)
             item.setSelected(True)
-            self.box_drawn.emit()
+            self.box_drawn.emit(item)
 
     def _update_polygon_preview(self):
         # 绘制过程只做轨迹跟随(不抽稀),抽稀延后到_finish_polygon
@@ -1092,19 +1108,26 @@ class AnnotationScene(QGraphicsScene):
                                         self.current_label)
                     if item is not None:
                         item.setSelected(True)
-                        self.box_drawn.emit()
+                        self.box_drawn.emit(item)
             self._draw_start = None
             event.accept()
             return
         super().mouseReleaseEvent(event)
 
     def mouseDoubleClickEvent(self, event):
-        """多边形模式: 双击闭合(>=3 顶点)."""
+        """多边形模式: 双击闭合(>=3 顶点); 浏览态双击文本框: 改文字."""
         if self.draw_mode and self.draw_shape == "polygon" and event.button() == Qt.LeftButton:
             if len(self._free_track) >= 3:
                 self._finish_polygon()
                 event.accept()
                 return
+        if not self.draw_mode and event.button() == Qt.LeftButton:
+            for it in self.items(event.scenePos()):
+                if (isinstance(it, (AnnotationBoxItem, AnnotationPolygonItem))
+                        and it.label == TEXT_LABEL):
+                    self.box_edit_requested.emit(it)
+                    event.accept()
+                    return
         super().mouseDoubleClickEvent(event)
 
     def keyPressEvent(self, event):

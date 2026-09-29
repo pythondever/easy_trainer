@@ -14,3 +14,15 @@ cnn/nano-seg.pt	https://hf-mirror.com/Ultralytics/YOLO26/resolve/main/yolo26n-se
 cnn/small-seg.pt	https://hf-mirror.com/Ultralytics/YOLO26/resolve/main/yolo26s-seg.pt	3DA1D83E31CAEC96F9300EB4064F4F62882C133C7C264D63DFE61A7C197837A4
 transformer/small.pt	https://storage.googleapis.com/rfdetr/small_coco/checkpoint_best_regular.pth	D81979A9213A2109345158CE9232668DF4C1AE52E9B8DB3F2EC0A8CBAD959B33
 ad/wide_resnet50_2.racm_in1k.safetensors	https://hf-mirror.com/timm/wide_resnet50_2.racm_in1k/resolve/main/model.safetensors	03B71D65FB2C73BB0DE079A1781009F27A782EC481D2F64AB3BDE9B1CDEC3000
+# 以下是字符识别(OCR)的权重: 四档检测 + 三档识别骨干, 本地名照其他架构那样按档位叫.
+# 检测段取整模型权重; 识别段只复用骨干(输出层要按自定义词表重建), 所以是 *_r 那份.
+# nano 与 small 的识别段是同一个网络, 共用 nano-rec.pt, 没有 small-rec.pt.
+# docTR 只认它自己缓存里的名字(架构-哈希前 8 位), 与本地名不同, 摆位见
+# app/train/ocr_weights.py.
+ocr/nano.pt	https://doctr-static.mindee.com/models?id=v0.8.1/db_mobilenet_v3_large-21748dd0.pt&src=0	21748DD02C0E40475D9EA53E72817C4F08BA90ADEA5231D0DC2C1A65D7D6B4E1
+ocr/small.pt	https://doctr-static.mindee.com/models?id=v0.7.0/linknet_resnet18-e47a14dc.pt&src=0	E47A14DC28761F49A7DF3509C162A4AC510AD3274CE145CC1BF49FB397D4074A
+ocr/medium.pt	https://doctr-static.mindee.com/models?id=v0.7.0/db_resnet34-cb6aed9e.pt&src=0	CB6AED9E4252C8A92D381DE1B15E1E75461F7A125A4262EF16768A4B9F797347
+ocr/large.pt	https://doctr-static.mindee.com/models?id=v0.7.0/db_resnet50-79bd7d70.pt&src=0	79BD7D702506703B89CF11AFA42D12AEBF5CF25C3618E6FFD5F85772240CA483
+ocr/nano-rec.pt	https://doctr-static.mindee.com/models?id=v0.4.1/mobilenet_v3_small_r-1a8a3530.pt&src=0	1A8A3530D76629E712B38B5BF957D901B0D94EABDEED9B4ED5D6F09C4576C7CB
+ocr/medium-rec.pt	https://doctr-static.mindee.com/models?id=v0.4.1/mobilenet_v3_large_r-74a22066.pt&src=0	74A22066FCD4951D7B9BEE2369B0DED4BCA1EE53FC8B5B0408F5B94A8ED18E8F
+ocr/large-rec.pt	https://doctr-static.mindee.com/models?id=v0.4.1/vgg16_bn_r-d108c19c.pt&src=0	D108C19C7BFAC356568E17DC246064A8B69360DE871B2A87E904C3770DCA96E6

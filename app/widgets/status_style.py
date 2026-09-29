@@ -36,6 +36,9 @@ TASK_TEXT = {
     "segment": QT_TRANSLATE_NOOP("TaskText", "分割"),
     "classify": QT_TRANSLATE_NOOP("TaskText", "分类"),
     "ad": QT_TRANSLATE_NOOP("TaskText", "异常检测"),
+    "ocr": QT_TRANSLATE_NOOP("TaskText", "字符检测"),
+    "ocr_det": QT_TRANSLATE_NOOP("TaskText", "字符检测"),
+    "ocr_rec": QT_TRANSLATE_NOOP("TaskText", "字符识别"),
 }
 
 STATUS_COLOR = {

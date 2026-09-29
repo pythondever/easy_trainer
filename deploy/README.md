@@ -43,7 +43,7 @@ deploy.exe --convert <model.onnx> [--ir] [--out <目录>] [--fp32] [--cross]
 
 ## 交付
 
-`python deploy\build.py` 出来的 `deploy\release\` 就是完整交付目录，整个拷过去：
+`python deploy\build_deploy.py` 出来的 `deploy\release\` 就是完整交付目录，整个拷过去：
 
 ```
 release\
@@ -93,7 +93,7 @@ release\
 ### 换架构重新发布
 
 ```powershell
-python deploy\build.py --arch sm86
+python deploy\build_deploy.py --arch sm86
 ```
 
 各架构 builder resource 体积：sm75 150 / sm80 245 / sm86 230 / sm89 243 / sm90 631 / sm120 360 MB。
@@ -109,13 +109,34 @@ python deploy\build.py --arch sm86
 - 要多代卡通用就加 `--cross`：构建 3.3× 慢、体积 1.6×、延迟 +8%，并且发布时要带全
   sm80 / sm86 / sm89 / sm90 / sm120 / ptx 六份 resource（约 2.1 GB）。
 
+### 字符识别（OCR）模型
+
+EasyTrainer 的"字符检测"训练导出的是**两段模型**，各是一个独立 onnx，部署侧要串起来跑：
+
+| 段 | 输入（固定） | 输出 | 后处理（部署侧自己做） |
+|---|---|---|---|
+| 检测 | `1×3×1024×1024`（= 训练时的 img_size） | `1×1×1024×1024` 概率图 | 二值化 + 找轮廓 → 文字区域的四边形 |
+| 识别 | `1×3×32×128` | `1×32×词表长度` logits | CTC 解码 → 字符串，字符顺序按 `vocab.txt` |
+
+要点：
+
+- **onnx 里只有前向，没有后处理**。docTR 官方 predictor 那套二值化与 CTC 解码带 numpy 与动态
+  控制流，进不了 onnx，所以输出名统一叫 `logits`。别拿它当最终文本用。
+- **识别段要连 `vocab.txt` 一起交付**，它由 EasyTrainer 的模型导出自动生成、与 onnx 同目录；
+  识别输出的最后一维按下标对应词表里的字符。少了它解出来的只是下标序列。
+- 输入尺寸是导出时定死的（检测段取训练 img_size，识别段固定 32×128），改尺寸要回 EasyTrainer
+  重新导出，本工具不负责缩放。
+- 转换本身没有特殊开关，按普通 onnx 转即可。实测（RTX 4060 Ti / TRT 10.14.1.48 / OpenVINO 2026.4）：
+  检测段 engine 255 层、89.4 MB 显存、构建 213 s；识别段 396 层、0.1 MB、139 s；转 IR 都是 0.1 s 级。
+- onnx 声明了 batch 维动态，但 engine 按本工具的统一策略以 **batch=1** 构建（IR 仍是动态维）。
+
 ## 构建
 
-需要 .NET SDK 10。发布用 `deploy\build.py`，一条命令到底：
+需要 .NET SDK 10。发布用 `deploy\build_deploy.py`，一条命令到底：
 
 ```powershell
-python deploy\build.py            全量发布，产物在 deploy\release\
-python deploy\build.py --probe    发布完顺带跑一次环境自检
+python deploy\build_deploy.py            全量发布，产物在 deploy\release\
+python deploy\build_deploy.py --probe    发布完顺带跑一次环境自检
 ```
 
 | 需求 | 参数 |
@@ -157,7 +178,7 @@ dotnet build deploy\Win.deploy\Win.deploy.csproj -c Release
 改了 `deploy\ovbridge\ovbridge.cpp` 要重跑 `deploy\ovbridge\build.cmd` 重新生成 `native\ovbridge.dll`
 （需要 VS 2022 的 C++ 生成工具，脚本会自己找 `vcvars64.bat`）。
 ⚠️ 这个 `.cmd` 的行尾必须是 **CRLF**：LF 行尾时 cmd.exe 会从行中间开始解析，中文注释全被当成命令
-（实测），而编辑器默认存 LF。`build.py` 每次调用前会自己检查并改回来，手动跑之前留意一下。
+（实测），而编辑器默认存 LF。`build_deploy.py` 每次调用前会自己检查并改回来，手动跑之前留意一下。
 
 两个本地依赖目录，都来自 `pip install openvino` 的 `site-packages\openvino\`：
 

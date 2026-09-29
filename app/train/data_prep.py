@@ -139,11 +139,11 @@ def _collect_labels(datasets):
                 for fn in sorted(os.listdir(label_path)):
                     stem, ext = os.path.splitext(fn)
                     if fmt == "json" and ext.lower() == ".json":
-                        for lb, _ in load_json_shapes(
+                        for lb, _pts, _txt in load_json_shapes(
                                 os.path.join(label_path, fn)):
                             _add(lb)
                     elif fmt == "txt" and ext.lower() == ".txt":
-                        for lb, _pts in load_yolo_shapes(
+                        for lb, _pts, _txt in load_yolo_shapes(
                                 os.path.join(label_path, fn), 1, 1, label_ids):
                             _add(lb)
             if img_dir and os.path.isdir(img_dir):
@@ -153,7 +153,7 @@ def _collect_labels(datasets):
                     jp = os.path.join(img_dir, fn)
                     if not looks_like_labelme(jp):
                         continue
-                    for lb, _ in load_json_shapes(jp):
+                    for lb, _pts, _txt in load_json_shapes(jp):
                         _add(lb)
     return labels
 

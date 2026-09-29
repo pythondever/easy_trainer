@@ -10,6 +10,18 @@ CARD_PAD = 4
 INFO_H = 22
 
 
+def _elide(fm, txt, max_w):
+    """按像素宽度截断. 缩略图标签条上 OCR 的文本内容可能是一整行字."""
+    if fm.horizontalAdvance(txt) <= max_w:
+        return txt
+    out = ""
+    for ch in txt:
+        if fm.horizontalAdvance(out + ch + "…") > max_w:
+            break
+        out += ch
+    return out + "…"
+
+
 class SelectablePixmapItem(QGraphicsPixmapItem):
     def __init__(self, pixmap, image_path, labels=None):
         super().__init__(pixmap)
@@ -78,9 +90,11 @@ class SelectablePixmapItem(QGraphicsPixmapItem):
         painter.save()
         fm = QFontMetricsF(painter.font())
         visible = self._labels[:3]
+        # 单个 chip 最多占卡片 60% 宽, 否则一行长文字会把 chip 顶出卡片
+        chip_max_w = max(40.0, pm.width() * 0.6)
         for lbl in visible:
-            txt = str(lbl)
-            tw = fm.horizontalAdvance(txt) + 12
+            txt = _elide(fm, str(lbl), chip_max_w - 12)
+            tw = min(fm.horizontalAdvance(txt) + 12, chip_max_w)
             color = QColor(label_color(txt).name())
             color.setAlpha(210)
             painter.setPen(Qt.NoPen)

@@ -19,7 +19,7 @@ installer.exe   双击打开 → 勾选 → 联网下载安装
 | 程序本体 program | 构建期 csproj 嵌入 exe | 直接解压，**不联网** |
 | 运行时 | 官方 python 3.10 embeddable zip（国内镜像） | 下载 → 解压即用（绿色，不写注册表） |
 | torch 等依赖 | PyPI 国内镜像（清华）+ torch 专用源 | pip 现场安装（约 3.3GB 下载） |
-| 预训练权重 | 官方源（Google 存储 + HuggingFace 镜像） | 下载 8 个 .pth/.pt 到 `pretrained\`（约 1.0GB） |
+| 预训练权重 | 官方源（Google 存储 + HuggingFace 镜像） | 下载 16 个 .pth/.pt 到 `pretrained\`（约 1.6GB） |
 
 Python、pip 依赖是国内可直连的公开地址，**无需自建服务器/OSS**：
 - Python：`https://mirrors.huaweicloud.com/python/3.10.11/python-3.10.11-embed-amd64.zip`
@@ -111,6 +111,8 @@ Python 运行时本身的下载信息仍写死在 `InstallerCore.cs` 常量里�
   app\ ui\                  全部 .pyd（__init__.py、easy_trainer.py 明文）
   style\ resources\ examples\
   pretrained\               预训练权重（可选；存在时程序启动自动识别）
+                            transformer\ cnn\ ad\ 由程序直接读；ocr\ 由
+                            app/train/ocr_weights.py 摆进 docTR 缓存后再用
   runtime\python310\        完整 Python 3.10（自带 pip，依赖装在 Lib\site-packages）
   installed.json            卸载/升级的依据
 ```
@@ -143,7 +145,7 @@ installer.exe --install D:\EasyTrainer runtime
   与旧明文 `.py`（保留 `__init__.py`、`easy_trainer.py`）——扩展模块导入优先级高于源码，不清会把
   新版已删除的模块"复活"（改了代码没生效/幽灵模块）。`runtime`、`pretrained` 与 Linux 端行为一致。
 - pip 现场安装无断点续传，中途断网重跑安装器即可（已装部分 pip 会跳过/缓存）。
-- torch 装完约占 5.5GB + 权重可选 1.0GB，安装前确认目标盘空间。
+- torch 装完约占 5.5GB + 权重可选 1.6GB，安装前确认目标盘空间。
 - 中文安装路径可用（cv2/PyTorch 均按 UTF-8 处理）；安装器 per-user 安装免 UAC，
   不写系统注册表（Python 本体按用户级安装到安装目录内）。
 - 卸载：运行 `installer.exe` → 「卸载…」选择安装根即可。
@@ -168,7 +170,7 @@ python3 builder/build.py -t dist/program
 
 ```bash
 ./installer.sh            # 默认装到 ~/EasyTrainer
-./installer.sh -d /opt/easy_trainer -p   # 换目录 + 安装预训练权重(~1.0GB)
+./installer.sh -d /opt/easy_trainer -p   # 换目录 + 安装预训练权重(~1.6GB)
 TORCH_INDEX=https://download.pytorch.org/whl/cu128 ./installer.sh   # torch 换源
 ```
 

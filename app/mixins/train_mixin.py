@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 import time
-
 import uuid
 from datetime import datetime
 from app.train.train_worker import TrainWorker
 from app.widgets.message_box import MessageBox
 from app.core.log import write_log
-from app.core.metrics import best_map50, best_value
+from app.core.metrics import best_value, primary_for, primary_of
 from app.core.utils import fmt_duration
 from PySide6.QtCore import QTimer, QTime
 from PySide6.QtCore import QCoreApplication as QC
@@ -24,6 +23,7 @@ class TrainMixin(object):
     _metrics_saved_ts = 0.0
     _best_map50 = None
     _progress_tip = ""
+    _metric_decimals = 3
 
     def is_training(self):
         return (self._train_worker is not None
@@ -136,20 +136,17 @@ class TrainMixin(object):
         self._update_eta(epoch, total)
 
     def _on_train_metrics(self, metrics):
-        # 异常检测看 AUROC, 分类看准确率, 检测/分割看 mAP@50
+        # 主指标查 core.metrics.PRIMARY 表; 老记录没存 task 时按 series 内容推断
         s = metrics.get("series", {})
-        auroc = best_value(s, "auroc")
-        acc = best_value(s, "accuracy")
-        m = best_map50(s)
-        best = auroc if auroc is not None else (acc if acc is not None else m)
+        task = self._train_worker._config.get("task") if self._train_worker else ""
+        p = primary_of(s, task)
+        best = best_value(s, p.base, p.direction)
         if best is not None:
             self._best_map50 = best
-            if auroc is not None:
-                self._progress_tip = QC.translate("TrainMixin", "进度 | 当前最好 AUROC")
-            elif acc is not None:
-                self._progress_tip = QC.translate("TrainMixin", "进度 | 当前最好准确率")
-            else:
-                self._progress_tip = QC.translate("TrainMixin", "进度 | 当前最好 mAP@50")
+            self._metric_decimals = p.decimals
+            self._progress_tip = QC.translate(
+                "TrainMixin", "进度 | 当前最好 {}").format(
+                    QC.translate("MetricLabel", p.label))
             self._apply_progress_format()
         self._pending_metrics = metrics
         if self._training_record_id:
@@ -205,17 +202,15 @@ class TrainMixin(object):
                 r.pop("metrics", None)
                 r["metrics_file"] = self.db.save_train_metrics(record_id, metrics)
                 s = metrics.get("series", {})
-                m = best_map50(s)
-                if m is not None:
-                    r["map50"] = "{:.3f}".format(m)
-                acc = best_value(s, "accuracy")
-                if acc is not None:
-                    r["accuracy"] = "{:.4f}".format(acc)
+                p = primary_of(s, r.get("task"))
+                v = best_value(s, p.base, p.direction)
+                if v is not None:
+                    r[p.field] = "{:.{}f}".format(v, p.decimals)
                 r["metrics_epochs"] = len(metrics.get("epochs") or [])
                 self.db.update_train_record(r)
-                write_log(QC.translate("TrainMixin", "更新训练指标: record={} 已完成epoch={} map50={} acc={} 类别数={}").format(
+                write_log(QC.translate("TrainMixin", "更新训练指标: record={} 已完成epoch={} {}={} 类别数={}").format(
                     record_id[:8], r.get("metrics_epochs"),
-                    r.get("map50"), r.get("accuracy"),
+                    p.field, r.get(p.field),
                     len(metrics.get("per_class", {}))))
                 return
 
@@ -248,10 +243,19 @@ class TrainMixin(object):
                 except Exception:
                     pass
                 if result:
-                    if result.get("map50"):
-                        r["map50"] = "{:.3f}".format(float(result["map50"]))
-                    if result.get("accuracy"):
-                        r["accuracy"] = "{:.4f}".format(float(result["accuracy"]))
+                    p = primary_for(r.get("task"))
+                    if p is not None:
+                        v = result.get(p.field, result.get(p.base))
+                        if v not in (None, ""):
+                            r[p.field] = "{:.{}f}".format(
+                                float(v), p.decimals)
+                    else:
+                        if result.get("map50"):
+                            r["map50"] = "{:.3f}".format(
+                                float(result["map50"]))
+                        if result.get("accuracy"):
+                            r["accuracy"] = "{:.4f}".format(
+                                float(result["accuracy"]))
                     if result.get("model_path"):
                         r["model_path"] = result["model_path"]
                 else:
@@ -286,7 +290,7 @@ class TrainMixin(object):
         self.task_name_label.show()
         self.train_progress.show()
         # 停止按钮的 show/hide 必须与 _hide_train_task 对称且都在这一处:
-        # 每个 epoch 的进度回调都会走到这里, 任何一次误 hide 都能自愈
+        # 每个 epoch 的进度回调都会走到这里
         self.stop_train_btn.show()
         self.time_count_label.show()
         self.time_count_edit.show()
@@ -301,7 +305,8 @@ class TrainMixin(object):
     def _apply_progress_format(self):
         """进度条文本:`30% | 0.556` 进度 | 当前最好精度 """
         m = self._best_map50
-        tail = "{:.3f}".format(m) if m is not None else "--"
+        tail = ("{:.{}f}".format(m, self._metric_decimals) if m is not None
+                else "--")
         self.train_progress.setFormat("%p% | " + tail)
         self.train_progress.setToolTip(self._progress_tip)
 

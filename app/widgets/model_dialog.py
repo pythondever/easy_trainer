@@ -22,9 +22,11 @@ from PySide6.QtCore import QTimer
 
 from app.core import i18n
 from app.core.db import get_paths, load_train_metrics
+from app.core.label_utils import TEXT_LABEL
 from app.core.log import write_log
 from app.core.utils import fmt_duration
-from app.core.metrics import (best_map50, metric_key, series_from_csv)
+from app.core.metrics import (best_value, metric_key, primary_for,
+                              primary_of, series_from_csv)
 from app.widgets.message_box import MessageBox, ProgressDialog
 from app.widgets.status_style import status_color, status_text, task_text
 from app.widgets.metrics_dialog import MetricsDialog
@@ -37,7 +39,8 @@ from ui.model import Ui_ModelDialog
 
 # 导出文件名里的任务段: 与界面语言无关(同一份权重导出到哪台机器都该同名)
 TASK_FILE_TAG = {"detect": "检测", "segment": "分割", "classify": "分类",
-                 "ad": "异常"}
+                 "ad": "异常", "ocr": "字符", "ocr_det": "字符检测",
+                 "ocr_rec": "字符识别"}
 
 
 def _parse_classes_txt(path):
@@ -97,8 +100,12 @@ CURVE_BG, CURVE_LINE = QColor("#181a20"), QColor("#4f7dff")
 
 
 def _metric_value(rec):
-    """精度统一取成 float: 检测/分割用 map50, 分类用 accuracy."""
-    for key in ("map50", "accuracy"):
+    """精度统一取成 float: 字段按任务的主指标定, 老记录没存 task 的退回 map50/accuracy."""
+    p = primary_for(rec.get("task"))
+    keys = ("map50", "accuracy")
+    if p is not None and p.field not in keys:
+        keys = (p.field,) + keys
+    for key in keys:
         v = rec.get(key)
         if v in (None, ""):
             continue
@@ -107,6 +114,12 @@ def _metric_value(rec):
         except (TypeError, ValueError):
             continue
     return None
+
+
+def _better_than(value, other, rec):
+    """越大越好还是越小越好看该任务的主指标(CER 这类错误率越小越好)."""
+    p = primary_for(rec.get("task"))
+    return value < other if (p is not None and p.direction < 0) else value > other
 
 
 def _status(rec):
@@ -139,18 +152,11 @@ def _load_series(rec, db_path):
         return {}
 
 
-def _curve_series(series):
+def _curve_series(series, task=""):
     """曲线数据与精度列同源(优先 ema 列, 见 core.metrics.metric_key)."""
-    key = metric_key(series, _metric_base(series))
+    key = metric_key(series, primary_of(series, task).base)
     ys = [v for v in (series.get(key) or []) if isinstance(v, (int, float))]
     return key, ys
-
-
-def _metric_base(series):
-    """该条训练记录的主指标: 异常检测是 AUROC, 分类是准确率, 其余是 mAP@50."""
-    if "auroc" in series:
-        return "auroc"
-    return "accuracy" if "accuracy" in series else "mAP@50"
 
 
 def _duration_seconds(rec):
@@ -368,10 +374,10 @@ class ModelDialog(QDialog):
         if not (rec.get("metrics_file") or rec.get("model_path")):
             return
         series = _load_series(rec, getattr(self.app.db, "db_path", None))
-        key = metric_key(series, _metric_base(series))
-        v = best_map50(series)
+        p = primary_of(series, rec.get("task"))
+        v = best_value(series, p.base, p.direction)
         if v is not None:
-            rec["map50" if key != "accuracy" else "accuracy"] = "{:.3f}".format(v)
+            rec[p.field] = "{:.3f}".format(v)
 
     def _record_match(self, r):
         if self._project and r.get("project") != self._project:
@@ -426,7 +432,7 @@ class ModelDialog(QDialog):
                     continue
                 key = r.get("dataset") or r.get("dataset_info") or ""
                 cur = best.get(key)
-                if cur is None or m > _metric_value(cur):
+                if cur is None or _better_than(m, _metric_value(cur), r):
                     best[key] = r
             recs = list(best.values())
         self._records = self._sort_records(recs)
@@ -659,7 +665,7 @@ class ModelDialog(QDialog):
         label = self.ui.detail_curve
         label.setText("")
         series = _load_series(rec, getattr(self.app.db, "db_path", None))
-        key, ys = _curve_series(series)
+        key, ys = _curve_series(series, rec.get("task"))
         if not ys:
             label.setPixmap(QPixmap())
             label.setText(self.tr("暂无曲线"))
@@ -894,6 +900,9 @@ class ModelDialog(QDialog):
         model_dir = self._exp["model_dir"]
         model_path = self._exp["model_path"]
         task = self._exp["task"]
+        if task in ("ocr_det", "ocr_rec"):
+            self._write_ocr_side(task)
+            return
         # ultralytics 的权重在 <ts_dir>/weights/ 下, classes.txt 却在上一级
         dirs = [model_dir, os.path.dirname(model_dir)]
         src, pairs = "", []
@@ -925,6 +934,29 @@ class ModelDialog(QDialog):
                 return
         self._write_label_map(pairs)
 
+    def _write_ocr_side(self, task):
+        """OCR 交付的不是类别表: 检测段只有"文本"一类, 识别段要的是词表."""
+        if task != "ocr_rec":
+            self._write_label_map([(0, TEXT_LABEL)])
+            return
+        try:
+            import torch
+            ckpt = torch.load(self._exp["model_path"], map_location="cpu",
+                              weights_only=False)
+        except Exception as e:
+            write_log(QC.translate("ModelDialog", "读取词表失败: {}").format(e))
+            return
+        vocab = str(ckpt.get("vocab") or "")
+        if not vocab:
+            return
+        path = os.path.join(self._exp["out_dir"], "vocab.txt")
+        try:
+            with open(path, "w", encoding="utf-8") as f:
+                f.write(vocab)
+            self._exp["copied"].append("vocab.txt")
+        except OSError as e:
+            write_log(QC.translate("ModelDialog", "生成 vocab.txt 失败: {}").format(e))
+
     def _write_label_map(self, pairs):
         """
         label_map.json = {类名: id}.
@@ -948,6 +980,11 @@ class ModelDialog(QDialog):
             write_log(QC.translate("ModelDialog", "导出模型报告跳过: 分类任务不出评估报告"))
             self._export_finish(self.tr("分类任务不生成评估报告"))
             return
+        if self._exp["task"] == "ocr_rec":
+            # 识别段的结论只有一个 CER, 没有漏检/误检可画
+            write_log(QC.translate("ModelDialog", "导出模型报告跳过: 字符识别不出评估报告"))
+            self._export_finish(self.tr("字符识别不生成评估报告"))
+            return
         cfg = self._build_eval_cfg()
         if not cfg:
             write_log(QC.translate("ModelDialog", "导出模型报告跳过: 未找到验证集"))
@@ -966,6 +1003,13 @@ class ModelDialog(QDialog):
                              self.tr("评估失败, 已跳过报告: {}").format(
                                  (msg or "").splitlines()[0]))))
         self._eval_worker.start()
+
+    def _eval_task(self, rec, cls_mode):
+        """评估报告用的任务键: 字符检测/识别各有各的 runner, 给空串会走 RF-DETR."""
+        task = str(rec.get("task") or "")
+        if task in ("ocr_det", "ocr_rec"):
+            return task
+        return "classify" if cls_mode else ""
 
     def _build_eval_cfg(self):
         """按记录的 val_dataset 组装测试配置(与测试界面同一套 runner)."""
@@ -1015,7 +1059,7 @@ class ModelDialog(QDialog):
             "iou_threshold": 0.5, "confidence": 0.5,
             "has_label": has_label, "device": rec.get("device") or "cuda",
             "total": total, "output_labels": False,
-            "task": "classify" if cls_mode else "",
+            "task": self._eval_task(rec, cls_mode),
             "family": rec.get("family") or "",
             "report_dir": report_dir, "_cfg_path": cfg_path,
             "language": i18n.current(),

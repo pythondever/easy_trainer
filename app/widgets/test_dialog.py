@@ -19,6 +19,7 @@ from PySide6.QtWidgets import QDialog, QFormLayout, QComboBox
 from app.core import i18n
 from app.core.db import get_paths
 from app.core.log import write_log
+from app.core.metrics import primary_for
 from app.widgets.combo_utils import style_combo
 from app.widgets.dialog_buttons import apply_icon
 from app.widgets.message_box import MessageBox
@@ -26,6 +27,7 @@ from app.widgets.multi_combo import install_multi_combo
 from app.widgets.status_style import task_text
 from app.train.dialogs import (CONTROL_H, _TrainStartDialog, detach_device_probe,
                                fill_device_combo_async, fill_device_items)
+from app.train.ocr_common import is_ocr
 from app.train.test_result_dialog import TestResultDialog
 from app.train.test_worker import TestWorker
 from ui.test_dialog import Ui_TestDialog
@@ -223,12 +225,13 @@ class TestDialog(QDialog):
         u.model_name.setText(os.path.basename(path))
         u.model_name.setToolTip(path)
         meta = []
-        metric = rec.get("map50") or rec.get("accuracy") or ""
+        p = primary_for(rec.get("task"))
+        metric = (rec.get(p.field) if p is not None
+                  else rec.get("map50") or rec.get("accuracy")) or ""
         if metric:
             try:
-                label = {"classify": self.tr("准确率"),
-                         "segment": "mask mAP50",
-                         "ad": "AUROC"}.get(rec.get("task"), "mAP50")
+                label = (QC.translate("MetricLabel", p.label) if p is not None
+                         else "mAP50")
                 meta.append("{} {:.3f}".format(label, float(metric)))
             except (TypeError, ValueError):
                 pass
@@ -324,6 +327,24 @@ class TestDialog(QDialog):
             box.setEnabled(True)
             box.setChecked(True)
             return
+        ocr_task = self._ocr_task()
+        if ocr_task:
+            labeled = int(info.get("labeled") or 0)
+            self.ui.iou_treshold_txt.setEnabled(labeled > 0)
+            if ocr_task == "ocr_rec":
+                # 识别段只算 CER, 没有框可写
+                box.setEnabled(False)
+                box.setChecked(False)
+                box.setToolTip(self.tr("字符识别只报告字条识别率, 不输出标注文件"))
+            else:
+                box.setEnabled(True)
+                box.setChecked(False)
+                box.setToolTip(self.tr(
+                    "为每张图写 <同名>.json 到图像目录, 框出文本区域, "
+                    "标注工具可直接打开;该处已有人工标注会被覆盖"))
+            self.ui.out_note.setToolTip(self.tr(
+                "把检测到的文本框写成 labelme json, 便于重载复核"))
+            return
         # 同一个弹窗可能被换数据集复用, 切回检测/分割要把 tooltip 还原
         box.setToolTip(self.tr("为每张图写 <同名>.json 到图像目录, "
                                "标注工具可直接打开;该处已有人工标注会被覆盖"))
@@ -408,6 +429,11 @@ class TestDialog(QDialog):
                 })
             total += int(binding.get("total") or 0)
         has_label = bool(base_labeled)
+        if self._ocr_task() == "ocr_rec" and not has_label:
+            MessageBox.warning(
+                self, self.tr("测试"),
+                self.tr("字符识别要拿标注框裁字条才能测, 请选择已标注的数据集"))
+            return
         device = self.ui.test_device_combo.currentData() or "cuda"
         report_dir = ""
         if model_path:
@@ -502,6 +528,11 @@ class TestDialog(QDialog):
             self.app._show_train_task(
                 self.tr("测试中 {}/{}").format(done, total), pct)
 
+    def _ocr_task(self):
+        """OCR 的任务键: 检测/识别是两条独立记录, 各按各的跑."""
+        task = str(self._record.get("task") or "")
+        return task if is_ocr(task) else ""
+
     def _test_task(self, cls_mode):
         """交给 test_worker 的任务键: 它按这个挑 runner, 与数据集格式无关.
 
@@ -509,6 +540,9 @@ class TestDialog(QDialog):
         """
         if str(self._record.get("task") or "") == "ad":
             return "ad"
+        ocr = self._ocr_task()
+        if ocr:
+            return ocr
         return "classify" if cls_mode else ""
 
     def _on_finished(self, res):
@@ -524,9 +558,15 @@ class TestDialog(QDialog):
                                self.tr("测试未正常完成"))
             return
         # 异常检测没有框也没有"P", 但同样该弹结果面板
-        if "P" in res or res.get("task") in ("classify", "ad"):
+        if "P" in res or res.get("task") in ("classify", "ad", "ocr_det"):
             self._fill_label_stats(res)
             TestResultDialog(res, parent=self.app).exec()
+        elif res.get("task") == "ocr_rec":
+            MessageBox.information(
+                self, self.tr("测试结果"),
+                self.tr("字条 {} 条 · CER {:.4f} · 全对 {} 条").format(
+                    res.get("total", 0), float(res.get("cer", 0.0)),
+                    res.get("exact", 0)))
         else:
             self.app._load_dataset_view(self._project, self._dataset)
 

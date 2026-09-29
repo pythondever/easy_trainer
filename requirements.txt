@@ -9,20 +9,11 @@ nvidia-ml-py>=11.5.0
 # torch>=2.0
 # torchvision>=0.15
 # rfdetr>=1.9.2
-# CNN(网络架构选 CNN)训练另需 ultralytics:
-#   pip install --no-deps ultralytics ultralytics-thop && pip install polars
-#   必须 --no-deps: ultralytics 依赖的是 opencv-python(GUI 版, 会拉 OpenCV 5),
-#   它和本文件里的 opencv-python-headless 往同一个 cv2/ 目录写文件互相覆盖.
-#   它只要求 cv2>=4.7, headless 完全够用. polars 是纯 python, 与 cv2 无关.
 # ultralytics>=8.3.0
 # ultralytics-thop>=2.0
 # polars>=1.0
-# 异常检测(网络架构选算法, 如 PatchCore/CFA)训练另需 anomalib:
-#   pip install anomalib
-#   它要的 opencv 也是 headless 版, 与本文件一致, 不像 ultralytics 那样需要 --no-deps
-#   骨干权重(wide_resnet50_2, 约 263MB)首次训练时联网从 HuggingFace 取; 离线机器
-#   要预置 %USERPROFILE%\.cache\huggingface\hub 下的 timm 缓存
 # anomalib>=2.6.2
+# python-doctr>=1.0.1
 onnx>=1.16
 onnxsim>=0.4.33
 onnxruntime>=1.16

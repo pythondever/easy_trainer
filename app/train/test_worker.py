@@ -22,8 +22,11 @@ WORKSPACE = os.path.dirname(os.path.dirname(os.path.dirname(
 TEST_RUNNER = "app.train.test_runner"
 CLASSIFY_TEST_RUNNER = "app.train.classify_test_runner"
 AD_TEST_RUNNER = "app.train.ad_test_runner"
+OCR_TEST_RUNNER = "app.train.ocr_test_runner"
 # 分类与异常检测都不走带框的检测分支
-_TASK_RUNNERS = {"classify": CLASSIFY_TEST_RUNNER, "ad": AD_TEST_RUNNER}
+_TASK_RUNNERS = {"classify": CLASSIFY_TEST_RUNNER, "ad": AD_TEST_RUNNER,
+                 "ocr": OCR_TEST_RUNNER, "ocr_det": OCR_TEST_RUNNER,
+                 "ocr_rec": OCR_TEST_RUNNER}
 
 
 def runner_module(config):

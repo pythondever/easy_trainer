@@ -4,6 +4,10 @@ import os
 
 from app.core.constants import IMAGE_EXTS
 
+# 文本标注(OCR)的保留标签名. 存盘固定写这个中文串, 不跟界面语言走 ——
+# 跟随语言的话同一次标注在换语言后会被读成两类, 按它过滤训练集也会漏.
+TEXT_LABEL = "文本"
+
 
 def normalize_label(name):
     s = str(name).strip()
@@ -26,6 +30,7 @@ def load_json_shapes_checked(json_path):
     "这张图标过没有"要同时知道 shapes 是否为空和这个 json 是不是标注文件,
     而 load_json_shapes 与 looks_like_labelme 各自读一遍同一个文件. 合到
     一次读盘, 判定口径与原来两个函数逐个调用完全一致.
+    每项是 (label, points, text), 非文本标注的 text 为空串.
     """
     try:
         with open(json_path, "r", encoding="utf-8") as f:
@@ -41,14 +46,15 @@ def load_json_shapes_checked(json_path):
             if len(pts) < 2:
                 continue
             shapes.append((normalize_label(shape.get("label", "unknown")),
-                           [[float(p[0]), float(p[1])] for p in pts]))
+                           [[float(p[0]), float(p[1])] for p in pts],
+                           str(shape.get("text") or "")))
     except Exception:
         return [], True
     return shapes, True
 
 
 def load_json_shapes(json_path):
-    """读 labelme json → [(label, points)], points = [[x, y], ...] 像素坐标.
+    """读 labelme json → [(label, points, text)], points = [[x, y], ...] 像素坐标.
 
     保留多边形顶点而不是只取外接框: 分割训练要拿顶点写 yolo-seg,
     压成框之后 mask 就没了.
@@ -73,7 +79,7 @@ def same_dir_json(image_path):
 
 
 def load_yolo_shapes(txt_path, iw, ih, label_ids=None, seen_ids=None):
-    """读 yolo txt → [(label, points)] 像素坐标, 支持 bbox(5 字段) 与 yolo-seg 多边形.
+    """读 yolo txt → [(label, points, "")] 像素坐标, 支持 bbox(5 字段) 与 yolo-seg 多边形.
 
     全仓 YOLO txt 的唯一解析入口. 字段数异常的行一律丢弃, 不猜格式:
     多一列置信度(6 字段)之类的外部 txt 很常见, 按"奇数坐标"硬凑外接框会
@@ -111,7 +117,7 @@ def load_yolo_shapes(txt_path, iw, ih, label_ids=None, seen_ids=None):
                     continue
                 if seen_ids is not None:
                     seen_ids[raw] = label
-                shapes.append((label, pts))
+                shapes.append((label, pts, ""))
     except Exception:
         return []
     return shapes
@@ -125,46 +131,48 @@ def points_bbox(pts):
 
 
 def shapes_to_boxes(shapes):
-    """[(label, points)] → 标注界面/场景用的 box 字典列表.
+    """[(label, points, text)] → 标注界面/场景用的 box 字典列表.
 
     3 点以上保留多边形顶点(压成外接框会让分割的 mask 消失),
     否则按两点对角的矩形, 与 shapes_to_yolo_text("auto") 用同一判据.
     """
     boxes = []
-    for label, pts in shapes:
+    for label, pts, text in shapes:
         if len(pts) >= 3:
             boxes.append({"label": label, "points": [list(p) for p in pts],
-                          "shape_type": "polygon"})
+                          "shape_type": "polygon", "text": text})
         elif len(pts) >= 2:
             x1, y1, x2, y2 = points_bbox(pts)
             boxes.append({"label": label, "x1": x1, "y1": y1,
-                          "x2": x2, "y2": y2})
+                          "x2": x2, "y2": y2, "text": text})
     return boxes
 
 
 def shapes_to_xywh(shapes):
-    """[(label, points)] → LMDB 记录用的 (x, y, w, h, label), 整数像素.
+    """[(label, points, text)] → LMDB 记录用的 (x, y, w, h, text, label), 整数像素.
 
     宽高至少 1 像素: 退化成一个点的框会让缩略图绘制与 IoU 计算除零.
+    text 排在 label 之前而不是末尾: 全仓取类别一律写 box[-1], 加在末尾会让
+    类别读成文字; 排在 label 前, box[-1] 与 box[:-1] 两种写法都自动兼容.
     """
     out = []
-    for label, pts in shapes:
+    for label, pts, text in shapes:
         if len(pts) < 2:
             continue
         x1, y1, x2, y2 = points_bbox(pts)
         x, y = int(x1), int(y1)
         w, h = int(x2 - x1), int(y2 - y1)
-        out.append((max(0, x), max(0, y), max(1, w), max(1, h), label))
+        out.append((max(0, x), max(0, y), max(1, w), max(1, h), text, label))
     return out
 
 
 def shapes_to_detections(shapes):
-    """[(label, points)] → [(label, [x1,y1,x2,y2], poly)], 测试/评估口径.
+    """[(label, points, text)] → [(label, [x1,y1,x2,y2], poly)], 测试/评估口径.
 
-    poly 是像素顶点列表(3 点以上), 检测标注为 None.
+    poly 是像素顶点列表(3 点以上), 检测标注为 None; 文字不进检测/分割口径.
     """
     out = []
-    for label, pts in shapes:
+    for label, pts, _text in shapes:
         if len(pts) < 2:
             continue
         x1, y1, x2, y2 = points_bbox(pts)
@@ -253,7 +261,7 @@ def _rect_corners(pts):
 
 
 def shapes_to_yolo_text(shapes, iw, ih, label_to_id, as_polygon=False):
-    """[(label, points)] 像素坐标 → yolo txt 内容.
+    """[(label, points, text)] 像素坐标 → yolo txt 内容(文字不进 yolo).
 
     as_polygon: True 全部写 yolo-seg 顶点序列(RF-DETR 会栅格化成 mask);
     False 全部写 cx cy w h;"auto" 按 shape 自身形态来 - 多边形写顶点,
@@ -261,7 +269,7 @@ def shapes_to_yolo_text(shapes, iw, ih, label_to_id, as_polygon=False):
     顶点少于 3 个时补成矩形四角(yolo-seg 至少要 3 个点).
     """
     lines = []
-    for label, pts in shapes:
+    for label, pts, _text in shapes:
         cls_id = label_to_id.get(label, 0)
         if as_polygon == "auto":
             as_polygon_each = len(pts) >= 3
@@ -284,16 +292,23 @@ def shapes_to_yolo_text(shapes, iw, ih, label_to_id, as_polygon=False):
 
 
 def shapes_to_labelme_json(shapes, img_path, iw, ih):
-    """[(label, points)] → labelme json dict, 多边形保留 polygon 形态."""
+    """[(label, points, text)] → labelme json dict, 多边形保留 polygon 形态.
+
+    文字只在有内容时写: 普通检测/分割的导出 json 保持原字段, 不给它们
+    平白多一个空 text.
+    """
     out = []
-    for label, pts in shapes:
-        out.append({
+    for label, pts, text in shapes:
+        shape = {
             "label": label,
             "points": [[round(float(x), 2), round(float(y), 2)] for x, y in pts],
             "group_id": None,
             "shape_type": "polygon" if len(pts) >= 3 else "rectangle",
             "flags": {},
-        })
+        }
+        if text:
+            shape["text"] = text
+        out.append(shape)
     return {"version": "5.0.1", "flags": {}, "shapes": out,
             "imagePath": os.path.basename(img_path),
             "imageWidth": iw, "imageHeight": ih}
