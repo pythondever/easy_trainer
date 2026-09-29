@@ -807,7 +807,7 @@
     </message>
     <message>
         <location filename="../ui/app.ui" line="434"/>
-        <location filename="../app/mixins/queue_mixin.py" line="334"/>
+        <location filename="../app/mixins/queue_mixin.py" line="368"/>
         <source>队列</source>
         <translation>대기열</translation>
     </message>
@@ -1690,42 +1690,37 @@
         <translation>학습 지표</translation>
     </message>
     <message>
-        <location filename="../app/widgets/metrics_dialog.py" line="61"/>
+        <location filename="../app/widgets/metrics_dialog.py" line="62"/>
         <source>标签筛选</source>
         <translation>라벨 필터</translation>
     </message>
     <message>
-        <location filename="../app/widgets/metrics_dialog.py" line="65"/>
+        <location filename="../app/widgets/metrics_dialog.py" line="66"/>
         <source>全部指标</source>
         <translation>전체 지표</translation>
     </message>
     <message>
-        <location filename="../app/widgets/metrics_dialog.py" line="66"/>
+        <location filename="../app/widgets/metrics_dialog.py" line="67"/>
         <source>全部标签-P</source>
         <translation>전체 라벨-P</translation>
     </message>
     <message>
-        <location filename="../app/widgets/metrics_dialog.py" line="67"/>
+        <location filename="../app/widgets/metrics_dialog.py" line="68"/>
         <source>全部标签-R</source>
         <translation>전체 라벨-R</translation>
     </message>
     <message>
-        <location filename="../app/widgets/metrics_dialog.py" line="80"/>
-        <source>(暂无标签数据,需完成首次 epoch 验证后才会出现)</source>
-        <translation>(아직 라벨 데이터가 없습니다. 첫 에포크 검증을 완료해야 표시됩니다)</translation>
-    </message>
-    <message>
-        <location filename="../app/widgets/metrics_dialog.py" line="105"/>
+        <location filename="../app/widgets/metrics_dialog.py" line="104"/>
         <source>暂无该标签的指标数据(训练完成后可查看)</source>
         <translation>이 라벨의 지표 데이터가 아직 없습니다(학습 완료 후 확인 가능)</translation>
     </message>
     <message>
-        <location filename="../app/widgets/metrics_dialog.py" line="148"/>
+        <location filename="../app/widgets/metrics_dialog.py" line="152"/>
         <source>loss 值</source>
         <translation>loss 값</translation>
     </message>
     <message>
-        <location filename="../app/widgets/metrics_dialog.py" line="149"/>
+        <location filename="../app/widgets/metrics_dialog.py" line="153"/>
         <source>指标值 (mAP/P/R)</source>
         <translation>지표 값 (mAP/P/R)</translation>
     </message>
@@ -3134,67 +3129,67 @@
 <context>
     <name>QueueMixin</name>
     <message>
-        <location filename="../app/mixins/queue_mixin.py" line="92"/>
+        <location filename="../app/mixins/queue_mixin.py" line="97"/>
         <source>训练队列已启动</source>
         <translation>학습 대기열이 시작되었습니다</translation>
     </message>
     <message>
-        <location filename="../app/mixins/queue_mixin.py" line="100"/>
+        <location filename="../app/mixins/queue_mixin.py" line="107"/>
         <source>[队列] 已停止</source>
         <translation>[队列] 중지했습니다</translation>
     </message>
     <message>
-        <location filename="../app/mixins/queue_mixin.py" line="188"/>
+        <location filename="../app/mixins/queue_mixin.py" line="195"/>
         <source>[队列] 所有任务已执行完毕</source>
         <translation>[队列] 모든 작업이 실행 완료되었습니다</translation>
     </message>
     <message>
-        <location filename="../app/mixins/queue_mixin.py" line="196"/>
+        <location filename="../app/mixins/queue_mixin.py" line="203"/>
         <source>[队列] 跳过任务 {}: {}</source>
         <translation>[队列] 작업 건너뜀 {}: {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/queue_mixin.py" line="197"/>
+        <location filename="../app/mixins/queue_mixin.py" line="204"/>
         <source>队列任务启动失败 {}: {}</source>
         <translation>대기열 작업 시작 실패 {}: {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/queue_mixin.py" line="217"/>
+        <location filename="../app/mixins/queue_mixin.py" line="224"/>
         <source>[队列] 缺少权重 {}, 该项训练会失败</source>
         <translation>[队列] 가중치 {}가 없습니다. 해당 학습은 실패합니다</translation>
     </message>
     <message>
-        <location filename="../app/mixins/queue_mixin.py" line="220"/>
+        <location filename="../app/mixins/queue_mixin.py" line="227"/>
         <source>[队列] 缺少权重 {}, 该项训练时会自行下载</source>
         <translation>[队列] 가중치 {}가 없습니다. 해당 항목은 학습 시 자동으로 다운로드합니다</translation>
     </message>
     <message>
-        <location filename="../app/mixins/queue_mixin.py" line="230"/>
+        <location filename="../app/mixins/queue_mixin.py" line="240"/>
         <source>已有训练在进行中</source>
         <translation>이미 학습이 진행 중입니다</translation>
     </message>
     <message>
-        <location filename="../app/mixins/queue_mixin.py" line="235"/>
+        <location filename="../app/mixins/queue_mixin.py" line="245"/>
         <source>[队列] 开始队列第 {}/{} 项: {}</source>
         <translation>[队列] 대기열 {}/{}번째 시작: {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/queue_mixin.py" line="239"/>
+        <location filename="../app/mixins/queue_mixin.py" line="249"/>
         <source>队列启动任务: {} record={}</source>
         <translation>대기열 작업 시작: {} record={}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/queue_mixin.py" line="277"/>
+        <location filename="../app/mixins/queue_mixin.py" line="287"/>
         <source>训练未完成, 详见日志</source>
         <translation>학습이 완료되지 않았습니다. 로그를 확인하세요</translation>
     </message>
     <message>
-        <location filename="../app/mixins/queue_mixin.py" line="304"/>
+        <location filename="../app/mixins/queue_mixin.py" line="321"/>
         <source>[队列] 显存等待超时, 仍继续启动下一个任务</source>
         <translation>[队列] VRAM 대기가 시간 초과되었지만 다음 작업 시작을 계속합니다</translation>
     </message>
     <message>
-        <location filename="../app/mixins/queue_mixin.py" line="333"/>
+        <location filename="../app/mixins/queue_mixin.py" line="367"/>
         <source>队列 {}</source>
         <translation>대기열 {}</translation>
     </message>
@@ -4568,19 +4563,19 @@
     </message>
     <message>
         <location filename="../ui/train.ui" line="778"/>
-        <location filename="../app/train/dialogs.py" line="1217"/>
-        <location filename="../app/train/dialogs.py" line="1226"/>
-        <location filename="../app/train/dialogs.py" line="1237"/>
-        <location filename="../app/train/dialogs.py" line="1256"/>
-        <location filename="../app/train/dialogs.py" line="1269"/>
+        <location filename="../app/train/dialogs.py" line="1221"/>
+        <location filename="../app/train/dialogs.py" line="1230"/>
+        <location filename="../app/train/dialogs.py" line="1241"/>
+        <location filename="../app/train/dialogs.py" line="1260"/>
+        <location filename="../app/train/dialogs.py" line="1273"/>
         <source>加入队列</source>
         <translation>대기열에 추가</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="791"/>
-        <location filename="../app/train/dialogs.py" line="1148"/>
-        <location filename="../app/train/dialogs.py" line="1158"/>
-        <location filename="../app/train/dialogs.py" line="1184"/>
+        <location filename="../app/train/dialogs.py" line="1152"/>
+        <location filename="../app/train/dialogs.py" line="1162"/>
+        <location filename="../app/train/dialogs.py" line="1188"/>
         <source>开始训练</source>
         <translation>학습 시작</translation>
     </message>
@@ -4601,7 +4596,7 @@
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="183"/>
-        <location filename="../app/train/dialogs.py" line="1227"/>
+        <location filename="../app/train/dialogs.py" line="1231"/>
         <source>请先选择输出路径</source>
         <translation>먼저 출력 경로를 선택하세요</translation>
     </message>
@@ -4613,7 +4608,7 @@
     <message>
         <location filename="../app/train/dialogs.py" line="199"/>
         <location filename="../app/train/dialogs.py" line="204"/>
-        <location filename="../app/train/dialogs.py" line="1112"/>
+        <location filename="../app/train/dialogs.py" line="1116"/>
         <source>未知</source>
         <translation>알 수 없음</translation>
     </message>
@@ -4669,7 +4664,7 @@
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="211"/>
-        <location filename="../app/train/dialogs.py" line="1121"/>
+        <location filename="../app/train/dialogs.py" line="1125"/>
         <source>数据集&quot;{}/{}&quot;没有文本标注, 无法训练{}</source>
         <translation>데이터셋 &quot;{}/{}&quot;에 텍스트 어노테이션이 없어 {} 학습 불가</translation>
     </message>
@@ -4734,128 +4729,128 @@
         <translation>뱅크 구축형 알고리즘은 특징만 추출해 메모리 뱅크를 구축하며 학습 에포크가 없습니다</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1013"/>
+        <location filename="../app/train/dialogs.py" line="1017"/>
         <source>仅建库</source>
         <translation>뱅크 구축만</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1073"/>
+        <location filename="../app/train/dialogs.py" line="1077"/>
         <source>请至少选择一个数据集</source>
         <translation>데이터셋을 하나 이상 선택하세요</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1077"/>
-        <location filename="../app/train/dialogs.py" line="1087"/>
+        <location filename="../app/train/dialogs.py" line="1081"/>
+        <location filename="../app/train/dialogs.py" line="1091"/>
         <source>&quot;{}&quot;不能为空</source>
         <translation>&quot;{}&quot;은(는) 비워둘 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1082"/>
+        <location filename="../app/train/dialogs.py" line="1086"/>
         <source>&quot;{}&quot;必须是整数(当前: {})</source>
         <translation>&quot;{}&quot;은(는) 정수여야 합니다(현재: {})</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1092"/>
+        <location filename="../app/train/dialogs.py" line="1096"/>
         <source>&quot;{}&quot;必须是数字(当前: {})</source>
         <translation>&quot;{}&quot;은(는) 숫자여야 합니다(현재: {})</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1101"/>
+        <location filename="../app/train/dialogs.py" line="1105"/>
         <source>图像尺寸需为 {} 的倍数(当前 {}), 可改为 {}</source>
         <translation>이미지 크기는 {}의 배수여야 합니다(현재 {}). {}로 변경할 수 있습니다</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1111"/>
+        <location filename="../app/train/dialogs.py" line="1115"/>
         <source>数据集&quot;{}/{}&quot;不是按分类导入的数据集(标签格式={}),无法训练{}</source>
         <translation>데이터셋 &quot;{}/{}&quot;은(는) 분류 방식으로 가져온 데이터셋이 아니므로(라벨 형식={}) {}을(를) 학습할 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1116"/>
+        <location filename="../app/train/dialogs.py" line="1120"/>
         <source>数据集&quot;{}/{}&quot;是分类数据集,无法训练{}任务</source>
         <translation>데이터셋 &quot;{}/{}&quot;은(는) 분류 데이터셋이므로 {} 작업을 학습할 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1128"/>
+        <location filename="../app/train/dialogs.py" line="1132"/>
         <source>选择输出目录</source>
         <translation>출력 디렉터리 선택</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1142"/>
+        <location filename="../app/train/dialogs.py" line="1146"/>
         <source>当前安装缺少 CNN 架构所需的组件, 无法训练.
 请重新安装软件后再试</source>
         <translation>현재 설치에 CNN 아키텍처에 필요한 구성 요소가 없어 학습을 시작할 수 없습니다.
 소프트웨어를 다시 설치한 후 시도해 주세요</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1149"/>
+        <location filename="../app/train/dialogs.py" line="1153"/>
         <source>当前已有训练在进行中, 请先停止!</source>
         <translation>현재 학습이 진행 중입니다. 먼저 중지하세요!</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1153"/>
+        <location filename="../app/train/dialogs.py" line="1157"/>
         <source>参数校验未通过: {}</source>
         <translation>파라미터 검증 실패: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1154"/>
-        <location filename="../app/train/dialogs.py" line="1213"/>
+        <location filename="../app/train/dialogs.py" line="1158"/>
+        <location filename="../app/train/dialogs.py" line="1217"/>
         <source>参数校验</source>
         <translation>파라미터 검증</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1174"/>
+        <location filename="../app/train/dialogs.py" line="1178"/>
         <source>训练启动失败: {}
 {}</source>
         <translation>학습 시작 실패: {}
 {}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1177"/>
+        <location filename="../app/train/dialogs.py" line="1181"/>
         <source>训练启动失败</source>
         <translation>학습 시작 실패</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1185"/>
+        <location filename="../app/train/dialogs.py" line="1189"/>
         <source>已有训练在进行中, 请先停止!</source>
         <translation>이미 학습이 진행 중입니다. 먼저 중지하세요!</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1187"/>
+        <location filename="../app/train/dialogs.py" line="1191"/>
         <source>开始训练: 任务类型={} 训练集={} 验证集={}</source>
         <translation>학습 시작: 작업 유형={} 학습 세트={} 검증 세트={}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1203"/>
+        <location filename="../app/train/dialogs.py" line="1207"/>
         <source>开始训练: 字符检测分两段入队 | {} | {}</source>
         <translation>학습 시작: 텍스트 검출이 두 단계로 나뉘어 대기열에 추가됨 | {} | {}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1242"/>
+        <location filename="../app/train/dialogs.py" line="1246"/>
         <source>队列</source>
         <translation>대기열</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1243"/>
+        <location filename="../app/train/dialogs.py" line="1247"/>
         <source>已更新该队列任务的参数</source>
         <translation>대기열 작업의 파라미터를 업데이트했습니다</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1249"/>
+        <location filename="../app/train/dialogs.py" line="1253"/>
         <source>加入队列失败</source>
         <translation>대기열 추가 실패</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1252"/>
+        <location filename="../app/train/dialogs.py" line="1256"/>
         <source>加入训练队列: {} | {}</source>
         <translation>학습 대기열에 추가: {} | {}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1257"/>
+        <location filename="../app/train/dialogs.py" line="1261"/>
         <source>已加入队列(第 {} 个), 可在首页&quot;队列&quot;中查看或启动.</source>
         <translation>대기열에 추가되었습니다({}번째). 홈 화면의 &quot;대기열&quot;에서 확인하거나 시작할 수 있습니다.</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1270"/>
+        <location filename="../app/train/dialogs.py" line="1274"/>
         <source>字符检测已拆成检测段与识别段, 分别排在第 {} 和第 {} 个</source>
         <translation>텍스트 검출이 검출 단계와 인식 단계로 나뉘어 각각 {}번째와 {}번째에 배치되었습니다</translation>
     </message>
@@ -4936,6 +4931,11 @@
         <location filename="../app/mixins/train_mixin.py" line="211"/>
         <source>更新训练指标: record={} 已完成epoch={} {}={} 类别数={}</source>
         <translation>학습 지표 업데이트: record={} 완료 epoch={} {}={} 클래스 수={}</translation>
+    </message>
+    <message>
+        <location filename="../app/mixins/train_mixin.py" line="309"/>
+        <source>等待显存释放 · 下一项:{}</source>
+        <translation>VRAM 해제 대기 · 다음:{}</translation>
     </message>
     <message>
         <location filename="../app/mixins/train_mixin.py" line="187"/>

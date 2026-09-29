@@ -905,7 +905,11 @@ class TrainDialog(QDialog):
         """按指定训练记录回填全部字段(模型界面训练按钮)."""
         task = str(rec.get("task", "") or "")
         if task:
-            idx = self.ui.task_combo.findData(task)
+            # 训练记录里 OCR 被拆成 ocr_det/ocr_rec 两条, 下拉上只有 ocr 一项,
+            # 直接拿记录值 findData 会落空, 界面停在"检测"上, 数据集又按
+            # 任务过滤, 结果就是 ocr 数据集一条都列不出来
+            idx = self.ui.task_combo.findData(
+                "ocr" if occ.is_ocr(task) else task)
             if idx >= 0:
                 self.ui.task_combo.setCurrentIndex(idx)
         # 老记录没有 family, 当年只有 rf-detr 一条路, 一律当 transformer

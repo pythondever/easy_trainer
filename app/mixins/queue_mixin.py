@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 """训练队列调度: 串行执行 db 里的任务快照, 逐个走与手工训练完全相同的启动链路.
 
-依赖 TrainMixin 提供 is_training / start_training / on_train_finished / db / _log.
+依赖 TrainMixin 提供 is_training / start_training / on_train_finished / db / _log /
+_show_train_waiting / _hide_train_task.
 """
 
 import uuid
@@ -12,6 +13,7 @@ from PySide6.QtCore import QCoreApplication as QC
 
 from app.core import model_assets
 from app.core.log import write_log
+from app.widgets.status_style import task_text
 from app.train.dialogs import (make_train_config, make_train_record,
                                params_summary)
 
@@ -23,6 +25,8 @@ except ImportError:
 # 任务切换的冷却: 等显存真正释放后再起下一个,避免 CUDA OOM
 COOLDOWN_MS = 5000
 COOLDOWN_MAX_MS = 30000
+# 显存回落到"开训前基线 + 这个余量"以内就算释放干净
+GPU_FREE_SLACK = 1 << 30
 
 DONE_STATUS = ("done", "failed", "skipped", "stopped", "interrupted")
 
@@ -47,6 +51,7 @@ class QueueMixin(object):
     _queue_finished_rids = None  # 本轮已收尾的 record_id, 防重复推进
     _queue_cooling = False
     _cooldown_elapsed = 0
+    _gpu_baseline = None
 
     # ---------- 查询 ----------
     def queue_items(self):
@@ -97,6 +102,8 @@ class QueueMixin(object):
     def stop_train_queue(self):
         """停止队列: 不再取下一个任务, 进行中的那个照常收尾."""
         self._queue_running = False
+        # 冷却间隙里进度区显示的是"等待下一项", 停了就没人再收它
+        self._hide_train_task()
         self._log(QC.translate("QueueMixin", "[队列] 已停止"))
         self._refresh_queue_ui()
 
@@ -225,6 +232,9 @@ class QueueMixin(object):
         record = make_train_record(
             config, self.db, (params.get("train_ds") or [["", ""]])[0][0])
         self.db.add_train_record(record)
+        # 冷却基线: 本项开训前的占用(桌面自身也占着显存)
+        usage = self._gpu_used_bytes()
+        self._gpu_baseline = usage[0] if usage else None
         if not self.start_training(config, record["id"]):
             self.db.delete_train_record(record["id"])
             raise RuntimeError(QC.translate("QueueMixin", "已有训练在进行中"))
@@ -287,6 +297,13 @@ class QueueMixin(object):
         """等显存回落再启动下一个, 避免上一个任务的显存还没释放就 OOM."""
         if self._queue_cooling:
             return
+        item = self._next_waiting()
+        if item is None:
+            self._hide_train_task()
+            QTimer.singleShot(0, self._pump_queue)
+            return
+        task = (item.get("params") or {}).get("task")
+        self._show_train_waiting(task_text(task) if task else item.get("name", ""))
         self._queue_cooling = True
         self._cooldown_elapsed = 0
         self._tick_cooldown()
@@ -307,22 +324,39 @@ class QueueMixin(object):
         QTimer.singleShot(COOLDOWN_MS, self._tick_cooldown)
 
     def _gpu_free(self):
-        """显存占用是否回落到阈值以下; pynvml 不可用时退化为只看进程退出."""
-        if pynvml is None:
+        """显存是否已回落: 与开训前的基线比, 只看全局占比会在桌面常驻超 25% 时永远等满冷却."""
+        usage = self._gpu_used_bytes()
+        if usage is None:
             return True
+        used, total = usage
+        if total <= 0:
+            return True
+        if used / float(total) < 0.25:
+            return True
+        return self._gpu_baseline is not None and used <= self._gpu_baseline + GPU_FREE_SLACK
+
+    def _gpu_used_bytes(self):
+        """全卡已用/总字节; pynvml 不可用或查询失败返回 None."""
+        if pynvml is None:
+            return None
         try:
             if self._nvml_state is None:
                 pynvml.nvmlInit()
                 self._nvml_state = True
-            used, total = 0, 0
+        except Exception:
+            self._nvml_state = False
+        if not self._nvml_state:
+            return None
+        try:
+            used = total = 0
             for i in range(pynvml.nvmlDeviceGetCount()):
                 h = pynvml.nvmlDeviceGetHandleByIndex(i)
                 mem = pynvml.nvmlDeviceGetMemoryInfo(h)
                 used += mem.used
                 total += mem.total
-            return total > 0 and used / float(total) < 0.25
         except Exception:
-            return True
+            return None
+        return used, total
 
     # ---------- UI 回调(由主窗口/队列面板实现)----------
     def _refresh_queue_ui(self):

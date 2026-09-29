@@ -807,7 +807,7 @@ Xác nhận xóa?</translation>
     </message>
     <message>
         <location filename="../ui/app.ui" line="434"/>
-        <location filename="../app/mixins/queue_mixin.py" line="334"/>
+        <location filename="../app/mixins/queue_mixin.py" line="368"/>
         <source>队列</source>
         <translation>Hàng đợi</translation>
     </message>
@@ -1690,42 +1690,37 @@ Mọi chú thích của nhãn này sẽ bị xóa và không thể khôi phục.
         <translation>Chỉ số huấn luyện</translation>
     </message>
     <message>
-        <location filename="../app/widgets/metrics_dialog.py" line="61"/>
+        <location filename="../app/widgets/metrics_dialog.py" line="62"/>
         <source>标签筛选</source>
         <translation>Lọc nhãn</translation>
     </message>
     <message>
-        <location filename="../app/widgets/metrics_dialog.py" line="65"/>
+        <location filename="../app/widgets/metrics_dialog.py" line="66"/>
         <source>全部指标</source>
         <translation>Tất cả chỉ số</translation>
     </message>
     <message>
-        <location filename="../app/widgets/metrics_dialog.py" line="66"/>
+        <location filename="../app/widgets/metrics_dialog.py" line="67"/>
         <source>全部标签-P</source>
         <translation>Tất cả nhãn - P</translation>
     </message>
     <message>
-        <location filename="../app/widgets/metrics_dialog.py" line="67"/>
+        <location filename="../app/widgets/metrics_dialog.py" line="68"/>
         <source>全部标签-R</source>
         <translation>Tất cả nhãn - R</translation>
     </message>
     <message>
-        <location filename="../app/widgets/metrics_dialog.py" line="80"/>
-        <source>(暂无标签数据,需完成首次 epoch 验证后才会出现)</source>
-        <translation>(Chưa có dữ liệu nhãn, sẽ hiện sau lần xác thực epoch đầu tiên)</translation>
-    </message>
-    <message>
-        <location filename="../app/widgets/metrics_dialog.py" line="105"/>
+        <location filename="../app/widgets/metrics_dialog.py" line="104"/>
         <source>暂无该标签的指标数据(训练完成后可查看)</source>
         <translation>Chưa có dữ liệu chỉ số cho nhãn này (xem được sau khi huấn luyện xong)</translation>
     </message>
     <message>
-        <location filename="../app/widgets/metrics_dialog.py" line="148"/>
+        <location filename="../app/widgets/metrics_dialog.py" line="152"/>
         <source>loss 值</source>
         <translation>Giá trị loss</translation>
     </message>
     <message>
-        <location filename="../app/widgets/metrics_dialog.py" line="149"/>
+        <location filename="../app/widgets/metrics_dialog.py" line="153"/>
         <source>指标值 (mAP/P/R)</source>
         <translation>Giá trị chỉ số (mAP/P/R)</translation>
     </message>
@@ -3134,67 +3129,67 @@ Bộ dữ liệu nguồn sẽ bị xóa hết sau khi di chuyển.</translation>
 <context>
     <name>QueueMixin</name>
     <message>
-        <location filename="../app/mixins/queue_mixin.py" line="92"/>
+        <location filename="../app/mixins/queue_mixin.py" line="97"/>
         <source>训练队列已启动</source>
         <translation>Đã khởi động hàng đợi huấn luyện</translation>
     </message>
     <message>
-        <location filename="../app/mixins/queue_mixin.py" line="100"/>
+        <location filename="../app/mixins/queue_mixin.py" line="107"/>
         <source>[队列] 已停止</source>
         <translation>[队列] Đã dừng</translation>
     </message>
     <message>
-        <location filename="../app/mixins/queue_mixin.py" line="188"/>
+        <location filename="../app/mixins/queue_mixin.py" line="195"/>
         <source>[队列] 所有任务已执行完毕</source>
         <translation>[队列] Đã thực hiện xong tất cả tác vụ</translation>
     </message>
     <message>
-        <location filename="../app/mixins/queue_mixin.py" line="196"/>
+        <location filename="../app/mixins/queue_mixin.py" line="203"/>
         <source>[队列] 跳过任务 {}: {}</source>
         <translation>[队列] Bỏ qua tác vụ {}: {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/queue_mixin.py" line="197"/>
+        <location filename="../app/mixins/queue_mixin.py" line="204"/>
         <source>队列任务启动失败 {}: {}</source>
         <translation>Khởi động tác vụ hàng đợi thất bại {}: {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/queue_mixin.py" line="217"/>
+        <location filename="../app/mixins/queue_mixin.py" line="224"/>
         <source>[队列] 缺少权重 {}, 该项训练会失败</source>
         <translation>[队列] Thiếu trọng số {}, lần huấn luyện đó sẽ thất bại</translation>
     </message>
     <message>
-        <location filename="../app/mixins/queue_mixin.py" line="220"/>
+        <location filename="../app/mixins/queue_mixin.py" line="227"/>
         <source>[队列] 缺少权重 {}, 该项训练时会自行下载</source>
         <translation>[队列] Thiếu trọng số {}, sẽ tự tải khi huấn luyện</translation>
     </message>
     <message>
-        <location filename="../app/mixins/queue_mixin.py" line="230"/>
+        <location filename="../app/mixins/queue_mixin.py" line="240"/>
         <source>已有训练在进行中</source>
         <translation>Đang có một lượt huấn luyện chạy</translation>
     </message>
     <message>
-        <location filename="../app/mixins/queue_mixin.py" line="235"/>
+        <location filename="../app/mixins/queue_mixin.py" line="245"/>
         <source>[队列] 开始队列第 {}/{} 项: {}</source>
         <translation>[队列] Bắt đầu mục {}/{} của hàng đợi: {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/queue_mixin.py" line="239"/>
+        <location filename="../app/mixins/queue_mixin.py" line="249"/>
         <source>队列启动任务: {} record={}</source>
         <translation>Hàng đợi khởi động tác vụ: {} record={}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/queue_mixin.py" line="277"/>
+        <location filename="../app/mixins/queue_mixin.py" line="287"/>
         <source>训练未完成, 详见日志</source>
         <translation>Huấn luyện chưa xong, xem nhật ký</translation>
     </message>
     <message>
-        <location filename="../app/mixins/queue_mixin.py" line="304"/>
+        <location filename="../app/mixins/queue_mixin.py" line="321"/>
         <source>[队列] 显存等待超时, 仍继续启动下一个任务</source>
         <translation>[队列] Hết thời gian chờ bộ nhớ GPU, vẫn tiếp tục khởi động tác vụ tiếp theo</translation>
     </message>
     <message>
-        <location filename="../app/mixins/queue_mixin.py" line="333"/>
+        <location filename="../app/mixins/queue_mixin.py" line="367"/>
         <source>队列 {}</source>
         <translation>Hàng đợi {}</translation>
     </message>
@@ -4568,19 +4563,19 @@ Báo cáo tốn khoảng 120 KB mỗi ảnh; khi có nhiều mẫu, giảm số 
     </message>
     <message>
         <location filename="../ui/train.ui" line="778"/>
-        <location filename="../app/train/dialogs.py" line="1217"/>
-        <location filename="../app/train/dialogs.py" line="1226"/>
-        <location filename="../app/train/dialogs.py" line="1237"/>
-        <location filename="../app/train/dialogs.py" line="1256"/>
-        <location filename="../app/train/dialogs.py" line="1269"/>
+        <location filename="../app/train/dialogs.py" line="1221"/>
+        <location filename="../app/train/dialogs.py" line="1230"/>
+        <location filename="../app/train/dialogs.py" line="1241"/>
+        <location filename="../app/train/dialogs.py" line="1260"/>
+        <location filename="../app/train/dialogs.py" line="1273"/>
         <source>加入队列</source>
         <translation>Thêm vào hàng đợi</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="791"/>
-        <location filename="../app/train/dialogs.py" line="1148"/>
-        <location filename="../app/train/dialogs.py" line="1158"/>
-        <location filename="../app/train/dialogs.py" line="1184"/>
+        <location filename="../app/train/dialogs.py" line="1152"/>
+        <location filename="../app/train/dialogs.py" line="1162"/>
+        <location filename="../app/train/dialogs.py" line="1188"/>
         <source>开始训练</source>
         <translation>Bắt đầu huấn luyện</translation>
     </message>
@@ -4601,7 +4596,7 @@ Báo cáo tốn khoảng 120 KB mỗi ảnh; khi có nhiều mẫu, giảm số 
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="183"/>
-        <location filename="../app/train/dialogs.py" line="1227"/>
+        <location filename="../app/train/dialogs.py" line="1231"/>
         <source>请先选择输出路径</source>
         <translation>Chọn đường dẫn đầu ra trước</translation>
     </message>
@@ -4613,7 +4608,7 @@ Báo cáo tốn khoảng 120 KB mỗi ảnh; khi có nhiều mẫu, giảm số 
     <message>
         <location filename="../app/train/dialogs.py" line="199"/>
         <location filename="../app/train/dialogs.py" line="204"/>
-        <location filename="../app/train/dialogs.py" line="1112"/>
+        <location filename="../app/train/dialogs.py" line="1116"/>
         <source>未知</source>
         <translation>Không xác định</translation>
     </message>
@@ -4669,7 +4664,7 @@ Báo cáo tốn khoảng 120 KB mỗi ảnh; khi có nhiều mẫu, giảm số 
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="211"/>
-        <location filename="../app/train/dialogs.py" line="1121"/>
+        <location filename="../app/train/dialogs.py" line="1125"/>
         <source>数据集&quot;{}/{}&quot;没有文本标注, 无法训练{}</source>
         <translation>Tập dữ liệu &quot;{}/{}&quot; không có chú thích văn bản, không thể huấn luyện {}</translation>
     </message>
@@ -4734,128 +4729,128 @@ Báo cáo tốn khoảng 120 KB mỗi ảnh; khi có nhiều mẫu, giảm số 
         <translation>Thuật toán kiểu ngân hàng bộ nhớ chỉ trích xuất đặc trưng để xây dựng ngân hàng bộ nhớ, không có số epoch huấn luyện</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1013"/>
+        <location filename="../app/train/dialogs.py" line="1017"/>
         <source>仅建库</source>
         <translation>Chỉ xây dựng ngân hàng bộ nhớ</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1073"/>
+        <location filename="../app/train/dialogs.py" line="1077"/>
         <source>请至少选择一个数据集</source>
         <translation>Chọn ít nhất một bộ dữ liệu</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1077"/>
-        <location filename="../app/train/dialogs.py" line="1087"/>
+        <location filename="../app/train/dialogs.py" line="1081"/>
+        <location filename="../app/train/dialogs.py" line="1091"/>
         <source>&quot;{}&quot;不能为空</source>
         <translation>&quot;{}&quot; không được để trống</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1082"/>
+        <location filename="../app/train/dialogs.py" line="1086"/>
         <source>&quot;{}&quot;必须是整数(当前: {})</source>
         <translation>&quot;{}&quot; phải là số nguyên (hiện tại: {})</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1092"/>
+        <location filename="../app/train/dialogs.py" line="1096"/>
         <source>&quot;{}&quot;必须是数字(当前: {})</source>
         <translation>&quot;{}&quot; phải là số (hiện tại: {})</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1101"/>
+        <location filename="../app/train/dialogs.py" line="1105"/>
         <source>图像尺寸需为 {} 的倍数(当前 {}), 可改为 {}</source>
         <translation>Kích thước ảnh phải là bội số của {} (hiện tại {}); có thể đổi thành {}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1111"/>
+        <location filename="../app/train/dialogs.py" line="1115"/>
         <source>数据集&quot;{}/{}&quot;不是按分类导入的数据集(标签格式={}),无法训练{}</source>
         <translation>Bộ dữ liệu &quot;{}/{}&quot; không được nhập dưới dạng bộ dữ liệu phân loại (định dạng nhãn={}), không thể huấn luyện {}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1116"/>
+        <location filename="../app/train/dialogs.py" line="1120"/>
         <source>数据集&quot;{}/{}&quot;是分类数据集,无法训练{}任务</source>
         <translation>Bộ dữ liệu &quot;{}/{}&quot; là bộ dữ liệu phân loại, không thể huấn luyện tác vụ {}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1128"/>
+        <location filename="../app/train/dialogs.py" line="1132"/>
         <source>选择输出目录</source>
         <translation>Chọn thư mục đầu ra</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1142"/>
+        <location filename="../app/train/dialogs.py" line="1146"/>
         <source>当前安装缺少 CNN 架构所需的组件, 无法训练.
 请重新安装软件后再试</source>
         <translation>Bản cài đặt này thiếu thành phần cần thiết cho kiến trúc CNN, không thể huấn luyện.
 Vui lòng cài đặt lại phần mềm rồi thử lại</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1149"/>
+        <location filename="../app/train/dialogs.py" line="1153"/>
         <source>当前已有训练在进行中, 请先停止!</source>
         <translation>Đang có huấn luyện chạy, hãy dừng trước!</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1153"/>
+        <location filename="../app/train/dialogs.py" line="1157"/>
         <source>参数校验未通过: {}</source>
         <translation>Kiểm tra tham số không đạt: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1154"/>
-        <location filename="../app/train/dialogs.py" line="1213"/>
+        <location filename="../app/train/dialogs.py" line="1158"/>
+        <location filename="../app/train/dialogs.py" line="1217"/>
         <source>参数校验</source>
         <translation>Kiểm tra tham số</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1174"/>
+        <location filename="../app/train/dialogs.py" line="1178"/>
         <source>训练启动失败: {}
 {}</source>
         <translation>Khởi động huấn luyện thất bại: {}
 {}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1177"/>
+        <location filename="../app/train/dialogs.py" line="1181"/>
         <source>训练启动失败</source>
         <translation>Không khởi động được huấn luyện</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1185"/>
+        <location filename="../app/train/dialogs.py" line="1189"/>
         <source>已有训练在进行中, 请先停止!</source>
         <translation>Đang có huấn luyện chạy, hãy dừng trước!</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1187"/>
+        <location filename="../app/train/dialogs.py" line="1191"/>
         <source>开始训练: 任务类型={} 训练集={} 验证集={}</source>
         <translation>Bắt đầu huấn luyện: loại tác vụ={} tập huấn luyện={} tập xác thực={}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1203"/>
+        <location filename="../app/train/dialogs.py" line="1207"/>
         <source>开始训练: 字符检测分两段入队 | {} | {}</source>
         <translation>Bắt đầu huấn luyện: phát hiện văn bản được xếp hàng đợi thành hai giai đoạn | {} | {}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1242"/>
+        <location filename="../app/train/dialogs.py" line="1246"/>
         <source>队列</source>
         <translation>Hàng đợi</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1243"/>
+        <location filename="../app/train/dialogs.py" line="1247"/>
         <source>已更新该队列任务的参数</source>
         <translation>Đã cập nhật tham số của tác vụ trong hàng đợi</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1249"/>
+        <location filename="../app/train/dialogs.py" line="1253"/>
         <source>加入队列失败</source>
         <translation>Thêm vào hàng đợi thất bại</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1252"/>
+        <location filename="../app/train/dialogs.py" line="1256"/>
         <source>加入训练队列: {} | {}</source>
         <translation>Thêm vào hàng đợi huấn luyện: {} | {}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1257"/>
+        <location filename="../app/train/dialogs.py" line="1261"/>
         <source>已加入队列(第 {} 个), 可在首页&quot;队列&quot;中查看或启动.</source>
         <translation>Đã thêm vào hàng đợi (vị trí {}), có thể xem hoặc khởi động trong &quot;Hàng đợi&quot; ở trang chủ.</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1270"/>
+        <location filename="../app/train/dialogs.py" line="1274"/>
         <source>字符检测已拆成检测段与识别段, 分别排在第 {} 和第 {} 个</source>
         <translation>Phát hiện văn bản đã được tách thành giai đoạn phát hiện và giai đoạn nhận dạng, xếp ở vị trí thứ {} và thứ {}</translation>
     </message>
@@ -4936,6 +4931,11 @@ Vui lòng cài đặt lại phần mềm rồi thử lại</translation>
         <location filename="../app/mixins/train_mixin.py" line="211"/>
         <source>更新训练指标: record={} 已完成epoch={} {}={} 类别数={}</source>
         <translation>Cập nhật chỉ số huấn luyện: record={} epoch đã xong={} {}={} số lớp={}</translation>
+    </message>
+    <message>
+        <location filename="../app/mixins/train_mixin.py" line="309"/>
+        <source>等待显存释放 · 下一项:{}</source>
+        <translation>Đang chờ giải phóng bộ nhớ GPU · mục tiếp:{}</translation>
     </message>
     <message>
         <location filename="../app/mixins/train_mixin.py" line="187"/>

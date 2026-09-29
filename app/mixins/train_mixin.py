@@ -283,7 +283,7 @@ class TrainMixin(object):
         write_log(QC.translate("TrainMixin", "已保存模型记录: {} | {}").format(
             rec.get("model_path", ""), rec.get("dataset_info", "")))
 
-    def _show_train_task(self, task_name, value=0):
+    def _show_train_task(self, task_name, value=0, stoppable=True):
         """训练开始时显示: 任务名 + 进度条 + 剩余时间 + 显存"""
         self.task_name_label.setText(task_name)
         self.train_progress.setValue(max(0, min(100, int(value))))
@@ -291,7 +291,7 @@ class TrainMixin(object):
         self.train_progress.show()
         # 停止按钮的 show/hide 必须与 _hide_train_task 对称且都在这一处:
         # 每个 epoch 的进度回调都会走到这里
-        self.stop_train_btn.show()
+        self.stop_train_btn.setVisible(stoppable)
         self.time_count_label.show()
         self.time_count_edit.show()
         self.gpu_memory_label.show()
@@ -301,6 +301,14 @@ class TrainMixin(object):
             self._gpu_timer.start()
         if not self._eta_timer.isActive():
             self._eta_timer.start()
+
+    def _show_train_waiting(self, name):
+        self._best_map50 = None          # 上一段的最好值不带到下一项
+        self._apply_progress_format()
+        # 冷却期没有训练进程, 挂个停止按钮只会点了没反应
+        self._show_train_task(
+            QC.translate("TrainMixin", "等待显存释放 · 下一项:{}").format(name), 0,
+            stoppable=False)
 
     def _apply_progress_format(self):
         """进度条文本:`30% | 0.556` 进度 | 当前最好精度 """

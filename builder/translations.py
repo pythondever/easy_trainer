@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
-"""界面翻译: 抽条目 -> 更新 i18n/*.ts -> 编译出 .qm. 改过界面文案后跑一次:
-
+"""
+界面翻译: 抽条目 -> 更新 i18n/*.ts -> 编译出 .qm. 改过界面文案后跑一次:
     python builder/translations.py
-
 译文在 .ts 里改, 本脚本只做抽取与编译; 产物 i18n/<lang>.qm 由 build.py 随发行包发布.
 """
 import os

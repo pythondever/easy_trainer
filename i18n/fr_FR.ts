@@ -807,7 +807,7 @@ Confirmer la suppression ?</translation>
     </message>
     <message>
         <location filename="../ui/app.ui" line="434"/>
-        <location filename="../app/mixins/queue_mixin.py" line="334"/>
+        <location filename="../app/mixins/queue_mixin.py" line="368"/>
         <source>队列</source>
         <translation>File d&apos;attente</translation>
     </message>
@@ -1690,42 +1690,37 @@ Toutes ses annotations seront supprimées et ne pourront pas être récupérées
         <translation>Métriques d&apos;entraînement</translation>
     </message>
     <message>
-        <location filename="../app/widgets/metrics_dialog.py" line="61"/>
+        <location filename="../app/widgets/metrics_dialog.py" line="62"/>
         <source>标签筛选</source>
         <translation>Filtre d&apos;étiquettes</translation>
     </message>
     <message>
-        <location filename="../app/widgets/metrics_dialog.py" line="65"/>
+        <location filename="../app/widgets/metrics_dialog.py" line="66"/>
         <source>全部指标</source>
         <translation>Toutes les métriques</translation>
     </message>
     <message>
-        <location filename="../app/widgets/metrics_dialog.py" line="66"/>
+        <location filename="../app/widgets/metrics_dialog.py" line="67"/>
         <source>全部标签-P</source>
         <translation>Toutes les étiquettes - P</translation>
     </message>
     <message>
-        <location filename="../app/widgets/metrics_dialog.py" line="67"/>
+        <location filename="../app/widgets/metrics_dialog.py" line="68"/>
         <source>全部标签-R</source>
         <translation>Toutes les étiquettes - R</translation>
     </message>
     <message>
-        <location filename="../app/widgets/metrics_dialog.py" line="80"/>
-        <source>(暂无标签数据,需完成首次 epoch 验证后才会出现)</source>
-        <translation>(Aucune donnée d&apos;étiquette ; apparaît après la validation de la première époque)</translation>
-    </message>
-    <message>
-        <location filename="../app/widgets/metrics_dialog.py" line="105"/>
+        <location filename="../app/widgets/metrics_dialog.py" line="104"/>
         <source>暂无该标签的指标数据(训练完成后可查看)</source>
         <translation>Aucune donnée de métrique pour cette étiquette (disponible une fois l&apos;entraînement terminé)</translation>
     </message>
     <message>
-        <location filename="../app/widgets/metrics_dialog.py" line="148"/>
+        <location filename="../app/widgets/metrics_dialog.py" line="152"/>
         <source>loss 值</source>
         <translation>Valeur de perte</translation>
     </message>
     <message>
-        <location filename="../app/widgets/metrics_dialog.py" line="149"/>
+        <location filename="../app/widgets/metrics_dialog.py" line="153"/>
         <source>指标值 (mAP/P/R)</source>
         <translation>Métrique (mAP/P/R)</translation>
     </message>
@@ -3134,67 +3129,67 @@ Le jeu de données source sera vidé.</translation>
 <context>
     <name>QueueMixin</name>
     <message>
-        <location filename="../app/mixins/queue_mixin.py" line="92"/>
+        <location filename="../app/mixins/queue_mixin.py" line="97"/>
         <source>训练队列已启动</source>
         <translation>File d&apos;attente d&apos;entraînement démarrée</translation>
     </message>
     <message>
-        <location filename="../app/mixins/queue_mixin.py" line="100"/>
+        <location filename="../app/mixins/queue_mixin.py" line="107"/>
         <source>[队列] 已停止</source>
         <translation>[队列] Arrêté</translation>
     </message>
     <message>
-        <location filename="../app/mixins/queue_mixin.py" line="188"/>
+        <location filename="../app/mixins/queue_mixin.py" line="195"/>
         <source>[队列] 所有任务已执行完毕</source>
         <translation>[队列] Toutes les tâches sont terminées</translation>
     </message>
     <message>
-        <location filename="../app/mixins/queue_mixin.py" line="196"/>
+        <location filename="../app/mixins/queue_mixin.py" line="203"/>
         <source>[队列] 跳过任务 {}: {}</source>
         <translation>[队列] Tâche ignorée {} : {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/queue_mixin.py" line="197"/>
+        <location filename="../app/mixins/queue_mixin.py" line="204"/>
         <source>队列任务启动失败 {}: {}</source>
         <translation>Échec du démarrage de la tâche de la file d&apos;attente {} : {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/queue_mixin.py" line="217"/>
+        <location filename="../app/mixins/queue_mixin.py" line="224"/>
         <source>[队列] 缺少权重 {}, 该项训练会失败</source>
         <translation>[队列] Poids manquants {} ; cet entraînement échouera</translation>
     </message>
     <message>
-        <location filename="../app/mixins/queue_mixin.py" line="220"/>
+        <location filename="../app/mixins/queue_mixin.py" line="227"/>
         <source>[队列] 缺少权重 {}, 该项训练时会自行下载</source>
         <translation>[队列] Poids manquants {} ; ils seront téléchargés pendant l&apos;entraînement</translation>
     </message>
     <message>
-        <location filename="../app/mixins/queue_mixin.py" line="230"/>
+        <location filename="../app/mixins/queue_mixin.py" line="240"/>
         <source>已有训练在进行中</source>
         <translation>Un entraînement est déjà en cours</translation>
     </message>
     <message>
-        <location filename="../app/mixins/queue_mixin.py" line="235"/>
+        <location filename="../app/mixins/queue_mixin.py" line="245"/>
         <source>[队列] 开始队列第 {}/{} 项: {}</source>
         <translation>[队列] Démarrage de l&apos;élément {}/{} de la file d&apos;attente : {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/queue_mixin.py" line="239"/>
+        <location filename="../app/mixins/queue_mixin.py" line="249"/>
         <source>队列启动任务: {} record={}</source>
         <translation>File d&apos;attente, lancement de la tâche : {} record={}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/queue_mixin.py" line="277"/>
+        <location filename="../app/mixins/queue_mixin.py" line="287"/>
         <source>训练未完成, 详见日志</source>
         <translation>Entraînement non terminé, voir le journal</translation>
     </message>
     <message>
-        <location filename="../app/mixins/queue_mixin.py" line="304"/>
+        <location filename="../app/mixins/queue_mixin.py" line="321"/>
         <source>[队列] 显存等待超时, 仍继续启动下一个任务</source>
         <translation>[队列] Délai d&apos;attente de la VRAM dépassé, lancement de la tâche suivante malgré tout</translation>
     </message>
     <message>
-        <location filename="../app/mixins/queue_mixin.py" line="333"/>
+        <location filename="../app/mixins/queue_mixin.py" line="367"/>
         <source>队列 {}</source>
         <translation>File d&apos;attente {}</translation>
     </message>
@@ -4568,19 +4563,19 @@ Le rapport pèse environ 120 Ko par image ; réduire cette valeur diminue nettem
     </message>
     <message>
         <location filename="../ui/train.ui" line="778"/>
-        <location filename="../app/train/dialogs.py" line="1217"/>
-        <location filename="../app/train/dialogs.py" line="1226"/>
-        <location filename="../app/train/dialogs.py" line="1237"/>
-        <location filename="../app/train/dialogs.py" line="1256"/>
-        <location filename="../app/train/dialogs.py" line="1269"/>
+        <location filename="../app/train/dialogs.py" line="1221"/>
+        <location filename="../app/train/dialogs.py" line="1230"/>
+        <location filename="../app/train/dialogs.py" line="1241"/>
+        <location filename="../app/train/dialogs.py" line="1260"/>
+        <location filename="../app/train/dialogs.py" line="1273"/>
         <source>加入队列</source>
         <translation>Ajouter à la file d&apos;attente</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="791"/>
-        <location filename="../app/train/dialogs.py" line="1148"/>
-        <location filename="../app/train/dialogs.py" line="1158"/>
-        <location filename="../app/train/dialogs.py" line="1184"/>
+        <location filename="../app/train/dialogs.py" line="1152"/>
+        <location filename="../app/train/dialogs.py" line="1162"/>
+        <location filename="../app/train/dialogs.py" line="1188"/>
         <source>开始训练</source>
         <translation>Démarrer l&apos;entraînement</translation>
     </message>
@@ -4601,7 +4596,7 @@ Le rapport pèse environ 120 Ko par image ; réduire cette valeur diminue nettem
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="183"/>
-        <location filename="../app/train/dialogs.py" line="1227"/>
+        <location filename="../app/train/dialogs.py" line="1231"/>
         <source>请先选择输出路径</source>
         <translation>Sélectionnez d&apos;abord un chemin de sortie</translation>
     </message>
@@ -4613,7 +4608,7 @@ Le rapport pèse environ 120 Ko par image ; réduire cette valeur diminue nettem
     <message>
         <location filename="../app/train/dialogs.py" line="199"/>
         <location filename="../app/train/dialogs.py" line="204"/>
-        <location filename="../app/train/dialogs.py" line="1112"/>
+        <location filename="../app/train/dialogs.py" line="1116"/>
         <source>未知</source>
         <translation>Inconnu</translation>
     </message>
@@ -4669,7 +4664,7 @@ Le rapport pèse environ 120 Ko par image ; réduire cette valeur diminue nettem
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="211"/>
-        <location filename="../app/train/dialogs.py" line="1121"/>
+        <location filename="../app/train/dialogs.py" line="1125"/>
         <source>数据集&quot;{}/{}&quot;没有文本标注, 无法训练{}</source>
         <translation>Le jeu de données &quot;{}/{}&quot; n&apos;a pas d&apos;annotations de texte ; impossible d&apos;entraîner {}</translation>
     </message>
@@ -4734,128 +4729,128 @@ Le rapport pèse environ 120 Ko par image ; réduire cette valeur diminue nettem
         <translation>Les algorithmes à banque de mémoire extraient seulement des caractéristiques pour construire la banque de mémoire ; il n&apos;y a pas d&apos;époques d&apos;entraînement</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1013"/>
+        <location filename="../app/train/dialogs.py" line="1017"/>
         <source>仅建库</source>
         <translation>Construction seule</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1073"/>
+        <location filename="../app/train/dialogs.py" line="1077"/>
         <source>请至少选择一个数据集</source>
         <translation>Sélectionnez au moins un jeu de données</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1077"/>
-        <location filename="../app/train/dialogs.py" line="1087"/>
+        <location filename="../app/train/dialogs.py" line="1081"/>
+        <location filename="../app/train/dialogs.py" line="1091"/>
         <source>&quot;{}&quot;不能为空</source>
         <translation>« {} » ne peut pas être vide</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1082"/>
+        <location filename="../app/train/dialogs.py" line="1086"/>
         <source>&quot;{}&quot;必须是整数(当前: {})</source>
         <translation>« {} » doit être un entier (actuel : {})</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1092"/>
+        <location filename="../app/train/dialogs.py" line="1096"/>
         <source>&quot;{}&quot;必须是数字(当前: {})</source>
         <translation>« {} » doit être un nombre (actuel : {})</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1101"/>
+        <location filename="../app/train/dialogs.py" line="1105"/>
         <source>图像尺寸需为 {} 的倍数(当前 {}), 可改为 {}</source>
         <translation>La taille d&apos;image doit être un multiple de {} (actuelle {}) ; essayez {}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1111"/>
+        <location filename="../app/train/dialogs.py" line="1115"/>
         <source>数据集&quot;{}/{}&quot;不是按分类导入的数据集(标签格式={}),无法训练{}</source>
         <translation>Le jeu de données « {}/{} » n&apos;a pas été importé comme jeu de classification (format des étiquettes={}) ; impossible d&apos;entraîner {}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1116"/>
+        <location filename="../app/train/dialogs.py" line="1120"/>
         <source>数据集&quot;{}/{}&quot;是分类数据集,无法训练{}任务</source>
         <translation>Le jeu de données « {}/{} » est un jeu de classification ; impossible d&apos;entraîner une tâche de {}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1128"/>
+        <location filename="../app/train/dialogs.py" line="1132"/>
         <source>选择输出目录</source>
         <translation>Sélectionner le dossier de sortie</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1142"/>
+        <location filename="../app/train/dialogs.py" line="1146"/>
         <source>当前安装缺少 CNN 架构所需的组件, 无法训练.
 请重新安装软件后再试</source>
         <translation>Cette installation ne contient pas les composants requis par l&apos;architecture CNN, entraînement impossible.
 Veuillez réinstaller le logiciel</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1149"/>
+        <location filename="../app/train/dialogs.py" line="1153"/>
         <source>当前已有训练在进行中, 请先停止!</source>
         <translation>Un entraînement est déjà en cours, arrêtez-le d&apos;abord !</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1153"/>
+        <location filename="../app/train/dialogs.py" line="1157"/>
         <source>参数校验未通过: {}</source>
         <translation>Validation des paramètres échouée : {}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1154"/>
-        <location filename="../app/train/dialogs.py" line="1213"/>
+        <location filename="../app/train/dialogs.py" line="1158"/>
+        <location filename="../app/train/dialogs.py" line="1217"/>
         <source>参数校验</source>
         <translation>Validation des paramètres</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1174"/>
+        <location filename="../app/train/dialogs.py" line="1178"/>
         <source>训练启动失败: {}
 {}</source>
         <translation>Échec du démarrage de l&apos;entraînement : {}
 {}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1177"/>
+        <location filename="../app/train/dialogs.py" line="1181"/>
         <source>训练启动失败</source>
         <translation>Échec du démarrage de l&apos;entraînement</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1185"/>
+        <location filename="../app/train/dialogs.py" line="1189"/>
         <source>已有训练在进行中, 请先停止!</source>
         <translation>Un entraînement est déjà en cours, arrêtez-le d&apos;abord !</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1187"/>
+        <location filename="../app/train/dialogs.py" line="1191"/>
         <source>开始训练: 任务类型={} 训练集={} 验证集={}</source>
         <translation>Début de l&apos;entraînement : type de tâche={} jeu d&apos;entraînement={} jeu de validation={}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1203"/>
+        <location filename="../app/train/dialogs.py" line="1207"/>
         <source>开始训练: 字符检测分两段入队 | {} | {}</source>
         <translation>Démarrage de l&apos;entraînement : détection de texte mise en file en deux étapes | {} | {}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1242"/>
+        <location filename="../app/train/dialogs.py" line="1246"/>
         <source>队列</source>
         <translation>File d&apos;attente</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1243"/>
+        <location filename="../app/train/dialogs.py" line="1247"/>
         <source>已更新该队列任务的参数</source>
         <translation>Paramètres de la tâche de la file d&apos;attente mis à jour</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1249"/>
+        <location filename="../app/train/dialogs.py" line="1253"/>
         <source>加入队列失败</source>
         <translation>Échec de l&apos;ajout à la file d&apos;attente</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1252"/>
+        <location filename="../app/train/dialogs.py" line="1256"/>
         <source>加入训练队列: {} | {}</source>
         <translation>Ajout à la file d&apos;attente d&apos;entraînement : {} | {}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1257"/>
+        <location filename="../app/train/dialogs.py" line="1261"/>
         <source>已加入队列(第 {} 个), 可在首页&quot;队列&quot;中查看或启动.</source>
         <translation>Ajouté à la file d&apos;attente (position {}) ; consultez-le ou lancez-le depuis « File d&apos;attente » sur la page d&apos;accueil.</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1270"/>
+        <location filename="../app/train/dialogs.py" line="1274"/>
         <source>字符检测已拆成检测段与识别段, 分别排在第 {} 和第 {} 个</source>
         <translation>Détection de texte divisée en étape de détection et étape de reconnaissance, respectivement aux rangs {} et {}</translation>
     </message>
@@ -4936,6 +4931,11 @@ Attendez un instant avant de lancer la tâche suivante.</translation>
         <location filename="../app/mixins/train_mixin.py" line="211"/>
         <source>更新训练指标: record={} 已完成epoch={} {}={} 类别数={}</source>
         <translation>Mise à jour des métriques d&apos;entraînement : record={} epoch terminés={} {}={} nombre de classes={}</translation>
+    </message>
+    <message>
+        <location filename="../app/mixins/train_mixin.py" line="309"/>
+        <source>等待显存释放 · 下一项:{}</source>
+        <translation>Attente libération VRAM · suivant : {}</translation>
     </message>
     <message>
         <location filename="../app/mixins/train_mixin.py" line="187"/>

@@ -7,7 +7,7 @@ from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel,
-                               QComboBox)
+                               QComboBox, QSizePolicy, QSpacerItem)
 
 from app.core.db import load_train_metrics
 from app.core.utils import setup_matplotlib_chinese
@@ -51,6 +51,7 @@ class MetricsDialog(QDialog):
         self._body = QVBoxLayout(self)
         self._body.setContentsMargins(12, 12, 12, 12)
         self._combo_filters = []
+        self._spacer = None
         self._build_toolbar()
         self._chart = None
         self._rebuild_chart()
@@ -75,11 +76,6 @@ class MetricsDialog(QDialog):
         style_combo(self._combo, self._combo_filters, self)
         self._combo.currentTextChanged.connect(lambda _: self._rebuild_chart())
         row.addWidget(self._combo)
-        # 无 per_class
-        if not self._per_class and not self._labels:
-            self._hint = QLabel(self.tr("(暂无标签数据,需完成首次 epoch 验证后才会出现)"))
-            self._hint.setStyleSheet(_muted_style(12))
-            row.addWidget(self._hint)
         self._body.addLayout(row)
 
     def _rebuild_chart(self):
@@ -87,6 +83,9 @@ class MetricsDialog(QDialog):
             self._body.removeWidget(self._chart)
             self._chart.deleteLater()
             self._chart = None
+        if self._spacer is not None:
+            self._body.removeItem(self._spacer)
+            self._spacer = None
         sel = self._combo.currentText()
         if sel == self._all_text:
             epochs, series = self._epochs, self._series
@@ -107,6 +106,11 @@ class MetricsDialog(QDialog):
             tip.setAlignment(Qt.AlignCenter)
             self._chart = tip
             self._body.addWidget(tip)
+            # 没有底部伸展空隙时, QBoxLayout 把多余竖向空间摊进条目间隙,
+            # 空态下工具行和提示会被撑得满屏散开
+            self._spacer = QSpacerItem(1, 1, QSizePolicy.Minimum,
+                                       QSizePolicy.Expanding)
+            self._body.addSpacerItem(self._spacer)
             return
         self._chart = self._build_chart(epochs, series)
         self._body.addWidget(self._chart)
