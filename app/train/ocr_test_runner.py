@@ -200,7 +200,9 @@ def _write_json(img_path, iw, ih, boxes, texts):
         x1, y1, x2, y2 = b
         pts = [[x1, y1], [x2, y1], [x2, y2], [x1, y2]]
         shapes.append((TEXT_LABEL, pts, texts[i] if i < len(texts) else ""))
-    data = shapes_to_labelme_json(shapes, img_path, iw, ih)
+    # 标志位是重载时把数据集认成 OCR 的唯一依据: 这些 json 没经过标注工具,
+    # 走不到 annotation_io 那条置位路径
+    data = shapes_to_labelme_json(shapes, img_path, iw, ih, ocr=True)
     data["imageData"] = None
     out = os.path.splitext(img_path)[0] + ".json"
     with open(out, "w", encoding="utf-8") as f:

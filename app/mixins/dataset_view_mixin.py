@@ -7,9 +7,9 @@ from app.widgets.paginator import Paginator
 from app.core.constants import (PAGE_SIZE, THUMB_CACHE_MAX,
                                 ROI_CACHE_MAX)
 from app.mixins.label_mixin import UNLABELED_KEY
-from app.core.label_utils import (TEXT_LABEL, normalize_label,
-                                  label_sort_key, rec_is_labeled,
-                                  same_dir_json)
+from app.core.label_utils import (OCR_JSON_FLAG, TEXT_LABEL,
+                                  normalize_label, label_sort_key,
+                                  rec_is_labeled, same_dir_json)
 from app.core.image_utils import pil_to_qimage, make_uniform_thumb
 from app.annotation.scene_items import SelectablePixmapItem
 from app.tasks.import_task import ImportTask
@@ -529,6 +529,10 @@ class DatasetViewMixin(object):
                         rec["boxes"] = boxes if boxes else None
                         rec["rois_by_idx"] = {}
                         rec["_has_annotation_json"] = True
+                        # 标志位只置不清: 数据集类型也一样只置不清, 标注工具
+                        # 里删掉文本框不该让已经认定的 OCR 数据集退化
+                        rec["_ocr_json"] = (bool(rec.get("_ocr_json"))
+                                            or bool(data.get(OCR_JSON_FLAG)))
                     except Exception:
                         pass
                 elif rec.get("_has_annotation_json"):
@@ -558,6 +562,24 @@ class DatasetViewMixin(object):
         }
         self._sync_labels_to_db(project_name, dataset_name, index["labels"])
         self._sync_db_labels_from_cache(project_name, dataset_name)
+        self._sync_ocr_dataset_type(project_name, dataset_name, index)
+
+    def _sync_ocr_dataset_type(self, project_name, dataset_name, index):
+        """
+        扫到带 OCR 标志位的 json 就把数据集标成 ocr.
+        推理写出的文本标注没有经过标注工具, 不会走 annotation_io 那条置位路径,
+        不在这里补的话训练页会按"没有文本标注"把数据集挡下来.
+        """
+        if not any(r.get("_ocr_json") for r in index.get("all", [])):
+            return
+        if str((self.db.get_dataset_import(project_name, dataset_name) or {})
+               .get("dataset_type", "") or "") == "ocr":
+            return
+        self.db.set_dataset_type(project_name, dataset_name, "ocr")
+        self._log(QC.translate(
+            "DatasetViewMixin",
+            "数据集 {}/{} 含 OCR 文本标注, 已标为字符检测数据集").format(
+                project_name, dataset_name))
 
     def _clear_scene(self):
         scene = self.graphics_view.scene()

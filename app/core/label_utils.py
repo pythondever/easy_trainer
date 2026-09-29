@@ -8,6 +8,10 @@ from app.core.constants import IMAGE_EXTS
 # 跟随语言的话同一次标注在换语言后会被读成两类, 按它过滤训练集也会漏.
 TEXT_LABEL = "文本"
 
+# labelme json 顶层的 OCR 标志位. 推理写出的文本标注靠它跟普通检测/分割
+# 区分: 重载扫到就给数据集打上 ocr 类型, 否则训练页认不出这是文本数据集.
+OCR_JSON_FLAG = "ocr"
+
 
 def normalize_label(name):
     s = str(name).strip()
@@ -25,7 +29,7 @@ def label_sort_key(name):
 
 
 def load_json_shapes_checked(json_path):
-    """读 labelme json → (shapes, 是否 labelme 文件).
+    """读 labelme json → (shapes, 是否 labelme 文件, 是否带 OCR 标志).
 
     "这张图标过没有"要同时知道 shapes 是否为空和这个 json 是不是标注文件,
     而 load_json_shapes 与 looks_like_labelme 各自读一遍同一个文件. 合到
@@ -36,9 +40,9 @@ def load_json_shapes_checked(json_path):
         with open(json_path, "r", encoding="utf-8") as f:
             data = json.load(f)
     except Exception:
-        return [], False
+        return [], False, False
     if not isinstance(data, dict) or not isinstance(data.get("shapes"), list):
-        return [], False
+        return [], False, False
     try:
         shapes = []
         for shape in data.get("shapes", []):
@@ -49,8 +53,8 @@ def load_json_shapes_checked(json_path):
                            [[float(p[0]), float(p[1])] for p in pts],
                            str(shape.get("text") or "")))
     except Exception:
-        return [], True
-    return shapes, True
+        return [], True, False
+    return shapes, True, bool(data.get(OCR_JSON_FLAG))
 
 
 def load_json_shapes(json_path):
@@ -202,7 +206,7 @@ def image_has_label(image_path, label_dirs, fmt):
     """
     same = os.path.splitext(image_path)[0] + ".json"
     if os.path.isfile(same):
-        shapes, is_labelme = load_json_shapes_checked(same)
+        shapes, is_labelme, _ocr = load_json_shapes_checked(same)
         if is_labelme:
             return bool(shapes)
     if not fmt or fmt == "cls":
@@ -291,11 +295,11 @@ def shapes_to_yolo_text(shapes, iw, ih, label_to_id, as_polygon=False):
     return "\n".join(lines) + ("\n" if lines else "")
 
 
-def shapes_to_labelme_json(shapes, img_path, iw, ih):
+def shapes_to_labelme_json(shapes, img_path, iw, ih, ocr=False):
     """[(label, points, text)] → labelme json dict, 多边形保留 polygon 形态.
 
     文字只在有内容时写: 普通检测/分割的导出 json 保持原字段, 不给它们
-    平白多一个空 text.
+    平白多一个空 text. ocr=True 时额外写一个顶层标志位, 见 OCR_JSON_FLAG.
     """
     out = []
     for label, pts, text in shapes:
@@ -309,6 +313,9 @@ def shapes_to_labelme_json(shapes, img_path, iw, ih):
         if text:
             shape["text"] = text
         out.append(shape)
-    return {"version": "5.0.1", "flags": {}, "shapes": out,
-            "imagePath": os.path.basename(img_path),
-            "imageWidth": iw, "imageHeight": ih}
+    doc = {"version": "5.0.1", "flags": {}, "shapes": out,
+          "imagePath": os.path.basename(img_path),
+          "imageWidth": iw, "imageHeight": ih}
+    if ocr:
+        doc[OCR_JSON_FLAG] = True
+    return doc

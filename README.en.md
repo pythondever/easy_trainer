@@ -2,7 +2,7 @@
 
 [**中文**](README.md) | [**English**](README.en.md)
 
-> A local image annotation and deep-learning training tool. Supports the full pipeline for **object detection / image segmentation / image classification**: annotation, training, testing, and model management. All data is stored in a local LMDB — the **annotate → train → evaluate** loop works fully offline.
+> A local image annotation and deep-learning training tool. Supports the full pipeline for **object detection / image segmentation / image classification / OCR / anomaly detection**: annotation, training, testing, and model management. All data is stored in a local LMDB — the **annotate → train → evaluate** loop works fully offline.
 
 ![Home](docs/images/主页.png)
 

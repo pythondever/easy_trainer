@@ -336,6 +336,13 @@ class TestDialog(QDialog):
                 box.setEnabled(False)
                 box.setChecked(False)
                 box.setToolTip(self.tr("字符识别只报告字条识别率, 不输出标注文件"))
+            elif labeled == 0:
+                # 推理模式: 没有真值可比, 写出的标注是这次唯一产物
+                box.setEnabled(False)
+                box.setChecked(True)
+                box.setToolTip(self.tr(
+                    "为每张图写 <同名>.json 到图像目录, 框出文本区域, "
+                    "标注工具可直接打开;该处已有人工标注会被覆盖"))
             else:
                 box.setEnabled(True)
                 box.setChecked(False)
@@ -557,8 +564,9 @@ class TestDialog(QDialog):
             MessageBox.warning(self, self.tr("测试结果"),
                                self.tr("测试未正常完成"))
             return
-        # 异常检测没有框也没有"P", 但同样该弹结果面板
-        if "P" in res or res.get("task") in ("classify", "ad", "ocr_det"):
+        # 异常检测没有框也没有"P", 但同样该弹结果面板. 字符检测有标注时才有
+        # "P": 无标注的推理路线留给它走 else 分支重载, 让写出的 json 回流
+        if "P" in res or res.get("task") in ("classify", "ad"):
             self._fill_label_stats(res)
             TestResultDialog(res, parent=self.app).exec()
         elif res.get("task") == "ocr_rec":

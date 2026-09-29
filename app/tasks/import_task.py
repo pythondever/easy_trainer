@@ -5,7 +5,8 @@ from PySide6.QtCore import QThread, Signal
 from PySide6.QtCore import QCoreApplication as QC
 from app.core.constants import IMAGE_EXTS
 from app.core.image_utils import pil_open
-from app.core.label_utils import (label_file_has_content, load_json_shapes,
+from app.core.label_utils import (label_file_has_content,
+                                  load_json_shapes_checked,
                                   load_yolo_shapes, same_dir_json,
                                   shapes_to_xywh)
 from app.core.log import write_log
@@ -16,8 +17,8 @@ class ImportTask(QThread):
     后台导入线程: 扫描图像目录,可选读取标签(yolo txt / labelme json),
     生成整图缩略图(默认大图模式);ROI 裁剪小图在筛选时懒生成.
     结果以 list 通过 finished_signal 返回:
-    [{"image_path", "label_path", "boxes": [(x,y,w,h,label)]或None, "labels": [...],
-      "thumb": QImage或None, "rois": {label: [QImage]}}]
+    [{"image_path", "label_path", "boxes": [(x,y,w,h,text,label)]或None, "labels": [...],
+      "thumb": QImage或None, "rois": {label: [QImage]}, "_ocr_json": bool}]
     """
     progress_updated = Signal(int)
     finished_signal = Signal(list)
@@ -85,9 +86,10 @@ class ImportTask(QThread):
                     label_path = self._label_of(img_path)
                     from_same = False
                     has_label_file = False
+                    ocr_json = False
                     try:
-                        boxes, labels, from_same, has_label_file = \
-                            self._read_boxes(img_path, label_path)
+                        (boxes, labels, from_same, has_label_file,
+                         ocr_json) = self._read_boxes(img_path, label_path)
                     except Exception:
                         boxes, labels = None, []
                     thumb = None
@@ -100,6 +102,7 @@ class ImportTask(QThread):
                         "rois": {},
                         "_has_annotation_json": from_same,
                         "_has_label_file": has_label_file,
+                        "_ocr_json": ocr_json,
                     })
             except Exception as e:
                 # 整条记录跳过且不留痕的话, 用户不知道哪张图没导进来
@@ -127,9 +130,10 @@ class ImportTask(QThread):
 
     def _read_boxes(self, img_path, label_path=""):
         """
-        读取标签, 返回 (boxes, labels, from_same_json, has_label_file):
+        读取标签, 返回 (boxes, labels, from_same_json, has_label_file, ocr_json):
         boxes = 像素坐标 [(x, y, w, h, text, label)]; labels = 对应类别列表
-        无标签返回 (None, [], False, False).
+        ocr_json = 该 labelme json 带 OCR 标志位(推理写出的文本标注)
+        无标签返回 (None, [], False, False, False).
         has_label_file = 标签文件存在且非空; 图像解码失败时仍可能为 True,
         供"已标注"统计使用(见 label_utils.rec_is_labeled).
         from_same_json 表示取自图像同路径 json, 调用方据此落
@@ -148,25 +152,28 @@ class ImportTask(QThread):
             fmt = self.fmt
             from_same = False
         else:
-            return None, [], False, False
+            return None, [], False, False, False
         if not os.path.exists(label_file):
-            return None, [], False, False
+            return None, [], False, False, False
         boxes = []
         labels = []
+        ocr_json = False
         if fmt == ".txt":
             try:
                 with pil_open(img_path) as im:
                     iw, ih = im.size
             except Exception:
                 return None, [], False, label_file_has_content(
-                    label_file, fmt)
+                    label_file, fmt), False
             # 解析统一走 label_utils, id→名 的映射同时被记进 _seen_ids
             shapes = load_yolo_shapes(label_file, iw, ih, self._id_names,
                                       self._seen_ids)
         else:
-            shapes = load_json_shapes(label_file)
+            shapes, _is_labelme, ocr_json = load_json_shapes_checked(
+                label_file)
         for x, y, w, h, txt, lbl in shapes_to_xywh(shapes):
             boxes.append((x, y, w, h, txt, lbl))
             labels.append(lbl)
         return (boxes, labels, from_same,
-                bool(boxes) or label_file_has_content(label_file, fmt))
+                bool(boxes) or label_file_has_content(label_file, fmt),
+                ocr_json)

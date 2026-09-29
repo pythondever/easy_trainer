@@ -12,10 +12,10 @@ from PySide6.QtWidgets import QMessageBox, QFileDialog
 
 from app.annotation.scene import AnnotationScene
 from app.annotation.box_item import assign_label_color, label_color
-from app.core.label_utils import (TEXT_LABEL, load_json_shapes,
-                                  load_yolo_shapes, normalize_label,
-                                  same_dir_json, shapes_to_boxes,
-                                  shapes_to_labelme_json)
+from app.core.label_utils import (OCR_JSON_FLAG, TEXT_LABEL,
+                                  load_json_shapes, load_yolo_shapes,
+                                  normalize_label, same_dir_json,
+                                  shapes_to_boxes, shapes_to_labelme_json)
 from app.widgets.message_box import MessageBox, ProgressDialog
 from app.core.log import write_log
 
@@ -97,10 +97,12 @@ def _load_import_label(image_path, label_path, fmt, label_ids=None):
     return shapes_to_boxes(load_json_shapes(label_file))
 
 
-def save_labelme(image_path, shapes, width=None, height=None, version="5.0.1"):
+def save_labelme(image_path, shapes, width=None, height=None,
+                 version="5.0.1", ocr=False):
     """
     保存 labelme json 到图像同路径(*.json).
     width/height 可传入已解码的宽高, 避免每次保存重复整图解码(QImage(image_path)).
+    ocr=True 时写一个顶层标志位, 见 label_utils.OCR_JSON_FLAG.
     """
     if width is not None and height is not None:
         w, h = int(width), int(height)
@@ -121,6 +123,8 @@ def save_labelme(image_path, shapes, width=None, height=None, version="5.0.1"):
         "imageHeight": h,
         "imageWidth": w,
     }
+    if ocr:
+        payload[OCR_JSON_FLAG] = True
     with open(json_path, "w", encoding="utf-8") as f:
         json.dump(payload, f, ensure_ascii=False, indent=2)
     return json_path
@@ -600,9 +604,12 @@ class AnnotationIOMixin:
         cur_pix = self.scene.image_item.pixmap()
         img_w = cur_pix.width() if cur_pix is not None else None
         img_h = cur_pix.height() if cur_pix is not None else None
+        is_ocr = any(s.get("label") == TEXT_LABEL for s in shapes)
         if shapes:
-            save_labelme(image_path, shapes, width=img_w, height=img_h)
+            save_labelme(image_path, shapes, width=img_w, height=img_h,
+                         ocr=is_ocr)
         else:
-            save_labelme(image_path, [], width=img_w, height=img_h)
+            save_labelme(image_path, [], width=img_w, height=img_h,
+                         ocr=is_ocr)
         self._modified_paths.add(image_path)
         self._dirty = False

@@ -485,28 +485,28 @@
         <translation>밝기 조절은 다각형에만 적용됩니다</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="320"/>
+        <location filename="../app/annotation/annotation_io.py" line="324"/>
         <source>    类别: {}</source>
         <translation>    클래스: {}</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="348"/>
+        <location filename="../app/annotation/annotation_io.py" line="352"/>
         <source>删除本地文件</source>
         <translation>로컬 파일 삭제</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="349"/>
+        <location filename="../app/annotation/annotation_io.py" line="353"/>
         <source>取消</source>
         <translation>취소</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="351"/>
-        <location filename="../app/annotation/annotation_io.py" line="361"/>
+        <location filename="../app/annotation/annotation_io.py" line="355"/>
+        <location filename="../app/annotation/annotation_io.py" line="365"/>
         <source>删除图像</source>
         <translation>이미지 삭제</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="352"/>
+        <location filename="../app/annotation/annotation_io.py" line="356"/>
         <source>是否删除当前图像?
 
 {}</source>
@@ -515,17 +515,17 @@
 {}</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="356"/>
+        <location filename="../app/annotation/annotation_io.py" line="360"/>
         <source>图像与同名标注文件将从磁盘删除, 不可恢复</source>
         <translation>이미지와 같은 이름의 라벨 파일이 디스크에서 삭제되며 복구할 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="362"/>
+        <location filename="../app/annotation/annotation_io.py" line="366"/>
         <source>无法访问主窗口, 删除失败</source>
         <translation>메인 창에 접근할 수 없어 삭제에 실패했습니다</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="375"/>
+        <location filename="../app/annotation/annotation_io.py" line="379"/>
         <source>(无图像)</source>
         <translation>(이미지 없음)</translation>
     </message>
@@ -584,72 +584,72 @@
         <translation>비우기</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="414"/>
-        <location filename="../app/annotation/annotation_io.py" line="443"/>
-        <location filename="../app/annotation/annotation_io.py" line="448"/>
+        <location filename="../app/annotation/annotation_io.py" line="418"/>
+        <location filename="../app/annotation/annotation_io.py" line="447"/>
+        <location filename="../app/annotation/annotation_io.py" line="452"/>
         <source>导出剪切板</source>
         <translation>클립보드 내보내기</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="415"/>
+        <location filename="../app/annotation/annotation_io.py" line="419"/>
         <source>剪切板是空的, 没有可导出的模板</source>
         <translation>클립보드가 비어 있어 내보낼 템플릿이 없습니다</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="418"/>
+        <location filename="../app/annotation/annotation_io.py" line="422"/>
         <source>选择导出目录</source>
         <translation>내보내기 디렉터리 선택</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="444"/>
+        <location filename="../app/annotation/annotation_io.py" line="448"/>
         <source>导出中断: {}
 (已写出 {} 个)</source>
         <translation>내보내기 중단: {}
 ({}개 작성됨)</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="449"/>
+        <location filename="../app/annotation/annotation_io.py" line="453"/>
         <source>已导出 {} 个模板(png + 同名 json)到:
 {}</source>
         <translation>템플릿 {}개(png + 같은 이름 json)를 다음 위치로 내보냈습니다:
 {}</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="455"/>
+        <location filename="../app/annotation/annotation_io.py" line="459"/>
         <source>选择导入目录</source>
         <translation>가져오기 디렉터리 선택</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="462"/>
         <location filename="../app/annotation/annotation_io.py" line="466"/>
-        <location filename="../app/annotation/annotation_io.py" line="500"/>
+        <location filename="../app/annotation/annotation_io.py" line="470"/>
+        <location filename="../app/annotation/annotation_io.py" line="504"/>
         <source>导入剪切板</source>
         <translation>클립보드 가져오기</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="463"/>
+        <location filename="../app/annotation/annotation_io.py" line="467"/>
         <source>读取目录失败: {}</source>
         <translation>디렉터리를 읽지 못했습니다: {}</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="467"/>
+        <location filename="../app/annotation/annotation_io.py" line="471"/>
         <source>这个目录里没有 png 文件</source>
         <translation>이 디렉터리에 png 파일이 없습니다</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="495"/>
+        <location filename="../app/annotation/annotation_io.py" line="499"/>
         <source>已导入 {} 个模板到剪切板</source>
         <translation>템플릿 {}개를 클립보드로 가져왔습니다</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="497"/>
+        <location filename="../app/annotation/annotation_io.py" line="501"/>
         <source>
 其中 {} 个没有同名 json, 按矩形导入</source>
         <translation>
 그중 {}개는 같은 이름의 json이 없어 사각형으로 가져왔습니다</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="499"/>
+        <location filename="../app/annotation/annotation_io.py" line="503"/>
         <source>
 {} 个文件读不出来, 已跳过</source>
         <translation>
@@ -676,12 +676,12 @@
         <location filename="../app/annotation/annotation_dialog.py" line="748"/>
         <location filename="../app/annotation/annotation_dialog.py" line="755"/>
         <location filename="../app/annotation/annotation_dialog.py" line="764"/>
-        <location filename="../app/annotation/annotation_io.py" line="518"/>
+        <location filename="../app/annotation/annotation_io.py" line="522"/>
         <source>删除标签</source>
         <translation>라벨 삭제</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="519"/>
+        <location filename="../app/annotation/annotation_io.py" line="523"/>
         <source>正在统计标注文件...</source>
         <translation>라벨 파일 집계 중...</translation>
     </message>
@@ -1025,53 +1025,58 @@
         <translation>데이터셋 다시 불러오기: {}/{}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="829"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="579"/>
+        <source>数据集 {}/{} 含 OCR 文本标注, 已标为字符检测数据集</source>
+        <translation>데이터셋 {}/{}에 OCR 텍스트 어노테이션이 있어 텍스트 검출 데이터셋으로 표시했습니다</translation>
+    </message>
+    <message>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="851"/>
         <source>第 {} / {} 页</source>
         <translation>{} / {} 페이지</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="833"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="855"/>
         <source>第 {}/{} 页 · 共 {} 个</source>
         <translation>{}/{} 페이지 · 총 {}개</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="835"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="857"/>
         <source>第 {}/{} 页 · 共 {} 张</source>
         <translation>{}/{} 페이지 · 총 {}장</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="848"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="870"/>
         <source>未选择标签</source>
         <translation>선택된 라벨 없음</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="850"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="872"/>
         <source>暂无数据</source>
         <translation>데이터 없음</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="887"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="909"/>
         <source>开始导入: {}/{} | 图像路径={} | 标签路径={} | 格式={}</source>
         <translation>가져오기 시작: {}/{} | 이미지 경로={} | 라벨 경로={} | 형식={}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="888"/>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="957"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="910"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="979"/>
         <source>(无)</source>
         <translation>(없음)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="952"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="974"/>
         <source>{}: {}个</source>
         <translation>{}: {}개</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="954"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="976"/>
         <source>数据集导入完成: {}/{} | 图像 {} 张, 已标注 {} 张 | 标签({}类): {}</source>
         <translation>데이터셋 가져오기 완료: {}/{} | 이미지 {}장, 라벨링 {}장 | 라벨({}개 클래스): {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="999"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="1021"/>
         <source>数据集 {}/{} 未导入, 右键&quot;导入&quot;选择图像与标签目录</source>
         <translation>데이터셋 {}/{}은(는) 가져오지 않았습니다. 마우스 오른쪽 버튼의 &quot;가져오기&quot;로 이미지와 라벨 디렉터리를 선택하세요</translation>
     </message>
@@ -1414,7 +1419,7 @@
 <context>
     <name>ImportTask</name>
     <message>
-        <location filename="../app/tasks/import_task.py" line="106"/>
+        <location filename="../app/tasks/import_task.py" line="109"/>
         <source>导入跳过 {}: {}</source>
         <translation>가져오기 건너뜀 {}: {}</translation>
     </message>
@@ -2723,89 +2728,89 @@
         <translation>인식 실패: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_test_runner.py" line="272"/>
+        <location filename="../app/train/ocr_test_runner.py" line="274"/>
         <source>明细写入失败: {}</source>
         <translation>상세 쓰기 실패: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_test_runner.py" line="280"/>
+        <location filename="../app/train/ocr_test_runner.py" line="282"/>
         <source>未知的字符检测架构: {}</source>
         <translation>알 수 없는 텍스트 검출 아키텍처: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_test_runner.py" line="294"/>
+        <location filename="../app/train/ocr_test_runner.py" line="296"/>
         <source>已加载配对识别模型: {}</source>
         <translation>페어링된 인식 모델을 불러왔습니다: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_test_runner.py" line="298"/>
+        <location filename="../app/train/ocr_test_runner.py" line="300"/>
         <source>识别模型不可用, 输出的标注只有框没有文字</source>
         <translation>인식 모델을 사용할 수 없습니다. 작성된 어노테이션에는 텍스트 없이 상자만 있습니다</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_test_runner.py" line="304"/>
-        <location filename="../app/train/ocr_test_runner.py" line="423"/>
+        <location filename="../app/train/ocr_test_runner.py" line="306"/>
+        <location filename="../app/train/ocr_test_runner.py" line="425"/>
         <source>没有可用的图像, 请检查数据集</source>
         <translation>사용할 수 있는 이미지가 없습니다. 데이터셋을 확인하세요</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_test_runner.py" line="305"/>
+        <location filename="../app/train/ocr_test_runner.py" line="307"/>
         <source>加载字符检测模型: {}</source>
         <translation>텍스트 검출 모델 불러오기: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_test_runner.py" line="307"/>
-        <location filename="../app/train/ocr_test_runner.py" line="427"/>
+        <location filename="../app/train/ocr_test_runner.py" line="309"/>
+        <location filename="../app/train/ocr_test_runner.py" line="429"/>
         <source>测试图片 {} 张</source>
         <translation>테스트 이미지 {}장</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_test_runner.py" line="340"/>
+        <location filename="../app/train/ocr_test_runner.py" line="342"/>
         <source>预测失败 {}: {}</source>
         <translation>예측 실패 {}: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_test_runner.py" line="370"/>
+        <location filename="../app/train/ocr_test_runner.py" line="372"/>
         <source>输出标注失败 {}: {}</source>
         <translation>어노테이션 출력 실패 {}: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_test_runner.py" line="398"/>
+        <location filename="../app/train/ocr_test_runner.py" line="400"/>
         <source>已写出 {} 张图的文本标注(图像同目录)</source>
         <translation>{}개 이미지의 텍스트 어노테이션을 작성했습니다(이미지와 같은 디렉터리)</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_test_runner.py" line="409"/>
+        <location filename="../app/train/ocr_test_runner.py" line="411"/>
         <source>未知的字符识别架构: {}</source>
         <translation>알 수 없는 텍스트 인식 아키텍처: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_test_runner.py" line="413"/>
+        <location filename="../app/train/ocr_test_runner.py" line="415"/>
         <source>该模型没有词表, 无法识别</source>
         <translation>이 모델에는 어휘가 없어 인식할 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_test_runner.py" line="424"/>
+        <location filename="../app/train/ocr_test_runner.py" line="426"/>
         <source>加载字符识别模型: {} 词表 {} 个字符</source>
         <translation>텍스트 인식 모델 불러오기: {} 어휘 {}자</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_test_runner.py" line="455"/>
+        <location filename="../app/train/ocr_test_runner.py" line="457"/>
         <source>识别失败 {}: {}</source>
         <translation>인식 실패 {}: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_test_runner.py" line="462"/>
+        <location filename="../app/train/ocr_test_runner.py" line="464"/>
         <source>没有取到任何字条: 该数据集没有文本标注, 识别段只能拿标注框裁图来测</source>
         <translation>가져온 잘라낸 텍스트가 없습니다: 이 데이터셋에는 텍스트 어노테이션이 없어, 인식 단계는 어노테이션 상자로 잘라낸 이미지로만 테스트할 수 있습니다</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_test_runner.py" line="468"/>
+        <location filename="../app/train/ocr_test_runner.py" line="470"/>
         <source>WARN {} 张图没有文本标注, 已跳过</source>
         <translation>WARN {}개 이미지에 텍스트 어노테이션이 없어 건너뛰었습니다</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_test_runner.py" line="471"/>
+        <location filename="../app/train/ocr_test_runner.py" line="473"/>
         <source>字条 {} 条, CER={:.4f}, 全对 {} 条</source>
         <translation>잘라낸 텍스트 {}개, CER={:.4f}, 전부 정확 {}개</translation>
     </message>
@@ -2818,72 +2823,72 @@
         <translation>학습 의존성이 없습니다: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="116"/>
+        <location filename="../app/train/ocr_train_runner.py" line="118"/>
         <source>检测模型 {} 权重来源: {}</source>
         <translation>검출 모델 {} 가중치 출처: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="120"/>
+        <location filename="../app/train/ocr_train_runner.py" line="122"/>
         <source>检测模型 {} 构建失败</source>
         <translation>검출 모델 {} 구성 실패</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="135"/>
+        <location filename="../app/train/ocr_train_runner.py" line="138"/>
         <source>识别模型 {} 权重来源: {}</source>
         <translation>인식 모델 {} 가중치 출처: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="139"/>
+        <location filename="../app/train/ocr_train_runner.py" line="142"/>
         <source>识别模型 {} 构建失败</source>
         <translation>인식 모델 {} 구성 실패</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="171"/>
+        <location filename="../app/train/ocr_train_runner.py" line="174"/>
         <source>标注里没有任何文字, 无法训练字符识别</source>
         <translation>어노테이션에 텍스트가 없어 텍스트 인식을 학습할 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="179"/>
+        <location filename="../app/train/ocr_train_runner.py" line="182"/>
         <source>词表 {} 个字符</source>
         <translation>어휘 {}자</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="192"/>
+        <location filename="../app/train/ocr_train_runner.py" line="195"/>
         <source>字符{}训练: model={} device={} epochs={} batch={} lr={}</source>
         <translation>텍스트 {} 학습: model={} device={} epochs={} batch={} lr={}</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="195"/>
+        <location filename="../app/train/ocr_train_runner.py" line="198"/>
         <source>识别</source>
         <translation>인식</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="196"/>
+        <location filename="../app/train/ocr_train_runner.py" line="199"/>
         <source>检测</source>
         <translation>객체 검출</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="199"/>
+        <location filename="../app/train/ocr_train_runner.py" line="202"/>
         <source>训练集没有可用的文本标注</source>
         <translation>학습 세트에 사용할 수 있는 텍스트 어노테이션이 없습니다</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="202"/>
+        <location filename="../app/train/ocr_train_runner.py" line="205"/>
         <source>验证集没有可用的文本标注</source>
         <translation>검증 세트에 사용할 수 있는 텍스트 어노테이션이 없습니다</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="204"/>
+        <location filename="../app/train/ocr_train_runner.py" line="207"/>
         <source>数据集: train={} val={}</source>
         <translation>데이터셋: train={} val={}</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="290"/>
+        <location filename="../app/train/ocr_train_runner.py" line="293"/>
         <source>早停触发: 连续 {} 个 epoch 无提升</source>
         <translation>조기 종료 발동: {} epoch 연속 향상 없음</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="319"/>
+        <location filename="../app/train/ocr_train_runner.py" line="322"/>
         <source>本次训练输出目录(时间戳): {}</source>
         <translation>이번 학습 출력 디렉터리(타임스탬프): {}</translation>
     </message>
@@ -2891,27 +2896,27 @@
 <context>
     <name>OnnxExport</name>
     <message>
-        <location filename="../app/train/onnx_export.py" line="113"/>
+        <location filename="../app/train/onnx_export.py" line="112"/>
         <source>该识别模型没有词表, 无法导出</source>
         <translation>이 인식 모델에는 어휘가 없어 내보낼 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../app/train/onnx_export.py" line="122"/>
+        <location filename="../app/train/onnx_export.py" line="121"/>
         <source>未知的字符模型架构: {}</source>
         <translation>알 수 없는 텍스트 모델 아키텍처: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/onnx_export.py" line="134"/>
+        <location filename="../app/train/onnx_export.py" line="133"/>
         <source>识别</source>
         <translation>인식</translation>
     </message>
     <message>
-        <location filename="../app/train/onnx_export.py" line="135"/>
+        <location filename="../app/train/onnx_export.py" line="134"/>
         <source>检测</source>
         <translation>객체 검출</translation>
     </message>
     <message>
-        <location filename="../app/train/onnx_export.py" line="153"/>
+        <location filename="../app/train/onnx_export.py" line="152"/>
         <source>异常检测不导出 ONNX, 请用模型管理的「导出」生成模型包</source>
         <translation>이상 검출은 ONNX를 내보내지 않습니다. 모델 관리의 「내보내기」로 모델 패키지를 생성하세요</translation>
     </message>
@@ -3452,121 +3457,122 @@
         <translation>텍스트 인식은 잘라낸 텍스트 인식률만 보고하며, 어노테이션 파일은 출력하지 않습니다</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="343"/>
+        <location filename="../app/widgets/test_dialog.py" line="344"/>
+        <location filename="../app/widgets/test_dialog.py" line="350"/>
         <source>为每张图写 &lt;同名&gt;.json 到图像目录, 框出文本区域, 标注工具可直接打开;该处已有人工标注会被覆盖</source>
         <translation>각 이미지마다 &lt;동일한 이름&gt;.json을 이미지 디렉터리에 작성하여 텍스트 영역을 상자로 표시합니다. 어노테이션 도구에서 바로 열 수 있으며, 해당 위치의 기존 수동 어노테이션은 덮어씌워집니다</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="346"/>
+        <location filename="../app/widgets/test_dialog.py" line="353"/>
         <source>把检测到的文本框写成 labelme json, 便于重载复核</source>
         <translation>검출된 텍스트 상자를 labelme json으로 작성하여, 다시 불러온 후 검토하기 쉽게 합니다</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="349"/>
+        <location filename="../app/widgets/test_dialog.py" line="356"/>
         <source>为每张图写 &lt;同名&gt;.json 到图像目录, 标注工具可直接打开;该处已有人工标注会被覆盖</source>
         <translation>이미지마다 &lt;같은 이름&gt;.json을 이미지 디렉터리에 작성해 어노테이션 도구에서 바로 열 수 있습니다. 해당 위치의 기존 수동 라벨은 덮어써집니다</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="366"/>
-        <location filename="../app/widgets/test_dialog.py" line="370"/>
-        <location filename="../app/widgets/test_dialog.py" line="384"/>
-        <location filename="../app/widgets/test_dialog.py" line="390"/>
-        <location filename="../app/widgets/test_dialog.py" line="403"/>
-        <location filename="../app/widgets/test_dialog.py" line="413"/>
-        <location filename="../app/widgets/test_dialog.py" line="419"/>
-        <location filename="../app/widgets/test_dialog.py" line="434"/>
+        <location filename="../app/widgets/test_dialog.py" line="373"/>
+        <location filename="../app/widgets/test_dialog.py" line="377"/>
+        <location filename="../app/widgets/test_dialog.py" line="391"/>
+        <location filename="../app/widgets/test_dialog.py" line="397"/>
+        <location filename="../app/widgets/test_dialog.py" line="410"/>
+        <location filename="../app/widgets/test_dialog.py" line="420"/>
+        <location filename="../app/widgets/test_dialog.py" line="426"/>
+        <location filename="../app/widgets/test_dialog.py" line="441"/>
         <source>测试</source>
         <translation>테스트</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="366"/>
+        <location filename="../app/widgets/test_dialog.py" line="373"/>
         <source>已有测试在进行中</source>
         <translation>이미 테스트가 진행 중입니다</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="370"/>
+        <location filename="../app/widgets/test_dialog.py" line="377"/>
         <source>请至少选择一个数据集</source>
         <translation>데이터셋을 하나 이상 선택하세요</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="385"/>
+        <location filename="../app/widgets/test_dialog.py" line="392"/>
         <source>置信度/iou阈值必须是数字</source>
         <translation>신뢰도/IoU 임계값은 숫자여야 합니다</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="391"/>
+        <location filename="../app/widgets/test_dialog.py" line="398"/>
         <source>模型文件不存在, 请重新选择</source>
         <translation>모델 파일이 없습니다. 다시 선택하세요</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="404"/>
+        <location filename="../app/widgets/test_dialog.py" line="411"/>
         <source>数据集 {}/{} 未导入图像</source>
         <translation>데이터셋 {}/{}에 이미지가 가져와지지 않았습니다</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="414"/>
+        <location filename="../app/widgets/test_dialog.py" line="421"/>
         <source>分类数据集与检测/分割数据集不能同时测试: {}/{}</source>
         <translation>분류 데이터셋과 검출/세그멘테이션 데이터셋은 함께 테스트할 수 없습니다: {}/{}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="420"/>
+        <location filename="../app/widgets/test_dialog.py" line="427"/>
         <source>已标注与未标注的数据集不能同时测试: {}/{}</source>
         <translation>라벨 있는 데이터셋과 미라벨 데이터셋은 함께 테스트할 수 없습니다: {}/{}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="435"/>
+        <location filename="../app/widgets/test_dialog.py" line="442"/>
         <source>字符识别要拿标注框裁字条才能测, 请选择已标注的数据集</source>
         <translation>텍스트 인식은 어노테이션 상자로 잘라낸 텍스트를 만들어야 테스트할 수 있으므로, 어노테이션이 완료된 데이터셋을 선택하세요</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="460"/>
+        <location filename="../app/widgets/test_dialog.py" line="467"/>
         <source>[test] 启动测试 worker: model={} 数据集={} 图像目录={} device={} cfg={}</source>
         <translation>[test] 테스트 worker 시작: model={} 데이터셋={} 이미지 디렉터리={} device={} cfg={}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="465"/>
+        <location filename="../app/widgets/test_dialog.py" line="472"/>
         <source>测试准备中...</source>
         <translation>테스트 준비 중...</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="482"/>
-        <location filename="../app/widgets/test_dialog.py" line="483"/>
+        <location filename="../app/widgets/test_dialog.py" line="489"/>
+        <location filename="../app/widgets/test_dialog.py" line="490"/>
         <source>测试即将开始</source>
         <translation>테스트가 곧 시작됩니다</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="529"/>
+        <location filename="../app/widgets/test_dialog.py" line="536"/>
         <source>测试中 {}/{}</source>
         <translation>테스트 중 {}/{}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="549"/>
+        <location filename="../app/widgets/test_dialog.py" line="556"/>
         <source>[test-dialog] 测试完成, ok={}</source>
         <translation>[test-dialog] 테스트 완료, ok={}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="557"/>
-        <location filename="../app/widgets/test_dialog.py" line="566"/>
+        <location filename="../app/widgets/test_dialog.py" line="564"/>
+        <location filename="../app/widgets/test_dialog.py" line="574"/>
         <source>测试结果</source>
         <translation>테스트 결과</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="558"/>
+        <location filename="../app/widgets/test_dialog.py" line="565"/>
         <source>测试未正常完成</source>
         <translation>테스트가 정상적으로 완료되지 않았습니다</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="567"/>
+        <location filename="../app/widgets/test_dialog.py" line="575"/>
         <source>字条 {} 条 · CER {:.4f} · 全对 {} 条</source>
         <translation>잘라낸 텍스트 {}개 · CER {:.4f} · 전부 정확 {}개</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="574"/>
+        <location filename="../app/widgets/test_dialog.py" line="582"/>
         <source>[test-dialog] 测试失败: {}</source>
         <translation>[test-dialog] 테스트 실패: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="581"/>
+        <location filename="../app/widgets/test_dialog.py" line="589"/>
         <source>测试失败</source>
         <translation>테스트 실패</translation>
     </message>
@@ -4857,92 +4863,92 @@
 <context>
     <name>TrainMixin</name>
     <message>
-        <location filename="../app/mixins/train_mixin.py" line="48"/>
+        <location filename="../app/mixins/train_mixin.py" line="47"/>
         <source>{} 训练中 0/{}</source>
         <translation>{} 학습 중 0/{}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/train_mixin.py" line="87"/>
+        <location filename="../app/mixins/train_mixin.py" line="86"/>
         <source>[train] 训练线程已结束但未返回结果, 按失败收尾</source>
         <translation>[train] 학습 스레드가 종료되었지만 결과가 반환되지 않아 실패로 처리합니다</translation>
     </message>
     <message>
-        <location filename="../app/mixins/train_mixin.py" line="98"/>
+        <location filename="../app/mixins/train_mixin.py" line="97"/>
         <source>仅停止当前</source>
         <translation>현재 작업만 중지</translation>
     </message>
     <message>
-        <location filename="../app/mixins/train_mixin.py" line="99"/>
+        <location filename="../app/mixins/train_mixin.py" line="98"/>
         <source>停止队列</source>
         <translation>대기열 중지</translation>
     </message>
     <message>
-        <location filename="../app/mixins/train_mixin.py" line="101"/>
-        <location filename="../app/mixins/train_mixin.py" line="110"/>
-        <location filename="../app/mixins/train_mixin.py" line="122"/>
+        <location filename="../app/mixins/train_mixin.py" line="100"/>
+        <location filename="../app/mixins/train_mixin.py" line="109"/>
+        <location filename="../app/mixins/train_mixin.py" line="121"/>
         <source>停止训练</source>
         <translation>학습 중지</translation>
     </message>
     <message>
-        <location filename="../app/mixins/train_mixin.py" line="101"/>
+        <location filename="../app/mixins/train_mixin.py" line="100"/>
         <source>当前正在跑训练队列, 要停止到什么范围?</source>
         <translation>현재 학습 대기열이 실행 중입니다. 어디까지 중지할까요?</translation>
     </message>
     <message>
+        <location filename="../app/mixins/train_mixin.py" line="102"/>
         <location filename="../app/mixins/train_mixin.py" line="103"/>
-        <location filename="../app/mixins/train_mixin.py" line="104"/>
         <source>取消</source>
         <translation>취소</translation>
     </message>
     <message>
-        <location filename="../app/mixins/train_mixin.py" line="110"/>
+        <location filename="../app/mixins/train_mixin.py" line="109"/>
         <source>确定要停止当前训练吗?</source>
         <translation>현재 학습을 중지하시겠습니까?</translation>
     </message>
     <message>
-        <location filename="../app/mixins/train_mixin.py" line="118"/>
+        <location filename="../app/mixins/train_mixin.py" line="117"/>
         <source>手动停止训练: {}</source>
         <translation>수동으로 학습 중지: {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/train_mixin.py" line="120"/>
+        <location filename="../app/mixins/train_mixin.py" line="119"/>
         <source>[train] 训练进程 10 秒内未退出, 可能有子进程残留占用显存</source>
         <translation>[train] 학습 프로세스가 10초 내에 종료되지 않았습니다. 하위 프로세스가 남아 VRAM을 점유하고 있을 수 있습니다</translation>
     </message>
     <message>
-        <location filename="../app/mixins/train_mixin.py" line="123"/>
+        <location filename="../app/mixins/train_mixin.py" line="122"/>
         <source>训练进程未能完全退出, 可能仍有子进程占用显存.
 建议稍等片刻再启动下一个任务.</source>
         <translation>학습 프로세스가 완전히 종료되지 않았습니다. 하위 프로세스가 아직 VRAM을 점유하고 있을 수 있습니다.
 잠시 기다린 후 다음 작업을 시작하는 것을 권장합니다.</translation>
     </message>
     <message>
-        <location filename="../app/mixins/train_mixin.py" line="135"/>
+        <location filename="../app/mixins/train_mixin.py" line="134"/>
         <source>{} 训练中 {}/{}</source>
         <translation>{} 학습 중 {}/{}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/train_mixin.py" line="148"/>
+        <location filename="../app/mixins/train_mixin.py" line="147"/>
         <source>进度 | 当前最好 {}</source>
         <translation>진행률 | 현재 최고 {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/train_mixin.py" line="212"/>
+        <location filename="../app/mixins/train_mixin.py" line="211"/>
         <source>更新训练指标: record={} 已完成epoch={} {}={} 类别数={}</source>
         <translation>학습 지표 업데이트: record={} 완료 epoch={} {}={} 클래스 수={}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/train_mixin.py" line="188"/>
+        <location filename="../app/mixins/train_mixin.py" line="187"/>
         <source>训练失败(队列模式, 已跳过弹窗): {}</source>
         <translation>학습 실패(대기열 모드, 팝업 건너뜀): {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/train_mixin.py" line="190"/>
+        <location filename="../app/mixins/train_mixin.py" line="189"/>
         <source>训练失败</source>
         <translation>학습 실패</translation>
     </message>
     <message>
-        <location filename="../app/mixins/train_mixin.py" line="191"/>
+        <location filename="../app/mixins/train_mixin.py" line="190"/>
         <source>训练过程中发生错误, Err:
 
 {}</source>
@@ -4951,7 +4957,7 @@
 {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/train_mixin.py" line="284"/>
+        <location filename="../app/mixins/train_mixin.py" line="283"/>
         <source>已保存模型记录: {} | {}</source>
         <translation>모델 기록 저장됨: {} | {}</translation>
     </message>
@@ -5273,7 +5279,7 @@
 <context>
     <name>TrainWorker</name>
     <message>
-        <location filename="../app/train/train_worker.py" line="485"/>
+        <location filename="../app/train/train_worker.py" line="486"/>
         <source>训练监控异常, 已终止.
 
 {}</source>
@@ -5282,7 +5288,7 @@
 {}</translation>
     </message>
     <message>
-        <location filename="../app/train/train_worker.py" line="494"/>
+        <location filename="../app/train/train_worker.py" line="495"/>
         <source>训练结果文件读取失败: {}
 
 {}</source>
@@ -5291,7 +5297,7 @@
 {}</translation>
     </message>
     <message>
-        <location filename="../app/train/train_worker.py" line="499"/>
+        <location filename="../app/train/train_worker.py" line="500"/>
         <source>训练进程异常退出 (code={})
 
 --- 子进程输出(尾部) ---
