@@ -41,7 +41,7 @@ Single or batch import. For detection/segmentation/OCR choose an image directory
 ### ✏️ Annotation
 - **Rectangle**: drag to draw (label chips stay a constant pixel size while zooming)
 - **Polygon**: freehand tracing + automatic point thinning on close (trace color follows the selected label)
-- **Text**: for OCR — draw a box then type its content (the label is fixed to "文本", kept out of the class list)
+- **Text**: for OCR — draw a box then type its content (the label is fixed to "文本", kept out of the class list). Always annotate text with a **rectangle**: cover slanted text with a horizontal box too — OCR collapses polygons to their horizontal bounding box, so tracing a tight outline gains nothing
 - **Format painter**: select a template region → paint copies anywhere (pixel copy, undoable)
 - **Zoom / pan**: mouse-wheel zoom, Space + drag pan, resize handles, delete, show/hide boxes
 - Shortcuts: A/D for prev/next, Q / Ctrl+Z, etc.

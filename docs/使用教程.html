@@ -184,7 +184,7 @@
 <ul data-page-node-id="mMmzgnonc8prHDJMTLwz20">
   <li data-page-node-id="onxqvYMS0cAyAeWLEb1qrc"><strong data-page-node-id="bAgtEZ0h3cOhMx5QPGaCEC">矩形</strong>：拖拽鼠标画矩形框</li>
   <li data-page-node-id="AefCAJAN0P4QtcB3Sa30jx"><strong data-page-node-id="xC6sGjSNMWFFzsoBB2eIzF">多边形</strong>：依次点击顶点，双击或回车结束（分割任务用）</li>
-  <li><strong>文本</strong>：先打开顶部“文本标注”开关再拖拽画框，松开即弹出输入框录入文字，双击可改（OCR 任务用）</li>
+  <li><strong>文本</strong>：先打开顶部“文本标注”开关再拖拽画框，松开即弹出输入框录入文字，双击可改（OCR 任务用）。文本框一律用<strong>矩形</strong>画，倾斜文字也用水平框盖住即可 —— 多边形的贴合轮廓在训练时会被按水平外接框处理，画了没有额外收益</li>
   <li data-page-node-id="cAZIqZIx91r6GTMMo5r26K"><strong data-page-node-id="sdjJYEm6Ji7OUBexXASKFZ">删除图像</strong>：删除当前这张图</li>
 </ul>
 
@@ -459,8 +459,24 @@
 
 <p>在标注界面打开顶部的<strong>文本标注</strong>开关，类别会自动固定为保留标签“文本”（不必先建标签），
 像画矩形一样框住文字，松开鼠标即弹出输入框录入内容；双击已有的文本框可以随时修改。
+<strong>文本框一律用矩形画</strong>：倾斜的文字也用水平框盖住即可，训练时多边形会被按水平外接框处理，
+描着轮廓画没有额外收益。
 带文本框的 labelme json 在导入时会自动把数据集标成<strong>字符检测数据集</strong>，
 后续只有这类数据集会出现在 OCR 的训练集下拉里。</p>
+
+<figure>
+  <img src="images/ocr标注.png" alt="OCR 文本标注">
+  <figcaption>打开“文本标注”开关后拖框，松开即弹出文字输入框；右侧“标注信息”列出每个文本框的形状、顶点数与面积</figcaption>
+</figure>
+
+<p>标注完成后回到数据集视图，OCR 数据集里每个文本框会<strong>单独裁成一张缩略图</strong>，
+标签条上显示的是框里录入的<strong>文字内容</strong>（超过 3 条折叠成 +N），而不是类别名 ——
+逐张翻过去就能核对内容录得对不对。上方的类别筛选里只有保留标签“文本”一项。</p>
+
+<figure>
+  <img src="images/ocr标注显示.png" alt="OCR 数据集缩略图显示文字内容">
+  <figcaption>OCR 数据集：每个文本框单独成图，标签条显示所录文字内容（超出折叠成 +N）</figcaption>
+</figure>
 
 <h3>8.2 训练</h3>
 
@@ -468,6 +484,11 @@
 识别段固定 32×128，不受这一项影响。点“开始训练”后会<strong>自动拆成两项排队</strong>：
 先字符检测、再字符识别；前一项跑完，等显存回落到开训前的水平再起下一项，
 这期间进度区显示“等待显存释放 · 下一项:字符识别”，中间不会有空白。</p>
+
+<figure>
+  <img src="images/ocr训练.png" alt="OCR 训练参数">
+  <figcaption>OCR 的训练参数（图中标识为“字符检测”段）；型号即档位 nano ~ large，架构一栏由算法自动决定、置灰不可改</figcaption>
+</figure>
 
 <div class="note">
   识别段的词表直接取标注里出现过的字符，所以标注文本要覆盖现场实际会遇到的字符集。
