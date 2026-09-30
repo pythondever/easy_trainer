@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """通用工具函数: 时长格式化, 界面字体选择, 路径与编码, 样式表加载."""
+import locale
 import os
 import sys
 
@@ -30,7 +31,6 @@ _CJK_FONT_FILES = (
 )
 
 # 雅黑没有韩文字形, 日文也只覆盖一部分. 这两个语言得把专用字体排到候选表
-# 最前, 否则第一个命中的永远是雅黑. PIL 不做字形回退, 只能靠这个顺序点字体.
 _LANG_FIRST = {
     "ko_KR": ("Malgun Gothic", "Gulim", "Batang", "Noto Sans KR",
               "Noto Sans CJK KR"),
@@ -119,8 +119,8 @@ def cjk_font_choice(lang=None):
 
 
 def setup_matplotlib_chinese(lang=None):
-    """把界面语言的字体写进全局 rcParams; 幂等(探测结果有缓存, 重复调用无开销).
-
+    """
+    把界面语言的字体写进全局 rcParams; 幂等(探测结果有缓存, 重复调用无开销).
     各图表模块一律从这里取字体, 别自己写 rcParams - 改的都是全局, 后执行的会盖掉
     前面那份, 同一进程里不同图表会用到两套字体(一个正常一个方框).
     """
@@ -152,12 +152,19 @@ def project_root():
         d = parent
 
 
-_TRAIN_TEXT_ENCODINGS = ("utf-8-sig", "utf-8", "gbk")
+_EXTRA_TEXT_ENCODINGS = ("gbk", "cp932", "cp949", "cp1251", "cp1252",
+                         "cp1250", "cp874")
+# 本机码页要排在 gbk 前面: GBK 几乎任何字节串都能解出字符(不抛异常, 也就不会
+# 往下回退), 日/韩/俄文机器的输出先被 gbk 解就成了乱码.
+_TEXT_ENCODINGS = tuple(dict.fromkeys(
+    enc.lower() for enc in ("utf-8-sig", "utf-8",
+                            locale.getpreferredencoding(False))
+    + _EXTRA_TEXT_ENCODINGS if enc))
 
 
 def decode_text_bytes(raw):
     """
-    解码子进程产出的 bytes, 按 utf-8 → gbk 降级.
+    解码子进程产出的 bytes, 按 UTF-8 → 本机 ANSI 码页 → 常见码页降级.
     训练子进程的文本编码由它自己的环境决定, 不能假设是 utf-8: Windows 上当
     stdout 是管道(不是控制台)时 Python 取 ANSI 码页(中文=gbk), 从 PyCharm
     之类注入过 PYTHONIOENCODING 的环境启动才是 utf-8; 而且 C 层库(torch 等)
@@ -166,16 +173,16 @@ def decode_text_bytes(raw):
     """
     if isinstance(raw, str):
         return raw
-    for enc in _TRAIN_TEXT_ENCODINGS:
+    for enc in _TEXT_ENCODINGS:
         try:
             return raw.decode(enc)
-        except UnicodeDecodeError:
+        except (UnicodeDecodeError, LookupError):
             continue
-    return raw.decode("gbk", errors="replace")
+    return raw.decode("utf-8", errors="replace")
 
 
 def read_text_any(path):
-    """读子进程产物文本, 按 utf-8 → gbk 降级, 避免编码不符时整条通道静默失效."""
+    """读子进程产物的文本文件, 编码判定见 decode_text_bytes."""
     with open(path, "rb") as f:
         return decode_text_bytes(f.read())
 

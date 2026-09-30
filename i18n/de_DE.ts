@@ -349,43 +349,43 @@ Bitte die Gutbilder in einen Unterordner mit einem der Namen {} legen oder den D
 <context>
     <name>AddLabelDialog</name>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="168"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="169"/>
         <source>添加标签</source>
         <translation>Label hinzufügen</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="182"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="183"/>
         <source>编辑标签</source>
         <translation>Label bearbeiten</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="214"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="217"/>
         <source>标签名称, 多个用逗号分隔</source>
         <translation>Labelnamen, mehrere durch Komma trennen</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="216"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="219"/>
         <source>导入</source>
         <translation>Importieren</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="223"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="226"/>
         <source>选择数据集...</source>
         <translation>Datensatz wählen...</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="246"/>
-        <location filename="../app/annotation/annotation_dialog.py" line="251"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="249"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="254"/>
         <source>导入标签</source>
         <translation>Labels importieren</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="247"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="250"/>
         <source>请先选择一个数据集</source>
         <translation>Zuerst einen Datensatz auswählen</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="252"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="255"/>
         <source>数据集&quot;{}&quot;还没有标签</source>
         <translation>Datensatz „{}&quot; hat noch keine Labels</translation>
     </message>
@@ -393,94 +393,94 @@ Bitte die Gutbilder in einen Unterordner mit einem der Namen {} legen oder den D
 <context>
     <name>AnnotationDialog</name>
     <message>
-        <location filename="../app/annotation/annotation_canvas.py" line="207"/>
+        <location filename="../app/annotation/annotation_canvas.py" line="208"/>
         <source>复制</source>
         <translation>Kopieren</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_canvas.py" line="209"/>
+        <location filename="../app/annotation/annotation_canvas.py" line="210"/>
         <source>填充</source>
         <translation>Füllen</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_canvas.py" line="219"/>
+        <location filename="../app/annotation/annotation_canvas.py" line="220"/>
         <source>粘贴</source>
         <translation>Einfügen</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="362"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="365"/>
         <source>标注 - {} / {}</source>
         <translation>Annotation - {} / {}</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="380"/>
-        <location filename="../app/annotation/annotation_dialog.py" line="868"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="383"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="877"/>
         <source>矩形</source>
         <translation>Rechteck</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="381"/>
-        <location filename="../app/annotation/annotation_dialog.py" line="874"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="384"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="883"/>
         <source>多边形</source>
         <translation>Polygon</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="390"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="393"/>
         <source>标签列表</source>
         <translation>Label-Liste</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="391"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="394"/>
         <source>标注信息</source>
         <translation>Annotationen</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="395"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="398"/>
         <source>上一张</source>
         <translation>Zurück</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="396"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="399"/>
         <source>下一张</source>
         <translation>Weiter</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="431"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="434"/>
         <source>只在选中的多边形框内生效; A/D 切图或 Ctrl+S 才写盘</source>
         <translation>Wirkt nur im ausgewählten Polygon; gespeichert wird erst bei A/D-Bildwechsel oder Ctrl+S</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="469"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="472"/>
         <source>显示标注</source>
         <translation>Annotationen anzeigen</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="475"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="478"/>
         <source>文本标注</source>
         <translation>Textannotation</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1026"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1035"/>
         <source>转换</source>
         <translation>Umrechnen</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1027"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1036"/>
         <source>设置像素精度, 在像素面积后显示物理面积</source>
         <translation>Pixelmaßstab setzen, um nach der Pixel-Fläche die physische Fläche anzuzeigen</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1031"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1040"/>
         <source>当前像素精度 {}, 点击修改</source>
         <translation>Aktueller Pixelmaßstab {}, zum Ändern klicken</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_canvas.py" line="562"/>
+        <location filename="../app/annotation/annotation_canvas.py" line="563"/>
         <source>先在画布上点选一个多边形</source>
         <translation>Zuerst ein Polygon auf der Zeichenfläche auswählen</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_canvas.py" line="565"/>
+        <location filename="../app/annotation/annotation_canvas.py" line="566"/>
         <source>亮度调节只对多边形有效</source>
         <translation>Helligkeitsanpassung wirkt nur auf Polygone</translation>
     </message>
@@ -530,185 +530,186 @@ Bitte die Gutbilder in einen Unterordner mit einem der Namen {} legen oder den D
         <translation>(kein Bild)</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_canvas.py" line="695"/>
-        <location filename="../app/annotation/annotation_dialog.py" line="819"/>
+        <location filename="../app/annotation/annotation_canvas.py" line="696"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="823"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="829"/>
         <source>添加标签</source>
         <translation>Label hinzufügen</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_canvas.py" line="696"/>
+        <location filename="../app/annotation/annotation_canvas.py" line="697"/>
         <source>请先添加标签(点击&quot;+&quot;)</source>
         <translation>Zuerst ein Label hinzufügen (auf „+&quot; klicken)</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_canvas.py" line="732"/>
+        <location filename="../app/annotation/annotation_canvas.py" line="733"/>
         <source>标注文字</source>
         <translation>Textlabel</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_canvas.py" line="733"/>
+        <location filename="../app/annotation/annotation_canvas.py" line="734"/>
         <source>请输入框内的文字</source>
         <translation>Feldtext eingeben</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_canvas.py" line="843"/>
+        <location filename="../app/annotation/annotation_canvas.py" line="846"/>
         <source>剪切板  {}/{}</source>
         <translation>Zwischenablage  {}/{}</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_canvas.py" line="868"/>
+        <location filename="../app/annotation/annotation_canvas.py" line="871"/>
         <source>第 {} 个模板  {}x{}
 左键选中用于粘贴, 右键 删除/导入/导出/清空</source>
         <translation>Vorlage {}  {}x{}
 Linksklick zum Auswählen fürs Einfügen; Rechtsklick: Löschen / Importieren / Exportieren / Leeren</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_canvas.py" line="900"/>
-        <location filename="../app/annotation/annotation_dialog.py" line="672"/>
+        <location filename="../app/annotation/annotation_canvas.py" line="903"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="676"/>
         <source>删除</source>
         <translation>Löschen</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_canvas.py" line="903"/>
+        <location filename="../app/annotation/annotation_canvas.py" line="906"/>
         <source>导入</source>
         <translation>Importieren</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_canvas.py" line="904"/>
+        <location filename="../app/annotation/annotation_canvas.py" line="907"/>
         <source>导出</source>
         <translation>Exportieren</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_canvas.py" line="906"/>
+        <location filename="../app/annotation/annotation_canvas.py" line="909"/>
         <source>清空</source>
         <translation>Leeren</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="419"/>
-        <location filename="../app/annotation/annotation_io.py" line="448"/>
-        <location filename="../app/annotation/annotation_io.py" line="453"/>
+        <location filename="../app/annotation/annotation_io.py" line="420"/>
+        <location filename="../app/annotation/annotation_io.py" line="449"/>
+        <location filename="../app/annotation/annotation_io.py" line="454"/>
         <source>导出剪切板</source>
         <translation>Zwischenablage exportieren</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="420"/>
+        <location filename="../app/annotation/annotation_io.py" line="421"/>
         <source>剪切板是空的, 没有可导出的模板</source>
         <translation>Die Zwischenablage ist leer; keine Vorlagen zum Exportieren</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="423"/>
+        <location filename="../app/annotation/annotation_io.py" line="424"/>
         <source>选择导出目录</source>
         <translation>Exportordner wählen</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="449"/>
+        <location filename="../app/annotation/annotation_io.py" line="450"/>
         <source>导出中断: {}
 (已写出 {} 个)</source>
         <translation>Export abgebrochen: {}
 ({} geschrieben)</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="454"/>
+        <location filename="../app/annotation/annotation_io.py" line="455"/>
         <source>已导出 {} 个模板(png + 同名 json)到:
 {}</source>
         <translation>{} Vorlage(n) exportiert (png + gleichnamige json) nach:
 {}</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="460"/>
+        <location filename="../app/annotation/annotation_io.py" line="461"/>
         <source>选择导入目录</source>
         <translation>Importordner wählen</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="467"/>
-        <location filename="../app/annotation/annotation_io.py" line="471"/>
-        <location filename="../app/annotation/annotation_io.py" line="505"/>
+        <location filename="../app/annotation/annotation_io.py" line="468"/>
+        <location filename="../app/annotation/annotation_io.py" line="472"/>
+        <location filename="../app/annotation/annotation_io.py" line="506"/>
         <source>导入剪切板</source>
         <translation>Zwischenablage importieren</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="468"/>
+        <location filename="../app/annotation/annotation_io.py" line="469"/>
         <source>读取目录失败: {}</source>
         <translation>Ordner konnte nicht gelesen werden: {}</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="472"/>
+        <location filename="../app/annotation/annotation_io.py" line="473"/>
         <source>这个目录里没有 png 文件</source>
         <translation>In diesem Ordner gibt es keine png-Dateien</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="500"/>
+        <location filename="../app/annotation/annotation_io.py" line="501"/>
         <source>已导入 {} 个模板到剪切板</source>
         <translation>{} Vorlage(n) in die Zwischenablage importiert</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="502"/>
+        <location filename="../app/annotation/annotation_io.py" line="503"/>
         <source>
 其中 {} 个没有同名 json, 按矩形导入</source>
         <translation>
 Davon {} ohne gleichnamige json, als Rechteck importiert</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="504"/>
+        <location filename="../app/annotation/annotation_io.py" line="505"/>
         <source>
 {} 个文件读不出来, 已跳过</source>
         <translation>
 {} Datei(en) nicht lesbar, übersprungen</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="610"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="613"/>
         <source>修改类别</source>
         <translation>Klasse ändern</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="611"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="614"/>
         <source>移动图像文件失败:
 {}</source>
         <translation>Bilddatei konnte nicht verschoben werden:
 {}</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="671"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="675"/>
         <source>编辑</source>
         <translation>Bearbeiten</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="748"/>
-        <location filename="../app/annotation/annotation_dialog.py" line="755"/>
-        <location filename="../app/annotation/annotation_dialog.py" line="764"/>
-        <location filename="../app/annotation/annotation_io.py" line="523"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="752"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="759"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="768"/>
+        <location filename="../app/annotation/annotation_io.py" line="524"/>
         <source>删除标签</source>
         <translation>Label löschen</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="524"/>
+        <location filename="../app/annotation/annotation_io.py" line="525"/>
         <source>正在统计标注文件...</source>
         <translation>Labeldateien werden gezählt...</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="749"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="753"/>
         <source>标签&quot;{}&quot;已有 {} 处标注, 删除后这些标注将被一并删除且不可恢复.
 确定删除吗?</source>
         <translation>Label „{}&quot; hat {} Annotation(en). Beim Löschen werden sie mit entfernt und können nicht wiederhergestellt werden.
 Trotzdem löschen?</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="756"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="760"/>
         <source>确定删除标签&quot;{}&quot;吗?</source>
         <translation>Label „{}&quot; löschen?</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="764"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="768"/>
         <source>正在清理标注文件...</source>
         <translation>Labeldateien werden bereinigt...</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="820"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="824"/>
         <source>标签名称不能为空</source>
         <translation>Labelname darf nicht leer sein</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="875"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="884"/>
         <source>{} 个顶点</source>
         <translation>{} Eckpunkte</translation>
     </message>
@@ -716,17 +717,17 @@ Trotzdem löschen?</translation>
 <context>
     <name>App</name>
     <message>
-        <location filename="../app/main_window.py" line="53"/>
+        <location filename="../app/main_window.py" line="54"/>
         <source>软件启动</source>
         <translation>Software startet</translation>
     </message>
     <message>
-        <location filename="../app/main_window.py" line="56"/>
+        <location filename="../app/main_window.py" line="57"/>
         <source>软件退出</source>
         <translation>Software beendet</translation>
     </message>
     <message>
-        <location filename="../app/main_window.py" line="58"/>
+        <location filename="../app/main_window.py" line="59"/>
         <source>软件退出前停止训练</source>
         <translation>Training vor dem Beenden stoppen</translation>
     </message>
@@ -835,17 +836,17 @@ Trotzdem löschen?</translation>
 <context>
     <name>Charts</name>
     <message>
-        <location filename="../app/widgets/charts.py" line="11"/>
+        <location filename="../app/widgets/charts.py" line="12"/>
         <source>暂无标注</source>
         <translation>Keine Annotationen</translation>
     </message>
     <message>
-        <location filename="../app/widgets/charts.py" line="12"/>
+        <location filename="../app/widgets/charts.py" line="13"/>
         <source>标签</source>
         <translation>Label</translation>
     </message>
     <message>
-        <location filename="../app/widgets/charts.py" line="13"/>
+        <location filename="../app/widgets/charts.py" line="14"/>
         <source>标签数量</source>
         <translation>Labelanzahl</translation>
     </message>
@@ -934,22 +935,22 @@ Trotzdem löschen?</translation>
 <context>
     <name>ColorPickerDialog</name>
     <message>
-        <location filename="../app/annotation/annotation_canvas.py" line="394"/>
+        <location filename="../app/annotation/annotation_canvas.py" line="395"/>
         <source>选择颜色</source>
         <translation>Farbe wählen</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_canvas.py" line="406"/>
+        <location filename="../app/annotation/annotation_canvas.py" line="407"/>
         <source>十六进制:</source>
         <translation>Hex:</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_canvas.py" line="427"/>
+        <location filename="../app/annotation/annotation_canvas.py" line="428"/>
         <source>基本颜色:</source>
         <translation>Grundfarben:</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_canvas.py" line="439"/>
+        <location filename="../app/annotation/annotation_canvas.py" line="440"/>
         <source>自定义 RGB:</source>
         <translation>Eigenes RGB:</translation>
     </message>
@@ -990,93 +991,93 @@ Trotzdem löschen?</translation>
 <context>
     <name>DatasetViewMixin</name>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="260"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="261"/>
         <source>删除全部未标注图像({} 张)</source>
         <translation>Alle nicht annotierten Bilder löschen ({} Bilder)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="266"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="267"/>
         <source>删除所选图像({} 张)</source>
         <translation>Ausgewählte Bilder löschen ({} Bilder)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="362"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="363"/>
         <source>重载跳过: 数据集 {}/{} 无图像目录</source>
         <translation>Neuladen übersprungen: Datensatz {}/{} ohne Bildordner</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="363"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="364"/>
         <source>重载</source>
         <translation>Neu laden</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="364"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="365"/>
         <source>该数据集还没有图像目录, 请先右键&quot;导入&quot;</source>
         <translation>Dieser Datensatz hat noch keinen Bildordner; zuerst per Rechtsklick „Importieren&quot;</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="368"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="369"/>
         <source>重载跳过: 数据集 {}/{} 正在载入</source>
         <translation>Neuladen übersprungen: Datensatz {}/{} wird geladen</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="370"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="371"/>
         <source>重载数据集: {}/{}</source>
         <translation>Datensatz neu laden: {}/{}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="579"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="580"/>
         <source>数据集 {}/{} 含 OCR 文本标注, 已标为字符检测数据集</source>
         <translation>Datensatz {}/{} enthält OCR-Textannotationen, als Textdetektions-Datensatz markiert</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="851"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="852"/>
         <source>第 {} / {} 页</source>
         <translation>Seite {} / {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="855"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="856"/>
         <source>第 {}/{} 页 · 共 {} 个</source>
         <translation>Seite {}/{} · {} Einträge</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="857"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="858"/>
         <source>第 {}/{} 页 · 共 {} 张</source>
         <translation>Seite {}/{} · {} Bilder</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="870"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="871"/>
         <source>未选择标签</source>
         <translation>Keine Labels ausgewählt</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="872"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="873"/>
         <source>暂无数据</source>
         <translation>Keine Daten</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="909"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="910"/>
         <source>开始导入: {}/{} | 图像路径={} | 标签路径={} | 格式={}</source>
         <translation>Import starten: {}/{} | Bildpfad={} | Labelpfad={} | Format={}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="910"/>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="979"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="911"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="980"/>
         <source>(无)</source>
         <translation>(keine)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="974"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="975"/>
         <source>{}: {}个</source>
         <translation>{}: {} Stück</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="976"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="977"/>
         <source>数据集导入完成: {}/{} | 图像 {} 张, 已标注 {} 张 | 标签({}类): {}</source>
         <translation>Datensatzimport abgeschlossen: {}/{} | {} Bilder, {} annotiert | Labels ({} Klassen): {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="1021"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="1022"/>
         <source>数据集 {}/{} 未导入, 右键&quot;导入&quot;选择图像与标签目录</source>
         <translation>Datensatz {}/{} nicht importiert, per Rechtsklick „Importieren&quot; Bild- und Labelordner wählen</translation>
     </message>
@@ -1157,16 +1158,16 @@ Trotzdem löschen?</translation>
 <context>
     <name>DialogButtons</name>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="211"/>
-        <location filename="../app/mixins/import_export_mixin.py" line="277"/>
-        <location filename="../app/mixins/label_mixin.py" line="247"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="214"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="278"/>
+        <location filename="../app/mixins/label_mixin.py" line="248"/>
         <location filename="../app/mixins/misc_mixin.py" line="122"/>
-        <location filename="../app/widgets/dialog_buttons.py" line="109"/>
+        <location filename="../app/widgets/dialog_buttons.py" line="110"/>
         <source>确定</source>
         <translation>OK</translation>
     </message>
     <message>
-        <location filename="../app/widgets/dialog_buttons.py" line="115"/>
+        <location filename="../app/widgets/dialog_buttons.py" line="116"/>
         <source>取消</source>
         <translation>Abbrechen</translation>
     </message>
@@ -1217,206 +1218,206 @@ Trotzdem löschen?</translation>
 <context>
     <name>ImportExportMixin</name>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="58"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="59"/>
         <source>导入数据 - {} / {}</source>
         <translation>Daten importieren - {} / {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="65"/>
-        <location filename="../app/mixins/import_export_mixin.py" line="165"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="66"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="166"/>
         <source>请选择图像文件夹</source>
         <translation>Bildordner wählen</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="141"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="142"/>
         <source>请选择分类根目录(子文件夹名=类别)</source>
         <translation>Klassifizierungs-Wurzelordner wählen (Unterordnername = Klasse)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="154"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="155"/>
         <source>(根目录)</source>
         <translation>(Wurzelordner)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="156"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="157"/>
         <source>所选文件夹下无分类子文件夹或图像</source>
         <translation>Keine Klassen-Unterordner oder Bilder im gewählten Ordner</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="158"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="159"/>
         <source>{}: {}张</source>
         <translation>{}: {} Bilder</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="160"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="161"/>
         <source>检测到 {} 类: {}</source>
         <translation>{} Klassen erkannt: {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="79"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="80"/>
         <source>所选文件夹无图像</source>
         <translation>Keine Bilder im gewählten Ordner</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="82"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="83"/>
         <source>共 {} 张图像, 已标注 {} 张</source>
         <translation>{} Bilder, {} annotiert</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="98"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="99"/>
         <source>(检测到 {} 张 {} 标签, 请切换上方格式为&quot;{}&quot;)</source>
         <translation>({} {} Labels erkannt; oben das Format auf „{}&quot; umstellen)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="102"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="103"/>
         <source>共 {} 张图像, 已标注 0 张 {}</source>
         <translation>{} Bilder, 0 annotiert {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="104"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="105"/>
         <source>共 {} 张图像(标签目录无匹配文件)</source>
         <translation>{} Bilder (keine passenden Dateien im Labelordner)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="171"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="172"/>
         <source>选择文件夹</source>
         <translation>Ordner wählen</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="211"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="212"/>
         <source>分类根目录(子文件夹名=类别)</source>
         <translation>Klassifizierungs-Wurzel (Unterordnername = Klasse)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="211"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="212"/>
         <source>图像路径</source>
         <translation>Bildpfad</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="233"/>
-        <location filename="../app/mixins/import_export_mixin.py" line="236"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="234"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="237"/>
         <source>导入数据</source>
         <translation>Daten importieren</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="233"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="234"/>
         <source>请先选择有效的图像文件夹</source>
         <translation>Zuerst einen gültigen Bildordner wählen</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="236"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="237"/>
         <source>标签路径无效</source>
         <translation>Labelpfad ungültig</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="297"/>
-        <location filename="../app/mixins/import_export_mixin.py" line="302"/>
-        <location filename="../app/mixins/import_export_mixin.py" line="313"/>
-        <location filename="../app/mixins/import_export_mixin.py" line="321"/>
-        <location filename="../app/mixins/import_export_mixin.py" line="338"/>
-        <location filename="../app/mixins/import_export_mixin.py" line="348"/>
-        <location filename="../app/mixins/import_export_mixin.py" line="361"/>
-        <location filename="../app/mixins/import_export_mixin.py" line="370"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="298"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="303"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="314"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="322"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="339"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="349"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="362"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="371"/>
         <source>导出</source>
         <translation>Exportieren</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="297"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="298"/>
         <source>请先在左侧选中要导出的数据集</source>
         <translation>Zuerst links den zu exportierenden Datensatz auswählen</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="310"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="311"/>
         <source>打开</source>
         <translation>Öffnen</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="321"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="322"/>
         <source>请先选择导出保存位置</source>
         <translation>Zuerst den Speicherort für den Export wählen</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="332"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="333"/>
         <source>开始导出: 项目={} | 源路径={} | 保存路径={} | 格式={}</source>
         <translation>Export starten: Projekt={} | Quellpfad={} | Speicherpfad={} | Format={}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="338"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="339"/>
         <source>正在导出项目...</source>
         <translation>Projekt wird exportiert...</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="349"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="350"/>
         <source>项目&quot;{}&quot;导出完成, 共复制 {} 张图像
 位置: {}</source>
         <translation>Projekt „{}&quot; exportiert: {} Bilder kopiert
 Ort: {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="351"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="352"/>
         <source>导出项目完成: {} | {} 张图像 | 标签({}) | 格式={} | → {}</source>
         <translation>Projektexport abgeschlossen: {} | {} Bilder | Labels({}) | Format={} | → {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="357"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="358"/>
         <source>开始导出: 数据集={}/{} | 源路径={} | 保存路径={} | 格式={}</source>
         <translation>Export starten: Datensatz={}/{} | Quellpfad={} | Speicherpfad={} | Format={}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="361"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="362"/>
         <source>正在导出数据集...</source>
         <translation>Datensatz wird exportiert...</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="371"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="372"/>
         <source>数据集&quot;{}&quot;导出完成, 共复制 {} 张图像
 位置: {}</source>
         <translation>Datensatz „{}&quot; exportiert: {} Bilder kopiert
 Ort: {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="374"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="375"/>
         <source>导出数据集完成: {}/{} | {} 张图像 | 标签({}) | 格式={} | → {}</source>
         <translation>Datensatzexport abgeschlossen: {}/{} | {} Bilder | Labels({}) | Format={} | → {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="379"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="380"/>
         <source>导出失败: 项目={} 数据集={} | {}</source>
         <translation>Export fehlgeschlagen: Projekt={} Datensatz={} | {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="380"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="381"/>
         <source>(整个项目)</source>
         <translation>(gesamtes Projekt)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="381"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="382"/>
         <source>导出失败</source>
         <translation>Export fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="384"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="385"/>
         <source>选择导出保存位置</source>
         <translation>Ziel für Export wählen</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="410"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="411"/>
         <source>{} =&gt; 标签:{}</source>
         <translation>{} =&gt; Labels:{}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="411"/>
         <location filename="../app/mixins/import_export_mixin.py" line="412"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="413"/>
         <source>(无)</source>
         <translation>(keine)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="419"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="420"/>
         <source>(无标签)</source>
         <translation>(keine Labels)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/import_export_mixin.py" line="462"/>
+        <location filename="../app/mixins/import_export_mixin.py" line="463"/>
         <source>正在导出: {}</source>
         <translation>Export läuft: {}</translation>
     </message>
@@ -1432,33 +1433,33 @@ Ort: {}</translation>
 <context>
     <name>LabelFilter</name>
     <message>
-        <location filename="../app/widgets/label_filter_popup.py" line="65"/>
-        <location filename="../app/widgets/label_filter_popup.py" line="465"/>
+        <location filename="../app/widgets/label_filter_popup.py" line="66"/>
+        <location filename="../app/widgets/label_filter_popup.py" line="466"/>
         <source>全选</source>
         <translation>Alle auswählen</translation>
     </message>
     <message>
-        <location filename="../app/widgets/label_filter_popup.py" line="479"/>
+        <location filename="../app/widgets/label_filter_popup.py" line="480"/>
         <source>显示全部图像</source>
         <translation>Ungefiltert</translation>
     </message>
     <message>
-        <location filename="../app/widgets/label_filter_popup.py" line="481"/>
+        <location filename="../app/widgets/label_filter_popup.py" line="482"/>
         <source>按所选标签过滤</source>
         <translation>Nach Label gefiltert</translation>
     </message>
     <message>
-        <location filename="../app/widgets/label_filter_popup.py" line="483"/>
+        <location filename="../app/widgets/label_filter_popup.py" line="484"/>
         <source>未选择标签</source>
         <translation>Keine Auswahl</translation>
     </message>
     <message>
-        <location filename="../app/widgets/label_filter_popup.py" line="576"/>
+        <location filename="../app/widgets/label_filter_popup.py" line="577"/>
         <source>收起</source>
         <translation>Einklappen</translation>
     </message>
     <message>
-        <location filename="../app/widgets/label_filter_popup.py" line="577"/>
+        <location filename="../app/widgets/label_filter_popup.py" line="578"/>
         <source>展开全部</source>
         <translation>Alle anzeigen</translation>
     </message>
@@ -1466,62 +1467,63 @@ Ort: {}</translation>
 <context>
     <name>LabelMixin</name>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="103"/>
+        <location filename="../app/mixins/label_mixin.py" line="104"/>
         <source>已选 {} 个</source>
         <translation>{} ausgewählt</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="104"/>
+        <location filename="../app/mixins/label_mixin.py" line="105"/>
         <source>全选</source>
         <translation>Alle auswählen</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="106"/>
-        <location filename="../app/mixins/label_mixin.py" line="123"/>
+        <location filename="../app/mixins/label_mixin.py" line="107"/>
+        <location filename="../app/mixins/label_mixin.py" line="124"/>
         <source>未选择标签</source>
         <translation>Keine Auswahl</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="115"/>
-        <location filename="../app/mixins/label_mixin.py" line="200"/>
+        <location filename="../app/mixins/label_mixin.py" line="116"/>
+        <location filename="../app/mixins/label_mixin.py" line="201"/>
         <source>未标注</source>
         <translation>Nicht annotiert</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="232"/>
-        <location filename="../app/mixins/label_mixin.py" line="237"/>
-        <location filename="../app/mixins/label_mixin.py" line="254"/>
+        <location filename="../app/mixins/label_mixin.py" line="233"/>
+        <location filename="../app/mixins/label_mixin.py" line="238"/>
+        <location filename="../app/mixins/label_mixin.py" line="255"/>
+        <location filename="../app/mixins/label_mixin.py" line="261"/>
         <source>重命名</source>
         <translation>Umbenennen</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="232"/>
-        <location filename="../app/mixins/label_mixin.py" line="485"/>
+        <location filename="../app/mixins/label_mixin.py" line="233"/>
+        <location filename="../app/mixins/label_mixin.py" line="490"/>
         <source>请先在左侧选中一个数据集</source>
         <translation>Zuerst links einen Datensatz auswählen</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="238"/>
+        <location filename="../app/mixins/label_mixin.py" line="239"/>
         <source>请先在筛选下拉框中选择要重命名的标签</source>
         <translation>Zuerst im Filter-Dropdown das umzubenennende Label wählen</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="241"/>
+        <location filename="../app/mixins/label_mixin.py" line="242"/>
         <source>类别修改</source>
         <translation>Klasse ändern</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="254"/>
+        <location filename="../app/mixins/label_mixin.py" line="255"/>
         <source>标签名称不能为空</source>
         <translation>Labelname darf nicht leer sein</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="263"/>
+        <location filename="../app/mixins/label_mixin.py" line="268"/>
         <source>合并标签</source>
         <translation>Labels zusammenführen</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="264"/>
+        <location filename="../app/mixins/label_mixin.py" line="269"/>
         <source>标签&quot;{}&quot;已存在.
 确定把&quot;{}&quot;的所有标注合并到&quot;{}&quot;吗?
 此操作会改写数据集源标签文件, 且不可恢复.</source>
@@ -1530,79 +1532,79 @@ Alle Annotationen von „{}&quot; in „{}&quot; zusammenführen?
 Dies überschreibt die Quell-Labeldateien des Datensatzes und kann nicht rückgängig gemacht werden.</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="319"/>
+        <location filename="../app/mixins/label_mixin.py" line="324"/>
         <source>合并标签: {} → {} ({}/{}) | 启动后台文件合并, 完成后输出统计</source>
         <translation>Labels zusammenführen: {} → {} ({}/{}) | Hintergrund-Zusammenführung gestartet, Statistik folgt nach Abschluss</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="325"/>
+        <location filename="../app/mixins/label_mixin.py" line="330"/>
         <source>重命名标签: {} → {} ({}/{})</source>
         <translation>Label umbenennen: {} → {} ({}/{})</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="397"/>
+        <location filename="../app/mixins/label_mixin.py" line="402"/>
         <source>{}: {}个</source>
         <translation>{}: {} Stück</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="400"/>
+        <location filename="../app/mixins/label_mixin.py" line="405"/>
         <source>删除标签完成: {} | 修改 {} 个标签文件 | 删除后标签统计({}类): {}</source>
         <translation>Label löschen abgeschlossen: {} | {} Labeldateien geändert | Labelstatistik nach dem Löschen ({} Klassen): {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="403"/>
         <location filename="../app/mixins/label_mixin.py" line="408"/>
         <location filename="../app/mixins/label_mixin.py" line="413"/>
+        <location filename="../app/mixins/label_mixin.py" line="418"/>
         <source>(无)</source>
         <translation>(keine)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="405"/>
+        <location filename="../app/mixins/label_mixin.py" line="410"/>
         <source>合并标签: {} → {} | 修改 {} 个标签文件 | 合并后标签统计({}类): {}</source>
         <translation>Labels zusammenführen: {} → {} | {} Labeldateien geändert | Labelstatistik nach dem Zusammenführen ({} Klassen): {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="410"/>
+        <location filename="../app/mixins/label_mixin.py" line="415"/>
         <source>合并标签: {} → {} | 无标签文件被修改 | 合并后标签统计({}类): {}</source>
         <translation>Labels zusammenführen: {} → {} | keine Labeldatei geändert | Labelstatistik nach dem Zusammenführen ({} Klassen): {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="451"/>
+        <location filename="../app/mixins/label_mixin.py" line="456"/>
         <source>重命名标签</source>
         <translation>Labels umbenennen</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="451"/>
+        <location filename="../app/mixins/label_mixin.py" line="456"/>
         <source>正在更新标注文件...</source>
         <translation>Labeldateien werden aktualisiert...</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="485"/>
         <location filename="../app/mixins/label_mixin.py" line="490"/>
-        <location filename="../app/mixins/label_mixin.py" line="494"/>
-        <location filename="../app/mixins/label_mixin.py" line="596"/>
+        <location filename="../app/mixins/label_mixin.py" line="495"/>
+        <location filename="../app/mixins/label_mixin.py" line="499"/>
+        <location filename="../app/mixins/label_mixin.py" line="601"/>
         <source>删除标签</source>
         <translation>Label löschen</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="491"/>
+        <location filename="../app/mixins/label_mixin.py" line="496"/>
         <source>请先在筛选下拉框中选择要删除的标签</source>
         <translation>Zuerst im Filter-Dropdown das zu löschende Label wählen</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="495"/>
+        <location filename="../app/mixins/label_mixin.py" line="500"/>
         <source>确定删除标签&quot;{}&quot;吗?
 该标签的所有标注将被删除, 且不可恢复.</source>
         <translation>Label „{}&quot; löschen?
 Alle seine Annotationen werden gelöscht und können nicht wiederhergestellt werden.</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="529"/>
+        <location filename="../app/mixins/label_mixin.py" line="534"/>
         <source>删除标签: {} ({}/{})</source>
         <translation>Label löschen: {} ({}/{})</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="596"/>
+        <location filename="../app/mixins/label_mixin.py" line="601"/>
         <source>正在清理标注文件...</source>
         <translation>Labeldateien werden bereinigt...</translation>
     </message>
@@ -1629,34 +1631,34 @@ Alle seine Annotationen werden gelöscht und können nicht wiederhergestellt wer
 <context>
     <name>MessageBox</name>
     <message>
-        <location filename="../app/widgets/message_box.py" line="271"/>
-        <location filename="../app/widgets/message_box.py" line="299"/>
+        <location filename="../app/widgets/message_box.py" line="272"/>
+        <location filename="../app/widgets/message_box.py" line="300"/>
         <source>确定</source>
         <translation>OK</translation>
     </message>
     <message>
-        <location filename="../app/widgets/message_box.py" line="95"/>
+        <location filename="../app/widgets/message_box.py" line="96"/>
         <source>详情已复制到剪贴板</source>
         <translation>Details in die Zwischenablage kopiert</translation>
     </message>
     <message>
-        <location filename="../app/widgets/message_box.py" line="264"/>
+        <location filename="../app/widgets/message_box.py" line="265"/>
         <source>关闭</source>
         <translation>Schließen</translation>
     </message>
     <message>
-        <location filename="../app/widgets/message_box.py" line="266"/>
+        <location filename="../app/widgets/message_box.py" line="267"/>
         <source>复制详情</source>
         <translation>Details kopieren</translation>
     </message>
     <message>
-        <location filename="../app/widgets/message_box.py" line="300"/>
-        <location filename="../app/widgets/message_box.py" line="347"/>
+        <location filename="../app/widgets/message_box.py" line="301"/>
+        <location filename="../app/widgets/message_box.py" line="348"/>
         <source>取消</source>
         <translation>Abbrechen</translation>
     </message>
     <message>
-        <location filename="../app/widgets/message_box.py" line="371"/>
+        <location filename="../app/widgets/message_box.py" line="372"/>
         <source>取消中...</source>
         <translation>Wird abgebrochen...</translation>
     </message>
@@ -1697,42 +1699,42 @@ Alle seine Annotationen werden gelöscht und können nicht wiederhergestellt wer
 <context>
     <name>MetricsDialog</name>
     <message>
-        <location filename="../app/widgets/metrics_dialog.py" line="33"/>
+        <location filename="../app/widgets/metrics_dialog.py" line="34"/>
         <source>训练指标</source>
         <translation>Trainingsmetriken</translation>
     </message>
     <message>
-        <location filename="../app/widgets/metrics_dialog.py" line="62"/>
+        <location filename="../app/widgets/metrics_dialog.py" line="63"/>
         <source>标签筛选</source>
         <translation>Labelfilter</translation>
     </message>
     <message>
-        <location filename="../app/widgets/metrics_dialog.py" line="66"/>
+        <location filename="../app/widgets/metrics_dialog.py" line="67"/>
         <source>全部指标</source>
         <translation>Alle Metriken</translation>
     </message>
     <message>
-        <location filename="../app/widgets/metrics_dialog.py" line="67"/>
+        <location filename="../app/widgets/metrics_dialog.py" line="68"/>
         <source>全部标签-P</source>
         <translation>Alle Labels - P</translation>
     </message>
     <message>
-        <location filename="../app/widgets/metrics_dialog.py" line="68"/>
+        <location filename="../app/widgets/metrics_dialog.py" line="69"/>
         <source>全部标签-R</source>
         <translation>Alle Labels - R</translation>
     </message>
     <message>
-        <location filename="../app/widgets/metrics_dialog.py" line="104"/>
+        <location filename="../app/widgets/metrics_dialog.py" line="105"/>
         <source>暂无该标签的指标数据(训练完成后可查看)</source>
         <translation>Noch keine Metrikdaten für dieses Label (nach Abschluss des Trainings verfügbar)</translation>
     </message>
     <message>
-        <location filename="../app/widgets/metrics_dialog.py" line="152"/>
+        <location filename="../app/widgets/metrics_dialog.py" line="153"/>
         <source>loss 值</source>
         <translation>Loss</translation>
     </message>
     <message>
-        <location filename="../app/widgets/metrics_dialog.py" line="153"/>
+        <location filename="../app/widgets/metrics_dialog.py" line="154"/>
         <source>指标值 (mAP/P/R)</source>
         <translation>Metrik (mAP/P/R)</translation>
     </message>
@@ -1903,7 +1905,7 @@ Alle seine Annotationen werden gelöscht und können nicht wiederhergestellt wer
     <name>ModelDialog</name>
     <message>
         <location filename="../ui/model.ui" line="14"/>
-        <location filename="../app/widgets/model_dialog.py" line="195"/>
+        <location filename="../app/widgets/model_dialog.py" line="198"/>
         <source>模型管理</source>
         <translation>Modellverwaltung</translation>
     </message>
@@ -1969,7 +1971,7 @@ Alle seine Annotationen werden gelöscht und können nicht wiederhergestellt wer
     </message>
     <message>
         <location filename="../ui/model.ui" line="135"/>
-        <location filename="../app/widgets/model_dialog.py" line="616"/>
+        <location filename="../app/widgets/model_dialog.py" line="619"/>
         <source>任务</source>
         <translation>Aufgabe</translation>
     </message>
@@ -1980,25 +1982,25 @@ Alle seine Annotationen werden gelöscht und können nicht wiederhergestellt wer
     </message>
     <message>
         <location filename="../ui/model.ui" line="145"/>
-        <location filename="../app/widgets/model_dialog.py" line="620"/>
+        <location filename="../app/widgets/model_dialog.py" line="623"/>
         <source>精度</source>
         <translation>Genauigkeit</translation>
     </message>
     <message>
         <location filename="../ui/model.ui" line="150"/>
-        <location filename="../app/widgets/model_dialog.py" line="631"/>
+        <location filename="../app/widgets/model_dialog.py" line="634"/>
         <source>训练时间</source>
         <translation>Trainiert am</translation>
     </message>
     <message>
         <location filename="../ui/model.ui" line="155"/>
-        <location filename="../app/widgets/model_dialog.py" line="633"/>
+        <location filename="../app/widgets/model_dialog.py" line="636"/>
         <source>耗时</source>
         <translation>Dauer</translation>
     </message>
     <message>
         <location filename="../ui/model.ui" line="160"/>
-        <location filename="../app/widgets/model_dialog.py" line="623"/>
+        <location filename="../app/widgets/model_dialog.py" line="626"/>
         <source>图像尺寸</source>
         <translation>Bildgröße</translation>
     </message>
@@ -2014,7 +2016,7 @@ Alle seine Annotationen werden gelöscht und können nicht wiederhergestellt wer
     </message>
     <message>
         <location filename="../ui/model.ui" line="191"/>
-        <location filename="../app/widgets/model_dialog.py" line="600"/>
+        <location filename="../app/widgets/model_dialog.py" line="603"/>
         <source>选中一行查看详情</source>
         <translation>Eine Zeile auswählen für Details</translation>
     </message>
@@ -2054,132 +2056,132 @@ Alle seine Annotationen werden gelöscht und können nicht wiederhergestellt wer
         <translation>Weiter</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="440"/>
+        <location filename="../app/widgets/model_dialog.py" line="443"/>
         <source>共 {} 条</source>
         <translation>{} Einträge</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="491"/>
+        <location filename="../app/widgets/model_dialog.py" line="494"/>
         <source> 等 {} 类</source>
         <translation> und {} weitere Klassen</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="515"/>
+        <location filename="../app/widgets/model_dialog.py" line="518"/>
         <source>测试</source>
         <translation>Testen</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="520"/>
+        <location filename="../app/widgets/model_dialog.py" line="523"/>
         <source>导出</source>
         <translation>Exportieren</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="525"/>
+        <location filename="../app/widgets/model_dialog.py" line="528"/>
         <source>删除</source>
         <translation>Löschen</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="613"/>
+        <location filename="../app/widgets/model_dialog.py" line="616"/>
         <source>{} × {} 累积</source>
         <translation>{} × {} akkumuliert</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="614"/>
+        <location filename="../app/widgets/model_dialog.py" line="617"/>
         <source>状态</source>
         <translation>Status</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="621"/>
+        <location filename="../app/widgets/model_dialog.py" line="624"/>
         <source>训练集</source>
         <translation>Trainingsset</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="622"/>
+        <location filename="../app/widgets/model_dialog.py" line="625"/>
         <source>验证集</source>
         <translation>Validierungsset</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="624"/>
+        <location filename="../app/widgets/model_dialog.py" line="627"/>
         <source>轮数 / 早停</source>
         <translation>Epochen / Early Stop</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="626"/>
+        <location filename="../app/widgets/model_dialog.py" line="629"/>
         <source>批大小</source>
         <translation>Batch-Größe</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="627"/>
+        <location filename="../app/widgets/model_dialog.py" line="630"/>
         <source>学习率</source>
         <translation>Lernrate</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="628"/>
+        <location filename="../app/widgets/model_dialog.py" line="631"/>
         <source>优化器</source>
         <translation>Optimierer</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="629"/>
+        <location filename="../app/widgets/model_dialog.py" line="632"/>
         <source>设备</source>
         <translation>Gerät</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="630"/>
+        <location filename="../app/widgets/model_dialog.py" line="633"/>
         <source>标签</source>
         <translation>Labels</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="634"/>
+        <location filename="../app/widgets/model_dialog.py" line="637"/>
         <source>模型路径</source>
         <translation>Modellpfad</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="653"/>
+        <location filename="../app/widgets/model_dialog.py" line="656"/>
         <source>失败原因</source>
         <translation>Fehlerursache</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="671"/>
+        <location filename="../app/widgets/model_dialog.py" line="674"/>
         <source>暂无曲线</source>
         <translation>Keine Kurve</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="695"/>
+        <location filename="../app/widgets/model_dialog.py" line="698"/>
         <source>{}  最佳 {:.3f}</source>
         <translation>{}  bestes {:.3f}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="703"/>
-        <location filename="../app/widgets/model_dialog.py" line="714"/>
+        <location filename="../app/widgets/model_dialog.py" line="706"/>
+        <location filename="../app/widgets/model_dialog.py" line="717"/>
         <source>打开目录</source>
         <translation>Ordner öffnen</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="704"/>
+        <location filename="../app/widgets/model_dialog.py" line="707"/>
         <source>模型目录不存在:
 {}</source>
         <translation>Modellordner existiert nicht:
 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="732"/>
+        <location filename="../app/widgets/model_dialog.py" line="735"/>
         <source>[model_dialog] 打开指标失败: {}
 {}</source>
         <translation>[model_dialog] Metriken öffnen fehlgeschlagen: {}
 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="734"/>
+        <location filename="../app/widgets/model_dialog.py" line="737"/>
         <source>查看指标失败</source>
         <translation>Metriken konnten nicht geöffnet werden</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="741"/>
+        <location filename="../app/widgets/model_dialog.py" line="744"/>
         <source>删除模型记录</source>
         <translation>Modelleintrag löschen</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="742"/>
+        <location filename="../app/widgets/model_dialog.py" line="745"/>
         <source>确定删除该条模型记录?
 项目={}
 数据集={}
@@ -2192,228 +2194,228 @@ Startzeit={}
 </translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="746"/>
+        <location filename="../app/widgets/model_dialog.py" line="749"/>
         <source>删除模型记录: 项目={} 数据集={} 任务={} 开始时间={}</source>
         <translation>Modelleintrag löschen: Projekt={} Datensatz={} Aufgabe={} Startzeit={}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="760"/>
+        <location filename="../app/widgets/model_dialog.py" line="763"/>
         <source>删除模型记录失败: {} | {}</source>
         <translation>Modelleintrag löschen fehlgeschlagen: {} | {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="761"/>
+        <location filename="../app/widgets/model_dialog.py" line="764"/>
         <source>[model_dialog] 删除失败: {}
 {}</source>
         <translation>[model_dialog] Löschen fehlgeschlagen: {}
 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="770"/>
+        <location filename="../app/widgets/model_dialog.py" line="773"/>
         <source>[model_dialog] 打开训练失败: {}
 {}</source>
         <translation>[model_dialog] Training öffnen fehlgeschlagen: {}
 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="771"/>
+        <location filename="../app/widgets/model_dialog.py" line="774"/>
         <source>打开训练失败</source>
         <translation>Training konnte nicht geöffnet werden</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="796"/>
+        <location filename="../app/widgets/model_dialog.py" line="799"/>
         <source>[model_dialog] 打开测试失败: {}
 {}</source>
         <translation>[model_dialog] Test öffnen fehlgeschlagen: {}
 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="798"/>
+        <location filename="../app/widgets/model_dialog.py" line="801"/>
         <source>打开测试失败</source>
         <translation>Test konnte nicht geöffnet werden</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="816"/>
-        <location filename="../app/widgets/model_dialog.py" line="834"/>
-        <location filename="../app/widgets/model_dialog.py" line="850"/>
-        <location filename="../app/widgets/model_dialog.py" line="1141"/>
-        <location filename="../app/widgets/model_dialog.py" line="1151"/>
+        <location filename="../app/widgets/model_dialog.py" line="819"/>
+        <location filename="../app/widgets/model_dialog.py" line="837"/>
+        <location filename="../app/widgets/model_dialog.py" line="853"/>
+        <location filename="../app/widgets/model_dialog.py" line="1144"/>
+        <location filename="../app/widgets/model_dialog.py" line="1154"/>
         <source>导出模型</source>
         <translation>Modell exportieren</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="817"/>
+        <location filename="../app/widgets/model_dialog.py" line="820"/>
         <source>模型文件不存在:
 {}</source>
         <translation>Modelldatei existiert nicht:
 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="818"/>
+        <location filename="../app/widgets/model_dialog.py" line="821"/>
         <source>导出模型失败: 模型文件不存在 {}</source>
         <translation>Modellexport fehlgeschlagen: Modelldatei existiert nicht {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="820"/>
+        <location filename="../app/widgets/model_dialog.py" line="823"/>
         <source>选择导出目录</source>
         <translation>Exportordner wählen</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="835"/>
+        <location filename="../app/widgets/model_dialog.py" line="838"/>
         <source>创建目录失败: {}</source>
         <translation>Ordner konnte nicht erstellt werden: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="836"/>
+        <location filename="../app/widgets/model_dialog.py" line="839"/>
         <source>导出模型失败: 创建目录失败 {} | {}</source>
         <translation>Modellexport fehlgeschlagen: Ordner erstellen fehlgeschlagen {} | {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="846"/>
+        <location filename="../app/widgets/model_dialog.py" line="849"/>
         <source>开始导出模型: 项目={} 任务={} 架构={} 尺寸={} | {}</source>
         <translation>Modellexport starten: Projekt={} Aufgabe={} Architektur={} Größe={} | {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="847"/>
-        <location filename="../app/widgets/model_dialog.py" line="1001"/>
+        <location filename="../app/widgets/model_dialog.py" line="850"/>
+        <location filename="../app/widgets/model_dialog.py" line="1004"/>
         <source>未知</source>
         <translation>unbekannt</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="851"/>
+        <location filename="../app/widgets/model_dialog.py" line="854"/>
         <source>正在导出 ONNX...</source>
         <translation>ONNX wird exportiert...</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="872"/>
+        <location filename="../app/widgets/model_dialog.py" line="875"/>
         <source>正在导出模型包...</source>
         <translation>Modellpaket wird exportiert...</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="883"/>
+        <location filename="../app/widgets/model_dialog.py" line="886"/>
         <source>导出模型包完成: 包含 {}</source>
         <translation>Modellpaket exportiert, enthält: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="890"/>
+        <location filename="../app/widgets/model_dialog.py" line="893"/>
         <source>ONNX 导出完成: {} ({:.1f} MB)</source>
         <translation>ONNX-Export abgeschlossen: {} ({:.1f} MB)</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="947"/>
+        <location filename="../app/widgets/model_dialog.py" line="950"/>
         <source>读取词表失败: {}</source>
         <translation>Vokabular-Lesefehler: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="958"/>
+        <location filename="../app/widgets/model_dialog.py" line="961"/>
         <source>生成 vocab.txt 失败: {}</source>
         <translation>vocab.txt erstellen fehlgeschlagen: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="974"/>
+        <location filename="../app/widgets/model_dialog.py" line="977"/>
         <source>生成 label_map.json 失败: {}</source>
         <translation>label_map.json erzeugen fehlgeschlagen: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="980"/>
+        <location filename="../app/widgets/model_dialog.py" line="983"/>
         <source>导出模型报告跳过: 分类任务不出评估报告</source>
         <translation>Modellberichtsexport übersprungen: Klassifizierungsaufgaben erzeugen keinen Auswertungsbericht</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="981"/>
+        <location filename="../app/widgets/model_dialog.py" line="984"/>
         <source>分类任务不生成评估报告</source>
         <translation>Klassifizierungsaufgaben erzeugen keinen Auswertungsbericht</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="985"/>
+        <location filename="../app/widgets/model_dialog.py" line="988"/>
         <source>导出模型报告跳过: 字符识别不出评估报告</source>
         <translation>Bericht übersprungen: Texterkennung ohne Auswertung</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="986"/>
+        <location filename="../app/widgets/model_dialog.py" line="989"/>
         <source>字符识别不生成评估报告</source>
         <translation>Texterkennung ohne Auswertung</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="990"/>
+        <location filename="../app/widgets/model_dialog.py" line="993"/>
         <source>导出模型报告跳过: 未找到验证集</source>
         <translation>Modellberichtsexport übersprungen: kein Validierungsset gefunden</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="991"/>
+        <location filename="../app/widgets/model_dialog.py" line="994"/>
         <source>未找到验证集, 已跳过评估报告</source>
         <translation>Kein Validierungsset gefunden; Auswertungsbericht übersprungen</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="993"/>
-        <location filename="../app/widgets/model_dialog.py" line="1074"/>
+        <location filename="../app/widgets/model_dialog.py" line="996"/>
+        <location filename="../app/widgets/model_dialog.py" line="1077"/>
         <source>正在生成模型报告...</source>
         <translation>Modellbericht wird erstellt...</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="997"/>
+        <location filename="../app/widgets/model_dialog.py" line="1000"/>
         <source>正在生成模型报告 {}/{}</source>
         <translation>Modellbericht wird erstellt {}/{}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1000"/>
+        <location filename="../app/widgets/model_dialog.py" line="1003"/>
         <source>导出模型评估失败: {}</source>
         <translation>Export der Modellauswertung fehlgeschlagen: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1003"/>
+        <location filename="../app/widgets/model_dialog.py" line="1006"/>
         <source>评估失败, 已跳过报告: {}</source>
         <translation>Auswertung fehlgeschlagen; Bericht übersprungen: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1093"/>
+        <location filename="../app/widgets/model_dialog.py" line="1096"/>
         <source>导出模型报告跳过: 验证集没有标注</source>
         <translation>Modellberichtsexport übersprungen: Validierungsset ohne Annotation</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1094"/>
+        <location filename="../app/widgets/model_dialog.py" line="1097"/>
         <source>验证集没有标注, 已跳过评估报告</source>
         <translation>Validierungsset ohne Annotation, Bewertungsbericht übersprungen</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1100"/>
+        <location filename="../app/widgets/model_dialog.py" line="1103"/>
         <source>[export] 生成评估报告失败:
 {}</source>
         <translation>[export] Auswertungsbericht erzeugen fehlgeschlagen:
 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1097"/>
+        <location filename="../app/widgets/model_dialog.py" line="1100"/>
         <source>生成评估报告失败: {}</source>
         <translation>Auswertungsbericht erzeugen fehlgeschlagen: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="932"/>
+        <location filename="../app/widgets/model_dialog.py" line="935"/>
         <source>读取类别表失败: {}</source>
         <translation>Klassenliste lesen fehlgeschlagen: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="933"/>
+        <location filename="../app/widgets/model_dialog.py" line="936"/>
         <source>[export] 读取类别表失败: {}</source>
         <translation>[export] Klassenliste lesen fehlgeschlagen: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1089"/>
+        <location filename="../app/widgets/model_dialog.py" line="1092"/>
         <source>导出模型报告完成: {}</source>
         <translation>Modellberichtsexport abgeschlossen: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1101"/>
+        <location filename="../app/widgets/model_dialog.py" line="1104"/>
         <source>评估完成, 但报告生成失败</source>
         <translation>Auswertung abgeschlossen, aber der Bericht konnte nicht erstellt werden</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1135"/>
+        <location filename="../app/widgets/model_dialog.py" line="1138"/>
         <source>导出模型完成: {} | 包含: {}</source>
         <translation>Modelexport abgeschlossen: {} | Enthält: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1137"/>
+        <location filename="../app/widgets/model_dialog.py" line="1140"/>
         <source>已导出到:
 {}
 
@@ -2424,33 +2426,33 @@ Startzeit={}
 Enthält: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1099"/>
-        <location filename="../app/widgets/model_dialog.py" line="1148"/>
+        <location filename="../app/widgets/model_dialog.py" line="1102"/>
+        <location filename="../app/widgets/model_dialog.py" line="1151"/>
         <source>未知错误</source>
         <translation>Unbekannter Fehler</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1152"/>
+        <location filename="../app/widgets/model_dialog.py" line="1155"/>
         <source>模型导出失败, 详情见日志</source>
         <translation>Modell-Export fehlgeschlagen, Details siehe Protokoll</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1147"/>
+        <location filename="../app/widgets/model_dialog.py" line="1150"/>
         <source>导出模型失败: {}</source>
         <translation>Modelexport fehlgeschlagen: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1149"/>
+        <location filename="../app/widgets/model_dialog.py" line="1152"/>
         <source>[export] ONNX 导出失败: {}</source>
         <translation>[export] ONNX-Export fehlgeschlagen: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1166"/>
+        <location filename="../app/widgets/model_dialog.py" line="1169"/>
         <source>复制导出示例失败: {}</source>
         <translation>Exportbeispiel kopieren fehlgeschlagen: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1167"/>
+        <location filename="../app/widgets/model_dialog.py" line="1170"/>
         <source>[export] 复制示例失败: {}</source>
         <translation>[export] Beispiel kopieren fehlgeschlagen: {}</translation>
     </message>
@@ -2691,7 +2693,7 @@ Trotzdem schließen?</translation>
 <context>
     <name>MultiCombo</name>
     <message>
-        <location filename="../app/widgets/multi_combo.py" line="349"/>
+        <location filename="../app/widgets/multi_combo.py" line="350"/>
         <source>请选择数据集</source>
         <translation>Datensätze wählen</translation>
     </message>
@@ -2720,6 +2722,29 @@ Trotzdem schließen?</translation>
         <location filename="../ui/input_name.ui" line="113"/>
         <source>确定</source>
         <translation>OK</translation>
+    </message>
+</context>
+<context>
+    <name>NameRules</name>
+    <message>
+        <location filename="../app/core/name_rules.py" line="25"/>
+        <source>名称不能为空</source>
+        <translation>Der Name darf nicht leer sein</translation>
+    </message>
+    <message>
+        <location filename="../app/core/name_rules.py" line="27"/>
+        <source>名称过长, 最多 {} 个字符</source>
+        <translation>Der Name ist zu lang, höchstens {} Zeichen</translation>
+    </message>
+    <message>
+        <location filename="../app/core/name_rules.py" line="41"/>
+        <source>名称不能包含「{}」等字符</source>
+        <translation>Der Name darf keine Zeichen wie {} enthalten</translation>
+    </message>
+    <message>
+        <location filename="../app/core/name_rules.py" line="54"/>
+        <source>「{}」是系统保留名称, 请换一个</source>
+        <translation>"{}" ist ein reservierter Name, bitte einen anderen wählen</translation>
     </message>
 </context>
 <context>
@@ -2931,157 +2956,157 @@ Trotzdem schließen?</translation>
 <context>
     <name>ProjectMixin</name>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="18"/>
+        <location filename="../app/mixins/project_mixin.py" line="32"/>
         <source>输入名称</source>
         <translation>Name eingeben</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="19"/>
+        <location filename="../app/mixins/project_mixin.py" line="33"/>
         <source>项目名称</source>
         <translation>Projektname</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="22"/>
-        <location filename="../app/mixins/project_mixin.py" line="26"/>
+        <location filename="../app/mixins/project_mixin.py" line="37"/>
+        <location filename="../app/mixins/project_mixin.py" line="41"/>
         <source>创建项目</source>
         <translation>Projekt erstellen</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="26"/>
-        <location filename="../app/mixins/project_mixin.py" line="38"/>
+        <location filename="../app/mixins/project_mixin.py" line="41"/>
+        <location filename="../app/mixins/project_mixin.py" line="53"/>
         <source>项目名称已存在!</source>
         <translation>Ein Projekt mit diesem Namen existiert bereits!</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="29"/>
+        <location filename="../app/mixins/project_mixin.py" line="44"/>
         <source>创建项目: {}</source>
         <translation>Projekt erstellen: {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="34"/>
-        <location filename="../app/mixins/project_mixin.py" line="38"/>
-        <location filename="../app/mixins/project_mixin.py" line="91"/>
+        <location filename="../app/mixins/project_mixin.py" line="49"/>
+        <location filename="../app/mixins/project_mixin.py" line="53"/>
+        <location filename="../app/mixins/project_mixin.py" line="106"/>
         <source>修改名称</source>
         <translation>Umbenennen</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="41"/>
+        <location filename="../app/mixins/project_mixin.py" line="56"/>
         <source>重命名项目: {} → {}</source>
         <translation>Projekt umbenennen: {} → {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="46"/>
-        <location filename="../app/mixins/project_mixin.py" line="92"/>
+        <location filename="../app/mixins/project_mixin.py" line="61"/>
+        <location filename="../app/mixins/project_mixin.py" line="107"/>
         <source>删除项目</source>
         <translation>Projekt löschen</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="47"/>
+        <location filename="../app/mixins/project_mixin.py" line="62"/>
         <source>确定删除项目&quot;{}&quot;吗?
 </source>
         <translation>Projekt „{}&quot; löschen?
 </translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="48"/>
+        <location filename="../app/mixins/project_mixin.py" line="63"/>
         <source>删除项目: {}</source>
         <translation>Projekt löschen: {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="88"/>
-        <location filename="../app/mixins/project_mixin.py" line="132"/>
-        <location filename="../app/mixins/project_mixin.py" line="140"/>
+        <location filename="../app/mixins/project_mixin.py" line="103"/>
+        <location filename="../app/mixins/project_mixin.py" line="147"/>
+        <location filename="../app/mixins/project_mixin.py" line="156"/>
         <source>添加数据集</source>
         <translation>Datensatz hinzufügen</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="90"/>
+        <location filename="../app/mixins/project_mixin.py" line="105"/>
         <source>导出项目</source>
         <translation>Projekt exportieren</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="107"/>
+        <location filename="../app/mixins/project_mixin.py" line="122"/>
         <source>导入</source>
         <translation>Importieren</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="108"/>
+        <location filename="../app/mixins/project_mixin.py" line="123"/>
         <source>导出</source>
         <translation>Exportieren</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="109"/>
+        <location filename="../app/mixins/project_mixin.py" line="124"/>
         <source>重载</source>
         <translation>Neu laden</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="110"/>
+        <location filename="../app/mixins/project_mixin.py" line="125"/>
         <source>移动</source>
         <translation>Verschieben</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="111"/>
+        <location filename="../app/mixins/project_mixin.py" line="126"/>
         <source>修改</source>
         <translation>Umbenennen</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="112"/>
+        <location filename="../app/mixins/project_mixin.py" line="127"/>
         <source>删除</source>
         <translation>Löschen</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="133"/>
+        <location filename="../app/mixins/project_mixin.py" line="148"/>
         <source>数据集名称</source>
         <translation>Datensatzname</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="140"/>
-        <location filename="../app/mixins/project_mixin.py" line="151"/>
+        <location filename="../app/mixins/project_mixin.py" line="156"/>
+        <location filename="../app/mixins/project_mixin.py" line="167"/>
         <source>该项目下已存在同名数据集!</source>
         <translation>In diesem Projekt existiert bereits ein Datensatz mit diesem Namen!</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="142"/>
+        <location filename="../app/mixins/project_mixin.py" line="158"/>
         <source>创建数据集: {}/{}</source>
         <translation>Datensatz erstellen: {}/{}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="147"/>
-        <location filename="../app/mixins/project_mixin.py" line="151"/>
+        <location filename="../app/mixins/project_mixin.py" line="163"/>
+        <location filename="../app/mixins/project_mixin.py" line="167"/>
         <source>修改数据集</source>
         <translation>Datensatz umbenennen</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="153"/>
+        <location filename="../app/mixins/project_mixin.py" line="169"/>
         <source>重命名数据集: {} → {}</source>
         <translation>Datensatz umbenennen: {} → {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="158"/>
+        <location filename="../app/mixins/project_mixin.py" line="174"/>
         <source>删除数据集</source>
         <translation>Datensatz löschen</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="159"/>
+        <location filename="../app/mixins/project_mixin.py" line="175"/>
         <source>确定删除数据集&quot;{}&quot;吗?
 </source>
         <translation>Datensatz „{}&quot; löschen?
 </translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="163"/>
+        <location filename="../app/mixins/project_mixin.py" line="179"/>
         <source>删除数据集: {}/{}</source>
         <translation>Datensatz löschen: {}/{}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="182"/>
-        <location filename="../app/mixins/project_mixin.py" line="195"/>
-        <location filename="../app/mixins/project_mixin.py" line="212"/>
+        <location filename="../app/mixins/project_mixin.py" line="198"/>
+        <location filename="../app/mixins/project_mixin.py" line="211"/>
+        <location filename="../app/mixins/project_mixin.py" line="228"/>
         <source>移动数据集</source>
         <translation>Datensatz verschieben</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="183"/>
+        <location filename="../app/mixins/project_mixin.py" line="199"/>
         <source>是否将&quot;{}&quot;的数据从
 {} / {} 移动到 {} / {}?
 移动后源数据集将清空.</source>
@@ -3090,42 +3115,42 @@ Trotzdem schließen?</translation>
 Der Quell-Datensatz wird danach geleert.</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="192"/>
+        <location filename="../app/mixins/project_mixin.py" line="208"/>
         <source>移动失败</source>
         <translation>Verschieben fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="196"/>
+        <location filename="../app/mixins/project_mixin.py" line="212"/>
         <source>已从 {} / {} 移动到 {} / {}</source>
         <translation>Von {} / {} nach {} / {} verschoben</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="213"/>
+        <location filename="../app/mixins/project_mixin.py" line="229"/>
         <source>没有可移动到的目标数据集(本项目之外无数据集)</source>
         <translation>Kein Ziel-Datensatz verfügbar (außerhalb dieses Projekts gibt es keine Datensätze)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="217"/>
+        <location filename="../app/mixins/project_mixin.py" line="233"/>
         <source>选择目标数据集</source>
         <translation>Ziel-Datensatz wählen</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="221"/>
+        <location filename="../app/mixins/project_mixin.py" line="237"/>
         <source>选择要将数据移动到的目标数据集:</source>
         <translation>Ziel-Datensatz wählen, in den die Daten verschoben werden:</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="302"/>
+        <location filename="../app/mixins/project_mixin.py" line="318"/>
         <source>{}: {}个</source>
         <translation>{}: {} Stück</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="304"/>
+        <location filename="../app/mixins/project_mixin.py" line="320"/>
         <source>数据集移动: {}/{} → {}/{} | 移动图像 {} 张 | 目标标签统计({}类): {}</source>
         <translation>Datensatz verschieben: {}/{} → {}/{} | {} Bilder verschoben | Labelstatistik im Ziel ({} Klassen): {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="307"/>
+        <location filename="../app/mixins/project_mixin.py" line="323"/>
         <source>(无)</source>
         <translation>(keine)</translation>
     </message>
@@ -3133,7 +3158,7 @@ Der Quell-Datensatz wird danach geleert.</translation>
 <context>
     <name>ProjectSidebar</name>
     <message>
-        <location filename="../app/widgets/project_sidebar.py" line="400"/>
+        <location filename="../app/widgets/project_sidebar.py" line="424"/>
         <source>{} 个项目 · {} 个数据集</source>
         <translation>Projekte {} · Datensätze {}</translation>
     </message>
@@ -3209,48 +3234,48 @@ Der Quell-Datensatz wird danach geleert.</translation>
 <context>
     <name>StatusText</name>
     <message>
-        <location filename="../app/widgets/status_style.py" line="16"/>
+        <location filename="../app/widgets/status_style.py" line="18"/>
         <source>等待中</source>
         <translation>Wartet</translation>
     </message>
     <message>
-        <location filename="../app/widgets/status_style.py" line="17"/>
-        <location filename="../app/widgets/status_style.py" line="24"/>
+        <location filename="../app/widgets/status_style.py" line="19"/>
+        <location filename="../app/widgets/status_style.py" line="26"/>
         <source>训练中</source>
         <translation>Training</translation>
     </message>
     <message>
-        <location filename="../app/widgets/status_style.py" line="18"/>
-        <location filename="../app/widgets/status_style.py" line="25"/>
+        <location filename="../app/widgets/status_style.py" line="20"/>
+        <location filename="../app/widgets/status_style.py" line="27"/>
         <source>已完成</source>
         <translation>Abgeschlossen</translation>
     </message>
     <message>
-        <location filename="../app/widgets/status_style.py" line="19"/>
-        <location filename="../app/widgets/status_style.py" line="26"/>
+        <location filename="../app/widgets/status_style.py" line="21"/>
+        <location filename="../app/widgets/status_style.py" line="28"/>
         <source>失败</source>
         <translation>Fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="../app/widgets/status_style.py" line="20"/>
-        <location filename="../app/widgets/status_style.py" line="29"/>
+        <location filename="../app/widgets/status_style.py" line="22"/>
+        <location filename="../app/widgets/status_style.py" line="31"/>
         <source>已跳过</source>
         <translation>Übersprungen</translation>
     </message>
     <message>
-        <location filename="../app/widgets/status_style.py" line="21"/>
-        <location filename="../app/widgets/status_style.py" line="27"/>
+        <location filename="../app/widgets/status_style.py" line="23"/>
+        <location filename="../app/widgets/status_style.py" line="29"/>
         <source>已停止</source>
         <translation>Gestoppt</translation>
     </message>
     <message>
-        <location filename="../app/widgets/status_style.py" line="22"/>
-        <location filename="../app/widgets/status_style.py" line="30"/>
+        <location filename="../app/widgets/status_style.py" line="24"/>
+        <location filename="../app/widgets/status_style.py" line="32"/>
         <source>已中断</source>
         <translation>Abgebrochen</translation>
     </message>
     <message>
-        <location filename="../app/widgets/status_style.py" line="28"/>
+        <location filename="../app/widgets/status_style.py" line="30"/>
         <source>失败/已停止</source>
         <translation>Fehlgeschlagen/Gestoppt</translation>
     </message>
@@ -3258,33 +3283,33 @@ Der Quell-Datensatz wird danach geleert.</translation>
 <context>
     <name>TaskText</name>
     <message>
-        <location filename="../app/widgets/status_style.py" line="35"/>
+        <location filename="../app/widgets/status_style.py" line="37"/>
         <source>检测</source>
         <translation>Erkennung</translation>
     </message>
     <message>
-        <location filename="../app/widgets/status_style.py" line="36"/>
+        <location filename="../app/widgets/status_style.py" line="38"/>
         <source>分割</source>
         <translation>Segmentierung</translation>
     </message>
     <message>
-        <location filename="../app/widgets/status_style.py" line="37"/>
+        <location filename="../app/widgets/status_style.py" line="39"/>
         <source>分类</source>
         <translation>Klassifizierung</translation>
     </message>
     <message>
-        <location filename="../app/widgets/status_style.py" line="38"/>
+        <location filename="../app/widgets/status_style.py" line="40"/>
         <source>异常检测</source>
         <translation>Anomalieerkennung</translation>
     </message>
     <message>
-        <location filename="../app/widgets/status_style.py" line="39"/>
-        <location filename="../app/widgets/status_style.py" line="40"/>
+        <location filename="../app/widgets/status_style.py" line="41"/>
+        <location filename="../app/widgets/status_style.py" line="42"/>
         <source>字符检测</source>
         <translation>TextDetektion</translation>
     </message>
     <message>
-        <location filename="../app/widgets/status_style.py" line="41"/>
+        <location filename="../app/widgets/status_style.py" line="43"/>
         <source>字符识别</source>
         <translation>Texterkennung</translation>
     </message>
@@ -3963,8 +3988,8 @@ Der Quell-Datensatz wird danach geleert.</translation>
     </message>
     <message>
         <location filename="../ui/test_result.ui" line="138"/>
-        <location filename="../app/train/test_result_dialog.py" line="239"/>
-        <location filename="../app/train/test_result_dialog.py" line="274"/>
+        <location filename="../app/train/test_result_dialog.py" line="240"/>
+        <location filename="../app/train/test_result_dialog.py" line="275"/>
         <source>测试张数</source>
         <translation>Getestete Bilder</translation>
     </message>
@@ -3980,7 +4005,7 @@ Der Quell-Datensatz wird danach geleert.</translation>
     </message>
     <message>
         <location filename="../ui/test_result.ui" line="306"/>
-        <location filename="../app/train/test_result_dialog.py" line="208"/>
+        <location filename="../app/train/test_result_dialog.py" line="209"/>
         <source>有误检图像</source>
         <translation>Bilder mit Fehlalarm</translation>
     </message>
@@ -3997,22 +4022,22 @@ Der Quell-Datensatz wird danach geleert.</translation>
     <message>
         <location filename="../ui/test_result.ui" line="430"/>
         <location filename="../ui/test_result.ui" line="639"/>
-        <location filename="../app/train/test_result_dialog.py" line="216"/>
-        <location filename="../app/train/test_result_dialog.py" line="350"/>
+        <location filename="../app/train/test_result_dialog.py" line="217"/>
+        <location filename="../app/train/test_result_dialog.py" line="351"/>
         <source>正确检出</source>
         <translation>Korrekt</translation>
     </message>
     <message>
         <location filename="../ui/test_result.ui" line="486"/>
         <location filename="../ui/test_result.ui" line="644"/>
-        <location filename="../app/train/test_result_dialog.py" line="351"/>
+        <location filename="../app/train/test_result_dialog.py" line="352"/>
         <source>漏检</source>
         <translation>Übersehen</translation>
     </message>
     <message>
         <location filename="../ui/test_result.ui" line="542"/>
         <location filename="../ui/test_result.ui" line="649"/>
-        <location filename="../app/train/test_result_dialog.py" line="351"/>
+        <location filename="../app/train/test_result_dialog.py" line="352"/>
         <source>误检</source>
         <translation>Fehlalarm</translation>
     </message>
@@ -4024,27 +4049,27 @@ Der Quell-Datensatz wird danach geleert.</translation>
     <message>
         <location filename="../ui/test_result.ui" line="598"/>
         <location filename="../ui/test_result.ui" line="659"/>
-        <location filename="../app/train/test_result_dialog.py" line="352"/>
+        <location filename="../app/train/test_result_dialog.py" line="353"/>
         <source>准确率</source>
         <translation>Genauigkeit</translation>
     </message>
     <message>
         <location filename="../ui/test_result.ui" line="629"/>
-        <location filename="../app/train/test_result_dialog.py" line="297"/>
-        <location filename="../app/train/test_result_dialog.py" line="318"/>
-        <location filename="../app/train/test_result_dialog.py" line="350"/>
+        <location filename="../app/train/test_result_dialog.py" line="298"/>
+        <location filename="../app/train/test_result_dialog.py" line="319"/>
+        <location filename="../app/train/test_result_dialog.py" line="351"/>
         <source>类别</source>
         <translation>Klasse</translation>
     </message>
     <message>
         <location filename="../ui/test_result.ui" line="634"/>
-        <location filename="../app/train/test_result_dialog.py" line="350"/>
+        <location filename="../app/train/test_result_dialog.py" line="351"/>
         <source>标注数</source>
         <translation>Rahmen</translation>
     </message>
     <message>
         <location filename="../ui/test_result.ui" line="654"/>
-        <location filename="../app/train/test_result_dialog.py" line="351"/>
+        <location filename="../app/train/test_result_dialog.py" line="352"/>
         <source>检出率</source>
         <translation>Trefferquote</translation>
     </message>
@@ -4072,199 +4097,199 @@ Der Bericht umfasst ca. 120 KB pro Bild; bei vielen Stichproben verkleinert ein 
     </message>
     <message>
         <location filename="../ui/test_result.ui" line="722"/>
-        <location filename="../app/train/test_result_dialog.py" line="144"/>
+        <location filename="../app/train/test_result_dialog.py" line="145"/>
         <source>导出 PDF 报告</source>
         <translation>PDF-Bericht exportieren</translation>
     </message>
     <message>
         <location filename="../ui/test_result.ui" line="729"/>
-        <location filename="../app/train/test_result_dialog.py" line="90"/>
+        <location filename="../app/train/test_result_dialog.py" line="91"/>
         <source>确定</source>
         <translation>OK</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="109"/>
+        <location filename="../app/train/test_result_dialog.py" line="110"/>
         <source>把漏检/误检的图逐张画框导出成 PDF</source>
         <translation>Alle Bilder mit Übersehenem oder Fehlalarm mit Rahmen in ein PDF exportieren</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="112"/>
+        <location filename="../app/train/test_result_dialog.py" line="113"/>
         <source>异常检测的逐图结果已写成 CSV, 不支持导出画框 PDF</source>
         <translation>Die Ergebnisse der Anomalieerkennung pro Bild wurden als CSV geschrieben; der Export als PDF mit Rahmen wird nicht unterstützt</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="114"/>
+        <location filename="../app/train/test_result_dialog.py" line="115"/>
         <source>本次测试没有逐图错误明细, 无法导出</source>
         <translation>Dieser Test enthält keine Fehlerdetails pro Bild; Export nicht möglich</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="126"/>
+        <location filename="../app/train/test_result_dialog.py" line="127"/>
         <source>保存 PDF 报告</source>
         <translation>PDF-Bericht speichern</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="127"/>
+        <location filename="../app/train/test_result_dialog.py" line="128"/>
         <source>PDF 文件 (*.pdf)</source>
         <translation>PDF-Dateien (*.pdf)</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="133"/>
+        <location filename="../app/train/test_result_dialog.py" line="134"/>
         <source>正在生成...</source>
         <translation>Wird erstellt...</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="151"/>
+        <location filename="../app/train/test_result_dialog.py" line="152"/>
         <source>无需导出</source>
         <translation>Nichts zu exportieren</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="152"/>
+        <location filename="../app/train/test_result_dialog.py" line="153"/>
         <source>本次测试没有漏检也没有误检, 没有内容可写.</source>
         <translation>Dieser Test hat weder Übersehenes noch Fehlalarme; nichts zu schreiben.</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="155"/>
+        <location filename="../app/train/test_result_dialog.py" line="156"/>
         <source>导出完成</source>
         <translation>Export abgeschlossen</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="156"/>
+        <location filename="../app/train/test_result_dialog.py" line="157"/>
         <source>PDF 报告已保存到:
 {}</source>
         <translation>PDF-Bericht gespeichert unter:
 {}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="160"/>
+        <location filename="../app/train/test_result_dialog.py" line="161"/>
         <source>导出失败</source>
         <translation>Export fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="195"/>
+        <location filename="../app/train/test_result_dialog.py" line="196"/>
         <source>按&quot;张&quot;统计 · 检出 1 个即算检出</source>
         <translation>Nach Bild · ein erkannter Rahmen zählt als erkannt</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="197"/>
+        <location filename="../app/train/test_result_dialog.py" line="198"/>
         <source> · 有标注 {} 张</source>
         <translation> · {} Bilder mit Labels</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="201"/>
+        <location filename="../app/train/test_result_dialog.py" line="202"/>
         <source>检出图像</source>
         <translation>Erkannte Bilder</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="202"/>
-        <location filename="../app/train/test_result_dialog.py" line="217"/>
+        <location filename="../app/train/test_result_dialog.py" line="203"/>
+        <location filename="../app/train/test_result_dialog.py" line="218"/>
         <source>检出率 </source>
         <translation>Trefferquote </translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="204"/>
+        <location filename="../app/train/test_result_dialog.py" line="205"/>
         <source>未检出图像</source>
         <translation>Nicht erkannte Bilder</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="205"/>
+        <location filename="../app/train/test_result_dialog.py" line="206"/>
         <source>未检出率 </source>
         <translation>Übersehensquote </translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="209"/>
+        <location filename="../app/train/test_result_dialog.py" line="210"/>
         <source>误检率 </source>
         <translation>Fehlalarmquote </translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="214"/>
+        <location filename="../app/train/test_result_dialog.py" line="215"/>
         <source>按&quot;标注框&quot;统计 · 标注总数 {}</source>
         <translation>Nach Rahmen · {} Rahmen insgesamt</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="237"/>
+        <location filename="../app/train/test_result_dialog.py" line="238"/>
         <source>按&quot;张&quot;统计 · 每张图判一个类别</source>
         <translation>Nach Bild · eine Klasse pro Bild</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="242"/>
+        <location filename="../app/train/test_result_dialog.py" line="243"/>
         <source>判断正确</source>
         <translation>Richtig</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="244"/>
+        <location filename="../app/train/test_result_dialog.py" line="245"/>
         <source>判断错误</source>
         <translation>Falsch</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="247"/>
-        <location filename="../app/train/test_result_dialog.py" line="319"/>
+        <location filename="../app/train/test_result_dialog.py" line="248"/>
+        <location filename="../app/train/test_result_dialog.py" line="320"/>
         <source>精度</source>
         <translation>Genauigkeit</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="272"/>
+        <location filename="../app/train/test_result_dialog.py" line="273"/>
         <source>按&quot;张&quot;统计 · 整图判良品/不良品</source>
         <translation>Zählung pro Bild · ganzes Bild als Gutteil/Schlechtteil bewertet</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="286"/>
-        <location filename="../app/train/test_result_dialog.py" line="297"/>
+        <location filename="../app/train/test_result_dialog.py" line="287"/>
+        <location filename="../app/train/test_result_dialog.py" line="298"/>
         <source>检出异常</source>
         <translation>Erkannte Anomalien</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="297"/>
-        <location filename="../app/train/test_result_dialog.py" line="318"/>
+        <location filename="../app/train/test_result_dialog.py" line="298"/>
+        <location filename="../app/train/test_result_dialog.py" line="319"/>
         <source>总图数</source>
         <translation>Bilder gesamt</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="302"/>
+        <location filename="../app/train/test_result_dialog.py" line="303"/>
         <source>异常</source>
         <translation>Anomalie</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="318"/>
+        <location filename="../app/train/test_result_dialog.py" line="319"/>
         <source>正确</source>
         <translation>Richtig</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="319"/>
+        <location filename="../app/train/test_result_dialog.py" line="320"/>
         <source>错误</source>
         <translation>Falsch</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="340"/>
+        <location filename="../app/train/test_result_dialog.py" line="341"/>
         <source>模型里没有判定阈值, 只报告分数, 逐图分数见 CSV 明细.</source>
         <translation>Modell ohne Entscheidungsschwelle, nur Scores; Scores je Bild siehe CSV-Details.</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="341"/>
+        <location filename="../app/train/test_result_dialog.py" line="342"/>
         <source>判定阈值 {:.4f}. 本次 {} 张, 检出异常 {} 张.</source>
         <translation>Entscheidungsschwelle {:.4f}. {} Bilder getestet, {} Anomalien erkannt.</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="254"/>
+        <location filename="../app/train/test_result_dialog.py" line="255"/>
         <source>整体精度 {:.1f}%, &quot;{}&quot;类错误最多({} 张), 是拉低精度的主要原因.</source>
         <translation>Gesamtgenauigkeit {:.1f}%. Klasse „{}&quot; hat die meisten Fehler ({} Bilder) und ist die Hauptursache für die niedrigere Genauigkeit.</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="379"/>
+        <location filename="../app/train/test_result_dialog.py" line="380"/>
         <source>整体漏检偏多(漏检 {} 个, 多于误检 {} 个).&quot;{}&quot;类漏检最多({} 个), 是检出率低的主要原因.</source>
         <translation>Insgesamt überwiegt Übersehenes ({} übersehen gegenüber {} Fehlalarmen). Klasse „{}&quot; hat die meisten übersehenen Objekte ({}) und ist die Hauptursache für die niedrige Trefferquote.</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="385"/>
+        <location filename="../app/train/test_result_dialog.py" line="386"/>
         <source>整体误检偏多(误检 {} 个, 多于漏检 {} 个).&quot;{}&quot;类误检最多({} 个), 是准确率低的主要原因.</source>
         <translation>Insgesamt überwiegen Fehlalarme ({} Fehlalarme gegenüber {} übersehenen). Klasse „{}&quot; hat die meisten Fehlalarme ({}) und ist die Hauptursache für die niedrige Genauigkeit.</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="389"/>
+        <location filename="../app/train/test_result_dialog.py" line="390"/>
         <source>模型表现良好: 无漏检, 无误检.</source>
         <translation>Das Modell ist gut: kein Übersehenes und keine Fehlalarme.</translation>
     </message>
     <message>
-        <location filename="../app/train/test_result_dialog.py" line="391"/>
+        <location filename="../app/train/test_result_dialog.py" line="392"/>
         <source>另有 {} 处位置对但类别判错(报告里用紫框标出),属分类能力不足, 需补易混淆类别的区分性样本.</source>
         <translation>Weitere {} Rahmen sind korrekt positioniert, aber falsch klassifiziert (im Bericht violett markiert). Das deutet auf zu schwache Klassifizierung hin; mehr unterscheidbare Beispiele für leicht verwechselbare Klassen ergänzen.</translation>
     </message>
@@ -4340,55 +4365,55 @@ Der Bericht umfasst ca. 120 KB pro Bild; bei vielen Stichproben verkleinert ein 
         <translation>run gestartet</translation>
     </message>
     <message>
-        <location filename="../app/train/test_worker.py" line="96"/>
+        <location filename="../app/train/test_worker.py" line="97"/>
         <source>启动子进程: {} {}</source>
         <translation>Unterprozess starten: {} {}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_worker.py" line="108"/>
+        <location filename="../app/train/test_worker.py" line="109"/>
         <source>启动子进程失败: {}</source>
         <translation>Unterprozess starten fehlgeschlagen: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_worker.py" line="115"/>
+        <location filename="../app/train/test_worker.py" line="116"/>
         <source>启动测试进程失败: {}</source>
         <translation>Testprozess konnte nicht gestartet werden: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_worker.py" line="117"/>
-        <location filename="../app/train/test_worker.py" line="119"/>
+        <location filename="../app/train/test_worker.py" line="118"/>
+        <location filename="../app/train/test_worker.py" line="120"/>
         <source>子进程已启动 pid={}</source>
         <translation>Unterprozess gestartet pid={}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_worker.py" line="151"/>
+        <location filename="../app/train/test_worker.py" line="152"/>
         <source>进入轮询循环</source>
         <translation>Polling-Schleife gestartet</translation>
     </message>
     <message>
-        <location filename="../app/train/test_worker.py" line="161"/>
+        <location filename="../app/train/test_worker.py" line="162"/>
         <source>轮询中: 文件={}B 已读{}行 子进程={}</source>
         <translation>Polling: Datei={}B, {} Zeilen gelesen, Unterprozess={}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_worker.py" line="171"/>
+        <location filename="../app/train/test_worker.py" line="172"/>
         <source>轮询异常:
 </source>
         <translation>Polling-Ausnahme: 
 </translation>
     </message>
     <message>
-        <location filename="../app/train/test_worker.py" line="179"/>
+        <location filename="../app/train/test_worker.py" line="180"/>
         <source>轮询结束 rc={}</source>
         <translation>Polling beendet rc={}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_worker.py" line="181"/>
+        <location filename="../app/train/test_worker.py" line="182"/>
         <source>子进程退出 rc={}</source>
         <translation>Unterprozess beendet rc={}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_worker.py" line="191"/>
+        <location filename="../app/train/test_worker.py" line="192"/>
         <source>测试未能完成, 详情见日志</source>
         <translation>Test konnte nicht abgeschlossen werden, Details siehe Protokoll</translation>
     </message>
@@ -5323,23 +5348,23 @@ Erneut einreihen und Training starten?</translation>
 <context>
     <name>Utils</name>
     <message>
-        <location filename="../app/core/utils.py" line="57"/>
-        <location filename="../app/core/utils.py" line="69"/>
+        <location filename="../app/core/utils.py" line="60"/>
+        <location filename="../app/core/utils.py" line="72"/>
         <source>{}秒</source>
         <translation>{} Sek </translation>
     </message>
     <message>
-        <location filename="../app/core/utils.py" line="63"/>
+        <location filename="../app/core/utils.py" line="66"/>
         <source>{}天</source>
         <translation>{} T </translation>
     </message>
     <message>
-        <location filename="../app/core/utils.py" line="65"/>
+        <location filename="../app/core/utils.py" line="68"/>
         <source>{}小时</source>
         <translation>{} Std </translation>
     </message>
     <message>
-        <location filename="../app/core/utils.py" line="67"/>
+        <location filename="../app/core/utils.py" line="70"/>
         <source>{}分</source>
         <translation>{} Min </translation>
     </message>
@@ -5413,17 +5438,17 @@ Erneut einreihen und Training starten?</translation>
 <context>
     <name>_PixelScaleDialog</name>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="108"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="109"/>
         <source>像素精度</source>
         <translation>Pixelmaßstab</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="114"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="115"/>
         <source>1 像素代表的实际长度</source>
         <translation>Reale Länge, die 1 Pixel darstellt</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="147"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="148"/>
         <source>请输入大于 0 的数字</source>
         <translation>Bitte eine Zahl größer als 0 eingeben</translation>
     </message>

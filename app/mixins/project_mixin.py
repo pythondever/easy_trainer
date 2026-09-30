@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 
+from app.core import name_rules
 from app.core.db import get_paths
 from app.core.label_utils import label_sort_key, rec_is_labeled
 from app.widgets.dialog_buttons import add_ok_cancel
@@ -13,10 +14,24 @@ from PySide6.QtWidgets import (QDialog, QMenu, QVBoxLayout, QHBoxLayout,
 
 
 class ProjectMixin(object):
+    def _ask_name(self, title, placeholder, preset, check):
+        """弹输入框并校验; 不合法就带着已输入内容重弹, 取消时 ok=False."""
+        while True:
+            name, ok = NameInputDialog.get_name(
+                self, title=title, preset=preset, placeholder=placeholder)
+            if not ok:
+                return name, ok
+            err = check(name)
+            if not err:
+                return name, ok
+            MessageBox.warning(self, title, err)
+            preset = name
+
     def _show_enter_name(self, preset="", title=None, placeholder=None):
-        return NameInputDialog.get_name(
-            self, title=title or QC.translate("ProjectMixin", "输入名称"), preset=preset,
-            placeholder=placeholder or QC.translate("ProjectMixin", "项目名称"))
+        return self._ask_name(
+            title or QC.translate("ProjectMixin", "输入名称"),
+            placeholder or QC.translate("ProjectMixin", "项目名称"),
+            preset, name_rules.check_path_name)
 
     def add_project(self):
         name, ok = self._show_enter_name(title=QC.translate("ProjectMixin", "创建项目"))
@@ -128,9 +143,10 @@ class ProjectMixin(object):
             self._delete_dataset(project, dataset)
 
     def _show_add_dataset(self, preset_name="", title=None):
-        return NameInputDialog.get_name(
-            self, title=title or QC.translate("ProjectMixin", "添加数据集"), preset=preset_name,
-            placeholder=QC.translate("ProjectMixin", "数据集名称"))
+        return self._ask_name(
+            title or QC.translate("ProjectMixin", "添加数据集"),
+            QC.translate("ProjectMixin", "数据集名称"),
+            preset_name, name_rules.check_path_name)
 
     def _add_dataset(self, project_name):
         name, ok = self._show_add_dataset()

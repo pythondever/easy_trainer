@@ -3,6 +3,7 @@ import os
 import json
 import time
 
+from app.core import name_rules
 from app.core.db import get_paths
 from ui.edit_label import Ui_Dialog as EditLabelUI
 from app.core.label_utils import (is_text_label, normalize_label,
@@ -254,6 +255,10 @@ class LabelMixin(object):
             MessageBox.warning(self, QC.translate("LabelMixin", "重命名"), QC.translate("LabelMixin", "标签名称不能为空"))
             return
         if new_name == old:
+            return
+        err = name_rules.check_label_name(new_name)
+        if err:
+            MessageBox.warning(self, QC.translate("LabelMixin", "重命名"), err)
             return
         proj, ds = self._current_dataset
         # 合并模式(新名已存在)会改写源标签文件,不可逆,需明确确认

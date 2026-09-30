@@ -1,18 +1,72 @@
 import lmdb
 import json
 import os
+import shutil
 from . import keys
 
 DEFAULT_MAP_SIZE = 128 * 1024 * 1024
 METRICS_DIR_NAME = "metrics"
-DEFAULT_DB_ROOT = os.path.join(os.path.expanduser("~"), ".easy_trainer")
+DB_DIR_NAME = ".easy_trainer"
+LEGACY_DB_ROOT = os.path.join(os.path.expanduser("~"), DB_DIR_NAME)
+
+
+def _has_non_ascii(path):
+    return any(ord(ch) > 127 for ch in path)
+
+
+def _writable_dir(path):
+    probe = os.path.join(path, ".et_write_test")
+    try:
+        os.makedirs(path, exist_ok=True)
+        with open(probe, "w", encoding="utf-8") as f:
+            f.write("")
+        os.remove(probe)
+        return True
+    except OSError:
+        return False
+
+
+def default_db_dir():
+    """
+    数据库目录. ~/.easy_trainer 含非 ASCII 时改用纯 ASCII 位置: native lmdb
+    在 Windows 上按 ANSI 码页解析路径, 用户名是中文(如 C:\\Users\\张工)时
+    ~/.easy_trainer 连 env 都打不开, 软件启动即失败.
+    """
+    if not _has_non_ascii(LEGACY_DB_ROOT):
+        return LEGACY_DB_ROOT
+    for var in ("PROGRAMDATA", "PUBLIC"):
+        base = os.environ.get(var)
+        if base and not _has_non_ascii(base):
+            cand = os.path.join(base, "EasyTrainer")
+            if _writable_dir(cand):
+                return cand
+    return LEGACY_DB_ROOT
+
+
+def migrate_legacy_db(target):
+    """
+    库换到 ASCII 位置后把老数据搬过去, 返回搬动的源目录(没搬返回空串).
+    只复制不删源目录, 搬完原目录还在, 出问题能回退.
+    """
+    if os.path.abspath(target) == os.path.abspath(LEGACY_DB_ROOT):
+        return ""
+    if not os.path.exists(os.path.join(LEGACY_DB_ROOT, "app.mdb", "data.mdb")):
+        return ""
+    if os.path.exists(os.path.join(target, "app.mdb", "data.mdb")):
+        return ""
+    try:
+        shutil.copytree(LEGACY_DB_ROOT, target, dirs_exist_ok=True)
+    except OSError:
+        return ""
+    return LEGACY_DB_ROOT
 
 
 def load_train_metrics(record, db_path=None):
     """取一条记录的指标: 优先外置文件, 文件缺失时退回记录内嵌字段(旧数据兼容)."""
     fname = record.get("metrics_file")
     if fname:
-        path = os.path.join(db_path or DEFAULT_DB_ROOT, METRICS_DIR_NAME, fname)
+        path = os.path.join(db_path or default_db_dir(), METRICS_DIR_NAME,
+                            fname)
         try:
             with open(path, "r", encoding="utf-8") as f:
                 return json.load(f)

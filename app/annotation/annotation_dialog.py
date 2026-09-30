@@ -34,7 +34,7 @@ from app.annotation.annotation_canvas import (ANGLE_RANGE_DEFAULT,
                                               _resource_path,
                                               _upgrade_graphics_view)
 from app.annotation.annotation_io import AnnotationIOMixin, _PrefetchWorker
-from app.core import theme
+from app.core import name_rules, theme
 from app.annotation.box_item import (AnnotationBoxItem, LABEL_COLORS,
                                      assign_label_color, label_color)
 from app.core.label_utils import (label_sort_key, normalize_label,
@@ -823,6 +823,11 @@ class AnnotationDialog(QDialog, AnnotationCanvasMixin, AnnotationIOMixin):
             MessageBox.warning(self, self.tr("添加标签"),
                                self.tr("标签名称不能为空"))
             return
+        for _name, _color in items:
+            err = name_rules.check_label_name(_name)
+            if err:
+                MessageBox.warning(self, self.tr("添加标签"), err)
+                return
         # 导入路径: 重复标签跳过(不覆盖已有颜色/标注);手动输入仍按原逻辑
         existing = set(self.label_colors)
         imported = getattr(dlg, "_imported_mode", False)

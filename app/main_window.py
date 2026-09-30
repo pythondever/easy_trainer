@@ -10,7 +10,7 @@ from app.core.constants import PAGE_SIZE
 from app.core.utils import (setup_matplotlib_chinese, load_style_sheet,
                             project_root)
 from app.core.log import write_log
-from app.core.db import DataBase
+from app.core.db import DataBase, default_db_dir, migrate_legacy_db
 from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtCore import Qt, QSize, QTimer, QEvent
 from PySide6.QtCore import QCoreApplication as QC
@@ -30,7 +30,7 @@ if "RF_HOME" not in os.environ:
     except OSError:
         pass
 
-DB_DIR = os.path.join(os.path.expanduser("~"), ".easy_trainer")
+DB_DIR = default_db_dir()
 
 
 class App(QWidget, MainUI, LabelMixin, ProjectMixin, ImportExportMixin,
@@ -229,6 +229,10 @@ def main():
         write_log("style.qss 引用了未定义的令牌: " + ", ".join(missing_token))
     myapp.setStyleSheet(qss)
     # db 提前建一次: 界面语言要在 setupUi 之前装好, 否则静态文案已经按中文生成了
+    migrated = migrate_legacy_db(DB_DIR)
+    if migrated:
+        write_log("数据库目录含非 ASCII, 已迁移: {} -> {}".format(
+            migrated, DB_DIR))
     db = DataBase(DB_DIR)
     i18n.apply(myapp, db.get_language())
     ui = App(db)

@@ -86,6 +86,7 @@ class TestWorker(SubprocessWorker):
         # 那边的安装根由 installer 写进 _pth
         env["PYTHONPATH"] = WORKSPACE
         env["PYTHONUNBUFFERED"] = "1"
+        env["PYTHONIOENCODING"] = "utf-8"
         env["CUDA_MODULE_LOADING"] = "LAZY"
         module = runner_module(self._config)
         bootstrap = runner_bootstrap(module)
