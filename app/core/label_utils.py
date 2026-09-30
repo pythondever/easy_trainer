@@ -2,11 +2,24 @@
 import json
 import os
 
+from app.core import i18n
 from app.core.constants import IMAGE_EXTS
 
-# 文本标注(OCR)的保留标签名. 存盘固定写这个中文串, 不跟界面语言走 ——
-# 跟随语言的话同一次标注在换语言后会被读成两类, 按它过滤训练集也会漏.
-TEXT_LABEL = "文本"
+TEXT_LABEL_ZH = "文本"
+TEXT_LABEL_EN = "text"
+
+_ZH_CODES = ("zh_CN", "zh_TW")
+
+
+def text_label():
+    """当前界面语言下这个保留标签的写法: 中文用「文本」, 其余语言用 text."""
+    return TEXT_LABEL_ZH if i18n.current() in _ZH_CODES else TEXT_LABEL_EN
+
+
+def is_text_label(name):
+    """是不是这个保留标签 —— 两种语言的写法都算, 与当前界面语言无关."""
+    return name in (TEXT_LABEL_ZH, TEXT_LABEL_EN)
+
 
 # labelme json 顶层的 OCR 标志位. 推理写出的文本标注靠它跟普通检测/分割
 # 区分: 重载扫到就给数据集打上 ocr 类型, 否则训练页认不出这是文本数据集.
@@ -29,8 +42,8 @@ def label_sort_key(name):
 
 
 def load_json_shapes_checked(json_path):
-    """读 labelme json → (shapes, 是否 labelme 文件, 是否带 OCR 标志).
-
+    """
+    读 labelme json → (shapes, 是否 labelme 文件, 是否带 OCR 标志).
     "这张图标过没有"要同时知道 shapes 是否为空和这个 json 是不是标注文件,
     而 load_json_shapes 与 looks_like_labelme 各自读一遍同一个文件. 合到
     一次读盘, 判定口径与原来两个函数逐个调用完全一致.
@@ -49,7 +62,11 @@ def load_json_shapes_checked(json_path):
             pts = shape.get("points") or []
             if len(pts) < 2:
                 continue
-            shapes.append((normalize_label(shape.get("label", "unknown")),
+            label = normalize_label(shape.get("label", "unknown"))
+            if is_text_label(label):
+                # 读进来就折成当前界面语言的写法, 否则换语言后同一批数据会显示成两种
+                label = text_label()
+            shapes.append((label,
                            [[float(p[0]), float(p[1])] for p in pts],
                            str(shape.get("text") or "")))
     except Exception:

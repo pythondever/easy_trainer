@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EasyTrainer 사용 안내서</title>
+<style>
+  body { font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+         max-width: 920px; margin: 0 auto; padding: 0 16px 48px;
+         color: #2b2f3b; background: #fff; line-height: 1.75; }
+  h1 { font-size: 28px; color: #1c1e25; border-bottom: 3px solid #4f7dff;
+       padding-bottom: 10px; margin: 24px 0; }
+  h2 { font-size: 22px; color: #1c1e25; margin-top: 40px;
+       border-left: 5px solid #4f7dff; padding-left: 12px; }
+  h3 { font-size: 17px; color: #353a48; margin-top: 26px; }
+  p, li { font-size: 15px; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  .lead { color: #4a5164; }
+  .note { background: #f3f6ff; border-left: 4px solid #4f7dff;
+          padding: 10px 14px; margin: 14px 0; border-radius: 4px; font-size: 14px; }
+  .warn { background: #fff3f3; border-left: 4px solid #d64545;
+          padding: 10px 14px; margin: 14px 0; border-radius: 4px; font-size: 14px; }
+  code { background: #23262f; color: #e8eaf0; padding: 1px 6px;
+         border-radius: 3px; font-family: Consolas, monospace; font-size: 13px; }
+  kbd { background: #f4f5f8; border: 1px solid #ccd2e0; border-bottom-width: 2px;
+        border-radius: 3px; padding: 0 5px; font-size: 13px;
+        font-family: Consolas, monospace; color: #353a48; }
+  figure { margin: 18px 0; text-align: center; }
+  figcaption { color: #5c6270; font-size: 13px; margin-top: 6px; }
+  img { max-width: 100%; height: auto; border: 1px solid #dde1ea;
+        border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+  .toc { background: #f9fafc; border: 1px solid #dde1ea; border-radius: 6px;
+         padding: 14px 22px; margin-bottom: 28px; }
+  .toc h2 { font-size: 16px; border: none; padding: 0; margin: 0 0 8px; color: #4f7dff; }
+  .toc ol { margin: 0; }
+  .toc li { font-size: 14px; margin-bottom: 4px; }
+  .toc a { color: #2b2f3b; text-decoration: none; }
+  .toc a:hover { color: #4f7dff; }
+  .lang { text-align: right; font-size: 13px; padding-top: 16px; }
+  .lang a { color: #6c7385; text-decoration: none; }
+  .lang a:hover { color: #4f7dff; }
+  table { border-collapse: collapse; width: 100%; margin: 14px 0; font-size: 14px; }
+  th, td { border: 1px solid #dde1ea; padding: 7px 10px; text-align: left; }
+  th { background: #f4f6fb; color: #353a48; font-weight: 600; }
+  /* 打印/PDF 排版: 标题不孤行, 图片不跨页截断 */
+  @media print {
+    h2, h3 { page-break-after: avoid; }
+    figure, img, table { page-break-inside: avoid; }
+    .lang { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="lang"><a href="introduce.html">다른 언어 / Other languages</a></div>
+
+<h1>EasyTrainer 사용 안내서</h1>
+
+<div class="toc">
+  <h2>목차</h2>
+  <ol>
+    <li><a href="#quick">빠른 시작</a></li>
+    <li><a href="#project">인터페이스와 프로젝트</a></li>
+    <li><a href="#annotate">어노테이션</a></li>
+    <li><a href="#train">학습</a></li>
+    <li><a href="#model">모델 관리</a></li>
+    <li><a href="#test">테스트와 평가 보고서</a></li>
+    <li><a href="#ocr">OCR</a></li>
+    <li><a href="#log">로그</a></li>
+  </ol>
+</div>
+
+<h2 id="quick">빠른 시작</h2>
+
+<p class="lead">빈 화면에서 첫 모델을 만들어 내기까지 가장 짧은 경로는 이 여섯 단계입니다. 각 단계의 자세한 내용은 뒤의 각 장에서 다룹니다.</p>
+
+<ol>
+  <li><strong>프로젝트 추가</strong> — 왼쪽의 「+ 프로젝트 추가」를 클릭하고 이름을 입력합니다.</li>
+  <li><strong>데이터셋 추가</strong> — 프로젝트 노드를 마우스 오른쪽 버튼으로 클릭 → 「데이터셋 추가」.</li>
+  <li><strong>데이터 가져오기</strong> — 데이터셋을 선택하고 상단의 「가져오기」를 클릭한 뒤, 이미지 폴더와 라벨 폴더를 각각 선택합니다.</li>
+  <li><strong>데이터 확인</strong> — 「속성」을 클릭해 클래스와 수량이 잘못되지 않았는지 확인합니다.</li>
+  <li><strong>학습</strong> — 「학습」을 클릭하고 작업 유형과 데이터셋을 선택한 뒤, 나머지는 기본값으로 두고 「학습 시작」을 클릭합니다.</li>
+  <li><strong>결과 확인</strong> — 학습이 끝나면 「모델」에서 해당 기록을 찾아 「테스트」를 클릭해 검증 세트에서 한 번 돌려봅니다. 납품이 필요하면 PDF 보고서를 한 부 내보냅니다.</li>
+</ol>
+
+<div class="note">
+  아직 어노테이션 데이터가 없다면 먼저 3장 「어노테이션」을 보세요.
+</div>
+
+<h2 id="project">1. 인터페이스와 프로젝트</h2>
+
+<h3>1.1 메인 화면 구성</h3>
+
+<p>메인 화면은 세 부분으로 나뉩니다. 왼쪽은 프로젝트 관리, 가운데는 이미지 보기, 도구 모음은 위쪽에 있습니다.</p>
+
+<ul>
+  <li><strong>왼쪽 프로젝트 트리</strong> — 프로젝트와 데이터셋이 계층 구조로 나열됩니다. 데이터셋 뒤에는 어노테이션 진행률(예: <code>126/128</code>)이 표시됩니다. 이름 앞의 점은 메모리 로드 여부를 나타내며, 초록색은 로드됨, 빨간색은 로드되지 않음입니다.</li>
+  <li><strong>가운데 이미지 영역</strong> — 썸네일을 페이지 단위로 넘겨 봅니다. 하단 중앙에 페이지 넘김 컨트롤이 있습니다. 두 화살표 사이에 페이지 번호가 있고, 현재 페이지 숫자는 강조 표시됩니다. 페이지 번호 위에 마우스를 올리면 현재 필터 기준으로 모두 몇 장의 이미지가 있는지 볼 수 있습니다.</li>
+  <li><strong>상단 도구 모음</strong> — 표시 비율, 어노테이션 필터 드롭다운, 그리고 편집, 삭제, 가져오기, 내보내기, 속성, 학습, 모델, 로그 등의 버튼이 있습니다.</li>
+</ul>
+
+<figure>
+  <img src="images/主页.png" alt="EasyTrainer 主界面">
+  <figcaption>EasyTrainer 메인 화면</figcaption>
+</figure>
+
+<h3>1.2 프로젝트와 데이터셋</h3>
+
+<p><strong>프로젝트 추가</strong>: 왼쪽의 「+ 프로젝트 추가」를 클릭하고 이름을 입력한 뒤 확인합니다. 프로젝트는 데이터셋의 컨테이너이며, 모든 데이터셋은 반드시 어떤 프로젝트에 속해야 합니다.</p>
+
+<figure>
+  <img src="images/添加项目.png" alt="添加项目">
+  <figcaption>프로젝트 이름 입력</figcaption>
+</figure>
+
+<p><strong>프로젝트 노드</strong>를 마우스 오른쪽 버튼으로 클릭합니다:</p>
+
+<ul>
+  <li><strong>데이터셋 추가</strong> — 프로젝트 아래에 새 데이터셋을 만듭니다</li>
+  <li><strong>프로젝트 내보내기</strong> — 프로젝트 전체의 데이터셋과 어노테이션을 지정한 형식으로 내보냅니다</li>
+  <li><strong>이름 변경</strong> — 프로젝트 이름을 바꿉니다</li>
+  <li><strong>프로젝트 삭제</strong> — 하위의 데이터셋, 어노테이션, 학습 기록까지 함께 지웁니다</li>
+</ul>
+
+<p><strong>데이터셋 노드</strong>를 마우스 오른쪽 버튼으로 클릭하면 개별 데이터셋에 대한 작업을 할 수 있습니다: 가져오기 / 내보내기 / 이동 / 이름 변경 / 삭제.</p>
+
+<p><strong>데이터셋을 더블클릭</strong>해야 로드됩니다. 이미지와 어노테이션을 다시 스캔하고 캐시를 재구성한 뒤, 오른쪽에서 볼 수 있습니다. 이미 로드된 것(행에 상태 점이 있음)은 다시 더블클릭해도 중복 스캔하지 않습니다.</p>
+
+<figure>
+  <img src="images/添加_修改_删除_数据集.png" alt="项目右键菜单">
+  <figcaption>프로젝트 오른쪽 클릭 메뉴</figcaption>
+</figure>
+
+<h3>1.3 데이터 가져오기</h3>
+
+<p>데이터셋을 선택하고 상단의 「가져오기」를 클릭하면 가져오기 대화상자가 뜹니다:</p>
+
+<ul>
+  <li><strong>이미지 경로</strong> — 이미지가 있는 폴더</li>
+  <li><strong>라벨 경로</strong> — 라벨 파일이 있는 폴더</li>
+  <li><strong>라벨 형식</strong> — Yolo txt / Labelme json / 하위 폴더 기준 분류 가져오기</li>
+</ul>
+
+<div class="note">
+  <strong>분류 데이터셋</strong>은 「하위 폴더 기준 분류 가져오기」를 선택합니다. 각 하위 폴더 이름이 하나의 클래스가 되며, <strong>라벨 파일이 필요하지 않습니다</strong>.<br>
+  OCR은 Labelme json을 사용합니다. 텍스트 상자의 라벨은 「text」로 고정되며, 가져온 뒤 자동으로 텍스트 검출 데이터셋으로 표시됩니다.
+</div>
+
+<figure>
+  <img src="images/导入数据.png" alt="导入数据">
+  <figcaption>데이터 가져오기 대화상자</figcaption>
+</figure>
+
+<h3>1.4 데이터셋 속성</h3>
+
+<p>데이터셋을 선택하고 상단의 「속성」을 클릭하면 이미지 경로, 라벨 경로, 그리고 <strong>라벨 분포 막대그래프</strong>를 볼 수 있습니다. 각 클래스에 어노테이션 상자가 몇 개 있는지를 보여줍니다. 어느 클래스의 샘플이 적은지 한눈에 알 수 있습니다.</p>
+
+<figure>
+  <img src="images/数据集属性_标签分布.png" alt="数据集属性与标签分布">
+  <figcaption>데이터셋 속성과 라벨 분포</figcaption>
+</figure>
+
+<h3>1.5 인터페이스 언어</h3>
+
+<p>도구 모음 맨 오른쪽에 인터페이스 언어 드롭다운이 있으며, 아홉 가지 언어 중에서 고를 수 있습니다: 中文, English, 繁體中文, 日本語, 한국어, Deutsch, Español, Français, Tiếng Việt.</p>
+
+<p>선택하면 메인 화면이 곧바로 바뀌고, 이미 열려 있는 로그 및 학습 대기열 창도 함께 새로 고쳐집니다. 아직 열지 않은 대화상자는 다음에 열 때 새 언어로 표시됩니다. 선택한 언어는 기억되어 다음에 실행해도 그대로 유지됩니다. 드롭다운의 각 항목은 해당 언어의 표기로 나열되므로, 현재 인터페이스가 어떤 언어든 어떤 항목을 골라야 하는지 알아볼 수 있습니다.</p>
+
+<h2 id="annotate">2. 어노테이션</h2>
+
+<h3>2.1 어노테이션 화면 열기</h3>
+
+<p>데이터셋을 선택한 뒤 썸네일을 마우스 오른쪽 버튼으로 클릭해 「어노테이션」을 선택하거나, 썸네일을 바로 더블클릭합니다.</p>
+
+<h3>2.2 상자 그리기</h3>
+
+<p>어노테이션 화면 상단 도구 모음에는 세 가지 그리기 방식이 있습니다:</p>
+
+<ul>
+  <li><strong>사각형</strong> — 마우스를 끌어 상자를 그립니다</li>
+  <li><strong>다각형</strong> — 꼭짓점을 차례로 클릭하고, 더블클릭하거나 Enter를 눌러 끝냅니다(세그멘테이션 작업용)</li>
+  <li><strong>텍스트</strong> — 먼저 상단의 「텍스트 어노테이션」 스위치를 켜고 상자를 그립니다. 마우스를 놓으면 입력 상자가 떠서 문자를 입력하고, 더블클릭으로 수정할 수 있습니다(OCR 작업용)</li>
+</ul>
+
+<p>텍스트 상자는 항상 <strong>사각형</strong>으로 그립니다. 기울어진 문자도 수평 상자로 덮으면 됩니다. 학습 시 다각형은 수평 외접 상자로 처리되므로, 윤곽을 따라 그려도 추가 이점이 없습니다.</p>
+
+<p>도구 모음에는 「이미지 삭제」도 있어 현재 이미지를 지울 수 있습니다.</p>
+
+<p>클래스는 오른쪽 라벨 목록에서 선택합니다.</p>
+
+<p><strong>「어노테이션 표시」 스위치</strong>는 모든 윤곽(상자 선, 라벨, 꼭짓점 핸들)을 언제든 숨겨 원본 이미지를 보기 편하게 해줍니다. 이미 붙여 넣었지만 아직 배치하지 않은 내용은 윤곽만 숨겨지고 패턴은 그대로 표시되므로, 이 스위치를 끄면 「붙였을 때 어떤 결과인지」를 미리보기에 딱 좋습니다.</p>
+
+<p>오른쪽 아래의 <strong>「어노테이션 정보」</strong>에는 이 이미지의 각 어노테이션 객체의 형태(사각형 / 다각형), 꼭짓점 수, 면적이 나열됩니다. 바로 아래의 <strong>이미지 정보</strong>는 현재 이미지의 너비 × 높이 × 채널 수(예: <code>505×505×3</code>)와 번호를 표시합니다.</p>
+
+<p>그 아래는 <strong>클립보드</strong>입니다. 다각형을 마우스 오른쪽 버튼으로 복사하면 복사한 영역의 썸네일(<code>120 × 90</code>)이 추가되며, 최대 9장까지 세로로 나열되고 스크롤할 수 있습니다. 가장 최근 장은 기본으로 선택되고 파란 테두리가 붙습니다. 썸네일을 마우스 오른쪽 버튼으로 클릭하면 이 장을 삭제하거나 전체를 비울 수 있습니다.</p>
+
+<figure>
+  <img src="images/图像标注_剪切板.png" alt="图像标注">
+  <figcaption>사각형 / 다각형 어노테이션, 라벨 목록과 오른쪽 아래 클립보드</figcaption>
+</figure>
+
+<h3>2.3 라벨 관리</h3>
+
+<p>어노테이션 화면 오른쪽에 라벨 목록이 있고, 위쪽에 「라벨 추가」가 있습니다:</p>
+
+<ul>
+  <li><strong>라벨 이름</strong> — 여러 라벨은 쉼표로 구분하며, 한 번에 여러 개를 추가할 수 있습니다</li>
+  <li><strong>가져오기</strong> — 다른 데이터셋에서 라벨을 통째로 가져옵니다</li>
+  <li><strong>색상 선택</strong> — 미리 정의된 색상 팔레트에서 고르거나 「사용자 지정 색상」을 클릭해 직접 고릅니다</li>
+</ul>
+
+<figure>
+  <img src="images/添加或导入标签.png" alt="添加标签">
+  <figcaption>라벨 추가 또는 가져오기</figcaption>
+</figure>
+
+<h3>2.4 클래스 변경</h3>
+
+<p><strong>하나만 변경</strong>: 어노테이션 상자를 클릭하면 클래스 드롭다운 메뉴가 뜹니다. 새 클래스를 선택하면 됩니다. 오른쪽 라벨 목록의 라벨도 이름 변경, 색상 변경, 삭제가 가능합니다.</p>
+
+<figure>
+  <img src="images/修改类别.png" alt="修改类别">
+  <figcaption>어노테이션 상자에서 클래스 직접 수정</figcaption>
+</figure>
+
+<p><strong>일괄 변경</strong>: 썸네일을 마우스 오른쪽 버튼으로 클릭 → 「클래스 일괄 수정」을 선택하고 원래 클래스와 새 클래스를 입력하면, 데이터셋 전체에서 이 클래스의 어노테이션이 모두 이름이 바뀝니다.</p>
+
+<figure>
+  <img src="images/标签批量修改.png" alt="批量修改类别">
+  <figcaption>클래스 일괄 수정 팝업</figcaption>
+</figure>
+
+<h3>2.5 어노테이션 객체 복사·붙여넣기</h3>
+
+<p><strong>다각형</strong> 어노테이션을 마우스 오른쪽 버튼으로 클릭하면 두 가지 작업이 있습니다:</p>
+
+<ul>
+  <li><strong>복사</strong> — 이 영역의 픽셀을 템플릿으로 저장하고, 동시에 오른쪽 아래 클립보드에 썸네일을 생성합니다</li>
+  <li><strong>채우기</strong> — 영역 안의 픽셀을 「채우기 값」 세 칸에 해당하는 RGB 색상(채널당 <code>0 ~ 255</code>, 기본값 255)으로 바꿉니다. 결함을 배경색으로 지울 때 주로 사용합니다</li>
+</ul>
+
+<p>클립보드의 썸네일 한 장을 <strong>왼쪽 버튼으로 클릭</strong>한 뒤 마우스를 캔버스로 옮기면 다각형 점선이 따라옵니다. 모양은 회전된 실제 윤곽이며, 이번에 뽑힌 각도가 적용되어 있습니다. 위치와 방향을 먼저 확인하고, <kbd>Esc</kbd>를 눌러 점선을 없애 일반 마우스 모드로 돌아간 다음, 마우스 오른쪽 버튼으로 「붙여넣기」를 선택해 배치합니다.</p>
+
+<p>이미지의 빈 곳을 마우스 오른쪽 버튼으로 클릭해 <strong>「붙여넣기」</strong>를 선택하면, 클립보드에서 현재 선택된 장을 마우스 위치에 붙여 넣습니다. 같은 이미지든 다른 이미지든 상관없습니다. 붙여 넣기 전에 도구 모음에서 다음 항목들을 먼저 설정합니다:</p>
+
+<ul>
+  <li><strong>각도 범위</strong> — 붙여 넣을 때 무작위로 회전하는 각도 구간(기본값 <code>-180 ~ 180</code>)입니다. 점선 미리보기에도 이 구간에서 뽑힌 각도가 사용되어, 보이는 그대로 적용됩니다</li>
+  <li><strong>블렌드 강도</strong> — <code>0 ~ 1</code>, 기본값 <code>0.70</code>. 붙여 넣을 때 밝기 보정과 가장자리 페더링을 자동으로 적용해, 붙인 부분이 배경과 자연스럽게 이어지게 합니다. 0으로 설정하면 그대로 딱 붙습니다</li>
+  <li><strong>채우기 값</strong> — R / G / B 세 개의 입력 칸(채널당 <code>0 ~ 255</code>, 기본값 255)이며, 마우스 오른쪽 버튼의 「채우기」와 함께 사용해 영역을 이 색으로 지웁니다</li>
+  <li><strong><kbd>Ctrl</kbd> + <kbd>Z</kbd></strong> — 가장 최근의 붙여 넣기 또는 채우기를 취소합니다. 픽셀이 복원되고 그에 따라 추가된 어노테이션도 함께 제거되며, 연속해서 취소할 수 있습니다</li>
+</ul>
+
+<figure>
+  <img src="images/标注对象复制.png" alt="标注对象复制">
+  <figcaption>어노테이션 객체를 마우스 오른쪽 버튼으로 복사 → 클립보드 썸네일, 도구 모음에서 각도 범위 / 블렌드 강도 / 채우기 값 설정</figcaption>
+</figure>
+
+<h3>2.6 다각형 영역 밝기 조절</h3>
+
+<p><strong>다각형</strong>을 클릭해 선택한 뒤 도구 모음의 「설정」에서 <strong>밝기</strong>를 켜면, 이 다각형 안 픽셀의 밝기를 바꿀 수 있습니다. 슬라이더를 끌거나 값을 직접 입력하면 이미지에서 실시간으로 미리 볼 수 있습니다.</p>
+
+<ul>
+  <li><strong>범위</strong> — <code>0 ~ 1</code>이며, 기본값 <code>0.50</code>은 원본 그대로를 뜻합니다. 1에 가까울수록 밝아지고(<code>1.00</code>은 약 두 배 밝기), 0에 가까울수록 어두워집니다(0은 완전 검정)</li>
+  <li><strong>선택된 다각형에만 적용됩니다</strong>. 사각형이거나 아무것도 선택하지 않았을 때는 안내만 표시하고 픽셀은 건드리지 않습니다. 다른 다각형을 클릭하면 슬라이더가 그 다각형의 값(조절한 적이 없으면 모두 0.50)으로 돌아가며, 이전 것의 밝기가 넘어오지 않습니다</li>
+  <li><strong>언제 저장되는가</strong> — 끄는 동안에는 메모리만 바뀌고 실시간으로 미리 보여줍니다. <kbd>A</kbd> / <kbd>D</kbd>로 이미지를 넘기거나 <kbd>Ctrl</kbd> + <kbd>S</kbd>를 눌러야 이미지 파일에 기록됩니다</li>
+  <li><strong>취소</strong> — 한 번의 조절은 한 단계로만 기록되며, <kbd>Ctrl</kbd> + <kbd>Z</kbd>로 조절 전으로 돌아갑니다. 같은 조절 안에서 왔다 갔다 여러 번 끌어도 한 단계로만 셉니다</li>
+</ul>
+
+<figure>
+  <img src="images/多边形区域亮度调节.png" alt="多边形亮度调节">
+  <figcaption>다각형을 선택한 뒤 「밝기」로 상자 안 픽셀의 밝기를 바꾸고, 이미지에서 실시간으로 미리 보기</figcaption>
+</figure>
+
+<h3>2.7 클래스별로 이미지 필터링</h3>
+
+<p>상단 도구 모음의 클래스 드롭다운에서 특정 클래스를 선택하면, 이미지 영역에 해당 클래스가 포함된 이미지만 표시됩니다. 특정 클래스를 집중적으로 확인하거나 어노테이션을 보완할 때 편리합니다.</p>
+
+<figure>
+  <img src="images/按标注类别_分类筛选.png" alt="按类别筛选">
+  <figcaption>클래스별 썸네일 필터링</figcaption>
+</figure>
+
+<h2 id="train">3. 학습</h2>
+
+<h3>3.1 학습 파라미터 설정</h3>
+
+<p>홈 화면 또는 모델 화면의 「학습」을 클릭하면 파라미터 설정 창이 뜹니다:</p>
+
+<ul>
+  <li><strong>작업 유형</strong> — 객체 검출 / 세그멘테이션 / 분류 / 이상 검출 / OCR이며, 데이터셋 형식에 따라 자동으로 바뀝니다</li>
+  <li><strong>학습 세트 / 검증 세트</strong> — 여러 개를 선택할 수 있고, 프로젝트를 넘나들며 조합할 수도 있습니다</li>
+  <li><strong>장치</strong> — 사용 가능한 GPU를 자동으로 나열합니다</li>
+  <li><strong>에포크 / 옵티마이저 / 조기 중단</strong> — 옵티마이저는 객체 검출과 세그멘테이션에 <code>adamw</code>, 분류에 <code>sgd</code>를 사용합니다. 조기 중단은 연속 N 에포크 동안 향상이 없으면 미리 끝내는 것이며, 0을 입력하면 끕니다</li>
+  <li><strong>학습률</strong> — 학습 과정에서 자동으로 감쇠합니다</li>
+  <li><strong>배치 / 이미지 크기 / 그래디언트 누적 / 스레드 수</strong> — 이미지 크기는 반드시 32의 배수여야 합니다. VRAM이 부족하면 배치를 줄이고 그래디언트 누적을 늘리면, 배치를 키운 것과 같은 효과입니다</li>
+  <li><strong>출력 경로</strong> — 비워 두면 시간 기준으로 디렉터리를 자동 생성하며, 「찾아보기」를 클릭해 지정할 수도 있습니다</li>
+</ul>
+
+<figure>
+  <img src="images/训练参数与队列.png" alt="训练参数配置">
+  <figcaption>학습 파라미터 설정 대화상자</figcaption>
+</figure>
+
+<h3>3.2 학습 대기열</h3>
+
+<p>파라미터를 설정한 뒤 「학습 시작」 외에도 <strong>「대기열에 추가」</strong>를 클릭해 작업을 먼저 걸어 두고 다음 작업을 설정할 수 있습니다. 홈 화면에서 「학습 대기열」을 클릭해 대기열 창을 엽니다:</p>
+
+<ul>
+  <li>대기열은 순서대로 실행되며, 객체 검출 / 세그멘테이션 / 분류 / 이상 검출 / OCR을 섞어 놓을 수 있고, 한 항목이 끝나면 자동으로 다음 항목으로 넘어갑니다</li>
+  <li><strong>위로 / 아래로 / 제거</strong> — 실행 순서를 조정하거나 작업을 삭제합니다</li>
+  <li><strong>편집</strong> — 선택한 작업의 파라미터를 수정합니다</li>
+  <li><strong>종료된 항목 정리</strong> — 이미 끝난 기록을 빼냅니다</li>
+  <li><strong>대기열 시작</strong> — 대기열의 작업을 처음부터 차례대로 실행합니다</li>
+</ul>
+
+<div class="note">
+  대기열은 밤새 돌리기에 적합합니다. 여러 데이터셋의 작업을 한 번에 설정해 두면, 소프트웨어가 자동으로 전부 끝내고 각각 모델을 저장합니다.
+</div>
+
+<figure>
+  <img src="images/训练队列查看.png" alt="训练队列">
+  <figcaption>학습 대기열 창</figcaption>
+</figure>
+
+<h3>3.3 학습 진행 상황</h3>
+
+<p>「학습 시작」을 클릭하면 홈 화면으로 돌아가고, 상단에 진행률 표시줄과 제어 표시줄이 나타납니다:</p>
+
+<ul>
+  <li><strong>작업 이름 + 진행률</strong> — <code>coco128 학습 중 5/100</code>과 같은 형태이며, 진행률 표시줄 안에 현재 에포크의 loss가 표시됩니다</li>
+  <li><strong>학습 중지</strong> — 언제든 중단할 수 있으며, 이미 끝난 부분은 저장됩니다</li>
+  <li><strong>남은 시간</strong> — 이미 사용한 시간을 바탕으로 외삽해 추정합니다</li>
+  <li><strong>VRAM</strong> — GPU VRAM 점유율로, 실시간으로 갱신됩니다</li>
+</ul>
+
+<figure>
+  <img src="images/训练进度_指标_剩余时间_显存用量.png" alt="训练进度">
+  <figcaption>학습 진행률 표시줄과 상태 표시줄</figcaption>
+</figure>
+
+<h3>3.4 학습 곡선</h3>
+
+<p>모델 관리에서 학습 기록 하나를 선택하고, 오른쪽 상세 패널의 <strong>「전체 지표 보기」</strong>를 클릭하면 학습 곡선 창이 뜹니다:</p>
+
+<ul>
+  <li>위쪽 절반은 <strong>val loss</strong> 곡선입니다</li>
+  <li>아래쪽 절반은 mAP@50-95 / mAP@50 / AR / F1 / precision / recall 등 여러 곡선이며, 세그멘테이션 작업은 mask mAP가 한 줄 더 있습니다</li>
+  <li>오른쪽 위의 「라벨 필터」 드롭다운으로 전체 지표 또는 특정 클래스의 곡선으로 전환해 볼 수 있습니다</li>
+</ul>
+
+<figure>
+  <img src="images/训练指标查看.png" alt="训练指标">
+  <figcaption>학습 지표 곡선(val loss + 각종 정확도)</figcaption>
+</figure>
+
+<h2 id="model">4. 모델 관리</h2>
+
+<p>홈 화면의 「모델」을 클릭하면 모델 관리가 열립니다. 왼쪽은 학습 기록 목록, 오른쪽은 상세 패널입니다.</p>
+
+<h3>4.1 목록과 필터</h3>
+
+<ul>
+  <li><strong>검색창</strong> — 프로젝트 / 데이터셋 / 라벨 키워드로 필터링합니다</li>
+  <li><strong>작업 / 상태 드롭다운</strong> — 작업은 객체 검출 / 세그멘테이션 / 분류 / 이상 검출 / 텍스트 검출 / 텍스트 인식 중에서 고를 수 있습니다. 상태는 학습 중 / 완료 / 실패 / 중지됨 중에서 고를 수 있습니다</li>
+  <li><strong>데이터셋별 최고 성능만 보기</strong> — 같은 데이터셋에서는 정확도가 가장 높은 항목만 남깁니다</li>
+  <li>목록 열: 작업, 데이터셋·라벨, 정확도, 학습 시각, 소요 시간, 이미지 크기, 작업</li>
+  <li><strong>정확도 열에는 색 막대가 있음</strong> — 초록 ≥ 0.8, 노랑 0.5 ~ 0.8, 빨강 &lt; 0.5. 실패 또는 중지됨 기록은 이 열에 상태 텍스트가 표시되며, 마우스를 올리면 실패 원인을 볼 수 있습니다</li>
+  <li>행 안의 세 버튼: <strong>테스트</strong>(모델 테스트 열기), <strong>내보내기</strong>, <strong>삭제</strong>(해당 학습 기록도 함께 지움)</li>
+</ul>
+
+<h3>4.2 상세 패널</h3>
+
+<p>아무 행이나 클릭하면 오른쪽에 해당 기록의 전체 파라미터가 표시됩니다: 작업·스케일, 상태, 정확도, 학습 / 검증 세트, 이미지 크기, 에포크 수 / 조기 중단, 배치 크기, 학습률, 옵티마이저, 장치, 라벨, 학습 시각, 소요 시간, 모델 경로. 위쪽에는 정확도 곡선의 썸네일도 있습니다.</p>
+
+<p>패널 아래쪽에 네 개의 버튼이 있습니다:</p>
+
+<ul>
+  <li><strong>전체 지표 보기</strong> — 학습 곡선 창을 엽니다(「학습 곡선」 절 참조)</li>
+  <li><strong>이 모델 테스트</strong> — 이 모델로 테스트 대화상자를 엽니다(「테스트 파라미터」 절 참조)</li>
+  <li><strong>이 구성으로 재학습</strong> — 이 기록의 모든 학습 파라미터를 그대로 불러와 학습을 다시 시작합니다</li>
+  <li><strong>모델 디렉터리 열기</strong> — 파일 탐색기에서 가중치 파일 위치를 엽니다</li>
+</ul>
+
+<figure>
+  <img src="images/模型训练记录.png" alt="模型训练记录">
+  <figcaption>모델 관리: 필터 바 + 학습 기록 목록 + 오른쪽 상세 패널</figcaption>
+</figure>
+
+<h3>4.3 ONNX 내보내기</h3>
+
+<p>「내보내기」를 클릭하고 디렉터리를 선택하면 「项目_时间戳」 폴더가 생성됩니다:</p>
+
+<ul>
+  <li><strong>모델 <code>.onnx</code></strong> — 객체 검출과 세그멘테이션은 RF-DETR이 내보내고, 분류와 OCR은 torch가 내보냅니다. 이름은 「项目_任务_图像尺寸_模型规模.onnx」입니다</li>
+  <li><strong><code>classes.txt</code></strong> — 클래스 id와 이름의 대응표입니다. OCR의 인식 단계는 <code>vocab.txt</code>이며, 한 줄에 한 문자씩이 곧 어휘입니다</li>
+  <li><strong>모델 평가 보고서 PDF</strong> — 검증 세트에서 자동으로 평가를 한 번 돌리고, 테스트 보고서 템플릿을 재사용하며, 이름은 「…_评估报告.pdf」입니다</li>
+  <li><strong><code>examples/</code></strong> — C++ / C# / Python으로 ONNX를 호출해 객체 검출, 세그멘테이션, 분류를 하는 예제 코드입니다. OCR은 현재 Python 버전만 있습니다</li>
+</ul>
+
+<p>내보내기 과정에는 진행 안내가 표시됩니다. ONNX 변환에는 <code>onnx</code>와 <code>onnxsim</code>이 설치되어 있어야 하며, 설치되어 있지 않으면 팝업으로 안내합니다.</p>
+
+<p>분류 작업은 평가 보고서를 생성하지 않습니다. 미검출·오검출 방식의 보고서는 분류에 적용되지 않기 때문입니다. OCR의 텍스트 인식도 마찬가지로, 결론은 CER 하나뿐입니다.</p>
+
+<h2 id="test">5. 테스트와 평가 보고서</h2>
+
+<h3>5.1 테스트 파라미터</h3>
+
+<p>모델 관리에서 행 안의 「테스트」(또는 상세 패널의 「이 모델 테스트」)를 클릭하면 테스트 대화상자가 뜹니다. 위쪽에 모델 정보가 표시됩니다: 작업 유형, 가중치 파일, 학습 정확도, 입력 크기, 스케일. 아래는 파라미터입니다:</p>
+
+<ul>
+  <li><strong>데이터</strong> — 프로젝트를 넘나들며 모든 데이터셋을 선택할 수 있습니다</li>
+  <li><strong>장치</strong> — 기본값은 첫 번째 사용 가능한 GPU입니다</li>
+  <li><strong>신뢰도</strong> — 이 점수보다 낮은 예측은 그냥 버립니다</li>
+  <li><strong>IoU 임계값</strong> — 예측 상자와 어노테이션 상자의 겹침 정도가 기준을 넘어야 정상 검출로 인정합니다</li>
+  <li><strong>라벨 파일 출력</strong> — 체크하면 예측 상자를 labelme json으로 작성해 사람이 검토하기 편합니다</li>
+  <li><strong>OCR</strong> — 텍스트 검출은 추론과 평가 두 갈래로 나뉩니다. 추론은 결과를 어노테이션 json으로 작성하고, 평가는 P/R을 집계합니다. 텍스트 인식은 어노테이션 파일을 출력하지 않고, 문자 조각의 인식률만 보고합니다</li>
+</ul>
+
+<div class="note">
+  데이터셋에 어노테이션이 있으면 자동으로 <strong>평가 모드</strong>로 들어가 재현율 / 미검출 / 오검출을 집계합니다. 텍스트 검출에서 추론 모드를 선택하면 어노테이션을 무시하고 예측 상자를 바로 json으로 작성합니다.
+</div>
+
+<figure>
+  <img src="images/模型测试与评估.png" alt="模型测试">
+  <figcaption>모델 테스트 파라미터 설정</figcaption>
+</figure>
+
+<h3>5.2 결과 분석</h3>
+
+<p>테스트가 끝나면 결과 분석 창이 뜹니다. 두 가지 기준으로 집계하며, 표현은 모두 직관적인 <strong>「정상 검출 / 미검출 / 오검출」</strong>입니다:</p>
+
+<ul>
+  <li><strong>이미지 기준</strong>(장 단위 집계, 1개만 검출해도 검출로 인정) — 테스트 장 수, 검출 이미지 및 재현율, 미검출 이미지, 오검출이 있는 이미지</li>
+  <li><strong>어노테이션 기준</strong>(어노테이션 상자 단위 집계) — 정상 검출, 미검출, 오검출, 정확도</li>
+  <li><strong>클래스별 표</strong> — 각 클래스의 어노테이션 수, 정상 검출, 미검출, 오검출, 재현율, 정확도</li>
+  <li><strong>텍스트 인식</strong> — 상자 단위로 집계하지 않고, 문자 조각 총수, CER(문자 오류율) 및 전부 맞은 조각 수를 보고합니다</li>
+  <li><strong>아래쪽 결론</strong> — 전체가 미검출 쪽인지 오검출 쪽인지, 그리고 가장 발목을 잡는 클래스가 무엇인지 한 문장으로 짚어 줍니다</li>
+</ul>
+
+<figure>
+  <img src="images/模型结果评估与报告.png" alt="测试结果分析与报告">
+  <figcaption>테스트 결과 분석 창(이미지 기준 + 어노테이션 기준 + 클래스별 상세)</figcaption>
+</figure>
+
+<h3>5.3 PDF 보고서 내보내기</h3>
+
+<p>오른쪽 아래의 「PDF 보고서 내보내기」를 클릭하면 백그라운드 스레드에서 생성되며, 내용은 다음과 같습니다:</p>
+
+<ul>
+  <li><strong>개요 페이지</strong> — 지표 요약 표 + 어노테이션 분포도</li>
+  <li><strong>미검출 샘플 페이지 / 오검출 샘플 페이지</strong> — 「클래스별 N장 추출」 방식으로 썸네일을 보여주고(수량은 왼쪽 아래에서 조정), 이미지 위에 빨간 상자로 미검출과 오검출 위치를 표시하며, 추출 비율도 명시합니다</li>
+  <li><strong>제안 페이지</strong> — 각종 오류에 대한 개선 방향을 제시합니다</li>
+</ul>
+
+<div class="note">
+  샘플링은 보고서를 만드는 이 단계에서만 일어나며, 상세 데이터는 여전히 전체이므로 이후 어려운 사례 발굴을 해도 데이터가 유실되지 않습니다.
+</div>
+
+<h2 id="ocr">6. OCR</h2>
+
+<p>OCR은 다른 작업과 다릅니다. <strong>두 개의 모델</strong>을 이어 붙여 완성합니다. 텍스트 검출이 문자 상자를 찾아내고, 텍스트 인식이 상자 안의 문자를 읽습니다. 학습, 테스트, 내보내기가 모두 두 단계로 나누어 진행되며, 모델 관리에 두 개의 기록이 남습니다.</p>
+
+<h3>6.1 텍스트 어노테이션</h3>
+
+<p>어노테이션 화면에서 상단의 <strong>「텍스트 어노테이션」</strong> 스위치를 켜면, 클래스가 자동으로 예약 라벨 「text」로 고정됩니다(라벨을 먼저 만들 필요가 없습니다). 사각형을 그리듯 문자를 감싸고 마우스를 놓으면 입력 상자가 떠서 내용을 입력하며, 이미 있는 텍스트 상자는 더블클릭하면 언제든 수정할 수 있습니다.</p>
+
+<p>텍스트 상자는 항상 사각형으로 그립니다. 기울어진 문자도 수평 상자로 덮으면 되고, 학습 시 다각형은 수평 외접 상자로 처리되므로 윤곽을 따라 그려도 추가 이점이 없습니다.</p>
+
+<p>텍스트 상자가 있는 labelme json을 가져오면 데이터셋이 자동으로 <strong>텍스트 검출 데이터셋</strong>으로 표시됩니다. 이후에는 이런 데이터셋만 OCR의 학습 세트 드롭다운에 나타납니다.</p>
+
+<figure>
+  <img src="images/ocr标注.png" alt="OCR 文本标注">
+  <figcaption>「텍스트 어노테이션」 스위치를 켠 뒤 상자를 그리고, 놓으면 문자 입력 상자가 뜹니다. 오른쪽 「어노테이션 정보」에는 각 텍스트 상자의 형태, 꼭짓점 수와 면적이 나열됩니다</figcaption>
+</figure>
+
+<p>어노테이션을 마치고 데이터셋 보기로 돌아오면, OCR 데이터셋에서는 각 텍스트 상자가 <strong>개별 썸네일로 잘려</strong> 표시되고, 라벨 바에는 클래스 이름이 아니라 상자에 입력한 <strong>문자 내용</strong>이 표시됩니다(3개를 넘으면 <code>+N</code>으로 접힘). 한 장씩 넘겨 보면 내용을 제대로 입력했는지 확인할 수 있습니다. 위쪽 클래스 필터에는 「text」 항목 하나만 있습니다.</p>
+
+<figure>
+  <img src="images/ocr标注显示.png" alt="OCR 数据集缩略图显示文字内容">
+  <figcaption>OCR 데이터셋: 각 텍스트 상자가 개별 이미지가 되고, 라벨 바에 입력한 문자 내용이 표시됨(초과 시 +N으로 접힘)</figcaption>
+</figure>
+
+<h3>6.2 학습</h3>
+
+<p>작업 유형에서 <strong>OCR</strong>을 선택합니다.</p>
+
+<p>이미지 크기는 검출 단계의 입력입니다(기본값 1024, 반드시 32의 배수). 인식 단계는 <code>32×128</code>로 고정되어 이 항목의 영향을 받지 않습니다.</p>
+
+<p>「학습 시작」을 클릭하면 자동으로 두 항목으로 나뉘어 대기열에 들어갑니다. 먼저 텍스트 검출, 다음으로 텍스트 인식입니다. 앞 항목이 끝나면 VRAM이 학습 시작 전 수준으로 내려갈 때까지 기다렸다가 다음 항목을 시작합니다. 이 동안 진행 영역에는 「VRAM 해제 대기 · 다음: 텍스트 인식」이 표시되어 중간에 비는 시간이 없습니다.</p>
+
+<figure>
+  <img src="images/ocr训练.png" alt="OCR 训练参数">
+  <figcaption>OCR의 학습 파라미터(그림에서는 「텍스트 검출」 단계로 표시됨). 모델명은 곧 등급 nano ~ large이며, 아키텍처 항목은 알고리즘이 자동으로 정하고 회색으로 표시되어 변경할 수 없습니다</figcaption>
+</figure>
+
+<div class="note">
+  인식 단계의 어휘는 어노테이션에 등장한 문자를 그대로 가져옵니다. 따라서 어노테이션 텍스트는 현장에서 실제로 마주칠 문자 집합을 모두 담아야 합니다. 현장에는 있지만 어노테이션에 등장하지 않은 문자는 모델이 알아보지 못합니다.
+</div>
+
+<h3>6.3 테스트: 검출은 두 갈래, 인식은 한 갈래</h3>
+
+<ul>
+  <li><strong>텍스트 검출 · 추론</strong> — 어노테이션과 대조하지 않고, 예측 상자(인식된 문자 포함)를 바로 labelme json으로 작성합니다. 작성된 json에는 OCR 표시가 있어 소프트웨어로 다시 끌어오면 텍스트 검출 데이터셋으로 인식되며, 결과를 확인하거나 어노테이션을 보완하는 데 쓸 수 있습니다</li>
+  <li><strong>텍스트 검출 · 평가</strong> — 데이터셋에 어노테이션이 있으면 자동으로 들어가며, 정상 검출 / 미검출 / 오검출과 클래스별 P/R을 집계합니다. 객체 검출 작업과 동일합니다</li>
+  <li><strong>텍스트 인식</strong> — 어노테이션 상자에서 잘라낸 문자 조각으로 테스트하며, 문자 조각 총수, CER(문자 오류율) 및 전부 맞은 조각 수를 보고하고 어노테이션 파일은 출력하지 않습니다</li>
+</ul>
+
+<h3>6.4 내보내기</h3>
+
+<p>두 단계에서 각각 ONNX 하나씩 내보냅니다: <code>项目_字符检测_尺寸_规模.onnx</code>와 <code>项目_字符识别_尺寸_规模.onnx</code>. 인식 단계에는 <code>vocab.txt</code> 어휘가 하나 더 붙습니다.</p>
+
+<p>텍스트 검출은 평소대로 평가 보고서를 생성합니다. 텍스트 인식은 CER이라는 결론 하나뿐이라 보고서를 생성하지 않습니다.</p>
+
+<p>호출 예제는 내보낸 디렉터리의 <code>examples/python/ocr.py</code>에 있습니다. 검출 단계 출력 logits에는 sigmoid가 적용되지 않으므로 후처리를 직접 작성해야 하며, 예제에 모두 작성되어 있습니다.</p>
+
+<h2 id="log">7. 로그</h2>
+
+<p>홈 화면 상단의 「로그」를 클릭하면 로그 창이 열리고, 실시간으로 스크롤되며 표시됩니다:</p>
+
+<ul>
+  <li>소프트웨어 시작 / 종료</li>
+  <li>프로젝트와 데이터셋의 생성, 이름 바꾸기, 삭제, 가져오기 / 내보내기</li>
+  <li>라벨의 생성, 이름 바꾸기, 삭제</li>
+  <li>학습의 시작, 진행 중(<code>[train]</code> 접두사로 하위 프로세스 출력 전달), 지표 갱신, 모델 저장, 수동 중지</li>
+  <li>테스트의 시작, 진행 중(<code>[test]</code> 접두사), 완료, 실패</li>
+</ul>
+
+<figure>
+  <img src="images/日志.png" alt="日志窗口">
+  <figcaption>로그 창</figcaption>
+</figure>
+
+<hr style="margin-top:48px; border:none; border-top:1px solid #dde1ea;">
+
+</body>
+</html>

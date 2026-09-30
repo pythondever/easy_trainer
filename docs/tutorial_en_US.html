@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EasyTrainer User Guide</title>
+<style>
+  body { font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+         max-width: 920px; margin: 0 auto; padding: 0 16px 48px;
+         color: #2b2f3b; background: #fff; line-height: 1.75; }
+  h1 { font-size: 28px; color: #1c1e25; border-bottom: 3px solid #4f7dff;
+       padding-bottom: 10px; margin: 24px 0; }
+  h2 { font-size: 22px; color: #1c1e25; margin-top: 40px;
+       border-left: 5px solid #4f7dff; padding-left: 12px; }
+  h3 { font-size: 17px; color: #353a48; margin-top: 26px; }
+  p, li { font-size: 15px; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  .lead { color: #4a5164; }
+  .note { background: #f3f6ff; border-left: 4px solid #4f7dff;
+          padding: 10px 14px; margin: 14px 0; border-radius: 4px; font-size: 14px; }
+  .warn { background: #fff3f3; border-left: 4px solid #d64545;
+          padding: 10px 14px; margin: 14px 0; border-radius: 4px; font-size: 14px; }
+  code { background: #23262f; color: #e8eaf0; padding: 1px 6px;
+         border-radius: 3px; font-family: Consolas, monospace; font-size: 13px; }
+  kbd { background: #f4f5f8; border: 1px solid #ccd2e0; border-bottom-width: 2px;
+        border-radius: 3px; padding: 0 5px; font-size: 13px;
+        font-family: Consolas, monospace; color: #353a48; }
+  figure { margin: 18px 0; text-align: center; }
+  figcaption { color: #5c6270; font-size: 13px; margin-top: 6px; }
+  img { max-width: 100%; height: auto; border: 1px solid #dde1ea;
+        border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+  .toc { background: #f9fafc; border: 1px solid #dde1ea; border-radius: 6px;
+         padding: 14px 22px; margin-bottom: 28px; }
+  .toc h2 { font-size: 16px; border: none; padding: 0; margin: 0 0 8px; color: #4f7dff; }
+  .toc ol { margin: 0; }
+  .toc li { font-size: 14px; margin-bottom: 4px; }
+  .toc a { color: #2b2f3b; text-decoration: none; }
+  .toc a:hover { color: #4f7dff; }
+  .lang { text-align: right; font-size: 13px; padding-top: 16px; }
+  .lang a { color: #6c7385; text-decoration: none; }
+  .lang a:hover { color: #4f7dff; }
+  table { border-collapse: collapse; width: 100%; margin: 14px 0; font-size: 14px; }
+  th, td { border: 1px solid #dde1ea; padding: 7px 10px; text-align: left; }
+  th { background: #f4f6fb; color: #353a48; font-weight: 600; }
+  /* 打印/PDF 排版: 标题不孤行, 图片不跨页截断 */
+  @media print {
+    h2, h3 { page-break-after: avoid; }
+    figure, img, table { page-break-inside: avoid; }
+    .lang { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="lang"><a href="introduce.html">Other languages</a></div>
+
+<h1>EasyTrainer User Guide</h1>
+
+<div class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#quick">Quick Start</a></li>
+    <li><a href="#project">Interface and Projects</a></li>
+    <li><a href="#annotate">Labels</a></li>
+    <li><a href="#train">Train</a></li>
+    <li><a href="#model">Model Manager</a></li>
+    <li><a href="#test">Test and Evaluation Report</a></li>
+    <li><a href="#ocr">OCR</a></li>
+    <li><a href="#log">Log</a></li>
+  </ol>
+</div>
+
+<h2 id="quick">Quick Start</h2>
+
+<p class="lead">From an empty install to your first trained model, the shortest path is these six steps. The details of each step are in the chapters that follow.</p>
+
+<ol>
+  <li><strong>Add Project</strong> — click "+ Add Project" on the left and type a name.</li>
+  <li><strong>Add Dataset</strong> — right-click the project node → "Add Dataset".</li>
+  <li><strong>Import Data</strong> — select the dataset, click "Import" at the top, and pick the image folder and the label folder separately.</li>
+  <li><strong>Check the data</strong> — click "Dataset Properties" and make sure the classes and counts are right.</li>
+  <li><strong>Train</strong> — click "Train", pick the task type and the dataset, leave the rest at the defaults, and click "Start Training".</li>
+  <li><strong>Check the results</strong> — when training finishes, find the record under "Models" and click "Test" to run it on the val set. If you need to deliver something, export a PDF report.</li>
+</ol>
+
+<div class="note">
+  If you don't have labeled data yet, start with chapter 3, "Labels".
+</div>
+
+<h2 id="project">1. Interface and Projects</h2>
+
+<h3>1.1 Main window layout</h3>
+
+<p>The main window has three parts: projects on the left, images in the middle, and the toolbar on top.</p>
+
+<ul>
+  <li><strong>Project tree on the left</strong> — projects and datasets are arranged in a hierarchy. After the dataset comes its labeling progress (such as <code>126/128</code>); the dot in front of the name shows whether it is loaded into memory, green for loaded, red for not loaded.</li>
+  <li><strong>Image area in the middle</strong> — thumbnails browsed page by page. A paging control sits centered at the bottom: two arrows around the page number, with the current page number highlighted. Hover over the page number to see how many images the current filter has in total.</li>
+  <li><strong>Toolbar on top</strong> — zoom, the label filter dropdown, and the Edit, Delete, Import, Export, Dataset Properties, Train, Models and Log buttons.</li>
+</ul>
+
+<figure>
+  <img src="images/主页.png" alt="EasyTrainer 主界面">
+  <figcaption>EasyTrainer main window</figcaption>
+</figure>
+
+<h3>1.2 Projects and datasets</h3>
+
+<p><strong>Add Project</strong>: click "+ Add Project" on the left, enter a name, and click OK. A project is the container for datasets, and every dataset has to belong to a project.</p>
+
+<figure>
+  <img src="images/添加项目.png" alt="添加项目">
+  <figcaption>Enter the project name</figcaption>
+</figure>
+
+<p>Right-click a <strong>project node</strong>:</p>
+
+<ul>
+  <li><strong>Add Dataset</strong> — create a new dataset under the project</li>
+  <li><strong>Export Project</strong> — export the datasets and labels of the whole project in a chosen format</li>
+  <li><strong>Rename</strong> — rename the project</li>
+  <li><strong>Delete Project</strong> — clears the datasets, labels and training records under it as well</li>
+</ul>
+
+<p>Right-clicking a <strong>dataset node</strong> acts on a single dataset: import / export / move / rename / delete.</p>
+
+<p><strong>Double-click a dataset</strong> to load it: the images and labels are rescanned and the caches rebuilt, and after that you can browse it on the right. Double-clicking one that has already been loaded (its row has a status dot) will not scan again.</p>
+
+<figure>
+  <img src="images/添加_修改_删除_数据集.png" alt="项目右键菜单">
+  <figcaption>Project context menu</figcaption>
+</figure>
+
+<h3>1.3 Import data</h3>
+
+<p>Select the dataset and click "Import" at the top; the import dialog opens:</p>
+
+<ul>
+  <li><strong>Image path</strong> — the folder the images are in</li>
+  <li><strong>Label path</strong> — the folder the label files are in</li>
+  <li><strong>Label format</strong> — Yolo txt / Labelme json / Import as classification (subfolders)</li>
+</ul>
+
+<div class="note">
+  For a <strong>classification dataset</strong>, choose "Import as classification (subfolders)": each subfolder name is one class, and <strong>no label files are needed</strong>.<br>
+  OCR uses Labelme json; the text box label is always "text", and after import the dataset is automatically marked as a text detection dataset.
+</div>
+
+<figure>
+  <img src="images/导入数据.png" alt="导入数据">
+  <figcaption>Import data dialog</figcaption>
+</figure>
+
+<h3>1.4 Dataset properties</h3>
+
+<p>Select the dataset and click "Dataset Properties" at the top; you can see the image path, the label path, and a <strong>label distribution bar chart</strong> showing how many annotation boxes each class has. You can tell at a glance which class is short on samples.</p>
+
+<figure>
+  <img src="images/数据集属性_标签分布.png" alt="数据集属性与标签分布">
+  <figcaption>Dataset properties and label distribution</figcaption>
+</figure>
+
+<h3>1.5 Interface language</h3>
+
+<p>The far right of the toolbar is the interface language dropdown, with nine languages to choose from: 中文, English, 繁體中文, 日本語, 한국어, Deutsch, Español, Français, Tiếng Việt.</p>
+
+<p>Once you pick one, the main window switches immediately, and any open Log or Training Queue windows refresh with it. Dialogs that are not open yet come up in the new language the next time you open them. Your choice is remembered, so the next launch is still in that language. Every entry in the dropdown is written in its own language, so no matter what the current interface language is, you can tell which one to pick.</p>
+
+<h2 id="annotate">2. Labels</h2>
+
+<h3>2.1 Open the annotation view</h3>
+
+<p>After selecting a dataset, right-click a thumbnail and choose "Labels", or just double-click the thumbnail.</p>
+
+<h3>2.2 Draw boxes</h3>
+
+<p>The toolbar at the top of the annotation view has three drawing modes:</p>
+
+<ul>
+  <li><strong>Rectangle</strong> — drag the mouse to draw a box</li>
+  <li><strong>Polygon</strong> — click the vertices one by one, then double-click or press Enter to finish (for segmentation tasks)</li>
+  <li><strong>Text Annotation</strong> — first turn on the "Text Annotation" switch at the top, then drag a box; when you release the mouse an input box pops up for the text, and double-clicking lets you change it (for OCR tasks)</li>
+</ul>
+
+<p>Always draw text boxes with <strong>Rectangle</strong>. Even tilted text is fine covered by a horizontal box: during training a polygon is treated as its horizontal bounding box, so tracing the outline brings no extra benefit.</p>
+
+<p>The toolbar also has "Delete Image", which deletes the current image.</p>
+
+<p>Pick the class from the label list on the right.</p>
+
+<p>The <strong>"Show labels" switch</strong> hides all outlines at any time (box lines, labels, vertex handles), which makes it easy to look at the original image. For content that has already been pasted but not yet dropped, only the outline is hidden while the pattern still shows, so turning it off is a good way to preview "what it will look like once pasted".</p>
+
+<p>The <strong>"Annotations"</strong> panel at the bottom right lists the shape (Rectangle / Polygon), vertex count and area of every annotation object in this image; directly below it, <strong>Image Info</strong> shows the width × height × channels of the current image (such as <code>505×505×3</code>) and its index.</p>
+
+<p>Further down is the <strong>Clipboard</strong>: after you right-click and copy a polygon, a thumbnail of the copied region (<code>120 × 90</code>) is added, up to 9 of them, arranged vertically and scrollable. The newest one is selected by default and carries a blue border; right-click a thumbnail to delete that one, or to clear them all.</p>
+
+<figure>
+  <img src="images/图像标注_剪切板.png" alt="图像标注">
+  <figcaption>Rectangle / polygon annotation, the label list and the clipboard at the bottom right</figcaption>
+</figure>
+
+<h3>2.3 Manage labels</h3>
+
+<p>The right side of the annotation view is the label list, with "Add Label" above it:</p>
+
+<ul>
+  <li><strong>Label name</strong> — separate several labels with commas to add more than one at a time</li>
+  <li><strong>Import</strong> — copy the labels over from another dataset in one batch</li>
+  <li><strong>Pick Color</strong> — choose from the preset swatches, or click "Custom RGB" to pick your own</li>
+</ul>
+
+<figure>
+  <img src="images/添加或导入标签.png" alt="添加标签">
+  <figcaption>Add or import labels</figcaption>
+</figure>
+
+<h3>2.4 Change the class</h3>
+
+<p><strong>One at a time</strong>: click an annotation box and a class dropdown menu appears; just pick the new class. Labels in the label list on the right can also be renamed, recolored and deleted.</p>
+
+<figure>
+  <img src="images/修改类别.png" alt="修改类别">
+  <figcaption>Change the class right on an annotation box</figcaption>
+</figure>
+
+<p><strong>In bulk</strong>: right-click a thumbnail → "Batch Change Class", fill in the old class and the new class, and every annotation of that class in the whole dataset is renamed.</p>
+
+<figure>
+  <img src="images/标签批量修改.png" alt="批量修改类别">
+  <figcaption>Batch change class dialog</figcaption>
+</figure>
+
+<h3>2.5 Copy and paste annotation objects</h3>
+
+<p>Right-click a <strong>polygon</strong> annotation and there are two actions:</p>
+
+<ul>
+  <li><strong>Copy</strong> — stores the pixels of this region as a template and, at the same time, creates a thumbnail in the clipboard at the bottom right</li>
+  <li><strong>Fill</strong> — changes the pixels inside the region to the RGB color of the three "Fill value" boxes (each channel <code>0 ~ 255</code>, default 255). Often used to wipe a defect out into the background color</li>
+</ul>
+
+<p><strong>Left-click</strong> a thumbnail in the clipboard, then move the mouse onto the canvas and a dashed polygon follows it: the shape is the real outline after rotation, with the angle rolled for this paste already applied. Check the landing spot and the orientation first, press <kbd>Esc</kbd> to dismiss the dashed line and go back to the normal mouse mode, then right-click and choose "Paste" to drop it.</p>
+
+<p>Right-click on an empty spot in the image and choose <strong>"Paste"</strong> to paste the currently selected clipboard item to the mouse position, either on the same image or on a different one. Before pasting, set these items in the toolbar:</p>
+
+<ul>
+  <li><strong>Angle Range</strong> — the angle interval for the random rotation when pasting (default <code>-180 ~ 180</code>). The dashed preview uses the angle rolled from this interval, so what you see is what you get</li>
+  <li><strong>Blend Strength</strong> — <code>0 ~ 1</code>, default <code>0.70</code>. Pasting automatically applies brightness compensation and edge feathering so the pasted part blends naturally with the background; set it to 0 to paste hard with no blending</li>
+  <li><strong>Fill value</strong> — three input boxes for R / G / B (each channel <code>0 ~ 255</code>, default 255), used together with the right-click "Fill" action to wipe a region to this color</li>
+  <li><strong><kbd>Ctrl</kbd> + <kbd>Z</kbd></strong> — undoes the most recent paste or fill: the pixels are restored and any annotations added with it are removed too. You can undo repeatedly</li>
+</ul>
+
+<figure>
+  <img src="images/标注对象复制.png" alt="标注对象复制">
+  <figcaption>Right-click to copy an annotation object → clipboard thumbnail; set Angle Range / Blend Strength / Fill value in the toolbar</figcaption>
+</figure>
+
+<h3>2.6 Adjust the brightness of a polygon region</h3>
+
+<p>Select a <strong>polygon</strong> and turn on <strong>Brightness</strong> under "Settings" in the toolbar, and you can change how light or dark the pixels inside that polygon box are. Drag the slider or type a value, and the image previews it in real time.</p>
+
+<ul>
+  <li><strong>Range</strong> — <code>0 ~ 1</code>; the default <code>0.50</code> means unchanged. Toward 1 it gets brighter (<code>1.00</code> is roughly double brightness), toward 0 it gets darker (0 is fully black)</li>
+  <li><strong>Applies only to the selected polygon</strong>. For a rectangle, or when nothing is selected, you only get a hint and the pixels are not touched. Click another polygon and the slider goes back to that polygon's own value (0.50 for any that was never adjusted), instead of carrying the previous one's brightness over</li>
+  <li><strong>When it is written to disk</strong> — dragging only changes memory and previews in real time. The values go into the image file only when you press <kbd>A</kbd> / <kbd>D</kbd> to switch images or press <kbd>Ctrl</kbd> + <kbd>S</kbd></li>
+  <li><strong>Undo</strong> — one adjustment is recorded as a single step, and <kbd>Ctrl</kbd> + <kbd>Z</kbd> goes back to before it. Dragging back and forth any number of times within the same adjustment still counts as one step</li>
+</ul>
+
+<figure>
+  <img src="images/多边形区域亮度调节.png" alt="多边形亮度调节">
+  <figcaption>With a polygon selected, use "Brightness" to change how light or dark the pixels inside are, previewed in real time on the image</figcaption>
+</figure>
+
+<h3>2.7 Filter images by class</h3>
+
+<p>In the class dropdown of the top toolbar, once you select a class the image area shows only the images that contain it. Very handy when you want to check or fill in the labels of one class.</p>
+
+<figure>
+  <img src="images/按标注类别_分类筛选.png" alt="按类别筛选">
+  <figcaption>Filter thumbnails by class</figcaption>
+</figure>
+
+<h2 id="train">3. Train</h2>
+
+<h3>3.1 Set the training parameters</h3>
+
+<p>Click "Train" on the home page or in the Models view and the parameter dialog opens:</p>
+
+<ul>
+  <li><strong>Task</strong> — Detection / Segmentation / Classification / Anomaly Detection / OCR; it switches automatically to follow the dataset format</li>
+  <li><strong>Train Set / Val Set</strong> — you can select several, and also combine them across projects</li>
+  <li><strong>Device</strong> — lists the available GPUs automatically</li>
+  <li><strong>Epochs / Optimizer / Early Stop</strong> — detection and segmentation use <code>adamw</code> and classification uses <code>sgd</code>; Early Stop ends early after N epochs in a row with no improvement, and 0 turns it off</li>
+  <li><strong>Learning rate</strong> — decays automatically during training</li>
+  <li><strong>Batch / Image Size / Grad Accum / Threads</strong> — Image Size must be a multiple of 32; if you run short of VRAM, lower the batch and raise Grad Accum, which is equivalent to a larger batch</li>
+  <li><strong>Output Path</strong> — leave it empty to generate the folder automatically by time, or click "Browse" to specify one</li>
+</ul>
+
+<figure>
+  <img src="images/训练参数与队列.png" alt="训练参数配置">
+  <figcaption>Training parameter dialog</figcaption>
+</figure>
+
+<h3>3.2 Training Queue</h3>
+
+<p>Once the parameters are set, besides "Start Training" you can click <strong>"Add to Queue"</strong> to park the task and go on to set up the next one. On the home page, click "Training Queue" to open the queue window:</p>
+
+<ul>
+  <li>The queue runs in order; Detection / Segmentation / Classification / Anomaly Detection / OCR can be mixed, and it moves on to the next one automatically when a task finishes</li>
+  <li><strong>Move Up / Move Down / Remove</strong> — change the running order or delete a task</li>
+  <li><strong>Edit</strong> — change the parameters of the selected task</li>
+  <li><strong>Clear Finished</strong> — move the records that have already run out of the queue</li>
+  <li><strong>Start Queue</strong> — run the queued tasks in order from the beginning</li>
+</ul>
+
+<div class="note">
+  The queue is made for leaving running overnight: set up tasks for several datasets in one go, and the software runs them all and saves a model for each.
+</div>
+
+<figure>
+  <img src="images/训练队列查看.png" alt="训练队列">
+  <figcaption>Training Queue window</figcaption>
+</figure>
+
+<h3>3.3 Training progress</h3>
+
+<p>After you click "Start Training" and come back to the home page, a progress bar and a control strip appear at the top:</p>
+
+<ul>
+  <li><strong>Task name + progress</strong> — shaped like <code>coco128 training 5/100</code>, with the current epoch's loss shown inside the progress bar</li>
+  <li><strong>Stop Training</strong> — stops at any time; the part that has already run is saved</li>
+  <li><strong>Time Left</strong> — estimated by extrapolating from the time used so far</li>
+  <li><strong>VRAM</strong> — GPU memory usage, refreshed in real time</li>
+</ul>
+
+<figure>
+  <img src="images/训练进度_指标_剩余时间_显存用量.png" alt="训练进度">
+  <figcaption>Training progress bar and status bar</figcaption>
+</figure>
+
+<h3>3.4 Training curves</h3>
+
+<p>In Model Manager, select a training record and click <strong>"View full metrics"</strong> in the details panel on the right; the training curve window opens:</p>
+
+<ul>
+  <li>The top half is the <strong>val loss</strong> curve</li>
+  <li>The bottom half holds several curves such as mAP@50-95 / mAP@50 / AR / F1 / precision / recall, and segmentation tasks add one more mask mAP curve</li>
+  <li>The "Label filter" dropdown at the top right switches between all metrics and the curve of one class</li>
+</ul>
+
+<figure>
+  <img src="images/训练指标查看.png" alt="训练指标">
+  <figcaption>Training metric curves (val loss + the accuracy metrics)</figcaption>
+</figure>
+
+<h2 id="model">4. Model Manager</h2>
+
+<p>Click "Models" on the home page to open Model Manager: the training record list is on the left and the details panel on the right.</p>
+
+<h3>4.1 List and filters</h3>
+
+<ul>
+  <li><strong>Search box</strong> — filters by keyword on project / dataset / label</li>
+  <li><strong>Task / Status dropdowns</strong> — for Task you can pick Detection / Segmentation / Classification / Anomaly Detection / Text Detection / Text Recognition; for Status you can pick Training / Finished / Failed / Stopped</li>
+  <li><strong>Best per dataset only</strong> — keeps only the highest-accuracy record of each dataset</li>
+  <li>List columns: Task, Dataset / Labels, Accuracy, Trained at, Duration, Image Size, Actions</li>
+  <li><strong>The Accuracy column has a color bar</strong> — green ≥ 0.8, yellow 0.5 ~ 0.8, red &lt; 0.5. Failed or stopped records show status text in this column instead, and hovering over it shows the failure reason</li>
+  <li>Three buttons in the row: <strong>Test</strong> (opens model testing), <strong>Export</strong> and <strong>Delete</strong> (which clears the matching training record as well)</li>
+</ul>
+
+<h3>4.2 Details panel</h3>
+
+<p>Click any row and the right side shows the full parameter set of that record: task · scale, status, accuracy, train / val sets, image size, epochs / early stop, batch size, learning rate, optimizer, device, labels, trained at, duration, model path. Above it there is also a thumbnail of the accuracy curve.</p>
+
+<p>Four buttons at the bottom of the panel:</p>
+
+<ul>
+  <li><strong>View full metrics</strong> — opens the training curve window (see the "Training curves" section)</li>
+  <li><strong>Test this model</strong> — opens the test dialog with this model (see the "Test parameters" section)</li>
+  <li><strong>Retrain with this config</strong> — brings over all the training parameters of this record and starts a new training run</li>
+  <li><strong>Open model directory</strong> — locates the weight file in File Explorer</li>
+</ul>
+
+<figure>
+  <img src="images/模型训练记录.png" alt="模型训练记录">
+  <figcaption>Model Manager: filter bar + training record list + details panel on the right</figcaption>
+</figure>
+
+<h3>4.3 Export ONNX</h3>
+
+<p>Click "Export" and choose a folder; a "项目_时间戳" folder is generated:</p>
+
+<ul>
+  <li><strong>Model <code>.onnx</code></strong> — detection and segmentation are exported by RF-DETR, classification and OCR by torch. The name is "项目_任务_图像尺寸_模型规模.onnx"</li>
+  <li><strong><code>classes.txt</code></strong> — the mapping between class ids and names. For the OCR recognition stage it is <code>vocab.txt</code>, one character per line as the vocabulary</li>
+  <li><strong>Evaluation report PDF</strong> — runs an evaluation on the val set automatically, reusing the test report template, named "…_评估报告.pdf"</li>
+  <li><strong><code>examples/</code></strong> — C++ / C# / Python sample code that calls the ONNX model for detection, segmentation and classification. OCR currently has a Python version only</li>
+</ul>
+
+<p>The export shows a progress indicator. ONNX conversion needs <code>onnx</code> and <code>onnxsim</code> installed; if they are missing, a popup tells you.</p>
+
+<p>Classification tasks do not produce an evaluation report: that missed/false-positive style of report does not fit classification. The same goes for OCR Text Recognition, whose only conclusion is CER.</p>
+
+<h2 id="test">5. Test and Evaluation Report</h2>
+
+<h3>5.1 Test parameters</h3>
+
+<p>In Model Manager, click "Test" in the row (or "Test this model" in the details panel) and the test dialog opens. The top shows the model info: task type, weight file, training accuracy, input size and scale. The parameters are below:</p>
+
+<ul>
+  <li><strong>Data</strong> — every dataset from every project can be selected</li>
+  <li><strong>Device</strong> — defaults to the first available GPU</li>
+  <li><strong>Confidence</strong> — predictions below this score are dropped</li>
+  <li><strong>IoU threshold</strong> — a prediction only counts as a correct detection when its overlap with the ground-truth box reaches this value</li>
+  <li><strong>Write label files</strong> — check it to write the predicted boxes out as labelme json, which makes manual review easy</li>
+  <li><strong>OCR</strong> — Text Detection has two paths, inference and evaluation: inference writes the results out as annotation json, evaluation measures P/R. Text Recognition writes no annotation files and only reports the crop recognition rate</li>
+</ul>
+
+<div class="note">
+  When the dataset has labels it automatically goes into <strong>evaluation mode</strong>, measuring Recall / Missed / False pos. If Text Detection is set to inference mode, the labels are ignored and the predicted boxes are written straight out as json.
+</div>
+
+<figure>
+  <img src="images/模型测试与评估.png" alt="模型测试">
+  <figcaption>Model test parameter setup</figcaption>
+</figure>
+
+<h3>5.2 Result analysis</h3>
+
+<p>When the test finishes, the result analysis window opens. It counts on two levels and always uses the plain wording <strong>"Correct detections / Missed / False pos."</strong>:</p>
+
+<ul>
+  <li><strong>Image level</strong> (counted per image; detecting one item counts as detected) — Images tested, detected images and their recall, undetected images, images with false positives</li>
+  <li><strong>Box level</strong> (counted per annotation box) — Correct detections, Missed, False pos., accuracy</li>
+  <li><strong>By class table</strong> — for each class: box count, Correct detections, Missed, False pos., recall and accuracy</li>
+  <li><strong>Text Recognition</strong> — not counted per box; it reports the total number of crops, the CER (character error rate) and the number of fully correct crops</li>
+  <li><strong>Conclusion at the bottom</strong> — one sentence on whether the model leans toward misses or false positives overall, and which class drags it down the most</li>
+</ul>
+
+<figure>
+  <img src="images/模型结果评估与报告.png" alt="测试结果分析与报告">
+  <figcaption>Test result analysis window (image level + box level + per-class details)</figcaption>
+</figure>
+
+<h3>5.3 Export PDF report</h3>
+
+<p>Click "Export PDF Report" at the bottom right; it is generated on a background thread and contains:</p>
+
+<ul>
+  <li><strong>Overview page</strong> — metric summary table + label distribution chart</li>
+  <li><strong>Missed samples page / False-positive samples page</strong> — thumbnails shown according to "Per class" (the count is adjusted at the bottom left), with red boxes marking where the misses and false positives are, plus the sampling ratio</li>
+  <li><strong>Suggestions page</strong> — an improvement direction for each type of error</li>
+</ul>
+
+<div class="note">
+  Sampling only happens at the report step; the detail data is still the full set, so hard-example mining later will not lose any data.
+</div>
+
+<h2 id="ocr">6. OCR</h2>
+
+<p>OCR is different from the other tasks: it is done by chaining <strong>two models</strong> — Text Detection finds the text boxes, and Text Recognition reads the characters inside them. Training, testing and export are all done in two separate stages, and Model Manager ends up with two records.</p>
+
+<h3>6.1 Annotate text</h3>
+
+<p>In the annotation view, turn on the <strong>"Text Annotation"</strong> switch at the top, and the class is automatically fixed to the reserved label "text" (you don't have to create a label first). Box the text the same way you draw a rectangle; when you release the mouse an input box pops up for the content, and double-clicking an existing text box lets you change it at any time.</p>
+
+<p>Always draw text boxes as rectangles: for tilted text a horizontal box is enough to cover it, because during training a polygon is treated as its horizontal bounding box and tracing the outline brings no extra benefit.</p>
+
+<p>When a labelme json with text boxes is imported, the dataset is automatically marked as a <strong>text detection dataset</strong>. From then on, only datasets of this kind show up in the OCR train set dropdown.</p>
+
+<figure>
+  <img src="images/ocr标注.png" alt="OCR 文本标注">
+  <figcaption>Turn on the "Text Annotation" switch and drag a box; releasing the mouse pops up the text input box. The "Annotations" panel on the right lists the shape, vertex count and area of each text box</figcaption>
+</figure>
+
+<p>When you have finished labeling and go back to the dataset view, every text box in an OCR dataset is <strong>cropped into its own thumbnail</strong>, and the label strip shows the <strong>text content</strong> recorded in the box (more than 3 of them collapse into <code>+N</code>) rather than the class name — flip through them one by one to check that the content was entered correctly. The class filter at the top has only one entry, "text".</p>
+
+<figure>
+  <img src="images/ocr标注显示.png" alt="OCR 数据集缩略图显示文字内容">
+  <figcaption>OCR dataset: each text box becomes its own image, and the label strip shows the recorded text (extras collapse into +N)</figcaption>
+</figure>
+
+<h3>6.2 Train</h3>
+
+<p>Set the task type to <strong>OCR</strong>.</p>
+
+<p>Image Size is the input of the detection stage (default 1024, and it must be a multiple of 32); the recognition stage is fixed at <code>32×128</code> and is not affected by this setting.</p>
+
+<p>After you click "Start Training" it is automatically split into two queued items: Text Detection first, then Text Recognition. When the first one finishes, the next one only starts after VRAM has fallen back to the level it was at before training began; during that time the progress area shows "Waiting for VRAM release · next:Text Recognition", so there is no idle gap in between.</p>
+
+<figure>
+  <img src="images/ocr训练.png" alt="OCR 训练参数">
+  <figcaption>OCR training parameters (marked as the "Text Detection" stage in the image); Model is the tier, nano ~ large, and the Architecture field is decided by the algorithm and greyed out, so it cannot be changed</figcaption>
+</figure>
+
+<div class="note">
+  The vocabulary of the recognition stage is taken straight from the characters that appear in the labels. So the annotated text has to cover the character set you actually meet on site — characters that occur on site but never appear in the labels will not be recognized by the model.
+</div>
+
+<h3>6.3 Testing: two paths for detection, one for recognition</h3>
+
+<ul>
+  <li><strong>Text Detection · inference</strong> — does not compare against the labels; it writes the predicted boxes (together with the recognized text) straight out as labelme json. The json carries an OCR flag, so dragging it back into the software makes it a text detection dataset that you can use to check the results or fill in labels</li>
+  <li><strong>Text Detection · evaluation</strong> — entered automatically when the dataset has labels; it measures Correct detections / Missed / False pos. and per-class P/R, the same as the detection task</li>
+  <li><strong>Text Recognition</strong> — tested on the crops cut out with the annotation boxes; it reports the total number of crops, the CER (character error rate) and the number of fully correct crops, and writes no annotation files</li>
+</ul>
+
+<h3>6.4 Export</h3>
+
+<p>Each of the two stages exports its own ONNX: <code>项目_字符检测_尺寸_规模.onnx</code> and <code>项目_字符识别_尺寸_规模.onnx</code>, with the recognition stage carrying an extra <code>vocab.txt</code> vocabulary.</p>
+
+<p>Text Detection produces an evaluation report as usual; Text Recognition has only CER as its conclusion and produces no report.</p>
+
+<p>The calling example is in <code>examples/python/ocr.py</code> in the export folder. Note that the logits output by the detection stage have not been through sigmoid, so you have to write the post-processing yourself — the example already has it all written.</p>
+
+<h2 id="log">7. Log</h2>
+
+<p>Click "Log" at the top of the home page to open the log window, which scrolls in real time and shows:</p>
+
+<ul>
+  <li>Software start / exit</li>
+  <li>Creating, renaming, deleting and importing / exporting projects and datasets</li>
+  <li>Creating, renaming and deleting labels</li>
+  <li>Training start, in progress (<code>[train]</code> prefix forwarding the subprocess output), metric updates, model saves and manual stops</li>
+  <li>Test start, in progress (<code>[test]</code> prefix), completion and failure</li>
+</ul>
+
+<figure>
+  <img src="images/日志.png" alt="日志窗口">
+  <figcaption>Log window</figcaption>
+</figure>
+
+<hr style="margin-top:48px; border:none; border-top:1px solid #dde1ea;">
+
+</body>
+</html>

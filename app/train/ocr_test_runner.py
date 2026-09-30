@@ -9,7 +9,7 @@ config 字段(与 test_dialog 组装的一致):
   iou_threshold / confidence / has_label / output_labels / report_dir
 
 检测段: 每张图预测文本框, 有标注时按 IoU 匹配算 P/R/TP/FP/FN; 勾选"输出标签
-文件"时把框写成 labelme json(类别"文本")到图像同目录, 首页重载即可看到.
+文件"时把框写成 labelme json(类别为保留标签)到图像同目录, 首页重载即可看到.
 识别段: 没有框就无从裁字条, 只能拿标注框裁图跑识别算 CER, 所以无标注数据集
 直接报错而不是给出 0.
 """
@@ -30,8 +30,8 @@ from PySide6.QtCore import QCoreApplication as QC
 
 from app.core import i18n
 from app.core.constants import IMAGE_EXTS
-from app.core.label_utils import (TEXT_LABEL, load_json_shapes,
-                                  shapes_to_labelme_json)
+from app.core.label_utils import (is_text_label, load_json_shapes,
+                                  shapes_to_labelme_json, text_label)
 from app.core.metrics import cer
 
 try:
@@ -199,7 +199,7 @@ def _write_json(img_path, iw, ih, boxes, texts):
     for i, b in enumerate(boxes):
         x1, y1, x2, y2 = b
         pts = [[x1, y1], [x2, y1], [x2, y2], [x1, y2]]
-        shapes.append((TEXT_LABEL, pts, texts[i] if i < len(texts) else ""))
+        shapes.append((text_label(), pts, texts[i] if i < len(texts) else ""))
     # 标志位是重载时把数据集认成 OCR 的唯一依据: 这些 json 没经过标注工具,
     # 走不到 annotation_io 那条置位路径
     data = shapes_to_labelme_json(shapes, img_path, iw, ih, ocr=True)
@@ -211,10 +211,10 @@ def _write_json(img_path, iw, ih, boxes, texts):
 
 
 def _gt_boxes(json_path):
-    """labelme 里的文本框 → [[x1,y1,x2,y2]], 只取"文本"这一类."""
+    """labelme 里的文本框 → [[x1,y1,x2,y2]], 只取保留标签这一类."""
     boxes = []
     for label, pts, _text in load_json_shapes(json_path):
-        if label != TEXT_LABEL:
+        if not is_text_label(label):
             continue
         xs = [float(p[0]) for p in pts]
         ys = [float(p[1]) for p in pts]
@@ -225,7 +225,7 @@ def _gt_boxes(json_path):
 def _crop_boxes(json_path):
     out = []
     for label, pts, text in load_json_shapes(json_path):
-        if label != TEXT_LABEL or not str(text or ""):
+        if not is_text_label(label) or not str(text or ""):
             continue
         xs = [float(p[0]) for p in pts]
         ys = [float(p[1]) for p in pts]
@@ -255,7 +255,7 @@ def _open_detail(cfg):
 def _write_detail(path, img_path, missing, spurious, hits):
     """照 test_runner 的口径: 只写有漏检或误检的图, 全对的图不落盘."""
     def item(box, conf=None):
-        d = {"cls": TEXT_LABEL,
+        d = {"cls": text_label(),
              "box": [round(float(v), 1) for v in box]}
         if conf is not None:
             d["conf"] = round(float(conf), 4)
@@ -387,7 +387,7 @@ def _run_det(cfg, ckpt):
         p = tp / (tp + fp) if (tp + fp) else 0.0
         r = tp / (tp + fn_) if (tp + fn_) else 0.0
         result.update({"P": p, "R": r, "TP": tp, "FP": fp, "FN": fn_,
-                       "per_class": {TEXT_LABEL: {"gt": gt_total, "tp": tp,
+                       "per_class": {text_label(): {"gt": gt_total, "tp": tp,
                                                   "fp": fp, "fn": fn_,
                                                   "det": tp + fp}},
                        "gt_missing": gt_missing,

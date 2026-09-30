@@ -8,7 +8,7 @@ from app.widgets.paginator import Paginator
 from app.core.constants import (PAGE_SIZE, THUMB_CACHE_MAX,
                                 ROI_CACHE_MAX)
 from app.mixins.label_mixin import UNLABELED_KEY
-from app.core.label_utils import (OCR_JSON_FLAG, TEXT_LABEL,
+from app.core.label_utils import (OCR_JSON_FLAG, is_text_label,
                                   normalize_label, label_sort_key,
                                   rec_is_labeled, same_dir_json)
 from app.core.image_utils import pil_to_qimage, make_uniform_thumb
@@ -124,10 +124,10 @@ except ImportError:
 
 
 def _thumb_labels(rec):
-    """缩略图标签条: 文本框用所录内容顶掉类别名("文本"本身没信息量)."""
-    labels = [lb for lb in (rec.get("labels") or []) if lb != TEXT_LABEL]
+    """缩略图标签条: 文本框用所录内容顶掉类别名(保留标签本身没信息量)."""
+    labels = [lb for lb in (rec.get("labels") or []) if not is_text_label(lb)]
     texts = [str(b[4]) for b in (rec.get("boxes") or [])
-             if len(b) >= 6 and b[-1] == TEXT_LABEL and b[4]]
+             if len(b) >= 6 and is_text_label(b[-1]) and b[4]]
     return labels + texts
 
 

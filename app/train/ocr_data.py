@@ -13,7 +13,8 @@ from PIL import Image
 
 from app.core.constants import IMAGE_EXTS
 from app.core.db import get_paths
-from app.core.label_utils import TEXT_LABEL, load_json_shapes, looks_like_labelme
+from app.core.label_utils import (is_text_label, load_json_shapes,
+                                  looks_like_labelme)
 from app.train.data_prep import _unique_dst
 
 
@@ -59,7 +60,7 @@ def collect(datasets, split):
                     continue
                 polys, texts = [], []
                 for label, pts, text in load_json_shapes(jp):
-                    if label != TEXT_LABEL or len(pts) < 2:
+                    if not is_text_label(label) or len(pts) < 2:
                         continue
                     polys.append(_to_quad(pts))
                     texts.append(str(text or ""))

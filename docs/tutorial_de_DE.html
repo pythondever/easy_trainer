@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EasyTrainer Benutzerhandbuch</title>
+<style>
+  body { font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+         max-width: 920px; margin: 0 auto; padding: 0 16px 48px;
+         color: #2b2f3b; background: #fff; line-height: 1.75; }
+  h1 { font-size: 28px; color: #1c1e25; border-bottom: 3px solid #4f7dff;
+       padding-bottom: 10px; margin: 24px 0; }
+  h2 { font-size: 22px; color: #1c1e25; margin-top: 40px;
+       border-left: 5px solid #4f7dff; padding-left: 12px; }
+  h3 { font-size: 17px; color: #353a48; margin-top: 26px; }
+  p, li { font-size: 15px; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  .lead { color: #4a5164; }
+  .note { background: #f3f6ff; border-left: 4px solid #4f7dff;
+          padding: 10px 14px; margin: 14px 0; border-radius: 4px; font-size: 14px; }
+  .warn { background: #fff3f3; border-left: 4px solid #d64545;
+          padding: 10px 14px; margin: 14px 0; border-radius: 4px; font-size: 14px; }
+  code { background: #23262f; color: #e8eaf0; padding: 1px 6px;
+         border-radius: 3px; font-family: Consolas, monospace; font-size: 13px; }
+  kbd { background: #f4f5f8; border: 1px solid #ccd2e0; border-bottom-width: 2px;
+        border-radius: 3px; padding: 0 5px; font-size: 13px;
+        font-family: Consolas, monospace; color: #353a48; }
+  figure { margin: 18px 0; text-align: center; }
+  figcaption { color: #5c6270; font-size: 13px; margin-top: 6px; }
+  img { max-width: 100%; height: auto; border: 1px solid #dde1ea;
+        border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+  .toc { background: #f9fafc; border: 1px solid #dde1ea; border-radius: 6px;
+         padding: 14px 22px; margin-bottom: 28px; }
+  .toc h2 { font-size: 16px; border: none; padding: 0; margin: 0 0 8px; color: #4f7dff; }
+  .toc ol { margin: 0; }
+  .toc li { font-size: 14px; margin-bottom: 4px; }
+  .toc a { color: #2b2f3b; text-decoration: none; }
+  .toc a:hover { color: #4f7dff; }
+  .lang { text-align: right; font-size: 13px; padding-top: 16px; }
+  .lang a { color: #6c7385; text-decoration: none; }
+  .lang a:hover { color: #4f7dff; }
+  table { border-collapse: collapse; width: 100%; margin: 14px 0; font-size: 14px; }
+  th, td { border: 1px solid #dde1ea; padding: 7px 10px; text-align: left; }
+  th { background: #f4f6fb; color: #353a48; font-weight: 600; }
+  /* 打印/PDF 排版: 标题不孤行, 图片不跨页截断 */
+  @media print {
+    h2, h3 { page-break-after: avoid; }
+    figure, img, table { page-break-inside: avoid; }
+    .lang { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="lang"><a href="introduce.html">Andere Sprachen / Other languages</a></div>
+
+<h1>EasyTrainer Benutzerhandbuch</h1>
+
+<div class="toc">
+  <h2>Inhalt</h2>
+  <ol>
+    <li><a href="#quick">Erste Schritte</a></li>
+    <li><a href="#project">Oberfläche und Projekte</a></li>
+    <li><a href="#annotate">Annotation</a></li>
+    <li><a href="#train">Training</a></li>
+    <li><a href="#model">Modellverwaltung</a></li>
+    <li><a href="#test">Test und Auswertungsbericht</a></li>
+    <li><a href="#ocr">OCR</a></li>
+    <li><a href="#log">Protokoll</a></li>
+  </ol>
+</div>
+
+<h2 id="quick">Erste Schritte</h2>
+
+<p class="lead">Von der leeren Software bis zum ersten Modell führen diese sechs Schritte am schnellsten. Die Details zu jedem Schritt stehen in den folgenden Kapiteln.</p>
+
+<ol>
+  <li><strong>Projekt hinzufügen</strong> – links auf „+ Projekt hinzufügen" klicken und einen Namen eingeben.</li>
+  <li><strong>Datensatz hinzufügen</strong> – Rechtsklick auf den Projektknoten → „Datensatz hinzufügen".</li>
+  <li><strong>Daten importieren</strong> – Datensatz auswählen, oben auf „Importieren" klicken und nacheinander den Bildordner und den Labelordner wählen.</li>
+  <li><strong>Daten prüfen</strong> – auf „Datensatz-Eigenschaften" klicken und kontrollieren, dass Klassen und Anzahl stimmen.</li>
+  <li><strong>Training</strong> – auf „Training" klicken, Aufgabentyp und Datensatz wählen, den Rest auf Standard lassen und auf „Training starten" klicken.</li>
+  <li><strong>Ergebnis ansehen</strong> – nach dem Training den Eintrag unter „Modelle" suchen und mit „Testen" einmal über das Validierungsset laufen lassen; für die Auslieferung einen PDF-Bericht exportieren.</li>
+</ol>
+
+<div class="note">
+  Falls noch keine annotierten Daten vorliegen, zuerst in Kapitel 3 „Annotation" schauen.
+</div>
+
+<h2 id="project">1. Oberfläche und Projekte</h2>
+
+<h3>1.1 Aufbau der Hauptoberfläche</h3>
+
+<p>Die Hauptoberfläche besteht aus drei Bereichen: links die Projekte, in der Mitte die Bilder, die Werkzeugleiste oben.</p>
+
+<ul>
+  <li><strong>Projektbaum links</strong> – Projekte und Datensätze sind hierarchisch angeordnet. Hinter dem Datensatz steht der Annotationsfortschritt (z. B. <code>126/128</code>); der Punkt vor dem Namen zeigt, ob er in den Speicher geladen ist: grün geladen, rot nicht geladen.</li>
+  <li><strong>Bildbereich in der Mitte</strong> – Vorschaubilder seitenweise ansehen. Unten mittig sitzt eine Gruppe von Blätterelementen: zwei Pfeile um die Seitenzahl, die aktuelle Seitenzahl ist hervorgehoben; wenn der Mauszeiger auf der Seitenzahl steht, sehen Sie, wie viele Bilder der aktuelle Filter insgesamt umfasst.</li>
+  <li><strong>Werkzeugleiste oben</strong> – Zoom, Dropdown zum Filtern der Annotationen sowie Schaltflächen für Bearbeiten, Löschen, Importieren, Exportieren, Eigenschaften, Training, Modelle, Protokoll und weitere.</li>
+</ul>
+
+<figure>
+  <img src="images/主页.png" alt="EasyTrainer 主界面">
+  <figcaption>EasyTrainer Hauptoberfläche</figcaption>
+</figure>
+
+<h3>1.2 Projekte und Datensätze</h3>
+
+<p><strong>Projekt hinzufügen</strong>: links auf „+ Projekt hinzufügen" klicken, Namen eingeben, mit OK bestätigen. Ein Projekt ist der Container für Datensätze; jeder Datensatz muss zu einem Projekt gehören.</p>
+
+<figure>
+  <img src="images/添加项目.png" alt="添加项目">
+  <figcaption>Projektnamen eingeben</figcaption>
+</figure>
+
+<p>Rechtsklick auf den <strong>Projektknoten</strong>:</p>
+
+<ul>
+  <li><strong>Datensatz hinzufügen</strong> – einen neuen Datensatz unter dem Projekt anlegen</li>
+  <li><strong>Projekt exportieren</strong> – die Datensätze und Annotationen des gesamten Projekts im gewünschten Format exportieren</li>
+  <li><strong>Umbenennen</strong> – das Projekt umbenennen</li>
+  <li><strong>Projekt löschen</strong> – entfernt auch die zugehörigen Datensätze, Annotationen und Trainingsläufe</li>
+</ul>
+
+<p>Ein Rechtsklick auf den <strong>Datensatzknoten</strong> betrifft einen einzelnen Datensatz: Importieren / Exportieren / Verschieben / Umbenennen / Löschen.</p>
+
+<p>Erst ein <strong>Doppelklick auf den Datensatz</strong> lädt ihn: Bilder und Annotationen werden neu eingelesen und der Cache neu aufgebaut, danach können Sie rechts browsen. Bei bereits geladenen Datensätzen (mit Statuspunkt in der Zeile) löst ein erneuter Doppelklick kein weiteres Einlesen aus.</p>
+
+<figure>
+  <img src="images/添加_修改_删除_数据集.png" alt="项目右键菜单">
+  <figcaption>Kontextmenü des Projekts</figcaption>
+</figure>
+
+<h3>1.3 Daten importieren</h3>
+
+<p>Datensatz auswählen und oben auf „Importieren" klicken; der Dialog zum Importieren öffnet sich:</p>
+
+<ul>
+  <li><strong>Bildpfad</strong> – der Ordner mit den Bildern</li>
+  <li><strong>Labelpfad</strong> – der Ordner mit den Labeldateien</li>
+  <li><strong>Labelformat</strong> – Yolo txt / Labelme json / Als Klassifizierung importieren (Unterordner)</li>
+</ul>
+
+<div class="note">
+  <strong>Klassifizierungsdatensätze</strong> nutzen „Als Klassifizierung importieren (Unterordner)": jeder Unterordnername ist eine Klasse, <strong>Labeldateien sind nicht nötig</strong>.<br>
+  Für OCR wird Labelme json verwendet; das Label der Textfelder ist fest „text"; nach dem Import wird der Datensatz automatisch als Textdetektions-Datensatz markiert.
+</div>
+
+<figure>
+  <img src="images/导入数据.png" alt="导入数据">
+  <figcaption>Dialog zum Importieren von Daten</figcaption>
+</figure>
+
+<h3>1.4 Datensatz-Eigenschaften</h3>
+
+<p>Datensatz auswählen und oben auf „Datensatz-Eigenschaften" klicken: Sie sehen den Bildpfad, den Labelpfad und ein <strong>Balkendiagramm der Labelverteilung</strong> – wie viele Annotationsrahmen jede Klasse hat. Welche Klasse zu wenige Beispiele hat, ist sofort erkennbar.</p>
+
+<figure>
+  <img src="images/数据集属性_标签分布.png" alt="数据集属性与标签分布">
+  <figcaption>Datensatz-Eigenschaften und Labelverteilung</figcaption>
+</figure>
+
+<h3>1.5 Oberflächensprache</h3>
+
+<p>Ganz rechts in der Werkzeugleiste sitzt das Dropdown für die Oberflächensprache mit neun Sprachen zur Auswahl: 中文、English、繁體中文、日本語、한국어、Deutsch、Español、Français、Tiếng Việt.</p>
+
+<p>Nach der Auswahl wechselt die Hauptoberfläche sofort; bereits geöffnete Fenster für Protokoll und Trainings-Warteschlange werden mit aktualisiert. Noch nicht geöffnete Dialoge erscheinen beim nächsten Öffnen in der neuen Sprache. Die Auswahl wird gemerkt und gilt auch beim nächsten Start. Jeder Eintrag im Dropdown steht in der jeweiligen Sprache selbst, sodass Sie unabhängig von der aktuellen Oberflächensprache erkennen, welchen Eintrag Sie wählen müssen.</p>
+
+<h2 id="annotate">2. Annotation</h2>
+
+<h3>2.1 Annotationsansicht öffnen</h3>
+
+<p>Datensatz auswählen und dann im Kontextmenü des Vorschaubilds „Annotation" wählen oder das Vorschaubild direkt doppelklicken.</p>
+
+<h3>2.2 Rahmen zeichnen</h3>
+
+<p>Die Werkzeugleiste oben in der Annotationsansicht bietet drei Arten zu zeichnen:</p>
+
+<ul>
+  <li><strong>Rechteck</strong> – mit gedrückter Maustaste einen Rahmen ziehen</li>
+  <li><strong>Polygon</strong> – nacheinander die Eckpunkte klicken, mit Doppelklick oder Eingabetaste abschließen (für Segmentierungsaufgaben)</li>
+  <li><strong>Textannotation</strong> – zuerst oben den Schalter „Textannotation" einschalten, dann einen Rahmen ziehen; beim Loslassen öffnet sich ein Eingabefeld für den Text, ein Doppelklick ändert ihn später (für OCR-Aufgaben)</li>
+</ul>
+
+<p>Textfelder werden immer als <strong>Rechteck</strong> gezeichnet. Auch schräger Text wird einfach mit einem horizontalen Rahmen überdeckt – beim Training wird ein Polygon als horizontales Hüllrechteck behandelt; das Nachfahren der Kontur bringt nichts.</p>
+
+<p>In der Werkzeugleiste gibt es außerdem „Bild löschen", um das aktuelle Bild zu entfernen.</p>
+
+<p>Die Klasse wählen Sie in der Labelliste rechts.</p>
+
+<p>Der <strong>Schalter „Annotationen anzeigen"</strong> blendet jederzeit alle Konturen aus (Rahmenlinien, Labels, Eckpunkte-Handles), um das Originalbild zu sehen. Bei bereits eingefügten, aber noch nicht abgelegten Inhalten werden nur die Konturen ausgeblendet, das Muster bleibt sichtbar – zum Ausschalten eignet er sich daher gut, um zu prüfen, „wie das Ergebnis nach dem Einfügen aussieht".</p>
+
+<p>Unten rechts listet <strong>„Annotationen"</strong> für jedes annotierte Objekt dieses Bildes die Form (Rechteck / Polygon), die Eckpunktezahl und die Fläche auf; direkt darunter zeigt die <strong>Bildinfo</strong> Breite × Höhe × Kanäle (z. B. <code>505×505×3</code>) und die laufende Nummer des Bildes.</p>
+
+<p>Weiter unten folgt die <strong>Zwischenablage</strong>: Nach dem Kopieren eines Polygons per Rechtsklick wird das Vorschaubild des kopierten Bereichs (<code>120 × 90</code>) hinzugefügt; es werden bis zu 9 Stück gespeichert, vertikal angeordnet und scrollbar. Das neueste ist standardmäßig ausgewählt und hat einen blauen Rahmen; per Rechtsklick auf ein Vorschaubild können Sie dieses löschen oder alle leeren.</p>
+
+<figure>
+  <img src="images/图像标注_剪切板.png" alt="图像标注">
+  <figcaption>Rechteck-/Polygon-Annotation, Labelliste und Zwischenablage unten rechts</figcaption>
+</figure>
+
+<h3>2.3 Labelverwaltung</h3>
+
+<p>Rechts in der Annotationsansicht liegt die Labelliste; darüber befindet sich „Label hinzufügen":</p>
+
+<ul>
+  <li><strong>Labelnamen</strong> – mehrere Labels durch Komma trennen; so lassen sich mehrere auf einmal hinzufügen</li>
+  <li><strong>Importieren</strong> – Labels aus einem anderen Datensatz komplett übernehmen</li>
+  <li><strong>Farbe</strong> – aus der vorgegebenen Palette wählen oder mit „Eigenes RGB:" selbst festlegen</li>
+</ul>
+
+<figure>
+  <img src="images/添加或导入标签.png" alt="添加标签">
+  <figcaption>Labels hinzufügen oder importieren</figcaption>
+</figure>
+
+<h3>2.4 Klasse ändern</h3>
+
+<p><strong>Einzeln ändern</strong>: auf einen Annotationsrahmen klicken, im aufgeklappten Dropdown die neue Klasse wählen. Die Labels in der Liste rechts lassen sich ebenfalls umbenennen, umfärben und löschen.</p>
+
+<figure>
+  <img src="images/修改类别.png" alt="修改类别">
+  <figcaption>Klasse direkt am Annotationsrahmen ändern</figcaption>
+</figure>
+
+<p><strong>Massenweise ändern</strong>: im Kontextmenü des Vorschaubilds „Klasse ändern" wählen, alte und neue Klasse eintragen – damit werden im gesamten Datensatz alle Annotationen dieser Klasse umbenannt.</p>
+
+<figure>
+  <img src="images/标签批量修改.png" alt="批量修改类别">
+  <figcaption>Dialog zum massenweisen Ändern der Klasse</figcaption>
+</figure>
+
+<h3>2.5 Annotationsobjekte kopieren und einfügen</h3>
+
+<p>Ein Rechtsklick auf eine <strong>Polygon</strong>-Annotation bietet zwei Aktionen:</p>
+
+<ul>
+  <li><strong>Kopieren</strong> – die Pixel dieses Bereichs werden als Vorlage gespeichert und in der Zwischenablage unten rechts als Vorschaubild abgelegt</li>
+  <li><strong>Füllen</strong> – die Pixel im Bereich werden auf die RGB-Farbe der drei Felder unter „Füllfarbe" gesetzt (pro Kanal <code>0 ~ 255</code>, Standard 255). Häufig genutzt, um Defekte in die Hintergrundfarbe zu übermalen</li>
+</ul>
+
+<p>Mit einem <strong>Linksklick</strong> wählen Sie ein Vorschaubild in der Zwischenablage; bewegen Sie dann den Mauszeiger auf die Leinwand, folgt eine gestrichelte Polygonlinie – ihre Form ist die tatsächliche Kontur nach der Drehung, mit dem diesmal ausgelosten Winkel. Prüfen Sie zuerst Position und Ausrichtung; mit <kbd>Esc</kbd> blenden Sie die gestrichelte Linie aus und kehren in den normalen Mausmodus zurück, dann wählen Sie per Rechtsklick „Einfügen", um sie abzulegen.</p>
+
+<p>Ein Rechtsklick auf eine leere Stelle im Bild und dann <strong>„Einfügen"</strong> fügt das aktuell ausgewählte Vorschaubild aus der Zwischenablage an der Mausposition ein – im selben Bild oder in einem anderen. Stellen Sie vor dem Einfügen in der Werkzeugleiste diese Punkte ein:</p>
+
+<ul>
+  <li><strong>Winkelbereich</strong> – das Intervall für die zufällige Drehung beim Einfügen (Standard <code>-180 ~ 180</code>). Die Vorschau mit der gestrichelten Linie nutzt den aus diesem Bereich ausgelosten Winkel, also genau das, was Sie bekommen</li>
+  <li><strong>Mischstärke</strong> – <code>0 ~ 1</code>, Standard <code>0.70</code>. Beim Einfügen werden Helligkeit ausgeglichen und die Ränder weichgezeichnet, damit sich der eingefügte Teil natürlich in den Hintergrund einfügt; bei 0 wird hart eingefügt</li>
+  <li><strong>Füllfarbe</strong> – die drei Eingabefelder R / G / B (pro Kanal <code>0 ~ 255</code>, Standard 255); zusammen mit „Füllen" im Kontextmenü übermalen Sie einen Bereich mit dieser Farbe</li>
+  <li><strong><kbd>Ctrl</kbd> + <kbd>Z</kbd></strong> – macht das letzte Einfügen oder Füllen rückgängig; die Pixel werden wiederhergestellt und die dadurch neu entstandenen Annotationen mit entfernt. Mehrfaches Rückgängig ist möglich</li>
+</ul>
+
+<figure>
+  <img src="images/标注对象复制.png" alt="标注对象复制">
+  <figcaption>Rechtsklick auf ein Annotationsobjekt → Vorschaubild in der Zwischenablage; in der Werkzeugleiste Winkelbereich / Mischstärke / Füllfarbe einstellen</figcaption>
+</figure>
+
+<h3>2.6 Helligkeit eines Polygonbereichs anpassen</h3>
+
+<p>Wählen Sie ein <strong>Polygon</strong> aus und aktivieren Sie in den <strong>Einstellungen</strong> der Werkzeugleiste die <strong>Helligkeit</strong>; damit ändern Sie die Helligkeit der Pixel innerhalb dieses Polygons. Schieben Sie den Regler oder geben Sie den Wert direkt ein – die Vorschau im Bild ist sofort zu sehen.</p>
+
+<ul>
+  <li><strong>Bereich</strong> – <code>0 ~ 1</code>, Standard <code>0.50</code> bedeutet unverändert. In Richtung 1 wird es heller (<code>1.00</code> etwa doppelte Helligkeit), in Richtung 0 dunkler (0 ist völlig schwarz)</li>
+  <li><strong>Wirkt nur auf das ausgewählte Polygon.</strong> Bei einem Rechteck oder ohne Auswahl erscheint nur ein Hinweis, die Pixel bleiben unverändert. Klicken Sie ein anderes Polygon an, springt der Regler auf dessen eigenen Wert zurück (nicht angepasste stehen auf 0.50); die Helligkeit des vorherigen wird nicht übernommen</li>
+  <li><strong>Wann gespeichert wird</strong> – beim Ziehen wird nur im Speicher geändert und live angezeigt. Erst mit <kbd>A</kbd> / <kbd>D</kbd> zum Bildwechseln oder mit <kbd>Ctrl</kbd> + <kbd>S</kbd> wird es in die Bilddatei geschrieben</li>
+  <li><strong>Rückgängig</strong> – eine Anpassung zählt als ein Schritt; mit <kbd>Ctrl</kbd> + <kbd>Z</kbd> kehren Sie zum Zustand davor zurück. Egal wie oft Sie innerhalb derselben Anpassung hin und her ziehen, es bleibt ein Schritt</li>
+</ul>
+
+<figure>
+  <img src="images/多边形区域亮度调节.png" alt="多边形亮度调节">
+  <figcaption>Nach Auswahl eines Polygons mit „Helligkeit" die Helligkeit der Pixel im Bereich ändern; Vorschau live im Bild</figcaption>
+</figure>
+
+<h3>2.7 Nach Klasse filtern</h3>
+
+<p>Im Klassen-Dropdown der oberen Werkzeugleiste zeigen Sie nach Auswahl einer Klasse im Bildbereich nur Bilder mit dieser Klasse an. Praktisch, um eine Klasse gezielt zu prüfen oder nachzuannotieren.</p>
+
+<figure>
+  <img src="images/按标注类别_分类筛选.png" alt="按类别筛选">
+  <figcaption>Vorschaubilder nach Klasse filtern</figcaption>
+</figure>
+
+<h2 id="train">3. Training</h2>
+
+<h3>3.1 Trainingsparameter einstellen</h3>
+
+<p>Auf der Startseite oder in der Modellverwaltung auf „Training" klicken; der Dialog zur Parametereinstellung öffnet sich:</p>
+
+<ul>
+  <li><strong>Aufgabentyp</strong> – Erkennung / Segmentierung / Klassifizierung / Anomalieerkennung / OCR; wird je nach Datensatzformat automatisch umgestellt</li>
+  <li><strong>Trainingsset / Validierungsset</strong> – Mehrfachauswahl möglich, auch projektübergreifend kombinierbar</li>
+  <li><strong>Gerät</strong> – listet automatisch die verfügbaren GPUs auf</li>
+  <li><strong>Epochen / Optimierer / Early Stop</strong> – der Optimierer ist <code>adamw</code> für Erkennung und Segmentierung und <code>sgd</code> für Klassifizierung; Early Stop beendet vorzeitig, wenn N Epochen in Folge keine Verbesserung bringen, 0 schaltet ihn ab</li>
+  <li><strong>Lernrate</strong> – wird während des Trainings automatisch verringert</li>
+  <li><strong>Batch / Bildgröße / Grad-Akkum. / Threads</strong> – die Bildgröße muss ein Vielfaches von 32 sein; reicht der VRAM nicht, verkleinern Sie den Batch und erhöhen Sie die Grad-Akkumulation – das wirkt wie ein größerer Batch</li>
+  <li><strong>Ausgabepfad</strong> – bleibt er leer, wird automatisch ein Ordner nach Zeitstempel angelegt; alternativ über „Durchsuchen" festlegen</li>
+</ul>
+
+<figure>
+  <img src="images/训练参数与队列.png" alt="训练参数配置">
+  <figcaption>Dialog zur Einstellung der Trainingsparameter</figcaption>
+</figure>
+
+<h3>3.2 Trainings-Warteschlange</h3>
+
+<p>Nach dem Einstellen der Parameter können Sie außer „Training starten" auch auf <strong>„Zur Warteschlange"</strong> klicken, um die Aufgabe erst einmal zurückzustellen, und dann die nächste konfigurieren. Auf der Startseite öffnet „Trainings-Warteschlange" das Warteschlangenfenster:</p>
+
+<ul>
+  <li>Die Warteschlange arbeitet die Aufgaben der Reihe nach ab; Erkennung / Segmentierung / Klassifizierung / Anomalieerkennung / OCR können gemischt werden, nach einer Aufgabe startet automatisch die nächste</li>
+  <li><strong>Nach oben / Nach unten / Entfernen</strong> – die Reihenfolge ändern oder eine Aufgabe löschen</li>
+  <li><strong>Bearbeiten</strong> – die Parameter der ausgewählten Aufgabe ändern</li>
+  <li><strong>Beendete löschen</strong> – entfernt die bereits abgeschlossenen Einträge</li>
+  <li><strong>Warteschlange starten</strong> – führt die Aufgaben der Warteschlange von vorn der Reihe nach aus</li>
+</ul>
+
+<div class="note">
+  Die Warteschlange eignet sich für den unbeaufsichtigten Betrieb über Nacht: Konfigurieren Sie die Aufgaben für mehrere Datensätze auf einmal; die Software führt alle aus und speichert die Modelle jeweils getrennt.
+</div>
+
+<figure>
+  <img src="images/训练队列查看.png" alt="训练队列">
+  <figcaption>Fenster der Trainings-Warteschlange</figcaption>
+</figure>
+
+<h3>3.3 Trainingsfortschritt</h3>
+
+<p>Nach dem Klick auf „Training starten" kehren Sie zur Startseite zurück; oben erscheinen Fortschrittsbalken und Steuerleiste:</p>
+
+<ul>
+  <li><strong>Aufgabenname + Fortschritt</strong> – in der Form <code>coco128 Training 5/100</code>; im Fortschrittsbalken wird der loss der aktuellen Epoche angezeigt</li>
+  <li><strong>Training stoppen</strong> – jederzeit abbrechen; der bereits abgeschlossene Teil wird gespeichert</li>
+  <li><strong>Restzeit</strong> – aus der bisher benötigten Zeit hochgerechnet</li>
+  <li><strong>VRAM</strong> – Auslastung des GPU-Speichers, live aktualisiert</li>
+</ul>
+
+<figure>
+  <img src="images/训练进度_指标_剩余时间_显存用量.png" alt="训练进度">
+  <figcaption>Fortschrittsbalken und Statusleiste des Trainings</figcaption>
+</figure>
+
+<h3>3.4 Trainingskurven</h3>
+
+<p>Wählen Sie in der Modellverwaltung einen Trainingslauf aus und klicken Sie im Detailbereich rechts auf <strong>„Alle Metriken anzeigen"</strong>; das Fenster mit den Trainingskurven öffnet sich:</p>
+
+<ul>
+  <li>Die obere Hälfte zeigt die Kurve des <strong>val loss</strong></li>
+  <li>Die untere Hälfte zeigt mehrere Kurven wie mAP@50-95 / mAP@50 / AR / F1 / precision / recall; bei Segmentierungsaufgaben kommt eine mask mAP hinzu</li>
+  <li>Das Dropdown „Labelfilter" oben rechts schaltet zwischen allen Metriken und den Kurven einer einzelnen Klasse um</li>
+</ul>
+
+<figure>
+  <img src="images/训练指标查看.png" alt="训练指标">
+  <figcaption>Trainingskurven (val loss + verschiedene Genauigkeiten)</figcaption>
+</figure>
+
+<h2 id="model">4. Modellverwaltung</h2>
+
+<p>Auf der Startseite „Modelle" öffnen – die Modellverwaltung erscheint: links die Liste der Trainingsläufe, rechts der Detailbereich.</p>
+
+<h3>4.1 Liste und Filter</h3>
+
+<ul>
+  <li><strong>Suchfeld</strong> – filtert nach Stichwörtern aus Projekt / Datensatz / Label</li>
+  <li><strong>Dropdown für Aufgabe / Status</strong> – als Aufgabe wählbar: Erkennung / Segmentierung / Klassifizierung / Anomalieerkennung / TextDetektion / Texterkennung; als Status: Training / Abgeschlossen / Fehlgeschlagen / Gestoppt</li>
+  <li><strong>Nur beste je Datensatz</strong> – pro Datensatz bleibt nur der Eintrag mit der höchsten Genauigkeit</li>
+  <li>Spalten der Liste: Aufgabe, Datensatz / Labels, Genauigkeit, Trainiert am, Dauer, Bildgröße, Aktionen</li>
+  <li><strong>Die Spalte Genauigkeit hat einen Farbbalken</strong> – grün ≥ 0.8, gelb 0.5 ~ 0.8, rot &lt; 0.5. Bei fehlgeschlagenen oder gestoppten Läufen steht in dieser Spalte der Statustext; mit dem Mauszeiger darüber sehen Sie die Fehlerursache</li>
+  <li>Drei Schaltflächen in der Zeile: <strong>Testen</strong> (öffnet den Modelltest), <strong>Exportieren</strong>, <strong>Löschen</strong> (entfernt auch den zugehörigen Trainingslauf)</li>
+</ul>
+
+<h3>4.2 Detailbereich</h3>
+
+<p>Klicken Sie auf eine beliebige Zeile; rechts erscheinen die vollständigen Parameter dieses Laufs: Aufgabe·Skala, Status, Genauigkeit, Trainings-/Validierungsset, Bildgröße, Epochen / Early Stop, Batch-Größe, Lernrate, Optimierer, Gerät, Labels, Trainingszeit, Dauer, Modellpfad. Oben gibt es außerdem eine Miniatur der Genauigkeitskurve.</p>
+
+<p>Am unteren Rand des Bereichs stehen vier Schaltflächen:</p>
+
+<ul>
+  <li><strong>Alle Metriken anzeigen</strong> – öffnet das Fenster mit den Trainingskurven (siehe Abschnitt „Trainingskurven")</li>
+  <li><strong>Dieses Modell testen</strong> – öffnet mit diesem Modell den Testdialog (siehe Abschnitt „Testparameter")</li>
+  <li><strong>Mit dieser Konfiguration neu trainieren</strong> – übernimmt alle Trainingsparameter dieses Laufs und startet ein neues Training</li>
+  <li><strong>Modellordner öffnen</strong> – zeigt die Gewichtsdatei im Datei-Explorer</li>
+</ul>
+
+<figure>
+  <img src="images/模型训练记录.png" alt="模型训练记录">
+  <figcaption>Modellverwaltung: Filterleiste + Liste der Trainingsläufe + Detailbereich rechts</figcaption>
+</figure>
+
+<h3>4.3 ONNX exportieren</h3>
+
+<p>Mit „Exportieren" einen Ordner wählen; es entsteht ein Ordner „项目_时间戳":</p>
+
+<ul>
+  <li><strong>Modell <code>.onnx</code></strong> – Erkennung und Segmentierung werden von RF-DETR exportiert, Klassifizierung und OCR von torch. Benannt als „项目_任务_图像尺寸_模型规模.onnx"</li>
+  <li><strong><code>classes.txt</code></strong> – die Zuordnung von Klassen-ID zu Name. Für die Erkennungsstufe von OCR ist es <code>vocab.txt</code>; eine Zeile pro Zeichen, das ist das Vokabular</li>
+  <li><strong>Auswertungsbericht PDF</strong> – führt automatisch eine Auswertung am Validierungsset durch, nutzt die Vorlage des Testberichts und heißt „…_评估报告.pdf"</li>
+  <li><strong><code>examples/</code></strong> – Beispielcode in C++ / C# / Python zum Aufrufen von ONNX für Erkennung, Segmentierung und Klassifizierung. Für OCR gibt es derzeit nur die Python-Version</li>
+</ul>
+
+<p>Der Export zeigt einen Fortschritt an. Für die ONNX-Konvertierung müssen <code>onnx</code> und <code>onnxsim</code> installiert sein; fehlen sie, erscheint ein Hinweis in einem Dialog.</p>
+
+<p>Klassifizierungsaufgaben erzeugen keinen Auswertungsbericht – der Bericht mit Übersehen/Fehlalarm passt nicht zur Klassifizierung. Bei der Texterkennung von OCR ist es genauso: Ihr Ergebnis ist nur der CER.</p>
+
+<h2 id="test">5. Test und Auswertungsbericht</h2>
+
+<h3>5.1 Testparameter</h3>
+
+<p>In der Modellverwaltung auf „Testen" in der Zeile klicken (oder im Detailbereich auf „Dieses Modell testen"); der Testdialog öffnet sich. Oben stehen die Modellinformationen: Aufgabentyp, Gewichtsdatei, Trainingsgenauigkeit, Eingabegröße, Skala. Darunter folgen die Parameter:</p>
+
+<ul>
+  <li><strong>Daten</strong> – alle Datensätze über alle Projekte hinweg sind wählbar</li>
+  <li><strong>Gerät</strong> – standardmäßig die erste verfügbare GPU</li>
+  <li><strong>Konfidenz</strong> – Vorhersagen unterhalb dieses Werts werden verworfen</li>
+  <li><strong>IoU-Schwelle</strong> – nur wenn die Überdeckung von Vorhersage- und Annotationsrahmen den Wert erreicht, gilt es als korrekt erkannt</li>
+  <li><strong>Labeldateien schreiben</strong> – wenn aktiviert, werden die Vorhersagerahmen als labelme json geschrieben, praktisch für die manuelle Kontrolle</li>
+  <li><strong>OCR</strong> – die TextDetektion kennt zwei Wege: Inferenz und Auswertung. Die Inferenz schreibt die Ergebnisse als Annotations-JSON, die Auswertung ermittelt P/R. Die Texterkennung gibt keine Annotationsdatei aus, sondern meldet nur die Erkennungsrate der Textausschnitte</li>
+</ul>
+
+<div class="note">
+  Hat der Datensatz Annotationen, wird automatisch der <strong>Auswertungsmodus</strong> verwendet; gezählt werden Trefferquote / Übersehen / Fehlalarm. Wurde bei der TextDetektion der Inferenzmodus gewählt, werden die Annotationen ignoriert und die Vorhersagerahmen direkt als JSON geschrieben.
+</div>
+
+<figure>
+  <img src="images/模型测试与评估.png" alt="模型测试">
+  <figcaption>Konfiguration der Modelltest-Parameter</figcaption>
+</figure>
+
+<h3>5.2 Ergebnisanalyse</h3>
+
+<p>Nach dem Test öffnet sich das Fenster zur Ergebnisanalyse; gezählt wird in zwei Dimensionen, durchgängig mit den klaren Bezeichnungen <strong>„Korrekt / Übersehen / Fehlalarm"</strong>:</p>
+
+<ul>
+  <li><strong>Bilddimension</strong> (gezählt pro Bild; ein Treffer genügt als erkannt) – Anzahl getesteter Bilder, erkannte Bilder und Trefferquote, nicht erkannte Bilder, Bilder mit Fehlalarm</li>
+  <li><strong>Annotationsdimension</strong> (gezählt pro Annotationsrahmen) – Korrekt, Übersehen, Fehlalarm, Genauigkeit</li>
+  <li><strong>Tabelle je Klasse</strong> – pro Klasse: Anzahl der Annotationen, Korrekt, Übersehen, Fehlalarm, Trefferquote, Genauigkeit</li>
+  <li><strong>Texterkennung</strong> – wird nicht pro Rahmen gezählt, sondern meldet die Gesamtzahl der Textausschnitte, den CER (Zeichenfehlerrate) und die Anzahl vollständig richtiger</li>
+  <li><strong>Fazit unten</strong> – ein Satz nennt, ob insgesamt eher Übersehen oder Fehlalarm überwiegt, und die Klasse mit dem größten Anteil daran</li>
+</ul>
+
+<figure>
+  <img src="images/模型结果评估与报告.png" alt="测试结果分析与报告">
+  <figcaption>Fenster der Testergebnisanalyse (Bilddimension + Annotationsdimension + Aufstellung je Klasse)</figcaption>
+</figure>
+
+<h3>5.3 PDF-Bericht exportieren</h3>
+
+<p>Unten rechts auf „PDF-Bericht exportieren" klicken; die Erstellung läuft in einem Hintergrund-Thread. Der Bericht enthält:</p>
+
+<ul>
+  <li><strong>Übersichtsseite</strong> – Tabelle mit zusammengefassten Metriken + Diagramm der Annotationsverteilung</li>
+  <li><strong>Seite mit Übersehen-Beispielen / Seite mit Fehlalarm-Beispielen</strong> – zeigt Vorschaubilder nach dem Muster „je Klasse N Stück" (die Anzahl wird unten links eingestellt). Im Bild markieren rote Rahmen die Stellen von Übersehen und Fehlalarm, und der Stichprobenanteil wird angegeben</li>
+  <li><strong>Empfehlungsseite</strong> – gibt für die einzelnen Fehlerarten eine Verbesserungsrichtung an</li>
+</ul>
+
+<div class="note">
+  Die Stichprobe entsteht erst beim Erstellen des Berichts; die Detaildaten bleiben vollständig, sodass bei der späteren Suche nach schwierigen Fällen keine Daten verloren gehen.
+</div>
+
+<h2 id="ocr">6. OCR</h2>
+
+<p>OCR ist anders als die übrigen Aufgaben: Es wird von <strong>zwei Modellen</strong> nacheinander erledigt – die TextDetektion findet die Textfelder, die Texterkennung liest die Zeichen im Feld. Training, Test und Export laufen jeweils in zwei getrennten Stufen, und in der Modellverwaltung bleiben zwei Läufe stehen.</p>
+
+<h3>6.1 Text annotieren</h3>
+
+<p>Aktivieren Sie in der Annotationsansicht oben den <strong>Schalter „Textannotation"</strong>; die Klasse wird automatisch auf das reservierte Label „text" festgelegt (Labels müssen nicht vorher angelegt werden). Ziehen Sie den Rahmen wie ein Rechteck um den Text; beim Loslassen öffnet sich ein Eingabefeld für den Inhalt. Ein Doppelklick auf ein vorhandenes Textfeld ändert den Text jederzeit.</p>
+
+<p>Textfelder werden immer als Rechteck gezeichnet: Auch schräger Text wird einfach mit einem horizontalen Rahmen überdeckt; beim Training wird ein Polygon als horizontales Hüllrechteck behandelt, das Nachfahren der Kontur bringt nichts.</p>
+
+<p>Beim Import von labelme json mit Textfeldern wird der Datensatz automatisch als <strong>Textdetektions-Datensatz</strong> markiert. Künftig erscheinen im OCR-Dropdown für das Trainingsset nur noch solche Datensätze.</p>
+
+<figure>
+  <img src="images/ocr标注.png" alt="OCR 文本标注">
+  <figcaption>Nach dem Aktivieren des Schalters „Textannotation" einen Rahmen ziehen; beim Loslassen öffnet sich das Texteingabefeld. Rechts listet „Annotationen" Form, Eckpunktezahl und Fläche jedes Textfelds auf</figcaption>
+</figure>
+
+<p>Nach dem Annotieren kehren Sie zur Datensatzansicht zurück. In einem OCR-Datensatz wird jedes Textfeld <strong>einzeln zu einem Vorschaubild zugeschnitten</strong>, und die Labelleiste zeigt den <strong>Textinhalt</strong> des Felds (mehr als 3 werden zu <code>+N</code> zusammengeklappt), nicht den Klassennamen – beim Durchblättern können Sie prüfen, ob der Inhalt richtig erfasst wurde. Im Klassenfilter oben gibt es nur den einen Eintrag „text".</p>
+
+<figure>
+  <img src="images/ocr标注显示.png" alt="OCR 数据集缩略图显示文字内容">
+  <figcaption>OCR-Datensatz: jedes Textfeld als eigenes Bild, die Labelleiste zeigt den erfassten Text (überzählige zusammengeklappt zu +N)</figcaption>
+</figure>
+
+<h3>6.2 Training</h3>
+
+<p>Als <strong>Aufgabentyp</strong> OCR wählen.</p>
+
+<p>Die Bildgröße ist die Eingabe der Detektionsstufe (Standard 1024, muss ein Vielfaches von 32 sein); die Erkennungsstufe ist fest auf <code>32×128</code> und wird von diesem Wert nicht beeinflusst.</p>
+
+<p>Nach dem Klick auf „Training starten" wird automatisch in zwei Warteschlangen-Aufgaben aufgeteilt: zuerst TextDetektion, dann Texterkennung. Erst wenn die vorige Aufgabe fertig ist und der VRAM wieder auf das Niveau vor dem Start gefallen ist, beginnt die nächste; währenddessen zeigt der Fortschrittsbereich „Warte auf freien VRAM · Nächstes:Texterkennung", es bleibt also keine Lücke.</p>
+
+<figure>
+  <img src="images/ocr训练.png" alt="OCR 训练参数">
+  <figcaption>Trainingsparameter für OCR (im Bild als Stufe „TextDetektion" gekennzeichnet); Modell = die Stufe nano ~ large, die Spalte Architektur legt der Algorithmus automatisch fest und ist ausgegraut, nicht änderbar</figcaption>
+</figure>
+
+<div class="note">
+  Das Vokabular der Erkennungsstufe übernimmt direkt die Zeichen, die in den Annotationen vorkommen. Die annotierten Texte müssen daher den Zeichensatz abdecken, der im Einsatz tatsächlich auftritt – Zeichen, die im Einsatz vorkommen, aber in den Annotationen fehlen, erkennt das Modell nicht.
+</div>
+
+<h3>6.3 Test: zwei Wege für die Detektion, einer für die Erkennung</h3>
+
+<ul>
+  <li><strong>TextDetektion · Inferenz</strong> – vergleicht nicht mit den Annotationen, sondern schreibt die Vorhersagerahmen (samt erkanntem Text) direkt als labelme json. Die JSON-Datei trägt ein OCR-Merkmal; zieht man sie zurück in die Software, gilt sie als Textdetektions-Datensatz und eignet sich zum Abgleichen der Ergebnisse oder zum Nachannotieren</li>
+  <li><strong>TextDetektion · Auswertung</strong> – wird bei annotierten Datensätzen automatisch verwendet und zählt Korrekt / Übersehen / Fehlalarm sowie P/R je Klasse, genau wie bei der Erkennungsaufgabe</li>
+  <li><strong>Texterkennung</strong> – getestet wird mit den aus Annotationsrahmen zugeschnittenen Textausschnitten; gemeldet werden Gesamtzahl, CER (Zeichenfehlerrate) und Anzahl vollständig richtiger, ohne Annotationsdatei</li>
+</ul>
+
+<h3>6.4 Export</h3>
+
+<p>Beide Stufen exportieren jeweils ein ONNX: <code>项目_字符检测_尺寸_规模.onnx</code> und <code>项目_字符识别_尺寸_规模.onnx</code>; die Erkennungsstufe bringt zusätzlich ein Vokabular <code>vocab.txt</code> mit.</p>
+
+<p>Die TextDetektion erzeugt wie gewohnt einen Auswertungsbericht; die Texterkennung hat nur den CER als Ergebnis und erzeugt keinen Bericht.</p>
+
+<p>Das Aufrufbeispiel liegt im Exportordner unter <code>examples/python/ocr.py</code>. Beachten Sie: Die von der Detektionsstufe ausgegebenen logits sind nicht durch sigmoid gegangen; die Nachbearbeitung müssen Sie selbst schreiben – im Beispiel ist sie fertig enthalten.</p>
+
+<h2 id="log">7. Protokoll</h2>
+
+<p>Oben auf der Startseite auf „Protokoll" klicken; das Protokollfenster öffnet sich und zeigt laufend mitrollend:</p>
+
+<ul>
+  <li>Start / Beenden der Software</li>
+  <li>Anlegen, Umbenennen, Löschen, Importieren / Exportieren von Projekten und Datensätzen</li>
+  <li>Anlegen, Umbenennen und Löschen von Labels</li>
+  <li>Beginn und Verlauf des Trainings (Ausgabe des Kindprozesses mit Präfix <code>[train]</code>), Aktualisierung der Metriken, Speichern des Modells, manuelles Stoppen</li>
+  <li>Start, Verlauf (Präfix <code>[test]</code>), Abschluss und Fehler des Tests</li>
+</ul>
+
+<figure>
+  <img src="images/日志.png" alt="日志窗口">
+  <figcaption>Protokollfenster</figcaption>
+</figure>
+
+<hr style="margin-top:48px; border:none; border-top:1px solid #dde1ea;">
+
+</body>
+</html>

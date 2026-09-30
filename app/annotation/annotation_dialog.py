@@ -37,8 +37,8 @@ from app.annotation.annotation_io import AnnotationIOMixin, _PrefetchWorker
 from app.core import theme
 from app.annotation.box_item import (AnnotationBoxItem, LABEL_COLORS,
                                      assign_label_color, label_color)
-from app.core.label_utils import (TEXT_LABEL, label_sort_key, normalize_label,
-                                  same_dir_json)
+from app.core.label_utils import (label_sort_key, normalize_label,
+                                  same_dir_json, text_label)
 from app.widgets.dialog_buttons import (add_ok_cancel, apply_icon,
                                         _icon_path, _tinted)
 from app.widgets.message_box import MessageBox, ProgressDialog
@@ -334,7 +334,7 @@ class AnnotationDialog(QDialog, AnnotationCanvasMixin, AnnotationIOMixin):
         self.label_ids = (db.get_dataset_label_ids(project, dataset)
                           if db else {})
         self.cls_mode = cls_mode
-        # "文本标注"开关(OCR): 打开后免建标签直接拉框, 类别固定为保留标签"文本"
+        # "文本标注"开关(OCR): 打开后免建标签直接拉框, 类别是保留标签
         self.text_mode = False
         self._label_before_text_mode = ""
         self._cls_changes = []
@@ -624,9 +624,9 @@ class AnnotationDialog(QDialog, AnnotationCanvasMixin, AnnotationIOMixin):
         self.label_colors = dict(self.db.get_dataset_labels(self.project, self.dataset))
         if self.text_mode:
             # 文本标注的类别是保留标签, 与数据集有没有自建标签无关
-            self.scene.current_label = TEXT_LABEL
+            self.scene.current_label = text_label()
         if not self.label_colors:
-            self.scene.current_label = "" if not self.text_mode else TEXT_LABEL
+            self.scene.current_label = "" if not self.text_mode else text_label()
             self._update_draw_buttons()
             return
         self._update_draw_buttons()

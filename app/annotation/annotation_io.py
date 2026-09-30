@@ -12,7 +12,7 @@ from PySide6.QtWidgets import QFileDialog
 
 from app.annotation.scene import AnnotationScene
 from app.annotation.box_item import assign_label_color, label_color
-from app.core.label_utils import (OCR_JSON_FLAG, TEXT_LABEL,
+from app.core.label_utils import (OCR_JSON_FLAG, is_text_label,
                                   load_json_shapes, load_yolo_shapes,
                                   normalize_label, same_dir_json,
                                   shapes_to_boxes, shapes_to_labelme_json)
@@ -394,11 +394,12 @@ class AnnotationIOMixin:
         missing = {}
         used = set(self.label_colors.values())
         names = {normalize_label(b.get("label")) for b in boxes}
-        if TEXT_LABEL in names:
+        text_names = {n for n in names if is_text_label(n)}
+        if text_names:
             # 图里出现过文本框就把数据集标成 OCR: 首页筛选与训练集过滤都认这个标记
             self.db.set_dataset_type(self.project, self.dataset, "ocr")
-        # "文本"是 OCR 的保留标签, 混进标签表会让首页下拉和训练类别多出一类
-        for lbl in sorted(names - {TEXT_LABEL}):
+        # OCR 保留标签, 混进标签表会让首页下拉和训练类别多出一类
+        for lbl in sorted(names - text_names):
             if lbl and lbl not in self.label_colors:
                 color = assign_label_color(lbl, used)
                 missing[lbl] = color
@@ -605,7 +606,7 @@ class AnnotationIOMixin:
         cur_pix = self.scene.image_item.pixmap()
         img_w = cur_pix.width() if cur_pix is not None else None
         img_h = cur_pix.height() if cur_pix is not None else None
-        is_ocr = any(s.get("label") == TEXT_LABEL for s in shapes)
+        is_ocr = any(is_text_label(s.get("label")) for s in shapes)
         if shapes:
             save_labelme(image_path, shapes, width=img_w, height=img_h,
                          ocr=is_ocr)

@@ -47,7 +47,7 @@ Single or batch import. For detection/segmentation/OCR choose an image directory
 - Shortcuts: A/D for prev/next, Q / Ctrl+Z, etc.
 
 <p align="center">
-  <img src="docs/images/图像标注_矩形_多边形_格式刷.png" width="80%" />
+  <img src="docs/images/图像标注_剪切板.png" width="80%" />
 </p>
 
 ### 🖼️ Home Browsing & Filtering by Class
@@ -68,7 +68,7 @@ Shows dataset paths and a label-distribution bar chart (descending by count; Top
 Runs in a **child process without blocking the UI**: live progress bar, ETA, GPU memory usage, manual stop (5-second countdown). Detection/segmentation use RF-DETR; classification uses ResNet (18/34/50/101); anomaly detection uses PatchCore (normal samples only, no labelling needed); OCR uses docTR in two stages (detection DB / LinkNet + recognition CRNN). All network sizes map from a dropdown. A **training queue** is supported: several configurations run back to back, and it can be stopped at any time, with one-click re-queue after an interruption or failure. OCR enqueues two items at once (text detection + text recognition); the second starts once GPU memory falls back to the pre-run level.
 
 <p align="center">
-  <img src="docs/images/训练参数设置.png" width="48%" />
+  <img src="docs/images/训练参数与队列.png" width="48%" />
   <img src="docs/images/训练进度_指标_剩余时间_显存用量.png" width="48%" />
 </p>
 
@@ -91,7 +91,7 @@ Configure data / device / model / confidence / IoU thresholds and run evaluation
 
 <p align="center">
   <img src="docs/images/测试参数设置.png" width="48%" />
-  <img src="docs/images/模型评估结果.png" width="48%" />
+  <img src="docs/images/模型结果评估与报告.png" width="48%" />
 </p>
 
 ### 📜 Logs

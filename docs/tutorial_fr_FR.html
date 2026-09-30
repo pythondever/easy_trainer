@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guide d'utilisation d'EasyTrainer</title>
+<style>
+  body { font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+         max-width: 920px; margin: 0 auto; padding: 0 16px 48px;
+         color: #2b2f3b; background: #fff; line-height: 1.75; }
+  h1 { font-size: 28px; color: #1c1e25; border-bottom: 3px solid #4f7dff;
+       padding-bottom: 10px; margin: 24px 0; }
+  h2 { font-size: 22px; color: #1c1e25; margin-top: 40px;
+       border-left: 5px solid #4f7dff; padding-left: 12px; }
+  h3 { font-size: 17px; color: #353a48; margin-top: 26px; }
+  p, li { font-size: 15px; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  .lead { color: #4a5164; }
+  .note { background: #f3f6ff; border-left: 4px solid #4f7dff;
+          padding: 10px 14px; margin: 14px 0; border-radius: 4px; font-size: 14px; }
+  .warn { background: #fff3f3; border-left: 4px solid #d64545;
+          padding: 10px 14px; margin: 14px 0; border-radius: 4px; font-size: 14px; }
+  code { background: #23262f; color: #e8eaf0; padding: 1px 6px;
+         border-radius: 3px; font-family: Consolas, monospace; font-size: 13px; }
+  kbd { background: #f4f5f8; border: 1px solid #ccd2e0; border-bottom-width: 2px;
+        border-radius: 3px; padding: 0 5px; font-size: 13px;
+        font-family: Consolas, monospace; color: #353a48; }
+  figure { margin: 18px 0; text-align: center; }
+  figcaption { color: #5c6270; font-size: 13px; margin-top: 6px; }
+  img { max-width: 100%; height: auto; border: 1px solid #dde1ea;
+        border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+  .toc { background: #f9fafc; border: 1px solid #dde1ea; border-radius: 6px;
+         padding: 14px 22px; margin-bottom: 28px; }
+  .toc h2 { font-size: 16px; border: none; padding: 0; margin: 0 0 8px; color: #4f7dff; }
+  .toc ol { margin: 0; }
+  .toc li { font-size: 14px; margin-bottom: 4px; }
+  .toc a { color: #2b2f3b; text-decoration: none; }
+  .toc a:hover { color: #4f7dff; }
+  .lang { text-align: right; font-size: 13px; padding-top: 16px; }
+  .lang a { color: #6c7385; text-decoration: none; }
+  .lang a:hover { color: #4f7dff; }
+  table { border-collapse: collapse; width: 100%; margin: 14px 0; font-size: 14px; }
+  th, td { border: 1px solid #dde1ea; padding: 7px 10px; text-align: left; }
+  th { background: #f4f6fb; color: #353a48; font-weight: 600; }
+  /* 打印/PDF 排版: 标题不孤行, 图片不跨页截断 */
+  @media print {
+    h2, h3 { page-break-after: avoid; }
+    figure, img, table { page-break-inside: avoid; }
+    .lang { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="lang"><a href="introduce.html">Autres langues / Other languages</a></div>
+
+<h1>Guide d'utilisation d'EasyTrainer</h1>
+
+<div class="toc">
+  <h2>Sommaire</h2>
+  <ol>
+    <li><a href="#quick">Prise en main rapide</a></li>
+    <li><a href="#project">Interface et projets</a></li>
+    <li><a href="#annotate">Annotations</a></li>
+    <li><a href="#train">Entraînement</a></li>
+    <li><a href="#model">Gestionnaire de modèles</a></li>
+    <li><a href="#test">Test et rapport d'évaluation</a></li>
+    <li><a href="#ocr">OCR</a></li>
+    <li><a href="#log">Journal</a></li>
+  </ol>
+</div>
+
+<h2 id="quick">Prise en main rapide</h2>
+
+<p class="lead">Du logiciel vide au premier modèle entraîné, le chemin le plus court tient en ces six étapes. Les détails de chaque étape sont donnés dans les chapitres suivants.</p>
+
+<ol>
+  <li><strong>Ajouter un projet</strong> — cliquez sur « + Ajouter un projet » à gauche, saisissez un nom.</li>
+  <li><strong>Ajouter un jeu de données</strong> — clic droit sur le nœud de projet → « Ajouter un jeu de données ».</li>
+  <li><strong>Importer des données</strong> — sélectionnez le jeu de données, cliquez sur « Importer » en haut, puis choisissez le dossier des images et celui des étiquettes.</li>
+  <li><strong>Vérifier les données</strong> — cliquez sur « Propriétés », vérifiez que les classes et les quantités sont correctes.</li>
+  <li><strong>Entraîner</strong> — cliquez sur « Entraîner », choisissez le type de tâche et le jeu de données, laissez le reste par défaut, puis cliquez sur « Démarrer l'entraînement ».</li>
+  <li><strong>Voir le résultat</strong> — une fois l'entraînement terminé, retrouvez cet enregistrement dans « Modèles » et cliquez sur « Tester » pour lancer une passe sur le jeu de validation ; pour livrer, exportez un rapport PDF.</li>
+</ol>
+
+<div class="note">
+  Si vous n'avez pas encore de données annotées, commencez par le chapitre 3 « Annotations ».
+</div>
+
+<h2 id="project">1. Interface et projets</h2>
+
+<h3>1.1 Disposition de l'interface principale</h3>
+
+<p>L'interface principale se compose de trois zones : à gauche la gestion des projets, au centre l'affichage des images, la barre d'outils en haut.</p>
+
+<ul>
+  <li><strong>Arborescence des projets à gauche</strong> — projets et jeux de données sont organisés de façon hiérarchique. Après le jeu de données vient la progression des annotations (par ex. <code>126/128</code>) ; le point devant le nom indique s'il est chargé en mémoire : vert = chargé, rouge = non chargé.</li>
+  <li><strong>Zone d'images au centre</strong> — navigation par pages dans les vignettes. En bas au centre, un groupe de commandes de pagination : deux flèches encadrent le numéro de page, le numéro de la page courante est mis en évidence ; en survolant le numéro de page, vous voyez le nombre total d'images selon le filtre actif.</li>
+  <li><strong>Barre d'outils en haut</strong> — échelle d'affichage, liste déroulante de filtrage des annotations, ainsi que les boutons Modifier, Supprimer, Importer, Exporter, Propriétés, Entraîner, Modèles, Journal, etc.</li>
+</ul>
+
+<figure>
+  <img src="images/主页.png" alt="EasyTrainer 主界面">
+  <figcaption>Interface principale d'EasyTrainer</figcaption>
+</figure>
+
+<h3>1.2 Projets et jeux de données</h3>
+
+<p><strong>Ajouter un projet</strong> : cliquez sur « + Ajouter un projet » à gauche, saisissez un nom, validez. Un projet est le conteneur des jeux de données ; chaque jeu de données doit appartenir à un projet.</p>
+
+<figure>
+  <img src="images/添加项目.png" alt="添加项目">
+  <figcaption>Saisie du nom du projet</figcaption>
+</figure>
+
+<p>Clic droit sur un <strong>nœud de projet</strong> :</p>
+
+<ul>
+  <li><strong>Ajouter un jeu de données</strong> — crée un nouveau jeu de données dans le projet</li>
+  <li><strong>Exporter le projet</strong> — exporte les jeux de données et les annotations de tout le projet dans le format choisi</li>
+  <li><strong>Renommer</strong> — renomme le projet</li>
+  <li><strong>Supprimer le projet</strong> — supprime aussi les jeux de données, les annotations et les enregistrements d'entraînement qu'il contient</li>
+</ul>
+
+<p>Le clic droit sur un <strong>nœud de jeu de données</strong> agit sur un seul jeu de données : Importer / Exporter / Déplacer / Renommer / Supprimer.</p>
+
+<p>Un <strong>double-clic sur le jeu de données</strong> est nécessaire pour le charger : il rescanne les images et les annotations, reconstruit le cache, et vous pouvez ensuite parcourir la partie droite. Si le jeu de données a déjà été chargé (point d'état sur la ligne), un nouveau double-clic ne relance pas le scan.</p>
+
+<figure>
+  <img src="images/添加_修改_删除_数据集.png" alt="项目右键菜单">
+  <figcaption>Menu contextuel du projet</figcaption>
+</figure>
+
+<h3>1.3 Importer des données</h3>
+
+<p>Sélectionnez le jeu de données, cliquez sur « Importer » en haut : la boîte de dialogue d'import s'ouvre :</p>
+
+<ul>
+  <li><strong>Chemin des images</strong> — le dossier qui contient les images</li>
+  <li><strong>Chemin des étiquettes</strong> — le dossier qui contient les fichiers d'annotations</li>
+  <li><strong>Format des étiquettes</strong> — Yolo txt / Labelme json / Importer comme classification (sous-dossiers)</li>
+</ul>
+
+<div class="note">
+  <strong>Jeu de données de classification</strong> : choisissez « Importer comme classification (sous-dossiers) » ; chaque nom de sous-dossier correspond à une classe, <strong>aucun fichier d'annotation n'est nécessaire</strong>.<br>
+  L'OCR utilise Labelme json ; l'étiquette des zones de texte est fixée à « text » et, après l'import, le jeu de données est automatiquement marqué comme jeu de données de détection de texte.
+</div>
+
+<figure>
+  <img src="images/导入数据.png" alt="导入数据">
+  <figcaption>Boîte de dialogue d'import des données</figcaption>
+</figure>
+
+<h3>1.4 Propriétés du jeu de données</h3>
+
+<p>Sélectionnez le jeu de données et cliquez sur « Propriétés » en haut : vous voyez le chemin des images, le chemin des étiquettes et un <strong>histogramme de répartition des étiquettes</strong> — combien de zones annotées compte chaque classe. On repère d'un coup d'œil la classe qui manque d'échantillons.</p>
+
+<figure>
+  <img src="images/数据集属性_标签分布.png" alt="数据集属性与标签分布">
+  <figcaption>Propriétés du jeu de données et répartition des étiquettes</figcaption>
+</figure>
+
+<h3>1.5 Langue de l'interface</h3>
+
+<p>À l'extrême droite de la barre d'outils se trouve la liste déroulante de la langue de l'interface, avec neuf langues au choix : 中文、English、繁體中文、日本語、한국어、Deutsch、Español、Français、Tiếng Việt.</p>
+
+<p>Dès que vous la sélectionnez, l'interface principale change immédiatement, et les fenêtres Journal et File d'attente d'entraînement déjà ouvertes sont actualisées en même temps ; les boîtes de dialogue pas encore ouvertes s'afficheront dans la nouvelle langue à la prochaine ouverture. Le choix est mémorisé : au prochain démarrage, la langue reste la même. Chaque entrée de la liste est libellée dans sa propre langue, donc quelle que soit la langue de l'interface, vous savez quelle entrée choisir.</p>
+
+<h2 id="annotate">2. Annotations</h2>
+
+<h3>2.1 Accéder à l'interface d'annotation</h3>
+
+<p>Après avoir sélectionné le jeu de données, faites un clic droit sur une vignette et choisissez « Annotations », ou double-cliquez directement sur la vignette.</p>
+
+<h3>2.2 Dessiner des zones</h3>
+
+<p>La barre d'outils en haut de l'interface d'annotation propose trois modes de tracé :</p>
+
+<ul>
+  <li><strong>Rectangle</strong> — faites glisser la souris pour tracer une zone</li>
+  <li><strong>Polygone</strong> — cliquez les sommets l'un après l'autre, terminez par un double-clic ou Entrée (pour les tâches de segmentation)</li>
+  <li><strong>Texte</strong> — activez d'abord l'interrupteur « Annotation de texte » en haut, puis tracez une zone ; au relâchement, une boîte de saisie s'ouvre pour enregistrer le texte, un double-clic permet de le modifier (pour les tâches OCR)</li>
+</ul>
+
+<p>Pour dessiner une zone de texte, utilisez toujours le <strong>Rectangle</strong>. Pour du texte incliné, une zone horizontale suffit — à l'entraînement, un polygone est traité comme sa boîte englobante horizontale : suivre le contour n'apporte rien de plus.</p>
+
+<p>La barre d'outils contient aussi « Supprimer l'image », qui supprime l'image courante.</p>
+
+<p>Les classes se choisissent dans la liste d'étiquettes à droite.</p>
+
+<p>L'<strong>interrupteur « Afficher les annotations »</strong> masque à tout moment tous les contours (traits de zone, étiquettes, poignées de sommets) pour mieux voir l'image d'origine. Pour un élément déjà collé mais pas encore validé, seuls les contours sont masqués et le motif reste visible : le désactiver est donc idéal pour prévisualiser « le rendu une fois collé ».</p>
+
+<p>En bas à droite, <strong>« Annotations »</strong> liste, pour chaque objet annoté de l'image, sa forme (Rectangle / Polygone), son nombre de sommets et son aire ; juste en dessous, <strong>Infos image</strong> affiche la largeur × hauteur × nombre de canaux de l'image courante (par ex. <code>505×505×3</code>) ainsi que son numéro.</p>
+
+<p>Encore en dessous se trouve le <strong>Presse-papiers</strong> : après avoir copié un polygone par clic droit, une vignette de la zone copiée (<code>120 × 90</code>) vient s'y ajouter, jusqu'à 9 au maximum, empilées verticalement et défilables. La plus récente est sélectionnée par défaut et bordée de bleu ; un clic droit sur une vignette permet de la supprimer ou de tout vider.</p>
+
+<figure>
+  <img src="images/图像标注_剪切板.png" alt="图像标注">
+  <figcaption>Annotation Rectangle / Polygone, liste d'étiquettes et presse-papiers en bas à droite</figcaption>
+</figure>
+
+<h3>2.3 Gestion des étiquettes</h3>
+
+<p>À droite de l'interface d'annotation se trouve la liste d'étiquettes, avec en haut « Ajouter une étiquette » :</p>
+
+<ul>
+  <li><strong>Nom de l'étiquette</strong> — plusieurs étiquettes séparées par des virgules : vous pouvez en ajouter plusieurs d'un coup</li>
+  <li><strong>Importer</strong> — reprendre en bloc les étiquettes d'un autre jeu de données</li>
+  <li><strong>Couleur</strong> — choisissez dans la palette prédéfinie, ou cliquez sur « Couleur personnalisée » pour la définir vous-même</li>
+</ul>
+
+<figure>
+  <img src="images/添加或导入标签.png" alt="添加标签">
+  <figcaption>Ajouter ou importer des étiquettes</figcaption>
+</figure>
+
+<h3>2.4 Modifier les classes</h3>
+
+<p><strong>Modifier une seule zone</strong> : cliquez sur une zone annotée, un menu déroulant de classes s'ouvre, il suffit de choisir la nouvelle classe. Les étiquettes de la liste à droite peuvent aussi être renommées, recolorées ou supprimées.</p>
+
+<figure>
+  <img src="images/修改类别.png" alt="修改类别">
+  <figcaption>Modifier directement la classe sur la zone annotée</figcaption>
+</figure>
+
+<p><strong>Modification en lot</strong> : clic droit sur une vignette → « Modifier les classes en lot », indiquez la classe d'origine et la nouvelle classe ; toutes les annotations de cette classe dans le jeu de données sont renommées.</p>
+
+<figure>
+  <img src="images/标签批量修改.png" alt="批量修改类别">
+  <figcaption>Fenêtre de modification des classes en lot</figcaption>
+</figure>
+
+<h3>2.5 Copier et coller des objets annotés</h3>
+
+<p>Un clic droit sur une annotation <strong>Polygone</strong> propose deux actions :</p>
+
+<ul>
+  <li><strong>Copier</strong> — enregistre les pixels de cette zone comme modèle et crée une vignette dans le presse-papiers en bas à droite</li>
+  <li><strong>Remplir</strong> — remplace les pixels de la zone par la couleur RVB correspondant aux trois champs « Valeur de remplissage » (par canal <code>0 ~ 255</code>, 255 par défaut). Sert souvent à effacer un défaut avec la couleur du fond</li>
+</ul>
+
+<p><strong>Cliquez avec le bouton gauche</strong> sur une vignette du presse-papiers, puis déplacez le curseur sur le canevas : un contour de polygone en pointillés vous suit — la forme est le contour réel après rotation, avec l'angle tiré au sort pour cette fois déjà appliqué. Repérez bien le point de pose et l'orientation, appuyez sur <kbd>Esc</kbd> pour masquer les pointillés et revenir au mode souris normal, puis faites un clic droit et choisissez « Coller » pour valider.</p>
+
+<p>Faites un clic droit sur une zone vide de l'image et choisissez <strong>« Coller »</strong> : la vignette actuellement sélectionnée dans le presse-papiers est collée à la position du curseur, dans la même image ou dans une autre. Avant de coller, réglez ces quelques éléments dans la barre d'outils :</p>
+
+<ul>
+  <li><strong>Plage d'angles</strong> — intervalle d'angles de rotation aléatoire appliqué au collage (<code>-180 ~ 180</code> par défaut). L'aperçu en pointillés utilise précisément l'angle tiré dans cet intervalle : ce que vous voyez est ce que vous obtenez</li>
+  <li><strong>Intensité de fusion</strong> — <code>0 ~ 1</code>, <code>0.70</code> par défaut. Au collage, la luminosité est compensée et les bords adoucis automatiquement, pour que la partie collée se fonde naturellement dans le fond ; à 0, le collage est brut</li>
+  <li><strong>Valeur de remplissage</strong> — trois champs R / G / B (par canal <code>0 ~ 255</code>, 255 par défaut), à utiliser avec « Remplir » du menu contextuel pour effacer la zone avec cette couleur</li>
+  <li><strong><kbd>Ctrl</kbd> + <kbd>Z</kbd></strong> — annule le dernier collage ou remplissage : les pixels sont restaurés et les annotations ajoutées dans la foulée sont supprimées en même temps ; vous pouvez annuler plusieurs fois de suite</li>
+</ul>
+
+<figure>
+  <img src="images/标注对象复制.png" alt="标注对象复制">
+  <figcaption>Clic droit pour copier un objet annoté → vignette dans le presse-papiers, réglage de la plage d'angles / intensité de fusion / valeur de remplissage dans la barre d'outils</figcaption>
+</figure>
+
+<h3>2.6 Réglage de la luminosité d'une zone polygonale</h3>
+
+<p>Sélectionnez un <strong>Polygone</strong> et activez <strong>Luminosité</strong> dans « Paramètres » de la barre d'outils pour éclaircir ou assombrir les pixels à l'intérieur de ce polygone. Faites glisser le curseur ou saisissez directement une valeur : l'aperçu est en temps réel sur l'image.</p>
+
+<ul>
+  <li><strong>Plage</strong> — <code>0 ~ 1</code> ; la valeur par défaut <code>0.50</code> laisse l'image d'origine. Plus vous allez vers 1, plus c'est clair (<code>1.00</code> correspond à peu près au double de la luminosité), plus vous allez vers 0, plus c'est sombre (0 = tout noir)</li>
+  <li><strong>Ne s'applique qu'au polygone sélectionné</strong>. Avec un rectangle, ou quand rien n'est sélectionné, seul un message s'affiche et les pixels ne changent pas. Cliquez sur un autre polygone : le curseur revient à sa propre valeur (0.50 pour ceux qui n'ont jamais été réglés) sans reprendre la luminosité du précédent</li>
+  <li><strong>Quand l'écriture sur disque a lieu</strong> — pendant le glissement, seuls la mémoire et l'aperçu en temps réel sont modifiés. Le fichier image n'est écrit qu'en changeant d'image avec <kbd>A</kbd> / <kbd>D</kbd> ou en appuyant sur <kbd>Ctrl</kbd> + <kbd>S</kbd></li>
+  <li><strong>Annuler</strong> — chaque réglage ne compte que pour une seule étape ; <kbd>Ctrl</kbd> + <kbd>Z</kbd> revient à l'état d'avant le réglage. Faire des allers-retours sur le curseur au cours d'un même réglage ne compte toujours que comme une étape</li>
+</ul>
+
+<figure>
+  <img src="images/多边形区域亮度调节.png" alt="多边形亮度调节">
+  <figcaption>Après avoir sélectionné un polygone, réglez la luminosité des pixels de la zone avec « Luminosité » ; aperçu en temps réel sur l'image</figcaption>
+</figure>
+
+<h3>2.7 Filtrer les images par classe</h3>
+
+<p>Dans la liste déroulante des classes de la barre d'outils en haut, sélectionnez une classe : la zone d'images n'affiche plus que les images contenant cette classe. Pratique pour vérifier ou compléter les annotations d'une classe en particulier.</p>
+
+<figure>
+  <img src="images/按标注类别_分类筛选.png" alt="按类别筛选">
+  <figcaption>Filtrer les vignettes par classe</figcaption>
+</figure>
+
+<h2 id="train">3. Entraînement</h2>
+
+<h3>3.1 Configurer les paramètres d'entraînement</h3>
+
+<p>Cliquez sur « Entraîner » depuis la page d'accueil ou l'interface des modèles : la configuration des paramètres s'ouvre :</p>
+
+<ul>
+  <li><strong>Type de tâche</strong> — Détection / Segmentation / Classification / Détection d'anomalies / OCR ; il bascule automatiquement selon le format du jeu de données</li>
+  <li><strong>Jeu d'entraînement / Jeu de validation</strong> — sélection multiple possible, et combinaison entre projets</li>
+  <li><strong>Appareil</strong> — liste automatiquement les GPU disponibles</li>
+  <li><strong>Époques / Optimiseur / Arrêt anticipé</strong> — l'optimiseur est <code>adamw</code> pour la détection et la segmentation, <code>sgd</code> pour la classification ; l'arrêt anticipé interrompt l'entraînement après N époques consécutives sans amélioration, la valeur 0 le désactive</li>
+  <li><strong>Taux d'apprentissage</strong> — décroît automatiquement pendant l'entraînement</li>
+  <li><strong>Lot / Taille d'image / Accumulation de gradient / Threads</strong> — la taille d'image doit être un multiple de 32 ; si la VRAM est insuffisante, réduisez le lot et augmentez l'accumulation de gradient, ce qui revient à agrandir le lot</li>
+  <li><strong>Chemin de sortie</strong> — laissé vide, un dossier est généré automatiquement à partir de l'horodatage ; vous pouvez aussi cliquer sur « Parcourir » pour le spécifier</li>
+</ul>
+
+<figure>
+  <img src="images/训练参数与队列.png" alt="训练参数配置">
+  <figcaption>Boîte de dialogue de configuration des paramètres d'entraînement</figcaption>
+</figure>
+
+<h3>3.2 File d'attente d'entraînement</h3>
+
+<p>Une fois les paramètres définis, en plus de « Démarrer l'entraînement », vous pouvez cliquer sur <strong>« Ajouter à la file d'attente »</strong> pour mettre la tâche en attente et enchaîner la configuration de la suivante. Depuis la page d'accueil, cliquez sur « File d'attente d'entraînement » pour ouvrir la fenêtre de la file :</p>
+
+<ul>
+  <li>La file s'exécute dans l'ordre ; Détection / Segmentation / Classification / Détection d'anomalies / OCR peuvent être mélangés, et une fois une tâche terminée, la suivante démarre automatiquement</li>
+  <li><strong>Monter / Descendre / Retirer</strong> — réorganiser l'ordre d'exécution ou supprimer une tâche</li>
+  <li><strong>Modifier</strong> — modifier les paramètres de la tâche sélectionnée</li>
+  <li><strong>Nettoyer les tâches terminées</strong> — retirer les enregistrements déjà exécutés</li>
+  <li><strong>Démarrer la file d'attente</strong> — exécuter les tâches de la file l'une après l'autre depuis le début</li>
+</ul>
+
+<div class="note">
+  La file d'attente convient au travail de nuit : configurez d'un coup les tâches de plusieurs jeux de données, le logiciel les exécutera toutes automatiquement et enregistrera un modèle pour chacune.
+</div>
+
+<figure>
+  <img src="images/训练队列查看.png" alt="训练队列">
+  <figcaption>Fenêtre de la file d'attente d'entraînement</figcaption>
+</figure>
+
+<h3>3.3 Progression de l'entraînement</h3>
+
+<p>Après avoir cliqué sur « Démarrer l'entraînement » et être revenu à la page d'accueil, une barre de progression et une barre de contrôle apparaissent en haut :</p>
+
+<ul>
+  <li><strong>Nom de la tâche + progression</strong> — de la forme <code>coco128 entraînement 5/100</code> ; la barre de progression indique le loss de l'époque en cours</li>
+  <li><strong>Arrêter l'entraînement</strong> — interrompt à tout moment ; la partie déjà exécutée est conservée</li>
+  <li><strong>Temps restant</strong> — estimé par extrapolation à partir du temps déjà écoulé</li>
+  <li><strong>VRAM</strong> — taux d'occupation de la mémoire du GPU, actualisé en temps réel</li>
+</ul>
+
+<figure>
+  <img src="images/训练进度_指标_剩余时间_显存用量.png" alt="训练进度">
+  <figcaption>Barre de progression d'entraînement et barre d'état</figcaption>
+</figure>
+
+<h3>3.4 Courbes d'entraînement</h3>
+
+<p>Dans le gestionnaire de modèles, sélectionnez un enregistrement d'entraînement et cliquez sur <strong>« Voir toutes les métriques »</strong> dans le panneau de détails à droite : la fenêtre des courbes d'entraînement s'ouvre :</p>
+
+<ul>
+  <li>La partie supérieure affiche la courbe <strong>val loss</strong></li>
+  <li>La partie inférieure regroupe plusieurs courbes : mAP@50-95 / mAP@50 / AR / F1 / precision / recall, etc. ; pour la segmentation, une courbe mask mAP s'y ajoute</li>
+  <li>En haut à droite, la liste déroulante « Filtre d'étiquettes » permet de basculer entre toutes les métriques et les courbes d'une classe donnée</li>
+</ul>
+
+<figure>
+  <img src="images/训练指标查看.png" alt="训练指标">
+  <figcaption>Courbes des métriques d'entraînement (val loss + différentes précisions)</figcaption>
+</figure>
+
+<h2 id="model">4. Gestionnaire de modèles</h2>
+
+<p>Cliquez sur « Modèles » depuis la page d'accueil pour ouvrir le gestionnaire de modèles : à gauche la liste des enregistrements d'entraînement, à droite le panneau de détails.</p>
+
+<h3>4.1 Liste et filtres</h3>
+
+<ul>
+  <li><strong>Champ de recherche</strong> — filtre par mot-clé sur le projet / le jeu de données / l'étiquette</li>
+  <li><strong>Listes Tâche / État</strong> — pour la tâche : Détection / Segmentation / Classification / Détection d'anomalies / Détection de texte / Reconnaissance de texte ; pour l'état : Entraînement / Terminé / Échec / Arrêté</li>
+  <li><strong>Meilleur par jeu de données uniquement</strong> — ne conserve que l'entrée la plus précise pour chaque jeu de données</li>
+  <li>Colonnes de la liste : Tâche, Jeu de données · Étiquette, Précision, Date d'entraînement, Durée, Taille d'image, Actions</li>
+  <li><strong>La colonne Précision comporte une barre de couleur</strong> — vert ≥ 0.8, jaune 0.5 ~ 0.8, rouge &lt; 0.5. Pour les enregistrements en échec ou arrêtés, cette colonne affiche le texte d'état ; en laissant le curseur dessus, vous voyez la cause de l'échec</li>
+  <li>Trois boutons sur la ligne : <strong>Tester</strong> (ouvre le test du modèle), <strong>Exporter</strong>, <strong>Supprimer</strong> (supprime aussi l'enregistrement d'entraînement correspondant)</li>
+</ul>
+
+<h3>4.2 Panneau de détails</h3>
+
+<p>Cliquez sur n'importe quelle ligne : le panneau de droite affiche tous les paramètres de cet enregistrement — Tâche · Échelle, État, Précision, Jeu d'entraînement / Jeu de validation, Taille d'image, Époques / Arrêt anticipé, Taille de lot, Taux d'apprentissage, Optimiseur, Appareil, Étiquette, Date d'entraînement, Durée, Chemin du modèle. En haut figure aussi une vignette de la courbe de précision.</p>
+
+<p>Quatre boutons en bas du panneau :</p>
+
+<ul>
+  <li><strong>Voir toutes les métriques</strong> — ouvre la fenêtre des courbes d'entraînement (voir la section « Courbes d'entraînement »)</li>
+  <li><strong>Tester ce modèle</strong> — ouvre la boîte de dialogue de test avec ce modèle (voir la section « Paramètres de test »)</li>
+  <li><strong>Réentraîner avec cette configuration</strong> — reprend tous les paramètres d'entraînement de cet enregistrement et relance un entraînement</li>
+  <li><strong>Ouvrir le dossier du modèle</strong> — localise le fichier de poids dans l'explorateur de fichiers</li>
+</ul>
+
+<figure>
+  <img src="images/模型训练记录.png" alt="模型训练记录">
+  <figcaption>Gestionnaire de modèles : barre de filtres + liste des enregistrements d'entraînement + panneau de détails à droite</figcaption>
+</figure>
+
+<h3>4.3 Exporter en ONNX</h3>
+
+<p>Cliquez sur « Exporter » et choisissez un dossier : un dossier « 项目_时间戳 » est généré :</p>
+
+<ul>
+  <li><strong>Modèle <code>.onnx</code></strong> — la détection et la segmentation sont exportées par RF-DETR, la classification et l'OCR par torch. Le nom est « 项目_任务_图像尺寸_模型规模.onnx »</li>
+  <li><strong><code>classes.txt</code></strong> — correspondance entre les id de classe et les noms. Pour le segment de reconnaissance d'OCR, c'est <code>vocab.txt</code> : un caractère par ligne, c'est le vocabulaire</li>
+  <li><strong>Rapport d'évaluation PDF</strong> — lance automatiquement une évaluation sur le jeu de validation, réutilise le modèle du rapport de test et nomme le fichier « …_评估报告.pdf »</li>
+  <li><strong><code>examples/</code></strong> — exemples de code C++ / C# / Python appelant l'ONNX pour la détection, la segmentation et la classification. L'OCR n'a pour l'instant qu'une version Python</li>
+</ul>
+
+<p>L'export affiche une progression. La conversion ONNX exige l'installation de <code>onnx</code> et <code>onnxsim</code> ; sinon, une boîte de dialogue vous le signale.</p>
+
+<p>Les tâches de classification ne génèrent pas de rapport d'évaluation — le rapport d'oublis et de fausses détections ne s'applique pas à la classification. Il en va de même pour la reconnaissance de texte de l'OCR, dont la seule conclusion est le CER.</p>
+
+<h2 id="test">5. Test et rapport d'évaluation</h2>
+
+<h3>5.1 Paramètres de test</h3>
+
+<p>Dans le gestionnaire de modèles, cliquez sur « Tester » sur la ligne (ou sur « Tester ce modèle » dans le panneau de détails) : la boîte de dialogue de test s'ouvre. En haut s'affichent les informations du modèle : Type de tâche, Fichier de poids, Précision d'entraînement, Taille d'entrée, Échelle. En dessous, les paramètres :</p>
+
+<ul>
+  <li><strong>Données</strong> — tous les jeux de données, tous projets confondus, sont sélectionnables</li>
+  <li><strong>Appareil</strong> — par défaut, le premier GPU disponible</li>
+  <li><strong>Confiance</strong> — les prédictions en dessous de ce score sont écartées directement</li>
+  <li><strong>Seuil IoU</strong> — une détection n'est comptée correcte que si le recouvrement entre la zone prédite et la zone annotée atteint le seuil</li>
+  <li><strong>Écrire les fichiers d'étiquettes</strong> — coché, les zones prédites sont écrites en labelme json, pour faciliter la vérification manuelle</li>
+  <li><strong>OCR</strong> — la détection de texte propose deux voies, inférence et évaluation : l'inférence écrit les résultats en json d'annotation, l'évaluation calcule P/R. La reconnaissance de texte ne produit pas de fichier d'annotation, elle rapporte seulement le taux de reconnaissance des extraits de texte</li>
+</ul>
+
+<div class="note">
+  Quand le jeu de données est annoté, le logiciel passe automatiquement en <strong>mode d'évaluation</strong> et calcule le taux de détection / les oublis / les fausses détections. Pour la détection de texte, si le mode inférence est choisi, les annotations sont ignorées et les zones prédites sont écrites directement en json.
+</div>
+
+<figure>
+  <img src="images/模型测试与评估.png" alt="模型测试">
+  <figcaption>Configuration des paramètres de test du modèle</figcaption>
+</figure>
+
+<h3>5.2 Analyse des résultats</h3>
+
+<p>Une fois le test terminé, la fenêtre d'analyse des résultats s'ouvre ; les statistiques se font selon deux axes et les termes employés sont toujours les très explicites <strong>« Détections correctes / Oublis / Fausses détections »</strong> :</p>
+
+<ul>
+  <li><strong>Dimension image</strong> (statistiques par image ; une seule détection suffit pour compter l'image comme détectée) — Images testées, Images détectées et taux de détection, Images non détectées, Images avec fausses détections</li>
+  <li><strong>Dimension annotation</strong> (statistiques par zone annotée) — Détections correctes, Oublis, Fausses détections, Précision</li>
+  <li><strong>Tableau par classe</strong> — pour chaque classe : nombre d'annotations, détections correctes, oublis, fausses détections, taux de détection, précision</li>
+  <li><strong>Reconnaissance de texte</strong> — pas de statistiques par zone : indique le nombre total d'extraits de texte, le CER (taux d'erreur de caractères) et le nombre d'extraits entièrement corrects</li>
+  <li><strong>Conclusion en bas</strong> — une phrase indique si l'ensemble penche vers les oublis ou vers les fausses détections, ainsi que la classe qui pèse le plus</li>
+</ul>
+
+<figure>
+  <img src="images/模型结果评估与报告.png" alt="测试结果分析与报告">
+  <figcaption>Fenêtre d'analyse des résultats de test (dimension image + dimension annotation + détail par classe)</figcaption>
+</figure>
+
+<h3>5.3 Exporter le rapport PDF</h3>
+
+<p>Cliquez sur « Exporter le rapport PDF » en bas à droite : il est généré par un thread en arrière-plan et contient :</p>
+
+<ul>
+  <li><strong>Page de synthèse</strong> — tableau récapitulatif des métriques + graphique de répartition des annotations</li>
+  <li><strong>Page des échantillons oublis / Page des échantillons fausses détections</strong> — présente des vignettes selon « N images par classe » (le nombre se règle en bas à gauche), les oublis et les fausses détections sont encadrés en rouge sur les images, avec la proportion d'échantillonnage indiquée</li>
+  <li><strong>Page de recommandations</strong> — propose des pistes d'amélioration pour chaque type d'erreur</li>
+</ul>
+
+<div class="note">
+  L'échantillonnage n'intervient qu'à l'étape de génération du rapport ; les données détaillées restent complètes, donc l'exploration des cas difficiles ne perdra aucune donnée.
+</div>
+
+<h2 id="ocr">6. OCR</h2>
+
+<p>L'OCR diffère des autres tâches : il est réalisé par <strong>deux modèles</strong> enchaînés — la détection de texte localise les zones de texte, la reconnaissance de texte lit les caractères dans ces zones. L'entraînement, le test et l'export se font en deux segments séparés, et deux enregistrements apparaissent dans le gestionnaire de modèles.</p>
+
+<h3>6.1 Annoter du texte</h3>
+
+<p>Dans l'interface d'annotation, activez l'interrupteur <strong>« Annotation de texte »</strong> en haut : la classe est automatiquement fixée à l'étiquette réservée « text » (pas besoin de créer l'étiquette au préalable). Encadrez le texte comme pour un rectangle ; au relâchement de la souris, une boîte de saisie s'ouvre pour enregistrer le contenu ; un double-clic sur une zone de texte existante permet de la modifier à tout moment.</p>
+
+<p>Les zones de texte se dessinent toujours avec le rectangle : pour du texte incliné, une zone horizontale suffit ; à l'entraînement, un polygone est traité comme sa boîte englobante horizontale, donc suivre le contour n'apporte rien de plus.</p>
+
+<p>À l'import, un labelme json contenant des zones de texte marque automatiquement le jeu de données comme <strong>jeu de données de détection de texte</strong>. Ensuite, seuls ces jeux de données apparaissent dans la liste déroulante du jeu d'entraînement OCR.</p>
+
+<figure>
+  <img src="images/ocr标注.png" alt="OCR 文本标注">
+  <figcaption>Après avoir activé l'interrupteur « Annotation de texte », tracez une zone : au relâchement, la boîte de saisie du texte s'ouvre ; à droite, « Annotations » liste la forme, le nombre de sommets et l'aire de chaque zone de texte</figcaption>
+</figure>
+
+<p>Une fois l'annotation terminée, revenez à la vue du jeu de données : dans un jeu de données OCR, chaque zone de texte est <strong>découpée en une vignette distincte</strong>, et la barre d'étiquette affiche le <strong>contenu textuel</strong> saisi dans la zone (au-delà de 3 éléments, repliés en <code>+N</code>), et non le nom de la classe — parcourir les vignettes une à une permet de vérifier que le contenu saisi est correct. Dans le filtre de classes en haut, il n'y a que l'entrée « text ».</p>
+
+<figure>
+  <img src="images/ocr标注显示.png" alt="OCR 数据集缩略图显示文字内容">
+  <figcaption>Jeu de données OCR : chaque zone de texte devient une image distincte, la barre d'étiquette affiche le contenu textuel saisi (replié en +N au-delà de la limite)</figcaption>
+</figure>
+
+<h3>6.2 Entraînement</h3>
+
+<p>Choisissez <strong>OCR</strong> comme type de tâche.</p>
+
+<p>La taille d'image est l'entrée du segment de détection (1024 par défaut, doit être un multiple de 32) ; le segment de reconnaissance est fixé à <code>32×128</code> et n'est pas concerné par ce réglage.</p>
+
+<p>Après avoir cliqué sur « Démarrer l'entraînement », le travail est automatiquement scindé en deux tâches mises en file : d'abord la détection de texte, puis la reconnaissance de texte. Une fois la première terminée, la suivante ne démarre qu'après le retour de la VRAM à son niveau d'avant l'entraînement ; pendant ce temps, la zone de progression affiche « Attente de la libération de la VRAM · suivant : Reconnaissance de texte », sans temps mort.</p>
+
+<figure>
+  <img src="images/ocr训练.png" alt="OCR 训练参数">
+  <figcaption>Paramètres d'entraînement OCR (identifiés dans l'image par le segment « Détection de texte ») ; le Modèle correspond au palier nano ~ large, la colonne architecture est décidée automatiquement par l'algorithme et grisée, non modifiable</figcaption>
+</figure>
+
+<div class="note">
+  Le vocabulaire du segment de reconnaissance reprend directement les caractères apparus dans les annotations. Le texte annoté doit donc couvrir le jeu de caractères réellement rencontré sur le terrain — un caractère présent sur site mais absent des annotations ne sera pas reconnu par le modèle.
+</div>
+
+<h3>6.3 Test : deux voies pour la détection, une pour la reconnaissance</h3>
+
+<ul>
+  <li><strong>Détection de texte · Inférence</strong> — ne compare pas les annotations et écrit directement les zones prédites (avec le texte reconnu) en labelme json. Le json produit porte un marqueur OCR et, une fois glissé dans le logiciel, il est reconnu comme jeu de données de détection de texte, ce qui permet de vérifier les résultats ou de compléter les annotations</li>
+  <li><strong>Détection de texte · Évaluation</strong> — activée automatiquement quand le jeu de données est annoté ; calcule les détections correctes / oublis / fausses détections et les P/R par classe, comme pour la tâche de détection</li>
+  <li><strong>Reconnaissance de texte</strong> — se teste sur les extraits de texte découpés à partir des zones annotées ; indique le nombre total d'extraits, le CER (taux d'erreur de caractères) et le nombre d'extraits entièrement corrects, sans produire de fichier d'annotation</li>
+</ul>
+
+<h3>6.4 Export</h3>
+
+<p>Les deux segments exportent chacun un ONNX : <code>项目_字符检测_尺寸_规模.onnx</code> et <code>项目_字符识别_尺寸_规模.onnx</code> ; le segment de reconnaissance inclut en plus un vocabulaire <code>vocab.txt</code>.</p>
+
+<p>La détection de texte génère un rapport d'évaluation comme d'habitude ; la reconnaissance de texte n'a que le CER comme conclusion et ne génère pas de rapport.</p>
+
+<p>Un exemple d'appel se trouve dans <code>examples/python/ocr.py</code> du dossier d'export. Attention : les logits produits par le segment de détection ne passent pas par une sigmoïde, le post-traitement est à écrire soi-même ; tout est déjà écrit dans l'exemple.</p>
+
+<h2 id="log">7. Journal</h2>
+
+<p>Cliquez sur « Journal » en haut de la page d'accueil : la fenêtre du journal s'ouvre et défile en temps réel :</p>
+
+<ul>
+  <li>Démarrage / fermeture du logiciel</li>
+  <li>Création, renommage, suppression, import / export de projets et de jeux de données</li>
+  <li>Création, renommage, suppression d'étiquettes</li>
+  <li>Démarrage, déroulement de l'entraînement (sortie du sous-processus relayée avec le préfixe <code>[train]</code>), mise à jour des métriques, sauvegarde du modèle, arrêt manuel</li>
+  <li>Lancement, déroulement (préfixe <code>[test]</code>), achèvement, échec du test</li>
+</ul>
+
+<figure>
+  <img src="images/日志.png" alt="日志窗口">
+  <figcaption>Fenêtre du journal</figcaption>
+</figure>
+
+<hr style="margin-top:48px; border:none; border-top:1px solid #dde1ea;">
+
+</body>
+</html>

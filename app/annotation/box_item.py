@@ -99,7 +99,7 @@ def _chip_screen_width(text):
 def chip_text(item):
     """
     chip 上显示的文字: 文本框(OCR)显示所录内容, 其它标注显示类别名.
-    文本框的类别固定是保留标签名("文本"), 显示它等于没说; 录进去的内容
+    文本框的类别是保留标签, 显示它等于没说; 录进去的内容
     才是要核对的东西, 所以有文字就优先显示文字.
     """
     return (item.text or item.label)[:12]

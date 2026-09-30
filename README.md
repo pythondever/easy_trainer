@@ -47,7 +47,7 @@
 - A/D 翻页、Q/Ctrl+Z 等快捷键
 
 <p align="center">
-  <img src="docs/images/图像标注_矩形_多边形_格式刷.png" width="80%" />
+  <img src="docs/images/图像标注_剪切板.png" width="80%" />
 </p>
 
 ### 🖼️ 首页浏览与按类筛选
@@ -68,7 +68,7 @@
 **子进程执行不阻塞 UI**，实时进度条、剩余时间、显存占用，支持手动停止（5 秒倒计时）。检测/分割走 RF-DETR，分类走 ResNet（18/34/50/101），异常检测走 PatchCore（只用正常样本，无需标注），OCR 走 docTR 两段（检测 DB / LinkNet + 识别 CRNN），所有网络尺寸下拉映射。支持**训练队列**：多组配置排队串行执行，可随时停止，中断或失败后可一键重新入队；OCR 一次入队两项（字符检测 + 字符识别），前一项跑完等显存回落到开训前水平再起下一项。
 
 <p align="center">
-  <img src="docs/images/训练参数设置.png" width="48%" />
+  <img src="docs/images/训练参数与队列.png" width="48%" />
   <img src="docs/images/训练进度_指标_剩余时间_显存用量.png" width="48%" />
 </p>
 
@@ -91,7 +91,7 @@
 
 <p align="center">
   <img src="docs/images/测试参数设置.png" width="48%" />
-  <img src="docs/images/模型评估结果.png" width="48%" />
+  <img src="docs/images/模型结果评估与报告.png" width="48%" />
 </p>
 
 ### 📜 日志

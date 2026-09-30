@@ -11,7 +11,7 @@ from PySide6.QtWidgets import (QGraphicsScene, QGraphicsPixmapItem, QGraphicsIte
 from app.annotation.blend import blend_patch
 from app.annotation.box_item import AnnotationBoxItem, AnnotationPolygonItem, label_color
 from app.core import theme
-from app.core.label_utils import TEXT_LABEL
+from app.core.label_utils import is_text_label
 
 # 文本框(OCR)固定配色: 走标签哈希色会和用户自己的类别撞色, 一眼分不出哪个是文本框
 TEXT_COLOR = "#2ec4b6"
@@ -707,7 +707,7 @@ class AnnotationScene(QGraphicsScene):
         return items
 
     def _resolve_color(self, label):
-        if label == TEXT_LABEL:
+        if is_text_label(label):
             # 必须给 QColor: 这个返回值一路喂给 QPen/QBrush, 给字符串会炸在里面
             return QColor(TEXT_COLOR)
         color = self.label_colors.get(label)
@@ -1125,7 +1125,7 @@ class AnnotationScene(QGraphicsScene):
         if not self.draw_mode and event.button() == Qt.LeftButton:
             for it in self.items(event.scenePos()):
                 if (isinstance(it, (AnnotationBoxItem, AnnotationPolygonItem))
-                        and it.label == TEXT_LABEL):
+                        and is_text_label(it.label)):
                     self.box_edit_requested.emit(it)
                     event.accept()
                     return

@@ -23,7 +23,7 @@ from PySide6.QtCore import QTimer
 from app.core import i18n
 from app.core import theme
 from app.core.db import get_paths, load_train_metrics
-from app.core.label_utils import TEXT_LABEL
+from app.core.label_utils import text_label
 from app.core.log import write_log
 from app.core.utils import fmt_duration
 from app.core.metrics import (best_value, metric_key, primary_for,
@@ -938,9 +938,9 @@ class ModelDialog(QDialog):
         self._write_label_map(pairs)
 
     def _write_ocr_side(self, task):
-        """OCR 交付的不是类别表: 检测段只有"文本"一类, 识别段要的是词表."""
+        """OCR 交付的不是类别表: 检测段只有保留标签一类, 识别段要的是词表."""
         if task != "ocr_rec":
-            self._write_label_map([(0, TEXT_LABEL)])
+            self._write_label_map([(0, text_label())])
             return
         try:
             import torch

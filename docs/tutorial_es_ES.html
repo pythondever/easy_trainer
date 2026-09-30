@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tutorial de uso de EasyTrainer</title>
+<style>
+  body { font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+         max-width: 920px; margin: 0 auto; padding: 0 16px 48px;
+         color: #2b2f3b; background: #fff; line-height: 1.75; }
+  h1 { font-size: 28px; color: #1c1e25; border-bottom: 3px solid #4f7dff;
+       padding-bottom: 10px; margin: 24px 0; }
+  h2 { font-size: 22px; color: #1c1e25; margin-top: 40px;
+       border-left: 5px solid #4f7dff; padding-left: 12px; }
+  h3 { font-size: 17px; color: #353a48; margin-top: 26px; }
+  p, li { font-size: 15px; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  .lead { color: #4a5164; }
+  .note { background: #f3f6ff; border-left: 4px solid #4f7dff;
+          padding: 10px 14px; margin: 14px 0; border-radius: 4px; font-size: 14px; }
+  .warn { background: #fff3f3; border-left: 4px solid #d64545;
+          padding: 10px 14px; margin: 14px 0; border-radius: 4px; font-size: 14px; }
+  code { background: #23262f; color: #e8eaf0; padding: 1px 6px;
+         border-radius: 3px; font-family: Consolas, monospace; font-size: 13px; }
+  kbd { background: #f4f5f8; border: 1px solid #ccd2e0; border-bottom-width: 2px;
+        border-radius: 3px; padding: 0 5px; font-size: 13px;
+        font-family: Consolas, monospace; color: #353a48; }
+  figure { margin: 18px 0; text-align: center; }
+  figcaption { color: #5c6270; font-size: 13px; margin-top: 6px; }
+  img { max-width: 100%; height: auto; border: 1px solid #dde1ea;
+        border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+  .toc { background: #f9fafc; border: 1px solid #dde1ea; border-radius: 6px;
+         padding: 14px 22px; margin-bottom: 28px; }
+  .toc h2 { font-size: 16px; border: none; padding: 0; margin: 0 0 8px; color: #4f7dff; }
+  .toc ol { margin: 0; }
+  .toc li { font-size: 14px; margin-bottom: 4px; }
+  .toc a { color: #2b2f3b; text-decoration: none; }
+  .toc a:hover { color: #4f7dff; }
+  .lang { text-align: right; font-size: 13px; padding-top: 16px; }
+  .lang a { color: #6c7385; text-decoration: none; }
+  .lang a:hover { color: #4f7dff; }
+  table { border-collapse: collapse; width: 100%; margin: 14px 0; font-size: 14px; }
+  th, td { border: 1px solid #dde1ea; padding: 7px 10px; text-align: left; }
+  th { background: #f4f6fb; color: #353a48; font-weight: 600; }
+  /* Impresión/PDF: los títulos no quedan solos y las imágenes no se cortan entre páginas */
+  @media print {
+    h2, h3 { page-break-after: avoid; }
+    figure, img, table { page-break-inside: avoid; }
+    .lang { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="lang"><a href="introduce.html">Otros idiomas / Other languages</a></div>
+
+<h1>Tutorial de uso de EasyTrainer</h1>
+
+<div class="toc">
+  <h2>Índice</h2>
+  <ol>
+    <li><a href="#quick">Inicio rápido</a></li>
+    <li><a href="#project">Interfaz y proyectos</a></li>
+    <li><a href="#annotate">Anotación</a></li>
+    <li><a href="#train">Entrenamiento</a></li>
+    <li><a href="#model">Gestión de modelos</a></li>
+    <li><a href="#test">Prueba e informe de evaluación</a></li>
+    <li><a href="#ocr">OCR</a></li>
+    <li><a href="#log">Registro</a></li>
+  </ol>
+</div>
+
+<h2 id="quick">Inicio rápido</h2>
+
+<p class="lead">Para pasar del programa vacío a su primer modelo, la ruta más corta son estos seis pasos. Los detalles de cada uno están en los capítulos siguientes.</p>
+
+<ol>
+  <li><strong>Añadir proyecto</strong>: pulse «+ Añadir proyecto» a la izquierda e introduzca un nombre.</li>
+  <li><strong>Añadir conjunto de datos</strong>: haga clic derecho en el nodo del proyecto → «Añadir conjunto de datos».</li>
+  <li><strong>Importar datos</strong>: seleccione el conjunto de datos, pulse «Importar» arriba y elija por separado la carpeta de imágenes y la de etiquetas.</li>
+  <li><strong>Comprobar los datos</strong>: pulse «Propiedades» y confirme que las clases y las cantidades son correctas.</li>
+  <li><strong>Entrenamiento</strong>: pulse «Entrenar», elija el tipo de tarea y el conjunto de datos, deje el resto por defecto y pulse «Iniciar entrenamiento».</li>
+  <li><strong>Ver los resultados</strong>: al terminar el entrenamiento, busque el registro en «Modelos» y pulse «Probar» para ejecutarlo en el conjunto de validación; si va a entregarlo, exporte un informe PDF.</li>
+</ol>
+
+<div class="note">
+  Si todavía no tiene datos anotados, consulte primero el capítulo 3, «Anotación».
+</div>
+
+<h2 id="project">1. Interfaz y proyectos</h2>
+
+<h3>1.1 Distribución de la interfaz principal</h3>
+
+<p>La interfaz principal se divide en tres zonas: a la izquierda se gestionan los proyectos, en el centro se ven las imágenes y la barra de herramientas está arriba.</p>
+
+<ul>
+  <li><strong>Árbol de proyectos (izquierda)</strong>: proyectos y conjuntos de datos ordenados jerárquicamente. Detrás del conjunto de datos aparece el progreso de anotación (p. ej., <code>126/128</code>); el punto que precede al nombre indica si está cargado en memoria: verde si está cargado, rojo si no lo está.</li>
+  <li><strong>Zona de imágenes (centro)</strong>: navegación paginada de miniaturas. Abajo, en el centro, hay un grupo de controles de paginación: dos flechas con el número de página en medio y el número de la página actual resaltado; si deja el ratón sobre el número, verá cuántas imágenes hay en total con el filtro actual.</li>
+  <li><strong>Barra de herramientas superior</strong>: el desplegable de escala de visualización, el desplegable de filtro de anotación y los botones Editar, Eliminar, Importar, Exportar, Propiedades, Entrenar, Modelos y Registro, entre otros.</li>
+</ul>
+
+<figure>
+  <img src="images/主页.png" alt="EasyTrainer 主界面">
+  <figcaption>Interfaz principal de EasyTrainer</figcaption>
+</figure>
+
+<h3>1.2 Proyectos y conjuntos de datos</h3>
+
+<p><strong>Añadir proyecto</strong>: pulse «+ Añadir proyecto» a la izquierda, introduzca un nombre y confirme con Aceptar. Un proyecto es el contenedor de los conjuntos de datos; cada conjunto de datos debe pertenecer a uno.</p>
+
+<figure>
+  <img src="images/添加项目.png" alt="添加项目">
+  <figcaption>Introduzca el nombre del proyecto</figcaption>
+</figure>
+
+<p>Haga clic derecho en el <strong>nodo del proyecto</strong>:</p>
+
+<ul>
+  <li><strong>Añadir conjunto de datos</strong>: crea un conjunto de datos dentro del proyecto</li>
+  <li><strong>Exportar proyecto</strong>: exporta al formato indicado los conjuntos de datos y las anotaciones de todo el proyecto</li>
+  <li><strong>Renombrar</strong>: cambia el nombre del proyecto</li>
+  <li><strong>Eliminar proyecto</strong>: borra a la vez los conjuntos de datos, las anotaciones y los registros de entrenamiento que contiene</li>
+</ul>
+
+<p>El clic derecho en el <strong>nodo del conjunto de datos</strong> opera sobre un único conjunto de datos: Importar / Exportar / Mover / Renombrar / Eliminar.</p>
+
+<p>El conjunto de datos solo se carga al <strong>hacer doble clic</strong> en él: vuelve a explorar las imágenes y las anotaciones y reconstruye la caché; después ya se puede navegar por él a la derecha. Si ya está cargado (la fila tiene el punto de estado), volver a hacer doble clic no repite la exploración.</p>
+
+<figure>
+  <img src="images/添加_修改_删除_数据集.png" alt="项目右键菜单">
+  <figcaption>Menú contextual del proyecto</figcaption>
+</figure>
+
+<h3>1.3 Importar datos</h3>
+
+<p>Seleccione el conjunto de datos y pulse «Importar» arriba; aparece el diálogo de importación:</p>
+
+<ul>
+  <li><strong>Ruta de imágenes</strong>: la carpeta donde están las imágenes</li>
+  <li><strong>Ruta de etiquetas</strong>: la carpeta donde están los archivos de etiquetas</li>
+  <li><strong>Formato de etiquetas</strong>: Yolo txt / Labelme json / Importar como clasificación (subcarpetas)</li>
+</ul>
+
+<div class="note">
+  Para un <strong>conjunto de datos de clasificación</strong>, elija «Importar como clasificación (subcarpetas)»: el nombre de cada subcarpeta es una clase y <strong>no hacen falta archivos de etiquetas</strong>.<br>
+  Para OCR se usa Labelme json; la etiqueta de los cuadros de texto es siempre «text» y, tras importar, el conjunto de datos se marca automáticamente como de detección de texto.
+</div>
+
+<figure>
+  <img src="images/导入数据.png" alt="导入数据">
+  <figcaption>Diálogo de importación de datos</figcaption>
+</figure>
+
+<h3>1.4 Propiedades del conjunto de datos</h3>
+
+<p>Seleccione el conjunto de datos y pulse «Propiedades» arriba; verá la ruta de imágenes, la ruta de etiquetas y un <strong>histograma de distribución de etiquetas</strong>: cuántos cuadros de anotación tiene cada clase. De un vistazo se ve qué clase tiene menos muestras.</p>
+
+<figure>
+  <img src="images/数据集属性_标签分布.png" alt="数据集属性与标签分布">
+  <figcaption>Propiedades del conjunto de datos y distribución de etiquetas</figcaption>
+</figure>
+
+<h3>1.5 Idioma de la interfaz</h3>
+
+<p>En el extremo derecho de la barra de herramientas está el desplegable de idioma de la interfaz, con nueve idiomas a elegir: 中文, English, 繁體中文, 日本語, 한국어, Deutsch, Español, Français, Tiếng Việt.</p>
+
+<p>Al seleccionarlo, la interfaz principal cambia al instante y las ventanas ya abiertas de Registro y Cola de entrenamiento se actualizan a la vez; los diálogos que aún no se han abierto aparecerán directamente en el nuevo idioma la próxima vez. La elección se guarda, de modo que en el siguiente inicio seguirá vigente ese idioma. Cada elemento del desplegable se muestra en su propio idioma, así que, sea cual sea el idioma actual de la interfaz, siempre reconocerá cuál debe elegir.</p>
+
+<h2 id="annotate">2. Anotación</h2>
+
+<h3>2.1 Entrar en la interfaz de anotación</h3>
+
+<p>Tras seleccionar el conjunto de datos, haga clic derecho en una miniatura y elija «Anotación», o bien haga doble clic directamente en la miniatura.</p>
+
+<h3>2.2 Dibujar cuadros</h3>
+
+<p>La barra de herramientas superior de la interfaz de anotación ofrece tres formas de dibujar:</p>
+
+<ul>
+  <li><strong>Rectángulo</strong>: arrastre el ratón para dibujar el cuadro</li>
+  <li><strong>Polígono</strong>: vaya marcando los vértices uno a uno y termine con doble clic o con Intro (para tareas de segmentación)</li>
+  <li><strong>Texto</strong>: active primero el interruptor «Anotación de texto» de arriba, arrastre para dibujar el cuadro y, al soltar, aparecerá un cuadro de entrada para escribir el texto; haga doble clic para modificarlo (para tareas de OCR)</li>
+</ul>
+
+<p>Para los cuadros de texto use siempre el <strong>Rectángulo</strong>. Basta con cubrir el texto inclinado con un cuadro horizontal: durante el entrenamiento los polígonos se tratan como el rectángulo horizontal que los envuelve, así que trazar el contorno no aporta ninguna ventaja.</p>
+
+<p>En la barra de herramientas también hay «Eliminar imagen», que borra la imagen actual.</p>
+
+<p>La clase se elige en la lista de etiquetas de la derecha.</p>
+
+<p>El <strong>interruptor «Mostrar etiquetas»</strong> oculta en cualquier momento todos los contornos (líneas del cuadro, etiquetas y tiradores de los vértices) para ver mejor la imagen original. En el contenido ya pegado pero aún sin fijar solo se ocultan los contornos, mientras que el patrón se sigue mostrando; por eso, apagarlo es justo lo que le permite previsualizar «cómo quedará al terminar de pegar».</p>
+
+<p><strong>«Anotaciones»</strong>, abajo a la derecha, enumera la forma de cada objeto anotado de esta imagen (rectángulo / polígono), el número de vértices y el área; justo debajo, <strong>Información de la imagen</strong> muestra el ancho × alto × número de canales de la imagen actual (p. ej., <code>505×505×3</code>) y su número de orden.</p>
+
+<p>Más abajo está el <strong>Portapapeles</strong>: al copiar un polígono con el botón derecho, se añade la miniatura de la zona copiada (<code>120 × 90</code>); se guardan hasta 9, dispuestas en vertical y con desplazamiento. La más reciente queda seleccionada por defecto y con borde azul; al hacer clic derecho en una miniatura puede borrar esa sola o vaciarlas todas.</p>
+
+<figure>
+  <img src="images/图像标注_剪切板.png" alt="图像标注">
+  <figcaption>Anotación con rectángulo / polígono, lista de etiquetas y portapapeles abajo a la derecha</figcaption>
+</figure>
+
+<h3>2.3 Gestión de etiquetas</h3>
+
+<p>A la derecha de la interfaz de anotación está la lista de etiquetas y, encima, «Añadir etiqueta»:</p>
+
+<ul>
+  <li><strong>Nombre de la etiqueta</strong>: separe varias etiquetas con comas; puede añadir varias de una vez</li>
+  <li><strong>Importar</strong>: copia las etiquetas de otro conjunto de datos en bloque</li>
+  <li><strong>Elegir color</strong>: elíjalo de la paleta predefinida o pulse «RGB personalizado:» para escogerlo usted mismo</li>
+</ul>
+
+<figure>
+  <img src="images/添加或导入标签.png" alt="添加标签">
+  <figcaption>Añadir o importar etiquetas</figcaption>
+</figure>
+
+<h3>2.4 Cambiar la clase</h3>
+
+<p><strong>Cambiar una sola</strong>: haga clic en el cuadro de anotación; aparecerá el menú desplegable de clases y bastará con elegir la nueva. Las etiquetas de la lista de la derecha también se pueden renombrar, cambiar de color o eliminar.</p>
+
+<figure>
+  <img src="images/修改类别.png" alt="修改类别">
+  <figcaption>Cambiar la clase directamente en el cuadro de anotación</figcaption>
+</figure>
+
+<p><strong>Cambio masivo</strong>: clic derecho en una miniatura → «Cambio masivo de clase»; indique la clase original y la nueva, y todas las anotaciones de esa clase en todo el conjunto de datos se renombran.</p>
+
+<figure>
+  <img src="images/标签批量修改.png" alt="批量修改类别">
+  <figcaption>Ventana de cambio masivo de clase</figcaption>
+</figure>
+
+<h3>2.5 Copiar y pegar objetos anotados</h3>
+
+<p>Al hacer clic derecho en una anotación de <strong>polígono</strong> hay dos operaciones:</p>
+
+<ul>
+  <li><strong>Copiar</strong>: guarda los píxeles de esta zona como plantilla y, a la vez, genera una miniatura en el portapapeles de abajo a la derecha</li>
+  <li><strong>Rellenar</strong>: cambia los píxeles de la zona al color RGB indicado en los tres campos de «Valor de relleno» (cada canal <code>0 ~ 255</code>, por defecto 255). Se usa sobre todo para tapar defectos con el color del fondo</li>
+</ul>
+
+<p><strong>Con el botón izquierdo</strong>, seleccione una miniatura del portapapeles y mueva el ratón al lienzo: aparecerá un contorno de polígono discontinuo que le sigue. La forma es el contorno real ya girado, con el ángulo que se ha sorteado en esta ocasión. Fíjese bien en dónde y con qué orientación va a caer, pulse <kbd>Esc</kbd> para quitar el contorno discontinuo y volver al modo normal de ratón, y luego haga clic derecho y elija «Pegar» para fijarlo.</p>
+
+<p>Al hacer clic derecho en una zona vacía de la imagen y elegir <strong>«Pegar»</strong>, se pega en la posición del ratón la miniatura seleccionada en ese momento en el portapapeles; da igual si es la misma imagen u otra. Antes de pegar, configure estas opciones en la barra de herramientas:</p>
+
+<ul>
+  <li><strong>Rango de ángulo</strong>: el intervalo de ángulos de rotación aleatoria al pegar (por defecto <code>-180 ~ 180</code>). La previsualización discontinua usa el ángulo sorteado dentro de este intervalo; lo que ve es lo que obtiene</li>
+  <li><strong>Intensidad de mezcla</strong>: <code>0 ~ 1</code>, por defecto <code>0.70</code>. Al pegar se compensa automáticamente el brillo y se difuminan los bordes para que la parte pegada encaje de forma natural con el fondo; si se ajusta a 0, el pegado es directo y sin difuminar</li>
+  <li><strong>Valor de relleno</strong>: los tres campos R / G / B (cada canal <code>0 ~ 255</code>, por defecto 255); junto con «Rellenar» del menú contextual, tapa la zona con este color</li>
+  <li><strong><kbd>Ctrl</kbd> + <kbd>Z</kbd></strong>: deshace el último pegado o relleno; los píxeles se restauran y las anotaciones añadidas con él se eliminan también. Se puede deshacer varias veces seguidas</li>
+</ul>
+
+<figure>
+  <img src="images/标注对象复制.png" alt="标注对象复制">
+  <figcaption>Al copiar un objeto anotado con el botón derecho → miniatura en el portapapeles; en la barra de herramientas se configuran Rango de ángulo / Intensidad de mezcla / Valor de relleno</figcaption>
+</figure>
+
+<h3>2.6 Ajuste de brillo de una zona poligonal</h3>
+
+<p>Seleccione un <strong>polígono</strong> y active <strong>Brillo</strong> en «Ajustes» de la barra de herramientas para cambiar la claridad u oscuridad de los píxeles dentro de ese polígono. Arrastre el control deslizante o introduzca el valor directamente; la vista previa en la imagen es en tiempo real.</p>
+
+<ul>
+  <li><strong>Rango</strong>: <code>0 ~ 1</code>; el valor por defecto <code>0.50</code> significa sin cambios. Cuanto más cerca de 1, más brillante (<code>1.00</code> equivale a unas dos veces el brillo) y cuanto más cerca de 0, más oscuro (0 deja todo negro)</li>
+  <li><strong>Solo se aplica al polígono seleccionado</strong>. Con un rectángulo, o si no hay nada seleccionado, solo se muestra un aviso y no se tocan los píxeles. Al hacer clic en otro polígono, el control deslizante vuelve a su propio valor (0.50 si no se ha ajustado), sin arrastrar el brillo del anterior</li>
+  <li><strong>Cuándo se guarda en disco</strong>: mientras se arrastra solo se modifica la memoria y se muestra la vista previa en tiempo real. Los cambios se escriben en el archivo de imagen al cambiar de imagen con <kbd>A</kbd> / <kbd>D</kbd> o al pulsar <kbd>Ctrl</kbd> + <kbd>S</kbd></li>
+  <li><strong>Deshacer</strong>: cada ajuste cuenta como un solo paso; <kbd>Ctrl</kbd> + <kbd>Z</kbd> vuelve al estado anterior al ajuste. Por mucho que arrastre de un lado a otro dentro de un mismo ajuste, cuenta como un solo paso</li>
+</ul>
+
+<figure>
+  <img src="images/多边形区域亮度调节.png" alt="多边形亮度调节">
+  <figcaption>Tras seleccionar un polígono, use «Brillo» para cambiar la claridad de los píxeles del cuadro, con vista previa en tiempo real sobre la imagen</figcaption>
+</figure>
+
+<h3>2.7 Filtrar imágenes por clase</h3>
+
+<p>En el desplegable de clases de la barra de herramientas superior, al seleccionar una clase la zona de imágenes solo muestra las imágenes que la contienen. Es muy útil cuando quiere revisar o completar las anotaciones de una clase concreta.</p>
+
+<figure>
+  <img src="images/按标注类别_分类筛选.png" alt="按类别筛选">
+  <figcaption>Filtrar miniaturas por clase</figcaption>
+</figure>
+
+<h2 id="train">3. Entrenamiento</h2>
+
+<h3>3.1 Configurar los parámetros de entrenamiento</h3>
+
+<p>Pulse «Entrenar» en la página de inicio o en la interfaz de modelos; aparece la configuración de parámetros:</p>
+
+<ul>
+  <li><strong>Tipo de tarea</strong>: Detección / Segmentación / Clasificación / Detección de anomalías / OCR; cambia automáticamente según el formato del conjunto de datos</li>
+  <li><strong>Conjunto de entrenamiento / Conjunto de validación</strong>: se pueden seleccionar varios y combinar entre proyectos</li>
+  <li><strong>Dispositivo</strong>: enumera automáticamente las GPU disponibles</li>
+  <li><strong>Épocas / Optimizador / Parada temprana</strong>: el optimizador es <code>adamw</code> para detección y segmentación, y <code>sgd</code> para clasificación; la parada temprana termina antes si no hay mejora durante N épocas seguidas, y poner 0 la desactiva</li>
+  <li><strong>Tasa de aprendizaje</strong>: se reduce automáticamente durante el entrenamiento</li>
+  <li><strong>Lote / Tamaño de imagen / Acum. gradiente / Número de hilos</strong>: el tamaño de imagen debe ser múltiplo de 32; si no hay suficiente VRAM, reduzca el lote y aumente la acumulación de gradiente, lo que equivale a agrandar el lote</li>
+  <li><strong>Ruta de salida</strong>: si se deja vacía, se genera automáticamente una carpeta con la fecha y la hora; también puede indicarla con «Examinar»</li>
+</ul>
+
+<figure>
+  <img src="images/训练参数与队列.png" alt="训练参数配置">
+  <figcaption>Diálogo de configuración de los parámetros de entrenamiento</figcaption>
+</figure>
+
+<h3>3.2 Cola de entrenamiento</h3>
+
+<p>Una vez configurados los parámetros, además de «Iniciar entrenamiento» puede pulsar <strong>«Añadir a la cola»</strong> para dejar la tarea en espera y pasar a configurar la siguiente. En la página de inicio, pulse «Cola de entrenamiento» para abrir la ventana de la cola:</p>
+
+<ul>
+  <li>La cola se ejecuta en orden; Detección / Segmentación / Clasificación / Detección de anomalías / OCR pueden mezclarse, y al terminar una tarea pasa automáticamente a la siguiente</li>
+  <li><strong>Subir / Bajar / Quitar</strong>: cambia el orden de ejecución o elimina la tarea</li>
+  <li><strong>Editar</strong>: modifica los parámetros de la tarea seleccionada</li>
+  <li><strong>Limpiar completadas</strong>: quita los registros ya terminados</li>
+  <li><strong>Iniciar cola</strong>: ejecuta las tareas de la cola en orden desde el principio</li>
+</ul>
+
+<div class="note">
+  La cola es ideal para dejarla funcionando de noche: configure de una vez las tareas de varios conjuntos de datos y el programa las completará todas automáticamente y guardará cada modelo por separado.
+</div>
+
+<figure>
+  <img src="images/训练队列查看.png" alt="训练队列">
+  <figcaption>Ventana de la cola de entrenamiento</figcaption>
+</figure>
+
+<h3>3.3 Progreso del entrenamiento</h3>
+
+<p>Tras pulsar «Iniciar entrenamiento» y volver a la página de inicio, aparecen arriba una barra de progreso y una barra de control:</p>
+
+<ul>
+  <li><strong>Nombre de la tarea + progreso</strong>: con la forma <code>coco128 entrenando 5/100</code>; dentro de la barra de progreso se muestra el loss de la época actual</li>
+  <li><strong>Detener entrenamiento</strong>: lo interrumpe en cualquier momento; la parte ya completada se guarda</li>
+  <li><strong>Tiempo restante</strong>: se estima a partir del tiempo ya empleado</li>
+  <li><strong>VRAM</strong>: el porcentaje de VRAM de la GPU que está en uso, actualizado en tiempo real</li>
+</ul>
+
+<figure>
+  <img src="images/训练进度_指标_剩余时间_显存用量.png" alt="训练进度">
+  <figcaption>Barra de progreso del entrenamiento y barra de estado</figcaption>
+</figure>
+
+<h3>3.4 Curvas de entrenamiento</h3>
+
+<p>En Gestión de modelos, seleccione un registro de entrenamiento y pulse <strong>«Ver métricas completas»</strong> en el panel de detalles de la derecha; aparece la ventana de curvas de entrenamiento:</p>
+
+<ul>
+  <li>En la mitad superior está la curva de <strong>val loss</strong></li>
+  <li>En la mitad inferior hay varias curvas, como mAP@50-95 / mAP@50 / AR / F1 / precision / recall; en las tareas de segmentación se añade una más, mask mAP</li>
+  <li>El desplegable «Filtro de etiquetas» de arriba a la derecha permite alternar entre todas las métricas o las curvas de una clase concreta</li>
+</ul>
+
+<figure>
+  <img src="images/训练指标查看.png" alt="训练指标">
+  <figcaption>Curvas de las métricas de entrenamiento (val loss + cada métrica de precisión)</figcaption>
+</figure>
+
+<h2 id="model">4. Gestión de modelos</h2>
+
+<p>Pulse «Modelos» en la página de inicio para abrir Gestión de modelos: a la izquierda está la lista de registros de entrenamiento y a la derecha, el panel de detalles.</p>
+
+<h3>4.1 Lista y filtros</h3>
+
+<ul>
+  <li><strong>Cuadro de búsqueda</strong>: filtra por palabras clave de proyecto / conjunto de datos / etiqueta</li>
+  <li><strong>Desplegables de Tarea / Estado</strong>: en Tarea se puede elegir Detección / Segmentación / Clasificación / Detección de anomalías / Detección de texto / Reconocimiento de texto; en Estado, En entrenamiento / Finalizado / Fallido / Detenido</li>
+  <li><strong>Solo el mejor de cada conjunto de datos</strong>: de cada conjunto de datos solo se conserva el registro con mayor precisión</li>
+  <li>Columnas de la lista: Tarea, Conjunto de datos·Etiqueta, Precisión, Hora de entrenamiento, Duración, Tamaño de imagen, Acciones</li>
+  <li><strong>La columna de precisión lleva una barra de color</strong>: verde ≥ 0.8, amarilla 0.5 ~ 0.8 y roja &lt; 0.5. En los registros fallidos o detenidos, esta columna muestra el texto del estado; si deja el ratón encima, verá el motivo del fallo</li>
+  <li>Tres botones en la fila: <strong>Probar</strong> (abre la prueba del modelo), <strong>Exportar</strong> y <strong>Eliminar</strong> (borra también el registro de entrenamiento correspondiente)</li>
+</ul>
+
+<h3>4.2 Panel de detalles</h3>
+
+<p>Al hacer clic en cualquier fila, a la derecha se muestran todos los parámetros de ese registro: Tarea·Escala, Estado, Precisión, Conjunto de entrenamiento / validación, Tamaño de imagen, Épocas / Parada temprana, Tamaño de lote, Tasa de aprendizaje, Optimizador, Dispositivo, Etiquetas, Hora de entrenamiento, Duración y Ruta del modelo. Arriba hay además una miniatura de la curva de precisión.</p>
+
+<p>En la parte inferior del panel hay cuatro botones:</p>
+
+<ul>
+  <li><strong>Ver métricas completas</strong>: abre la ventana de curvas de entrenamiento (véase la sección «Curvas de entrenamiento»)</li>
+  <li><strong>Probar este modelo</strong>: abre el diálogo de prueba con este modelo (véase la sección «Parámetros de prueba»)</li>
+  <li><strong>Reentrenar con esta configuración</strong>: recupera todos los parámetros de entrenamiento de este registro y vuelve a iniciar un entrenamiento</li>
+  <li><strong>Abrir directorio del modelo</strong>: abre la ubicación del archivo de pesos en el explorador de archivos</li>
+</ul>
+
+<figure>
+  <img src="images/模型训练记录.png" alt="模型训练记录">
+  <figcaption>Gestión de modelos: barra de filtros + lista de registros de entrenamiento + panel de detalles a la derecha</figcaption>
+</figure>
+
+<h3>4.3 Exportar ONNX</h3>
+
+<p>Pulse «Exportar» y elija una carpeta; se generará una carpeta «项目_时间戳»:</p>
+
+<ul>
+  <li><strong>Modelo <code>.onnx</code></strong>: detección y segmentación se exportan con RF-DETR, y clasificación y OCR con torch. El nombre es «项目_任务_图像尺寸_模型规模.onnx»</li>
+  <li><strong><code>classes.txt</code></strong>: la correspondencia entre el id y el nombre de las clases. En el tramo de reconocimiento del OCR es <code>vocab.txt</code>, con un carácter por línea, que es el vocabulario</li>
+  <li><strong>Informe de evaluación PDF</strong>: ejecuta automáticamente una evaluación sobre el conjunto de validación, reutiliza la plantilla del informe de prueba y se llama «…_评估报告.pdf»</li>
+  <li><strong><code>examples/</code></strong>: código de ejemplo en C++ / C# / Python para llamar a ONNX y hacer detección, segmentación y clasificación. Para OCR, por ahora solo hay versión en Python</li>
+</ul>
+
+<p>El proceso de exportación muestra el progreso. La conversión a ONNX requiere tener instalados <code>onnx</code> y <code>onnxsim</code>; si no lo están, aparecerá un aviso en una ventana emergente.</p>
+
+<p>Las tareas de clasificación no generan informe de evaluación: el informe de omitidos y falsos positivos no es aplicable a la clasificación. Con el Reconocimiento de texto del OCR pasa lo mismo; su única conclusión es el CER.</p>
+
+<h2 id="test">5. Prueba e informe de evaluación</h2>
+
+<h3>5.1 Parámetros de prueba</h3>
+
+<p>En Gestión de modelos, pulse «Probar» en la fila (o «Probar este modelo» en el panel de detalles) y aparecerá el diálogo de prueba. Arriba se muestra la información del modelo: tipo de tarea, archivo de pesos, precisión de entrenamiento, tamaño de entrada y escala. Debajo están los parámetros:</p>
+
+<ul>
+  <li><strong>Datos</strong>: se pueden seleccionar todos los conjuntos de datos, incluso de distintos proyectos</li>
+  <li><strong>Dispositivo</strong>: por defecto, la primera GPU disponible</li>
+  <li><strong>Confianza</strong>: las predicciones por debajo de esta puntuación se descartan directamente</li>
+  <li><strong>Umbral IoU</strong>: solo si el solapamiento entre el cuadro predicho y el cuadro anotado alcanza el valor se cuenta como detección correcta</li>
+  <li><strong>Escribir archivos de etiquetas</strong>: si se marca, los cuadros predichos se escriben en labelme json para facilitar la revisión manual</li>
+  <li><strong>OCR</strong>: la Detección de texto tiene dos vías, inferencia y evaluación: la inferencia escribe los resultados como json de anotaciones y la evaluación calcula P/R. El Reconocimiento de texto no genera archivos de anotaciones, solo informa de la tasa de acierto de las tiras de texto</li>
+</ul>
+
+<div class="note">
+  Cuando el conjunto de datos tiene anotaciones, se entra automáticamente en <strong>modo evaluación</strong>, que calcula la tasa de detección / los omitidos / los falsos positivos. Si en la Detección de texto se elige el modo de inferencia, se ignoran las anotaciones y los cuadros predichos se escriben directamente en json.
+</div>
+
+<figure>
+  <img src="images/模型测试与评估.png" alt="模型测试">
+  <figcaption>Configuración de los parámetros de prueba del modelo</figcaption>
+</figure>
+
+<h3>5.2 Análisis de resultados</h3>
+
+<p>Al terminar la prueba aparece la ventana de análisis de resultados, que hace el recuento en dos dimensiones y siempre usa los términos claros <strong>«Correctos / Omitidos / Falsos pos.»</strong>:</p>
+
+<ul>
+  <li><strong>Dimensión de imagen</strong> (recuento por imagen; basta con detectar 1 para contar como detectada): número de imágenes probadas, imágenes detectadas y tasa de detección, imágenes sin detección e imágenes con falsos positivos</li>
+  <li><strong>Dimensión de anotación</strong> (recuento por cuadro de anotación): Correctos, Omitidos, Falsos pos. y Exactitud</li>
+  <li><strong>Tabla por clase</strong>: número de anotaciones, Correctos, Omitidos, Falsos pos., tasa de detección y exactitud de cada clase</li>
+  <li><strong>Reconocimiento de texto</strong>: no cuenta por cuadro; informa del número total de tiras de texto, el CER (tasa de error de caracteres) y el número de tiras totalmente correctas</li>
+  <li><strong>Conclusión al pie</strong>: una frase que señala si en conjunto predominan los omitidos o los falsos positivos, y la clase que más perjudica</li>
+</ul>
+
+<figure>
+  <img src="images/模型结果评估与报告.png" alt="测试结果分析与报告">
+  <figcaption>Ventana de análisis de los resultados de la prueba (dimensión de imagen + dimensión de anotación + detalle por clase)</figcaption>
+</figure>
+
+<h3>5.3 Exportar el informe PDF</h3>
+
+<p>Pulse «Exportar informe PDF» abajo a la derecha; se genera en un hilo en segundo plano y su contenido incluye:</p>
+
+<ul>
+  <li><strong>Página de resumen</strong>: tabla resumen de métricas + gráfico de distribución de anotaciones</li>
+  <li><strong>Página de muestras omitidas / página de muestras con falsos positivos</strong>: muestra miniaturas según «N por clase» (la cantidad se ajusta abajo a la izquierda); en la imagen se marcan con un cuadro rojo las posiciones de los omitidos y los falsos positivos, y se indica la proporción de muestreo</li>
+  <li><strong>Página de recomendaciones</strong>: propone líneas de mejora para cada tipo de error</li>
+</ul>
+
+<div class="note">
+  El muestreo solo se realiza en el paso de generar el informe; los datos de detalle siguen siendo completos, así que más adelante no se perderá información al buscar casos difíciles.
+</div>
+
+<h2 id="ocr">6. OCR</h2>
+
+<p>El OCR es distinto de las demás tareas: se realiza encadenando <strong>dos modelos</strong>: la Detección de texto localiza los cuadros de texto y el Reconocimiento de texto lee los caracteres de esos cuadros. El entrenamiento, la prueba y la exportación se hacen en dos tramos separados, y en Gestión de modelos quedarán dos registros.</p>
+
+<h3>6.1 Anotar texto</h3>
+
+<p>En la interfaz de anotación, active el interruptor <strong>«Anotación de texto»</strong> de arriba y la clase se fija automáticamente en la etiqueta reservada «text» (no hace falta crear la etiqueta antes). Enmarque el texto igual que dibujaría un rectángulo; al soltar el ratón aparece el cuadro de entrada para escribir el contenido, y puede modificar un cuadro de texto ya existente con doble clic en cualquier momento.</p>
+
+<p>Los cuadros de texto se dibujan siempre con rectángulos: para el texto inclinado basta con cubrirlo con un cuadro horizontal; durante el entrenamiento los polígonos se tratan como el rectángulo horizontal que los envuelve, así que dibujar el contorno no aporta ninguna ventaja.</p>
+
+<p>Cuando se importa un labelme json con cuadros de texto, el conjunto de datos se marca automáticamente como <strong>conjunto de datos de detección de texto</strong>. A partir de ahí, solo este tipo de conjuntos de datos aparecerá en el desplegable de conjunto de entrenamiento del OCR.</p>
+
+<figure>
+  <img src="images/ocr标注.png" alt="OCR 文本标注">
+  <figcaption>Tras activar el interruptor «Anotación de texto» y arrastrar para dibujar el cuadro, al soltar aparece el cuadro de entrada de texto; «Anotaciones», a la derecha, enumera la forma, el número de vértices y el área de cada cuadro de texto</figcaption>
+</figure>
+
+<p>Al terminar la anotación y volver a la vista del conjunto de datos, en un conjunto de datos de OCR cada cuadro de texto se <strong>recorta en una miniatura propia</strong>; en la barra de etiquetas se muestra el <strong>contenido de texto</strong> escrito en el cuadro (si hay más de 3, se pliega como <code>+N</code>), no el nombre de la clase; hojeándolas una a una podrá comprobar si el contenido está bien escrito. En el filtro de clases de arriba solo aparece la opción «text».</p>
+
+<figure>
+  <img src="images/ocr标注显示.png" alt="OCR 数据集缩略图显示文字内容">
+  <figcaption>Conjunto de datos de OCR: cada cuadro de texto es una imagen aparte y la barra de etiquetas muestra el contenido de texto escrito (si lo supera, se pliega como +N)</figcaption>
+</figure>
+
+<h3>6.2 Entrenamiento</h3>
+
+<p>En Tipo de tarea seleccione <strong>OCR</strong>.</p>
+
+<p>El Tamaño de imagen es la entrada del tramo de detección (por defecto 1024 y debe ser múltiplo de 32); el tramo de reconocimiento está fijo en <code>32×128</code> y no se ve afectado por esta opción.</p>
+
+<p>Al pulsar «Iniciar entrenamiento», la tarea se divide automáticamente en dos elementos en cola: primero la Detección de texto y luego el Reconocimiento de texto. Cuando termina el primero, hay que esperar a que la VRAM baje al nivel previo al inicio del entrenamiento para arrancar el siguiente; durante ese tiempo, la zona de progreso muestra «Esperando liberar VRAM · siguiente:Reconocimiento de texto» y no queda vacía.</p>
+
+<figure>
+  <img src="images/ocr训练.png" alt="OCR 训练参数">
+  <figcaption>Parámetros de entrenamiento del OCR (en la imagen se indica el tramo «Detección de texto»); el modelo es el nivel, de nano a large, y el campo de arquitectura lo decide automáticamente el algoritmo: está en gris y no se puede cambiar</figcaption>
+</figure>
+
+<div class="note">
+  El vocabulario del tramo de reconocimiento se toma directamente de los caracteres que aparecen en las anotaciones. Por eso el texto anotado debe cubrir el conjunto de caracteres que realmente se encontrará en la planta: los caracteres que existan en la planta pero no aparezcan en las anotaciones no los reconocerá el modelo.
+</div>
+
+<h3>6.3 Prueba: la detección tiene dos vías y el reconocimiento, una</h3>
+
+<ul>
+  <li><strong>Detección de texto · Inferencia</strong>: no compara con las anotaciones, sino que escribe directamente los cuadros predichos (junto con el texto reconocido) en labelme json. El json generado lleva la marca de OCR y, al arrastrarlo de vuelta al programa, se reconocerá como conjunto de datos de detección de texto; sirve para comprobar los resultados o completar la anotación</li>
+  <li><strong>Detección de texto · Evaluación</strong>: se activa automáticamente cuando el conjunto de datos tiene anotaciones; calcula Correctos / Omitidos / Falsos pos. y la P/R por clase, igual que en la tarea de detección</li>
+  <li><strong>Reconocimiento de texto</strong>: se prueba con las tiras de texto recortadas de los cuadros anotados e informa del número total de tiras, el CER (tasa de error de caracteres) y el número de tiras totalmente correctas; no genera archivos de anotaciones</li>
+</ul>
+
+<h3>6.4 Exportación</h3>
+
+<p>Cada tramo exporta su propio ONNX: <code>项目_字符检测_尺寸_规模.onnx</code> y <code>项目_字符识别_尺寸_规模.onnx</code>; el tramo de reconocimiento incluye además un vocabulario <code>vocab.txt</code>.</p>
+
+<p>La Detección de texto genera el informe de evaluación como de costumbre; el Reconocimiento de texto solo tiene el CER como conclusión y no genera informe.</p>
+
+<p>El ejemplo de uso está en <code>examples/python/ocr.py</code>, dentro de la carpeta de exportación. Tenga en cuenta que los logits que produce el tramo de detección no pasan por la sigmoide, así que el posprocesado hay que escribirlo usted mismo; en el ejemplo ya está hecho.</p>
+
+<h2 id="log">7. Registro</h2>
+
+<p>Pulse «Registro» en la parte superior de la página de inicio para abrir la ventana de registro, que va mostrando en tiempo real lo siguiente:</p>
+
+<ul>
+  <li>Inicio / cierre del programa</li>
+  <li>Creación, renombrado, eliminación e importación / exportación de proyectos y conjuntos de datos</li>
+  <li>Creación, renombrado y eliminación de etiquetas</li>
+  <li>Inicio, desarrollo (<code>[train]</code> con prefijo que reenvía la salida del subproceso), actualización de métricas, guardado del modelo y parada manual del entrenamiento</li>
+  <li>Inicio, desarrollo (<code>[test]</code> con prefijo), finalización y fallo de la prueba</li>
+</ul>
+
+<figure>
+  <img src="images/日志.png" alt="日志窗口">
+  <figcaption>Ventana de registro</figcaption>
+</figure>
+
+<hr style="margin-top:48px; border:none; border-top:1px solid #dde1ea;">
+
+</body>
+</html>

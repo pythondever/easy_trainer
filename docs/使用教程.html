@@ -1,26 +1,31 @@
 <!DOCTYPE html>
-<html lang="zh-CN" data-page-node-id="VxDAAUyjxRmKeGYg19nGOa">
-<head data-page-node-id="XKo749OT5F1CXa3JsO6byg">
-<meta charset="UTF-8" data-page-node-id="bXCIMEbZHfpNNgXdfmVlu9">
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>EasyTrainer 使用教程</title>
 <style>
   body { font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
-         max-width: 920px; margin: 24px auto; padding: 0 16px;
-         color: #2b2f3b; background: #fff; line-height: 1.65; }
+         max-width: 920px; margin: 0 auto; padding: 0 16px 48px;
+         color: #2b2f3b; background: #fff; line-height: 1.75; }
   h1 { font-size: 28px; color: #1c1e25; border-bottom: 3px solid #4f7dff;
-       padding-bottom: 10px; margin-bottom: 24px; }
-  h2 { font-size: 22px; color: #1c1e25; margin-top: 36px;
+       padding-bottom: 10px; margin: 24px 0; }
+  h2 { font-size: 22px; color: #1c1e25; margin-top: 40px;
        border-left: 5px solid #4f7dff; padding-left: 12px; }
-  h3 { font-size: 17px; color: #353a48; margin-top: 24px; }
+  h3 { font-size: 17px; color: #353a48; margin-top: 26px; }
   p, li { font-size: 15px; }
   ul, ol { padding-left: 22px; }
   li { margin-bottom: 6px; }
+  .lead { color: #4a5164; }
   .note { background: #f3f6ff; border-left: 4px solid #4f7dff;
           padding: 10px 14px; margin: 14px 0; border-radius: 4px; font-size: 14px; }
   .warn { background: #fff3f3; border-left: 4px solid #d64545;
           padding: 10px 14px; margin: 14px 0; border-radius: 4px; font-size: 14px; }
   code { background: #23262f; color: #e8eaf0; padding: 1px 6px;
          border-radius: 3px; font-family: Consolas, monospace; font-size: 13px; }
+  kbd { background: #f4f5f8; border: 1px solid #ccd2e0; border-bottom-width: 2px;
+        border-radius: 3px; padding: 0 5px; font-size: 13px;
+        font-family: Consolas, monospace; color: #353a48; }
   figure { margin: 18px 0; text-align: center; }
   figcaption { color: #5c6270; font-size: 13px; margin-top: 6px; }
   img { max-width: 100%; height: auto; border: 1px solid #dde1ea;
@@ -32,502 +37,501 @@
   .toc li { font-size: 14px; margin-bottom: 4px; }
   .toc a { color: #2b2f3b; text-decoration: none; }
   .toc a:hover { color: #4f7dff; }
+  .lang { text-align: right; font-size: 13px; padding-top: 16px; }
+  .lang a { color: #6c7385; text-decoration: none; }
+  .lang a:hover { color: #4f7dff; }
+  table { border-collapse: collapse; width: 100%; margin: 14px 0; font-size: 14px; }
+  th, td { border: 1px solid #dde1ea; padding: 7px 10px; text-align: left; }
+  th { background: #f4f6fb; color: #353a48; font-weight: 600; }
   /* 打印/PDF 排版: 标题不孤行, 图片不跨页截断 */
   @media print {
     h2, h3 { page-break-after: avoid; }
     figure, img, table { page-break-inside: avoid; }
+    .lang { display: none; }
   }
 </style>
 </head>
-<body data-page-node-id="fyjPWixOOXzDP24mi6jxui">
+<body>
 
-<h1 data-page-node-id="o8YipVKgxNN7WMpBsSBJ0V">EasyTrainer 使用教程</h1>
+<div class="lang"><a href="introduce.html">其他语言 / Other languages</a></div>
 
-<div class="toc" data-page-node-id="4XpBZTKeZcWmlxFYPddsBQ">
-  <h2 data-page-node-id="QaEG3i1vIAEPnI4XFQUlhQ">目录</h2>
-  <ol data-page-node-id="qoElvENymaG8LCnWBX5oHg">
-    <li data-page-node-id="V7drVItkOo5zzMcHDxIkdf"><a href="#intro" data-page-node-id="bW7d82tpHQbIVFWd0ZbkFv">软件概览</a></li>
-    <li data-page-node-id="S15w7amtmVYV7n27LHoxf1"><a href="#project" data-page-node-id="iGiRzFhxydO6Y96YSkzuBN">项目与数据集管理</a></li>
-    <li data-page-node-id="xSDDhEphvOgtoaEZKBKmoG"><a href="#label" data-page-node-id="DRCuPgDDPs0cSlGUM4Egn0">标签管理</a></li>
-    <li data-page-node-id="VorB4uAFJrF8nefdQKvO4h"><a href="#annotate" data-page-node-id="V3WSarWvA5TsKJICvFS35Q">图像标注</a></li>
-    <li data-page-node-id="xOg1ivJtfhn4B2I6inzpt7"><a href="#train" data-page-node-id="En0I6UBE9R0Y3Il1H6P5Tp">训练与训练队列</a></li>
-    <li data-page-node-id="PsjjYtHBn8xnut7uznHPq1"><a href="#model" data-page-node-id="S2zd3lA1BKnOGaSInMLNFl">模型管理</a></li>
-    <li data-page-node-id="S6FlC2RC16XjbzOQ0s8CwI"><a href="#test" data-page-node-id="FzToPpQXIqBstVbHdXA7LK">模型测试与评估报告</a></li>
-    <li><a href="#ocr">OCR（字符检测 + 字符识别）</a></li>
-    <li data-page-node-id="fRNU8niHvjOjmKW25dmw56"><a href="#log" data-page-node-id="h0R7PLetJ38HABIiGjtmFy">日志</a></li>
+<h1>EasyTrainer 使用教程</h1>
+
+<div class="toc">
+  <h2>目录</h2>
+  <ol>
+    <li><a href="#quick">快速上手</a></li>
+    <li><a href="#project">界面与项目</a></li>
+    <li><a href="#annotate">标注</a></li>
+    <li><a href="#train">训练</a></li>
+    <li><a href="#model">模型管理</a></li>
+    <li><a href="#test">测试与评估报告</a></li>
+    <li><a href="#ocr">OCR</a></li>
+    <li><a href="#log">日志</a></li>
   </ol>
 </div>
 
-<h2 id="intro" data-page-node-id="W5aH6IHP3JhxeAAloNWYv3">1. 软件概览</h2>
+<h2 id="quick">快速上手</h2>
 
-<p data-page-node-id="UvJpzk36Z2AdP7usG77Wl9">主界面采用三栏布局：</p>
+<p class="lead">从空软件到跑出第一个模型，最短路径是这六步。每一步的细节在后面各章。</p>
 
-<ul data-page-node-id="z3BEp2FCKztzqPEVy5pH7j">
-  <li data-page-node-id="kWkhyJOEM6JJvyMEkb2uZj"><strong data-page-node-id="m7lQm25IvQ02j4NGo65AqN">左侧项目树</strong>：项目与数据集层级展示，数据集节点带标注进度（如 126/128）；
-      名称前的圆点表示该数据集<strong data-page-node-id="mz3CXIAJ7mpdG0byQUPakX">是否已加载进内存</strong>（绿=已加载，红=未加载）</li>
-  <li data-page-node-id="ZNsYrpDdDXhM5Cq1EFlhKh"><strong data-page-node-id="IQS6pgKESuXQOm1INYiekJ">中间图像区</strong>：缩略图分页浏览，底部居中一组翻页控件（两个箭头夹住页码，当前页数字化亮），悬停页码可看当前筛选下的总数与单位</li>
-  <li data-page-node-id="ig3anMDDYpACwcu61esIjD"><strong data-page-node-id="wHGxlguD5wEW2SivuHbRkS">顶部工具栏</strong>：显示比例、标注筛选，以及编辑、删除、导入、导出、属性、训练、模型、日志等按钮</li>
-  <li data-page-node-id="zXk2pQwErTy7UiOpAs3dFg"><strong data-page-node-id="vBn4mKl9JhGf2DsAqW8zXc">界面语言</strong>：工具栏最右侧的下拉框，可选 <b>中文</b>、<b>English</b>、<b>繁體中文</b>、<b>日本語</b>、<b>한국어</b>、<b>Deutsch</b>、<b>Español</b>、<b>Français</b>、<b>Tiếng Việt</b> 九种。主界面当场就变，已经打开的窗口（日志、训练队列）也一起刷新；还没打开的对话框，下次打开自然就是新语言。选择会记住，下次启动仍是该语言。下拉框里列出的是各语言自己的写法，跟当前界面语言无关，所以任何语言下都能认出该选哪一项。
-      <br>译文按语言放在 <code>i18n/&lt;语言代码&gt;.ts</code>（<code>.qm</code> 由它编译出来），改过界面文案后跑一次 <code>python builder/translations.py</code> 重新抽取并编译全部语言。新抽出的条目会标成未完成，编译时跳过并回退中文，所以漏译最多是那一句显示中文，不会让界面空掉</li>
-</ul>
+<ol>
+  <li><strong>添加项目</strong> —— 点左侧「+ 添加项目」，输个名字。</li>
+  <li><strong>添加数据集</strong> —— 右键项目节点 →「添加数据集」。</li>
+  <li><strong>导入数据</strong> —— 选中数据集，点顶部「导入」，分别选图像文件夹和标注文件夹。</li>
+  <li><strong>核对数据</strong> —— 点「属性」，确认类别和数量没搞错。</li>
+  <li><strong>训练</strong> —— 点「训练」，选任务类型和数据集，其余留默认，点「开始训练」。</li>
+  <li><strong>看结果</strong> —— 训练完在「模型」里找到这条记录，点「测试」在验证集上跑一遍；要交付就导一份 PDF 报告。</li>
+</ol>
 
-<figure data-page-node-id="53Y78EVgaJO2RRmH6ViZxN">
-  <img src="images/主页.png" alt="EasyTrainer 主页" data-page-node-id="n1FdmHuqRgvDzhx63wUIzB">
-  <figcaption data-page-node-id="l7mFoNVsgDxqwVjfP73Uky">EasyTrainer 主界面</figcaption>
-</figure>
-
-<h2 id="project" data-page-node-id="JG8ehLmnd0qMEfhlprXUmX">2. 项目与数据集管理</h2>
-
-<h3 data-page-node-id="8PCy2yGe9kHP3YmcPufVdm">2.1 添加项目</h3>
-
-<p data-page-node-id="DHazr0j1jFI8oF7nyTN8pG">点击左侧 <code data-page-node-id="LAzbvRQVKNX9lqxrffF27Y">+ 添加项目</code> 按钮，输入项目名称后确定。
-项目是数据集的容器，所有数据集必须归属于某个项目。</p>
-
-<figure data-page-node-id="HB9tZXyTsoWhW65bBrGL0t">
-  <img src="images/添加项目.png" alt="添加项目" data-page-node-id="T9gXncp8ddJ9qiK3WeahEr">
-  <figcaption data-page-node-id="hV0XY86K2RVm2ABjJT6ofN">输入项目名称</figcaption>
-</figure>
-
-<h3 data-page-node-id="QD0poGDBPLwVJkUCqpdP4G">2.2 添加 / 重命名 / 删除数据集</h3>
-
-<p data-page-node-id="I0AWhQi9fEB3l82ReOcmM4">右键点击<strong data-page-node-id="Jl77RljZokkxIMWPOkbrM3">项目节点</strong>弹出菜单：添加数据集 / 导出项目 / 修改名称 / 删除项目。</p>
-
-<ul data-page-node-id="qjCQoHZayeMMjFs6ofPmYJ">
-  <li data-page-node-id="SZIx3bHgCPlk5x4NINEEBW"><strong data-page-node-id="Aj1zaVQ3hKQSCMLhjhO955">添加数据集</strong>：在项目下新建一个数据集</li>
-  <li data-page-node-id="scQvJNHxOqcq3dN0JdD2hW"><strong data-page-node-id="hSgdvUSdMEK1WEJNCwEHec">导出项目</strong>：把整个项目的数据集与标注导出为指定格式</li>
-  <li data-page-node-id="Zekf8D2dnmuQPNcZEfJ0dz"><strong data-page-node-id="7filJV1bDbzcRxDHBNevdy">修改名称</strong>：重命名项目</li>
-  <li data-page-node-id="J5bsZUrvktYTAEJp0xWYsC"><strong data-page-node-id="M8gDJMBk9XUp3hXv1xT0xr">删除项目</strong>：连同其下数据集、标注、训练记录一并清除</li>
-</ul>
-
-<p data-page-node-id="foaZ4tyNoQq9gLDYYPmXDq">右键点击<strong data-page-node-id="qEM6eJK723ow3D9Ow5VIhO">数据集节点</strong>则是对该数据集的操作：导入 / 导出 / 移动 / 修改 / 删除。
-<strong data-page-node-id="ZSBYXvnNEjKkFoDSH6gArJ">双击数据集节点</strong>即载入：重新扫描该数据集的图像与标注并重建缓存，随后即可在右侧浏览。已载入（行内有状态圆点）的数据集再次双击不会重复扫描。</p>
-
-<figure data-page-node-id="KaRgJmTwHT6He1ASkUH86i">
-  <img src="images/添加_修改_删除_数据集.png" alt="项目右键菜单" data-page-node-id="FxOq6g91k6VZhH9WW8qC7I">
-  <figcaption data-page-node-id="8B9HdUW4HgxBBEGH9Phgy1">项目右键菜单</figcaption>
-</figure>
-
-<h3 data-page-node-id="H4UFZLKhAMPh0DIW28tEsQ">2.3 导入数据</h3>
-
-<p data-page-node-id="d9zZjY0RtgESTHHBerNMAk">选中数据集后，点击顶部 <strong data-page-node-id="tw9VBxIPOeGXxz0RGvSiVh">导入</strong> 按钮，弹出"导入数据"对话框：</p>
-<ul data-page-node-id="REz7btnpdONHO5OJTQEyCX">
-  <li data-page-node-id="TygDqLj5rIo6MM7vOG7XAr"><strong data-page-node-id="zRYzRm42ShUAkP0uOJmon0">图像路径</strong>：选择图片所在文件夹</li>
-  <li data-page-node-id="TJaJnP85JPNin0NIkWxrJ8"><strong data-page-node-id="EE1qmiXKeAuR8xsPp0pbYS">标签路径</strong>：选择标注文件所在文件夹</li>
-  <li data-page-node-id="eTMBVDDaD8ylUY0N6TqRYG"><strong data-page-node-id="Nll6NKeZrP0aoeek3Aq4JA">标签格式</strong>：Yolo txt / Labelme json / 按子文件夹分类导入（OCR 用 Labelme json）</li>
-</ul>
-
-<div class="note" data-page-node-id="yF3lLJEVC3AMS0Vyz59mKj">
-  <strong data-page-node-id="zhpiEHQ2YYuxJw3kYdXltQ">分类数据集</strong>选择"按子文件夹分类导入"：每个子文件夹名作为一个类别，<strong data-page-node-id="ZeZ6JZHCxS0Cg7MZHtWKtZ">无需标注文件</strong>；OCR 用 Labelme json，文本框的标签固定为“文本”，导入后自动标成字符检测数据集。
+<div class="note">
+  手上还没有标注数据的话，先看第 3 章「标注」。
 </div>
 
-<figure data-page-node-id="vhK7Yn38q8xhBG8u6gkUyD">
-  <img src="images/导入数据.png" alt="导入数据" data-page-node-id="d9OZkMzk5S4nIHVl6udqRO">
-  <figcaption data-page-node-id="Sae5cG6E6qC0wR43X4iVrP">导入数据对话框</figcaption>
-</figure>
+<h2 id="project">1. 界面与项目</h2>
 
-<h3 data-page-node-id="bfrBQKCQBBNSxw4Hi0MBHe">2.4 数据集属性与标签分布</h3>
+<h3>1.1 主界面布局</h3>
 
-<p data-page-node-id="osHDuhdYrOm5tjaabIbz7s">选中数据集后点击顶部 <strong data-page-node-id="MmVmmx6ADt67q9wd2YjgTv">属性</strong> 按钮，可查看图像路径、标签路径，
-以及<strong data-page-node-id="YNV0yc7PeQNAUIz2VZMaQC">标签分布柱状图</strong>（每个类别的标注框数量），用于快速发现类别不均衡问题。</p>
-
-<figure data-page-node-id="EAVNhACMdbWZPpTJOdEkkF">
-  <img src="images/数据集属性_标签分布.png" alt="数据集属性与标签分布" data-page-node-id="bIcO8MOt50cfETbUFk4gTB">
-  <figcaption data-page-node-id="T1Kgfg2OuJSmoUTO3TkCyB">数据集属性与标签分布</figcaption>
-</figure>
-
-<h2 id="label" data-page-node-id="PlpIr7NmwuWbkULbkV7H1l">3. 标签管理</h2>
-
-<h3 data-page-node-id="HMUYIgLOoyjEWA75SiDNSu">3.1 添加或导入标签</h3>
-
-<p data-page-node-id="3AofMsGBBUi1uxCmnMTwBW">在标注界面右侧标签列表上方点击 <strong data-page-node-id="fUm1ZOK6JvNC6vTHoOInuM">添加标签</strong>：</p>
-<ul data-page-node-id="V5eGJolFTyu8WfqBcG6VZX">
-  <li data-page-node-id="rBIG0y7qpBcBosTuP7GDnq"><strong data-page-node-id="wf6sTm6g2BZJJ9N7pJqX1P">标签名称</strong>：多个标签用逗号分隔，可一次添加多个</li>
-  <li data-page-node-id="tfkEmUOMWLq1NE4K6Jziii"><strong data-page-node-id="ECOb9kYw6ttOtoKKvbb6t3">导入</strong>：从已有数据集一键导入全部标签</li>
-  <li data-page-node-id="aGwI9Lqq3gAo6heEnbP3B6"><strong data-page-node-id="WiT1qssGQsNfRRHAIldMk5">颜色</strong>：从预设色板选取，或点击"自定义"挑选颜色</li>
-</ul>
-
-<figure data-page-node-id="EjutF70F3sUSJusFFaLYyG">
-  <img src="images/添加或导入标签.png" alt="添加标签" data-page-node-id="ONPxdqBI2XwBEgXXrTkFMh">
-  <figcaption data-page-node-id="DjFdmWfy3b6qZ58I5jcIDG">添加或导入标签</figcaption>
-</figure>
-
-<h3 data-page-node-id="rqTAlYLln2bdjSv61DX76q">3.2 批量修改类别</h3>
-
-<p data-page-node-id="DAMjjxJrlvUqPWmmoboXFj">选中数据集后，在<strong data-page-node-id="u5pHBE84Ht8ttWyo5FCSBI">图像区缩略图上右键</strong>选择"批量修改类别"，
-输入原类别与新类别，即可把整个数据集中该类的标注全部改名：</p>
-
-<figure data-page-node-id="GzVPdYy5ZkMD6EqK7ulCVu">
-  <img src="images/标签批量修改.png" alt="批量修改类别" data-page-node-id="ZnE2HYcg0vlrZgM3GBCYY6">
-  <figcaption data-page-node-id="o4N1bOYS6eWgkNRTM7Ot94">类别批量修改弹窗</figcaption>
-</figure>
-
-<h3 data-page-node-id="bPRDrH3M3bxSh7ecVs7zEY">3.3 修改单个标注的类别</h3>
-
-<p data-page-node-id="sgikSBgTDkdZg8fhnhcTAQ">进入标注界面后，<strong data-page-node-id="YZgu1ZBlW086nzG3HExoj4">在标注框上点击</strong>即可弹出类别下拉菜单，
-选中新类别即完成修改；右侧标签列表中的标签也可重命名、改色、删除。</p>
-
-<figure data-page-node-id="MVxXNvWbdC8ekH6MKRHZB8">
-  <img src="images/修改类别.png" alt="修改类别" data-page-node-id="dQnIBVcQbTfSs7Tu3t4s6y">
-  <figcaption data-page-node-id="0FhiM98qT4tFFKMirrMjeR">在标注框上直接修改类别</figcaption>
-</figure>
-
-<h2 id="annotate" data-page-node-id="eFpVnq9L7HPJ0kp0R2ECmh">4. 图像标注</h2>
-
-<h3 data-page-node-id="0xTTDmciChAH6YhKu39y18">4.1 进入标注界面</h3>
-
-<p data-page-node-id="XpCdCCTEMCS7wmYh42ZrCH">在左侧树选中具体数据集后，右键缩略图选择“标注”，或直接双击缩略图进入。</p>
-
-<h3 data-page-node-id="BuvJ5N08hnLlpEri2OFqBA">4.2 矩形、多边形与文本标注</h3>
-
-<p data-page-node-id="xwmjuCSCAMKUVBQpsQrmzG">标注界面顶部工具栏提供三种绘制工具：</p>
-
-<ul data-page-node-id="mMmzgnonc8prHDJMTLwz20">
-  <li data-page-node-id="onxqvYMS0cAyAeWLEb1qrc"><strong data-page-node-id="bAgtEZ0h3cOhMx5QPGaCEC">矩形</strong>：拖拽鼠标画矩形框</li>
-  <li data-page-node-id="AefCAJAN0P4QtcB3Sa30jx"><strong data-page-node-id="xC6sGjSNMWFFzsoBB2eIzF">多边形</strong>：依次点击顶点，双击或回车结束（分割任务用）</li>
-  <li><strong>文本</strong>：先打开顶部“文本标注”开关再拖拽画框，松开即弹出输入框录入文字，双击可改（OCR 任务用）。文本框一律用<strong>矩形</strong>画，倾斜文字也用水平框盖住即可 —— 多边形的贴合轮廓在训练时会被按水平外接框处理，画了没有额外收益</li>
-  <li data-page-node-id="cAZIqZIx91r6GTMMo5r26K"><strong data-page-node-id="sdjJYEm6Ji7OUBexXASKFZ">删除图像</strong>：删除当前这张图</li>
-</ul>
-
-<p data-page-node-id="vRClgAzlOt5WcDuPVzFB0X">右侧<strong data-page-node-id="MmhUdWGkyBJVM1ZSCcy0f5">标签列表</strong>选择类别；<strong>显示标注</strong>开关可随时隐藏所有标注轮廓（框线、标签、顶点手柄）查看原图；
-尚未落地的粘贴内容只藏轮廓、图案照常显示，所以关掉它正好可以预览“贴上去之后是什么效果”。
-右下方“<strong>标注信息</strong>”面板列出本图所有标注对象的形状（矩形/多边形）、顶点数与面积；
-其下方<strong data-page-node-id="RTQWZSHRxq2knc5Cy3ECtz">图像信息</strong>显示当前图的宽 × 高 × 通道数（如 505×505×3）与序号。</p>
-
-<p data-page-node-id="4N29Sw37ZZSXffVIsrCuQG"><strong data-page-node-id="L4pRNTASve2qip1gxxBxtq">“图像信息”下方为剪切板区</strong>：右键复制多边形后，被复制区域的缩略图
-（120 × 90）会加入这里，最多 9 张、纵向排列、可上下滚动，
-<strong data-page-node-id="TEJXhEFFvrAt6GLHHmoVnc">最新一张默认选中并带蓝色边框</strong>；右键缩略图可<strong data-page-node-id="sbYfONCfGp1YESJzSl0qGR">删除</strong>该张或<strong data-page-node-id="6KIld7SF4qyzyg9rr0aTiC">清空</strong>全部。</p>
-
-<figure data-page-node-id="hhY4IXBM2t1oOMoYpfvzlg">
-  <img src="images/图像标注_剪切板.png" alt="图像标注" data-page-node-id="fJE0bipATvvW20EsY6fX6Z">
-  <figcaption data-page-node-id="EOcJCVCvCpMVveSmjiLXMg">矩形 / 多边形标注、标签列表与右下角剪切板</figcaption>
-</figure>
-
-<h3 data-page-node-id="j5F2DDVUSDE7BzWXn3yvsr">4.3 标注对象复制（数据增强）</h3>
-
-<p data-page-node-id="Y0S9LRw9baaTrg1CDSejtw">右键<strong data-page-node-id="E5jJiaWmfOpJoIkQAoV2iD">多边形</strong>标注有两个操作：</p>
-
-<ul data-page-node-id="MMCfMgC3GZslLhePUdrd12">
-  <li data-page-node-id="BiI3DqgxjdrDanduE2MSB0"><strong data-page-node-id="UqUha6JJ3ic00dTjVpiw6X">复制</strong>：把该多边形区域的像素存为模板，同时在右下角剪切板生成缩略图</li>
-  <li data-page-node-id="cI1WGDQBFAI6Hx5hiDrNhW"><strong data-page-node-id="vayOCktsoKCsjj28dlK1Me">填充</strong>：把区域内的像素改成“填充值”三个输入框对应的 RGB 颜色（每通道 0 ~ 255，默认 255）,
-      常用于把缺陷区域抹成背景色</li>
-</ul>
-
-<p data-page-node-id="pWjWypXq10MrcY1KO15sCk"><strong>左键点选</strong>剪切板里的某张缩略图后，把鼠标移到画布上，会有一条<strong>多边形虚线轮廓</strong>
-跟着鼠标走（形状是旋转后的真实轮廓，已套用本次摇出的角度），据此可以先看清这一贴大概落在哪、朝向如何；
-按 <code>Esc</code> 收掉虚线、回到普通鼠标模式，再右键选“粘贴”即可落地。</p>
-
-<p data-page-node-id="pWjWypXq10MrcY1KO15sCk2">在图像空白处右键选择<strong data-page-node-id="SjRBrY5eaytevDt1pnXQxY">粘贴</strong>，即可把<strong data-page-node-id="A25JlgR12LXRIOYOx9lyTD">剪切板中当前选中</strong>的那张缩略图
-贴到鼠标位置（同图或跨图均可）：</p>
-
-<ul data-page-node-id="AAsQTGeDdMXrVemn40EgZa">
-  <li data-page-node-id="91QzL34HQbuGLuVCsAkBos"><strong data-page-node-id="x9gMZaAektZfElpLQM6m9c">角度范围</strong>：粘贴时随机旋转的角度区间（默认 -180 ~ 180）；
-      虚线预览用的就是这个区间里摇出的角度，所见即所得</li>
-  <li data-page-node-id="nH9hzbNleDAL07jTisJy0F"><strong data-page-node-id="wmtYcSPbGmXBiQFl23lG5u">融合强度</strong>：0 ~ 1，默认 0.70。粘贴时自动做亮度补偿和边缘羽化，
-      让粘贴区域与背景自然过渡；设为 0 则等同直接硬贴</li>
-  <li data-page-node-id="UuiJlSFkSAXquLHLPOhn05"><strong data-page-node-id="feCbWMLCxKikHu3IsZJ2eX">填充值</strong>：R - G - B 三个输入框（每通道 0 ~ 255，默认 255），配合右键“填充”把区域抹成该颜色</li>
-  <li data-page-node-id="LwtRjxaGDIjOIyyWS3Kmpc"><strong data-page-node-id="sBVkl6EO4NCzcnLsiowK37">Ctrl + Z</strong>：撤销最近一次粘贴或填充（恢复像素并移除随之新增的标注），
-      可连续撤销</li>
-</ul>
-
-<figure data-page-node-id="GqGmS1ps1kFxiYTIpfbj0i">
-  <img src="images/标注对象复制.png" alt="标注对象复制" data-page-node-id="BBQHV8qBGbolxH4VLf1pFn">
-  <figcaption data-page-node-id="koVEQM8QYsnLgqNq1gk5MG">右键复制标注对象 → 剪切板缩略图，工具栏设置角度范围 / 融合强度 / 填充值</figcaption>
-</figure>
-
-<h3 data-page-node-id="VwQ9tGm2BzXk1rLpYcTd0a">4.4 多边形区域亮度调节</h3>
-
-<p data-page-node-id="Kd7mYv3QbWx1sTpRgHnZ2c">在画布上点选一个<strong>多边形</strong>标注，工具条“设置”里的
-<strong data-page-node-id="QpL2nXk8VrB4tMszWyGh1e">亮度调节</strong>即可改该多边形<strong>框内像素</strong>的明暗：
-拖动滑块（或直接输入数值）整体提亮或压暗，图像上实时预览。</p>
-
-<ul data-page-node-id="Jt3bWn7KdXqY5mZvRcP2sD">
-  <li data-page-node-id="Hz5cQm1TpKvN8bXdLyRj3w"><strong>范围与含义</strong>：0 ~ 1，默认 <strong>0.50 = 原样</strong>；
-      越往 1 越亮（1.00 约为两倍亮度），越往 0 越暗（0 为全黑）</li>
-  <li data-page-node-id="Rm9pLc4VnQxT6dWsYbGj7t"><strong>作用对象</strong>：只对<strong>选中的多边形</strong>生效；矩形或没选中任何标注时给提示、不动像素。
-      点另一个多边形时滑块回到它自己的值（没调过的都是 0.50），上一个多边形的亮度不会跟着带过去</li>
-  <li data-page-node-id="Wf2yBq8KmNvR5tXdZpLc1s"><strong>什么时候写盘</strong>：拖动过程只改内存、实时预览，按 <code>A</code> / <code>D</code> 切图
-      或 <code>Ctrl + S</code> 才写进图像文件</li>
-  <li data-page-node-id="Nv6tZm3QxKpB9sLdRwYc5h"><strong>撤销</strong>：一次调节只记一步，<code>Ctrl + Z</code> 一下即可回到调节前的像素
-      （同一次里来回拖多少次也只算一步）</li>
-</ul>
-
-<figure data-page-node-id="Ms4qXn1VtLpC7bWdRyGk9z">
-  <img src="images/多边形区域亮度调节.png" alt="多边形亮度调节" data-page-node-id="Tb8vKm2QxLpN4dWsRcYj6h">
-  <figcaption data-page-node-id="Gh5cZq7BvNdX2mKrLjPw8t">选中多边形后用“亮度调节”改框内像素明暗，图像上实时预览</figcaption>
-</figure>
-
-<h3 data-page-node-id="xx5TwSDXQZLCItpwEonRnQ">4.5 按标注类别筛选</h3>
-
-<p data-page-node-id="35aiu9pGC5OFyvHdX0Th2F">首页顶部工具栏的类别下拉框，选择某类别后图像区只显示含该类别的图，
-便于集中检查、补标某一类。</p>
-
-<figure data-page-node-id="PXAnIp6SPE9WKgM0yQMUAw">
-  <img src="images/按标注类别_分类筛选.png" alt="按类别筛选" data-page-node-id="34t07nG8cHo7ZTcS73q1k3">
-  <figcaption data-page-node-id="gVX4GPtmBgQ5qB9khHIrHD">按类别筛选缩略图</figcaption>
-</figure>
-
-<h2 id="train" data-page-node-id="8yiEH7kAR5O85CVMiJfs8F">5. 训练与训练队列</h2>
-
-<h3 data-page-node-id="ZUBqBEf30tyI5qLrK9SXIA">5.1 训练参数配置</h3>
-
-<p data-page-node-id="Ag1ExVz5LSWmFsdCu55cov">点击首页或模型界面的<strong data-page-node-id="crrBsB7ENTFg5N4INdsgFL">训练</strong>按钮，弹出训练参数配置：</p>
-
-<ul data-page-node-id="1RgEJeuqqwEukGs2s5NZ5B">
-  <li data-page-node-id="GhQd4Iq558CSKJlf2IOvqd"><strong data-page-node-id="GTQJGwNWvpDEfgEG3S76YK">任务类型</strong>：检测 / 分割 / 分类 / 异常检测 / OCR（按数据集格式自动联动）</li>
-  <li data-page-node-id="LoSnqLgYTVPsb8AJxiOPmu"><strong data-page-node-id="9dOG349Yy5R7XT3jx9qIXx">训练集 / 验证集</strong>：多选数据集，可跨项目组合</li>
-  <li data-page-node-id="enC3ZQdJD1qWqxZBUrZlSA"><strong data-page-node-id="n1CE7q6ZIRbYeA3XA8qHWF">设备</strong>：自动列出可用 GPU（如 NVIDIA GeForce RTX 4060 Ti）</li>
-  <li data-page-node-id="D9CK8QwPNchtkBx9a1JEmp"><strong data-page-node-id="rn5SvsLNeeAA3hwPUHmd3N">训练超参</strong>：轮次、优化器（检测/分割=adamw、分类=sgd）、早停
-      （连续 N 轮无提升则提前结束，0 为关闭）、学习率（训练中自动衰减）、
-      批次、图像尺寸（32 的倍数）、梯度累积（显存不足时等效放大批次）、线程数</li>
-  <li data-page-node-id="KUFDKwQmn1EuZWAig0pHt0"><strong data-page-node-id="n6NUcnszAcFeDnKNgDO96g">输出路径</strong>：留空则自动按时间生成目录，也可点"选择路径"指定</li>
-</ul>
-
-<figure data-page-node-id="by9jFSk6GWTs1PnJKlX1qE">
-  <img src="images/训练参数与队列.png" alt="训练参数配置" data-page-node-id="1t2HAJHx5cB3sNBZfXOork">
-  <figcaption data-page-node-id="9CDfqDEkikRjdYRAgYLICn">训练参数配置对话框</figcaption>
-</figure>
-
-<h3 data-page-node-id="BLQdQYBNMSzAjTs94Ua3Tw">5.2 训练队列</h3>
-
-<p data-page-node-id="aaUMdfvytHBOaBDrjZJOSh">配置好后除"开始训练"外，还可以点<strong data-page-node-id="pC3vOKjVX0i13faZ6qNyCS">加入队列</strong>把任务先挂起来，
-继续配置下一个。点击首页 <strong data-page-node-id="z3UeCBgpRZT5GvTYKy2M47">训练队列</strong>（或训练窗口入口）打开队列窗口：</p>
-
-<ul data-page-node-id="Z0Bzo2KGWUYUa8DWDk3Z7y">
-  <li data-page-node-id="8svVaSY6gdmb4RSKZVBODV">队列按顺序依次执行，<strong data-page-node-id="D96QvbIbiVOojYnL96mkwO">支持检测 / 分割 / 分类 / 异常检测 / OCR 任务混排</strong>，自动逐项切换</li>
-  <li data-page-node-id="QpVH0ZziIXOgjWR69RErB2"><strong data-page-node-id="aEQw5fd8yPox9pRecaicze">上移 / 下移 / 移除</strong>：调整执行顺序或删除任务</li>
-  <li data-page-node-id="DinLB8Yk1r3OL2iDisOav3"><strong data-page-node-id="mfBkLKjl3Y0SkKiDCnDGSy">编辑</strong>：修改选中任务的参数</li>
-  <li data-page-node-id="pnbCArF3D9IpIwKCF5qsFG"><strong data-page-node-id="tAaxk1Ur5NQsV1fRbRoIHn">清理已完成</strong>：移除已跑完的记录</li>
-  <li data-page-node-id="g0r0NlEHBpQQ4yjqtXdHL3"><strong data-page-node-id="ELNimkJrSJxsl0qBYKPotK">开始队列</strong>：从头依次执行队列中的任务</li>
-</ul>
-
-<div class="note" data-page-node-id="PUAzDU5fYuIeBKy6GKuRJM">
-  队列适合晚上挂机：把多个数据集的任务一次配好，软件会自动跑完全部并分别保存模型。
-</div>
-
-<figure data-page-node-id="q3FTSNRLKIrdyTKh80NyzJ">
-  <img src="images/训练队列查看.png" alt="训练队列" data-page-node-id="jZjlKS7e4vcxj8fyHj5dDg">
-  <figcaption data-page-node-id="O7ySy4TjXfaIKf2W7XgSXZ">训练队列窗口</figcaption>
-</figure>
-
-<h3 data-page-node-id="YnEjxtm82HrLIjUBKwxRne">5.3 训练进度监控</h3>
-
-<p data-page-node-id="RrO2eFDLTmxxqzFL9Ad1IS">点击"开始训练"后回到首页，顶部出现进度条与控制条：</p>
-
-<ul data-page-node-id="N77VavJ9OLHHVI70WURUUt">
-  <li data-page-node-id="U5lCX1EpxuKN0HdkJEMiHB"><strong data-page-node-id="TmBg6KfBCT6nf8E5e27KtT">任务名 + 进度</strong>：如 "coco128 训练中 5/100"，进度条内显示当前轮 loss</li>
-  <li data-page-node-id="lPkaED5mgAsG4f0WykQzRS"><strong data-page-node-id="fE3mbYy3yy79iiafa2Gxkj">停止训练</strong>：随时终止（已完成的部分会保存）</li>
-  <li data-page-node-id="BWQcmQFjNSHUEKSAksxq0e"><strong data-page-node-id="owxXdj3wptfJwy5kk7ofrV">剩余时间</strong>：按已用时长外推估算</li>
-  <li data-page-node-id="Z4vt1m8h8ixRKeOvnYSFpi"><strong data-page-node-id="d3oP0x7N4dFe08SRe5jtnh">显存</strong>：实时显示 GPU 显存占用率</li>
-</ul>
-
-<figure data-page-node-id="DfqTH5uFqcYfkmkREAHSok">
-  <img src="images/训练进度_指标_剩余时间_显存用量.png" alt="训练进度" data-page-node-id="yuN41MreLHpez8Az7WCOwO">
-  <figcaption data-page-node-id="r6sXNHkuSXL5BI5n8jDou9">训练进度条与状态栏</figcaption>
-</figure>
-
-<h3 data-page-node-id="MyuyEj5VvomcVduTyqenJm">5.4 训练指标查看</h3>
-
-<p data-page-node-id="tr2XiDzpN0NXfmg19p6hAW">在模型管理窗口选中某条训练记录，点击右侧详情面板的<strong data-page-node-id="yGc6CEKARzJGk5l36WedgY">查看完整指标</strong>，弹出训练曲线窗口：</p>
-
-<ul data-page-node-id="2YbCEPd8ZLHBZgrLABrBr6">
-  <li data-page-node-id="aZaUM4venMXtOXuE5Hfa25">上半图：<strong data-page-node-id="sXjzioir6TYFH8OAP9bHEq">val loss</strong> 曲线</li>
-  <li data-page-node-id="YllKLv58m2LLSJyyCVS1Gy">下半图：mAP@50-95 / mAP@50 / AR / F1 / precision / recall 等多条曲线
-      （分割任务还会显示 mask mAP 曲线）</li>
-  <li data-page-node-id="w4Wa9g84GtMiEC7IdHSgt0">右上角"标签筛选"下拉框可切换查看全部指标或某个类别的曲线</li>
-</ul>
-
-<figure data-page-node-id="n13zjfZeQeh2a4Hbm9FkW3">
-  <img src="images/训练指标查看.png" alt="训练指标" data-page-node-id="wXIDTDJi4jBmD3Fi5vLWO6">
-  <figcaption data-page-node-id="a9sYeUFFpZXTxkjfK9qpS2">训练指标曲线（val loss + 各项精度）</figcaption>
-</figure>
-
-<h2 id="model" data-page-node-id="0zuCrI0ilh6UDDZxN5mcmw">6. 模型管理</h2>
-
-<p data-page-node-id="7id7SXBYBMLZeNN7IdTzXx">点击首页 <strong data-page-node-id="G10yK7T30B3PwEycjfbola">模型</strong> 按钮打开模型管理窗口，左侧为训练记录列表，
-右侧为固定详情面板：</p>
-
-<h3 data-page-node-id="CWppXVAMM4dSy8arxEJi0R">6.1 筛选与列表</h3>
-
-<ul data-page-node-id="cq1eCUvH63TACPIWjX3xS0">
-  <li data-page-node-id="ip4xbT3Y7M1lJpb0QEkAL3"><strong data-page-node-id="l6dZgSczXN7pG79Qk5HH2w">搜索框</strong>：按项目 / 数据集 / 标签关键字过滤</li>
-  <li data-page-node-id="fxUfGCFoBUCgCitGRvjfia"><strong data-page-node-id="5wmsgoa2lYLeNQ9pe2gtC0">任务 / 状态下拉</strong>：只看检测 / 分割 / 分类 / 异常检测 / 字符检测 / 字符识别，或训练中 / 已完成 / 失败 / 已停止</li>
-  <li data-page-node-id="GJdUUP73FXdejXSn448wG6"><strong data-page-node-id="Z6iH1A70AZbz36DOzPfzqg">仅看每个数据集最佳</strong>：同一数据集只保留精度最高的一条</li>
-  <li data-page-node-id="ijwHkSdGUCBZwxnvb6jGDA">列表列：任务、数据集·标签、精度、训练时间、耗时、图像尺寸、操作</li>
-  <li data-page-node-id="6UNQDaMVMLaMZRI79RC1On"><strong data-page-node-id="6iyqOHk1Vuo5cyghc07cwY">精度</strong>列带色条：绿 ≥0.8、黄 0.5～0.8、红 &lt;0.5；
-      失败/已停止的记录在精度列显示状态文字，悬停可看失败原因</li>
-  <li data-page-node-id="5Ql0NsPefH5MppeB7tzQ0y">行内按钮：<strong data-page-node-id="G6x5Wjbtxrn2Qmg4yWhJj9">测试</strong>（打开模型测试）、<strong data-page-node-id="JQmhIj1qVLTEmLCgzd54P8">导出</strong>、<strong data-page-node-id="KcMBWHwJfGlonR0H18ctJz">删除</strong>（同时清理对应训练记录）</li>
-</ul>
-
-<p>点击<strong>导出</strong>选择目录后，会生成「项目_时间戳」文件夹，里面包含：</p>
+<p>主界面分三块：左侧管项目，中间看图，工具栏在上方。</p>
 
 <ul>
-  <li><strong>模型 .onnx</strong>：检测/分割由 RF-DETR 导出，分类与 OCR 由 torch 导出，命名
-      「项目_任务_图像尺寸_模型规模.onnx」</li>
-  <li><strong>classes.txt</strong>：类别 id 与名称对照（OCR 识别段是 <code>vocab.txt</code>，一行字符即词表）</li>
-  <li><strong>评估报告 PDF</strong>：自动在验证集上跑一遍评估，复用测试报告的模板，
-      命名「…_评估报告.pdf」</li>
-  <li><strong>examples/</strong>：C++ / C# / Python 三种语言调用 ONNX 做检测、分割、分类的示例代码（OCR 目前只有 Python 版）</li>
+  <li><strong>左侧项目树</strong> —— 项目与数据集按层级排列。数据集后面是标注进度（如 <code>126/128</code>）；名字前的圆点表示它有没有载入内存，绿色已载入，红色未载入。</li>
+  <li><strong>中间图像区</strong> —— 缩略图分页浏览。底部居中一组翻页控件：两个箭头夹着页码，当前页数字高亮；鼠标停在页码上能看到当前筛选下共有多少张图。</li>
+  <li><strong>顶部工具栏</strong> —— 显示比例、标注筛选下拉框，以及编辑、删除、导入、导出、属性、训练、模型、日志等按钮。</li>
 </ul>
 
-<p>导出过程有进度提示；ONNX 转换需要 <code>onnx</code> / <code>onnxsim</code>，
-未安装会在弹窗里提示。分类任务不生成评估报告（检测/分割的漏检误检报告不适用），OCR 的字符识别同理（结论只有 CER）。</p>
-
-<h3 data-page-node-id="RLy0BBwABnMwvjpRzyy8Bn">6.2 右侧详情面板</h3>
-
-<p data-page-node-id="AH8zEHByk2F5pEsXWplNEx">点击任意一行，右侧显示该记录的完整参数：任务·规模、状态、精度、训练/验证集、
-图像尺寸、轮数/早停、批大小、学习率、优化器、设备、标签、训练时间、耗时、模型路径，
-上方还有<strong data-page-node-id="G1bqvbFIjJTM6lOB3eXSAq">精度曲线缩略图</strong>。面板底部四个按钮：</p>
-
-<ul data-page-node-id="PB1hHX2JGCGx8tGoji0d1E">
-  <li data-page-node-id="t39Eh1nQNbuEdePdm5YzUn"><strong data-page-node-id="nqILjsKEEBbJzDlVYXiceM">查看完整指标</strong>：打开训练曲线窗口（见 5.4 节）</li>
-  <li data-page-node-id="YvGvtj9AhoET7qn0bTbqXv"><strong data-page-node-id="ACwEh8psokC7MccN0Qmbr5">测试此模型</strong>：用该模型打开测试对话框（见 7.1 节）</li>
-  <li data-page-node-id="rOKZ0FSaoEpU2UksKDQVCJ"><strong data-page-node-id="r9fCCCKOq1dAmAiWX6vq5h">按此配置重训</strong>：带出该记录的全部训练参数重新开一次训练</li>
-  <li data-page-node-id="9GfPuKvqQ1PxQ7ko0c9bSS"><strong data-page-node-id="Tlmjo1THblFXsXOLGjkbF5">打开模型目录</strong>：在资源管理器中定位权重文件</li>
-</ul>
-
-<figure data-page-node-id="PO7ISl1xgOrm46mPXcmAKM">
-  <img src="images/模型训练记录.png" alt="模型训练记录" data-page-node-id="ubFkWgHtOPu9MTFNDOOZVN">
-  <figcaption data-page-node-id="KAcWWw7lym4ziiqv4Od9E4">模型管理：筛选条 + 训练记录列表 + 右侧详情面板</figcaption>
+<figure>
+  <img src="images/主页.png" alt="EasyTrainer 主界面">
+  <figcaption>EasyTrainer 主界面</figcaption>
 </figure>
 
-<h2 id="test" data-page-node-id="BjGYnsgY0VJUsMiC8BtzwH">7. 模型测试与评估报告</h2>
+<h3>1.2 项目与数据集</h3>
 
-<h3 data-page-node-id="mFA5mQUE5o9L8KX3rgPHoe">7.1 测试参数设置</h3>
+<p><strong>添加项目</strong>：点左侧「+ 添加项目」，输入名称，确定。项目是数据集的容器，每个数据集都必须属于某个项目。</p>
 
-<p data-page-node-id="Us1otgPJMm6NxgvLFVi3qs">在模型管理窗口点击行内<strong data-page-node-id="5z7Ieo1nBQSpBTOQSrp6Im">测试</strong>按钮（或详情面板的“测试此模型”），
-弹出模型测试对话框。顶部显示模型信息
-（任务类型、权重文件、训练精度、输入尺寸、规模），下方配置：</p>
+<figure>
+  <img src="images/添加项目.png" alt="添加项目">
+  <figcaption>输入项目名称</figcaption>
+</figure>
 
-<ul data-page-node-id="OyTWcgj0CVFxTPKQhzQcJ4">
-  <li data-page-node-id="XFq8wyPjK6jEH8dgR306gq"><strong data-page-node-id="A0QBwU2HXJ8GBCgHgPsUiw">数据</strong>：跨项目所有数据集可选</li>
-  <li data-page-node-id="Ku97CXPK3AzU7HAZ4B40Fo"><strong data-page-node-id="o4uHlHyIeQjpYpSZIf3C46">设备</strong>：默认第一个可用 GPU</li>
-  <li data-page-node-id="yBx23K99N1p74WM1RKKc0D"><strong data-page-node-id="Vk5rWEEZZFHbeU1U1pD2UK">置信度</strong>：低于该分数的预测直接丢弃</li>
-  <li data-page-node-id="32SQkJbdqnpvXP5z5Fq2l2"><strong data-page-node-id="PWnhkqfIGZssXCBAGDUOWP">IoU 阈值</strong>：预测框与标注框重合度达标才算正确检出</li>
-  <li data-page-node-id="0kU3qv1sKn7ocu5hysHvt1"><strong data-page-node-id="FX2rm42KdtRiyldgemMVnB">输出标签文件</strong>：勾选后把预测框写成 labelme json，便于人工复核</li>
-  <li><strong>OCR</strong>：字符检测分“推理 / 评估”两条路 —— 推理把结果写成标注 json，评估统计 P/R；字符识别不输出标注文件，只报告字条识别率</li>
+<p>右键<strong>项目节点</strong>：</p>
+
+<ul>
+  <li><strong>添加数据集</strong> —— 在项目下新建一个数据集</li>
+  <li><strong>导出项目</strong> —— 把整个项目的数据集与标注导出成指定格式</li>
+  <li><strong>修改名称</strong> —— 重命名项目</li>
+  <li><strong>删除项目</strong> —— 连同下面的数据集、标注、训练记录一起清除</li>
 </ul>
 
-<div class="note" data-page-node-id="RRpu3jHy4Fa3uGl13858zp">
-  数据集已标注时自动进入<strong data-page-node-id="mp46glzu3pBDmcOKDTVt3A">评估模式</strong>：统计检出率 / 漏检 / 误检；字符检测若选推理模式，则无视标注、直接把预测框写成 json。
+<p>右键<strong>数据集节点</strong>是对单个数据集的操作：导入 / 导出 / 移动 / 修改 / 删除。</p>
+
+<p><strong>双击数据集</strong>才会载入：重新扫描图像和标注、重建缓存，之后右侧就能浏览。已经载入过的（行内有状态圆点）再双击不会重复扫描。</p>
+
+<figure>
+  <img src="images/添加_修改_删除_数据集.png" alt="项目右键菜单">
+  <figcaption>项目右键菜单</figcaption>
+</figure>
+
+<h3>1.3 导入数据</h3>
+
+<p>选中数据集，点顶部「导入」，弹出导入对话框：</p>
+
+<ul>
+  <li><strong>图像路径</strong> —— 图片所在的文件夹</li>
+  <li><strong>标签路径</strong> —— 标注文件所在的文件夹</li>
+  <li><strong>标签格式</strong> —— Yolo txt / Labelme json / 按子文件夹分类导入</li>
+</ul>
+
+<div class="note">
+  <strong>分类数据集</strong>选「按子文件夹分类导入」：每个子文件夹名就是一个类别，<strong>不需要标注文件</strong>。<br>
+  OCR 用 Labelme json，文本框的标签固定为「文本」，导入后会自动标成字符检测数据集。
 </div>
 
-<figure data-page-node-id="IaywnKZOpCk2iQ0V3UqAI0">
-  <img src="images/模型测试与评估.png" alt="模型测试" data-page-node-id="cHQzSTwtVP58vk12UVI5jh">
-  <figcaption data-page-node-id="s9mesScR0BGf0fB8K0ttJN">模型测试参数配置</figcaption>
+<figure>
+  <img src="images/导入数据.png" alt="导入数据">
+  <figcaption>导入数据对话框</figcaption>
 </figure>
 
-<h3 data-page-node-id="dEezVeaGeqZTLMNs3pHOkO">7.2 测试结果分析</h3>
+<h3>1.4 数据集属性</h3>
 
-<p data-page-node-id="Q6HrSHyqY41EThCjb8Pn9d">测试完成后弹出"测试结果分析"窗口，分两个维度统计（全部用直白的
-"正确检出 / 漏检 / 误检"表述）：</p>
+<p>选中数据集，点顶部「属性」，能看到图像路径、标签路径，以及<strong>标签分布柱状图</strong> —— 每个类别有多少个标注框。哪一类样本偏少，一眼就能看出来。</p>
 
-<ul data-page-node-id="jamSCeh4mJyo2ryL4HlZyX">
-  <li data-page-node-id="5O3ZUwarJaK6vgKuqe5bg0"><strong data-page-node-id="ENZFFWzFKHkDJcPThCTJSh">图像维度</strong>（按张统计，检出 1 个即算检出）：测试张数、检出图像及检出率、
-      未检出图像、有误检图像</li>
-  <li data-page-node-id="fWTsEDeK1UzUmCRrFcQNnc"><strong data-page-node-id="VQGHBDMIPPAfN5ka1ytmnc">标注维度</strong>（按标注框统计）：正确检出、漏检、误检、准确率</li>
-  <li data-page-node-id="BG4S0v5W7WmwuDOuHV77nJ"><strong data-page-node-id="FRrgkSVjfgN0UXPs0Q7lW8">按类别表格</strong>：每类的标注数 / 正确检出 / 漏检 / 误检 / 检出率 / 准确率</li>
-  <li><strong>字符识别</strong>：不按框统计，报告字条总数、CER（字符错误率）与全对条数</li>
-  <li data-page-node-id="FdCmj2JjXEpBhSLsTX3dc9"><strong data-page-node-id="CZ831wpUzJbU7k28lK9wsp">底部结论</strong>：一句话点出整体偏漏检还是偏误检、拖累最大的类别</li>
-</ul>
-
-<figure data-page-node-id="VeiG0i9p532vJfPj803CCA">
-  <img src="images/模型结果评估与报告.png" alt="测试结果分析与报告" data-page-node-id="NcyisYMUSwsBuYdv4PBJqV">
-  <figcaption data-page-node-id="V763VWA0TcBUxRU2wCG4uX">测试结果分析窗口（图像维度 + 标注维度 + 按类别明细）</figcaption>
+<figure>
+  <img src="images/数据集属性_标签分布.png" alt="数据集属性与标签分布">
+  <figcaption>数据集属性与标签分布</figcaption>
 </figure>
 
-<h3 data-page-node-id="cbD9vYtLJNCTBhCge8ef0q">7.3 导出 PDF 报告</h3>
+<h3>1.5 界面语言</h3>
 
-<p data-page-node-id="9rn6WdfLtXuxL5a7RO6OH9">点击右下角 <strong data-page-node-id="zQRA8RiN0C1HN0HoVEvqy5">导出 PDF 报告</strong>，后台线程生成评估报告，内容包含：</p>
+<p>工具栏最右侧是界面语言下拉框，九种语言任选：中文、English、繁體中文、日本語、한국어、Deutsch、Español、Français、Tiếng Việt。</p>
 
-<ul data-page-node-id="pNUwGr2a1UqtGflPYpSzBP">
-  <li data-page-node-id="s48oADHamjw5oH1UwH02oz">总览页：指标汇总表 + 标注分布图</li>
-  <li data-page-node-id="kXAkGClC0jigcFdt7bzkFM">漏检样本页、误检样本页：按"每类抽取 N 张"（左下角可调）展示缩略图，
-      图上用红框标出漏检 / 误检位置，并注明抽取比例</li>
-  <li data-page-node-id="rdX5GFXEDlL6vPX2uuKK2T">建议页：针对各类错误给出改进方向</li>
+<p>选中后主界面立刻切换，已经打开的日志、训练队列窗口一起刷新；还没打开的对话框下次打开就是新语言。选择会被记住，下次启动仍是这个语言。下拉框里每一项都用该语言自己的写法列出，所以无论当前界面是什么语言，都能认出该选哪一项。</p>
+
+<h2 id="annotate">2. 标注</h2>
+
+<h3>2.1 进入标注界面</h3>
+
+<p>选中数据集后，右键缩略图选「标注」，或者直接双击缩略图。</p>
+
+<h3>2.2 画框</h3>
+
+<p>标注界面顶部工具栏有三种画法：</p>
+
+<ul>
+  <li><strong>矩形</strong> —— 拖鼠标画框</li>
+  <li><strong>多边形</strong> —— 依次点顶点，双击或回车结束（分割任务用）</li>
+  <li><strong>文本</strong> —— 先打开顶部的「文本标注」开关，再拖框，松开就弹输入框录文字，双击可改（OCR 任务用）</li>
 </ul>
 
-<div class="note" data-page-node-id="5Dsenl6UT8kBg4KEh5BaQC">
-  抽样只发生在出报告这一步，明细数据仍是全量，后续做难例挖掘不会丢数据。
+<p>画文本框一律用<strong>矩形</strong>。倾斜的文字也用水平框盖住就行 —— 训练时多边形会被当作水平外接框处理，沿着轮廓描没有额外收益。</p>
+
+<p>工具栏上还有「删除图像」，删掉当前这张。</p>
+
+<p>类别在右侧标签列表里选。</p>
+
+<p><strong>「显示标注」开关</strong>随时隐藏所有轮廓（框线、标签、顶点手柄），方便看原图。已经贴上去、还没落地的内容只藏轮廓、图案照常显示，所以关掉它正好能预览「贴完是什么效果」。</p>
+
+<p>右下角<strong>「标注信息」</strong>列出本图每个标注对象的形状（矩形 / 多边形）、顶点数和面积；下面紧接着的<strong>图像信息</strong>显示当前图的宽 × 高 × 通道数（如 <code>505×505×3</code>）和序号。</p>
+
+<p>再往下是<strong>剪切板</strong>：右键复制多边形后，复制区域的缩略图（<code>120 × 90</code>）会加进来，最多存 9 张，纵向排列、可滚动。最新一张默认选中、带蓝色边框；右键缩略图可以删掉这一张，或者清空全部。</p>
+
+<figure>
+  <img src="images/图像标注_剪切板.png" alt="图像标注">
+  <figcaption>矩形 / 多边形标注、标签列表与右下角剪切板</figcaption>
+</figure>
+
+<h3>2.3 标签管理</h3>
+
+<p>标注界面右侧是标签列表，上方有「添加标签」：</p>
+
+<ul>
+  <li><strong>标签名称</strong> —— 多个标签用逗号分隔，一次可以加好几个</li>
+  <li><strong>导入</strong> —— 从别的数据集把标签整批抄过来</li>
+  <li><strong>颜色</strong> —— 从预设色板里选，或者点「自定义」自己挑</li>
+</ul>
+
+<figure>
+  <img src="images/添加或导入标签.png" alt="添加标签">
+  <figcaption>添加或导入标签</figcaption>
+</figure>
+
+<h3>2.4 改类别</h3>
+
+<p><strong>改一个</strong>：点一下标注框，弹出类别下拉菜单，选新类别即可。右侧标签列表里的标签也能重命名、改色、删除。</p>
+
+<figure>
+  <img src="images/修改类别.png" alt="修改类别">
+  <figcaption>在标注框上直接修改类别</figcaption>
+</figure>
+
+<p><strong>批量改</strong>：在缩略图上右键 →「批量修改类别」，填入原类别和新类别，整个数据集里这一类的标注全部改名。</p>
+
+<figure>
+  <img src="images/标签批量修改.png" alt="批量修改类别">
+  <figcaption>类别批量修改弹窗</figcaption>
+</figure>
+
+<h3>2.5 复制粘贴标注对象</h3>
+
+<p>右键一个<strong>多边形</strong>标注，有两个操作：</p>
+
+<ul>
+  <li><strong>复制</strong> —— 把这块区域的像素存成模板，同时在右下角剪切板生成缩略图</li>
+  <li><strong>填充</strong> —— 把区域内的像素改成「填充值」那三个框对应的 RGB 颜色（每通道 <code>0 ~ 255</code>，默认 255）。常用在把缺陷抹成背景色</li>
+</ul>
+
+<p><strong>左键点选</strong>剪切板里的一张缩略图，再把鼠标移到画布上，会有一条多边形虚线跟着走 —— 形状是旋转后的真实轮廓，已经套用了这次摇出的角度。落点和朝向先看清楚，按 <kbd>Esc</kbd> 收掉虚线回到普通鼠标模式，再右键选「粘贴」落地。</p>
+
+<p>在图像空白处右键选<strong>「粘贴」</strong>，就把剪切板里当前选中的那张贴到鼠标位置，同一张图或换一张图都行。粘贴前先在工具栏设好这几项：</p>
+
+<ul>
+  <li><strong>角度范围</strong> —— 粘贴时随机旋转的角度区间（默认 <code>-180 ~ 180</code>）。虚线预览用的就是这个区间里摇出来的角度，所见即所得</li>
+  <li><strong>融合强度</strong> —— <code>0 ~ 1</code>，默认 <code>0.70</code>。粘贴时自动做亮度补偿和边缘羽化，让贴上去的部分和背景自然衔接；设成 0 就是直接硬贴</li>
+  <li><strong>填充值</strong> —— R / G / B 三个输入框（每通道 <code>0 ~ 255</code>，默认 255），配合右键「填充」把区域抹成这个颜色</li>
+  <li><strong><kbd>Ctrl</kbd> + <kbd>Z</kbd></strong> —— 撤销最近一次粘贴或填充，像素恢复、随之新增的标注一起移除，可以连着撤</li>
+</ul>
+
+<figure>
+  <img src="images/标注对象复制.png" alt="标注对象复制">
+  <figcaption>右键复制标注对象 → 剪切板缩略图，工具栏设置角度范围 / 融合强度 / 填充值</figcaption>
+</figure>
+
+<h3>2.6 多边形区域亮度调节</h3>
+
+<p>点选一个<strong>多边形</strong>，在工具条「设置」里打开<strong>亮度调节</strong>，就能改这个多边形框内像素的明暗。拖滑块或者直接输数值，图像上实时预览。</p>
+
+<ul>
+  <li><strong>范围</strong> —— <code>0 ~ 1</code>，默认 <code>0.50</code> 表示原样。往 1 走越亮（<code>1.00</code> 大约两倍亮度），往 0 走越暗（0 全黑）</li>
+  <li><strong>只对选中的多边形生效</strong>。矩形、或者什么都没选中的时候只给提示，不动像素。点另一个多边形，滑块会回到它自己的值（没调过的都是 0.50），不会把上一个的亮度带过去</li>
+  <li><strong>什么时候写盘</strong> —— 拖动过程只改内存、实时预览。按 <kbd>A</kbd> / <kbd>D</kbd> 切图或按 <kbd>Ctrl</kbd> + <kbd>S</kbd> 才写进图像文件</li>
+  <li><strong>撤销</strong> —— 一次调节只记一步，<kbd>Ctrl</kbd> + <kbd>Z</kbd> 回到调节前。同一次里来回拖多少下也只算一步</li>
+</ul>
+
+<figure>
+  <img src="images/多边形区域亮度调节.png" alt="多边形亮度调节">
+  <figcaption>选中多边形后用「亮度调节」改框内像素明暗，图像上实时预览</figcaption>
+</figure>
+
+<h3>2.7 按类别筛图</h3>
+
+<p>顶部工具栏的类别下拉框，选中某一类之后，图像区只显示含这个类别的图。想集中检查、补标某一类的时候很方便。</p>
+
+<figure>
+  <img src="images/按标注类别_分类筛选.png" alt="按类别筛选">
+  <figcaption>按类别筛选缩略图</figcaption>
+</figure>
+
+<h2 id="train">3. 训练</h2>
+
+<h3>3.1 配置训练参数</h3>
+
+<p>点首页或模型界面的「训练」，弹出参数配置：</p>
+
+<ul>
+  <li><strong>任务类型</strong> —— 检测 / 分割 / 分类 / 异常检测 / OCR，会跟着数据集格式自动切</li>
+  <li><strong>训练集 / 验证集</strong> —— 可以多选，也能跨项目组合</li>
+  <li><strong>设备</strong> —— 自动列出可用的 GPU</li>
+  <li><strong>轮次 / 优化器 / 早停</strong> —— 优化器检测和分割用 <code>adamw</code>、分类用 <code>sgd</code>；早停是连续 N 轮没有提升就提前结束，填 0 表示关闭</li>
+  <li><strong>学习率</strong> —— 训练过程中自动衰减</li>
+  <li><strong>批次 / 图像尺寸 / 梯度累积 / 线程数</strong> —— 图像尺寸必须是 32 的倍数；显存不够就调小批次、调大梯度累积，效果等同于放大批次</li>
+  <li><strong>输出路径</strong> —— 留空就按时间自动生成目录，也可以点「选择路径」指定</li>
+</ul>
+
+<figure>
+  <img src="images/训练参数与队列.png" alt="训练参数配置">
+  <figcaption>训练参数配置对话框</figcaption>
+</figure>
+
+<h3>3.2 训练队列</h3>
+
+<p>参数配好之后，除了「开始训练」，还能点<strong>「加入队列」</strong>把任务先挂起来，接着配下一个。首页点「训练队列」打开队列窗口：</p>
+
+<ul>
+  <li>队列按顺序执行，检测 / 分割 / 分类 / 异常检测 / OCR 可以混排，跑完一项自动切下一项</li>
+  <li><strong>上移 / 下移 / 移除</strong> —— 调整执行顺序或删掉任务</li>
+  <li><strong>编辑</strong> —— 修改选中任务的参数</li>
+  <li><strong>清理已完成</strong> —— 把已经跑完的记录移出去</li>
+  <li><strong>开始队列</strong> —— 从头依次执行队列里的任务</li>
+</ul>
+
+<div class="note">
+  队列适合晚上挂机：把多个数据集的任务一次配好，软件会自动全部跑完并分别保存模型。
 </div>
 
-<h2 id="ocr">8. OCR（字符检测 + 字符识别）</h2>
+<figure>
+  <img src="images/训练队列查看.png" alt="训练队列">
+  <figcaption>训练队列窗口</figcaption>
+</figure>
 
-<p>OCR 与其它任务不同：它由<strong>两个模型</strong>串联完成 —— 字符检测负责找出文字框，
-字符识别负责读出框里的字。训练、测试、导出都是两段分开进行的，模型管理里会留下两条记录。</p>
+<h3>3.3 训练进度</h3>
 
-<h3>8.1 标注文本</h3>
+<p>点「开始训练」后回到首页，顶部出现进度条和控制条：</p>
 
-<p>在标注界面打开顶部的<strong>文本标注</strong>开关，类别会自动固定为保留标签“文本”（不必先建标签），
-像画矩形一样框住文字，松开鼠标即弹出输入框录入内容；双击已有的文本框可以随时修改。
-<strong>文本框一律用矩形画</strong>：倾斜的文字也用水平框盖住即可，训练时多边形会被按水平外接框处理，
-描着轮廓画没有额外收益。
-带文本框的 labelme json 在导入时会自动把数据集标成<strong>字符检测数据集</strong>，
-后续只有这类数据集会出现在 OCR 的训练集下拉里。</p>
+<ul>
+  <li><strong>任务名 + 进度</strong> —— 形如 <code>coco128 训练中 5/100</code>，进度条里显示当前轮的 loss</li>
+  <li><strong>停止训练</strong> —— 随时中止，已经跑完的部分会保存</li>
+  <li><strong>剩余时间</strong> —— 按已经用掉的时间外推估算</li>
+  <li><strong>显存</strong> —— GPU 显存占用率，实时刷新</li>
+</ul>
+
+<figure>
+  <img src="images/训练进度_指标_剩余时间_显存用量.png" alt="训练进度">
+  <figcaption>训练进度条与状态栏</figcaption>
+</figure>
+
+<h3>3.4 训练曲线</h3>
+
+<p>在模型管理里选中一条训练记录，点右侧详情面板的<strong>「查看完整指标」</strong>，弹出训练曲线窗口：</p>
+
+<ul>
+  <li>上半部分是 <strong>val loss</strong> 曲线</li>
+  <li>下半部分是 mAP@50-95 / mAP@50 / AR / F1 / precision / recall 等多条曲线，分割任务还会多一条 mask mAP</li>
+  <li>右上角「标签筛选」下拉框，可以切换看全部指标或某个类别的曲线</li>
+</ul>
+
+<figure>
+  <img src="images/训练指标查看.png" alt="训练指标">
+  <figcaption>训练指标曲线（val loss + 各项精度）</figcaption>
+</figure>
+
+<h2 id="model">4. 模型管理</h2>
+
+<p>点首页「模型」打开模型管理：左边是训练记录列表，右边是详情面板。</p>
+
+<h3>4.1 列表与筛选</h3>
+
+<ul>
+  <li><strong>搜索框</strong> —— 按项目 / 数据集 / 标签的关键字过滤</li>
+  <li><strong>任务 / 状态下拉</strong> —— 任务可选检测 / 分割 / 分类 / 异常检测 / 字符检测 / 字符识别；状态可选训练中 / 已完成 / 失败 / 已停止</li>
+  <li><strong>仅看每个数据集最佳</strong> —— 同一个数据集只留精度最高的那条</li>
+  <li>列表列：任务、数据集·标签、精度、训练时间、耗时、图像尺寸、操作</li>
+  <li><strong>精度列带色条</strong> —— 绿 ≥ 0.8、黄 0.5 ~ 0.8、红 &lt; 0.5。失败或已停止的记录在这一列显示状态文字，鼠标停上去能看到失败原因</li>
+  <li>行内三个按钮：<strong>测试</strong>（打开模型测试）、<strong>导出</strong>、<strong>删除</strong>（连带清掉对应的训练记录）</li>
+</ul>
+
+<h3>4.2 详情面板</h3>
+
+<p>点任意一行，右侧显示这条记录的完整参数：任务·规模、状态、精度、训练 / 验证集、图像尺寸、轮数 / 早停、批大小、学习率、优化器、设备、标签、训练时间、耗时、模型路径。上方还有精度曲线的缩略图。</p>
+
+<p>面板底部四个按钮：</p>
+
+<ul>
+  <li><strong>查看完整指标</strong> —— 打开训练曲线窗口（见「训练曲线」一节）</li>
+  <li><strong>测试此模型</strong> —— 用这个模型打开测试对话框（见「测试参数」一节）</li>
+  <li><strong>按此配置重训</strong> —— 把这条记录的全部训练参数带出来，重新开一次训练</li>
+  <li><strong>打开模型目录</strong> —— 在资源管理器里定位权重文件</li>
+</ul>
+
+<figure>
+  <img src="images/模型训练记录.png" alt="模型训练记录">
+  <figcaption>模型管理：筛选条 + 训练记录列表 + 右侧详情面板</figcaption>
+</figure>
+
+<h3>4.3 导出 ONNX</h3>
+
+<p>点「导出」选个目录，会生成一个「项目_时间戳」文件夹：</p>
+
+<ul>
+  <li><strong>模型 <code>.onnx</code></strong> —— 检测和分割由 RF-DETR 导出，分类与 OCR 由 torch 导出。命名是「项目_任务_图像尺寸_模型规模.onnx」</li>
+  <li><strong><code>classes.txt</code></strong> —— 类别 id 和名称的对照。OCR 的识别段是 <code>vocab.txt</code>，一行一个字符就是词表</li>
+  <li><strong>评估报告 PDF</strong> —— 自动在验证集上跑一遍评估，复用测试报告的模板，命名「…_评估报告.pdf」</li>
+  <li><strong><code>examples/</code></strong> —— C++ / C# / Python 调用 ONNX 做检测、分割、分类的示例代码。OCR 目前只有 Python 版</li>
+</ul>
+
+<p>导出过程有进度提示。ONNX 转换需要装 <code>onnx</code> 和 <code>onnxsim</code>，没装会在弹窗里提示。</p>
+
+<p>分类任务不生成评估报告 —— 漏检误检那套报告对分类不适用。OCR 的字符识别也一样，它的结论只有 CER。</p>
+
+<h2 id="test">5. 测试与评估报告</h2>
+
+<h3>5.1 测试参数</h3>
+
+<p>在模型管理里点行内的「测试」（或详情面板的「测试此模型」），弹出测试对话框。顶部显示模型信息：任务类型、权重文件、训练精度、输入尺寸、规模。下面是参数：</p>
+
+<ul>
+  <li><strong>数据</strong> —— 跨项目的所有数据集都能选</li>
+  <li><strong>设备</strong> —— 默认第一个可用的 GPU</li>
+  <li><strong>置信度</strong> —— 低于这个分数的预测直接丢掉</li>
+  <li><strong>IoU 阈值</strong> —— 预测框和标注框的重合度达标才算正确检出</li>
+  <li><strong>输出标签文件</strong> —— 勾上就把预测框写成 labelme json，方便人工复核</li>
+  <li><strong>OCR</strong> —— 字符检测分推理和评估两条路：推理把结果写成标注 json，评估统计 P/R。字符识别不输出标注文件，只报告字条的识别率</li>
+</ul>
+
+<div class="note">
+  数据集有标注时会自动进入<strong>评估模式</strong>，统计检出率 / 漏检 / 误检。字符检测如果选了推理模式，就无视标注，直接把预测框写成 json。
+</div>
+
+<figure>
+  <img src="images/模型测试与评估.png" alt="模型测试">
+  <figcaption>模型测试参数配置</figcaption>
+</figure>
+
+<h3>5.2 结果分析</h3>
+
+<p>测试跑完弹出结果分析窗口，分两个维度统计，用词一律是直白的<strong>「正确检出 / 漏检 / 误检」</strong>：</p>
+
+<ul>
+  <li><strong>图像维度</strong>（按张统计，检出 1 个就算检出）—— 测试张数、检出图像及检出率、未检出图像、有误检的图像</li>
+  <li><strong>标注维度</strong>（按标注框统计）—— 正确检出、漏检、误检、准确率</li>
+  <li><strong>按类别表格</strong> —— 每一类的标注数、正确检出、漏检、误检、检出率、准确率</li>
+  <li><strong>字符识别</strong> —— 不按框统计，报字条总数、CER（字符错误率）和全对条数</li>
+  <li><strong>底部结论</strong> —— 一句话点出整体是偏漏检还是偏误检，以及拖累最大的类别</li>
+</ul>
+
+<figure>
+  <img src="images/模型结果评估与报告.png" alt="测试结果分析与报告">
+  <figcaption>测试结果分析窗口（图像维度 + 标注维度 + 按类别明细）</figcaption>
+</figure>
+
+<h3>5.3 导出 PDF 报告</h3>
+
+<p>点右下角「导出 PDF 报告」，后台线程生成，内容包括：</p>
+
+<ul>
+  <li><strong>总览页</strong> —— 指标汇总表 + 标注分布图</li>
+  <li><strong>漏检样本页 / 误检样本页</strong> —— 按「每类抽取 N 张」展示缩略图（数量在左下角调），图上用红框标出漏检和误检的位置，并注明抽取比例</li>
+  <li><strong>建议页</strong> —— 针对各类错误给出改进方向</li>
+</ul>
+
+<div class="note">
+  抽样只发生在出报告这一步，明细数据仍是全量，后面做难例挖掘不会丢数据。
+</div>
+
+<h2 id="ocr">6. OCR</h2>
+
+<p>OCR 和其它任务不一样：它由<strong>两个模型</strong>串起来完成 —— 字符检测找出文字框，字符识别读出框里的字。训练、测试、导出都是两段分开做的，模型管理里会留下两条记录。</p>
+
+<h3>6.1 标注文本</h3>
+
+<p>在标注界面打开顶部的<strong>「文本标注」</strong>开关，类别会自动固定成保留标签「文本」（不用先建标签）。像画矩形一样框住文字，松开鼠标就弹出输入框录内容；双击已有的文本框随时能改。</p>
+
+<p>文本框一律用矩形画：倾斜的文字也用水平框盖住就行，训练时多边形会被当成水平外接框，描着轮廓画没有额外收益。</p>
+
+<p>带文本框的 labelme json 导入时会自动把数据集标成<strong>字符检测数据集</strong>。往后只有这类数据集会出现在 OCR 的训练集下拉里。</p>
 
 <figure>
   <img src="images/ocr标注.png" alt="OCR 文本标注">
-  <figcaption>打开“文本标注”开关后拖框，松开即弹出文字输入框；右侧“标注信息”列出每个文本框的形状、顶点数与面积</figcaption>
+  <figcaption>打开「文本标注」开关后拖框，松开即弹出文字输入框；右侧「标注信息」列出每个文本框的形状、顶点数与面积</figcaption>
 </figure>
 
-<p>标注完成后回到数据集视图，OCR 数据集里每个文本框会<strong>单独裁成一张缩略图</strong>，
-标签条上显示的是框里录入的<strong>文字内容</strong>（超过 3 条折叠成 +N），而不是类别名 ——
-逐张翻过去就能核对内容录得对不对。上方的类别筛选里只有保留标签“文本”一项。</p>
+<p>标完回到数据集视图，OCR 数据集里每个文本框会<strong>单独裁成一张缩略图</strong>，标签条上显示的是框里录的<strong>文字内容</strong>（超过 3 条折叠成 <code>+N</code>），不是类别名 —— 逐张翻过去就能核对内容录得对不对。上方类别筛选里只有「文本」这一项。</p>
 
 <figure>
   <img src="images/ocr标注显示.png" alt="OCR 数据集缩略图显示文字内容">
   <figcaption>OCR 数据集：每个文本框单独成图，标签条显示所录文字内容（超出折叠成 +N）</figcaption>
 </figure>
 
-<h3>8.2 训练</h3>
+<h3>6.2 训练</h3>
 
-<p>任务类型选 <strong>OCR</strong>。图像尺寸对应检测段的输入（默认 1024，需为 32 的倍数），
-识别段固定 32×128，不受这一项影响。点“开始训练”后会<strong>自动拆成两项排队</strong>：
-先字符检测、再字符识别；前一项跑完，等显存回落到开训前的水平再起下一项，
-这期间进度区显示“等待显存释放 · 下一项:字符识别”，中间不会有空白。</p>
+<p>任务类型选 <strong>OCR</strong>。</p>
+
+<p>图像尺寸是检测段的输入（默认 1024，必须是 32 的倍数）；识别段固定 <code>32×128</code>，不受这一项影响。</p>
+
+<p>点「开始训练」后会自动拆成两项排队：先字符检测，再字符识别。前一项跑完，要等显存回落到开训前的水平才起下一项，这期间进度区显示「等待显存释放 · 下一项:字符识别」，中间不会空着。</p>
 
 <figure>
   <img src="images/ocr训练.png" alt="OCR 训练参数">
-  <figcaption>OCR 的训练参数（图中标识为“字符检测”段）；型号即档位 nano ~ large，架构一栏由算法自动决定、置灰不可改</figcaption>
+  <figcaption>OCR 的训练参数（图中标识为「字符检测」段）；型号即档位 nano ~ large，架构一栏由算法自动决定、置灰不可改</figcaption>
 </figure>
 
 <div class="note">
-  识别段的词表直接取标注里出现过的字符，所以标注文本要覆盖现场实际会遇到的字符集。
+  识别段的词表直接取标注里出现过的字符。所以标注文本要覆盖现场实际会遇到的字符集 —— 现场有、标注里没出现过的字符，模型认不出来。
 </div>
 
-<h3>8.3 测试：字符检测两条路，字符识别一条路</h3>
+<h3>6.3 测试：检测两条路，识别一条路</h3>
 
 <ul>
-  <li><strong>字符检测 · 推理</strong>：不比对标注，直接把预测框（连同识别出的文字）写成 labelme json。
-      写出的 json 带 OCR 标志位，拖回软件会被认成字符检测数据集，可用来核对结果或补标。</li>
-  <li><strong>字符检测 · 评估</strong>：数据集已标注时自动进入，统计正确检出 / 漏检 / 误检与按类 P/R，和检测任务一致。</li>
-  <li><strong>字符识别</strong>：拿标注框裁出的字条来测，报告字条总数、CER（字符错误率）与全对条数，不输出标注文件。</li>
+  <li><strong>字符检测 · 推理</strong> —— 不比对标注，直接把预测框（连同识别出的文字）写成 labelme json。写出的 json 带 OCR 标志位，拖回软件会被认成字符检测数据集，可以用来核对结果或补标</li>
+  <li><strong>字符检测 · 评估</strong> —— 数据集有标注时自动进入，统计正确检出 / 漏检 / 误检和按类 P/R，跟检测任务一致</li>
+  <li><strong>字符识别</strong> —— 拿标注框裁出的字条来测，报告字条总数、CER（字符错误率）和全对条数，不输出标注文件</li>
 </ul>
 
-<h3>8.4 导出</h3>
+<h3>6.4 导出</h3>
 
-<p>两段各导一份 ONNX：<code>项目_字符检测_尺寸_规模.onnx</code> 与
-<code>项目_字符识别_尺寸_规模.onnx</code>，识别段额外带 <code>vocab.txt</code> 词表。
-字符检测照常生成评估报告；字符识别只有 CER 一个结论，不生成报告。
-调用示例见导出目录下的 <code>examples/python/ocr.py</code>（检测段输出的 logits 没过 sigmoid，
-后处理要自己做，示例里都写好了）。</p>
+<p>两段各导一份 ONNX：<code>项目_字符检测_尺寸_规模.onnx</code> 和 <code>项目_字符识别_尺寸_规模.onnx</code>，识别段额外带一个 <code>vocab.txt</code> 词表。</p>
 
-<h2 id="log" data-page-node-id="OPqMorKvoOAkxzDZvlbcRM">9. 日志</h2>
+<p>字符检测照常生成评估报告；字符识别只有 CER 一个结论，不生成报告。</p>
 
-<p data-page-node-id="X0x5AlqFj0pAQ6lhztxDy8">点击首页顶部 <strong data-page-node-id="ATwaGKk9dQLeereMLl87Nt">日志</strong> 按钮，打开日志窗口，实时显示：</p>
-<ul data-page-node-id="hq5uUhXmIr0sivJCJbhg0n">
-  <li data-page-node-id="zb9WHWcvftyql9AJcw8Htd">软件启动 / 退出</li>
-  <li data-page-node-id="EoUi4b9HP0hSDmwT0DOOmz">项目 / 数据集创建、重命名、删除、导入 / 导出</li>
-  <li data-page-node-id="XDuxYQUhZUwgOHgrRUKUqL">标签创建、重命名、删除</li>
-  <li data-page-node-id="rA0lfBvGfDCsrvufa9J9sC">训练开始、训练中（[train] 前缀转发子进程输出）、指标更新、模型保存、手动停止</li>
-  <li data-page-node-id="TKepEYZXyLFA00Sf4UHu4X">测试启动、测试中（[test] 前缀）、完成、失败</li>
+<p>调用示例在导出目录的 <code>examples/python/ocr.py</code>。注意检测段输出的 logits 没过 sigmoid，后处理要自己写，示例里都写好了。</p>
+
+<h2 id="log">7. 日志</h2>
+
+<p>点首页顶部的「日志」，打开日志窗口，实时滚动显示：</p>
+
+<ul>
+  <li>软件启动 / 退出</li>
+  <li>项目和数据集的创建、重命名、删除、导入 / 导出</li>
+  <li>标签的创建、重命名、删除</li>
+  <li>训练的开始、进行中（<code>[train]</code> 前缀转发子进程输出）、指标更新、模型保存、手动停止</li>
+  <li>测试的启动、进行中（<code>[test]</code> 前缀）、完成、失败</li>
 </ul>
 
-<figure data-page-node-id="eVDLX2LQx50F37e0aoRg2k">
-  <img src="images/日志.png" alt="日志窗口" data-page-node-id="3Wr0vMEpgdA8x42ZMl4Lwe">
-  <figcaption data-page-node-id="7xn2a9nEOwv5yeA40TJIj9">日志窗口</figcaption>
+<figure>
+  <img src="images/日志.png" alt="日志窗口">
+  <figcaption>日志窗口</figcaption>
 </figure>
 
-<hr style="margin-top:48px; border:none; border-top:1px solid #dde1ea;" data-page-node-id="FLF1BPvnyWvJ6yCLCH9Ptw">
+<hr style="margin-top:48px; border:none; border-top:1px solid #dde1ea;">
 
 </body>
 </html>

@@ -17,7 +17,7 @@ from PySide6.QtWidgets import (QDialog, QWidget, QApplication, QVBoxLayout,
 from app.annotation.scene import AnnotationScene
 from app.annotation.box_item import AnnotationPolygonItem
 from app.core import theme
-from app.core.label_utils import TEXT_LABEL
+from app.core.label_utils import is_text_label, text_label
 from app.core.utils import project_root, ui_font_family
 from app.widgets.dialog_buttons import add_ok_cancel
 from app.widgets.message_box import MessageBox
@@ -674,7 +674,7 @@ class AnnotationCanvasMixin:
             for w in (self.ui.draw_rect_btn, self.ui.poly_btn):
                 w.setEnabled(False)
             return
-        # 文本标注模式下不必先建标签: 类别固定是保留标签"文本"
+        # 文本标注模式下不必先建标签: 类别是保留标签
         can_draw = self.text_mode or (
             bool(self.label_colors)
             and self.scene.current_label in self.label_colors)
@@ -752,17 +752,17 @@ class AnnotationCanvasMixin:
 
     # ---------------- 复制/粘贴(格式刷改造: 右键复制多边形 + 随机旋转粘贴) ----------------
     def _toggle_text_mode(self, checked):
-        """"文本标注"开关: 打开后类别固定为保留标签"文本", 不必先建标签.
-
-        关掉时退回开关前的那个标签, 否则下一个框会莫名其妙继续带着"文本"画出来.
+        """"
+        文本标注"开关: 打开后类别是保留标签, 不必先建标签.
+        关掉时退回开关前的那个标签, 否则下一个框会莫名其妙继续带着它画出来.
         """
         self.text_mode = bool(checked)
         if self.text_mode:
             self._label_before_text_mode = self.scene.current_label
-            self.scene.current_label = TEXT_LABEL
+            self.scene.current_label = text_label()
         else:
             back = self._label_before_text_mode
-            if not back or back == TEXT_LABEL:
+            if not back or is_text_label(back):
                 back = sorted(self.label_colors)[0] if self.label_colors else ""
             self.scene.current_label = back
         self._update_draw_buttons()

@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hướng dẫn sử dụng EasyTrainer</title>
+<style>
+  body { font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+         max-width: 920px; margin: 0 auto; padding: 0 16px 48px;
+         color: #2b2f3b; background: #fff; line-height: 1.75; }
+  h1 { font-size: 28px; color: #1c1e25; border-bottom: 3px solid #4f7dff;
+       padding-bottom: 10px; margin: 24px 0; }
+  h2 { font-size: 22px; color: #1c1e25; margin-top: 40px;
+       border-left: 5px solid #4f7dff; padding-left: 12px; }
+  h3 { font-size: 17px; color: #353a48; margin-top: 26px; }
+  p, li { font-size: 15px; }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  .lead { color: #4a5164; }
+  .note { background: #f3f6ff; border-left: 4px solid #4f7dff;
+          padding: 10px 14px; margin: 14px 0; border-radius: 4px; font-size: 14px; }
+  .warn { background: #fff3f3; border-left: 4px solid #d64545;
+          padding: 10px 14px; margin: 14px 0; border-radius: 4px; font-size: 14px; }
+  code { background: #23262f; color: #e8eaf0; padding: 1px 6px;
+         border-radius: 3px; font-family: Consolas, monospace; font-size: 13px; }
+  kbd { background: #f4f5f8; border: 1px solid #ccd2e0; border-bottom-width: 2px;
+        border-radius: 3px; padding: 0 5px; font-size: 13px;
+        font-family: Consolas, monospace; color: #353a48; }
+  figure { margin: 18px 0; text-align: center; }
+  figcaption { color: #5c6270; font-size: 13px; margin-top: 6px; }
+  img { max-width: 100%; height: auto; border: 1px solid #dde1ea;
+        border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+  .toc { background: #f9fafc; border: 1px solid #dde1ea; border-radius: 6px;
+         padding: 14px 22px; margin-bottom: 28px; }
+  .toc h2 { font-size: 16px; border: none; padding: 0; margin: 0 0 8px; color: #4f7dff; }
+  .toc ol { margin: 0; }
+  .toc li { font-size: 14px; margin-bottom: 4px; }
+  .toc a { color: #2b2f3b; text-decoration: none; }
+  .toc a:hover { color: #4f7dff; }
+  .lang { text-align: right; font-size: 13px; padding-top: 16px; }
+  .lang a { color: #6c7385; text-decoration: none; }
+  .lang a:hover { color: #4f7dff; }
+  table { border-collapse: collapse; width: 100%; margin: 14px 0; font-size: 14px; }
+  th, td { border: 1px solid #dde1ea; padding: 7px 10px; text-align: left; }
+  th { background: #f4f6fb; color: #353a48; font-weight: 600; }
+  /* 打印/PDF 排版: 标题不孤行, 图片不跨页截断 */
+  @media print {
+    h2, h3 { page-break-after: avoid; }
+    figure, img, table { page-break-inside: avoid; }
+    .lang { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="lang"><a href="introduce.html">Ngôn ngữ khác / Other languages</a></div>
+
+<h1>Hướng dẫn sử dụng EasyTrainer</h1>
+
+<div class="toc">
+  <h2>Mục lục</h2>
+  <ol>
+    <li><a href="#quick">Bắt đầu nhanh</a></li>
+    <li><a href="#project">Giao diện và dự án</a></li>
+    <li><a href="#annotate">Chú thích</a></li>
+    <li><a href="#train">Huấn luyện</a></li>
+    <li><a href="#model">Quản lý mô hình</a></li>
+    <li><a href="#test">Kiểm thử và báo cáo đánh giá</a></li>
+    <li><a href="#ocr">OCR</a></li>
+    <li><a href="#log">Nhật ký</a></li>
+  </ol>
+</div>
+
+<h2 id="quick">Bắt đầu nhanh</h2>
+
+<p class="lead">Từ phần mềm trống đến khi chạy ra mô hình đầu tiên, đường đi ngắn nhất là sáu bước này. Chi tiết của từng bước nằm ở các chương sau.</p>
+
+<ol>
+  <li><strong>Thêm dự án</strong> — bấm “+ Thêm dự án” ở bên trái, nhập một cái tên.</li>
+  <li><strong>Thêm bộ dữ liệu</strong> — nhấp chuột phải vào nút dự án → “Thêm bộ dữ liệu”.</li>
+  <li><strong>Nhập dữ liệu</strong> — chọn bộ dữ liệu, bấm “Nhập” ở trên cùng, lần lượt chọn thư mục ảnh và thư mục chú thích.</li>
+  <li><strong>Kiểm tra dữ liệu</strong> — bấm “Thuộc tính bộ dữ liệu”, xác nhận lớp và số lượng không bị sai.</li>
+  <li><strong>Huấn luyện</strong> — bấm “Huấn luyện”, chọn loại tác vụ và bộ dữ liệu, các mục còn lại để mặc định, bấm “Bắt đầu huấn luyện”.</li>
+  <li><strong>Xem kết quả</strong> — huấn luyện xong, tìm bản ghi này trong “Mô hình”, bấm “Kiểm thử” để chạy một lượt trên tập xác thực; nếu cần bàn giao thì xuất một báo cáo PDF.</li>
+</ol>
+
+<div class="note">
+  Nếu chưa có dữ liệu chú thích, hãy xem chương 3 “Chú thích” trước.
+</div>
+
+<h2 id="project">1. Giao diện và dự án</h2>
+
+<h3>1.1 Bố cục giao diện chính</h3>
+
+<p>Giao diện chính chia làm ba phần: bên trái quản lý dự án, ở giữa xem ảnh, thanh công cụ nằm phía trên.</p>
+
+<ul>
+  <li><strong>Cây dự án bên trái</strong> — dự án và bộ dữ liệu sắp xếp theo thứ bậc. Sau bộ dữ liệu là tiến độ chú thích (ví dụ <code>126/128</code>); chấm tròn trước tên cho biết nó đã được nạp vào bộ nhớ hay chưa, xanh là đã nạp, đỏ là chưa nạp.</li>
+  <li><strong>Vùng ảnh ở giữa</strong> — duyệt ảnh thu nhỏ theo trang. Ở giữa phía dưới là một cụm điều khiển chuyển trang: hai mũi tên kẹp lấy số trang, số trang hiện tại được tô sáng; đưa chuột lên số trang sẽ thấy theo bộ lọc hiện tại có tổng cộng bao nhiêu ảnh.</li>
+  <li><strong>Thanh công cụ phía trên</strong> — tỉ lệ hiển thị, hộp thả xuống lọc chú thích, cùng các nút Sửa, Xóa, Nhập, Xuất, Thuộc tính, Huấn luyện, Mô hình, Nhật ký...</li>
+</ul>
+
+<figure>
+  <img src="images/主页.png" alt="EasyTrainer 主界面">
+  <figcaption>Giao diện chính EasyTrainer</figcaption>
+</figure>
+
+<h3>1.2 Dự án và bộ dữ liệu</h3>
+
+<p><strong>Thêm dự án</strong>: bấm “+ Thêm dự án” ở bên trái, nhập tên, xác nhận. Dự án là vật chứa của bộ dữ liệu, mỗi bộ dữ liệu đều phải thuộc một dự án nào đó.</p>
+
+<figure>
+  <img src="images/添加项目.png" alt="添加项目">
+  <figcaption>Nhập tên dự án</figcaption>
+</figure>
+
+<p>Nhấp chuột phải vào <strong>nút dự án</strong>:</p>
+
+<ul>
+  <li><strong>Thêm bộ dữ liệu</strong> — tạo một bộ dữ liệu mới dưới dự án</li>
+  <li><strong>Xuất dự án</strong> — xuất toàn bộ bộ dữ liệu và chú thích của dự án ra định dạng chỉ định</li>
+  <li><strong>Đổi tên</strong> — đổi tên dự án</li>
+  <li><strong>Xóa dự án</strong> — xóa luôn cả bộ dữ liệu, chú thích và bản ghi huấn luyện bên trong</li>
+</ul>
+
+<p>Nhấp chuột phải vào <strong>nút bộ dữ liệu</strong> là thao tác trên một bộ dữ liệu: nhập / xuất / di chuyển / đổi tên / xóa.</p>
+
+<p>Phải <strong>nhấp đúp vào bộ dữ liệu</strong> mới nạp được: quét lại ảnh và chú thích, dựng lại bộ nhớ đệm, sau đó mới duyệt được ở bên phải. Bộ dữ liệu đã nạp rồi (trong dòng có chấm tròn trạng thái) thì nhấp đúp lần nữa sẽ không quét lại.</p>
+
+<figure>
+  <img src="images/添加_修改_删除_数据集.png" alt="项目右键菜单">
+  <figcaption>Menu chuột phải của dự án</figcaption>
+</figure>
+
+<h3>1.3 Nhập dữ liệu</h3>
+
+<p>Chọn bộ dữ liệu, bấm “Nhập” ở trên cùng, hộp thoại nhập dữ liệu hiện ra:</p>
+
+<ul>
+  <li><strong>Đường dẫn ảnh</strong> — thư mục chứa ảnh</li>
+  <li><strong>Đường dẫn nhãn</strong> — thư mục chứa tệp chú thích</li>
+  <li><strong>Định dạng nhãn</strong> — Yolo txt / Labelme json / Nhập phân loại theo thư mục con</li>
+</ul>
+
+<div class="note">
+  <strong>Bộ dữ liệu phân loại</strong> chọn “Nhập phân loại theo thư mục con”: mỗi tên thư mục con là một lớp, <strong>không cần tệp chú thích</strong>.<br>
+  OCR dùng Labelme json, nhãn của ô văn bản cố định là “text”, sau khi nhập sẽ tự động được đánh dấu thành bộ dữ liệu phát hiện văn bản.
+</div>
+
+<figure>
+  <img src="images/导入数据.png" alt="导入数据">
+  <figcaption>Hộp thoại nhập dữ liệu</figcaption>
+</figure>
+
+<h3>1.4 Thuộc tính bộ dữ liệu</h3>
+
+<p>Chọn bộ dữ liệu, bấm “Thuộc tính bộ dữ liệu” ở trên cùng, sẽ thấy đường dẫn ảnh, đường dẫn nhãn, cùng <strong>biểu đồ cột phân bố nhãn</strong> — mỗi lớp có bao nhiêu khung chú thích. Lớp nào ít mẫu, nhìn một cái là thấy ngay.</p>
+
+<figure>
+  <img src="images/数据集属性_标签分布.png" alt="数据集属性与标签分布">
+  <figcaption>Thuộc tính bộ dữ liệu và phân bố nhãn</figcaption>
+</figure>
+
+<h3>1.5 Ngôn ngữ giao diện</h3>
+
+<p>Ngoài cùng bên phải thanh công cụ là hộp thả xuống ngôn ngữ giao diện, chọn một trong chín ngôn ngữ: 中文、English、繁體中文、日本語、한국어、Deutsch、Español、Français、Tiếng Việt。</p>
+
+<p>Sau khi chọn, giao diện chính chuyển ngay, cửa sổ Nhật ký và Hàng đợi huấn luyện đang mở cũng làm mới theo; các hộp thoại chưa mở thì lần sau mở sẽ là ngôn ngữ mới. Lựa chọn được ghi nhớ, lần khởi động sau vẫn là ngôn ngữ đó. Mỗi mục trong hộp thả xuống đều được ghi bằng chính ngôn ngữ đó, nên dù giao diện hiện tại là ngôn ngữ nào cũng nhận ra được nên chọn mục nào.</p>
+
+<h2 id="annotate">2. Chú thích</h2>
+
+<h3>2.1 Vào giao diện chú thích</h3>
+
+<p>Sau khi chọn bộ dữ liệu, nhấp chuột phải vào ảnh thu nhỏ và chọn “Chú thích”, hoặc nhấp đúp thẳng vào ảnh thu nhỏ.</p>
+
+<h3>2.2 Vẽ khung</h3>
+
+<p>Thanh công cụ phía trên giao diện chú thích có ba cách vẽ:</p>
+
+<ul>
+  <li><strong>Hình chữ nhật</strong> — kéo chuột để vẽ khung</li>
+  <li><strong>Đa giác</strong> — lần lượt bấm các đỉnh, nhấp đúp hoặc nhấn Enter để kết thúc (dùng cho tác vụ phân đoạn)</li>
+  <li><strong>Chú thích văn bản</strong> — bật công tắc “Chú thích văn bản” ở trên cùng trước, rồi kéo khung, thả chuột là hiện ô nhập để ghi chữ, nhấp đúp để sửa (dùng cho tác vụ OCR)</li>
+</ul>
+
+<p>Vẽ ô văn bản thì luôn dùng <strong>Hình chữ nhật</strong>. Chữ nghiêng cũng chỉ cần lấy khung ngang trùm lên là được — khi huấn luyện, đa giác sẽ được xử lý như khung bao ngang, vẽ men theo đường viền không mang lại thêm lợi ích gì.</p>
+
+<p>Trên thanh công cụ còn có “Xóa ảnh”, để xóa ảnh hiện tại.</p>
+
+<p>Lớp được chọn trong danh sách nhãn ở bên phải.</p>
+
+<p><strong>Công tắc “Hiện chú thích”</strong> ẩn mọi đường viền (đường khung, nhãn, tay nắm đỉnh) bất cứ lúc nào, tiện cho việc xem ảnh gốc. Nội dung đã dán lên nhưng chưa chốt thì chỉ ẩn phần đường viền, phần hình vẫn hiển thị như thường, nên tắt nó đi lại vừa đúng để xem thử “dán xong trông ra sao”.</p>
+
+<p>Ở góc dưới bên phải, <strong>“Thông tin chú thích”</strong> liệt kê hình dạng (hình chữ nhật / đa giác), số đỉnh và diện tích của từng đối tượng chú thích trong ảnh này; ngay bên dưới là <strong>Thông tin ảnh</strong> hiển thị chiều rộng × chiều cao × số kênh của ảnh hiện tại (ví dụ <code>505×505×3</code>) cùng số thứ tự.</p>
+
+<p>Xuống nữa là <strong>Bộ nhớ tạm</strong>: sau khi nhấp chuột phải để sao chép đa giác, ảnh thu nhỏ của vùng đã sao chép (<code>120 × 90</code>) sẽ được thêm vào, lưu tối đa 9 ảnh, xếp dọc, cuộn được. Ảnh mới nhất mặc định được chọn, có viền xanh; nhấp chuột phải vào ảnh thu nhỏ có thể xóa ảnh đó, hoặc xóa sạch tất cả.</p>
+
+<figure>
+  <img src="images/图像标注_剪切板.png" alt="图像标注">
+  <figcaption>Chú thích hình chữ nhật / đa giác, danh sách nhãn và bộ nhớ tạm ở góc dưới bên phải</figcaption>
+</figure>
+
+<h3>2.3 Quản lý nhãn</h3>
+
+<p>Bên phải giao diện chú thích là danh sách nhãn, phía trên có “Thêm nhãn”:</p>
+
+<ul>
+  <li><strong>Tên nhãn</strong> — nhiều nhãn cách nhau bằng dấu phẩy, thêm một lần được mấy cái</li>
+  <li><strong>Nhập</strong> — sao chép hàng loạt nhãn từ bộ dữ liệu khác sang</li>
+  <li><strong>Chọn màu</strong> — chọn từ bảng màu có sẵn, hoặc bấm “Màu tùy chỉnh” để tự chọn</li>
+</ul>
+
+<figure>
+  <img src="images/添加或导入标签.png" alt="添加标签">
+  <figcaption>Thêm hoặc nhập nhãn</figcaption>
+</figure>
+
+<h3>2.4 Đổi lớp</h3>
+
+<p><strong>Đổi một cái</strong>: bấm vào khung chú thích, menu thả xuống chọn lớp hiện ra, chọn lớp mới là xong. Nhãn trong danh sách nhãn bên phải cũng có thể đổi tên, đổi màu, xóa.</p>
+
+<figure>
+  <img src="images/修改类别.png" alt="修改类别">
+  <figcaption>Đổi lớp trực tiếp trên khung chú thích</figcaption>
+</figure>
+
+<p><strong>Đổi hàng loạt</strong>: nhấp chuột phải vào ảnh thu nhỏ → “Đổi lớp hàng loạt”, điền lớp cũ và lớp mới, toàn bộ chú thích của lớp đó trong cả bộ dữ liệu sẽ được đổi tên.</p>
+
+<figure>
+  <img src="images/标签批量修改.png" alt="批量修改类别">
+  <figcaption>Hộp thoại đổi lớp hàng loạt</figcaption>
+</figure>
+
+<h3>2.5 Sao chép và dán đối tượng chú thích</h3>
+
+<p>Nhấp chuột phải vào một chú thích <strong>đa giác</strong>, có hai thao tác:</p>
+
+<ul>
+  <li><strong>Sao chép</strong> — lưu pixel của vùng này thành mẫu, đồng thời tạo ảnh thu nhỏ trong bộ nhớ tạm ở góc dưới bên phải</li>
+  <li><strong>Tô kín</strong> — đổi pixel trong vùng thành màu RGB ứng với ba ô “Giá trị tô kín” (mỗi kênh <code>0 ~ 255</code>, mặc định 255). Thường dùng để xóa khuyết tật thành màu nền</li>
+</ul>
+
+<p><strong>Bấm chuột trái</strong> để chọn một ảnh thu nhỏ trong bộ nhớ tạm, rồi đưa chuột lên khung vẽ, sẽ có một đường đa giác nét đứt đi theo — hình dạng là đường viền thật sau khi xoay, đã áp dụng góc vừa ngẫu nhiên ra. Xem kỹ điểm đặt và hướng trước, nhấn <kbd>Esc</kbd> để thu đường nét đứt lại và trở về chế độ chuột thường, rồi nhấp chuột phải chọn “Dán” để chốt.</p>
+
+<p>Nhấp chuột phải vào chỗ trống trên ảnh rồi chọn <strong>“Dán”</strong>, ảnh đang được chọn trong bộ nhớ tạm sẽ được dán vào vị trí chuột, cùng một ảnh hay đổi sang ảnh khác đều được. Trước khi dán, hãy đặt sẵn mấy mục này trên thanh công cụ:</p>
+
+<ul>
+  <li><strong>Phạm vi góc</strong> — khoảng góc xoay ngẫu nhiên khi dán (mặc định <code>-180 ~ 180</code>). Bản xem trước nét đứt dùng đúng góc ngẫu nhiên trong khoảng này, thấy sao được vậy</li>
+  <li><strong>Độ mạnh hòa trộn</strong> — <code>0 ~ 1</code>, mặc định <code>0.70</code>. Khi dán sẽ tự động bù độ sáng và làm mềm viền, giúp phần dán lên ăn khớp tự nhiên với nền; đặt 0 là dán thô trực tiếp</li>
+  <li><strong>Giá trị tô kín</strong> — ba ô nhập R / G / B (mỗi kênh <code>0 ~ 255</code>, mặc định 255), kết hợp với “Tô kín” ở menu chuột phải để xóa vùng thành màu này</li>
+  <li><strong><kbd>Ctrl</kbd> + <kbd>Z</kbd></strong> — hoàn tác lần dán hoặc tô kín gần nhất, pixel khôi phục, chú thích thêm vào kèm theo cũng bị gỡ bỏ, hoàn tác liên tiếp được</li>
+</ul>
+
+<figure>
+  <img src="images/标注对象复制.png" alt="标注对象复制">
+  <figcaption>Nhấp chuột phải để sao chép đối tượng chú thích → ảnh thu nhỏ trong bộ nhớ tạm, đặt Phạm vi góc / Độ mạnh hòa trộn / Giá trị tô kín trên thanh công cụ</figcaption>
+</figure>
+
+<h3>2.6 Điều chỉnh độ sáng vùng đa giác</h3>
+
+<p>Bấm chọn một <strong>đa giác</strong>, mở <strong>Điều chỉnh độ sáng</strong> trong “Cài đặt” trên thanh công cụ là có thể đổi độ sáng tối của pixel bên trong khung đa giác đó. Kéo thanh trượt hoặc nhập thẳng số, ảnh xem trước ngay lập tức.</p>
+
+<ul>
+  <li><strong>Phạm vi</strong> — <code>0 ~ 1</code>, mặc định <code>0.50</code> là giữ nguyên. Càng về 1 càng sáng (<code>1.00</code> khoảng gấp đôi độ sáng), càng về 0 càng tối (0 là đen hẳn)</li>
+  <li><strong>Chỉ có tác dụng với đa giác đang chọn</strong>. Với hình chữ nhật, hoặc khi chưa chọn gì, chỉ hiện thông báo chứ không đổi pixel. Bấm sang đa giác khác, thanh trượt sẽ trở về giá trị riêng của nó (cái nào chưa chỉnh đều là 0.50), không mang độ sáng của cái trước sang</li>
+  <li><strong>Khi nào ghi ra đĩa</strong> — quá trình kéo chỉ đổi trong bộ nhớ, xem trước tức thì. Phải nhấn <kbd>A</kbd> / <kbd>D</kbd> để chuyển ảnh hoặc nhấn <kbd>Ctrl</kbd> + <kbd>S</kbd> mới ghi vào tệp ảnh</li>
+  <li><strong>Hoàn tác</strong> — một lần chỉnh chỉ ghi một bước, <kbd>Ctrl</kbd> + <kbd>Z</kbd> quay về trước khi chỉnh. Trong cùng một lần, kéo qua kéo lại bao nhiêu lần cũng chỉ tính một bước</li>
+</ul>
+
+<figure>
+  <img src="images/多边形区域亮度调节.png" alt="多边形亮度调节">
+  <figcaption>Sau khi chọn đa giác, dùng “Điều chỉnh độ sáng” để đổi độ sáng tối pixel trong khung, xem trước ngay trên ảnh</figcaption>
+</figure>
+
+<h3>2.7 Lọc ảnh theo lớp</h3>
+
+<p>Hộp thả xuống lớp trên thanh công cụ phía trên, sau khi chọn một lớp nào đó, vùng ảnh chỉ hiển thị những ảnh có lớp này. Rất tiện khi muốn kiểm tra tập trung hoặc chú thích bổ sung cho một lớp.</p>
+
+<figure>
+  <img src="images/按标注类别_分类筛选.png" alt="按类别筛选">
+  <figcaption>Lọc ảnh thu nhỏ theo lớp</figcaption>
+</figure>
+
+<h2 id="train">3. Huấn luyện</h2>
+
+<h3>3.1 Cấu hình tham số huấn luyện</h3>
+
+<p>Bấm “Huấn luyện” ở trang chính hoặc giao diện mô hình, phần cấu hình tham số hiện ra:</p>
+
+<ul>
+  <li><strong>Loại tác vụ</strong> — Phát hiện / Phân đoạn / Phân loại / Phát hiện bất thường / OCR, sẽ tự chuyển theo định dạng bộ dữ liệu</li>
+  <li><strong>Tập huấn luyện / Tập xác thực</strong> — chọn được nhiều, cũng có thể kết hợp xuyên dự án</li>
+  <li><strong>Thiết bị</strong> — tự động liệt kê các GPU khả dụng</li>
+  <li><strong>Số epoch / Trình tối ưu / Dừng sớm</strong> — trình tối ưu: phát hiện và phân đoạn dùng <code>adamw</code>, phân loại dùng <code>sgd</code>; dừng sớm là khi liên tiếp N epoch không cải thiện thì kết thúc sớm, điền 0 là tắt</li>
+  <li><strong>Tốc độ học</strong> — tự động giảm dần trong quá trình huấn luyện</li>
+  <li><strong>batch / Kích thước ảnh / Tích lũy gradient / Số luồng</strong> — kích thước ảnh phải là bội số của 32; nếu thiếu bộ nhớ GPU thì giảm batch, tăng tích lũy gradient, hiệu quả tương đương với tăng batch</li>
+  <li><strong>Đường dẫn đầu ra</strong> — để trống thì tự tạo thư mục theo thời gian, cũng có thể bấm “Chọn đường dẫn” để chỉ định</li>
+</ul>
+
+<figure>
+  <img src="images/训练参数与队列.png" alt="训练参数配置">
+  <figcaption>Hộp thoại cấu hình tham số huấn luyện</figcaption>
+</figure>
+
+<h3>3.2 Hàng đợi huấn luyện</h3>
+
+<p>Sau khi cấu hình xong tham số, ngoài “Bắt đầu huấn luyện”, còn có thể bấm <strong>“Thêm vào hàng đợi”</strong> để treo tác vụ lại, rồi cấu hình tiếp cái kế tiếp. Ở trang chính bấm “Hàng đợi huấn luyện” để mở cửa sổ hàng đợi:</p>
+
+<ul>
+  <li>Hàng đợi thực thi theo thứ tự, Phát hiện / Phân đoạn / Phân loại / Phát hiện bất thường / OCR có thể xếp lẫn nhau, chạy xong một mục tự động chuyển sang mục kế tiếp</li>
+  <li><strong>Lên / Xuống / Loại bỏ</strong> — điều chỉnh thứ tự thực thi hoặc xóa tác vụ</li>
+  <li><strong>Sửa</strong> — sửa tham số của tác vụ đang chọn</li>
+  <li><strong>Dọn mục đã kết thúc</strong> — đưa những bản ghi đã chạy xong ra ngoài</li>
+  <li><strong>Bắt đầu hàng đợi</strong> — thực thi lần lượt các tác vụ trong hàng đợi từ đầu</li>
+</ul>
+
+<div class="note">
+  Hàng đợi phù hợp để treo máy qua đêm: cấu hình một lần các tác vụ của nhiều bộ dữ liệu, phần mềm sẽ tự chạy hết và lưu mô hình riêng cho từng cái.
+</div>
+
+<figure>
+  <img src="images/训练队列查看.png" alt="训练队列">
+  <figcaption>Cửa sổ hàng đợi huấn luyện</figcaption>
+</figure>
+
+<h3>3.3 Tiến độ huấn luyện</h3>
+
+<p>Sau khi bấm “Bắt đầu huấn luyện” và quay về trang chính, phía trên xuất hiện thanh tiến độ và thanh điều khiển:</p>
+
+<ul>
+  <li><strong>Tên tác vụ + tiến độ</strong> — dạng như <code>coco128 Đang huấn luyện 5/100</code>, trong thanh tiến độ hiển thị loss của epoch hiện tại</li>
+  <li><strong>Dừng huấn luyện</strong> — dừng bất cứ lúc nào, phần đã chạy xong sẽ được lưu</li>
+  <li><strong>Thời gian còn lại</strong> — ước lượng ngoại suy theo thời gian đã dùng</li>
+  <li><strong>Bộ nhớ GPU</strong> — tỉ lệ chiếm dụng bộ nhớ GPU, làm mới liên tục</li>
+</ul>
+
+<figure>
+  <img src="images/训练进度_指标_剩余时间_显存用量.png" alt="训练进度">
+  <figcaption>Thanh tiến độ huấn luyện và thanh trạng thái</figcaption>
+</figure>
+
+<h3>3.4 Đường cong huấn luyện</h3>
+
+<p>Trong Quản lý mô hình, chọn một bản ghi huấn luyện, bấm <strong>“Xem chỉ số đầy đủ”</strong> ở bảng chi tiết bên phải, cửa sổ đường cong huấn luyện hiện ra:</p>
+
+<ul>
+  <li>Nửa trên là đường cong <strong>val loss</strong></li>
+  <li>Nửa dưới là nhiều đường cong mAP@50-95 / mAP@50 / AR / F1 / precision / recall..., tác vụ phân đoạn còn thêm một đường mask mAP</li>
+  <li>Hộp thả xuống “Lọc nhãn” ở góc trên bên phải, có thể chuyển xem toàn bộ chỉ số hoặc đường cong của một lớp nào đó</li>
+</ul>
+
+<figure>
+  <img src="images/训练指标查看.png" alt="训练指标">
+  <figcaption>Đường cong chỉ số huấn luyện (val loss + các độ chính xác)</figcaption>
+</figure>
+
+<h2 id="model">4. Quản lý mô hình</h2>
+
+<p>Bấm “Mô hình” ở trang chính để mở Quản lý mô hình: bên trái là danh sách bản ghi huấn luyện, bên phải là bảng chi tiết.</p>
+
+<h3>4.1 Danh sách và lọc</h3>
+
+<ul>
+  <li><strong>Ô tìm kiếm</strong> — lọc theo từ khóa dự án / bộ dữ liệu / nhãn</li>
+  <li><strong>Thả xuống Tác vụ / Trạng thái</strong> — tác vụ chọn được Phát hiện / Phân đoạn / Phân loại / Phát hiện bất thường / Phát hiện văn bản / Nhận dạng văn bản; trạng thái chọn được Đang huấn luyện / Hoàn thành / Thất bại / Đã dừng</li>
+  <li><strong>Chỉ xem cái tốt nhất của mỗi bộ dữ liệu</strong> — cùng một bộ dữ liệu chỉ giữ bản ghi có độ chính xác cao nhất</li>
+  <li>Các cột danh sách: Tác vụ, Bộ dữ liệu·Nhãn, Độ chính xác, Thời gian huấn luyện, Thời gian, Kích thước ảnh, Thao tác</li>
+  <li><strong>Cột độ chính xác có thanh màu</strong> — xanh ≥ 0.8, vàng 0.5 ~ 0.8, đỏ &lt; 0.5. Bản ghi thất bại hoặc đã dừng thì ở cột này hiển thị chữ trạng thái, đưa chuột lên sẽ thấy nguyên nhân thất bại</li>
+  <li>Ba nút trong dòng: <strong>Kiểm thử</strong> (mở kiểm thử mô hình), <strong>Xuất</strong>, <strong>Xóa</strong> (xóa luôn bản ghi huấn luyện tương ứng)</li>
+</ul>
+
+<h3>4.2 Bảng chi tiết</h3>
+
+<p>Bấm vào dòng bất kỳ, bên phải hiển thị đầy đủ tham số của bản ghi này: Tác vụ·Quy mô, Trạng thái, Độ chính xác, Tập huấn luyện / Tập xác thực, Kích thước ảnh, Số epoch / Dừng sớm, Kích thước batch, Tốc độ học, Trình tối ưu, Thiết bị, Nhãn, Thời gian huấn luyện, Thời gian, Đường dẫn mô hình. Phía trên còn có ảnh thu nhỏ của đường cong độ chính xác.</p>
+
+<p>Bốn nút ở đáy bảng:</p>
+
+<ul>
+  <li><strong>Xem chỉ số đầy đủ</strong> — mở cửa sổ đường cong huấn luyện (xem mục “Đường cong huấn luyện”)</li>
+  <li><strong>Kiểm thử mô hình này</strong> — dùng mô hình này để mở hộp thoại kiểm thử (xem mục “Tham số kiểm thử”)</li>
+  <li><strong>Huấn luyện lại theo cấu hình này</strong> — mang ra toàn bộ tham số huấn luyện của bản ghi này, mở lại một lượt huấn luyện mới</li>
+  <li><strong>Mở thư mục mô hình</strong> — định vị tệp trọng số trong trình quản lý tệp</li>
+</ul>
+
+<figure>
+  <img src="images/模型训练记录.png" alt="模型训练记录">
+  <figcaption>Quản lý mô hình: thanh lọc + danh sách bản ghi huấn luyện + bảng chi tiết bên phải</figcaption>
+</figure>
+
+<h3>4.3 Xuất ONNX</h3>
+
+<p>Bấm “Xuất” rồi chọn một thư mục, sẽ tạo ra thư mục “项目_时间戳”:</p>
+
+<ul>
+  <li><strong>Mô hình <code>.onnx</code></strong> — phát hiện và phân đoạn do RF-DETR xuất, phân loại và OCR do torch xuất. Tên theo dạng “项目_任务_图像尺寸_模型规模.onnx”</li>
+  <li><strong><code>classes.txt</code></strong> — bảng đối chiếu id lớp và tên. Giai đoạn nhận dạng của OCR là <code>vocab.txt</code>, mỗi dòng một ký tự chính là từ vựng</li>
+  <li><strong>Báo cáo đánh giá PDF</strong> — tự động chạy một lượt đánh giá trên tập xác thực, dùng lại mẫu của báo cáo kiểm thử, tên theo dạng “…_评估报告.pdf”</li>
+  <li><strong><code>examples/</code></strong> — mã ví dụ C++ / C# / Python gọi ONNX để phát hiện, phân đoạn, phân loại. OCR hiện chỉ có bản Python</li>
+</ul>
+
+<p>Quá trình xuất có thông báo tiến độ. Chuyển đổi ONNX cần cài <code>onnx</code> và <code>onnxsim</code>, nếu chưa cài sẽ có thông báo trong hộp thoại.</p>
+
+<p>Tác vụ phân loại không tạo báo cáo đánh giá — kiểu báo cáo phát hiện sót/phát hiện nhầm không áp dụng cho phân loại. Nhận dạng văn bản của OCR cũng vậy, kết luận của nó chỉ có CER.</p>
+
+<h2 id="test">5. Kiểm thử và báo cáo đánh giá</h2>
+
+<h3>5.1 Tham số kiểm thử</h3>
+
+<p>Trong Quản lý mô hình, bấm “Kiểm thử” trong dòng (hoặc “Kiểm thử mô hình này” ở bảng chi tiết), hộp thoại kiểm thử hiện ra. Phía trên hiển thị thông tin mô hình: loại tác vụ, tệp trọng số, độ chính xác huấn luyện, kích thước đầu vào, quy mô. Bên dưới là tham số:</p>
+
+<ul>
+  <li><strong>Dữ liệu</strong> — chọn được mọi bộ dữ liệu xuyên dự án</li>
+  <li><strong>Thiết bị</strong> — mặc định là GPU khả dụng đầu tiên</li>
+  <li><strong>Độ tin cậy</strong> — dự đoán dưới điểm này bị loại thẳng</li>
+  <li><strong>Ngưỡng IoU</strong> — khung dự đoán và khung chú thích phải đủ mức trùng khớp mới tính là phát hiện đúng</li>
+  <li><strong>Ghi tệp nhãn</strong> — tích vào thì ghi khung dự đoán thành labelme json, tiện cho người kiểm tra lại</li>
+  <li><strong>OCR</strong> — phát hiện văn bản có hai đường là suy luận và đánh giá: suy luận ghi kết quả thành json chú thích, đánh giá thống kê P/R. Nhận dạng văn bản không xuất tệp chú thích, chỉ báo cáo tỉ lệ nhận dạng của đoạn văn bản đã cắt</li>
+</ul>
+
+<div class="note">
+  Khi bộ dữ liệu có chú thích sẽ tự động vào <strong>chế độ đánh giá</strong>, thống kê tỉ lệ phát hiện / phát hiện sót / phát hiện nhầm. Phát hiện văn bản nếu chọn chế độ suy luận thì bỏ qua chú thích, ghi thẳng khung dự đoán thành json.
+</div>
+
+<figure>
+  <img src="images/模型测试与评估.png" alt="模型测试">
+  <figcaption>Cấu hình tham số kiểm thử mô hình</figcaption>
+</figure>
+
+<h3>5.2 Phân tích kết quả</h3>
+
+<p>Kiểm thử chạy xong sẽ hiện cửa sổ phân tích kết quả, thống kê theo hai chiều, dùng từ đều thẳng thắn là <strong>“Phát hiện đúng / Phát hiện sót / Phát hiện nhầm”</strong>:</p>
+
+<ul>
+  <li><strong>Chiều ảnh</strong> (thống kê theo từng ảnh, phát hiện được 1 cái là tính là phát hiện) — số ảnh kiểm thử, ảnh phát hiện được và tỉ lệ phát hiện, ảnh không phát hiện được, ảnh có phát hiện nhầm</li>
+  <li><strong>Chiều chú thích</strong> (thống kê theo khung chú thích) — Phát hiện đúng, Phát hiện sót, Phát hiện nhầm, Độ chính xác</li>
+  <li><strong>Bảng theo lớp</strong> — số chú thích, phát hiện đúng, phát hiện sót, phát hiện nhầm, tỉ lệ phát hiện, độ chính xác của từng lớp</li>
+  <li><strong>Nhận dạng văn bản</strong> — không thống kê theo khung, báo tổng số đoạn văn bản, CER (tỉ lệ lỗi ký tự) và số đoạn đúng hoàn toàn</li>
+  <li><strong>Kết luận ở đáy</strong> — một câu nêu rõ tổng thể nghiêng về phát hiện sót hay phát hiện nhầm, cùng lớp gây ảnh hưởng lớn nhất</li>
+</ul>
+
+<figure>
+  <img src="images/模型结果评估与报告.png" alt="测试结果分析与报告">
+  <figcaption>Cửa sổ phân tích kết quả kiểm thử (chiều ảnh + chiều chú thích + chi tiết theo lớp)</figcaption>
+</figure>
+
+<h3>5.3 Xuất báo cáo PDF</h3>
+
+<p>Bấm “Lưu báo cáo PDF” ở góc dưới bên phải, luồng nền sẽ tạo ra, nội dung gồm:</p>
+
+<ul>
+  <li><strong>Trang tổng quan</strong> — bảng tổng hợp chỉ số + biểu đồ phân bố chú thích</li>
+  <li><strong>Trang mẫu phát hiện sót / Trang mẫu phát hiện nhầm</strong> — hiển thị ảnh thu nhỏ theo “Số mẫu mỗi lớp N ảnh” (chỉnh số lượng ở góc dưới bên trái), trên ảnh dùng khung đỏ đánh dấu vị trí phát hiện sót và phát hiện nhầm, đồng thời ghi rõ tỉ lệ lấy mẫu</li>
+  <li><strong>Trang đề xuất</strong> — đưa ra hướng cải thiện cho từng loại lỗi</li>
+</ul>
+
+<div class="note">
+  Việc lấy mẫu chỉ diễn ra ở bước xuất báo cáo, dữ liệu chi tiết vẫn là toàn bộ, sau này khai thác mẫu khó sẽ không bị mất dữ liệu.
+</div>
+
+<h2 id="ocr">6. OCR</h2>
+
+<p>OCR khác các tác vụ khác: nó được hoàn thành bằng <strong>hai mô hình</strong> nối tiếp nhau — phát hiện văn bản tìm ra ô chữ, nhận dạng văn bản đọc ra chữ trong ô. Huấn luyện, kiểm thử, xuất đều làm riêng hai giai đoạn, trong Quản lý mô hình sẽ để lại hai bản ghi.</p>
+
+<h3>6.1 Chú thích văn bản</h3>
+
+<p>Trong giao diện chú thích, bật công tắc <strong>“Chú thích văn bản”</strong> ở trên cùng, lớp sẽ tự động cố định thành nhãn dành riêng “text” (không cần tạo nhãn trước). Khoanh chữ giống như vẽ hình chữ nhật, thả chuột là hiện ô nhập để ghi nội dung; nhấp đúp vào ô văn bản đã có để sửa bất cứ lúc nào.</p>
+
+<p>Ô văn bản luôn vẽ bằng hình chữ nhật: chữ nghiêng cũng chỉ cần lấy khung ngang trùm lên là được, khi huấn luyện đa giác sẽ bị coi như khung bao ngang, vẽ men theo đường viền không mang lại thêm lợi ích.</p>
+
+<p>labelme json có ô văn bản khi nhập sẽ tự động đánh dấu bộ dữ liệu thành <strong>bộ dữ liệu phát hiện văn bản</strong>. Về sau chỉ những bộ dữ liệu loại này mới xuất hiện trong hộp thả xuống tập huấn luyện của OCR.</p>
+
+<figure>
+  <img src="images/ocr标注.png" alt="OCR 文本标注">
+  <figcaption>Sau khi bật công tắc “Chú thích văn bản” thì kéo khung, thả ra là hiện ô nhập văn bản; “Thông tin chú thích” bên phải liệt kê hình dạng, số đỉnh và diện tích của từng ô văn bản</figcaption>
+</figure>
+
+<p>Chú thích xong quay về chế độ xem bộ dữ liệu, trong bộ dữ liệu OCR mỗi ô văn bản sẽ <strong>được cắt riêng thành một ảnh thu nhỏ</strong>, trên thanh nhãn hiển thị <strong>nội dung chữ</strong> đã ghi trong ô (quá 3 cái thì thu gọn thành <code>+N</code>), chứ không phải tên lớp — lật từng ảnh là kiểm tra được nội dung ghi đúng hay chưa. Trong bộ lọc lớp phía trên chỉ có một mục là “text”.</p>
+
+<figure>
+  <img src="images/ocr标注显示.png" alt="OCR 数据集缩略图显示文字内容">
+  <figcaption>Bộ dữ liệu OCR: mỗi ô văn bản thành một ảnh riêng, thanh nhãn hiển thị nội dung chữ đã ghi (vượt quá thì thu gọn thành +N)</figcaption>
+</figure>
+
+<h3>6.2 Huấn luyện</h3>
+
+<p>Loại tác vụ chọn <strong>OCR</strong>.</p>
+
+<p>Kích thước ảnh là đầu vào của giai đoạn phát hiện (mặc định 1024, phải là bội số của 32); giai đoạn nhận dạng cố định <code>32×128</code>, không bị mục này ảnh hưởng.</p>
+
+<p>Sau khi bấm “Bắt đầu huấn luyện” sẽ tự động tách thành hai mục xếp hàng: phát hiện văn bản trước, rồi nhận dạng văn bản. Mục trước chạy xong, phải đợi bộ nhớ GPU hạ về mức trước khi huấn luyện mới khởi động mục kế tiếp, trong khoảng thời gian đó vùng tiến độ hiển thị “Đang đợi giải phóng bộ nhớ GPU · Mục tiếp theo: Nhận dạng văn bản”, ở giữa không bị bỏ trống.</p>
+
+<figure>
+  <img src="images/ocr训练.png" alt="OCR 训练参数">
+  <figcaption>Tham số huấn luyện của OCR (trong hình đánh dấu là giai đoạn “Phát hiện văn bản”); Mô hình tức là mức nano ~ large, cột Kiến trúc do thuật toán tự quyết định, bị làm xám không sửa được</figcaption>
+</figure>
+
+<div class="note">
+  Từ vựng của giai đoạn nhận dạng lấy trực tiếp các ký tự đã xuất hiện trong chú thích. Vì vậy chú thích văn bản phải bao phủ bộ ký tự thực tế sẽ gặp ngoài hiện trường — ký tự có ngoài hiện trường mà chưa từng xuất hiện trong chú thích thì mô hình không nhận ra được.
+</div>
+
+<h3>6.3 Kiểm thử: phát hiện hai đường, nhận dạng một đường</h3>
+
+<ul>
+  <li><strong>Phát hiện văn bản · Suy luận</strong> — không đối chiếu chú thích, ghi thẳng khung dự đoán (kèm chữ nhận dạng được) thành labelme json. Json ghi ra mang cờ OCR, kéo trở lại phần mềm sẽ được nhận là bộ dữ liệu phát hiện văn bản, dùng được để đối chiếu kết quả hoặc chú thích bổ sung</li>
+  <li><strong>Phát hiện văn bản · Đánh giá</strong> — tự động vào khi bộ dữ liệu có chú thích, thống kê phát hiện đúng / phát hiện sót / phát hiện nhầm và P/R theo lớp, giống tác vụ phát hiện</li>
+  <li><strong>Nhận dạng văn bản</strong> — lấy đoạn văn bản được cắt ra từ khung chú thích để kiểm thử, báo tổng số đoạn văn bản, CER (tỉ lệ lỗi ký tự) và số đoạn đúng hoàn toàn, không xuất tệp chú thích</li>
+</ul>
+
+<h3>6.4 Xuất</h3>
+
+<p>Hai giai đoạn mỗi giai đoạn xuất một bản ONNX: <code>项目_字符检测_尺寸_规模.onnx</code> và <code>项目_字符识别_尺寸_规模.onnx</code>, giai đoạn nhận dạng mang thêm một từ vựng <code>vocab.txt</code>.</p>
+
+<p>Phát hiện văn bản vẫn tạo báo cáo đánh giá như thường; nhận dạng văn bản chỉ có một kết luận là CER, không tạo báo cáo.</p>
+
+<p>Ví dụ gọi nằm ở <code>examples/python/ocr.py</code> trong thư mục xuất. Lưu ý logits đầu ra của giai đoạn phát hiện chưa qua sigmoid, phần hậu xử lý phải tự viết, trong ví dụ đã viết sẵn hết.</p>
+
+<h2 id="log">7. Nhật ký</h2>
+
+<p>Bấm “Nhật ký” ở phía trên trang chính để mở cửa sổ nhật ký, hiển thị cuộn liên tục theo thời gian thực:</p>
+
+<ul>
+  <li>Phần mềm khởi động / thoát</li>
+  <li>Tạo, đổi tên, xóa, nhập / xuất dự án và bộ dữ liệu</li>
+  <li>Tạo, đổi tên, xóa nhãn</li>
+  <li>Bắt đầu, đang chạy huấn luyện (<code>[train]</code> tiền tố chuyển tiếp đầu ra của tiến trình con), cập nhật chỉ số, lưu mô hình, dừng thủ công</li>
+  <li>Khởi động, đang chạy (<code>[test]</code> tiền tố), hoàn thành, thất bại của kiểm thử</li>
+</ul>
+
+<figure>
+  <img src="images/日志.png" alt="日志窗口">
+  <figcaption>Cửa sổ nhật ký</figcaption>
+</figure>
+
+<hr style="margin-top:48px; border:none; border-top:1px solid #dde1ea;">
+
+</body>
+</html>
