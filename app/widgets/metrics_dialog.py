@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """训练指标折线图对话框: 指标来自 metrics/<train_id>.json, 旧记录退回内嵌字段."""
 
+import os
 import re
 
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
@@ -11,8 +12,28 @@ from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel,
 
 from app.core import theme
 from app.core.db import load_train_metrics
+from app.core.metrics import series_from_csv
 from app.core.utils import setup_matplotlib_chinese
 from app.widgets.combo_utils import style_combo
+
+
+def load_run_series(record, db_path=None):
+    """
+    一次训练用于画图的曲线: 优先训练目录里的 metrics.csv(rf-detr 真源).
+    指标 json 只是训练中的节流快照, 可能缺列或缺尾轮; 分类没有 csv, 只会走 json.
+    返回扁平的 series 字典({"epochs": [...], "mAP@50": [...]}), 取不到给 {}.
+    """
+    model_path = record.get("model_path") or ""
+    csv_path = (os.path.join(os.path.dirname(model_path), "metrics.csv")
+                if model_path else "")
+    if csv_path and os.path.isfile(csv_path):
+        s = series_from_csv(csv_path)
+        if s.get("epochs"):
+            return s
+    try:
+        return (load_train_metrics(record, db_path) or {}).get("series") or {}
+    except Exception:
+        return {}
 
 
 def _muted_style(size=13):

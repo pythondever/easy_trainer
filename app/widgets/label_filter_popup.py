@@ -9,6 +9,7 @@ from PySide6.QtGui import (QColor, QFont, QFontMetrics, QPainter, QPainterPath,
                            QPen, QPolygonF)
 from PySide6.QtWidgets import QApplication, QToolButton, QWidget
 from app.core import theme
+from app.widgets.check_chip import paint_dot, paint_mark
 
 BTN_H = 32
 BTN_PAD = 12
@@ -42,18 +43,11 @@ SEP = "#31353f"
 TEXT = theme.hexof("text")
 TEXT_SUB = theme.hexof("text_3")
 TEXT_DIM = "#55555e"
-HOVER_BG = "#2b2f3b"
+HOVER_BG = theme.hexof("hover_chip")
 TRACK = "#1e1e26"
 SLIDER = "#55555f"
 SLIDER_HOVER = "#6a6a75"
-CHECK_BORDER = "#464d5e"
-CHECK_BORDER_HOVER = "#5a6379"
 ARROW_DIM = theme.hexof("border_strong")
-
-
-def _is_dark(color):
-    """深色圆点(未标注的黑块)在深底上看不见, 需要补一圈描边."""
-    return QColor(color).lightness() < 40
 
 
 class LabelFilterButton(QToolButton):
@@ -117,17 +111,8 @@ class LabelFilterButton(QToolButton):
         p.drawPath(path)
 
         cy = rect.center().y() + 0.5
-        dot = QRectF(rect.x() + BTN_PAD, cy - DOT / 2.0, DOT, DOT)
-        fill = QColor(self._color)
-        if self._dim:
-            fill.setAlpha(110)
-        p.setPen(Qt.NoPen)
-        p.setBrush(fill)
-        p.drawEllipse(dot)
-        if _is_dark(self._color):
-            p.setPen(QPen(QColor(CHECK_BORDER), 1))
-            p.setBrush(Qt.NoBrush)
-            p.drawEllipse(dot)
+        paint_dot(p, rect.x() + BTN_PAD + DOT / 2.0, cy, self._color,
+                  self._dim)
 
         avail = (rect.width() - 2 * BTN_PAD - DOT - BTN_GAP
                  - BTN_GAP - BTN_ARROW)
@@ -472,8 +457,7 @@ class LabelFilterPanel(QWidget):
                    Qt.AlignVCenter | Qt.AlignLeft, text)
         self._paint_status(p, fm, tx + fm.horizontalAdvance(text) + 8,
                            mark_cx - CHECK / 2.0 - 10)
-        self._paint_mark(p, mark_cx, cy, ALL_COLOR, self._all_selected(),
-                         hovered)
+        paint_mark(p, mark_cx, cy, ALL_COLOR, self._all_selected(), hovered)
 
     def _paint_status(self, p, fm, left, right):
         if self._all_selected():
@@ -500,14 +484,7 @@ class LabelFilterPanel(QWidget):
             p.drawRoundedRect(QRectF(rect).adjusted(0, 1, -1, -1), 5, 5)
 
         cy = rect.center().y() + 0.5
-        dot = QRectF(rect.x() + 2, cy - DOT / 2.0, DOT, DOT)
-        p.setPen(Qt.NoPen)
-        p.setBrush(QColor(color))
-        p.drawEllipse(dot)
-        if _is_dark(color):
-            p.setPen(QPen(QColor(CHECK_BORDER), 1))
-            p.setBrush(Qt.NoBrush)
-            p.drawEllipse(dot)
+        paint_dot(p, rect.x() + 2 + DOT / 2.0, cy, color)
 
         mark_limit = rect.right() - 2 - CHECK   # 勾选框左边界最远只能到这儿
         tx = rect.x() + 2 + DOT + 6
@@ -520,28 +497,7 @@ class LabelFilterPanel(QWidget):
         p.setPen(QColor(TEXT))
         p.drawText(QRectF(tx, rect.y(), avail, rect.height()),
                    Qt.AlignVCenter | Qt.AlignLeft, text)
-        self._paint_mark(p, mark_cx, cy, color, checked, hovered)
-
-    @staticmethod
-    def _paint_mark(p, cx, cy, color, checked, hovered):
-        mark = QRectF(cx - CHECK / 2.0, cy - CHECK / 2.0, CHECK, CHECK)
-        if checked:
-            p.setPen(Qt.NoPen)
-            p.setBrush(QColor(color))
-            p.drawEllipse(mark)
-            pen = QPen(QColor("#ffffff"), 1.8)
-            pen.setCapStyle(Qt.RoundCap)
-            pen.setJoinStyle(Qt.RoundJoin)
-            p.setPen(pen)
-            p.setBrush(Qt.NoBrush)
-            p.drawPolyline(QPolygonF([
-                QPointF(cx - 3.4, cy), QPointF(cx - 1.0, cy + 2.5),
-                QPointF(cx + 3.5, cy - 2.4)]))
-            return
-        border = CHECK_BORDER_HOVER if hovered else CHECK_BORDER
-        p.setPen(QPen(QColor(border), 1.5))
-        p.setBrush(Qt.NoBrush)
-        p.drawEllipse(mark)
+        paint_mark(p, mark_cx, cy, color, checked, hovered)
 
     def _paint_scroll(self, p):
         geo = self._geo

@@ -927,6 +927,8 @@ QDialog#TrainDialog QWidget#lr_wrap,
 QDialog#TrainDialog QWidget#img_wrap,
 QDialog#TrainDialog QWidget#grad_wrap,
 QDialog#TrainDialog QWidget#section_out_wrap,
+QDialog#TrainDialog QWidget#section_aug_wrap,
+QDialog#TrainDialog QWidget#aug_body,
 QDialog#TestDialog QWidget#conf_wrap,
 QDialog#TestDialog QWidget#iou_wrap,
 QDialog#TestDialog QWidget#out_wrap {
@@ -982,6 +984,49 @@ QFrame#button_line {
 }
 QFrame#button_line { margin-top: 2px; }
 QLabel#dialogConfirmPrompt { font-size: {{font_xl}}; }
+
+/* 数据增强勾选区：只剩折叠箭头与启用计数徽标.
+   勾选项本身是 CheckChip 自绘的, 不经过 QSS */
+QToolButton[class~="augToggle"] {
+    background-color: transparent;
+    border: none;
+    padding: 0;
+    min-width: 18px;
+    max-width: 18px;
+    min-height: 18px;
+    max-height: 18px;
+    color: {{text_2}};
+}
+QToolButton[class~="augToggle"]:hover { color: {{accent_text}}; }
+QLabel[class~="augCount"] {
+    background-color: {{bg_base}};
+    color: {{text_3}};
+    border: 1px solid {{border_subtle}};
+    border-radius: {{r_sm}};
+    padding: 1px 9px;
+    font-size: {{font_md}};
+}
+QLabel[class~="augCount"][on="true"] {
+    background-color: {{accent_dim}};
+    color: {{accent_text}};
+    border-color: {{accent_dim}};
+}
+QLabel[class~="augCount"][on="true"]:disabled {
+    background-color: {{bg_base}};
+    color: {{text_3}};
+    border-color: {{border_subtle}};
+}
+QLabel[class~="augGroupTitle"] {
+    color: {{text_2}};
+    font-size: {{font_md}};
+    font-weight: 600;
+}
+QLabel[class~="augGroupTip"] {
+    color: {{text_3}};
+    font-size: {{font_md}};
+}
+QLabel[class~="augGroupTitle"]:disabled,
+QLabel[class~="augGroupTip"]:disabled { color: {{text_3}}; }
 
 /* ---------------- 模型管理对话框 ---------------- */
 QDialog#ModelDialog { background-color: {{bg_panel}}; }

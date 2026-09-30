@@ -15,10 +15,12 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QDialog,
-    QFormLayout, QFrame, QHBoxLayout, QLabel,
-    QLineEdit, QPushButton, QScrollArea, QSizePolicy,
-    QSpacerItem, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QComboBox, QDialog, QFormLayout,
+    QFrame, QHBoxLayout, QLabel, QLineEdit,
+    QPushButton, QScrollArea, QSizePolicy, QSpacerItem,
+    QVBoxLayout, QWidget)
+
+from app.widgets.check_chip import CheckChip
 
 class Ui_TestDialog(object):
     def setupUi(self, TestDialog):
@@ -248,7 +250,7 @@ class Ui_TestDialog(object):
         self.out_wrap_layout.setSpacing(10)
         self.out_wrap_layout.setObjectName(u"out_wrap_layout")
         self.out_wrap_layout.setContentsMargins(0, 0, 0, 0)
-        self.output_label_file_checkBox = QCheckBox(self.out_wrap)
+        self.output_label_file_checkBox = CheckChip(self.out_wrap)
         self.output_label_file_checkBox.setObjectName(u"output_label_file_checkBox")
 
         self.out_wrap_layout.addWidget(self.output_label_file_checkBox)
@@ -352,7 +354,7 @@ class Ui_TestDialog(object):
         self.iou_note.setText(QCoreApplication.translate("TestDialog", u"\u4e0e\u6807\u6ce8\u6846\u91cd\u5408\u5ea6\u8fbe\u6807\u624d\u7b97\u6b63\u786e\u68c0\u51fa", None))
         self.output_label_label.setText(QCoreApplication.translate("TestDialog", u"\u8f93\u51fa\u6807\u7b7e\u6587\u4ef6", None))
         self.output_label_file_checkBox.setText("")
-        self.out_note.setText(QCoreApplication.translate("TestDialog", u"\u4f1a\u5728\u56fe\u50cf\u8def\u5f84\u4e0b\u8f93\u51fa\u6807\u7b7e\u6587\u4ef6, \u53ef\u91cd\u8f7d\u6570\u636e\u96c6\u67e5\u770b\u68c0\u51fa\u6548\u679c", None))
+        self.out_note.setText(QCoreApplication.translate("TestDialog", u"\u5199\u5728\u56fe\u50cf\u76ee\u5f55\u4e0b, \u53ef\u91cd\u8f7d\u6570\u636e\u96c6\u67e5\u770b\u68c0\u51fa\u6548\u679c", None))
         self.summary_icon.setText(QCoreApplication.translate("TestDialog", u"i", None))
         self.summary_text.setText(QCoreApplication.translate("TestDialog", u"\u8bf7\u9009\u62e9\u6570\u636e\u96c6", None))
         self.cancel_btn.setText(QCoreApplication.translate("TestDialog", u"\u53d6\u6d88", None))

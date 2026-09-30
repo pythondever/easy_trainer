@@ -591,6 +591,115 @@
         </layout>
       </item>
       <item>
+        <widget class="QWidget" name="section_aug_wrap" native="true">
+          <layout class="QHBoxLayout" name="section_aug_layout">
+            <property name="spacing">
+              <number>10</number>
+            </property>
+            <property name="leftMargin">
+              <number>0</number>
+            </property>
+            <property name="topMargin">
+              <number>0</number>
+            </property>
+            <property name="rightMargin">
+              <number>0</number>
+            </property>
+            <property name="bottomMargin">
+              <number>0</number>
+            </property>
+            <item>
+              <widget class="QToolButton" name="aug_toggle_btn">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="cursor">
+                 <cursorShape>PointingHandCursor</cursorShape>
+                </property>
+                <property name="focusPolicy">
+                 <enum>Qt::NoFocus</enum>
+                </property>
+                <property name="arrowType">
+                 <enum>Qt::RightArrow</enum>
+                </property>
+                <property name="checkable">
+                 <bool>true</bool>
+                </property>
+                <property name="checked">
+                 <bool>false</bool>
+                </property>
+                <property name="class" stdset="0">
+                 <string notr="true">augToggle</string>
+                </property>
+              </widget>
+            </item>
+            <item>
+              <widget class="QLabel" name="group_aug_title">
+                <property name="text">
+                  <string>数据增强</string>
+                </property>
+                <property name="class" stdset="0">
+                  <string notr="true">dialogSectionTitle</string>
+                </property>
+              </widget>
+            </item>
+            <item>
+              <widget class="QFrame" name="group_aug_line">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="frameShape">
+                  <enum>QFrame::HLine</enum>
+                </property>
+                <property name="frameShadow">
+                  <enum>QFrame::Sunken</enum>
+                </property>
+                <property name="class" stdset="0">
+                 <string notr="true">dialogSectionLine</string>
+                </property>
+              </widget>
+            </item>
+            <item>
+              <widget class="QLabel" name="aug_count_label">
+                <property name="text">
+                  <string />
+                </property>
+                <property name="class" stdset="0">
+                 <string notr="true">augCount</string>
+                </property>
+              </widget>
+            </item>
+          </layout>
+        </widget>
+      </item>
+      <item>
+        <widget class="QWidget" name="aug_body" native="true">
+          <layout class="QVBoxLayout" name="aug_body_layout">
+            <property name="spacing">
+              <number>7</number>
+            </property>
+            <property name="leftMargin">
+              <number>0</number>
+            </property>
+            <property name="topMargin">
+              <number>0</number>
+            </property>
+            <property name="rightMargin">
+              <number>0</number>
+            </property>
+            <property name="bottomMargin">
+              <number>0</number>
+            </property>
+          </layout>
+        </widget>
+      </item>
+      <item>
         <widget class="QWidget" name="section_out_wrap" native="true">
           <layout class="QHBoxLayout" name="section_out_layout">
             <property name="spacing">

@@ -10,13 +10,13 @@ import os
 from PySide6.QtCore import Qt, QTimer, Signal
 from PySide6.QtCore import QCoreApplication as QC
 from PySide6.QtGui import QFontMetrics
-from PySide6.QtWidgets import (QCheckBox, QDialog, QFileDialog, QFrame,
-                               QHBoxLayout, QLabel, QMenu, QProgressBar,
-                               QPushButton)
+from PySide6.QtWidgets import (QDialog, QFileDialog, QFrame, QHBoxLayout,
+                               QLabel, QMenu, QProgressBar, QPushButton)
 
 from app.core import model_assets
 from app.core.log import write_log
 from app.core.model_download import ModelDownloader
+from app.widgets.check_chip import CheckChip
 from app.widgets.dialog_buttons import apply_icon
 from app.widgets.message_box import MessageBox
 from app.widgets.status_style import task_text
@@ -75,7 +75,7 @@ class _ModelRow(QFrame):
         lay.setContentsMargins(12, 0, 12, 0)
         lay.setSpacing(10)
 
-        self.check = QCheckBox()
+        self.check = CheckChip()
         self.check.setProperty("class", "modelCheck")
         self.check.setCursor(Qt.PointingHandCursor)
         lay.addWidget(self.check)

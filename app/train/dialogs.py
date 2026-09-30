@@ -8,14 +8,16 @@ import uuid
 from datetime import datetime
 from importlib.util import find_spec
 
-from PySide6.QtCore import Qt, QTimer, QThread, Signal
+from PySide6.QtCore import Qt, QTimer, QThread, Signal, QEvent
 from PySide6.QtCore import QCoreApplication as QC
 from PySide6.QtCore import QT_TRANSLATE_NOOP
 from PySide6.QtGui import QIntValidator, QDoubleValidator
 from PySide6.QtWidgets import (QDialog, QLabel, QFileDialog, QComboBox,
-                               QPushButton, QVBoxLayout)
+                               QPushButton, QVBoxLayout, QHBoxLayout,
+                               QGridLayout, QWidget)
 from PySide6.QtGui import QStandardItem
 
+from app.widgets.check_chip import CheckChip
 from app.widgets.combo_utils import style_combo
 from app.widgets.dialog_buttons import apply_icon
 from app.widgets.message_box import MessageBox
@@ -24,6 +26,7 @@ from app.widgets.status_style import task_text
 from app.widgets.model_manager_dialog import ensure_weight
 from app.widgets.dialog_fit import fit_dialog_height
 from app.core import i18n
+from app.core import theme
 from app.core.db import get_paths
 from app.core.log import write_log
 from app.train import ad_common as adc
@@ -52,6 +55,74 @@ def collect_dataset_labels(db, ds_pairs):
 BEST_CKPT = {"classify": "checkpoint_best.pth", "ad": adc.MODEL_FILE}
 BEST_CKPT_DEFAULT = "checkpoint_best_ema.pth"
 BEST_CKPT_CNN = os.path.join("weights", "best.pt")
+
+# 数据增强勾选项: (所属分组, 代号, 名称, 括号里的参数). 界面只存代号串(逗号分隔),
+# 由训练 runner 展开成各自后端的增强参数(rf-detr 是 aug_config, YOLO 是超参) ——
+# GUI 进程不导入 rfdetr, 否则启动要多等一两秒
+AUG_GROUPS = (
+    ("geo", QT_TRANSLATE_NOOP("TrainDialog", "几何变换"),
+     QT_TRANSLATE_NOOP("TrainDialog", "标注框会跟着一起变换")),
+    ("pix", QT_TRANSLATE_NOOP("TrainDialog", "像素变换"),
+     QT_TRANSLATE_NOOP("TrainDialog", "只改画面，标注框不动")),
+)
+AUG_ITEMS = (
+    ("geo", "hflip", QT_TRANSLATE_NOOP("TrainDialog", "水平翻转"),
+     QT_TRANSLATE_NOOP("TrainDialog", "0.5")),
+    ("geo", "vflip", QT_TRANSLATE_NOOP("TrainDialog", "垂直翻转"),
+     QT_TRANSLATE_NOOP("TrainDialog", "0.5")),
+    ("geo", "rotate", QT_TRANSLATE_NOOP("TrainDialog", "旋转"),
+     QT_TRANSLATE_NOOP("TrainDialog", "±15°")),
+    ("geo", "affine", QT_TRANSLATE_NOOP("TrainDialog", "仿射"),
+     QT_TRANSLATE_NOOP("TrainDialog", "±20%")),
+    ("geo", "mosaic", QT_TRANSLATE_NOOP("TrainDialog", "马赛克"),
+     QT_TRANSLATE_NOOP("TrainDialog", "4 图拼接")),
+    ("pix", "brightness", QT_TRANSLATE_NOOP("TrainDialog", "亮度/对比度"),
+     QT_TRANSLATE_NOOP("TrainDialog", "±0.1")),
+    ("pix", "colorjitter", QT_TRANSLATE_NOOP("TrainDialog", "颜色抖动"),
+     QT_TRANSLATE_NOOP("TrainDialog", "饱和/色相")),
+    ("pix", "blur", QT_TRANSLATE_NOOP("TrainDialog", "高斯模糊"),
+     QT_TRANSLATE_NOOP("TrainDialog", "核 3")),
+    ("pix", "noise", QT_TRANSLATE_NOOP("TrainDialog", "高斯噪声"),
+     QT_TRANSLATE_NOOP("TrainDialog", "σ 0.05")),
+)
+AUG_COUNT_FMT = QT_TRANSLATE_NOOP("TrainDialog", "已启用 {} 项")
+AUG_UNAVAILABLE = QT_TRANSLATE_NOOP(
+    "TrainDialog", "该任务不支持配置数据增强")
+AUG_ITEM_UNAVAILABLE = QT_TRANSLATE_NOOP(
+    "TrainDialog", "当前网络架构不支持该增强")
+
+# 勾选项由哪套后端执行: Transformer 走 rf-detr(kornia), CNN 走 YOLO(ultralytics 超参).
+# 没列进来的两边都能用. 马赛克只有 YOLO 有; 模糊/噪声只有 kornia 有
+AUG_BOTH = ("transformer", "cnn")
+AUG_FAMILIES = {
+    "mosaic": ("cnn",),
+    "blur": ("transformer",),
+    "noise": ("transformer",),
+}
+# 后端独有项在另一套后端下整张卡片不显示, 其余后端用不上的项置灰
+AUG_HIDE_WHEN_UNSUPPORTED = ("mosaic",)
+# 对勾按分组取主题色, 一眼分得出这项属于几何还是像素
+AUG_TINT = {"geo": "accent", "pix": "st_info"}
+
+# 改造前的记录里存的是单档预设代号, 回填时展开成勾选组合, 否则老记录打开是空的
+AUG_LEGACY = {
+    "off": (),
+    "default": ("hflip",),
+    "conservative": ("hflip", "brightness"),
+    "industrial": ("hflip", "brightness", "blur", "noise"),
+    "aggressive": ("hflip", "vflip", "rotate", "affine", "colorjitter"),
+}
+
+
+def parse_aug_codes(value):
+    """记录里的增强值 → 勾选代号集合: 新值是逗号串, 旧值是单档预设代号."""
+    text = str(value or "").strip().lower()
+    if not text:
+        return set()
+    if text in AUG_LEGACY:
+        return set(AUG_LEGACY[text])
+    known = {code for _g, code, _n, _p in AUG_ITEMS}
+    return {c for c in (x.strip() for x in text.split(",")) if c in known}
 
 
 def best_ckpt_name(config):
@@ -109,6 +180,7 @@ def make_train_record(config, db, project_fallback=""):
         "metrics_epochs": 0,
         "labels": collect_dataset_labels(db, ds_pairs),
         "device": config.get("device", ""),
+        "aug": config.get("aug", ""),
     }
 
 
@@ -132,6 +204,7 @@ def params_to_record(params):
         "device": params.get("device", ""),
         "optimizer": params.get("optimizer", ""),
         "output_path": params.get("out_root", ""),
+        "aug": params.get("aug", ""),
     }
 
 
@@ -254,6 +327,7 @@ def make_train_config(db, params):
         "early_stop": params.get("early_stop", 20),
         "lr": params.get("lr", 1e-4),
         "img_size": params.get("img_size", 640),
+        "aug": params.get("aug", ""),
         "datasets": datasets,
         # 子进程按它装翻译, 少了这行日志只会出中文
         "language": i18n.current(),
@@ -471,6 +545,7 @@ class TrainDialog(QDialog):
         self._preset_record = preset_record
         self.queue_edit_qid = None   # 队列面板"编辑"时回填用: 保存即更新该队列项
         self._pending_device = None   # 设备列表探测期间没回填上的设备串
+        self._aug_checks = {}      # 增强代号 -> 勾选框
         self._build()
 
     def closeEvent(self, event):
@@ -488,6 +563,8 @@ class TrainDialog(QDialog):
         self._fill_defaults()
         self._fix_heights()
         self._connect()
+        # toggled 只在状态变的时候发, 初始的折叠态得手动套一次
+        self._toggle_aug(self.ui.aug_toggle_btn.isChecked())
         self._fit_content()
         fit_dialog_height(self)
 
@@ -585,6 +662,8 @@ class TrainDialog(QDialog):
         self.ui.start_train.clicked.connect(self._on_start_train)
         self.ui.add_queue_btn.clicked.connect(self._on_add_to_queue)
         self.ui.select_output_path_btn.clicked.connect(self._select_output_dir)
+        self.ui.aug_toggle_btn.toggled.connect(self._toggle_aug)
+        self.ui.section_aug_wrap.installEventFilter(self)
         apply_icon(self.ui.cancel_btn, self.tr("取消"))
         self.ui.cancel_btn.clicked.connect(self.reject)
 
@@ -701,6 +780,7 @@ class TrainDialog(QDialog):
         self._fill_arch_combo()
         self._fill_network_combo()
         self._fill_optimizer()
+        self._build_aug_items()
         self.ui.task_combo.setCurrentIndex(0)  # 默认检测
         self.ui.task_combo.currentIndexChanged.connect(self._on_task_changed)
         self.ui.arch_combo.currentIndexChanged.connect(self._on_arch_changed)
@@ -809,6 +889,155 @@ class TrainDialog(QDialog):
             if it is not None:
                 it.setTextAlignment(Qt.AlignHCenter)
 
+    def _build_aug_items(self):
+        """按 AUG_ITEMS 现场搭勾选项: 文案全部走 tr(), 换语言不用重排 XML."""
+        body = getattr(self.ui, "aug_body", None)
+        if body is None:
+            return
+        lay = body.layout()
+        while lay.count():
+            item = lay.takeAt(0)
+            w = item.widget()
+            if w is not None:
+                w.setParent(None)
+        self._aug_checks = {}
+
+        for gid, gname, gtip in AUG_GROUPS:
+            head = QWidget(body)
+            hl = QHBoxLayout(head)
+            hl.setContentsMargins(0, 0, 0, 0)
+            hl.setSpacing(8)
+            title = QLabel(self.tr(gname), head)
+            title.setProperty("class", "augGroupTitle")
+            tip = QLabel(self.tr(gtip), head)
+            tip.setProperty("class", "augGroupTip")
+            hl.addWidget(title)
+            hl.addWidget(tip)
+            hl.addStretch(1)
+            lay.addWidget(head)
+
+            grid = QGridLayout()
+            grid.setHorizontalSpacing(7)
+            grid.setVerticalSpacing(7)
+            lay.addLayout(grid)
+            row = 0
+            col = 0
+            for g, code, name, param in AUG_ITEMS:
+                if g != gid:
+                    continue
+                chk = CheckChip(body, check=theme.color(AUG_TINT[gid]))
+                chk.setText("{}({})".format(self.tr(name),
+                                            self.tr(param)))
+                chk.toggled.connect(self._on_aug_toggled)
+                # 不撑满格子: 拉满的话悬停底色会横铺大半行
+                grid.addWidget(chk, row, col, Qt.AlignLeft | Qt.AlignVCenter)
+                self._aug_checks[code] = chk
+                col += 1
+                if col >= 2:
+                    col = 0
+                    row += 1
+
+        self._set_aug_enabled()
+        self._refresh_aug_badge()
+
+    def _aug_backend(self):
+        """增强交给哪套后端: Transformer 是 rf-detr(kornia), CNN 是 YOLO(ultralytics)."""
+        return "cnn" if self._arch() == "cnn" else "transformer"
+
+    def _aug_available(self):
+        """分类(resnet)/异常检测(anomalib)/OCR(docTR) 的训练 runner 都不读增强代号."""
+        return self._task() in ("detect", "segment")
+
+    def _aug_item_ok(self, code):
+        return self._aug_backend() in AUG_FAMILIES.get(code, AUG_BOTH)
+
+    def _checked_aug_codes(self):
+        """只留当前后端吃得下的代号, 存进记录的和实际生效的才是同一份."""
+        return [c for c, chk in self._aug_checks.items()
+                if chk.isChecked() and self._aug_item_ok(c)]
+
+    def _aug_value(self):
+        """勾选代号串(逗号分隔); 整块不可用时按"不增强"记录."""
+        if not self._aug_available():
+            return ""
+        return ",".join(self._checked_aug_codes())
+
+    def _set_aug_checks(self, value):
+        """回填勾选: 新记录是逗号串, 改造前的老记录是单档预设代号, 两种都认."""
+        codes = parse_aug_codes(value)
+        for code, chk in self._aug_checks.items():
+            chk.blockSignals(True)
+            chk.setChecked(code in codes)
+            chk.blockSignals(False)
+        self._refresh_aug_badge()
+
+    def _set_aug_enabled(self):
+        """整块不可用(任务不吃)就全灰; 整块可用时再按后端逐项分.
+
+        不可用只改可用性和可见性, 勾选留着 —— 切回原来那套还是原样.
+        """
+        body = getattr(self.ui, "aug_body", None)
+        if body is None:
+            return
+        ok = self._aug_available()
+        tip = "" if ok else self.tr(AUG_UNAVAILABLE)
+        # 折叠态下 body 是隐藏的, 提示得同时挂在标题行上
+        for name in ("aug_body", "section_aug_wrap", "aug_toggle_btn",
+                     "group_aug_title", "aug_count_label"):
+            w = getattr(self.ui, name, None)
+            if w is not None:
+                w.setEnabled(ok)
+                w.setToolTip(tip)
+        for code, chk in self._aug_checks.items():
+            usable = ok and self._aug_item_ok(code)
+            chk.setVisible(code not in AUG_HIDE_WHEN_UNSUPPORTED
+                           or self._aug_item_ok(code))
+            chk.setEnabled(usable)
+            chk.setToolTip("" if usable else self.tr(AUG_ITEM_UNAVAILABLE))
+        self._refresh_aug_badge()
+        # 马赛克卡片会随架构显示/隐藏, 内容高度跟着变
+        self._fit_content()
+
+    def _toggle_aug(self, expand):
+        """折叠只改可见性, 勾选状态留着."""
+        body = getattr(self.ui, "aug_body", None)
+        btn = getattr(self.ui, "aug_toggle_btn", None)
+        if body is None or btn is None:
+            return
+        body.setVisible(bool(expand))
+        btn.setArrowType(Qt.DownArrow if expand else Qt.RightArrow)
+        self._fit_content()
+
+    def eventFilter(self, obj, event):
+        """标题行整行可点: 只有左边箭头是小按钮, 点标题或分隔线在这里补一次切换."""
+        if (obj is getattr(self.ui, "section_aug_wrap", None)
+                and event.type() == QEvent.MouseButtonRelease):
+            btn = getattr(self.ui, "aug_toggle_btn", None)
+            if (btn is not None and btn.isEnabled()
+                    and obj.childAt(event.position().toPoint()) is not btn):
+                btn.setChecked(not btn.isChecked())
+        return super().eventFilter(obj, event)
+
+    def _on_aug_toggled(self):
+        # 勾选态由 CheckChip 自绘, 这里只管计数
+        self._refresh_aug_badge()
+
+    def _refresh_aug_badge(self):
+        label = getattr(self.ui, "aug_count_label", None)
+        if label is None:
+            return
+        count = len(self._checked_aug_codes())
+        label.setText(self.tr(AUG_COUNT_FMT).format(count))
+        label.setProperty("on", "true" if count else "false")
+        self._repolish(label)
+
+    @staticmethod
+    def _repolish(widget):
+        """动态属性改完要让样式重算, 否则得等下一次重绘才变."""
+        widget.style().unpolish(widget)
+        widget.style().polish(widget)
+        widget.update()
+
     def _on_task_changed(self):
         self.ui.task_badge.setText(self._task_text())
         self._apply_task_ui()
@@ -840,6 +1069,7 @@ class TrainDialog(QDialog):
         over = {} if task == "classify" else self.ARCH_DEFAULTS.get(self._arch(), {})
         self.ui.grad_accum_line_txt.setEnabled(task != "classify")
         self._set_ad_fields_enabled(task)
+        self._set_aug_enabled()
         self.ui.epochs_line_txt.setText(str(epochs))
         self.ui.lr_line_txt.setText(str(over.get("lr", lr)))
         self.ui.img_size_line_txt.setText(str(over.get("img_size", img)))
@@ -1005,6 +1235,7 @@ class TrainDialog(QDialog):
             _set_combo("network_combo", rec.get("model_size"))
         self._set_device(rec.get("device"))
         _set_combo("optimizer_comboBox", rec.get("optimizer"))
+        self._set_aug_checks(rec.get("aug"))
         out = rec.get("output_path")
         if out and hasattr(self.ui, "output_line_txt"):
             self.ui.output_line_txt.setText(str(out))
@@ -1319,6 +1550,7 @@ class TrainDialog(QDialog):
             "out_root": self.ui.output_line_txt.text().strip(),
             "train_ds": [list(x) for x in self._selected_datasets()],
             "val_ds": [list(x) for x in self._selected_val_datasets()],
+            "aug": self._aug_value(),
         }
 
     def _img_size(self):

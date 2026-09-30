@@ -22,15 +22,15 @@ from PySide6.QtCore import QTimer
 
 from app.core import i18n
 from app.core import theme
-from app.core.db import get_paths, load_train_metrics
+from app.core.db import get_paths
 from app.core.label_utils import text_label
 from app.core.log import write_log
 from app.core.utils import fmt_duration
-from app.core.metrics import (best_value, metric_key, primary_for,
-                              primary_of, series_from_csv)
+from app.core.metrics import best_value, metric_key, primary_for, primary_of
 from app.widgets.message_box import MessageBox, ProgressDialog
 from app.widgets.status_style import status_color, status_text, task_text
-from app.widgets.metrics_dialog import MetricsDialog
+from app.widgets.compare_dialog import CompareDialog
+from app.widgets.metrics_dialog import MetricsDialog, load_run_series
 from app.widgets.test_dialog import TestDialog
 from app.train.dialogs import TrainDialog
 from app.train.test_worker import TestWorker
@@ -136,23 +136,6 @@ def _status(rec):
     if "训练" in st or "运行" in st:
         return "训练中"
     return "已完成"
-
-
-def _load_series(rec, db_path):
-    """
-    显示用曲线数据: 优先训练目录的 metrics.csv(rf-detr 真源);
-    指标 json 只是训练中的节流快照, 可能缺列或缺尾轮. 分类无 csv, 走 json.
-    """
-    model_path = rec.get("model_path") or ""
-    csv_path = os.path.join(os.path.dirname(model_path), "metrics.csv") if model_path else ""
-    if csv_path and os.path.isfile(csv_path):
-        s = series_from_csv(csv_path)
-        if s.get("epochs"):
-            return s
-    try:
-        return (load_train_metrics(rec, db_path) or {}).get("series") or {}
-    except Exception:
-        return {}
 
 
 def _curve_series(series, task=""):
@@ -324,6 +307,8 @@ class ModelDialog(QDialog):
             lambda: self._current and self._test(self._current))
         u.detail_retrain_btn.clicked.connect(
             lambda: self._current and self._retrain(self._current))
+        u.detail_compare_btn.clicked.connect(
+            lambda: self._current and self._compare(self._current))
         u.detail_open_dir_btn.clicked.connect(self._open_model_dir)
         self._show_detail(None)
 
@@ -377,7 +362,7 @@ class ModelDialog(QDialog):
     def _refresh_metric_from_file(self, rec):
         if not (rec.get("metrics_file") or rec.get("model_path")):
             return
-        series = _load_series(rec, getattr(self.app.db, "db_path", None))
+        series = load_run_series(rec, getattr(self.app.db, "db_path", None))
         p = primary_of(series, rec.get("task"))
         v = best_value(series, p.base, p.direction)
         if v is not None:
@@ -604,8 +589,9 @@ class ModelDialog(QDialog):
             u.detail_info.setText(self.tr("选中一行查看详情"))
             u.detail_curve.setPixmap(QPixmap())
             u.detail_curve.setText("")
-            for b in (u.detail_metrics_btn, u.detail_test_btn,
-                      u.detail_retrain_btn, u.detail_open_dir_btn):
+            for b in (u.detail_metrics_btn, u.detail_compare_btn,
+                      u.detail_test_btn, u.detail_retrain_btn,
+                      u.detail_open_dir_btn):
                 b.setEnabled(False)
             return
         m = _metric_value(rec)
@@ -661,6 +647,7 @@ class ModelDialog(QDialog):
         self._draw_curve(rec)
         has_model = bool(rec.get("model_path"))
         u.detail_metrics_btn.setEnabled(True)
+        u.detail_compare_btn.setEnabled(True)
         u.detail_test_btn.setEnabled(has_model)
         u.detail_retrain_btn.setEnabled(True)
         u.detail_open_dir_btn.setEnabled(has_model)
@@ -668,7 +655,7 @@ class ModelDialog(QDialog):
     def _draw_curve(self, rec):
         label = self.ui.detail_curve
         label.setText("")
-        series = _load_series(rec, getattr(self.app.db, "db_path", None))
+        series = load_run_series(rec, getattr(self.app.db, "db_path", None))
         key, ys = _curve_series(series, rec.get("task"))
         if not ys:
             label.setPixmap(QPixmap())
@@ -736,6 +723,22 @@ class ModelDialog(QDialog):
             print(QC.translate("ModelDialog", "[model_dialog] 打开指标失败: {}\n{}").format(
                 e, traceback.format_exc()), flush=True)
             MessageBox.warning(self, self.tr("查看指标失败"), str(e))
+
+    def _compare(self, record):
+        """对比入口: 带上当前所有训练记录, 默认勾中当前这条."""
+        recs = list(getattr(self, "_all_records", None) or [])
+        if not recs:
+            MessageBox.warning(self, self.tr("对比多次训练"),
+                               self.tr("当前没有可对比的训练记录"))
+            return
+        try:
+            CompareDialog(self.app.db, recs, current=record,
+                          parent=self).exec()
+        except Exception as e:
+            trace = traceback.format_exc()
+            print(QC.translate("ModelDialog", "[model_dialog] 打开对比失败: {}\n{}").format(
+                e, trace), flush=True)
+            MessageBox.warning(self, self.tr("打开对比失败"), str(e))
 
     def _delete(self, record):
         ds = record.get("dataset", "")

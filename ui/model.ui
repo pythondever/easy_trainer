@@ -89,7 +89,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QCheckBox" name="best_only_check">
+      <widget class="CheckChip" name="best_only_check">
        <property name="text">
         <string>仅看每个数据集最佳</string>
        </property>
@@ -219,6 +219,13 @@
          </widget>
         </item>
         <item>
+         <widget class="QPushButton" name="detail_compare_btn">
+          <property name="text">
+           <string>对比多次训练</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QPushButton" name="detail_test_btn">
           <property name="text">
            <string>测试此模型</string>
@@ -310,6 +317,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>CheckChip</class>
+   <extends>QCheckBox</extends>
+   <header>app.widgets.check_chip</header>
+  </customwidget>
+ </customwidgets>
  <resources />
  <connections />
 </ui>

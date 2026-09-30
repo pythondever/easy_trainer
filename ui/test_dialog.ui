@@ -422,7 +422,7 @@
          <number>0</number>
         </property>
         <item>
-         <widget class="QCheckBox" name="output_label_file_checkBox">
+         <widget class="CheckChip" name="output_label_file_checkBox">
           <property name="text">
            <string />
           </property>
@@ -431,7 +431,7 @@
         <item>
          <widget class="QLabel" name="out_note">
           <property name="sizePolicy"><sizepolicy hsizetype="Expanding" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text">
-           <string>会在图像路径下输出标签文件, 可重载数据集查看检出效果</string>
+           <string>写在图像目录下, 可重载数据集查看检出效果</string>
           </property>
           <property name="class" stdset="0">
            <string notr="true">fieldNote</string>
@@ -562,6 +562,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>CheckChip</class>
+   <extends>QCheckBox</extends>
+   <header>app.widgets.check_chip</header>
+  </customwidget>
+ </customwidgets>
  <resources />
  <connections />
 </ui>

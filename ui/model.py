@@ -15,10 +15,12 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QComboBox,
-    QDialog, QHBoxLayout, QHeaderView, QLabel,
-    QLineEdit, QPushButton, QSizePolicy, QSpacerItem,
-    QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QAbstractItemView, QApplication, QComboBox, QDialog,
+    QHBoxLayout, QHeaderView, QLabel, QLineEdit,
+    QPushButton, QSizePolicy, QSpacerItem, QTableWidget,
+    QTableWidgetItem, QVBoxLayout, QWidget)
+
+from app.widgets.check_chip import CheckChip
 
 class Ui_ModelDialog(object):
     def setupUi(self, ModelDialog):
@@ -56,7 +58,7 @@ class Ui_ModelDialog(object):
 
         self.filterLayout.addWidget(self.status_combo)
 
-        self.best_only_check = QCheckBox(ModelDialog)
+        self.best_only_check = CheckChip(ModelDialog)
         self.best_only_check.setObjectName(u"best_only_check")
 
         self.filterLayout.addWidget(self.best_only_check)
@@ -128,6 +130,11 @@ class Ui_ModelDialog(object):
         self.detail_metrics_btn.setObjectName(u"detail_metrics_btn")
 
         self.detail_layout.addWidget(self.detail_metrics_btn)
+
+        self.detail_compare_btn = QPushButton(self.detail_panel)
+        self.detail_compare_btn.setObjectName(u"detail_compare_btn")
+
+        self.detail_layout.addWidget(self.detail_compare_btn)
 
         self.detail_test_btn = QPushButton(self.detail_panel)
         self.detail_test_btn.setObjectName(u"detail_test_btn")
@@ -221,6 +228,7 @@ class Ui_ModelDialog(object):
         self.detail_title.setText(QCoreApplication.translate("ModelDialog", u"\u6a21\u578b\u8be6\u60c5", None))
         self.detail_info.setText(QCoreApplication.translate("ModelDialog", u"\u9009\u4e2d\u4e00\u884c\u67e5\u770b\u8be6\u60c5", None))
         self.detail_metrics_btn.setText(QCoreApplication.translate("ModelDialog", u"\u67e5\u770b\u5b8c\u6574\u6307\u6807", None))
+        self.detail_compare_btn.setText(QCoreApplication.translate("ModelDialog", u"\u5bf9\u6bd4\u591a\u6b21\u8bad\u7ec3", None))
         self.detail_test_btn.setText(QCoreApplication.translate("ModelDialog", u"\u6d4b\u8bd5\u6b64\u6a21\u578b", None))
         self.detail_retrain_btn.setText(QCoreApplication.translate("ModelDialog", u"\u6309\u6b64\u914d\u7f6e\u91cd\u8bad", None))
         self.detail_open_dir_btn.setText(QCoreApplication.translate("ModelDialog", u"\u6253\u5f00\u6a21\u578b\u76ee\u5f55", None))

@@ -11,6 +11,7 @@ import os
 import shutil
 import sys
 import traceback
+from importlib.util import find_spec
 
 _WORKSPACE = os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__))))
@@ -64,6 +65,58 @@ def _make_model(architecture, task="detect", pretrained_path=""):
     return cls(pretrain_weights=pretrained_path)
 
 
+# 勾选代号 → rfdetr 的 aug_config 片段. 界面只存代号串, 到这里才展开成字典:
+# GUI 进程不导入 rfdetr, 免得为了几个字面量让启动多等一两秒
+AUG_TRANSFORMS = {
+    "hflip": {"HorizontalFlip": {"p": 0.5}},
+    "vflip": {"VerticalFlip": {"p": 0.5}},
+    "rotate": {"Rotate": {"limit": 15, "p": 0.5}},
+    "affine": {"Affine": {"scale": (0.8, 1.2), "translate_percent": (-0.1, 0.1),
+                          "rotate": (-15, 15), "shear": (-5, 5), "p": 0.5}},
+    "brightness": {"RandomBrightnessContrast": {"brightness_limit": 0.1,
+                                                "contrast_limit": 0.1, "p": 0.3}},
+    "colorjitter": {"ColorJitter": {"brightness": 0.2, "contrast": 0.2,
+                                    "saturation": 0.2, "hue": 0.1, "p": 0.5}},
+    "blur": {"GaussianBlur": {"blur_limit": 3, "p": 0.3}},
+    "noise": {"GaussNoise": {"std_range": (0.01, 0.05), "p": 0.3}},
+}
+
+# 改造前的记录存的是单档预设代号, 展开成勾选组合才能对上
+AUG_LEGACY_CODES = {
+    "off": (),
+    "default": ("hflip",),
+    "conservative": ("hflip", "brightness"),
+    "industrial": ("hflip", "brightness", "blur", "noise"),
+    "aggressive": ("hflip", "vflip", "rotate", "affine", "colorjitter"),
+}
+
+
+def _resolve_aug_config(value):
+    """勾选代号串 → aug_config 字典. 空值/没勾/代号全不认识都给 {} (空字典即不增强)."""
+    text = str(value or "").strip().lower()
+    if not text:
+        return {}
+    codes = AUG_LEGACY_CODES.get(text, text.split(","))
+    out = {}
+    for code in codes:
+        frag = AUG_TRANSFORMS.get(str(code).strip())
+        if frag:
+            out.update(frag)
+    return out
+
+
+def _check_aug_available(aug_config):
+    """缺组件时提前报错: rfdetr 抛的那条 ImportError 埋在子进程 traceback 里很难认."""
+    if not aug_config:
+        return
+    if find_spec("kornia") or find_spec("albumentations"):
+        return
+    raise RuntimeError(QC.translate(
+        "TrainRunner",
+        "数据增强需要 kornia 或 albumentations, 当前环境两者都没有.\n"
+        "请把训练参数里的\"数据增强\"全部取消勾选, 或补装组件后重试"))
+
+
 def main():
     cfg_path = sys.argv[1]
     with open(cfg_path, "r", encoding="utf-8") as f:
@@ -105,6 +158,18 @@ def main():
     print("[train] " + QC.translate("TrainRunner", "使用模型 {} device={} epochs={} batch={} resolution={}").format(
         cfg.get("architecture", "nano"), device, cfg["epochs"],
         cfg["batch_size"], resolution), flush=True)
+
+    aug_config = _resolve_aug_config(cfg.get("aug"))
+    _check_aug_available(aug_config)
+    # config.json 里只有代号, 另存一份展开后的定义方便事后复现
+    with open(os.path.join(ts_dir, "augmentations.json"), "w",
+              encoding="utf-8") as f:
+        json.dump(aug_config, f, ensure_ascii=False, indent=2)
+    if aug_config:
+        print("[train] " + QC.translate("TrainRunner", "数据增强: {}").format(
+            json.dumps(aug_config, ensure_ascii=False)), flush=True)
+    else:
+        print("[train] " + QC.translate("TrainRunner", "数据增强: 未启用"), flush=True)
 
     def _patch_training_hooks():
         class _FlushCsv(Callback):
@@ -169,6 +234,7 @@ def main():
         # 早停: UI 填 0 禁用, >0 启用且值为 patience
         early_stopping=cfg.get("early_stop", 0) > 0,
         early_stopping_patience=max(cfg.get("early_stop", 0), 1),
+        aug_config=aug_config,
         log_per_class_metrics=True,
     )
     print("[train] " + QC.translate("TrainRunner", "训练完成"), flush=True)

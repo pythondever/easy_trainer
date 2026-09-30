@@ -18,7 +18,7 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
 from PySide6.QtWidgets import (QApplication, QComboBox, QDialog, QFormLayout,
     QFrame, QGridLayout, QHBoxLayout, QLabel,
     QLineEdit, QPushButton, QScrollArea, QSizePolicy,
-    QSpacerItem, QVBoxLayout, QWidget)
+    QSpacerItem, QToolButton, QVBoxLayout, QWidget)
 
 class Ui_TrainDialog(object):
     def setupUi(self, TrainDialog):
@@ -362,6 +362,62 @@ class Ui_TrainDialog(object):
 
         self.scroll_layout.addLayout(self.grid_hyper)
 
+        self.section_aug_wrap = QWidget(self.scrollAreaWidgetContents)
+        self.section_aug_wrap.setObjectName(u"section_aug_wrap")
+        self.section_aug_layout = QHBoxLayout(self.section_aug_wrap)
+        self.section_aug_layout.setSpacing(10)
+        self.section_aug_layout.setObjectName(u"section_aug_layout")
+        self.section_aug_layout.setContentsMargins(0, 0, 0, 0)
+        self.aug_toggle_btn = QToolButton(self.section_aug_wrap)
+        self.aug_toggle_btn.setObjectName(u"aug_toggle_btn")
+        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        sizePolicy2.setHorizontalStretch(0)
+        sizePolicy2.setVerticalStretch(0)
+        sizePolicy2.setHeightForWidth(self.aug_toggle_btn.sizePolicy().hasHeightForWidth())
+        self.aug_toggle_btn.setSizePolicy(sizePolicy2)
+        self.aug_toggle_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.aug_toggle_btn.setFocusPolicy(Qt.NoFocus)
+        self.aug_toggle_btn.setArrowType(Qt.RightArrow)
+        self.aug_toggle_btn.setCheckable(True)
+        self.aug_toggle_btn.setChecked(False)
+        self.aug_toggle_btn.setProperty(u"class", u"augToggle")
+
+        self.section_aug_layout.addWidget(self.aug_toggle_btn)
+
+        self.group_aug_title = QLabel(self.section_aug_wrap)
+        self.group_aug_title.setObjectName(u"group_aug_title")
+        self.group_aug_title.setProperty(u"class", u"dialogSectionTitle")
+
+        self.section_aug_layout.addWidget(self.group_aug_title)
+
+        self.group_aug_line = QFrame(self.section_aug_wrap)
+        self.group_aug_line.setObjectName(u"group_aug_line")
+        sizePolicy.setHeightForWidth(self.group_aug_line.sizePolicy().hasHeightForWidth())
+        self.group_aug_line.setSizePolicy(sizePolicy)
+        self.group_aug_line.setFrameShape(QFrame.HLine)
+        self.group_aug_line.setFrameShadow(QFrame.Sunken)
+        self.group_aug_line.setProperty(u"class", u"dialogSectionLine")
+
+        self.section_aug_layout.addWidget(self.group_aug_line)
+
+        self.aug_count_label = QLabel(self.section_aug_wrap)
+        self.aug_count_label.setObjectName(u"aug_count_label")
+        self.aug_count_label.setProperty(u"class", u"augCount")
+
+        self.section_aug_layout.addWidget(self.aug_count_label)
+
+
+        self.scroll_layout.addWidget(self.section_aug_wrap)
+
+        self.aug_body = QWidget(self.scrollAreaWidgetContents)
+        self.aug_body.setObjectName(u"aug_body")
+        self.aug_body_layout = QVBoxLayout(self.aug_body)
+        self.aug_body_layout.setSpacing(7)
+        self.aug_body_layout.setObjectName(u"aug_body_layout")
+        self.aug_body_layout.setContentsMargins(0, 0, 0, 0)
+
+        self.scroll_layout.addWidget(self.aug_body)
+
         self.section_out_wrap = QWidget(self.scrollAreaWidgetContents)
         self.section_out_wrap.setObjectName(u"section_out_wrap")
         self.section_out_layout = QHBoxLayout(self.section_out_wrap)
@@ -436,11 +492,11 @@ class Ui_TrainDialog(object):
 
         self.summary_text = QLabel(self.summary_bar)
         self.summary_text.setObjectName(u"summary_text")
-        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-        sizePolicy2.setHorizontalStretch(0)
-        sizePolicy2.setVerticalStretch(0)
-        sizePolicy2.setHeightForWidth(self.summary_text.sizePolicy().hasHeightForWidth())
-        self.summary_text.setSizePolicy(sizePolicy2)
+        sizePolicy3 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        sizePolicy3.setHorizontalStretch(0)
+        sizePolicy3.setVerticalStretch(0)
+        sizePolicy3.setHeightForWidth(self.summary_text.sizePolicy().hasHeightForWidth())
+        self.summary_text.setSizePolicy(sizePolicy3)
         self.summary_text.setProperty(u"class", u"summaryText")
         self.summary_text.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignVCenter)
 
@@ -523,6 +579,8 @@ class Ui_TrainDialog(object):
         self.grad_accum_label.setText(QCoreApplication.translate("TrainDialog", u"\u68af\u5ea6\u7d2f\u79ef", None))
         self.grad_note.setText(QCoreApplication.translate("TrainDialog", u"\u663e\u5b58\u4e0d\u8db3\u65f6\u8c03\u5927\uff0c\u7b49\u6548\u6279\u6b21 \u00d7 N", None))
         self.loader_num_label.setText(QCoreApplication.translate("TrainDialog", u"\u7ebf\u7a0b\u6570", None))
+        self.group_aug_title.setText(QCoreApplication.translate("TrainDialog", u"\u6570\u636e\u589e\u5f3a", None))
+        self.aug_count_label.setText("")
         self.group_out_title.setText(QCoreApplication.translate("TrainDialog", u"\u8f93\u51fa", None))
         self.output_label.setText(QCoreApplication.translate("TrainDialog", u"\u8f93\u51fa\u8def\u5f84", None))
         self.output_line_txt.setText("")
