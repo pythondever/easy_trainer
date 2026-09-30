@@ -152,7 +152,6 @@ class App(QWidget, MainUI, LabelMixin, ProjectMixin, ImportExportMixin,
     def _setup_header_groups(self):
         """首页顶部工具栏分组: 标签区/统计区/训练区 用竖线分隔"""
         self.train_btn.setProperty("class", "primary")
-        self.delete_label_btn.setProperty("class", "danger")
         self._tighten_gpu_pair()
 
         def vline():
@@ -163,10 +162,12 @@ class App(QWidget, MainUI, LabelMixin, ProjectMixin, ImportExportMixin,
             return line
 
         lay = self.datasetHeaderLayout
-        # 插入位置(按创建顺序): 9=标签筛选 12=统计 13=训练
-        lay.insertWidget(13, vline())   # 统计 | 训练
-        lay.insertWidget(12, vline())   # 标签区 | 统计
-        lay.insertWidget(9, vline())    # 进度区 | 标签区
+        # 按锚点控件定位: 硬编码索引会随顶部控件的增删错位
+        for anchor in (self.label_filter_btn, self.dataset_properties_btn,
+                       self.train_btn):
+            idx = lay.indexOf(anchor)
+            if idx > 0:
+                lay.insertWidget(idx, vline())
 
     def _tighten_gpu_pair(self):
         lay = self.datasetHeaderLayout
@@ -196,8 +197,6 @@ class App(QWidget, MainUI, LabelMixin, ProjectMixin, ImportExportMixin,
         self.next_page_btn.clicked.connect(lambda: self.next_page())
         self.dataset_properties_btn.clicked.connect(self._on_dataset_properties)
         self.stop_train_btn.clicked.connect(lambda checked=False: self.stop_training())
-        self.rename_label_btn.clicked.connect(self._on_rename_label)
-        self.delete_label_btn.clicked.connect(self._on_delete_label)
         self.train_btn.clicked.connect(self._on_train_clicked)
         self.log_btn.clicked.connect(self._on_log_clicked)
         self.model_btn.clicked.connect(self._on_model_clicked)

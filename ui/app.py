@@ -191,16 +191,6 @@ class Ui_AppUI(object):
 
         self.datasetHeaderLayout.addWidget(self.label_filter_btn)
 
-        self.rename_label_btn = QPushButton(self.datasetHeader)
-        self.rename_label_btn.setObjectName(u"rename_label_btn")
-
-        self.datasetHeaderLayout.addWidget(self.rename_label_btn)
-
-        self.delete_label_btn = QPushButton(self.datasetHeader)
-        self.delete_label_btn.setObjectName(u"delete_label_btn")
-
-        self.datasetHeaderLayout.addWidget(self.delete_label_btn)
-
         self.dataset_properties_btn = QPushButton(self.datasetHeader)
         self.dataset_properties_btn.setObjectName(u"dataset_properties_btn")
 
@@ -315,8 +305,6 @@ class Ui_AppUI(object):
         self.time_count_label.setText(QCoreApplication.translate("AppUI", u"\u5269\u4f59\u65f6\u95f4:", None))
         self.gpu_memory_label.setText(QCoreApplication.translate("AppUI", u"\u663e\u5b58:", None))
         self.gpu_memory_use_btn.setText(QCoreApplication.translate("AppUI", u"20%", None))
-        self.rename_label_btn.setText(QCoreApplication.translate("AppUI", u"\u7f16\u8f91", None))
-        self.delete_label_btn.setText(QCoreApplication.translate("AppUI", u"\u5220\u9664", None))
         self.dataset_properties_btn.setText(QCoreApplication.translate("AppUI", u"\u7edf\u8ba1", None))
         self.train_btn.setText(QCoreApplication.translate("AppUI", u"\u8bad\u7ec3", None))
         self.model_btn.setText(QCoreApplication.translate("AppUI", u"\u6a21\u578b", None))

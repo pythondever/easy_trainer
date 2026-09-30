@@ -394,20 +394,6 @@
               <widget class="LabelFilterButton" name="label_filter_btn"/>
              </item>
              <item>
-              <widget class="QPushButton" name="rename_label_btn">
-               <property name="text">
-                <string>编辑</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="delete_label_btn">
-               <property name="text">
-                <string>删除</string>
-               </property>
-              </widget>
-             </item>
-             <item>
               <widget class="QPushButton" name="dataset_properties_btn">
                <property name="text">
                 <string>统计</string>

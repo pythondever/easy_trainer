@@ -7,15 +7,14 @@
 - A/D 切换上一张/下一张, 切换/关闭时保存 labelme json(图像同路径)
 """
 import os
-import json
 import re
 import shutil
 from functools import lru_cache
-from PySide6.QtCore import Qt, QTimer, QSize, QEvent
+from PySide6.QtCore import Qt, QTimer, QSize, QEvent, QRegularExpression
 from PySide6.QtCore import QCoreApplication as QC
 from PySide6.QtGui import (QColor, QPixmap, QKeySequence, QShortcut,
                            QPainter, QIcon, QCursor, QIntValidator,
-                           QDoubleValidator)
+                           QDoubleValidator, QRegularExpressionValidator)
 from PySide6.QtWidgets import (QDialog, QWidget, QApplication, QVBoxLayout,
                                QHBoxLayout, QLabel, QLineEdit, QPushButton,
                                QFrame, QMenu)
@@ -38,10 +37,10 @@ from app.core import name_rules, theme
 from app.annotation.box_item import (AnnotationBoxItem, LABEL_COLORS,
                                      assign_label_color, label_color)
 from app.core.label_utils import (label_sort_key, normalize_label,
-                                  same_dir_json, text_label)
+                                  text_label)
 from app.widgets.dialog_buttons import (add_ok_cancel, apply_icon,
                                         _icon_path, _tinted)
-from app.widgets.message_box import MessageBox, ProgressDialog
+from app.widgets.message_box import MessageBox
 from app.core.log import write_log
 
 
@@ -173,15 +172,21 @@ class AddLabelDialog(QDialog):
         self._source_colors = {}   # 导入的数据集标签颜色(用于确定时还原颜色)
         self._selected_color = ""
         self._imported_mode = False   # 本次弹窗是否走"导入"路径(导入后输入框只读)
+        self._edit_mode = False       # 编辑已有标签: 整段名称当一项, 不按逗号拆
         self._setup()
         if preset_name:
             self.ui.input_label_name_txt.setText(preset_name)
         if preset_color:
             self._select_color(preset_color)
         if edit_mode:
-            # 编辑已有标签: 名称/数据集/导入全部锁定, 只允许改颜色
+            # 编辑已有标签: 名称与颜色都可改; 跨数据集导入与编辑无关, 一并锁掉.
+            # 名称里的逗号会撑坏 data.yaml 的类别列表, 置校验器直接禁掉输入
+            self._edit_mode = True
             self.setWindowTitle(self.tr("编辑标签"))
-            self.ui.input_label_name_txt.setEnabled(False)
+            self.ui.input_label_name_txt.setPlaceholderText(
+                self.tr("标签名称"))
+            self.ui.input_label_name_txt.setValidator(
+                QRegularExpressionValidator(QRegularExpression("[^,，]*"), self))
             self.ui.load_project_label_combo.setEnabled(False)
             self.ui.load_label_btn.setEnabled(False)
 
@@ -299,6 +304,10 @@ class AddLabelDialog(QDialog):
         text = self.ui.input_label_name_txt.text().strip()
         if not text:
             return []
+        if self._edit_mode:
+            # 编辑单个已有标签: 整段就是名称(输入框已禁逗号), 不做批量拆分
+            return [(text, self._selected_color
+                     or assign_label_color(text, set()))]
         names = [n.strip() for n in re.split(r"[,\uff0c]+", text) if n.strip()]
         # 批量建标签时逐个哈希会撞色, 先登记已指定的颜色再对余下的做探测分配
         colors = {}
@@ -338,7 +347,7 @@ class AnnotationDialog(QDialog, AnnotationCanvasMixin, AnnotationIOMixin):
         self.text_mode = False
         self._label_before_text_mode = ""
         self._cls_changes = []
-        self._deleted_labels = []
+        self._label_files_touched = False   # 本会话改过标签文件(删除/改名)
         self.image_list = list(image_list) if image_list else []
         self.index = current_index
         self._pix_cache = {}
@@ -692,7 +701,7 @@ class AnnotationDialog(QDialog, AnnotationCanvasMixin, AnnotationIOMixin):
         layout.addStretch(1)
 
     def _edit_label(self, name):
-        """编辑标签颜色: 弹编辑标签窗(名称/导入锁定), 确定后写库并即时刷新."""
+        """编辑标签: 名称与颜色一起改, 改名由主窗口链路同步改写标签文件."""
         dlg = AddLabelDialog(self, preset_name=name,
                              preset_color=self.label_colors.get(name, ""),
                              db=self.db, project=self.project,
@@ -701,23 +710,42 @@ class AnnotationDialog(QDialog, AnnotationCanvasMixin, AnnotationIOMixin):
             return
         items = dlg.result_data()
         if not items:
+            MessageBox.warning(self, self.tr("编辑标签"),
+                               self.tr("标签名称不能为空"))
             return
-        new_color = items[0][1]
-        if new_color == self.label_colors.get(name):
-            return
-        self.db.add_dataset_label(self.project, self.dataset, name, new_color)
-        self.label_colors[name] = new_color
-        self.scene.label_colors[name] = QColor(new_color)
-        # 框颜色是 paint 时动态查 scene.label_colors, 重绘即可生效(A/D 翻页同源)
-        self.scene.update()
-        self._refresh_labels()
+        new_name, new_color = items[0]
+        if new_name != name:
+            if not self._main.rename_label(self.project, self.dataset, name,
+                                           new_name, parent=self):
+                return
+            self._rename_label_in_scene(name, new_name)
+            name = new_name
+            self._label_files_touched = True
+            self._refresh_labels()
+        if new_color and new_color != self.label_colors.get(name):
+            self.db.add_dataset_label(self.project, self.dataset, name, new_color)
+            self.label_colors[name] = new_color
+            self.scene.label_colors[name] = QColor(new_color)
+            # 框颜色是 paint 时动态查 scene.label_colors, 重绘即可生效(A/D 翻页同源)
+            self.scene.update()
+            self._refresh_labels()
+            write_log("修改标签颜色: {} → {} ({}/{})".format(
+                name, new_color, self.project, self.dataset))
         self._refresh_labeled_list()
-        write_log("修改标签颜色: {} → {} ({}/{})".format(
-            name, new_color, self.project, self.dataset))
+
+    def _rename_label_in_scene(self, old_name, new_name):
+        """场景内该标签的框改挂新名; 名称是 paint 时读的, 重绘即可生效."""
+        for item in self.scene.all_items():
+            if getattr(item, "label", None) == old_name:
+                item.label = new_name
+        self.scene.label_colors.pop(old_name, None)
+        if self.scene.current_label == old_name:
+            self.scene.current_label = new_name
+        self.scene.update()
 
     def _delete_label_from_list(self, name):
         """
-        删除标签并同步清理其标注: db / 本地 labelme json / 当前场景.
+        删除标签并同步清理其标注: 标签文件 / db / 缓存索引 / 当前场景.
         统计口径与数据集统计一致: 优先数主窗口内存索引的 boxes/labels
         (统计页 label_counts 同源, 即时); 无索引时退回扫描图像同路径 json.
         先统计,用户确认后才写文件(取消不落盘).
@@ -760,43 +788,12 @@ class AnnotationDialog(QDialog, AnnotationCanvasMixin, AnnotationIOMixin):
                     self.tr("确定删除标签\"{}\"吗?").format(name),
                     default_yes=True):
                 return
-        # 确认后清理图像同路径 json(外部标签目录文件由主窗口关闭后统一清理)
-        paths = self._dataset_image_paths()
-        progress = None
-        if len(paths) > 50:
-            progress = ProgressDialog(
-                self.tr("删除标签"), self.tr("正在清理标注文件..."), self,
-                maximum=len(paths), cancellable=False)
-        try:
-            for i, img_path in enumerate(paths):
-                if progress is not None:
-                    progress.set_progress(i)
-                jp = same_dir_json(img_path)
-                if not jp:
-                    continue
-                try:
-                    with open(jp, "r", encoding="utf-8") as f:
-                        text = f.read()
-                    if needle not in text:
-                        continue
-                    data = json.loads(text)
-                    before = len(data.get("shapes", []))
-                    data["shapes"] = [s for s in data.get("shapes", [])
-                                      if normalize_label(s.get("label")) != needle]
-                    if len(data["shapes"]) != before:
-                        with open(jp, "w", encoding="utf-8") as f:
-                            json.dump(data, f, ensure_ascii=False, indent=2)
-                except Exception:
-                    continue
-        finally:
-            if progress is not None:
-                progress.close()
+        # 文件层交给主窗口那条链路(后台上线): 图像同路径 json 与导入的 YOLO
+        # txt 一并改写, 同时清缓存索引 / db / class_id 映射, 改完自己刷新首页视图
+        self._label_files_touched = True
+        self._main._apply_delete_label(self.project, self.dataset, name)
         for item in scene_items:
             self.scene.delete_item(item)
-        self.db.remove_dataset_label(self.project, self.dataset, name)
-        self._deleted_labels.append(name)
-        write_log("删除标签: {} ({}/{})".format(
-            name, self.project, self.dataset))
         self.label_colors.pop(name, None)
         self.scene.label_colors.pop(name, None)
         if self.scene.current_label == name:

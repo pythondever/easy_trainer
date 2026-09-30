@@ -309,21 +309,39 @@ class DatasetViewMixin(object):
         changes = getattr(dlg, "_cls_changes", [])
         if changes:
             self._apply_cls_changes(proj, ds, changes)
-        deleted = getattr(dlg, "_deleted_labels", [])
-        if deleted:
-            self._apply_deleted_labels(proj, ds, deleted)
+        touched = bool(getattr(dlg, "_label_files_touched", False))
         modified = getattr(dlg, "_modified_paths", set()) or set()
-        if not changes and not deleted and not modified:
+        if not changes and not touched and not modified:
             # 会话无任何改动: 缓存/db/文件均未变化, 收尾全跳过(9w 图省一次全量重建)
             return
-        # 只重读本会话真正写过 json 的图(框增删改); 整标签删除/类别修改已由
-        # _apply_* 就地同步, 无框改动时无需读 json, 仅统一重建分组与 db 计数.
-        self._refresh_dataset_labels(proj, ds, rescan=bool(modified),
-                                     only_paths=modified or None)
-        self._refresh_label_filter(proj, ds)
-        self._refresh_dataset_stats(proj, ds)
-        self.show_dataset_images(proj, ds)
-        self._sync_label_paths_from_json(proj, ds)
+
+        def _finish_session():
+            # 只重读本会话真正写过 json 的图(框增删改); 整标签删除/类别修改已由
+            # _apply_* 就地同步, 无框改动时无需读 json, 仅统一重建分组与 db 计数.
+            self._refresh_dataset_labels(proj, ds, rescan=bool(modified),
+                                         only_paths=modified or None)
+            self._refresh_label_filter(proj, ds)
+            self._refresh_dataset_stats(proj, ds)
+            self.show_dataset_images(proj, ds)
+            self._sync_label_paths_from_json(proj, ds)
+
+        if touched:
+            # 标签删除/改名是立即起后台线程改文件的: 轮询到线程空闲再重扫, 否则
+            # 还没改到的文件会把刚删掉的标签又读回缓存
+            self._wait_label_tasks_then(_finish_session)
+        else:
+            _finish_session()
+
+    def _wait_label_tasks_then(self, fn):
+        """等标签文件改写线程全部结束再执行 fn(轮询而不接信号, 避免已结束漏接)."""
+        def _poll():
+            tasks = [t for t in (getattr(self, "_merge_tasks", None) or ())
+                     if t is not None and t.isRunning()]
+            if tasks:
+                QTimer.singleShot(200, _poll)
+            else:
+                fn()
+        _poll()
 
     def _sync_label_paths_from_json(self, project_name, dataset_name):
         """
@@ -744,8 +762,10 @@ class DatasetViewMixin(object):
 
     def _evict_img_cache(self):
         """
-        QImage 图像缓存 LRU 淘汰: thumb/ROI 超过各自上限时,
+        QImage 图像缓存 LRU 淘汰: thumb 按图片数、ROI 按条目数卡各自上限,
         释放最久未访问且不在当前页的缓存(置 None / 清空 rois_by_idx).
+        配额单位必须跟缓存 key 一致: 一个 rec 的 rois_by_idx 装的是该图全部
+        命中框的 ROI(工业缺陷图一张几十个框很常见), 按图片数计量等于永不超限.
         收集时只 append rec 本身, 不建 (时间, rec) 元组; 且只有真超上限才 sort
         (稳态下缓存贴着上限, 多一轮排序纯属浪费; 实测 Python 层 nsmallest
         拼不过 C 层 sort).
@@ -762,29 +782,37 @@ class DatasetViewMixin(object):
         t_max = getattr(self, "_thumb_cache_max", THUMB_CACHE_MAX)
         r_max = getattr(self, "_roi_cache_max", ROI_CACHE_MAX)
         records = index.get("all", [])
-        # 全部装得下时必定不超限, 连遍历都免了(几千张以内的小数据集常见)
-        if len(records) <= t_max and len(records) <= r_max:
+        if not records:
             return
         protected = getattr(self, "_current_page_paths", None) or set()
         placeholder = _thumb_placeholder()
         thumbs = []
         rois = []
+        roi_entries = 0
         for rec in records:
             if rec.get("image_path", "") in protected:
                 continue
             th = rec.get("thumb")
             if th is not None and th is not placeholder:
                 thumbs.append(rec)
-            if rec.get("rois_by_idx"):
-                rois.append(rec)
+            bucket = rec.get("rois_by_idx")
+            if bucket:
+                n = sum(len(v) for v in bucket.values())
+                if n:
+                    rois.append((rec, n))
+                    roi_entries += n
         if len(thumbs) > t_max:
             thumbs.sort(key=lambda r: r.get("_thumb_t", 0), reverse=True)
             for rec in thumbs[t_max:]:
                 rec["thumb"] = None
-        if len(rois) > r_max:
-            rois.sort(key=lambda r: r.get("_roi_t", 0), reverse=True)
-            for rec in rois[r_max:]:
+        if roi_entries > r_max:
+            rois.sort(key=lambda item: item[0].get("_roi_t", 0), reverse=True)
+            # 从最久未访问的一端整图清, 直到条目数落回上限内
+            for rec, n in reversed(rois):
+                if roi_entries <= r_max:
+                    break
                 rec["rois_by_idx"] = {}
+                roi_entries -= n
 
     def _render_scene(self, records):
         """

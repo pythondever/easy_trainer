@@ -33,6 +33,7 @@ class ResponsiveMixin(object):
         self._header_more_btn = btn
         self._header_more_menu = menu
         self._header_collapsed = False
+        btn.setVisible(False)
         self.datasetHeader.installEventFilter(self)
 
     def _retranslate_header_overflow(self):
@@ -85,7 +86,7 @@ class ResponsiveMixin(object):
             act.setEnabled(src.isEnabled())
 
     def _fit_header(self):
-        """顶栏装不下就收起那 4 个入口按钮.
+        """顶栏装不下就收起那 4 个入口按钮和「…」.
 
         宽度按各控件自己的 sizeHint 求和(与可见性无关): 若按当前可见项算, 收起后需求
         变小、下一拍又该放开, 会来回抖.
@@ -102,8 +103,9 @@ class ResponsiveMixin(object):
                 need += item.sizeHint().width()      # 弹簧也要占它那份
                 count += 1
                 continue
-            # 业务上隐藏的(训练进度条/停止按钮)不占位置; 我们收起来的那 4 个仍要计入
-            if wid.isHidden() and wid.objectName() not in OVERFLOW_BTNS:
+            # 业务上隐藏的(训练进度条/停止按钮)不占位置; 我们收起来的 4 个和「…」仍要计入
+            if (wid.isHidden() and wid.objectName() not in OVERFLOW_BTNS
+                    and wid is not self._header_more_btn):
                 continue
             need += wid.sizeHint().width()
             count += 1
@@ -113,5 +115,6 @@ class ResponsiveMixin(object):
         if collapsed == self._header_collapsed:
             return
         self._header_collapsed = collapsed
+        self._header_more_btn.setVisible(collapsed)
         for name in OVERFLOW_BTNS:
             getattr(self, name).setVisible(not collapsed)

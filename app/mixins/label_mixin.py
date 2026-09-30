@@ -1,21 +1,16 @@
 # -*- coding: utf-8 -*-
-import os
-import json
 import time
 
 from app.core import name_rules
 from app.core.db import get_paths
-from ui.edit_label import Ui_Dialog as EditLabelUI
 from app.core.label_utils import (is_text_label, normalize_label,
                                   label_sort_key, rec_is_labeled)
 from app.annotation.box_item import assign_label_color
-from app.widgets.dialog_buttons import apply_icon
 from app.widgets.label_filter_popup import (ALL_COLOR, DIM_DOT,
                                             LabelFilterPanel)
-from app.widgets.message_box import MessageBox, ProgressDialog
-from app.tasks.merge_task import MergeLabelsTask
+from app.widgets.message_box import MessageBox
+from app.tasks.merge_task import LabelJsonTask, MergeLabelsTask
 from PySide6.QtCore import QCoreApplication as QC
-from PySide6.QtWidgets import QDialog
 
 # "未标注"不是真实类别, 用黑块占位, 与真实标签的彩色块对齐
 UNLABELED_COLOR = "#000000"
@@ -23,17 +18,6 @@ UNLABELED_KEY = "__unlabeled__"
 
 
 class LabelMixin(object):
-    @property
-    def current_label(self):
-        """筛选里唯一选中的那个标签; 全选/未选择/多选都返回 None.
-
-        重命名/删除这类只作用于单个标签的入口靠它判断能不能执行, 它不代表
-        当前视图在看什么(视图口径见 _filter_records).
-        """
-        if len(self.filter_labels) != 1:
-            return None
-        return self.filter_labels[0]
-
     def _unlabeled_selected(self):
         """筛选里是否含未标注 - 首页批量删未标注图的门槛."""
         return UNLABELED_KEY in self.filter_labels
@@ -128,16 +112,6 @@ class LabelMixin(object):
         panel = getattr(self, "label_filter_panel", None)
         if panel is not None:
             panel.set_state(self.filter_labels)
-        self._update_label_action_buttons()
-
-    def _update_label_action_buttons(self):
-        """编辑/删除只认单个标签: 未选、多选、只选未标注 都置灰."""
-        label = self.current_label
-        enabled = bool(label) and label != UNLABELED_KEY
-        for name in ("rename_label_btn", "delete_label_btn"):
-            btn = getattr(self, name, None)
-            if btn is not None:
-                btn.setEnabled(enabled)
 
     def _reset_label_filter_text(self):
         """没打开数据集: 面板没有可选项, 收起态回到未选择标签."""
@@ -223,58 +197,31 @@ class LabelMixin(object):
             for lbl in lbls:
                 index["labels"].setdefault(lbl, []).append(rec)
 
-    def _on_rename_label(self):
-        """
-        首页"编辑"按钮: 重命名筛选里唯一选中的那个标签.
-        多选或未选标签时按钮已置灰, 走不到这里.
-        弹 ui/edit_label.py 对话框(类别 + 批量修改为 + 确定).
-        """
-        if not self._current_dataset:
-            MessageBox.warning(self, QC.translate("LabelMixin", "重命名"), QC.translate("LabelMixin", "请先在左侧选中一个数据集"))
-            return
-        old = self.current_label
-        if old == "__unlabeled__" or not old:
-            MessageBox.warning(
-                self, QC.translate("LabelMixin", "重命名"),
-                QC.translate("LabelMixin", "请先在筛选下拉框中选择要重命名的标签"))
-            return
-        dlg = QDialog(self)
-        dlg.setWindowTitle(QC.translate("LabelMixin", "类别修改"))
-        ui = EditLabelUI()
-        ui.setupUi(dlg)
-        ui.label_btn.setText(old)
-        ui.new_label_edit.setText(old)
-        ui.new_label_edit.selectAll()
-        apply_icon(ui.done_btn, QC.translate("DialogButtons", "确定"))
-        ui.done_btn.clicked.connect(dlg.accept)
-        dlg.exec()
-        new_name = ui.new_label_edit.text().strip()
-        if dlg.result() != QDialog.Accepted:
-            return
-        if not new_name:
-            MessageBox.warning(self, QC.translate("LabelMixin", "重命名"), QC.translate("LabelMixin", "标签名称不能为空"))
-            return
-        if new_name == old:
-            return
+    def rename_label(self, project_name, dataset_name, old_name, new_name,
+                     parent=None):
+        """重命名/合并标签: 校验 + 合并确认 + 落库改文件. 返回是否已执行."""
+        if not new_name or new_name == old_name:
+            return False
         err = name_rules.check_label_name(new_name)
         if err:
-            MessageBox.warning(self, QC.translate("LabelMixin", "重命名"), err)
-            return
-        proj, ds = self._current_dataset
+            MessageBox.warning(parent or self,
+                               QC.translate("LabelMixin", "重命名"), err)
+            return False
         # 合并模式(新名已存在)会改写源标签文件,不可逆,需明确确认
-        exists = self.db.get_dataset_labels(proj, ds)
+        exists = self.db.get_dataset_labels(project_name, dataset_name)
         if new_name in exists:
             if not MessageBox.question(
-                    self, QC.translate("LabelMixin", "合并标签"),
+                    parent or self, QC.translate("LabelMixin", "合并标签"),
                     QC.translate(
                         "LabelMixin",
                         "标签\"{}\"已存在.\n"
                         "确定把\"{}\"的所有标注合并到\"{}\"吗?\n"
                         "此操作会改写数据集源标签文件, 且不可恢复.").format(
-                        new_name, old, new_name),
+                        new_name, old_name, new_name),
                     default_yes=False):
-                return
-        self._apply_rename_label(proj, ds, old, new_name)
+                return False
+        self._apply_rename_label(project_name, dataset_name, old_name, new_name)
+        return True
 
     def _apply_rename_label(self, project_name, dataset_name, old_name, new_name):
         """
@@ -304,7 +251,6 @@ class LabelMixin(object):
                 if changed:
                     rec["rois_by_idx"] = {}
             self._rebuild_index_labels(project_name, dataset_name)
-        self._rename_label_in_files(project_name, dataset_name, old_name, new_name)
         labels = self.db.get_dataset_labels(project_name, dataset_name)
         merge_mode = new_name in labels  # 新名已存在合并类别
         color = labels.pop(old_name, None)
@@ -319,18 +265,19 @@ class LabelMixin(object):
             if changed != ids:
                 self.db.save_dataset_label_ids(
                     project_name, dataset_name, changed)
+        self._replace_filter_label(old_name, new_name)
         if merge_mode:
-            self._replace_filter_label(old_name, new_name)
             self._log(QC.translate("LabelMixin", "合并标签: {} → {} ({}/{}) | 启动后台文件合并, 完成后输出统计").format(
                 old_name, new_name, project_name, dataset_name))
-            self._merge_label_files(project_name, dataset_name,
-                                    old_name, new_name)
-            return  # 文件合并是异步的,完成后回调里刷新
-        self._replace_filter_label(old_name, new_name)
-        self._log(QC.translate("LabelMixin", "重命名标签: {} → {} ({}/{})").format(
-            old_name, new_name, project_name, dataset_name))
-        self._refresh_label_filter(project_name, dataset_name)
-        self.show_dataset_images(project_name, dataset_name)
+        else:
+            self._log(QC.translate("LabelMixin", "重命名标签: {} → {} ({}/{})").format(
+                old_name, new_name, project_name, dataset_name))
+            self._refresh_label_filter(project_name, dataset_name)
+            self.show_dataset_images(project_name, dataset_name)
+        # json 改写在后台跑(几万张的读写在主线程会把界面冻住); 合并模式等
+        # json 改完再接着改 txt, 保证标注源文件先一致
+        self._rename_label_in_files(project_name, dataset_name, old_name,
+                                    new_name, merge_mode)
 
     def _merge_label_files(self, project_name, dataset_name, old_name, new_name):
         """合并模式的文件层: 后台改 txt(行首旧 id → 新 id), 项目树行内进度条."""
@@ -442,68 +389,44 @@ class LabelMixin(object):
         if cleaned != current:
             self.db.save_dataset_labels(project_name, dataset_name, cleaned)
 
-    def _rename_label_in_files(self, project_name, dataset_name, old_name, new_name):
-        """
-        本地 labelme json: 把 shape.label == old_name 改成 new_name.
-        """
+    def _start_label_file_task(self, task, project_name, dataset_name, on_done):
+        """标签文件改写线程的公共挂载: 项目树行内进度 + _merge_tasks 退出收尾."""
+        if getattr(self, "_merge_tasks", None) is None:
+            self._merge_tasks = set()
+        self._merge_tasks.add(task)
+        self.project_tree.set_row_task(project_name, dataset_name, 0)
+
+        def _on_progress(v):
+            self.project_tree.set_row_task(project_name, dataset_name, v)
+
+        def _on_finished(changed):
+            self._merge_tasks.discard(task)
+            self.project_tree.set_row_task(project_name, dataset_name, None)
+            on_done(changed)
+
+        task.progress_updated.connect(_on_progress)
+        task.finished_signal.connect(_on_finished)
+        task.start()
+
+    def _rename_label_in_files(self, project_name, dataset_name, old_name,
+                               new_name, merge_mode=False):
+        """本地 labelme json: 把 shape.label == old_name 改成 new_name(后台线程)."""
         index = self.dataset_cache.get(project_name, {}).get(dataset_name)
         if not index:
             return
-        recs = index.get("all", [])
-        progress = None
-        if len(recs) > 50:
-            progress = ProgressDialog(
-                QC.translate("LabelMixin", "重命名标签"), QC.translate("LabelMixin", "正在更新标注文件..."), self,
-                maximum=len(recs), cancellable=False)
-        try:
-            for i, rec in enumerate(recs):
-                if progress is not None:
-                    progress.set_progress(i)
-                img_path = rec.get("image_path", "")
-                base, _ = os.path.splitext(img_path)
-                json_path = base + ".json"
-                if not os.path.exists(json_path):
-                    continue
-                try:
-                    with open(json_path, "r", encoding="utf-8") as f:
-                        text = f.read()
-                    if old_name not in text:
-                        continue      # 快速跳过: 该图不含此标签, 无需解析
-                    data = json.loads(text)
-                    changed = False
-                    for shape in data.get("shapes", []):
-                        if normalize_label(shape.get("label")) == old_name:
-                            shape["label"] = new_name
-                            changed = True
-                    if changed:
-                        with open(json_path, "w", encoding="utf-8") as f:
-                            json.dump(data, f, ensure_ascii=False, indent=2)
-                except Exception:
-                    continue
-        finally:
-            if progress is not None:
-                progress.close()
+        paths = [rec.get("image_path", "") for rec in index.get("all", [])]
+        task = LabelJsonTask(paths, parent=self, old_name=old_name,
+                             new_name=new_name)
 
-    def _on_delete_label(self):
-        """首页"删除"按钮: 删除筛选里唯一选中的那个标签(含确认弹窗)."""
-        if not self._current_dataset:
-            MessageBox.warning(self, QC.translate("LabelMixin", "删除标签"), QC.translate("LabelMixin", "请先在左侧选中一个数据集"))
-            return
-        old = self.current_label
-        if old == "__unlabeled__" or not old:
-            MessageBox.warning(
-                self, QC.translate("LabelMixin", "删除标签"),
-                QC.translate("LabelMixin", "请先在筛选下拉框中选择要删除的标签"))
-            return
-        if not MessageBox.question(
-                self, QC.translate("LabelMixin", "删除标签"),
-                QC.translate("LabelMixin", "确定删除标签\"{}\"吗?\n该标签的所有标注将被删除, 且不可恢复.").format(old), default_yes=True):
-            return
-        proj, ds = self._current_dataset
-        self._apply_delete_label(proj, ds, old)
+        def on_done(changed):
+            if merge_mode:
+                self._merge_label_files(project_name, dataset_name,
+                                        old_name, new_name)
+
+        self._start_label_file_task(task, project_name, dataset_name, on_done)
 
     def _apply_delete_label(self, project_name, dataset_name, label_name):
-        """删除标签: 内存索引 / 本地 json / db / YOLO txt 同步移除."""
+        """删除标签: 内存索引 / 本地 json / db / YOLO txt 同步移除. 返回 json 改写任务(可空)."""
         index = self.dataset_cache.get(project_name, {}).get(dataset_name)
         if index:
             for rec in index.get("all", []):
@@ -519,7 +442,6 @@ class LabelMixin(object):
                 if changed:
                     rec["rois_by_idx"] = {}
             self._rebuild_index_labels(project_name, dataset_name)
-        self._delete_label_in_files(project_name, dataset_name, label_name)
         self.db.remove_dataset_label(project_name, dataset_name, label_name)
         # 同步移除 class_id 映射中指向该标签的项
         ids = self.db.get_dataset_label_ids(project_name, dataset_name)
@@ -533,16 +455,22 @@ class LabelMixin(object):
                                   if k != label_name]
         self._log(QC.translate("LabelMixin", "删除标签: {} ({}/{})").format(
             label_name, project_name, dataset_name))
-        # YOLO txt 文件层删除: 后台删行首==旧 id 的行(否则重新导入标签复活)
         binding = self.db.get_dataset_import(project_name, dataset_name) or {}
         label_fmt = binding.get("label_fmt", "") or ""
         label_paths = get_paths(binding, "label")
-        if label_fmt == ".txt" and old_ids and label_paths:
-            self._remove_label_files(project_name, dataset_name,
-                                     label_name, old_ids)
-            return  # 文件删除是异步的,完成后回调里刷新
-        self._after_merge_refresh(project_name, dataset_name,
-                                  label_name, "", 0, op="delete")
+        use_txt = bool(label_fmt == ".txt" and old_ids and label_paths)
+
+        def on_done(changed):
+            # YOLO txt 文件层删除: 后台删行首==旧 id 的行(否则重新导入标签复活)
+            if use_txt:
+                self._remove_label_files(project_name, dataset_name,
+                                         label_name, old_ids)
+                return  # 文件删除是异步的,完成后回调里刷新
+            self._after_merge_refresh(project_name, dataset_name,
+                                      label_name, "", changed, op="delete")
+
+        return self._delete_label_in_files(project_name, dataset_name,
+                                           label_name, on_done=on_done)
 
     def _remove_label_files(self, project_name, dataset_name,
                             label_name, old_ids):
@@ -578,81 +506,31 @@ class LabelMixin(object):
             self._merge_tasks = set()
         self._merge_tasks.add(task)
 
-    def _delete_label_in_files(self, project_name, dataset_name, label_name):
+    def _delete_label_in_files(self, project_name, dataset_name, label_name,
+                               on_done=None):
         """
         本地 labelme json: 删除 shape.label == label_name 的所有 shapes
         """
-        return self._delete_labels_in_files(project_name, dataset_name, [label_name])
+        return self._delete_labels_in_files(project_name, dataset_name,
+                                            [label_name], on_done=on_done)
 
-    def _delete_labels_in_files(self, project_name, dataset_name, label_names):
+    def _delete_labels_in_files(self, project_name, dataset_name, label_names,
+                                on_done=None):
         """
-        批量删除标签的文件层清理: 一次遍历同时过滤全部标签.
+        批量删除标签的文件层清理: 一次遍历同时过滤全部标签, 后台线程执行.
+        改完后在主线程回调 on_done(实际改写的文件数); 无活可干时返回 None.
         """
         names = {n for n in (label_names or []) if n}
         if not names:
-            return
+            return None
         index = self.dataset_cache.get(project_name, {}).get(dataset_name)
         if not index:
-            return
-        recs = index.get("all", [])
-        progress = None
-        if len(recs) > 50:
-            progress = ProgressDialog(
-                QC.translate("LabelMixin", "删除标签"), QC.translate("LabelMixin", "正在清理标注文件..."), self,
-                maximum=len(recs), cancellable=False)
-        try:
-            for i, rec in enumerate(recs):
-                if progress is not None:
-                    progress.set_progress(i)
-                img_path = rec.get("image_path", "")
-                base, _ = os.path.splitext(img_path)
-                json_path = base + ".json"
-                if not os.path.exists(json_path):
-                    continue
-                try:
-                    with open(json_path, "r", encoding="utf-8") as f:
-                        text = f.read()
-                    if not any(n in text for n in names):
-                        continue      # 快速跳过: 不含任一待删标签
-                    data = json.loads(text)
-                    before = len(data.get("shapes", []))
-                    data["shapes"] = [s for s in data.get("shapes", [])
-                                      if normalize_label(s.get("label")) not in names]
-                    if len(data["shapes"]) != before:
-                        with open(json_path, "w", encoding="utf-8") as f:
-                            json.dump(data, f, ensure_ascii=False, indent=2)
-                except Exception:
-                    continue
-        finally:
-            if progress is not None:
-                progress.close()
-
-    def _apply_deleted_labels(self, project_name, dataset_name, label_names):
-        """
-        清理缓存中的 labels/boxes/派生缓存, 重建分组.
-        """
-        names = {n for n in (label_names or []) if n}
-        if not names:
-            return
-        self._delete_labels_in_files(project_name, dataset_name, names)
-        index = self.dataset_cache.get(project_name, {}).get(dataset_name)
-        if not index:
-            return
-        for rec in index.get("all", []):
-            changed = False
-            rec_labels = rec.get("labels") or []
-            new_labels = [l for l in rec_labels if l not in names]
-            if len(new_labels) != len(rec_labels):
-                rec["labels"] = new_labels
-                changed = True
-            if rec.get("boxes"):
-                new_boxes = [b for b in rec["boxes"] if b[-1] not in names]
-                if len(new_boxes) != len(rec["boxes"]):
-                    rec["boxes"] = new_boxes
-                    changed = True
-            if changed:
-                rec["rois_by_idx"] = {}
-        self._rebuild_index_labels(project_name, dataset_name)
+            return None
+        paths = [rec.get("image_path", "") for rec in index.get("all", [])]
+        task = LabelJsonTask(paths, parent=self, names=list(names))
+        self._start_label_file_task(task, project_name, dataset_name,
+                                    on_done or (lambda _n: None))
+        return task
 
     def _apply_cls_changes(self, project_name, dataset_name, changes):
         """分类数据集修改了类别: 同步缓存中的 image_path/cls/labels, 重建标签分组."""

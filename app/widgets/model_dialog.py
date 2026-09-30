@@ -367,9 +367,9 @@ class ModelDialog(QDialog):
         for t in train_recs:
             if t.get("id") in seen_train_ids:
                 continue
-            self._refresh_metric_from_file(t)
             if not self._record_match(t):
                 continue
+            self._refresh_metric_from_file(t)
             recs.append(t)
         self._all_records = recs
         self._apply_filters()
