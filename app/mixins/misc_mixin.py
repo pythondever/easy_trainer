@@ -77,6 +77,7 @@ class MiscMixin(object):
         if dlg is not None:
             dlg.ui.retranslateUi(dlg)
             dlg.setWindowTitle(QC.translate("LogDialog", "日志"))
+        self._retranslate_header_overflow()
 
     def _on_log_clicked(self):
         """显示常驻日志对话框(启动时已创建并注册, 隐藏也接收日志)."""

@@ -6,3 +6,4 @@ from app.mixins.dataset_view_mixin import DatasetViewMixin
 from app.mixins.train_mixin import TrainMixin
 from app.mixins.queue_mixin import QueueMixin
 from app.mixins.misc_mixin import MiscMixin
+from app.mixins.responsive_mixin import ResponsiveMixin

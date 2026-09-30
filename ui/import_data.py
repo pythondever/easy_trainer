@@ -73,22 +73,16 @@ class Ui_ImportData(object):
         self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
         self.label_fmt = QLabel(ImportData)
         self.label_fmt.setObjectName(u"label_fmt")
-        font = QFont()
-        font.setFamilies([u"Microsoft YaHei"])
-        font.setPointSize(12)
-        self.label_fmt.setFont(font)
 
         self.horizontalLayout_3.addWidget(self.label_fmt)
 
         self.yolo_fmt = QRadioButton(ImportData)
         self.yolo_fmt.setObjectName(u"yolo_fmt")
-        self.yolo_fmt.setFont(font)
 
         self.horizontalLayout_3.addWidget(self.yolo_fmt)
 
         self.labelme_fmt = QRadioButton(ImportData)
         self.labelme_fmt.setObjectName(u"labelme_fmt")
-        self.labelme_fmt.setFont(font)
         self.labelme_fmt.setChecked(True)
 
         self.horizontalLayout_3.addWidget(self.labelme_fmt)
@@ -109,7 +103,6 @@ class Ui_ImportData(object):
         self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
         self.tips_lbl = QLabel(ImportData)
         self.tips_lbl.setObjectName(u"tips_lbl")
-        self.tips_lbl.setFont(font)
 
         self.horizontalLayout_4.addWidget(self.tips_lbl)
 

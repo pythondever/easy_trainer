@@ -108,9 +108,9 @@ class DatasetRowDelegate(QStyledItemDelegate):
         _draw_photo_icon(p, cx, cy - 6.5, icon_c)
 
         name_font = QFont()
-        name_font.setPixelSize(13)
+        name_font.setPixelSize(theme.px(13))
         num_font = QFont()
-        num_font.setPixelSize(11)
+        num_font.setPixelSize(theme.px(11))
         p.setFont(num_font)
         fm = QFontMetrics(num_font)
         w_total = fm.horizontalAdvance(str(total))
@@ -292,13 +292,13 @@ class ProjectCardHeader(QWidget):
         hover_c = theme.color("text_3") if self.underMouse() else theme.color("text_faint")
         _draw_chevron(p, 20, cy, self.expanded, hover_c)
         f = QFont()
-        f.setPixelSize(13)
+        f.setPixelSize(theme.px(13))
         p.setFont(f)
         p.setPen(theme.color("text"))
         fm = QFontMetrics(f)
         # 数据集计数徽标: 宽度按文字自适应, 固定 20px 放不下两位数
         fs = QFont()
-        fs.setPixelSize(11)
+        fs.setPixelSize(theme.px(11))
         fms = QFontMetrics(fs)
         badge_w = max(20, fms.horizontalAdvance(str(self.count)) + 14)
         badge_x = self.width() - BADGE_PAD_R - badge_w

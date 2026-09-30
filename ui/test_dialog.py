@@ -17,8 +17,8 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QDialog,
     QFormLayout, QFrame, QHBoxLayout, QLabel,
-    QLineEdit, QPushButton, QSizePolicy, QSpacerItem,
-    QVBoxLayout, QWidget)
+    QLineEdit, QPushButton, QScrollArea, QSizePolicy,
+    QSpacerItem, QVBoxLayout, QWidget)
 
 class Ui_TestDialog(object):
     def setupUi(self, TestDialog):
@@ -36,7 +36,17 @@ class Ui_TestDialog(object):
 
         self.mainLayout.addWidget(self.title_label)
 
-        self.model_card = QFrame(TestDialog)
+        self.scroll_area = QScrollArea(TestDialog)
+        self.scroll_area.setObjectName(u"scroll_area")
+        self.scroll_area.setFrameShape(QFrame.NoFrame)
+        self.scroll_area.setWidgetResizable(True)
+        self.scrollAreaWidgetContents = QWidget()
+        self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
+        self.scroll_layout = QVBoxLayout(self.scrollAreaWidgetContents)
+        self.scroll_layout.setSpacing(10)
+        self.scroll_layout.setObjectName(u"scroll_layout")
+        self.scroll_layout.setContentsMargins(0, 0, 0, 0)
+        self.model_card = QFrame(self.scrollAreaWidgetContents)
         self.model_card.setObjectName(u"model_card")
         self.model_card.setFrameShape(QFrame.NoFrame)
         self.model_card_layout = QVBoxLayout(self.model_card)
@@ -79,18 +89,18 @@ class Ui_TestDialog(object):
         self.model_card_layout.addWidget(self.model_meta)
 
 
-        self.mainLayout.addWidget(self.model_card)
+        self.scroll_layout.addWidget(self.model_card)
 
         self.group_source_row = QHBoxLayout()
         self.group_source_row.setSpacing(10)
         self.group_source_row.setObjectName(u"group_source_row")
-        self.group_source_title = QLabel(TestDialog)
+        self.group_source_title = QLabel(self.scrollAreaWidgetContents)
         self.group_source_title.setObjectName(u"group_source_title")
         self.group_source_title.setProperty(u"class", u"dialogSectionTitle")
 
         self.group_source_row.addWidget(self.group_source_title)
 
-        self.group_source_line = QFrame(TestDialog)
+        self.group_source_line = QFrame(self.scrollAreaWidgetContents)
         self.group_source_line.setObjectName(u"group_source_line")
         sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         sizePolicy2.setHorizontalStretch(0)
@@ -104,19 +114,19 @@ class Ui_TestDialog(object):
         self.group_source_row.addWidget(self.group_source_line)
 
 
-        self.mainLayout.addLayout(self.group_source_row)
+        self.scroll_layout.addLayout(self.group_source_row)
 
         self.form_source = QFormLayout()
         self.form_source.setObjectName(u"form_source")
         self.form_source.setHorizontalSpacing(14)
         self.form_source.setVerticalSpacing(12)
         self.form_source.setLabelAlignment(Qt.AlignLeft|Qt.AlignVCenter)
-        self.test_data_label = QLabel(TestDialog)
+        self.test_data_label = QLabel(self.scrollAreaWidgetContents)
         self.test_data_label.setObjectName(u"test_data_label")
 
         self.form_source.setWidget(0, QFormLayout.ItemRole.LabelRole, self.test_data_label)
 
-        self.test_data_combo = QComboBox(TestDialog)
+        self.test_data_combo = QComboBox(self.scrollAreaWidgetContents)
         self.test_data_combo.setObjectName(u"test_data_combo")
         sizePolicy2.setHeightForWidth(self.test_data_combo.sizePolicy().hasHeightForWidth())
         self.test_data_combo.setSizePolicy(sizePolicy2)
@@ -124,12 +134,12 @@ class Ui_TestDialog(object):
 
         self.form_source.setWidget(0, QFormLayout.ItemRole.FieldRole, self.test_data_combo)
 
-        self.test_device_label = QLabel(TestDialog)
+        self.test_device_label = QLabel(self.scrollAreaWidgetContents)
         self.test_device_label.setObjectName(u"test_device_label")
 
         self.form_source.setWidget(1, QFormLayout.ItemRole.LabelRole, self.test_device_label)
 
-        self.test_device_combo = QComboBox(TestDialog)
+        self.test_device_combo = QComboBox(self.scrollAreaWidgetContents)
         self.test_device_combo.setObjectName(u"test_device_combo")
         sizePolicy2.setHeightForWidth(self.test_device_combo.sizePolicy().hasHeightForWidth())
         self.test_device_combo.setSizePolicy(sizePolicy2)
@@ -138,18 +148,18 @@ class Ui_TestDialog(object):
         self.form_source.setWidget(1, QFormLayout.ItemRole.FieldRole, self.test_device_combo)
 
 
-        self.mainLayout.addLayout(self.form_source)
+        self.scroll_layout.addLayout(self.form_source)
 
         self.group_param_row = QHBoxLayout()
         self.group_param_row.setSpacing(10)
         self.group_param_row.setObjectName(u"group_param_row")
-        self.group_param_title = QLabel(TestDialog)
+        self.group_param_title = QLabel(self.scrollAreaWidgetContents)
         self.group_param_title.setObjectName(u"group_param_title")
         self.group_param_title.setProperty(u"class", u"dialogSectionTitle")
 
         self.group_param_row.addWidget(self.group_param_title)
 
-        self.group_param_line = QFrame(TestDialog)
+        self.group_param_line = QFrame(self.scrollAreaWidgetContents)
         self.group_param_line.setObjectName(u"group_param_line")
         sizePolicy2.setHeightForWidth(self.group_param_line.sizePolicy().hasHeightForWidth())
         self.group_param_line.setSizePolicy(sizePolicy2)
@@ -160,19 +170,19 @@ class Ui_TestDialog(object):
         self.group_param_row.addWidget(self.group_param_line)
 
 
-        self.mainLayout.addLayout(self.group_param_row)
+        self.scroll_layout.addLayout(self.group_param_row)
 
         self.form_param = QFormLayout()
         self.form_param.setObjectName(u"form_param")
         self.form_param.setHorizontalSpacing(14)
         self.form_param.setVerticalSpacing(10)
         self.form_param.setLabelAlignment(Qt.AlignLeft|Qt.AlignVCenter)
-        self.confidence_label = QLabel(TestDialog)
+        self.confidence_label = QLabel(self.scrollAreaWidgetContents)
         self.confidence_label.setObjectName(u"confidence_label")
 
         self.form_param.setWidget(0, QFormLayout.ItemRole.LabelRole, self.confidence_label)
 
-        self.conf_wrap = QWidget(TestDialog)
+        self.conf_wrap = QWidget(self.scrollAreaWidgetContents)
         self.conf_wrap.setObjectName(u"conf_wrap")
         self.conf_wrap_layout = QHBoxLayout(self.conf_wrap)
         self.conf_wrap_layout.setSpacing(4)
@@ -197,12 +207,12 @@ class Ui_TestDialog(object):
 
         self.form_param.setWidget(0, QFormLayout.ItemRole.FieldRole, self.conf_wrap)
 
-        self.iou_treshold_label = QLabel(TestDialog)
+        self.iou_treshold_label = QLabel(self.scrollAreaWidgetContents)
         self.iou_treshold_label.setObjectName(u"iou_treshold_label")
 
         self.form_param.setWidget(1, QFormLayout.ItemRole.LabelRole, self.iou_treshold_label)
 
-        self.iou_wrap = QWidget(TestDialog)
+        self.iou_wrap = QWidget(self.scrollAreaWidgetContents)
         self.iou_wrap.setObjectName(u"iou_wrap")
         self.iou_wrap_layout = QHBoxLayout(self.iou_wrap)
         self.iou_wrap_layout.setSpacing(4)
@@ -227,12 +237,12 @@ class Ui_TestDialog(object):
 
         self.form_param.setWidget(1, QFormLayout.ItemRole.FieldRole, self.iou_wrap)
 
-        self.output_label_label = QLabel(TestDialog)
+        self.output_label_label = QLabel(self.scrollAreaWidgetContents)
         self.output_label_label.setObjectName(u"output_label_label")
 
         self.form_param.setWidget(2, QFormLayout.ItemRole.LabelRole, self.output_label_label)
 
-        self.out_wrap = QWidget(TestDialog)
+        self.out_wrap = QWidget(self.scrollAreaWidgetContents)
         self.out_wrap.setObjectName(u"out_wrap")
         self.out_wrap_layout = QHBoxLayout(self.out_wrap)
         self.out_wrap_layout.setSpacing(10)
@@ -256,13 +266,13 @@ class Ui_TestDialog(object):
         self.form_param.setWidget(2, QFormLayout.ItemRole.FieldRole, self.out_wrap)
 
 
-        self.mainLayout.addLayout(self.form_param)
+        self.scroll_layout.addLayout(self.form_param)
 
         self.bottomSpacerTop = QSpacerItem(20, 12, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
-        self.mainLayout.addItem(self.bottomSpacerTop)
+        self.scroll_layout.addItem(self.bottomSpacerTop)
 
-        self.summary_bar = QFrame(TestDialog)
+        self.summary_bar = QFrame(self.scrollAreaWidgetContents)
         self.summary_bar.setObjectName(u"summary_bar")
         self.summary_bar.setFrameShape(QFrame.NoFrame)
         self.summary_bar_layout = QHBoxLayout(self.summary_bar)
@@ -286,7 +296,11 @@ class Ui_TestDialog(object):
         self.summary_bar_layout.addWidget(self.summary_text)
 
 
-        self.mainLayout.addWidget(self.summary_bar)
+        self.scroll_layout.addWidget(self.summary_bar)
+
+        self.scroll_area.setWidget(self.scrollAreaWidgetContents)
+
+        self.mainLayout.addWidget(self.scroll_area)
 
         self.button_line = QFrame(TestDialog)
         self.button_line.setObjectName(u"button_line")

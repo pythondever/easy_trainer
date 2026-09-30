@@ -71,8 +71,8 @@ PALETTE = {
 
 # ---------------- 控件盒模型 ----------------
 # QSS 的尺寸按内容盒算: 总高 = 内容高 + 上下 padding + 上下边框
-PAD_BTN = "6px 14px"          # 按钮内边距
-PAD_FIELD = "6px 10px"        # 输入框 / 下拉内边距
+PAD_BTN = (6, 14)             # 按钮内边距 (上下, 左右)
+PAD_FIELD = (6, 10)           # 输入框 / 下拉内边距
 H_CTRL = 18                   # 主窗口控件内容高 -> 18 + 12 + 2 = 32
 H_CTRL_DIALOG = 22            # 弹窗控件内容高 -> 22 + 12 + 2 = 36
 
@@ -100,17 +100,43 @@ RADIUS = {
     "r_2xl": 12,          # 消息框
 }
 
-TOKENS = dict(PALETTE)
-TOKENS.update({k: "{}px".format(v) for k, v in FONT.items()})
-TOKENS.update({k: "{}px".format(v) for k, v in RADIUS.items()})
-TOKENS.update({
-    "h_ctrl": "{}px".format(H_CTRL),
-    "h_ctrl_dialog": "{}px".format(H_CTRL_DIALOG),
-    "pad_btn": PAD_BTN,
-    "pad_field": PAD_FIELD,
-    # rgba() 里要的是裸三元组, 不能带 #
-    "accent_rgb": "79,125,255",
-})
+# ---------------- 界面倍率 ----------------
+# 用户可选的字号档位. 默认 1.0 = 原样, 不动它时观感逐像素不变.
+# 字号必须和盒模型一起缩: 只放大字号, 按钮仍按旧尺寸描边会立刻显挤.
+FONT_SCALE = 1.0
+
+
+def px(value):
+    """Python 侧写死的像素尺寸(字号)走这里, 才能跟界面倍率一起变."""
+    return max(1, int(round(value * FONT_SCALE)))
+
+
+def set_font_scale(scale):
+    """换倍率并重算令牌; 之后要重新 load_style_sheet() + setStyleSheet 才生效."""
+    global FONT_SCALE
+    FONT_SCALE = float(scale) if scale else 1.0
+    _rebuild_tokens()
+
+
+TOKENS = {}
+
+
+def _rebuild_tokens():
+    TOKENS.clear()
+    TOKENS.update(PALETTE)
+    TOKENS.update({k: "{}px".format(px(v)) for k, v in FONT.items()})
+    TOKENS.update({k: "{}px".format(px(v)) for k, v in RADIUS.items()})
+    TOKENS.update({
+        "h_ctrl": "{}px".format(px(H_CTRL)),
+        "h_ctrl_dialog": "{}px".format(px(H_CTRL_DIALOG)),
+        "pad_btn": "{}px {}px".format(px(PAD_BTN[0]), px(PAD_BTN[1])),
+        "pad_field": "{}px {}px".format(px(PAD_FIELD[0]), px(PAD_FIELD[1])),
+        # rgba() 里要的是裸三元组, 不能带 #
+        "accent_rgb": "79,125,255",
+    })
+
+
+_rebuild_tokens()
 
 _PLACEHOLDER = re.compile(r"\{\{([A-Za-z_][A-Za-z0-9_]*)\}\}")
 

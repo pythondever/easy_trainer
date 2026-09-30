@@ -6,6 +6,7 @@ from PySide6.QtGui import (QBrush, QColor, QPen, QFont, QFontMetrics, QPainter,
 import functools
 import hashlib
 from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsPolygonItem, QGraphicsItem
+from app.core import theme
 from app.core.utils import ui_font_family
 
 # 深色背景下鲜艳的标签配色.
@@ -71,7 +72,7 @@ def _chip_font():
         if not font.exactMatch():
             font.setFamily("Noto Sans CJK SC, Microsoft YaHei, sans-serif")
         font.setStyleHint(QFont.SansSerif)
-        font.setPixelSize(13)
+        font.setPixelSize(theme.px(13))
         _CHIP_FONT = font
     return _CHIP_FONT
 

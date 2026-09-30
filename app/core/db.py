@@ -673,6 +673,18 @@ class DataBase:
             else:
                 txn.delete(keys.language)
 
+    def get_font_scale(self):
+        with self.mdb.begin(write=False) as txn:
+            data = txn.get(keys.font_scale)
+        try:
+            return float(data.decode("utf-8")) if data else 1.0
+        except ValueError:
+            return 1.0
+
+    def set_font_scale(self, scale):
+        with self.mdb.begin(write=True) as txn:
+            txn.put(keys.font_scale, str(float(scale)).encode("utf-8"))
+
     # ---------- 训练/模型记录级联删除 ----------
 
     def delete_project_records(self, project_name):

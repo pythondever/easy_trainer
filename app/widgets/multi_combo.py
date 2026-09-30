@@ -182,7 +182,7 @@ class MultiComboDelegate(QStyledItemDelegate):
         # 勾选圈占住右边, 先把它和两侧留白扣掉, 剩下的才是文字可用宽
         mark_cx = rect.right() - 12 - MARK / 2.0
         font = QFont(p.font())
-        font.setPixelSize(LIST_FONT_PX)
+        font.setPixelSize(theme.px(LIST_FONT_PX))
         p.setFont(font)
         fm = QFontMetrics(font)
         left = row.x() + 9 + DOT + 5
@@ -289,7 +289,7 @@ class ChipLineEdit(QLineEdit):
         self._cross = []
         rect = self.rect()
         font = QFont(self.font())
-        font.setPixelSize(CHIP_FONT_PX)
+        font.setPixelSize(theme.px(CHIP_FONT_PX))
         p.setFont(font)
         rows = self._chips()
         if not rows:

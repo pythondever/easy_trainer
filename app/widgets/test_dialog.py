@@ -24,6 +24,7 @@ from app.widgets.combo_utils import style_combo
 from app.widgets.dialog_buttons import apply_icon
 from app.widgets.message_box import MessageBox
 from app.widgets.multi_combo import install_multi_combo
+from app.widgets.dialog_fit import fit_dialog_height
 from app.widgets.status_style import task_text
 from app.train.dialogs import (CONTROL_H, _TrainStartDialog, detach_device_probe,
                                fill_device_combo_async, fill_device_items)
@@ -66,14 +67,28 @@ class TestDialog(QDialog):
         self._fill_data_combo()
         self._fill_device_combo()
         self._fill_defaults()
-        self.resize(max(self.sizeHint().width(), 680), self.sizeHint().height())
         self.ui.start_test_btn.clicked.connect(self._on_start)
         self.ui.cancel_btn.clicked.connect(self.reject)
         self._on_data_changed()
+        self._fit_content()
+        fit_dialog_height(self)
 
     def closeEvent(self, event):
         detach_device_probe(self)
         super().closeEvent(event)
+
+    def _fit_content(self):
+        """开窗高度按参数区实际内容定, 屏装不下时由 fit_dialog_height 收窗、滚动条接管."""
+        ui = self.ui
+        margin = ui.mainLayout.contentsMargins()
+        fixed = (ui.title_label.sizeHint().height()
+                 + ui.button_line.sizeHint().height()
+                 + ui.bottom_row.sizeHint().height())
+        spacing = ui.mainLayout.spacing() * (ui.mainLayout.count() - 1)
+        # 内容高是按 sizeHint 估的, 真排下来会差一两像素 —— 不留余量默认尺寸下就平白多出滚动条
+        want = (ui.scrollAreaWidgetContents.sizeHint().height() + fixed + spacing
+                + margin.top() + margin.bottom() + 6)
+        self.resize(max(self.sizeHint().width(), 680), max(520, want))
 
     # ---------- 样式: 点击任意位置展开 + 控件对齐 ----------
     def _init_style(self):

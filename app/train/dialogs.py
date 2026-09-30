@@ -22,6 +22,7 @@ from app.widgets.message_box import MessageBox
 from app.widgets.multi_combo import install_multi_combo
 from app.widgets.status_style import task_text
 from app.widgets.model_manager_dialog import ensure_weight
+from app.widgets.dialog_fit import fit_dialog_height
 from app.core import i18n
 from app.core.db import get_paths
 from app.core.log import write_log
@@ -487,7 +488,21 @@ class TrainDialog(QDialog):
         self._fill_defaults()
         self._fix_heights()
         self._connect()
-        self.resize(740, max(560, self.sizeHint().height()))
+        self._fit_content()
+        fit_dialog_height(self)
+
+    def _fit_content(self):
+        """开窗高度按参数区实际内容定, 屏装不下时由 fit_dialog_height 收窗、滚动条接管."""
+        ui = self.ui
+        margin = ui.mainLayout.contentsMargins()
+        fixed = (ui.title_row.sizeHint().height()
+                 + ui.button_line.sizeHint().height()
+                 + ui.bottom_row.sizeHint().height())
+        spacing = ui.mainLayout.spacing() * (ui.mainLayout.count() - 1)
+        # 内容高是按 sizeHint 估的, 真排下来会差一两像素 —— 不留余量默认尺寸下就平白多出滚动条
+        want = (ui.scrollAreaWidgetContents.sizeHint().height() + fixed + spacing
+                + margin.top() + margin.bottom() + 6)
+        self.resize(740, max(520, want))
 
     def _tag_task_combo(self):
         """任务下拉挂 itemData. 按文本找的话, 界面切英文后 _task() 会全部落空."""

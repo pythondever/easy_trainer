@@ -197,7 +197,6 @@ class ModelDialog(QDialog):
         self.ui.setupUi(self)
         self.setWindowTitle(self.tr("模型管理"))
         self._tag_filter_combos()
-        self.setWindowState(Qt.WindowMaximized)
         self.app = app
         self._project = project
         self._dataset = dataset
@@ -226,6 +225,8 @@ class ModelDialog(QDialog):
         self.ui.pre_page_btn.clicked.connect(self._prev_page)
         self.ui.next_page_btn.clicked.connect(self._next_page)
         self._load_records()
+        # 必须放在最后: setWindowState 会当场触发 resizeEvent, 而它要读 _page_size
+        self.setWindowState(Qt.WindowMaximized)
 
     def showEvent(self, event):
         super().showEvent(event)

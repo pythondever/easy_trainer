@@ -5,3 +5,4 @@ model_history = b'model_history'  # 模型记录列表(有模型文件的训练,
 train_queue = b'train_queue'  # 训练队列(参数快照+数据集引用,串行逐个执行)
 models_dir = b'models_dir'  # 预训练权重的根目录(用户改过才写; 内部再分 cnn/transformer 子目录)
 language = b'language'  # 界面语言代码(默认中文不写, 切过才写)
+font_scale = b'font_scale'  # 界面倍率(默认 1.0 不写, 调过才写)

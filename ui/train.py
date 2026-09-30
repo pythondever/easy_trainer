@@ -17,8 +17,8 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QComboBox, QDialog, QFormLayout,
     QFrame, QGridLayout, QHBoxLayout, QLabel,
-    QLineEdit, QPushButton, QSizePolicy, QSpacerItem,
-    QVBoxLayout, QWidget)
+    QLineEdit, QPushButton, QScrollArea, QSizePolicy,
+    QSpacerItem, QVBoxLayout, QWidget)
 
 class Ui_TrainDialog(object):
     def setupUi(self, TrainDialog):
@@ -51,7 +51,17 @@ class Ui_TrainDialog(object):
 
         self.mainLayout.addLayout(self.title_row)
 
-        self.section_data_wrap = QWidget(TrainDialog)
+        self.scroll_area = QScrollArea(TrainDialog)
+        self.scroll_area.setObjectName(u"scroll_area")
+        self.scroll_area.setFrameShape(QFrame.NoFrame)
+        self.scroll_area.setWidgetResizable(True)
+        self.scrollAreaWidgetContents = QWidget()
+        self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
+        self.scroll_layout = QVBoxLayout(self.scrollAreaWidgetContents)
+        self.scroll_layout.setSpacing(10)
+        self.scroll_layout.setObjectName(u"scroll_layout")
+        self.scroll_layout.setContentsMargins(0, 0, 0, 0)
+        self.section_data_wrap = QWidget(self.scrollAreaWidgetContents)
         self.section_data_wrap.setObjectName(u"section_data_wrap")
         self.section_data_layout = QHBoxLayout(self.section_data_wrap)
         self.section_data_layout.setSpacing(10)
@@ -77,19 +87,19 @@ class Ui_TrainDialog(object):
         self.section_data_layout.addWidget(self.group_data_line)
 
 
-        self.mainLayout.addWidget(self.section_data_wrap)
+        self.scroll_layout.addWidget(self.section_data_wrap)
 
         self.grid_data = QGridLayout()
         self.grid_data.setObjectName(u"grid_data")
         self.grid_data.setHorizontalSpacing(12)
         self.grid_data.setVerticalSpacing(12)
-        self.task_label = QLabel(TrainDialog)
+        self.task_label = QLabel(self.scrollAreaWidgetContents)
         self.task_label.setObjectName(u"task_label")
         self.task_label.setAlignment(Qt.AlignLeft|Qt.AlignVCenter)
 
         self.grid_data.addWidget(self.task_label, 0, 0, 1, 1)
 
-        self.task_combo = QComboBox(TrainDialog)
+        self.task_combo = QComboBox(self.scrollAreaWidgetContents)
         self.task_combo.addItem("")
         self.task_combo.addItem("")
         self.task_combo.addItem("")
@@ -99,67 +109,67 @@ class Ui_TrainDialog(object):
 
         self.grid_data.addWidget(self.task_combo, 0, 1, 1, 1)
 
-        self.network_label = QLabel(TrainDialog)
+        self.network_label = QLabel(self.scrollAreaWidgetContents)
         self.network_label.setObjectName(u"network_label")
         self.network_label.setAlignment(Qt.AlignLeft|Qt.AlignVCenter)
 
         self.grid_data.addWidget(self.network_label, 0, 2, 1, 1)
 
-        self.network_combo = QComboBox(TrainDialog)
+        self.network_combo = QComboBox(self.scrollAreaWidgetContents)
         self.network_combo.setObjectName(u"network_combo")
 
         self.grid_data.addWidget(self.network_combo, 0, 3, 1, 1)
 
-        self.dataset_label = QLabel(TrainDialog)
+        self.dataset_label = QLabel(self.scrollAreaWidgetContents)
         self.dataset_label.setObjectName(u"dataset_label")
         self.dataset_label.setAlignment(Qt.AlignLeft|Qt.AlignVCenter)
 
         self.grid_data.addWidget(self.dataset_label, 1, 0, 1, 1)
 
-        self.dataset_combo = QComboBox(TrainDialog)
+        self.dataset_combo = QComboBox(self.scrollAreaWidgetContents)
         self.dataset_combo.setObjectName(u"dataset_combo")
         self.dataset_combo.setMinimumSize(QSize(230, 0))
 
         self.grid_data.addWidget(self.dataset_combo, 1, 1, 1, 1)
 
-        self.val_label = QLabel(TrainDialog)
+        self.val_label = QLabel(self.scrollAreaWidgetContents)
         self.val_label.setObjectName(u"val_label")
         self.val_label.setAlignment(Qt.AlignLeft|Qt.AlignVCenter)
 
         self.grid_data.addWidget(self.val_label, 1, 2, 1, 1)
 
-        self.val_combo = QComboBox(TrainDialog)
+        self.val_combo = QComboBox(self.scrollAreaWidgetContents)
         self.val_combo.setObjectName(u"val_combo")
         self.val_combo.setMinimumSize(QSize(230, 0))
 
         self.grid_data.addWidget(self.val_combo, 1, 3, 1, 1)
 
-        self.device_label = QLabel(TrainDialog)
+        self.device_label = QLabel(self.scrollAreaWidgetContents)
         self.device_label.setObjectName(u"device_label")
         self.device_label.setAlignment(Qt.AlignLeft|Qt.AlignVCenter)
 
         self.grid_data.addWidget(self.device_label, 2, 0, 1, 1)
 
-        self.device_combo = QComboBox(TrainDialog)
+        self.device_combo = QComboBox(self.scrollAreaWidgetContents)
         self.device_combo.setObjectName(u"device_combo")
 
         self.grid_data.addWidget(self.device_combo, 2, 1, 1, 1)
 
-        self.arch_label = QLabel(TrainDialog)
+        self.arch_label = QLabel(self.scrollAreaWidgetContents)
         self.arch_label.setObjectName(u"arch_label")
         self.arch_label.setAlignment(Qt.AlignLeft|Qt.AlignVCenter)
 
         self.grid_data.addWidget(self.arch_label, 2, 2, 1, 1)
 
-        self.arch_combo = QComboBox(TrainDialog)
+        self.arch_combo = QComboBox(self.scrollAreaWidgetContents)
         self.arch_combo.setObjectName(u"arch_combo")
 
         self.grid_data.addWidget(self.arch_combo, 2, 3, 1, 1)
 
 
-        self.mainLayout.addLayout(self.grid_data)
+        self.scroll_layout.addLayout(self.grid_data)
 
-        self.section_hyper_wrap = QWidget(TrainDialog)
+        self.section_hyper_wrap = QWidget(self.scrollAreaWidgetContents)
         self.section_hyper_wrap.setObjectName(u"section_hyper_wrap")
         self.section_hyper_layout = QHBoxLayout(self.section_hyper_wrap)
         self.section_hyper_layout.setSpacing(10)
@@ -182,41 +192,41 @@ class Ui_TrainDialog(object):
         self.section_hyper_layout.addWidget(self.group_hyper_line)
 
 
-        self.mainLayout.addWidget(self.section_hyper_wrap)
+        self.scroll_layout.addWidget(self.section_hyper_wrap)
 
         self.grid_hyper = QGridLayout()
         self.grid_hyper.setObjectName(u"grid_hyper")
         self.grid_hyper.setHorizontalSpacing(12)
         self.grid_hyper.setVerticalSpacing(12)
-        self.epoch_label = QLabel(TrainDialog)
+        self.epoch_label = QLabel(self.scrollAreaWidgetContents)
         self.epoch_label.setObjectName(u"epoch_label")
         self.epoch_label.setAlignment(Qt.AlignLeft|Qt.AlignVCenter)
 
         self.grid_hyper.addWidget(self.epoch_label, 0, 0, 1, 1)
 
-        self.epochs_line_txt = QLineEdit(TrainDialog)
+        self.epochs_line_txt = QLineEdit(self.scrollAreaWidgetContents)
         self.epochs_line_txt.setObjectName(u"epochs_line_txt")
 
         self.grid_hyper.addWidget(self.epochs_line_txt, 0, 1, 1, 1)
 
-        self.optimizer_label = QLabel(TrainDialog)
+        self.optimizer_label = QLabel(self.scrollAreaWidgetContents)
         self.optimizer_label.setObjectName(u"optimizer_label")
         self.optimizer_label.setAlignment(Qt.AlignLeft|Qt.AlignVCenter)
 
         self.grid_hyper.addWidget(self.optimizer_label, 0, 2, 1, 1)
 
-        self.optimizer_comboBox = QComboBox(TrainDialog)
+        self.optimizer_comboBox = QComboBox(self.scrollAreaWidgetContents)
         self.optimizer_comboBox.setObjectName(u"optimizer_comboBox")
 
         self.grid_hyper.addWidget(self.optimizer_comboBox, 0, 3, 1, 1)
 
-        self.early_stop_label = QLabel(TrainDialog)
+        self.early_stop_label = QLabel(self.scrollAreaWidgetContents)
         self.early_stop_label.setObjectName(u"early_stop_label")
         self.early_stop_label.setAlignment(Qt.AlignLeft|Qt.AlignVCenter)
 
         self.grid_hyper.addWidget(self.early_stop_label, 1, 0, 1, 1)
 
-        self.early_wrap = QWidget(TrainDialog)
+        self.early_wrap = QWidget(self.scrollAreaWidgetContents)
         self.early_wrap.setObjectName(u"early_wrap")
         self.early_wrap_layout = QVBoxLayout(self.early_wrap)
         self.early_wrap_layout.setSpacing(4)
@@ -242,13 +252,13 @@ class Ui_TrainDialog(object):
 
         self.grid_hyper.addWidget(self.early_wrap, 1, 1, 1, 1)
 
-        self.lr_label = QLabel(TrainDialog)
+        self.lr_label = QLabel(self.scrollAreaWidgetContents)
         self.lr_label.setObjectName(u"lr_label")
         self.lr_label.setAlignment(Qt.AlignLeft|Qt.AlignVCenter)
 
         self.grid_hyper.addWidget(self.lr_label, 1, 2, 1, 1)
 
-        self.lr_wrap = QWidget(TrainDialog)
+        self.lr_wrap = QWidget(self.scrollAreaWidgetContents)
         self.lr_wrap.setObjectName(u"lr_wrap")
         self.lr_wrap_layout = QVBoxLayout(self.lr_wrap)
         self.lr_wrap_layout.setSpacing(4)
@@ -271,24 +281,24 @@ class Ui_TrainDialog(object):
 
         self.grid_hyper.addWidget(self.lr_wrap, 1, 3, 1, 1)
 
-        self.batch_label = QLabel(TrainDialog)
+        self.batch_label = QLabel(self.scrollAreaWidgetContents)
         self.batch_label.setObjectName(u"batch_label")
         self.batch_label.setAlignment(Qt.AlignLeft|Qt.AlignVCenter)
 
         self.grid_hyper.addWidget(self.batch_label, 2, 0, 1, 1)
 
-        self.batch_size_line_txt = QLineEdit(TrainDialog)
+        self.batch_size_line_txt = QLineEdit(self.scrollAreaWidgetContents)
         self.batch_size_line_txt.setObjectName(u"batch_size_line_txt")
 
         self.grid_hyper.addWidget(self.batch_size_line_txt, 2, 1, 1, 1)
 
-        self.img_size_label = QLabel(TrainDialog)
+        self.img_size_label = QLabel(self.scrollAreaWidgetContents)
         self.img_size_label.setObjectName(u"img_size_label")
         self.img_size_label.setAlignment(Qt.AlignLeft|Qt.AlignVCenter)
 
         self.grid_hyper.addWidget(self.img_size_label, 2, 2, 1, 1)
 
-        self.img_wrap = QWidget(TrainDialog)
+        self.img_wrap = QWidget(self.scrollAreaWidgetContents)
         self.img_wrap.setObjectName(u"img_wrap")
         self.img_wrap_layout = QHBoxLayout(self.img_wrap)
         self.img_wrap_layout.setSpacing(8)
@@ -309,13 +319,13 @@ class Ui_TrainDialog(object):
 
         self.grid_hyper.addWidget(self.img_wrap, 2, 3, 1, 1)
 
-        self.grad_accum_label = QLabel(TrainDialog)
+        self.grad_accum_label = QLabel(self.scrollAreaWidgetContents)
         self.grad_accum_label.setObjectName(u"grad_accum_label")
         self.grad_accum_label.setAlignment(Qt.AlignLeft|Qt.AlignVCenter)
 
         self.grid_hyper.addWidget(self.grad_accum_label, 3, 0, 1, 1)
 
-        self.grad_wrap = QWidget(TrainDialog)
+        self.grad_wrap = QWidget(self.scrollAreaWidgetContents)
         self.grad_wrap.setObjectName(u"grad_wrap")
         self.grad_wrap_layout = QVBoxLayout(self.grad_wrap)
         self.grad_wrap_layout.setSpacing(4)
@@ -338,21 +348,21 @@ class Ui_TrainDialog(object):
 
         self.grid_hyper.addWidget(self.grad_wrap, 3, 1, 1, 1)
 
-        self.loader_num_label = QLabel(TrainDialog)
+        self.loader_num_label = QLabel(self.scrollAreaWidgetContents)
         self.loader_num_label.setObjectName(u"loader_num_label")
         self.loader_num_label.setAlignment(Qt.AlignLeft|Qt.AlignVCenter)
 
         self.grid_hyper.addWidget(self.loader_num_label, 3, 2, 1, 1)
 
-        self.batch_size_line_txt_2 = QLineEdit(TrainDialog)
+        self.batch_size_line_txt_2 = QLineEdit(self.scrollAreaWidgetContents)
         self.batch_size_line_txt_2.setObjectName(u"batch_size_line_txt_2")
 
         self.grid_hyper.addWidget(self.batch_size_line_txt_2, 3, 3, 1, 1)
 
 
-        self.mainLayout.addLayout(self.grid_hyper)
+        self.scroll_layout.addLayout(self.grid_hyper)
 
-        self.section_out_wrap = QWidget(TrainDialog)
+        self.section_out_wrap = QWidget(self.scrollAreaWidgetContents)
         self.section_out_wrap.setObjectName(u"section_out_wrap")
         self.section_out_layout = QHBoxLayout(self.section_out_wrap)
         self.section_out_layout.setSpacing(10)
@@ -375,14 +385,14 @@ class Ui_TrainDialog(object):
         self.section_out_layout.addWidget(self.group_out_line)
 
 
-        self.mainLayout.addWidget(self.section_out_wrap)
+        self.scroll_layout.addWidget(self.section_out_wrap)
 
         self.form_out = QFormLayout()
         self.form_out.setObjectName(u"form_out")
         self.form_out.setHorizontalSpacing(12)
         self.form_out.setVerticalSpacing(12)
         self.form_out.setLabelAlignment(Qt.AlignRight|Qt.AlignVCenter)
-        self.output_label = QLabel(TrainDialog)
+        self.output_label = QLabel(self.scrollAreaWidgetContents)
         self.output_label.setObjectName(u"output_label")
 
         self.form_out.setWidget(0, QFormLayout.ItemRole.LabelRole, self.output_label)
@@ -390,12 +400,12 @@ class Ui_TrainDialog(object):
         self.out_row = QHBoxLayout()
         self.out_row.setSpacing(8)
         self.out_row.setObjectName(u"out_row")
-        self.output_line_txt = QLineEdit(TrainDialog)
+        self.output_line_txt = QLineEdit(self.scrollAreaWidgetContents)
         self.output_line_txt.setObjectName(u"output_line_txt")
 
         self.out_row.addWidget(self.output_line_txt)
 
-        self.select_output_path_btn = QPushButton(TrainDialog)
+        self.select_output_path_btn = QPushButton(self.scrollAreaWidgetContents)
         self.select_output_path_btn.setObjectName(u"select_output_path_btn")
         self.select_output_path_btn.setMinimumSize(QSize(90, 30))
 
@@ -405,13 +415,13 @@ class Ui_TrainDialog(object):
         self.form_out.setLayout(0, QFormLayout.ItemRole.FieldRole, self.out_row)
 
 
-        self.mainLayout.addLayout(self.form_out)
+        self.scroll_layout.addLayout(self.form_out)
 
         self.bottom_spacer_top = QSpacerItem(20, 12, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
-        self.mainLayout.addItem(self.bottom_spacer_top)
+        self.scroll_layout.addItem(self.bottom_spacer_top)
 
-        self.summary_bar = QFrame(TrainDialog)
+        self.summary_bar = QFrame(self.scrollAreaWidgetContents)
         self.summary_bar.setObjectName(u"summary_bar")
         self.summary_bar.setFrameShape(QFrame.NoFrame)
         self.summary_bar_layout = QHBoxLayout(self.summary_bar)
@@ -437,7 +447,11 @@ class Ui_TrainDialog(object):
         self.summary_bar_layout.addWidget(self.summary_text)
 
 
-        self.mainLayout.addWidget(self.summary_bar)
+        self.scroll_layout.addWidget(self.summary_bar)
+
+        self.scroll_area.setWidget(self.scrollAreaWidgetContents)
+
+        self.mainLayout.addWidget(self.scroll_area)
 
         self.button_line = QFrame(TrainDialog)
         self.button_line.setObjectName(u"button_line")

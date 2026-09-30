@@ -1144,6 +1144,25 @@ QFrame#headerSeparator {
     width: 1px;
 }
 
+/* 溢出菜单: 收窄到装不下时, 顶栏尾部的入口按钮藏进这里 */
+QPushButton#headerMoreBtn {
+    padding: 6px 10px;
+}
+QPushButton#headerMoreBtn::menu-indicator { image: none; width: 0px; }
+
+/* 训练/测试/结果框内容区可滚动: 框与视口都透出对话框底色, 只留右侧滚动条 */
+QDialog#TrainDialog QScrollArea,
+QDialog#TestDialog QScrollArea,
+QDialog#TestResultDialog QScrollArea {
+    background: transparent;
+    border: none;
+}
+QDialog#TrainDialog QScrollArea > QWidget > QWidget,
+QDialog#TestDialog QScrollArea > QWidget > QWidget,
+QDialog#TestResultDialog QScrollArea > QWidget > QWidget {
+    background: transparent;
+}
+
 /* 标签筛选按钮与它弹出的平铺面板都自绘(app/widgets/label_filter_popup.py),
    走不上 QSS, 这里不再给它们配色 */
 

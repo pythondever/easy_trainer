@@ -73,7 +73,7 @@ class LabelFilterButton(QToolButton):
 
     def _font(self):
         f = QFont(self.font())
-        f.setPixelSize(13)
+        f.setPixelSize(theme.px(13))
         return f
 
     def set_state(self, text, color, dim):
@@ -428,7 +428,7 @@ class LabelFilterPanel(QWidget):
         p.drawPath(path)
 
         font = QFont(p.font())
-        font.setPixelSize(LIST_FONT_PX)
+        font.setPixelSize(theme.px(LIST_FONT_PX))
         p.setFont(font)
 
         geo = self._geo

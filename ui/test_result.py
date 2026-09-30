@@ -17,8 +17,8 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QAbstractItemView, QApplication, QDialog, QFrame,
     QHBoxLayout, QHeaderView, QLabel, QPushButton,
-    QSizePolicy, QSpacerItem, QSpinBox, QTableWidget,
-    QTableWidgetItem, QVBoxLayout, QWidget)
+    QScrollArea, QSizePolicy, QSpacerItem, QSpinBox,
+    QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget)
 
 class Ui_TestResultDialog(object):
     def setupUi(self, TestResultDialog):
@@ -29,7 +29,17 @@ class Ui_TestResultDialog(object):
         self.mainLayout.setSpacing(12)
         self.mainLayout.setObjectName(u"mainLayout")
         self.mainLayout.setContentsMargins(22, 18, 22, 16)
-        self.section_img = QWidget(TestResultDialog)
+        self.scroll_area = QScrollArea(TestResultDialog)
+        self.scroll_area.setObjectName(u"scroll_area")
+        self.scroll_area.setFrameShape(QFrame.NoFrame)
+        self.scroll_area.setWidgetResizable(True)
+        self.scrollAreaWidgetContents = QWidget()
+        self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
+        self.scroll_layout = QVBoxLayout(self.scrollAreaWidgetContents)
+        self.scroll_layout.setSpacing(12)
+        self.scroll_layout.setObjectName(u"scroll_layout")
+        self.scroll_layout.setContentsMargins(0, 0, 0, 0)
+        self.section_img = QWidget(self.scrollAreaWidgetContents)
         self.section_img.setObjectName(u"section_img")
         self.section_img_layout = QVBoxLayout(self.section_img)
         self.section_img_layout.setSpacing(6)
@@ -262,9 +272,9 @@ class Ui_TestResultDialog(object):
         self.section_img_layout.addLayout(self.metricRowImg)
 
 
-        self.mainLayout.addWidget(self.section_img)
+        self.scroll_layout.addWidget(self.section_img)
 
-        self.section_lbl = QWidget(TestResultDialog)
+        self.section_lbl = QWidget(self.scrollAreaWidgetContents)
         self.section_lbl.setObjectName(u"section_lbl")
         self.section_lbl_layout = QVBoxLayout(self.section_lbl)
         self.section_lbl_layout.setSpacing(6)
@@ -491,9 +501,9 @@ class Ui_TestResultDialog(object):
         self.section_lbl_layout.addLayout(self.metricRowLbl)
 
 
-        self.mainLayout.addWidget(self.section_lbl)
+        self.scroll_layout.addWidget(self.section_lbl)
 
-        self.result_table = QTableWidget(TestResultDialog)
+        self.result_table = QTableWidget(self.scrollAreaWidgetContents)
         if (self.result_table.columnCount() < 7):
             self.result_table.setColumnCount(7)
         __qtablewidgetitem = QTableWidgetItem()
@@ -515,13 +525,17 @@ class Ui_TestResultDialog(object):
         self.result_table.setSelectionMode(QAbstractItemView.NoSelection)
         self.result_table.setAlternatingRowColors(True)
 
-        self.mainLayout.addWidget(self.result_table)
+        self.scroll_layout.addWidget(self.result_table)
 
-        self.conclusion_label = QLabel(TestResultDialog)
+        self.conclusion_label = QLabel(self.scrollAreaWidgetContents)
         self.conclusion_label.setObjectName(u"conclusion_label")
         self.conclusion_label.setWordWrap(True)
 
-        self.mainLayout.addWidget(self.conclusion_label)
+        self.scroll_layout.addWidget(self.conclusion_label)
+
+        self.scroll_area.setWidget(self.scrollAreaWidgetContents)
+
+        self.mainLayout.addWidget(self.scroll_area)
 
         self.btn_row = QHBoxLayout()
         self.btn_row.setObjectName(u"btn_row")

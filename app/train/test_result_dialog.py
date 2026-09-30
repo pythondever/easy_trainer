@@ -5,7 +5,7 @@ import datetime
 import os
 import re
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QTimer
 from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, \
     QSizePolicy, QTableWidgetItem
 from app.core import theme
@@ -13,6 +13,7 @@ from app.core.label_utils import label_sort_key
 from app.train.export_worker import ReportWorker
 from app.widgets.message_box import MessageBox
 from app.widgets.dialog_buttons import apply_icon
+from app.widgets.dialog_fit import fit_dialog_height
 from ui.test_result import Ui_TestResultDialog
 
 
@@ -93,10 +94,51 @@ class TestResultDialog(QDialog):
         self._ui.export_pdf_btn.clicked.connect(self._on_export)
         self._res = res
         self._worker = None
+        self._fitted = False
         if per_class_limit is not None:
             self._ui.sample_spin.setValue(per_class_limit)
         self._fill(res)
         self._sync_export_btn()
+        self._fit_content()
+        fit_dialog_height(self)
+
+    def _fit_content(self):
+        """开窗尺寸按结果区实际内容定, 屏装不下时由 fit_dialog_height 收窗、滚动条接管."""
+        ui = self._ui
+        margin = ui.mainLayout.contentsMargins()
+        spacing = ui.mainLayout.spacing() * (ui.mainLayout.count() - 1)
+        contents = ui.scrollAreaWidgetContents
+        # 内容尺寸是按 sizeHint 估的, 真排下来会差一两像素 —— 不留余量默认尺寸下就平白多出滚动条
+        want_h = (contents.sizeHint().height() + ui.btn_row.sizeHint().height()
+                  + spacing + margin.top() + margin.bottom() + 6)
+        # 表格的列宽原来靠 minimumWidth 把窗口撑开, 进了滚动区就撑不动了:
+        # 长语言下表头会整块被横向滚动条挡在视野外, 这里把宽度补回来
+        want_w = (contents.sizeHint().width() + margin.left() + margin.right()
+                  + ui.scroll_area.verticalScrollBar().sizeHint().width() + 6)
+        scr = self.screen() or QApplication.primaryScreen()
+        cap = scr.availableGeometry().width() - 80 if scr else want_w
+        self.resize(max(760, min(want_w, cap)), max(520, want_h))
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        if self._fitted:
+            return
+        self._fitted = True
+        # showEvent 里布局还没排完, 滚动条状态不作数 —— 挪到事件循环第一轮再量
+        QTimer.singleShot(0, self, self._grow_to_fit)
+
+    def _grow_to_fit(self):
+        """默认尺寸下平白冒出滚动条时把窗口补高(屏幕装不下就留着滚动条).
+        sizeHint 是按各控件的理想宽度估的, 长语言下同一行会折行、真排下来更高."""
+        ui = self._ui
+        bar = ui.scroll_area.verticalScrollBar()
+        if not bar.isVisible():
+            return
+        need = self.height() + bar.maximum() + 2
+        scr = self.screen() or QApplication.primaryScreen()
+        avail = scr.availableGeometry().height() - 90 if scr else 0
+        if avail and need <= avail:
+            self.resize(self.width(), need)
 
     # ---------------- 导出 PDF ----------------
 
@@ -288,7 +330,7 @@ class TestResultDialog(QDialog):
         self._fill_ad_table(res.get("per_class") or {})
         u.conclusion_label.setText(self._conclusion_ad(total, hit, thr))
         # 内容只有两卡一行, 多余高度集中留到按钮上方, 否则会被均分成几道空隙
-        u.mainLayout.insertStretch(u.mainLayout.count() - 1, 1)
+        u.scroll_layout.addStretch(1)
 
     def _fill_ad_table(self, per_class):
         """异常检测的类别表: 只有图数与检出数, 没有真值这一层."""

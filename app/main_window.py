@@ -5,7 +5,7 @@ from app.widgets.log_dialog import LogDialog
 from app.widgets.popup_flat import ComboPopupFlattener
 from app.widgets.dialog_buttons import resource_icon
 from ui.app import Ui_AppUI as MainUI
-from app.core import i18n
+from app.core import i18n, theme
 from app.core.constants import PAGE_SIZE
 from app.core.utils import (setup_matplotlib_chinese, load_style_sheet,
                             project_root)
@@ -18,7 +18,8 @@ from PySide6.QtWidgets import QWidget, QApplication, QTimeEdit, QFrame, QHBoxLay
 
 
 from app.mixins import (LabelMixin, ProjectMixin, ImportExportMixin,
-                        DatasetViewMixin, TrainMixin, QueueMixin, MiscMixin)
+                        DatasetViewMixin, TrainMixin, QueueMixin, MiscMixin,
+                        ResponsiveMixin)
 
 
 _pretrained_dir = os.path.join(project_root(), "pretrained")
@@ -34,7 +35,7 @@ DB_DIR = default_db_dir()
 
 
 class App(QWidget, MainUI, LabelMixin, ProjectMixin, ImportExportMixin,
-          DatasetViewMixin, TrainMixin, QueueMixin, MiscMixin):
+          DatasetViewMixin, TrainMixin, QueueMixin, MiscMixin, ResponsiveMixin):
     def __init__(self, db=None):
         super().__init__()
         self.db = db if db is not None else DataBase(DB_DIR)
@@ -138,6 +139,7 @@ class App(QWidget, MainUI, LabelMixin, ProjectMixin, ImportExportMixin,
         self._init_label_filter()
         self._current_dataset = None
         self._setup_header_groups()
+        self.init_header_overflow()
 
     def _init_pager(self):
         """底栏翻页用箭头图标: 三字按钮按全局 padding 要占约 78px, 底栏里只有它俩显笨重."""
@@ -215,7 +217,14 @@ class App(QWidget, MainUI, LabelMixin, ProjectMixin, ImportExportMixin,
                 and event.type() == QEvent.MouseButtonDblClick):
             self._on_graphics_double_click(event.position().toPoint())
             return True
+        if obj is self.datasetHeader and event.type() == QEvent.LayoutRequest:
+            # 顶栏内容变了(换语言/开始训练/队列条数/数据集名变长)都要重判一次
+            self._fit_header()
         return False
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self._fit_header()
 
     def show_ui(self):
         self.showMaximized()
@@ -224,16 +233,18 @@ class App(QWidget, MainUI, LabelMixin, ProjectMixin, ImportExportMixin,
 def main():
     setup_matplotlib_chinese()
     myapp = QApplication(sys.argv)
-    qss, missing_token = load_style_sheet()
-    if missing_token:
-        write_log("style.qss 引用了未定义的令牌: " + ", ".join(missing_token))
-    myapp.setStyleSheet(qss)
-    # db 提前建一次: 界面语言要在 setupUi 之前装好, 否则静态文案已经按中文生成了
+    # db 要最先建: 界面语言和界面倍率都得在 setupUi 与样式表之前定好,
+    # 否则静态文案已按中文生成、字号令牌也已按默认档算过一遍
     migrated = migrate_legacy_db(DB_DIR)
     if migrated:
         write_log("数据库目录含非 ASCII, 已迁移: {} -> {}".format(
             migrated, DB_DIR))
     db = DataBase(DB_DIR)
+    theme.set_font_scale(db.get_font_scale())
+    qss, missing_token = load_style_sheet()
+    if missing_token:
+        write_log("style.qss 引用了未定义的令牌: " + ", ".join(missing_token))
+    myapp.setStyleSheet(qss)
     i18n.apply(myapp, db.get_language())
     ui = App(db)
     ui.show_ui()

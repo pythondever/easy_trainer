@@ -103,12 +103,6 @@
       <layout class="QHBoxLayout" name="horizontalLayout_3">
        <item>
         <widget class="QLabel" name="label_fmt">
-         <property name="font">
-          <font>
-           <family>Microsoft YaHei</family>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
          <property name="text">
           <string>标签格式:</string>
          </property>
@@ -116,12 +110,6 @@
        </item>
        <item>
         <widget class="QRadioButton" name="yolo_fmt">
-         <property name="font">
-          <font>
-           <family>Microsoft YaHei</family>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
          <property name="text">
           <string>Yolo txt</string>
          </property>
@@ -129,12 +117,6 @@
        </item>
        <item>
         <widget class="QRadioButton" name="labelme_fmt">
-         <property name="font">
-          <font>
-           <family>Microsoft YaHei</family>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
          <property name="text">
           <string>Labelme json</string>
          </property>
@@ -169,12 +151,6 @@
       <layout class="QHBoxLayout" name="horizontalLayout_4">
        <item>
         <widget class="QLabel" name="tips_lbl">
-         <property name="font">
-          <font>
-           <family>Microsoft YaHei</family>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
          <property name="text">
           <string>提示信息</string>
          </property>

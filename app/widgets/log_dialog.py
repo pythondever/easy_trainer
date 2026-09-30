@@ -3,6 +3,7 @@ from PySide6.QtGui import QTextCursor
 from PySide6.QtWidgets import QDialog
 
 from app.core.log import LOG_FILE, MAX_LINES, register_log_dialog
+from app.widgets.dialog_fit import fit_dialog_height
 from ui.log import Ui_LogDialog
 
 
@@ -22,6 +23,7 @@ class LogDialog(QDialog):
         self.ui.clr_log_btn.clicked.connect(self.clear_log)
         self._load_history()
         register_log_dialog(self)
+        fit_dialog_height(self)
 
     def _load_history(self):
         try:
