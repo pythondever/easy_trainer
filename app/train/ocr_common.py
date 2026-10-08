@@ -4,7 +4,7 @@ OCR 架构表: 训练对话框在主进程读它, 所以这里不能 import doct
 """
 
 from app.train.task_spec import (
-    QT_TRANSLATE_NOOP, TaskSpec)
+    QT_TRANSLATE_NOOP, NO_TEXT, TaskSpec)
 
 
 OCR_MODELS = (
