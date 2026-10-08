@@ -85,19 +85,26 @@ COL_TASK, COL_DATA, COL_METRIC, COL_TIME, COL_DUR, COL_IMG, COL_OPS = range(7)
 METRIC_GOOD, METRIC_MID, METRIC_BAD = (theme.hexof("st_ok"), theme.hexof("st_warn"),
                                        theme.hexof("st_err"))
 
-# 操作列按钮配色: 测试/导出绿, 删除红. 行内样式会盖掉全局, 故 disabled 态要自己补
-_OPS_BTN = "QPushButton{font-size:12px;padding:2px 4px;background-color:%s;" \
-           "border:1px solid %s;color:%s;}" \
-           "QPushButton:hover{background-color:%s;border-color:%s;}" \
-           "QPushButton:pressed{background-color:%s;}" \
-           "QPushButton:disabled{background-color:" + theme.hexof("bg_panel") + \
-           ";border-color:" + theme.hexof("border_subtle") + \
-           ";color:" + theme.hexof("text_disabled") + ";}"
+# 操作列按钮: 行内样式会盖掉全局, disabled 态要自己补. 配色取 theme 令牌,
+# 写死十六进制的话换主题时这两只按钮还是旧色
+_OPS_BTN = ("QPushButton{font-size:12px;padding:2px 6px;border-radius:"
+            + theme.TOKENS["r_md"] + ";background-color:%s;border:1px solid %s;"
+            "color:%s;}"
+            "QPushButton:hover{background-color:%s;border-color:%s;}"
+            "QPushButton:pressed{background-color:%s;}"
+            "QPushButton:disabled{background-color:" + theme.hexof("bg_panel")
+            + ";border-color:" + theme.hexof("border_subtle")
+            + ";color:" + theme.hexof("text_disabled") + ";}")
 OPS_BTN_QSS = {
-    "opsGo": _OPS_BTN % ("#2b6b4a", "#3d8c62", "#d6f5e4",
-                         "#357f58", "#4ba376", "#245c40"),
-    "opsDel": _OPS_BTN % ("#7a3336", "#a3454b", "#ffd9d9",
-                          "#8f3d41", "#bd5359", "#6a2c2f"),
+    "opsGo": _OPS_BTN % (theme.hexof("bg_control"), theme.hexof("border"),
+                         theme.hexof("text_2"), theme.hexof("bg_hover"),
+                         theme.hexof("border_hover"),
+                         theme.hexof("bg_pressed_2")),
+    "opsDel": _OPS_BTN % (theme.hexof("danger_bg"), theme.hexof("danger_border"),
+                          theme.hexof("danger_text"),
+                          theme.hexof("danger_bg_hover"),
+                          theme.hexof("danger_border_hover"),
+                          theme.hexof("danger_bg_pressed")),
 }
 CURVE_BG, CURVE_LINE = theme.color("bg_base"), theme.color("accent")
 
@@ -280,7 +287,7 @@ class ModelDialog(QDialog):
             COL_TIME: (QHeaderView.ResizeToContents, 130),
             COL_DUR: (QHeaderView.ResizeToContents, 90),
             COL_IMG: (QHeaderView.ResizeToContents, 80),
-            COL_OPS: (QHeaderView.Fixed, 150),
+            COL_OPS: (QHeaderView.Fixed, 140),
         }
         for i, (mode, w) in widths.items():
             h.setSectionResizeMode(i, mode)
@@ -291,8 +298,8 @@ class ModelDialog(QDialog):
         h.setSortIndicatorShown(True)
         h.setSortIndicator(self._sort_col, Qt.DescendingOrder)
         h.sectionClicked.connect(self._on_header_clicked)
-        t.verticalHeader().setDefaultSectionSize(46)
-        t.verticalHeader().setMinimumSectionSize(40)
+        t.verticalHeader().setDefaultSectionSize(52)
+        t.verticalHeader().setMinimumSectionSize(46)
         t.itemSelectionChanged.connect(self._on_selection_changed)
 
     def _setup_filters(self):
@@ -303,8 +310,6 @@ class ModelDialog(QDialog):
         u.best_only_check.stateChanged.connect(self._apply_filters)
         u.detail_metrics_btn.clicked.connect(
             lambda: self._current and self._show_metrics(self._current))
-        u.detail_test_btn.clicked.connect(
-            lambda: self._current and self._test(self._current))
         u.detail_retrain_btn.clicked.connect(
             lambda: self._current and self._retrain(self._current))
         u.detail_compare_btn.clicked.connect(
@@ -479,27 +484,18 @@ class ModelDialog(QDialog):
             if len(labels) > 6:
                 label_text += self.tr(" 等 {} 类").format(len(labels))
             data_text = str(r.get("dataset_info") or r.get("dataset") or "")
-            if label_text:
-                data_text += "\n{}".format(label_text)
-            vals = [task_text(r.get("task", "") or "-"), data_text,
+            vals = [task_text(r.get("task", "") or "-"), "",
                     "", r.get("start_time", ""), _duration_text(r),
                     r.get("img_size", "")]
             for j, v in enumerate(vals):
                 item = QTableWidgetItem(str(v))
-                item.setTextAlignment(
-                    Qt.AlignCenter if j != COL_DATA else Qt.AlignLeft | Qt.AlignVCenter)
+                item.setTextAlignment(Qt.AlignCenter)
                 item.setToolTip(str(v))
                 t.setItem(i, j, item)
-            if m is None:
-                item = QTableWidgetItem(status_text(st))
-                item.setTextAlignment(Qt.AlignCenter)
-                item.setForeground(QColor(status_color(st, "#ffd166")))
-                err = str(r.get("error") or "").strip()
-                item.setToolTip(err or status_text(st))
-                t.setItem(i, COL_METRIC, item)
-            else:
-                t.setCellWidget(i, COL_METRIC, self._make_metric_cell(
-                    m, st if st != "已完成" else None, r.get("error")))
+            t.setCellWidget(i, COL_DATA,
+                            self._make_data_cell(data_text, label_text))
+            t.setCellWidget(i, COL_METRIC, self._make_metric_cell(
+                m, st if st != "已完成" else None, r.get("error")))
             btns = []
             tbtn = QPushButton(self.tr("测试"))
             tbtn.setObjectName("opsGo")
@@ -532,44 +528,69 @@ class ModelDialog(QDialog):
         return wrap
 
     def _make_metric_cell(self, value, status=None, error=None):
-        color = METRIC_GOOD if value >= 0.8 else (
-            METRIC_MID if value >= 0.5 else METRIC_BAD)
+        # 数值 / 进度条 / 状态三个槽位恒定: 状态槽没内容也占位, 否则数值
+        # 会随有无状态上下跳 12px, 整列看着在抖
+        if value is None:
+            color = theme.hexof("text_3")
+        else:
+            color = METRIC_GOOD if value >= 0.8 else (
+                METRIC_MID if value >= 0.5 else METRIC_BAD)
         wrap = QWidget()
         v = QVBoxLayout(wrap)
-        v.setContentsMargins(2, 2, 2, 2)
+        # 垂直内边距压到 1px: 行高扣掉单元格 padding 后只剩 39px,
+        # 三个槽(数值/进度条/状态)要刚好放下
+        v.setContentsMargins(6, 1, 6, 1)
         v.setSpacing(2)
-        lbl = QLabel("{:.3f}".format(value))
+        lbl = QLabel("{:.3f}".format(value) if value is not None else "—")
         lbl.setAlignment(Qt.AlignCenter)
         lbl.setStyleSheet("font-size:12px;color:%s;" % color)
-        if status:
-            s = QLabel(status_text(status))
-            s.setAlignment(Qt.AlignCenter)
-            s.setStyleSheet("font-size:10px;color:%s;"
-                            % status_color(status, METRIC_MID))
-            v.addWidget(s)
-            if error:
-                wrap.setToolTip(error)
         bar = QProgressBar()
         bar.setRange(0, 100)
-        bar.setValue(int(round(value * 100)))
+        bar.setValue(int(round(value * 100)) if value is not None else 0)
         bar.setTextVisible(False)
         bar.setFixedHeight(5)
+        # 控件一旦有 setStyleSheet, 高度就归 QSS 管, setFixedHeight 会被撑回默认高度,
+        # 必须在 QSS 里再钉一次, 否则进度条变 18px 把下面的状态槽压住
         bar.setStyleSheet(
-            "QProgressBar{border:none;background:" + theme.hexof("border_subtle") + ";border-radius:2px;}"
+            "QProgressBar{min-height:5px;max-height:5px;border:none;background:" + theme.hexof("border_subtle") + ";border-radius:2px;}"
             "QProgressBar::chunk{background:%s;border-radius:2px;}" % color)
-        v.addWidget(lbl)
+        slot = QLabel(status_text(status) if status else "")
+        slot.setAlignment(Qt.AlignCenter)
+        slot.setFixedHeight(12)
+        slot.setStyleSheet("font-size:10px;color:%s;" % (
+            status_color(status, METRIC_MID) if status else "transparent"))
+        if status and error:
+            wrap.setToolTip(error)
+        v.addWidget(lbl, 1)      # 数值槽吃剩余高度, 文字仍垂直居中
         v.addWidget(bar)
+        v.addWidget(slot)
+        return self._transparent_wrap(wrap)
+
+    def _make_data_cell(self, name, labels):
+        """数据集名 + 标签两行: QTableWidgetItem 不认换行符, 只能拆成两个 QLabel."""
+        wrap = QWidget()
+        v = QVBoxLayout(wrap)
+        v.setContentsMargins(8, 2, 8, 2)
+        v.setSpacing(0)
+        top = QLabel(name)
+        top.setStyleSheet("font-size:12px;color:%s;" % theme.hexof("text"))
+        v.addWidget(top)
+        if labels:
+            sub = QLabel(labels)
+            sub.setStyleSheet("font-size:11px;color:%s;" % theme.hexof("text_3"))
+            v.addWidget(sub)
+        wrap.setToolTip(name if not labels else name + "\n" + labels)
         return self._transparent_wrap(wrap)
 
     def _make_ops_cell(self, buttons):
         wrap = QWidget()
         h = QHBoxLayout(wrap)
         h.setContentsMargins(0, 0, 0, 0)
-        h.setSpacing(4)
+        h.setSpacing(6)
         h.addStretch(1)
         for b in buttons:
-            b.setMinimumSize(44, 26)
-            b.setMaximumWidth(50)
+            b.setMinimumSize(38, 24)
+            b.setMaximumWidth(46)
             b.setStyleSheet(OPS_BTN_QSS[b.objectName()])
             h.addWidget(b)
         h.addStretch(1)
@@ -590,8 +611,7 @@ class ModelDialog(QDialog):
             u.detail_curve.setPixmap(QPixmap())
             u.detail_curve.setText("")
             for b in (u.detail_metrics_btn, u.detail_compare_btn,
-                      u.detail_test_btn, u.detail_retrain_btn,
-                      u.detail_open_dir_btn):
+                      u.detail_retrain_btn, u.detail_open_dir_btn):
                 b.setEnabled(False)
             return
         m = _metric_value(rec)
@@ -648,7 +668,6 @@ class ModelDialog(QDialog):
         has_model = bool(rec.get("model_path"))
         u.detail_metrics_btn.setEnabled(True)
         u.detail_compare_btn.setEnabled(True)
-        u.detail_test_btn.setEnabled(has_model)
         u.detail_retrain_btn.setEnabled(True)
         u.detail_open_dir_btn.setEnabled(has_model)
 
@@ -725,8 +744,16 @@ class ModelDialog(QDialog):
             MessageBox.warning(self, self.tr("查看指标失败"), str(e))
 
     def _compare(self, record):
-        """对比入口: 带上当前所有训练记录, 默认勾中当前这条."""
+        """对比入口: 只带当前模型(同任务+同架构)的训练记录, 默认勾中当前这条."""
         recs = list(getattr(self, "_all_records", None) or [])
+        if record is not None:
+            task = record.get("task", "")
+            model = record.get("model", "")
+            same = [r for r in recs if r.get("task", "") == task
+                    and r.get("model", "") == model]
+            # 筛空了说明字段对不上, 退回全量, 不至于开一个空窗口
+            if same:
+                recs = same
         if not recs:
             MessageBox.warning(self, self.tr("对比多次训练"),
                                self.tr("当前没有可对比的训练记录"))

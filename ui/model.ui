@@ -226,13 +226,6 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="detail_test_btn">
-          <property name="text">
-           <string>测试此模型</string>
-          </property>
-         </widget>
-        </item>
-        <item>
          <widget class="QPushButton" name="detail_retrain_btn">
           <property name="text">
            <string>按此配置重训</string>

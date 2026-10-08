@@ -136,11 +136,6 @@ class Ui_ModelDialog(object):
 
         self.detail_layout.addWidget(self.detail_compare_btn)
 
-        self.detail_test_btn = QPushButton(self.detail_panel)
-        self.detail_test_btn.setObjectName(u"detail_test_btn")
-
-        self.detail_layout.addWidget(self.detail_test_btn)
-
         self.detail_retrain_btn = QPushButton(self.detail_panel)
         self.detail_retrain_btn.setObjectName(u"detail_retrain_btn")
 
@@ -229,7 +224,6 @@ class Ui_ModelDialog(object):
         self.detail_info.setText(QCoreApplication.translate("ModelDialog", u"\u9009\u4e2d\u4e00\u884c\u67e5\u770b\u8be6\u60c5", None))
         self.detail_metrics_btn.setText(QCoreApplication.translate("ModelDialog", u"\u67e5\u770b\u5b8c\u6574\u6307\u6807", None))
         self.detail_compare_btn.setText(QCoreApplication.translate("ModelDialog", u"\u5bf9\u6bd4\u591a\u6b21\u8bad\u7ec3", None))
-        self.detail_test_btn.setText(QCoreApplication.translate("ModelDialog", u"\u6d4b\u8bd5\u6b64\u6a21\u578b", None))
         self.detail_retrain_btn.setText(QCoreApplication.translate("ModelDialog", u"\u6309\u6b64\u914d\u7f6e\u91cd\u8bad", None))
         self.detail_open_dir_btn.setText(QCoreApplication.translate("ModelDialog", u"\u6253\u5f00\u6a21\u578b\u76ee\u5f55", None))
         self.pre_page_btn.setText(QCoreApplication.translate("ModelDialog", u"\u4e0a\u4e00\u9875", None))

@@ -953,47 +953,130 @@ Delete anyway?</translation>
 <context>
     <name>CompareDialog</name>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="98"/>
+        <location filename="../ui/compare.ui" line="14"/>
         <source>对比多次训练</source>
         <translation>Compare Runs</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="126"/>
+        <location filename="../ui/compare.ui" line="22"/>
         <source>对比指标</source>
         <translation>Compare Metric</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="154"/>
+        <location filename="../ui/compare.ui" line="38"/>
+        <source>记录范围</source>
+        <translation>Record range</translation>
+    </message>
+    <message>
+        <location filename="../ui/compare.ui" line="65"/>
+        <location filename="../app/widgets/compare_dialog.py" line="686"/>
+        <location filename="../app/widgets/compare_dialog.py" line="690"/>
+        <location filename="../app/widgets/compare_dialog.py" line="707"/>
+        <source>导出对比报告</source>
+        <translation>Export comparison report</translation>
+    </message>
+    <message>
+        <location filename="../ui/compare.ui" line="72"/>
+        <location filename="../app/widgets/compare_dialog.py" line="714"/>
+        <location filename="../app/widgets/compare_dialog.py" line="718"/>
+        <source>删除选中</source>
+        <translation>Delete selected</translation>
+    </message>
+    <message>
+        <location filename="../ui/compare.ui" line="91"/>
+        <source>训练记录（可勾选，上限 8 条）</source>
+        <translation>Training records (checkable, up to 8)</translation>
+    </message>
+    <message>
+        <location filename="../ui/compare.ui" line="162"/>
+        <source>关键指标汇总</source>
+        <translation>Key metrics summary</translation>
+    </message>
+    <message>
+        <location filename="../ui/compare.ui" line="182"/>
+        <source>差异与结论</source>
+        <translation>Differences and conclusion</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/compare_dialog.py" line="320"/>
         <source>勾选要对比的训练记录(最多 {} 条), 双击查看单次指标</source>
         <translation>Tick the training runs to compare (up to {}); double-click to view one run&apos;s metrics</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="214"/>
-        <source>这些记录都没有保存指标, 无法对比</source>
-        <translation>None of these runs has saved metrics; nothing to compare</translation>
+        <location filename="../app/widgets/compare_dialog.py" line="295"/>
+        <source>数据来源：LMDB train_history + metrics.csv / metrics json</source>
+        <translation>Data source: LMDB train_history + metrics.csv / metrics json</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="260"/>
+        <location filename="../app/widgets/compare_dialog.py" line="507"/>
         <source>一次最多对比 {} 条记录</source>
         <translation>At most {} runs can be compared at once</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="281"/>
+        <location filename="../app/widgets/compare_dialog.py" line="535"/>
+        <source>{} 训练曲线（按 epoch）</source>
+        <translation>{} training curve (by epoch)</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/compare_dialog.py" line="542"/>
+        <source>已选 {} 条（上限 {}）</source>
+        <translation>{} selected (max {})</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/compare_dialog.py" line="544"/>
         <source>已选 {} 条(上限 {}), 双击左侧记录可查看单次指标</source>
         <translation>{} selected (limit {}); double-click a run on the left to view its metrics</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="283"/>
+        <location filename="../app/widgets/compare_dialog.py" line="546"/>
+        <location filename="../app/widgets/compare_dialog.py" line="572"/>
         <source>勾选左侧的训练记录后这里显示对比曲线</source>
         <translation>Tick runs on the left to show their comparison curves here</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="296"/>
-        <source>暂无可对比的指标数据</source>
-        <translation>No comparable metric data yet</translation>
+        <location filename="../app/widgets/compare_dialog.py" line="640"/>
+        <source>无</source>
+        <translation>None</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="319"/>
+        <location filename="../app/widgets/compare_dialog.py" line="653"/>
+        <source>至少勾选 2 条记录&lt;br&gt;才能比较差异</source>
+        <translation>Select at least 2 records&lt;br&gt;to compare differences</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/compare_dialog.py" line="687"/>
+        <source>当前没有可导出的对比图表</source>
+        <translation>No comparison chart to export</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/compare_dialog.py" line="691"/>
+        <source>PNG 图片 (*.png)</source>
+        <translation>PNG image (*.png)</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/compare_dialog.py" line="705"/>
+        <source>已导出: {}
+{}</source>
+        <translation>Exported: {}
+{}</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/compare_dialog.py" line="708"/>
+        <source>导出失败: {}</source>
+        <translation>Export failed: {}</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/compare_dialog.py" line="715"/>
+        <source>请先勾选要删除的训练记录</source>
+        <translation>Select records to delete first</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/compare_dialog.py" line="719"/>
+        <source>确定删除选中的 {} 条训练记录? 对应指标文件会一并删除.</source>
+        <translation>Delete the {} selected training records? Their metric files will be removed too.</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/compare_dialog.py" line="576"/>
         <source>所选记录没有&quot;{}&quot;的数据</source>
         <translation>The selected runs have no &quot;{}&quot; data</translation>
     </message>
@@ -1197,6 +1280,89 @@ Delete anyway?</translation>
         <location filename="../app/widgets/dialog_buttons.py" line="116"/>
         <source>取消</source>
         <translation>Cancel</translation>
+    </message>
+</context>
+<context>
+    <name>DiffPanel</name>
+    <message>
+        <location filename="../app/widgets/compare_diff.py" line="108"/>
+        <source>最佳记录</source>
+        <translation>Best record</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/compare_diff.py" line="109"/>
+        <source>按 {}</source>
+        <translation>by {}</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/compare_diff.py" line="127"/>
+        <source>参数差异</source>
+        <translation>Parameter differences</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/compare_diff.py" line="127"/>
+        <source>仅列取值不同的项</source>
+        <translation>Only differing values</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/compare_diff.py" line="136"/>
+        <source>所选记录参数完全一致</source>
+        <translation>Selected records share identical parameters</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/compare_diff.py" line="145"/>
+        <source>共同</source>
+        <translation>Common</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/compare_diff.py" line="175"/>
+        <source>结论</source>
+        <translation>Conclusion</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/compare_diff.py" line="190"/>
+        <source>最佳</source>
+        <translation>Best</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/compare_diff.py" line="200"/>
+        <source>它独有的设置</source>
+        <translation>unique to it</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/compare_diff.py" line="204"/>
+        <source>启用增强 {}/{} 条</source>
+        <translation>Augmentation enabled on {}/{}:</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/compare_diff.py" line="207"/>
+        <source>所选记录都没有启用数据增强</source>
+        <translation>No record enabled data augmentation</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/compare_diff.py" line="212"/>
+        <source>仍在训练</source>
+        <translation>still training</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/compare_diff.py" line="214"/>
+        <source>曲线未收敛， 对比仅供参考</source>
+        <translation>curve not converged, for reference only</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/compare_diff.py" line="219"/>
+        <source>未跑完</source>
+        <translation>unfinished</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/compare_diff.py" line="219"/>
+        <source>不参与最佳判定</source>
+        <translation>excluded from best pick</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/compare_diff.py" line="222"/>
+        <source>训练时长</source>
+        <translation>Training duration</translation>
     </message>
 </context>
 <context>
@@ -1662,6 +1828,14 @@ This rewrites the dataset&apos;s source label files and cannot be undone.</trans
         <location filename="../app/core/metrics.py" line="44"/>
         <source>CER</source>
         <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MetricTabs</name>
+    <message>
+        <location filename="../app/widgets/metric_tabs.py" line="60"/>
+        <source>所选记录都没有 {} 的数据</source>
+        <translation>None of the selected records have {} data</translation>
     </message>
 </context>
 <context>

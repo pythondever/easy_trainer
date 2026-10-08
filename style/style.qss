@@ -1039,7 +1039,7 @@ QDialog#ModelDialog QTableWidget {
     color: {{text}};
     font-size: {{font_md}};
 }
-QDialog#ModelDialog QTableWidget::item { padding: 4px 6px; }
+QDialog#ModelDialog QTableWidget::item { padding: 6px 8px; }
 QDialog#ModelDialog QTableWidget::item:hover {
     background-color: {{bg_hover}};
 }
@@ -1053,9 +1053,9 @@ QDialog#ModelDialog QHeaderView::section {
     border: none;
     border-right: 1px solid {{border_subtle}};
     border-bottom: 1px solid {{border_subtle}};
-    padding: 6px 8px;
+    padding: 8px;
     font-size: {{font_md}};
-    font-weight: 500;
+    font-weight: 600;
 }
 QDialog#ModelDialog QPushButton {
     background-color: {{bg_control_2}}; color: {{text}}; border: 1px solid {{border}};
@@ -1434,6 +1434,19 @@ QLabel[class~="modelStatus"][state="ready"] { color: {{st_ok}}; }
 QLabel[class~="modelStatus"][state="failed"] { color: {{st_err}}; }
 QLabel[class~="modelStatus"][state="local"] { color: {{st_info}}; }
 QLabel[class~="modelStatus"][state="broken"] { color: {{st_err}}; }
+
+/* 行首色点: 状态不只靠右端那行字, 扫视时先看到颜色 */
+QLabel[class~="modelDot"] {
+    border-radius: 4px;
+    background-color: {{text_disabled}};
+}
+QLabel[class~="modelDot"][state="ready"] { background-color: {{st_ok}}; }
+QLabel[class~="modelDot"][state="busy"] { background-color: {{accent}}; }
+QLabel[class~="modelDot"][state="local"] { background-color: {{st_info}}; }
+QLabel[class~="modelDot"][state="broken"] { background-color: {{st_err}}; }
+QLabel[class~="modelDot"][state="failed"] { background-color: {{st_err}}; }
+
+QFrame#modelRow:hover { background-color: {{hover_chip}}; }
 
 QProgressBar#modelProgress {
     background-color: {{bg_sunken}};

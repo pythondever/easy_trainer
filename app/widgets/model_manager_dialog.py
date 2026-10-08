@@ -11,7 +11,8 @@ from PySide6.QtCore import Qt, QTimer, Signal
 from PySide6.QtCore import QCoreApplication as QC
 from PySide6.QtGui import QFontMetrics
 from PySide6.QtWidgets import (QDialog, QFileDialog, QFrame, QHBoxLayout,
-                               QLabel, QMenu, QProgressBar, QPushButton)
+                               QLabel, QMenu, QProgressBar, QPushButton,
+                               QSizePolicy)
 
 from app.core import model_assets
 from app.core.log import write_log
@@ -22,7 +23,7 @@ from app.widgets.message_box import MessageBox
 from app.widgets.status_style import task_text
 from ui.model_manager import Ui_ModelManagerDialog
 
-ROW_H = 38
+ROW_H = 42
 BAR_W = 144
 BAR_H = 14
 W_NAME = 54
@@ -32,7 +33,8 @@ W_SIZE = 62
 W_DESC = 140
 W_STATUS = 158
 W_DIR = 220
-BTN_W = 72
+BTN_W = 52
+DOT = 8
 
 
 def _set_state(widget, state):
@@ -59,7 +61,7 @@ def _fmt_eta(secs):
 
 
 class _ModelRow(QFrame):
-    """一行: 勾选 / 名称 / 大小 / 描述 / 进度条或本地路径 / 状态 / 本地按钮."""
+    """一行: 勾选 / 状态色点 / 名称 / 大小 / 描述 / 进度条或本地路径 / 状态 / 本地按钮."""
 
     pick_requested = Signal(object)
     unbind_requested = Signal(object)
@@ -80,12 +82,21 @@ class _ModelRow(QFrame):
         self.check.setCursor(Qt.PointingHandCursor)
         lay.addWidget(self.check)
 
+        self.dot = QLabel()
+        self.dot.setProperty("class", "modelDot")
+        self.dot.setFixedSize(DOT, DOT)
+        lay.addWidget(self.dot)
+
         self.size_label = self._label(
             model_assets.human_size(asset.nbytes), "modelSize", W_SIZE)
         lay.addWidget(self._label(asset.level, "modelName", W_NAME))
         lay.addWidget(self.size_label)
-        lay.addWidget(self._label(
-            QC.translate("ModelAssets", asset.desc), "modelDesc", W_DESC))
+        # 描述列是唯一的弹性列: 余量全给它. 早先是行尾一个 addStretch,
+        # 窗口一拉宽多出来的宽度全堆成描述列与状态列之间的中缝
+        desc = self._label(QC.translate("ModelAssets", asset.desc), "modelDesc", 0)
+        desc.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        desc.setMinimumWidth(W_DESC)
+        lay.addWidget(desc, 1)
 
         self.bar = QProgressBar()
         self.bar.setObjectName("modelProgress")
@@ -100,7 +111,6 @@ class _ModelRow(QFrame):
         self.path_label.setVisible(False)
         lay.addWidget(self.bar)
         lay.addWidget(self.path_label)
-        lay.addStretch(1)
 
         self.status = self._label("", "modelStatus", W_STATUS)
         self.status.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
@@ -120,7 +130,8 @@ class _ModelRow(QFrame):
     def _label(self, text, cls, width):
         lbl = QLabel(text)
         lbl.setProperty("class", cls)
-        lbl.setFixedWidth(width)
+        if width:
+            lbl.setFixedWidth(width)
         return lbl
 
     # ---------- 本地权重 ----------
@@ -140,6 +151,11 @@ class _ModelRow(QFrame):
         self.path_label.setVisible(True)
 
     # ---------- 状态 ----------
+    def _mark(self, state):
+        """状态文字与色点一起切: 分开设会漏一处, 行看着像没状态."""
+        _set_state(self.status, state)
+        _set_state(self.dot, state)
+
     def is_checked(self):
         return self.check.isChecked()
 
@@ -160,14 +176,14 @@ class _ModelRow(QFrame):
         self._clear_local()
         self.status.setText(self.tr("已就绪"))
         self.status.setToolTip("")
-        _set_state(self.status, "ready")
+        self._mark("ready")
 
     def mark_idle(self):
         self.bar.setVisible(False)
         self._clear_local()
         self.status.setText(self.tr("未下载"))
         self.status.setToolTip("")
-        _set_state(self.status, "idle")
+        self._mark("idle")
 
     def mark_local(self, src):
         self.bar.setVisible(False)
@@ -184,7 +200,7 @@ class _ModelRow(QFrame):
             model_assets.human_size(size) if size else "—")
         self.status.setText(self.tr("本地权重"))
         self.status.setToolTip(src)
-        _set_state(self.status, "local")
+        self._mark("local")
 
     def mark_local_broken(self, src):
         self.bar.setVisible(False)
@@ -197,12 +213,12 @@ class _ModelRow(QFrame):
         self.status.setText(self.tr("本地失效"))
         self.status.setToolTip(
             self.tr("登记的本地权重文件已不在这个位置:\n{}").format(src))
-        _set_state(self.status, "broken")
+        self._mark("broken")
 
     def mark_verifying(self):
         self.local_btn.setVisible(False)
         self.status.setText(self.tr("校验中..."))
-        _set_state(self.status, "busy")
+        self._mark("busy")
 
     def mark_busy(self, done, total, bps):
         frac = 0.0 if not total else min(1.0, float(done) / total)
@@ -215,14 +231,14 @@ class _ModelRow(QFrame):
                 _fmt_speed(bps), _fmt_eta((total - done) / bps)))
         else:
             self.status.setText(_fmt_speed(0))
-        _set_state(self.status, "busy")
+        self._mark("busy")
 
     def mark_failed(self, reason):
         self.bar.setVisible(False)
         self.local_btn.setVisible(True)
         self.status.setText(self.tr("失败"))
         self.status.setToolTip(reason)
-        _set_state(self.status, "failed")
+        self._mark("failed")
 
     def refresh(self, directory):
         # 本地绑定优先于官方文件: resolve_path 也是先给本地那份

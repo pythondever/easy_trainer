@@ -953,47 +953,130 @@
 <context>
     <name>CompareDialog</name>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="98"/>
+        <location filename="../ui/compare.ui" line="14"/>
         <source>对比多次训练</source>
         <translation>比較多次訓練</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="126"/>
+        <location filename="../ui/compare.ui" line="22"/>
         <source>对比指标</source>
         <translation>比較指標</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="154"/>
+        <location filename="../ui/compare.ui" line="38"/>
+        <source>记录范围</source>
+        <translation>記錄範圍</translation>
+    </message>
+    <message>
+        <location filename="../ui/compare.ui" line="65"/>
+        <location filename="../app/widgets/compare_dialog.py" line="686"/>
+        <location filename="../app/widgets/compare_dialog.py" line="690"/>
+        <location filename="../app/widgets/compare_dialog.py" line="707"/>
+        <source>导出对比报告</source>
+        <translation>匯出對比報告</translation>
+    </message>
+    <message>
+        <location filename="../ui/compare.ui" line="72"/>
+        <location filename="../app/widgets/compare_dialog.py" line="714"/>
+        <location filename="../app/widgets/compare_dialog.py" line="718"/>
+        <source>删除选中</source>
+        <translation>刪除選中</translation>
+    </message>
+    <message>
+        <location filename="../ui/compare.ui" line="91"/>
+        <source>训练记录（可勾选，上限 8 条）</source>
+        <translation>訓練記錄（可勾選，上限 8 筆）</translation>
+    </message>
+    <message>
+        <location filename="../ui/compare.ui" line="162"/>
+        <source>关键指标汇总</source>
+        <translation>關鍵指標彙總</translation>
+    </message>
+    <message>
+        <location filename="../ui/compare.ui" line="182"/>
+        <source>差异与结论</source>
+        <translation>差異與結論</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/compare_dialog.py" line="320"/>
         <source>勾选要对比的训练记录(最多 {} 条), 双击查看单次指标</source>
         <translation>勾選要比較的訓練記錄(最多 {} 筆), 雙擊查看單次指標</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="214"/>
-        <source>这些记录都没有保存指标, 无法对比</source>
-        <translation>這些記錄都沒有儲存指標, 無法比較</translation>
+        <location filename="../app/widgets/compare_dialog.py" line="295"/>
+        <source>数据来源：LMDB train_history + metrics.csv / metrics json</source>
+        <translation>資料來源：LMDB train_history + metrics.csv / metrics json</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="260"/>
+        <location filename="../app/widgets/compare_dialog.py" line="507"/>
         <source>一次最多对比 {} 条记录</source>
         <translation>一次最多比較 {} 筆記錄</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="281"/>
+        <location filename="../app/widgets/compare_dialog.py" line="535"/>
+        <source>{} 训练曲线（按 epoch）</source>
+        <translation>{} 訓練曲線（按 epoch）</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/compare_dialog.py" line="542"/>
+        <source>已选 {} 条（上限 {}）</source>
+        <translation>已選 {} 筆（上限 {}）</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/compare_dialog.py" line="544"/>
         <source>已选 {} 条(上限 {}), 双击左侧记录可查看单次指标</source>
         <translation>已選 {} 筆(上限 {}), 雙擊左側記錄可查看單次指標</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="283"/>
+        <location filename="../app/widgets/compare_dialog.py" line="546"/>
+        <location filename="../app/widgets/compare_dialog.py" line="572"/>
         <source>勾选左侧的训练记录后这里显示对比曲线</source>
         <translation>勾選左側的訓練記錄後這裡會顯示比較曲線</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="296"/>
-        <source>暂无可对比的指标数据</source>
-        <translation>暫無可比較的指標資料</translation>
+        <location filename="../app/widgets/compare_dialog.py" line="640"/>
+        <source>无</source>
+        <translation>無</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="319"/>
+        <location filename="../app/widgets/compare_dialog.py" line="653"/>
+        <source>至少勾选 2 条记录&lt;br&gt;才能比较差异</source>
+        <translation>至少勾選 2 筆記錄&lt;br&gt;才能比較差異</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/compare_dialog.py" line="687"/>
+        <source>当前没有可导出的对比图表</source>
+        <translation>目前沒有可匯出的對比圖表</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/compare_dialog.py" line="691"/>
+        <source>PNG 图片 (*.png)</source>
+        <translation>PNG 圖片 (*.png)</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/compare_dialog.py" line="705"/>
+        <source>已导出: {}
+{}</source>
+        <translation>已匯出: {}
+{}</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/compare_dialog.py" line="708"/>
+        <source>导出失败: {}</source>
+        <translation>匯出失敗: {}</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/compare_dialog.py" line="715"/>
+        <source>请先勾选要删除的训练记录</source>
+        <translation>請先勾選要刪除的訓練記錄</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/compare_dialog.py" line="719"/>
+        <source>确定删除选中的 {} 条训练记录? 对应指标文件会一并删除.</source>
+        <translation>確定刪除選中的 {} 筆訓練記錄? 對應指標檔案會一併刪除.</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/compare_dialog.py" line="576"/>
         <source>所选记录没有&quot;{}&quot;的数据</source>
         <translation>所選記錄沒有&quot;{}&quot;的資料</translation>
     </message>
@@ -1197,6 +1280,89 @@
         <location filename="../app/widgets/dialog_buttons.py" line="116"/>
         <source>取消</source>
         <translation>取消</translation>
+    </message>
+</context>
+<context>
+    <name>DiffPanel</name>
+    <message>
+        <location filename="../app/widgets/compare_diff.py" line="108"/>
+        <source>最佳记录</source>
+        <translation>最佳記錄</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/compare_diff.py" line="109"/>
+        <source>按 {}</source>
+        <translation>按 {}</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/compare_diff.py" line="127"/>
+        <source>参数差异</source>
+        <translation>參數差異</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/compare_diff.py" line="127"/>
+        <source>仅列取值不同的项</source>
+        <translation>僅列取值不同的項</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/compare_diff.py" line="136"/>
+        <source>所选记录参数完全一致</source>
+        <translation>所選記錄參數完全一致</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/compare_diff.py" line="145"/>
+        <source>共同</source>
+        <translation>共同</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/compare_diff.py" line="175"/>
+        <source>结论</source>
+        <translation>結論</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/compare_diff.py" line="190"/>
+        <source>最佳</source>
+        <translation>最佳</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/compare_diff.py" line="200"/>
+        <source>它独有的设置</source>
+        <translation>它獨有的設定</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/compare_diff.py" line="204"/>
+        <source>启用增强 {}/{} 条</source>
+        <translation>啟用增強 {}/{} 筆</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/compare_diff.py" line="207"/>
+        <source>所选记录都没有启用数据增强</source>
+        <translation>所選記錄都沒有啟用資料增強</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/compare_diff.py" line="212"/>
+        <source>仍在训练</source>
+        <translation>仍在訓練</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/compare_diff.py" line="214"/>
+        <source>曲线未收敛， 对比仅供参考</source>
+        <translation>曲線未收斂， 僅供參考</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/compare_diff.py" line="219"/>
+        <source>未跑完</source>
+        <translation>未跑完</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/compare_diff.py" line="219"/>
+        <source>不参与最佳判定</source>
+        <translation>不參與最佳判定</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/compare_diff.py" line="222"/>
+        <source>训练时长</source>
+        <translation>訓練時長</translation>
     </message>
 </context>
 <context>
@@ -1662,6 +1828,14 @@
         <location filename="../app/core/metrics.py" line="44"/>
         <source>CER</source>
         <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MetricTabs</name>
+    <message>
+        <location filename="../app/widgets/metric_tabs.py" line="60"/>
+        <source>所选记录都没有 {} 的数据</source>
+        <translation>所選記錄都沒有 {} 的資料</translation>
     </message>
 </context>
 <context>
