@@ -27,6 +27,8 @@ import numpy as np
 from sklearn.metrics import roc_auc_score
 from app.core.constants import IMAGE_EXTS
 from app.core.db import get_paths
+from app.train.task_spec import (
+    QT_TRANSLATE_NOOP, NeedsClsSpec)
 
 NORMAL_NAMES = ("ok", "good", "normal", "fine", "pass",
                 "良品", "正常", "正品", "正常品", "合格", "合格品",
@@ -662,5 +664,72 @@ def truth_of_path(path, root):
     if rel in (".", ""):
         return ""
     return rel.split(os.sep)[0]
+
+
+BUILD_ONLY = QT_TRANSLATE_NOOP("TrainDialog", "仅建库")
+
+
+class AdSpec(NeedsClsSpec):
+    """异常检测: 数据集与分类同源, 但型号是算法代号, 界面上一堆参数用不上."""
+
+    code = "ad"
+    defaults = (20, 1e-4, 256, 4)
+    # 算法自带学习率与优化器, 也没有早停/梯度累积的概念
+    disabled_fields = ("lr_line_txt", "early_stop_line_txt",
+                       "grad_accum_line_txt", "optimizer_comboBox")
+
+    def resolve_architecture(self, raw):
+        codes = model_codes()
+        return raw if raw in codes else codes[0]
+
+    def resolve_family(self, raw):
+        return "ad"
+
+    def uses_grad_accum(self):
+        return False
+
+    def checkpoint_name(self, family):
+        return MODEL_FILE
+
+    def img_tip(self, arch):
+        return QT_TRANSLATE_NOOP(
+            "TrainDialog",
+            "异常检测推荐尺寸: 256; 缺陷很小时调到 512 更稳, 显存和耗时随之上升")
+
+    def img_note(self, arch):
+        return QT_TRANSLATE_NOOP("TrainDialog", "建议 256")
+
+    def arch_selectable(self, arch):
+        return False
+
+    def arch_forced(self):
+        return "transformer"
+
+    def network_items(self, arch, tr):
+        """代号放 itemData: 显示名带中文说明, 直接拿文本当 architecture 会存错."""
+        out = []
+        for code, text, _cls, _kw, by_epoch in AD_MODELS:
+            if by_epoch:
+                out.append((text, code))
+            else:
+                out.append(("{} ({})".format(text, tr(BUILD_ONLY)), code))
+        return out
+
+    def optimizer_options(self, arch):
+        return (["adamw"], "adamw")
+
+    def disabled_tooltip(self):
+        return QT_TRANSLATE_NOOP("TrainDialog", "异常检测算法自带学习率与优化器, 不需要设置")
+
+    def epochs_policy(self, network, keep_value):
+        """建库型算法没有训练这一步: 轮次固定 1 并置灰."""
+        if is_epoch_model(network):
+            return (True, None if keep_value else str(self.defaults[0]), "")
+        return (False, "1", QT_TRANSLATE_NOOP(
+            "TrainDialog", "建库型算法只提取特征建立记忆库, 没有训练轮次"))
+
+
+SPEC = AdSpec()
+
 
 

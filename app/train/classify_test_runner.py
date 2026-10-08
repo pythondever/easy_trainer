@@ -28,7 +28,7 @@ try:
     import torch
     from torchvision import transforms
     from PIL import Image
-    from app.train.classify_common import make_resnet
+    from app.train.classify_model import make_resnet
 except Exception as e:
     print("[test] " + QC.translate(
         "ClassifyTestRunner", "缺少测试依赖: {}").format(e), flush=True)

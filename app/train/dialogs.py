@@ -30,13 +30,34 @@ from app.core import theme
 from app.core.db import get_paths
 from app.core.log import write_log
 from app.train import ad_common as adc
+from app.train import classify_common, detect_common, segment_common
 from app.train import ocr_common as occ
 from app.train.data_prep import timestamp_dir
 from ui.train import Ui_TrainDialog
 
 CONTROL_H = 36
-# 探测设备期间下拉里的占位文本: 常量存原文, 用的时候走 QC.translate
+
 PROBING_TEXT = QT_TRANSLATE_NOOP("TrainDialog", "正在检测显卡...")
+
+# 与任务下拉的顺序一致
+TASK_SPECS = (detect_common.SPEC, segment_common.SPEC, classify_common.SPEC,
+              adc.SPEC, occ.SPEC)
+_SPEC_BY_CODE = {spec.code: spec for spec in TASK_SPECS}
+# 各任务用不上的控件并集: 切任务时要逐个恢复可用性, 得知道全集
+DISABLEABLE_FIELDS = tuple(sorted(
+    {name for spec in TASK_SPECS for name in spec.disabled_fields}))
+
+
+def spec_for(task):
+    """任务代号 → 任务规格. 字符检测的记录里是 ocr_det/ocr_rec 两条, 都归到 ocr."""
+    if occ.is_ocr(task):
+        return occ.SPEC
+    return _SPEC_BY_CODE.get(str(task or ""), detect_common.SPEC)
+
+
+def _td(text):
+    """TrainDialog 上下文的翻译: 队列出队那条路没有对话框实例, 取不到 self.tr."""
+    return QC.translate("TrainDialog", text)
 
 
 def collect_dataset_labels(db, ds_pairs):
@@ -51,14 +72,6 @@ def collect_dataset_labels(db, ds_pairs):
     return sorted(labels)
 
 
-# 各任务 best 权重的文件名: rf-detr 用 ema track, 分类/异常检测的 runner 只有单一产物
-BEST_CKPT = {"classify": "checkpoint_best.pth", "ad": adc.MODEL_FILE}
-BEST_CKPT_DEFAULT = "checkpoint_best_ema.pth"
-BEST_CKPT_CNN = os.path.join("weights", "best.pt")
-
-# 数据增强勾选项: (所属分组, 代号, 名称, 括号里的参数). 界面只存代号串(逗号分隔),
-# 由训练 runner 展开成各自后端的增强参数(rf-detr 是 aug_config, YOLO 是超参) ——
-# GUI 进程不导入 rfdetr, 否则启动要多等一两秒
 AUG_GROUPS = (
     ("geo", QT_TRANSLATE_NOOP("TrainDialog", "几何变换"),
      QT_TRANSLATE_NOOP("TrainDialog", "标注框会跟着一起变换")),
@@ -91,20 +104,19 @@ AUG_UNAVAILABLE = QT_TRANSLATE_NOOP(
 AUG_ITEM_UNAVAILABLE = QT_TRANSLATE_NOOP(
     "TrainDialog", "当前网络架构不支持该增强")
 
-# 勾选项由哪套后端执行: Transformer 走 rf-detr(kornia), CNN 走 YOLO(ultralytics 超参).
-# 没列进来的两边都能用. 马赛克只有 YOLO 有; 模糊/噪声只有 kornia 有
+
 AUG_BOTH = ("transformer", "cnn")
 AUG_FAMILIES = {
     "mosaic": ("cnn",),
     "blur": ("transformer",),
     "noise": ("transformer",),
 }
-# 后端独有项在另一套后端下整张卡片不显示, 其余后端用不上的项置灰
+
 AUG_HIDE_WHEN_UNSUPPORTED = ("mosaic",)
-# 对勾按分组取主题色, 一眼分得出这项属于几何还是像素
+
 AUG_TINT = {"geo": "accent", "pix": "st_info"}
 
-# 改造前的记录里存的是单档预设代号, 回填时展开成勾选组合, 否则老记录打开是空的
+
 AUG_LEGACY = {
     "off": (),
     "default": ("hflip",),
@@ -126,21 +138,14 @@ def parse_aug_codes(value):
 
 
 def best_ckpt_name(config):
-    """训练期间先按这个填记录的 model_path, 跑完由 runner 的 RESULT 覆盖.
-
-    分类也带 family="cnn", 但它的产物名不随架构变, 所以先按任务判.
-    """
-    task = config.get("task", "")
-    if task in BEST_CKPT:
-        return BEST_CKPT[task]
-    if config.get("family") == "cnn":
-        return BEST_CKPT_CNN
-    return BEST_CKPT_DEFAULT
+    """训练期间先按这个填记录的 model_path, 跑完由 runner 的 RESULT 覆盖."""
+    return spec_for(config.get("task", "")).checkpoint_name(
+        config.get("family", ""))
 
 
 def make_train_record(config, db, project_fallback=""):
-    """按 config 组装训练记录(供训练界面回填); 不落库, 调用方在启动成功后写入.
-
+    """
+    按 config 组装训练记录(供训练界面回填); 不落库, 调用方在启动成功后写入.
     与 TrainDialog 解耦: 队列出队时没有对话框实例, 也走这个函数.
     """
     ds_pairs = [(d["project"], d["dataset_name"]) for d in config["datasets"]
@@ -246,8 +251,8 @@ def _unique_ts_dir(out_root, ts):
 
 
 def make_train_config(db, params):
-    """把参数快照落盘成子进程配置. 队列出队与开始训练共用同一条路径.
-
+    """
+    把参数快照落盘成子进程配置. 队列出队与开始训练共用同一条路径.
     timestamp_dir 只在这里算一次: 训练记录的 model_path 必须复用它,
     否则两次调用跨秒会指向一个不存在的目录.
     """
@@ -256,6 +261,7 @@ def make_train_config(db, params):
     if not out_root:
         raise ValueError(QC.translate("TrainDialog", "请先选择输出路径"))
     os.makedirs(out_root, exist_ok=True)
+    spec = spec_for(task)
     datasets = []
     for split, pairs in (("train", params.get("train_ds") or []),
                          ("val", params.get("val_ds") or [])):
@@ -266,26 +272,10 @@ def make_train_config(db, params):
             fmt = info.get("label_fmt", "")
             # 入队后数据集可能被重新导入成别的格式, 出队时再校验一次
             # (队列可能挂着几个小时, 中间改了数据集这里才发现)
-            if task == "classify" and fmt != "cls":
-                raise ValueError(QC.translate(
-                    "TrainDialog",
-                    "数据集\"{}/{}\"不是分类数据集(标签格式={}), 无法训练图像分类")
-                    .format(proj, name, fmt or QC.translate("TrainDialog", "未知")))
-            if task == "ad" and fmt != "cls":
-                raise ValueError(QC.translate(
-                    "TrainDialog",
-                    "数据集\"{}/{}\"不是分类数据集(标签格式={}), 无法训练异常检测")
-                    .format(proj, name, fmt or QC.translate("TrainDialog", "未知")))
-            if task not in ("classify", "ad") and fmt == "cls":
-                raise ValueError(QC.translate(
-                    "TrainDialog",
-                    "数据集\"{}/{}\"是分类数据集, 无法训练{}任务")
-                    .format(proj, name, task_text(task)))
-            if occ.is_ocr(task) and str(info.get("dataset_type", "") or "") != "ocr":
-                raise ValueError(QC.translate(
-                    "TrainDialog",
-                    "数据集\"{}/{}\"没有文本标注, 无法训练{}")
-                    .format(proj, name, task_text(task)))
+            problem = spec.dataset_problem(proj, name, info,
+                                           task_text(task), _td)
+            if problem:
+                raise ValueError(problem)
             datasets.append({
                 "dataset_name": name, "project": proj, "split": split,
                 "image_path": info.get("image_path", ""),
@@ -300,23 +290,14 @@ def make_train_config(db, params):
     if not any(d["split"] == "val" for d in datasets):
         raise ValueError(QC.translate("TrainDialog", "请至少选择一个验证集数据集"))
     ts_dir = _unique_ts_dir(out_root, timestamp_dir())
-    architecture = params.get("architecture") or "nano"
-    if task == "classify":
-        architecture = {
-            "nano": "resnet18", "small": "resnet34",
-            "medium": "resnet50", "large": "resnet101",
-        }.get(architecture, "resnet18")
-    elif task == "ad":
-        # 异常检测的"型号"就是算法代号(patchcore/cfa/...), 上面那套 nano/large 不适用
-        architecture = architecture if architecture in adc.model_codes() \
-            else adc.model_codes()[0]
+    architecture = spec.resolve_architecture(params.get("architecture"))
     config = {
         "task": task,
         "out_root": out_root,
         "project": datasets[0]["project"],
         "timestamp_dir": ts_dir,
         "architecture": architecture,
-        "family": "ad" if task == "ad" else (params.get("family") or "transformer"),
+        "family": spec.resolve_family(params.get("family")),
         "model_size": params.get("architecture") or "nano",
         "device": params.get("device") or "",
         "epochs": params.get("epochs", 100),
@@ -329,11 +310,10 @@ def make_train_config(db, params):
         "img_size": params.get("img_size", 640),
         "aug": params.get("aug", ""),
         "datasets": datasets,
-        # 子进程按它装翻译, 少了这行日志只会出中文
         "language": i18n.current(),
     }
-    # 分类不传梯度累积(runner 不消费该字段),检测/分割才传
-    if task not in ("classify", "ad"):
+    # 分类不传梯度累积(runner),检测/分割才传
+    if spec.uses_grad_accum():
         config["grad_accum"] = params.get("grad_accum", 4)
     cfg_path = os.path.join(ts_dir, "train_config.json")
     with open(cfg_path, "w", encoding="utf-8") as f:
@@ -448,8 +428,8 @@ def fill_device_items(combo, devices):
 
 
 def fill_device_combo_async(dialog, combo, start_button):
-    """设备下拉先填占位值, 后台探测完回调 dialog._on_devices_ready(devices).
-
+    """
+    设备下拉先填占位值, 后台探测完回调 dialog._on_devices_ready(devices).
     就绪前禁掉下拉与开始按钮, 免得占位值 CPU 被当成用户选择跑出去.
     """
     combo.clear()
@@ -483,54 +463,7 @@ def detach_device_probe(dialog):
 
 
 class TrainDialog(QDialog):
-    # 各任务默认参数:epochs / lr / img_size / grad_accum(分类禁用)
-    TASK_DEFAULTS = {
-        "detect": (100, 1e-4, 640, 4),
-        "segment": (100, 1e-4, 648, 4),
-        "classify": (30, 0.001, 224, 4),
-        # 建库型算法(默认的 PatchCore)不看轮次, 这里给的是按轮训练那些算法的默认
-        "ad": (20, 1e-4, 256, 4),
-        # 检测段按 1024 训(docTR 的默认输入), 识别段固定 32x128 不吃这个值
-        "ocr": (50, 1e-4, 1024, 4),
-    }
-    TASK_TIPS = {
-        "detect": QT_TRANSLATE_NOOP(
-            "TrainDialog", "目标检测推荐图像尺寸: 640(可设为 32 的倍数如 640/672)"),
-        "segment": QT_TRANSLATE_NOOP(
-            "TrainDialog", "图像分割推荐尺寸: 648(需为 {} 的倍数)"),
-        "cnn_segment": QT_TRANSLATE_NOOP(
-            "TrainDialog", "CNN 分割推荐尺寸: 640(需为 32 的倍数)"),
-        "classify": QT_TRANSLATE_NOOP(
-            "TrainDialog", "图像分类推荐尺寸: 224(小图用 224, 较大图可到 256)"),
-        "ad": QT_TRANSLATE_NOOP(
-            "TrainDialog",
-            "异常检测推荐尺寸: 256; 缺陷很小时调到 512 更稳, 显存和耗时随之上升"),
-        "ocr": QT_TRANSLATE_NOOP(
-            "TrainDialog",
-            "字符检测推荐尺寸: 1024(需为 {} 的倍数); 识别段固定 32x128, 不受此项影响"),
-    }
-    # 尺寸输入框右侧的倍数提示, 数字由 _img_block() 现算, 这里只留模板
     IMG_NOTE_FMT = QT_TRANSLATE_NOOP("TrainDialog", "{} 的倍数")
-    # 没有倍数约束的任务(分类/异常检测)给个建议值, 免得右侧空着
-    IMG_NOTE = {
-        "classify": QT_TRANSLATE_NOOP("TrainDialog", "建议 224"),
-        "ad": QT_TRANSLATE_NOOP("TrainDialog", "建议 256"),
-    }
-    # 步长是框架的要求, 不是我们的选择: rf-detr 要 resolution 整除
-    # patch_size * num_windows, YOLO 要 32 的倍数. 检测四档都是 16*2=32;
-    # 分割 nano 是单窗口 12, 其余三档双窗口 24
-    TRANSFORMER_BLOCK = {
-        "detect": {"nano": 32, "small": 32, "medium": 32, "large": 32},
-        "segment": {"nano": 12, "small": 24, "medium": 24, "large": 24},
-    }
-    # 切架构时要跟着换的推荐值; 没列的沿用任务默认(分类只有 resnet, 不参与)
-    ARCH_DEFAULTS = {
-        "transformer": {},
-        "cnn": {"lr": 0.01, "batch": 16, "optimizer": "sgd", "img_size": 640},
-    }
-    # 异常检测不消费这几项(算法自带学习率和优化器, 也没有早停/梯度累积的概念)
-    AD_DISABLED_FIELDS = ("lr_line_txt", "early_stop_line_txt",
-                          "grad_accum_line_txt", "optimizer_comboBox")
 
     def __init__(self, app, project="", dataset="", preset_record=None):
         """project/dataset 可为空(独立入口);preset_record 传入时按记录回填(模型界面训练按钮)."""
@@ -583,8 +516,12 @@ class TrainDialog(QDialog):
 
     def _tag_task_combo(self):
         """任务下拉挂 itemData. 按文本找的话, 界面切英文后 _task() 会全部落空."""
-        for i, code in enumerate(("detect", "segment", "classify", "ad", "ocr")):
-            self.ui.task_combo.setItemData(i, code)
+        for i, spec in enumerate(TASK_SPECS):
+            self.ui.task_combo.setItemData(i, spec.code)
+
+    def _spec(self):
+        """当前任务的规格."""
+        return spec_for(self._task())
 
     def _task(self):
         return self.ui.task_combo.currentData() or "detect"
@@ -690,14 +627,15 @@ class TrainDialog(QDialog):
         """
         model = combo.model()
         model.clear()
-        want_ocr = occ.is_ocr(self._task())
+        spec = self._spec()
         for proj in self.app.db.get_projects():
             for ds_info in self.app.db.get_datasets(proj):
                 ds = str(ds_info.get("dataset_name", "") or "")
                 if not ds:
                     continue
                 # 文本真值只有打过 ocr 标记的数据集才有, 两边互不混用
-                if want_ocr != (str(ds_info.get("dataset_type", "") or "") == "ocr"):
+                if not spec.accepts_dataset_type(
+                        str(ds_info.get("dataset_type", "") or "")):
                     continue
                 text = "{}/{}".format(proj, ds)
                 item = QStandardItem(text)
@@ -804,8 +742,10 @@ class TrainDialog(QDialog):
         self._sync_start_enabled()
 
     def _set_device(self, value):
-        """设备下拉显示的是 GPU 型号, 回填得按 itemData 里的 cuda:0 找;
-        历史记录存的是小写 cpu, 下拉数据是大写 CPU, 按忽略大小写兜底."""
+        """
+        设备下拉显示的是 GPU 型号, 回填得按 itemData 里的 cuda:0 找;
+        历史记录存的是小写 cpu, 下拉数据是大写 CPU, 按忽略大小写兜底.
+        """
         if not value:
             return
         combo = self.ui.device_combo
@@ -857,24 +797,14 @@ class TrainDialog(QDialog):
             btn.setToolTip(self.tr("已有训练在进行中, 请先停止") if busy else "")
 
     def _fill_optimizer(self):
-        """优化器下拉: 分类(resnet)与 CNN(YOLO) 推荐 sgd, 检测/分割的 detr 推荐 adamw.
-
+        """
+        优化器下拉: 分类(resnet)与 CNN(YOLO) 推荐 sgd, 检测/分割的 detr 推荐 adamw.
         异常检测这一项是置灰的(算法自带优化器), 内容只求别留空.
         """
         combo = self.ui.optimizer_comboBox
         combo.clear()
-        if self._task() == "ad":
-            combo.addItems(["adamw"])
-            recommended = "adamw"
-        elif self._task() == "classify":
-            combo.addItems(["adamw", "sgd"])
-            recommended = "sgd"
-        elif self._arch() == "cnn":
-            combo.addItems(["adamw", "sgd", "adam"])
-            recommended = "sgd"
-        else:
-            combo.addItems(["adamw", "sgd", "adam"])
-            recommended = "adamw"
+        items, recommended = self._spec().optimizer_options(self._arch())
+        combo.addItems(items)
         idx = combo.findText(recommended)
         if idx >= 0:
             combo.setCurrentIndex(idx)
@@ -946,7 +876,7 @@ class TrainDialog(QDialog):
 
     def _aug_available(self):
         """分类(resnet)/异常检测(anomalib)/OCR(docTR) 的训练 runner 都不读增强代号."""
-        return self._task() in ("detect", "segment")
+        return self._spec().aug_supported()
 
     def _aug_item_ok(self, code):
         return self._aug_backend() in AUG_FAMILIES.get(code, AUG_BOTH)
@@ -972,8 +902,8 @@ class TrainDialog(QDialog):
         self._refresh_aug_badge()
 
     def _set_aug_enabled(self):
-        """整块不可用(任务不吃)就全灰; 整块可用时再按后端逐项分.
-
+        """
+        整块不可用(任务不吃)就全灰; 整块可用时再按后端逐项分.
         不可用只改可用性和可见性, 勾选留着 —— 切回原来那套还是原样.
         """
         body = getattr(self.ui, "aug_body", None)
@@ -1058,17 +988,16 @@ class TrainDialog(QDialog):
         self._apply_task_ui()
 
     def _apply_task_ui(self):
-        """任务类型/架构切换: 按两者推荐填充参数, grad_accum 可用性, 型号项.
-
+        """
+        任务类型/架构切换: 按两者推荐填充参数, grad_accum 可用性, 型号项.
         首页进入是空表单,用户选择任务类型后由这里给出推荐值;
         模型界面回填(preset_record)时 _apply_record_params 会在其后覆盖为记录值.
         """
-        task = self._task()
-        epochs, lr, img, _ = self.TASK_DEFAULTS.get(task, (100, 1e-4, 640, 4))
-        self._sync_arch_combo(task)
-        over = {} if task == "classify" else self.ARCH_DEFAULTS.get(self._arch(), {})
-        self.ui.grad_accum_line_txt.setEnabled(task != "classify")
-        self._set_ad_fields_enabled(task)
+        spec = self._spec()
+        epochs, lr, img, _ = spec.defaults
+        self._sync_arch_combo()
+        over = spec.arch_overrides(self._arch())
+        self._sync_disabled_fields(spec)
         self._set_aug_enabled()
         self.ui.epochs_line_txt.setText(str(epochs))
         self.ui.lr_line_txt.setText(str(over.get("lr", lr)))
@@ -1085,18 +1014,19 @@ class TrainDialog(QDialog):
         self._fill_network_combo()
         self._refill_dataset_combos()
         self._setup_img_size_tip()
-        self._sync_ad_epochs()
+        self._sync_epochs()
 
-    def _set_ad_fields_enabled(self, task):
-        """异常检测用不上学习率/早停/梯度累积/优化器(算法自带), 置灰而不是留着骗人."""
-        is_ad = task == "ad"
-        for name in self.AD_DISABLED_FIELDS:
+    def _sync_disabled_fields(self, spec):
+        """置灰本任务用不上的项(异常检测那几项算法自带), 而不是留着骗人."""
+        tip = self.tr(spec.disabled_tooltip())
+        for name in DISABLEABLE_FIELDS:
             w = getattr(self.ui, name, None)
             if w is None:
                 continue
-            w.setEnabled(not is_ad)
-            if is_ad:
-                w.setToolTip(self.tr("异常检测算法自带学习率与优化器, 不需要设置"))
+            ok = name not in spec.disabled_fields
+            w.setEnabled(ok)
+            if not ok:
+                w.setToolTip(tip)
 
     def _refill_dataset_combos(self):
         """切任务时重列两个数据集下拉, 还列得出来的勾选保留."""
@@ -1106,39 +1036,33 @@ class TrainDialog(QDialog):
             self._fill_dataset_multi(combo, keep)
 
     def _on_network_changed(self):
-        """型号/算法切换: 异常检测的轮次可用性跟算法走, 尺寸步长提示跟档位走."""
-        if self._task() == "ad":
-            self._sync_ad_epochs()
+        """型号/算法切换: 轮次可用性跟算法走, 尺寸步长提示跟档位走."""
+        self._sync_epochs()
         self._setup_img_size_tip()
 
-    def _sync_ad_epochs(self, keep_value=False):
-        """建库型算法(PatchCore)没有训练这一步, 轮次固定 1 并置灰.
-
+    def _sync_epochs(self, keep_value=False):
+        """
+        轮次可用性交给任务规格: 建库型算法(PatchCore)没有训练这一步, 固定 1 并置灰.
         不这么做的话界面显示的是异常检测的默认 20 轮, 而 runner 拿到后强制改成 1,
         用户在界面上看到的和实际跑的不是一回事.
         keep_value 留给记录回填: 那条路上的轮次是记录里的真实值, 只置灰不改写.
         """
+        enabled, text, tip = self._spec().epochs_policy(
+            self._network(), keep_value)
         edit = self.ui.epochs_line_txt
-        if self._task() != "ad":
-            edit.setEnabled(True)
-            edit.setToolTip("")
-            return
-        by_epoch = adc.is_epoch_model(self.ui.network_combo.currentData())
-        edit.setEnabled(by_epoch)
-        if by_epoch:
-            edit.setToolTip("")
-            if not keep_value:
-                edit.setText(str(self.TASK_DEFAULTS["ad"][0]))
-        else:
-            edit.setText("1")
-            edit.setToolTip(self.tr("建库型算法只提取特征建立记忆库, 没有训练轮次"))
+        edit.setEnabled(enabled)
+        edit.setToolTip(self.tr(tip))
+        if text is not None:
+            edit.setText(text)
 
-    def _sync_arch_combo(self, task):
-        """分类只有 resnet(CNN) 一条路、异常检测根本不走这条线, 都锁死;
-        锁的时候别触发联动, 否则覆盖回填值."""
+    def _sync_arch_combo(self):
+        """
+        分类只有 resnet(CNN) 一条路、异常检测根本不走这条线, 都锁死;
+        锁的时候别触发联动, 否则覆盖回填值.
+        """
         combo = self.ui.arch_combo
-        combo.setEnabled(task not in ("classify", "ad") and not occ.is_ocr(task))
-        want = {"classify": "cnn", "ad": "transformer"}.get(task)
+        combo.setEnabled(self._spec().arch_selectable(self._arch()))
+        want = self._spec().arch_forced()
         if want:
             idx = combo.findData(want)
             if idx >= 0:
@@ -1153,8 +1077,7 @@ class TrainDialog(QDialog):
             # 训练记录里 OCR 被拆成 ocr_det/ocr_rec 两条, 下拉上只有 ocr 一项,
             # 直接拿记录值 findData 会落空, 界面停在"检测"上, 数据集又按
             # 任务过滤, 结果就是 ocr 数据集一条都列不出来
-            idx = self.ui.task_combo.findData(
-                "ocr" if occ.is_ocr(task) else task)
+            idx = self.ui.task_combo.findData(spec_for(task).code)
             if idx >= 0:
                 self.ui.task_combo.setCurrentIndex(idx)
         # 老记录没有 family, 当年只有 rf-detr 一条路, 一律当 transformer
@@ -1217,22 +1140,20 @@ class TrainDialog(QDialog):
                 idx = combo.findText(str(img))
                 if idx >= 0:
                     combo.setCurrentIndex(idx)
-        if self._task() == "ad":
-            # 异常检测的型号下拉显示名带后缀, 只能按代号回填
-            combo = self.ui.network_combo
-            idx = combo.findData(str(rec.get("model_size") or ""))
-            if idx >= 0:
-                # 挡掉信号: currentIndexChanged 走的是 _on_network_changed, 那条路
-                # 按"用户换算法"处理, 会把轮次重置成默认值, 盖掉刚回填的记录值.
-                # 被挡掉的尺寸提示联动在这里补回来
-                combo.blockSignals(True)
-                combo.setCurrentIndex(idx)
-                combo.blockSignals(False)
-                self._setup_img_size_tip()
-            # 算法定下来之后才能定轮次的可用性
-            self._sync_ad_epochs(keep_value=True)
-        else:
-            _set_combo("network_combo", rec.get("model_size"))
+        # 型号回填: 异常检测与字符检测的代号在 itemData, 其余任务存的就是显示名.
+        # 挡掉信号是因为 currentIndexChanged 那条路按"用户换算法"处理, 会把轮次
+        # 重置成默认值、盖掉刚回填的记录值 —— 被挡掉的联动在下面手动补回来
+        combo = self.ui.network_combo
+        idx = combo.findData(str(rec.get("model_size") or ""))
+        if idx < 0:
+            idx = combo.findText(str(rec.get("model_size") or ""))
+        if idx >= 0:
+            combo.blockSignals(True)
+            combo.setCurrentIndex(idx)
+            combo.blockSignals(False)
+        self._setup_img_size_tip()
+        # 算法定下来之后才能定轮次的可用性
+        self._sync_epochs(keep_value=True)
         self._set_device(rec.get("device"))
         _set_combo("optimizer_comboBox", rec.get("optimizer"))
         self._set_aug_checks(rec.get("aug"))
@@ -1245,71 +1166,37 @@ class TrainDialog(QDialog):
         前四档两边同名同义."""
         combo = self.ui.network_combo
         combo.clear()
-        if occ.is_ocr(self._task()):
-            # 档位取自 occ.OCR_MODELS, 不能跟下面 else 共用: arch_combo 在 OCR 下只是
-            # 置灰不清空, 残留的 cnn 会让 cnn 分支多给一档表里没有的 x-large
-            # collect_train_params 读的是 currentData, 显示名必须同时写进 itemData
-            for code in occ.model_codes():
-                combo.addItem(code, code)
-            self._center_combo_items(combo)
-            return
-        if self._task() == "ad":
-            # 代号放 itemData: 显示名带中文说明, 直接拿文本当 architecture 会存错
-            for code, text, _cls, _kw, by_epoch in adc.AD_MODELS:
-                if by_epoch:
-                    combo.addItem(text, code)
-                else:
-                    combo.addItem("{} ({})".format(
-                        text, self.tr("仅建库")), code)
-        elif self._task() != "classify" and self._arch() == "cnn":
-            combo.addItems(["nano", "small", "medium", "large", "x-large"])
-        else:
-            combo.addItems(["nano", "small", "medium", "large"])
+        for text, data in self._spec().network_items(self._arch(), self.tr):
+            if data is None:
+                combo.addItem(text)
+            else:
+                combo.addItem(text, data)
         self._center_combo_items(combo)
-        if self._task() == "classify":
-            # 分类只有 resnet, 档位即 resnet18/34/50/101, 固定从头训练的那档
+        if combo.count():
             combo.setCurrentIndex(0)
 
     def _setup_img_size_tip(self):
         """尺寸提示按任务/架构/档位现算: 同一任务不同档位的步长不一样(分割只有
         nano 是 12, 其余三档 24), 写死的话换个档位就成了错话."""
-        key = self._img_key()
+        spec = self._spec()
+        arch = self._arch()
         block = self._img_block()
         if block:
             self.ui.img_size_line_txt.setToolTip(
-                self.tr(self.TASK_TIPS.get(key, "")).format(block))
+                self.tr(spec.img_tip(arch)).format(block))
             self.ui.img_note.setText(self.tr(self.IMG_NOTE_FMT).format(block))
         else:
-            self.ui.img_size_line_txt.setToolTip(
-                self.tr(self.TASK_TIPS.get(key, "")))
-            self.ui.img_note.setText(self.tr(self.IMG_NOTE.get(key, "")))
-
-    def _img_key(self):
-        """CNN 分割不吃 rf-detr 的 12 的倍数约束, 提示语单独一套."""
-        if self._task() == "segment" and self._arch() == "cnn":
-            return "cnn_segment"
-        return self._task()
+            self.ui.img_size_line_txt.setToolTip(self.tr(spec.img_tip(arch)))
+            self.ui.img_note.setText(self.tr(spec.img_note(arch)))
 
     def _network(self):
-        """当前档位名; 异常检测与字符检测都把代号存在 itemData 里."""
-        if self._task() == "ad" or occ.is_ocr(self._task()):
-            return self.ui.network_combo.currentData() or ""
-        return self.ui.network_combo.currentText() or ""
+        """当前档位名; 异常检测与字符检测的代号在 itemData, 其余在显示名上."""
+        combo = self.ui.network_combo
+        return combo.currentData() or combo.currentText() or ""
 
     def _img_block(self):
         """当前组合下图像尺寸必须整除的步长; 无约束返回 0(分类/异常检测)."""
-        task = self._task()
-        if task in ("classify", "ad"):
-            return 0
-        if occ.is_ocr(task):
-            return 32
-        if self._arch() == "cnn":
-            return 32
-        table = self.TRANSFORMER_BLOCK.get(task)
-        if not table:
-            return 0
-        # 档位名取不到时按最松的一档算: 漏报好过误报
-        return table.get(self._network()) or min(table.values())
+        return self._spec().img_block(self._arch(), self._network())
 
     # ---------- 校验 ----------
     def _setup_validators(self):
@@ -1352,24 +1239,13 @@ class TrainDialog(QDialog):
                     block, size, near)
         # 任务类型与数据集格式匹配校验(按导入时的 label_fmt 判断:cls=分类,其余=检测/分割)
         # 异常检测与分类同源: 真值就是"子文件夹名", 所以也必须要 cls 格式的数据集
-        task = self._task()
-        task_text = self._task_text()
+        spec = self._spec()
+        label = self._task_text()
         for proj, name in self._selected_datasets() + self._selected_val_datasets():
-            fmt = self.app.db.get_dataset_import(proj, name).get("label_fmt", "")
-            if task in ("classify", "ad") and fmt != "cls":
-                return False, self.tr(
-                    "数据集\"{}/{}\"不是按分类导入的数据集(标签格式={}),"
-                    "无法训练{}").format(proj, name, fmt or self.tr("未知"),
-                                        task_text)
-            if task not in ("classify", "ad") and fmt == "cls":
-                return False, self.tr(
-                    "数据集\"{}/{}\"是分类数据集,无法训练{}任务").format(
-                    proj, name, task_text)
-            if occ.is_ocr(task) and str(self.app.db.get_dataset_import(
-                    proj, name).get("dataset_type", "") or "") != "ocr":
-                return False, self.tr(
-                    "数据集\"{}/{}\"没有文本标注, 无法训练{}").format(
-                    proj, name, task_text)
+            info = self.app.db.get_dataset_import(proj, name)
+            problem = spec.dataset_problem(proj, name, info, label, self.tr)
+            if problem:
+                return False, problem
         return True, ""
 
     # ---------- 交互 ----------
@@ -1380,11 +1256,11 @@ class TrainDialog(QDialog):
             self.ui.output_line_txt.setText(d)
 
     def _family_ready(self):
-        """CNN 走 ultralytics 后端, 没装就别放行 —— 否则要等子进程起来才报 ImportError.
-
+        """
+        CNN 走 ultralytics 后端, 没装就别放行 —— 否则要等子进程起来才报 ImportError.
         用 find_spec 而不是 import: 后者在 GUI 线程里要花一两秒.
         """
-        if self._task() == "classify" or self._arch() != "cnn":
+        if not self._spec().needs_cnn_runtime(self._arch()):
             return True, ""
         if find_spec("ultralytics") is None:
             # 不点库名: 这条是给终端用户看的, 正常装好的包不该走到这里
@@ -1413,7 +1289,7 @@ class TrainDialog(QDialog):
                              self._arch()):
             return
         params = self.collect_train_params()
-        if occ.is_ocr(params.get("task")):
+        if self._spec().split_stages:
             self._start_ocr(params)
             return
         try:
@@ -1476,7 +1352,7 @@ class TrainDialog(QDialog):
             MessageBox.warning(self, self.tr("加入队列"),
                                self.tr("请先选择输出路径"))
             return
-        if occ.is_ocr(params.get("task")):
+        if self._spec().split_stages:
             self._enqueue_ocr(params)
             return
         for proj, name in params["train_ds"] + params["val_ds"]:
@@ -1524,20 +1400,10 @@ class TrainDialog(QDialog):
     def collect_train_params(self):
         """纯收集: 只读 UI 与 db, 不建目录, 不落盘(入队与开始训练共用)."""
         task = self._task()
-        if task == "ad":
-            # 异常检测的"型号"是算法代号, 存在 itemData 里(显示名带中文后缀)
-            architecture = self.ui.network_combo.currentData() \
-                or adc.model_codes()[0]
-        elif occ.is_ocr(task):
-            architecture = self.ui.network_combo.currentData() \
-                or occ.model_codes()[0]
-        else:
-            architecture = self.ui.network_combo.currentText() or "nano"
         return {
             "task": task,
-            "architecture": architecture,
-            "family": "ocr" if occ.is_ocr(task) else (
-                "ad" if task == "ad" else self._arch()),
+            "architecture": self._network() or "nano",
+            "family": self._spec().resolve_family(self._arch()),
             "device": self._device(),
             "epochs": self.param_int(self.ui.epochs_line_txt, 100),
             "batch_size": self.param_int(self.ui.batch_size_line_txt, 8),

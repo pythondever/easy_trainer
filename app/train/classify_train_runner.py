@@ -35,7 +35,7 @@ try:
     from torch.utils.data import DataLoader, Dataset
     from torchvision import transforms
     from PIL import Image
-    from app.train.classify_common import make_resnet
+    from app.train.classify_model import make_resnet
 except Exception as e:
     print("[train] " + QC.translate("ClassifyTrainRunner", "缺少训练依赖: {}").format(e), flush=True)
     sys.exit(1)
