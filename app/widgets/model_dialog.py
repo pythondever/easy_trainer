@@ -81,6 +81,8 @@ def _parse_data_yaml_names(path):
     except OSError:
         pass
     return out
+
+
 COL_TASK, COL_DATA, COL_METRIC, COL_TIME, COL_DUR, COL_IMG, COL_OPS = range(7)
 METRIC_GOOD, METRIC_MID, METRIC_BAD = (theme.hexof("st_ok"), theme.hexof("st_warn"),
                                        theme.hexof("st_err"))

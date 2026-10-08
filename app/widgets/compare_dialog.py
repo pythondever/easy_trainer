@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-"""多次训练结果对比: 三栏(记录 / 曲线+汇总表 / 差异与结论).
-
+"""
+多次训练结果对比: 三栏(记录 / 曲线+汇总表 / 差异与结论).
 界面由 ui/compare.py 编译生成(Ui_CompareDialog), 这里 setupUi 填充数据.
 曲线来源与单次指标窗口同源(metrics_dialog.load_run_series), 不重复
 解析 metrics.csv / metrics.json; 绘制走自绘 CompareChart, 不用 matplotlib.
@@ -39,17 +39,17 @@ METRIC_ORDER = (
     "accuracy", "auroc", "F1@0.5", "CER", "WER",
     "train_loss", "val_loss",
 )
-# 汇总表固定列: 与设计稿一致, 不随当前对比指标变化
+
 _COLUMNS = ("时间", "任务 / 模型", "数据集", "轮次", "批次", "学习率",
             "mAP@50", "precision", "recall", "F1@0.5", "训练时长", "增强")
-# 汇总表里跟着当前指标标背景的列(表头列名 → 列号)
+
 _CUR_COLUMN = {"mAP@50": 6, "precision": 7, "recall": 8, "F1@0.5": 9}
 
-# 记录范围下拉: (界面文案, 判断键)
+
 RANGE_ITEMS = (("全部记录", "all"), ("今天", "today"), ("昨天", "yesterday"),
                ("近7天", "7d"), ("近30天", "30d"))
 
-# 任务键 → 卡片类型标签(文本, 底色, 前景色); ocr 系列本质是检测/识别, 标签沿用设计稿
+
 TASK_TAG = {
     "detect": ("DETECT", "#12354f", "#6fc2ff"),
     "ocr": ("DETECT", "#12354f", "#6fc2ff"),
@@ -60,11 +60,11 @@ TASK_TAG = {
     "ad": ("AD", "#1f2a3d", "#7c879c"),
 }
 
-# 主指标短名: 卡片右侧"F1 0.278"这类, 长名(如 mAP@50)放不下
+
 _PRIMARY_SHORT = {"mAP@50": "mAP", "mask mAP50": "mAP", "准确率": "ACC",
                   "AUROC": "AUROC", "F1@0.5": "F1", "CER": "CER"}
 
-# 非完成状态在卡片上的文案; 键是库里存的中文状态
+
 _STATUS_LABEL = {"失败": "已失败", "失败/已停止": "已失败", "已停止": "已停止",
                  "已中断": "已中断", "已跳过": "已跳过"}
 
@@ -79,7 +79,6 @@ ROLE_BEST = Qt.UserRole + 6
 ROLE_BAD = Qt.UserRole + 7
 
 _AUG_NAMES = {code: name for _g, code, name, _p in AUG_ITEMS}
-# 右栏差异里的增强太长会挤成几行, 超过两项就只列前两项
 AUG_DIFF_MAX = 2
 
 

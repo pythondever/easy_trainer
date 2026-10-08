@@ -8,9 +8,6 @@ from PySide6.QtWidgets import QSizePolicy, QWidget
 
 from app.core import theme
 
-# 不复用标注的 LABEL_COLORS: 那组是为"任意两色距离最大"挑的, 纯黄/品红在
-# 深色细线上过跳; 对比图最多 8 条, 这里另取饱和度接近的一组, 与记录卡片 /
-# 汇总表 / 右栏差异的色点共用同一套索引.
 SERIES_COLORS = ("#ff8aa0", "#3ddc84", "#f5b84c", "#6fc2ff",
                  "#c58aff", "#52d6a8", "#ff9f6e", "#7c879c")
 

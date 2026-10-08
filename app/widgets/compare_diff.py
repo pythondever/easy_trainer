@@ -8,7 +8,6 @@ from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QVBoxLayout, QWidget
 
 from app.core import theme
 
-# 参与差异比较的字段: (显示名, 数据键)
 DIFF_FIELDS = (("任务", "task"), ("模型", "model"), ("数据集", "dataset"),
                ("轮次", "epochs"), ("批次", "batch"), ("学习率", "lr"),
                ("图像尺寸", "img_size"), ("增强", "aug"))
