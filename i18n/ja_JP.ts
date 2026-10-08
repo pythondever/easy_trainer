@@ -928,6 +928,14 @@
     </message>
 </context>
 <context>
+    <name>CollapsibleText</name>
+    <message>
+        <location filename="../app/widgets/collapsible_text.py" line="57"/>
+        <source>点击展开 / 收起完整内容</source>
+        <translation>クリックで展開 / 折りたたみ</translation>
+    </message>
+</context>
+<context>
     <name>ColorPickerDialog</name>
     <message>
         <location filename="../app/annotation/annotation_canvas.py" line="395"/>
@@ -969,31 +977,31 @@
     </message>
     <message>
         <location filename="../ui/compare.ui" line="65"/>
-        <location filename="../app/widgets/compare_dialog.py" line="686"/>
-        <location filename="../app/widgets/compare_dialog.py" line="690"/>
-        <location filename="../app/widgets/compare_dialog.py" line="707"/>
+        <location filename="../app/widgets/compare_dialog.py" line="695"/>
+        <location filename="../app/widgets/compare_dialog.py" line="699"/>
+        <location filename="../app/widgets/compare_dialog.py" line="716"/>
         <source>导出对比报告</source>
         <translation>比較レポートをエクスポート</translation>
     </message>
     <message>
         <location filename="../ui/compare.ui" line="72"/>
-        <location filename="../app/widgets/compare_dialog.py" line="714"/>
-        <location filename="../app/widgets/compare_dialog.py" line="718"/>
+        <location filename="../app/widgets/compare_dialog.py" line="723"/>
+        <location filename="../app/widgets/compare_dialog.py" line="727"/>
         <source>删除选中</source>
         <translation>選択を削除</translation>
     </message>
     <message>
-        <location filename="../ui/compare.ui" line="91"/>
+        <location filename="../ui/compare.ui" line="97"/>
         <source>训练记录（可勾选，上限 8 条）</source>
         <translation>学習記録（チェック可、最大 8 件）</translation>
     </message>
     <message>
-        <location filename="../ui/compare.ui" line="162"/>
+        <location filename="../ui/compare.ui" line="168"/>
         <source>关键指标汇总</source>
         <translation>主要指標のまとめ</translation>
     </message>
     <message>
-        <location filename="../ui/compare.ui" line="182"/>
+        <location filename="../ui/compare.ui" line="188"/>
         <source>差异与结论</source>
         <translation>差分と結論</translation>
     </message>
@@ -1008,75 +1016,75 @@
         <translation>データソース：LMDB train_history + metrics.csv / metrics json</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="507"/>
+        <location filename="../app/widgets/compare_dialog.py" line="516"/>
         <source>一次最多对比 {} 条记录</source>
         <translation>一度に比較できるのは {} 件までです</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="535"/>
+        <location filename="../app/widgets/compare_dialog.py" line="544"/>
         <source>{} 训练曲线（按 epoch）</source>
         <translation>{} 学習曲線（epoch ごと）</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="542"/>
+        <location filename="../app/widgets/compare_dialog.py" line="551"/>
         <source>已选 {} 条（上限 {}）</source>
         <translation>選択 {} 件（上限 {}）</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="544"/>
+        <location filename="../app/widgets/compare_dialog.py" line="553"/>
         <source>已选 {} 条(上限 {}), 双击左侧记录可查看单次指标</source>
         <translation>{} 件選択中(上限 {}), 左側の記録をダブルクリックすると単回の指標を表示</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="546"/>
-        <location filename="../app/widgets/compare_dialog.py" line="572"/>
+        <location filename="../app/widgets/compare_dialog.py" line="555"/>
+        <location filename="../app/widgets/compare_dialog.py" line="581"/>
         <source>勾选左侧的训练记录后这里显示对比曲线</source>
         <translation>左側の学習記録を選択すると、ここに比較曲線が表示されます</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="640"/>
+        <location filename="../app/widgets/compare_dialog.py" line="649"/>
         <source>无</source>
         <translation>なし</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="653"/>
+        <location filename="../app/widgets/compare_dialog.py" line="662"/>
         <source>至少勾选 2 条记录&lt;br&gt;才能比较差异</source>
         <translation>差異を比較するには&lt;br&gt;2 件以上選択してください</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="687"/>
+        <location filename="../app/widgets/compare_dialog.py" line="696"/>
         <source>当前没有可导出的对比图表</source>
         <translation>エクスポートできる比較チャートがありません</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="691"/>
+        <location filename="../app/widgets/compare_dialog.py" line="700"/>
         <source>PNG 图片 (*.png)</source>
         <translation>PNG 画像 (*.png)</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="705"/>
+        <location filename="../app/widgets/compare_dialog.py" line="714"/>
         <source>已导出: {}
 {}</source>
         <translation>エクスポート済み: {}
 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="708"/>
+        <location filename="../app/widgets/compare_dialog.py" line="717"/>
         <source>导出失败: {}</source>
         <translation>エクスポート失敗: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="715"/>
+        <location filename="../app/widgets/compare_dialog.py" line="724"/>
         <source>请先勾选要删除的训练记录</source>
         <translation>削除する学習記録を選択してください</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="719"/>
+        <location filename="../app/widgets/compare_dialog.py" line="728"/>
         <source>确定删除选中的 {} 条训练记录? 对应指标文件会一并删除.</source>
         <translation>選択した {} 件の学習記録を削除しますか? 対応する指標ファイルも削除されます.</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="576"/>
+        <location filename="../app/widgets/compare_dialog.py" line="585"/>
         <source>所选记录没有&quot;{}&quot;的数据</source>
         <translation>選択した記録に&quot;{}&quot;のデータがありません</translation>
     </message>
@@ -1285,82 +1293,82 @@
 <context>
     <name>DiffPanel</name>
     <message>
-        <location filename="../app/widgets/compare_diff.py" line="108"/>
+        <location filename="../app/widgets/compare_diff.py" line="107"/>
         <source>最佳记录</source>
         <translation>最良記録</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_diff.py" line="109"/>
+        <location filename="../app/widgets/compare_diff.py" line="108"/>
         <source>按 {}</source>
         <translation>{} 基準</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_diff.py" line="127"/>
+        <location filename="../app/widgets/compare_diff.py" line="126"/>
         <source>参数差异</source>
         <translation>パラメータ差分</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_diff.py" line="127"/>
+        <location filename="../app/widgets/compare_diff.py" line="126"/>
         <source>仅列取值不同的项</source>
         <translation>値が異なる項目のみ表示</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_diff.py" line="136"/>
+        <location filename="../app/widgets/compare_diff.py" line="135"/>
         <source>所选记录参数完全一致</source>
         <translation>選択した記録のパラメータは完全に一致しています</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_diff.py" line="145"/>
+        <location filename="../app/widgets/compare_diff.py" line="144"/>
         <source>共同</source>
         <translation>共通</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_diff.py" line="175"/>
+        <location filename="../app/widgets/compare_diff.py" line="174"/>
         <source>结论</source>
         <translation>結論</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_diff.py" line="190"/>
+        <location filename="../app/widgets/compare_diff.py" line="189"/>
         <source>最佳</source>
         <translation>最良</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_diff.py" line="200"/>
+        <location filename="../app/widgets/compare_diff.py" line="199"/>
         <source>它独有的设置</source>
         <translation>この記録だけの設定</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_diff.py" line="204"/>
+        <location filename="../app/widgets/compare_diff.py" line="203"/>
         <source>启用增强 {}/{} 条</source>
         <translation>データ拡張を有効化 {}/{} 件</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_diff.py" line="207"/>
+        <location filename="../app/widgets/compare_diff.py" line="206"/>
         <source>所选记录都没有启用数据增强</source>
         <translation>選択した記録はどれもデータ拡張を有効化していません</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_diff.py" line="212"/>
+        <location filename="../app/widgets/compare_diff.py" line="211"/>
         <source>仍在训练</source>
         <translation>学習中</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_diff.py" line="214"/>
+        <location filename="../app/widgets/compare_diff.py" line="213"/>
         <source>曲线未收敛， 对比仅供参考</source>
         <translation>曲線が未収束， 参考値</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_diff.py" line="219"/>
+        <location filename="../app/widgets/compare_diff.py" line="218"/>
         <source>未跑完</source>
         <translation>未完了</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_diff.py" line="219"/>
+        <location filename="../app/widgets/compare_diff.py" line="218"/>
         <source>不参与最佳判定</source>
         <translation>最良判定の対象外</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_diff.py" line="222"/>
+        <location filename="../app/widgets/compare_diff.py" line="221"/>
         <source>训练时长</source>
         <translation>学習時間</translation>
     </message>
@@ -1765,34 +1773,34 @@
 <context>
     <name>MessageBox</name>
     <message>
-        <location filename="../app/widgets/message_box.py" line="272"/>
-        <location filename="../app/widgets/message_box.py" line="300"/>
+        <location filename="../app/widgets/message_box.py" line="274"/>
+        <location filename="../app/widgets/message_box.py" line="302"/>
         <source>确定</source>
         <translation>OK</translation>
     </message>
     <message>
-        <location filename="../app/widgets/message_box.py" line="96"/>
+        <location filename="../app/widgets/message_box.py" line="98"/>
         <source>详情已复制到剪贴板</source>
         <translation>詳細をクリップボードにコピーしました</translation>
     </message>
     <message>
-        <location filename="../app/widgets/message_box.py" line="265"/>
+        <location filename="../app/widgets/message_box.py" line="267"/>
         <source>关闭</source>
         <translation>閉じる</translation>
     </message>
     <message>
-        <location filename="../app/widgets/message_box.py" line="267"/>
+        <location filename="../app/widgets/message_box.py" line="269"/>
         <source>复制详情</source>
         <translation>詳細をコピー</translation>
     </message>
     <message>
-        <location filename="../app/widgets/message_box.py" line="301"/>
-        <location filename="../app/widgets/message_box.py" line="348"/>
+        <location filename="../app/widgets/message_box.py" line="303"/>
+        <location filename="../app/widgets/message_box.py" line="350"/>
         <source>取消</source>
         <translation>キャンセル</translation>
     </message>
     <message>
-        <location filename="../app/widgets/message_box.py" line="372"/>
+        <location filename="../app/widgets/message_box.py" line="374"/>
         <source>取消中...</source>
         <translation>キャンセル中...</translation>
     </message>
@@ -1833,7 +1841,7 @@
 <context>
     <name>MetricTabs</name>
     <message>
-        <location filename="../app/widgets/metric_tabs.py" line="60"/>
+        <location filename="../app/widgets/metric_tabs.py" line="90"/>
         <source>所选记录都没有 {} 的数据</source>
         <translation>選択した記録に {} のデータがありません</translation>
     </message>
@@ -2047,7 +2055,7 @@
     <name>ModelDialog</name>
     <message>
         <location filename="../ui/model.ui" line="14"/>
-        <location filename="../app/widgets/model_dialog.py" line="181"/>
+        <location filename="../app/widgets/model_dialog.py" line="190"/>
         <source>模型管理</source>
         <translation>モデル管理</translation>
     </message>
@@ -2113,7 +2121,7 @@
     </message>
     <message>
         <location filename="../ui/model.ui" line="135"/>
-        <location filename="../app/widgets/model_dialog.py" line="606"/>
+        <location filename="../app/widgets/model_dialog.py" line="629"/>
         <source>任务</source>
         <translation>タスク</translation>
     </message>
@@ -2124,25 +2132,25 @@
     </message>
     <message>
         <location filename="../ui/model.ui" line="145"/>
-        <location filename="../app/widgets/model_dialog.py" line="610"/>
+        <location filename="../app/widgets/model_dialog.py" line="633"/>
         <source>精度</source>
         <translation>精度</translation>
     </message>
     <message>
         <location filename="../ui/model.ui" line="150"/>
-        <location filename="../app/widgets/model_dialog.py" line="621"/>
+        <location filename="../app/widgets/model_dialog.py" line="644"/>
         <source>训练时间</source>
         <translation>学習日時</translation>
     </message>
     <message>
         <location filename="../ui/model.ui" line="155"/>
-        <location filename="../app/widgets/model_dialog.py" line="623"/>
+        <location filename="../app/widgets/model_dialog.py" line="646"/>
         <source>耗时</source>
         <translation>所要時間</translation>
     </message>
     <message>
         <location filename="../ui/model.ui" line="160"/>
-        <location filename="../app/widgets/model_dialog.py" line="613"/>
+        <location filename="../app/widgets/model_dialog.py" line="636"/>
         <source>图像尺寸</source>
         <translation>画像サイズ</translation>
     </message>
@@ -2158,195 +2166,190 @@
     </message>
     <message>
         <location filename="../ui/model.ui" line="191"/>
-        <location filename="../app/widgets/model_dialog.py" line="589"/>
+        <location filename="../app/widgets/model_dialog.py" line="612"/>
         <source>选中一行查看详情</source>
         <translation>行を選択すると詳細を表示します</translation>
     </message>
     <message>
-        <location filename="../ui/model.ui" line="217"/>
+        <location filename="../ui/model.ui" line="220"/>
         <source>查看完整指标</source>
         <translation>すべての指標を表示</translation>
     </message>
     <message>
-        <location filename="../ui/model.ui" line="224"/>
-        <location filename="../app/widgets/model_dialog.py" line="731"/>
+        <location filename="../ui/model.ui" line="227"/>
+        <location filename="../app/widgets/model_dialog.py" line="756"/>
         <source>对比多次训练</source>
         <translation>複数回の学習を比較</translation>
     </message>
     <message>
-        <location filename="../ui/model.ui" line="231"/>
-        <source>测试此模型</source>
-        <translation>このモデルをテスト</translation>
-    </message>
-    <message>
-        <location filename="../ui/model.ui" line="238"/>
+        <location filename="../ui/model.ui" line="234"/>
         <source>按此配置重训</source>
         <translation>この設定で再学習</translation>
     </message>
     <message>
-        <location filename="../ui/model.ui" line="245"/>
+        <location filename="../ui/model.ui" line="241"/>
         <source>打开模型目录</source>
         <translation>モデルフォルダを開く</translation>
     </message>
     <message>
-        <location filename="../ui/model.ui" line="285"/>
+        <location filename="../ui/model.ui" line="281"/>
         <source>上一页</source>
         <translation>前へ</translation>
     </message>
     <message>
-        <location filename="../ui/model.ui" line="292"/>
+        <location filename="../ui/model.ui" line="288"/>
         <source>1/1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/model.ui" line="299"/>
+        <location filename="../ui/model.ui" line="295"/>
         <source>下一页</source>
         <translation>次へ</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="429"/>
+        <location filename="../app/widgets/model_dialog.py" line="436"/>
         <source>共 {} 条</source>
         <translation>全 {} 件</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="480"/>
+        <location filename="../app/widgets/model_dialog.py" line="487"/>
         <source> 等 {} 类</source>
         <translation> ほか {} クラス</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="504"/>
+        <location filename="../app/widgets/model_dialog.py" line="502"/>
         <source>测试</source>
         <translation>テスト</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="509"/>
+        <location filename="../app/widgets/model_dialog.py" line="507"/>
         <source>导出</source>
         <translation>エクスポート</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="514"/>
+        <location filename="../app/widgets/model_dialog.py" line="512"/>
         <source>删除</source>
         <translation>削除</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="603"/>
+        <location filename="../app/widgets/model_dialog.py" line="626"/>
         <source>{} × {} 累积</source>
         <translation>{} × {} 累積</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="604"/>
+        <location filename="../app/widgets/model_dialog.py" line="627"/>
         <source>状态</source>
         <translation>状態</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="611"/>
+        <location filename="../app/widgets/model_dialog.py" line="634"/>
         <source>训练集</source>
         <translation>学習セット</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="612"/>
+        <location filename="../app/widgets/model_dialog.py" line="635"/>
         <source>验证集</source>
         <translation>検証セット</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="614"/>
+        <location filename="../app/widgets/model_dialog.py" line="637"/>
         <source>轮数 / 早停</source>
         <translation>エポック / 早期終了</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="616"/>
+        <location filename="../app/widgets/model_dialog.py" line="639"/>
         <source>批大小</source>
         <translation>バッチサイズ</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="617"/>
+        <location filename="../app/widgets/model_dialog.py" line="640"/>
         <source>学习率</source>
         <translation>学習率</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="618"/>
+        <location filename="../app/widgets/model_dialog.py" line="641"/>
         <source>优化器</source>
         <translation>オプティマイザ</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="619"/>
+        <location filename="../app/widgets/model_dialog.py" line="642"/>
         <source>设备</source>
         <translation>デバイス</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="620"/>
+        <location filename="../app/widgets/model_dialog.py" line="643"/>
         <source>标签</source>
         <translation>ラベル</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="624"/>
+        <location filename="../app/widgets/model_dialog.py" line="647"/>
         <source>模型路径</source>
         <translation>モデルパス</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="643"/>
+        <location filename="../app/widgets/model_dialog.py" line="663"/>
         <source>失败原因</source>
         <translation>失敗理由</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="662"/>
+        <location filename="../app/widgets/model_dialog.py" line="679"/>
         <source>暂无曲线</source>
         <translation>曲線なし</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="686"/>
+        <location filename="../app/widgets/model_dialog.py" line="703"/>
         <source>{}  最佳 {:.3f}</source>
         <translation>{}  最良 {:.3f}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="694"/>
-        <location filename="../app/widgets/model_dialog.py" line="705"/>
+        <location filename="../app/widgets/model_dialog.py" line="711"/>
+        <location filename="../app/widgets/model_dialog.py" line="722"/>
         <source>打开目录</source>
         <translation>フォルダを開く</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="695"/>
+        <location filename="../app/widgets/model_dialog.py" line="712"/>
         <source>模型目录不存在:
 {}</source>
         <translation>モデルフォルダが存在しません:
 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="723"/>
+        <location filename="../app/widgets/model_dialog.py" line="740"/>
         <source>[model_dialog] 打开指标失败: {}
 {}</source>
         <translation>[model_dialog] 指標の表示に失敗しました: {}
 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="725"/>
+        <location filename="../app/widgets/model_dialog.py" line="742"/>
         <source>查看指标失败</source>
         <translation>指標の表示に失敗しました</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="732"/>
+        <location filename="../app/widgets/model_dialog.py" line="757"/>
         <source>当前没有可对比的训练记录</source>
         <translation>比較できる学習記録がありません</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="739"/>
+        <location filename="../app/widgets/model_dialog.py" line="764"/>
         <source>[model_dialog] 打开对比失败: {}
 {}</source>
         <translation>[model_dialog] 比較を開けませんでした: {}
 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="741"/>
+        <location filename="../app/widgets/model_dialog.py" line="766"/>
         <source>打开对比失败</source>
         <translation>比較を開けませんでした</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="748"/>
+        <location filename="../app/widgets/model_dialog.py" line="773"/>
         <source>删除模型记录</source>
         <translation>モデル記録を削除</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="749"/>
+        <location filename="../app/widgets/model_dialog.py" line="774"/>
         <source>确定删除该条模型记录?
 项目={}
 数据集={}
@@ -2359,228 +2362,228 @@
 </translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="753"/>
+        <location filename="../app/widgets/model_dialog.py" line="778"/>
         <source>删除模型记录: 项目={} 数据集={} 任务={} 开始时间={}</source>
         <translation>モデル記録を削除: プロジェクト={} データセット={} タスク={} 開始時刻={}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="767"/>
+        <location filename="../app/widgets/model_dialog.py" line="792"/>
         <source>删除模型记录失败: {} | {}</source>
         <translation>モデル記録の削除に失敗しました: {} | {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="768"/>
+        <location filename="../app/widgets/model_dialog.py" line="793"/>
         <source>[model_dialog] 删除失败: {}
 {}</source>
         <translation>[model_dialog] 削除に失敗しました: {}
 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="777"/>
+        <location filename="../app/widgets/model_dialog.py" line="802"/>
         <source>[model_dialog] 打开训练失败: {}
 {}</source>
         <translation>[model_dialog] 学習画面を開けませんでした: {}
 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="778"/>
+        <location filename="../app/widgets/model_dialog.py" line="803"/>
         <source>打开训练失败</source>
         <translation>学習画面を開けませんでした</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="803"/>
+        <location filename="../app/widgets/model_dialog.py" line="828"/>
         <source>[model_dialog] 打开测试失败: {}
 {}</source>
         <translation>[model_dialog] テスト画面を開けませんでした: {}
 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="805"/>
+        <location filename="../app/widgets/model_dialog.py" line="830"/>
         <source>打开测试失败</source>
         <translation>テスト画面を開けませんでした</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="823"/>
-        <location filename="../app/widgets/model_dialog.py" line="841"/>
-        <location filename="../app/widgets/model_dialog.py" line="857"/>
-        <location filename="../app/widgets/model_dialog.py" line="1148"/>
-        <location filename="../app/widgets/model_dialog.py" line="1158"/>
+        <location filename="../app/widgets/model_dialog.py" line="848"/>
+        <location filename="../app/widgets/model_dialog.py" line="866"/>
+        <location filename="../app/widgets/model_dialog.py" line="882"/>
+        <location filename="../app/widgets/model_dialog.py" line="1173"/>
+        <location filename="../app/widgets/model_dialog.py" line="1183"/>
         <source>导出模型</source>
         <translation>モデルをエクスポート</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="824"/>
+        <location filename="../app/widgets/model_dialog.py" line="849"/>
         <source>模型文件不存在:
 {}</source>
         <translation>モデルファイルが存在しません:
 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="825"/>
+        <location filename="../app/widgets/model_dialog.py" line="850"/>
         <source>导出模型失败: 模型文件不存在 {}</source>
         <translation>モデルのエクスポートに失敗しました: モデルファイルが存在しません {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="827"/>
+        <location filename="../app/widgets/model_dialog.py" line="852"/>
         <source>选择导出目录</source>
         <translation>エクスポート先フォルダを選択</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="842"/>
+        <location filename="../app/widgets/model_dialog.py" line="867"/>
         <source>创建目录失败: {}</source>
         <translation>フォルダの作成に失敗しました: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="843"/>
+        <location filename="../app/widgets/model_dialog.py" line="868"/>
         <source>导出模型失败: 创建目录失败 {} | {}</source>
         <translation>モデルのエクスポートに失敗しました: フォルダの作成に失敗 {} | {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="853"/>
+        <location filename="../app/widgets/model_dialog.py" line="878"/>
         <source>开始导出模型: 项目={} 任务={} 架构={} 尺寸={} | {}</source>
         <translation>モデルのエクスポート開始: プロジェクト={} タスク={} アーキテクチャ={} サイズ={} | {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="854"/>
-        <location filename="../app/widgets/model_dialog.py" line="1008"/>
+        <location filename="../app/widgets/model_dialog.py" line="879"/>
+        <location filename="../app/widgets/model_dialog.py" line="1033"/>
         <source>未知</source>
         <translation>不明</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="858"/>
+        <location filename="../app/widgets/model_dialog.py" line="883"/>
         <source>正在导出 ONNX...</source>
         <translation>ONNX をエクスポート中...</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="879"/>
+        <location filename="../app/widgets/model_dialog.py" line="904"/>
         <source>正在导出模型包...</source>
         <translation>モデルパッケージをエクスポート中...</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="890"/>
+        <location filename="../app/widgets/model_dialog.py" line="915"/>
         <source>导出模型包完成: 包含 {}</source>
         <translation>モデルパッケージのエクスポート完了: 内容: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="897"/>
+        <location filename="../app/widgets/model_dialog.py" line="922"/>
         <source>ONNX 导出完成: {} ({:.1f} MB)</source>
         <translation>ONNX エクスポート完了: {} ({:.1f} MB)</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="954"/>
+        <location filename="../app/widgets/model_dialog.py" line="979"/>
         <source>读取词表失败: {}</source>
         <translation>語彙の読み込みに失敗: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="965"/>
+        <location filename="../app/widgets/model_dialog.py" line="990"/>
         <source>生成 vocab.txt 失败: {}</source>
         <translation>vocab.txt の生成に失敗: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="981"/>
+        <location filename="../app/widgets/model_dialog.py" line="1006"/>
         <source>生成 label_map.json 失败: {}</source>
         <translation>label_map.json の生成に失敗しました: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="987"/>
+        <location filename="../app/widgets/model_dialog.py" line="1012"/>
         <source>导出模型报告跳过: 分类任务不出评估报告</source>
         <translation>モデルレポートのエクスポートをスキップ: 分類タスクでは評価レポートを出力しません</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="988"/>
+        <location filename="../app/widgets/model_dialog.py" line="1013"/>
         <source>分类任务不生成评估报告</source>
         <translation>分類タスクでは評価レポートを生成しません</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="992"/>
+        <location filename="../app/widgets/model_dialog.py" line="1017"/>
         <source>导出模型报告跳过: 字符识别不出评估报告</source>
         <translation>モデルレポートのエクスポートをスキップ: テキスト認識は評価レポートを生成しない</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="993"/>
+        <location filename="../app/widgets/model_dialog.py" line="1018"/>
         <source>字符识别不生成评估报告</source>
         <translation>テキスト認識は評価レポートを生成しない</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="997"/>
+        <location filename="../app/widgets/model_dialog.py" line="1022"/>
         <source>导出模型报告跳过: 未找到验证集</source>
         <translation>モデルレポートのエクスポートをスキップ: 検証セットが見つかりません</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="998"/>
+        <location filename="../app/widgets/model_dialog.py" line="1023"/>
         <source>未找到验证集, 已跳过评估报告</source>
         <translation>検証セットが見つからないため、評価レポートをスキップしました</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1000"/>
-        <location filename="../app/widgets/model_dialog.py" line="1081"/>
+        <location filename="../app/widgets/model_dialog.py" line="1025"/>
+        <location filename="../app/widgets/model_dialog.py" line="1106"/>
         <source>正在生成模型报告...</source>
         <translation>モデルレポートを生成中...</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1004"/>
+        <location filename="../app/widgets/model_dialog.py" line="1029"/>
         <source>正在生成模型报告 {}/{}</source>
         <translation>モデルレポートを生成中 {}/{}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1007"/>
+        <location filename="../app/widgets/model_dialog.py" line="1032"/>
         <source>导出模型评估失败: {}</source>
         <translation>モデルエクスポートの評価に失敗しました: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1010"/>
+        <location filename="../app/widgets/model_dialog.py" line="1035"/>
         <source>评估失败, 已跳过报告: {}</source>
         <translation>評価に失敗し、レポートをスキップしました: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1100"/>
+        <location filename="../app/widgets/model_dialog.py" line="1125"/>
         <source>导出模型报告跳过: 验证集没有标注</source>
         <translation>モデルレポートのエクスポートをスキップ: 検証セットにアノテーションがありません</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1101"/>
+        <location filename="../app/widgets/model_dialog.py" line="1126"/>
         <source>验证集没有标注, 已跳过评估报告</source>
         <translation>検証セットにアノテーションがないため, 評価レポートをスキップしました</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1107"/>
+        <location filename="../app/widgets/model_dialog.py" line="1132"/>
         <source>[export] 生成评估报告失败:
 {}</source>
         <translation>[export] 評価レポートの生成に失敗しました:
 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1104"/>
+        <location filename="../app/widgets/model_dialog.py" line="1129"/>
         <source>生成评估报告失败: {}</source>
         <translation>評価レポートの生成に失敗しました: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="939"/>
+        <location filename="../app/widgets/model_dialog.py" line="964"/>
         <source>读取类别表失败: {}</source>
         <translation>クラス表の読み込みに失敗しました: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="940"/>
+        <location filename="../app/widgets/model_dialog.py" line="965"/>
         <source>[export] 读取类别表失败: {}</source>
         <translation>[export] クラス表の読み込みに失敗しました: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1096"/>
+        <location filename="../app/widgets/model_dialog.py" line="1121"/>
         <source>导出模型报告完成: {}</source>
         <translation>モデルレポートのエクスポート完了: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1108"/>
+        <location filename="../app/widgets/model_dialog.py" line="1133"/>
         <source>评估完成, 但报告生成失败</source>
         <translation>評価は完了しましたが、レポートの生成に失敗しました</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1142"/>
+        <location filename="../app/widgets/model_dialog.py" line="1167"/>
         <source>导出模型完成: {} | 包含: {}</source>
         <translation>モデルのエクスポート完了: {} | 内容: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1144"/>
+        <location filename="../app/widgets/model_dialog.py" line="1169"/>
         <source>已导出到:
 {}
 
@@ -2591,33 +2594,33 @@
 内容: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1106"/>
-        <location filename="../app/widgets/model_dialog.py" line="1155"/>
+        <location filename="../app/widgets/model_dialog.py" line="1131"/>
+        <location filename="../app/widgets/model_dialog.py" line="1180"/>
         <source>未知错误</source>
         <translation>不明なエラー</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1159"/>
+        <location filename="../app/widgets/model_dialog.py" line="1184"/>
         <source>模型导出失败, 详情见日志</source>
         <translation>モデルのエクスポートに失敗しました。詳細はログをご確認ください</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1154"/>
+        <location filename="../app/widgets/model_dialog.py" line="1179"/>
         <source>导出模型失败: {}</source>
         <translation>モデルのエクスポートに失敗しました: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1156"/>
+        <location filename="../app/widgets/model_dialog.py" line="1181"/>
         <source>[export] ONNX 导出失败: {}</source>
         <translation>[export] ONNX のエクスポートに失敗しました: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1173"/>
+        <location filename="../app/widgets/model_dialog.py" line="1198"/>
         <source>复制导出示例失败: {}</source>
         <translation>エクスポートサンプルのコピーに失敗しました: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1174"/>
+        <location filename="../app/widgets/model_dialog.py" line="1199"/>
         <source>[export] 复制示例失败: {}</source>
         <translation>[export] サンプルのコピーに失敗しました: {}</translation>
     </message>
@@ -2694,13 +2697,13 @@
     <name>ModelManagerDialog</name>
     <message>
         <location filename="../ui/model_manager.ui" line="14"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="395"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="399"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="404"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="439"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="443"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="494"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="501"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="411"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="415"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="420"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="455"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="459"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="510"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="517"/>
         <source>模型权重</source>
         <translation>モデルの重み</translation>
     </message>
@@ -2736,121 +2739,121 @@
     </message>
     <message>
         <location filename="../ui/model_manager.ui" line="265"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="277"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="482"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="293"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="498"/>
         <source>开始下载</source>
         <translation>ダウンロード開始</translation>
     </message>
     <message>
         <location filename="../ui/model_manager.ui" line="275"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="264"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="280"/>
         <source>关闭</source>
         <translation>閉じる</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="56"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="58"/>
         <source>还剩 {}s</source>
         <translation>残り {}s</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="57"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="59"/>
         <source>还剩 {}m{}s</source>
         <translation>残り {}m{}s</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="371"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="387"/>
         <source>选择权重目录</source>
         <translation>重みフォルダを選択</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="389"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="405"/>
         <source>选择预训练权重</source>
         <translation>事前学習済みの重みを選択</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="390"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="406"/>
         <source>权重文件 (*.pt *.pth *.ckpt)</source>
         <translation>重みファイル (*.pt *.pth *.ckpt)</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="400"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="416"/>
         <source>仍要用这个文件吗?</source>
         <translation>それでもこのファイルを使用しますか?</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="428"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="444"/>
         <source>权重目录不可写入 {}: {!r}</source>
         <translation>重みフォルダに書き込めません {}: {!r}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="439"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="455"/>
         <source>勾选的模型都已就绪, 不需要下载.</source>
         <translation>チェックしたモデルはすべて準備済みで、ダウンロードは不要です。</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="444"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="460"/>
         <source>当前目录不可写入, 请点&quot;更改&quot;换一个目录:
 {}</source>
         <translation>現在のフォルダに書き込めません。「変更」をクリックして別のフォルダを指定してください:
 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="277"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="449"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="293"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="465"/>
         <source>下载中...</source>
         <translation>ダウンロード中...</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="495"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="511"/>
         <source>以下权重没能下载完成:
 </source>
         <translation>以下の重みをダウンロードできませんでした:
 </translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="502"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="518"/>
         <source>下载还在进行, 现在关闭会中断下载(已下载部分保留, 下次可续传).
 确定关闭?</source>
         <translation>ダウンロードが進行中です。今閉じるとダウンロードが中断されます(ダウンロード済みの部分は保持され、次回続きから再開できます)。
 閉じますか?</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="534"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="550"/>
         <source>去下载</source>
         <translation>ダウンロードへ</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="543"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="559"/>
         <source>该架构的权重必须先下载好才能开始训练, 也可以在权重管理里指定本地的权重文件.</source>
         <translation>このアーキテクチャの重みは、先にダウンロードしないと学習を開始できません。モデルの重みでローカルの重みファイルを指定することもできます。</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="537"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="553"/>
         <source>本次训练选用 {} {}模型, 需要先下载 {}.</source>
         <translation>今回の学習では {} {} モデルを使用するため、先に {} をダウンロードする必要があります。</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="536"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="552"/>
         <source>缺少模型权重</source>
         <translation>モデルの重みがありません</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="349"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="365"/>
         <source>待下载 {}</source>
         <translation>ダウンロード待ち: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="351"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="367"/>
         <source>无需下载</source>
         <translation>ダウンロード不要</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="353"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="369"/>
         <source>本地 {} 项</source>
         <translation>ローカル: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="535"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="551"/>
         <source>取消</source>
         <translation>キャンセル</translation>
     </message>
@@ -5712,65 +5715,65 @@
 <context>
     <name>_ModelRow</name>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="109"/>
-        <location filename="../app/widgets/model_manager_dialog.py" line="155"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="119"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="171"/>
         <source>本地</source>
         <translation>ローカル</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="131"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="142"/>
         <source>取消本地绑定</source>
         <translation>ローカルの紐付けを解除</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="161"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="177"/>
         <source>已就绪</source>
         <translation>準備完了</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="168"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="184"/>
         <source>未下载</source>
         <translation>未ダウンロード</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="177"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="193"/>
         <source>更换</source>
         <translation>変更</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="185"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="201"/>
         <source>本地权重</source>
         <translation>ローカルの重み</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="194"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="210"/>
         <source>重选</source>
         <translation>選び直す</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="195"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="211"/>
         <source>(路径未记录)</source>
         <translation>(パス未記録)</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="197"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="213"/>
         <source>本地失效</source>
         <translation>ローカルの重みなし</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="199"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="215"/>
         <source>登记的本地权重文件已不在这个位置:
 {}</source>
         <translation>登録されたローカルの重みファイルがこの場所にありません:
 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="204"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="220"/>
         <source>校验中...</source>
         <translation>検証中...</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_manager_dialog.py" line="223"/>
+        <location filename="../app/widgets/model_manager_dialog.py" line="239"/>
         <source>失败</source>
         <translation>失敗</translation>
     </message>

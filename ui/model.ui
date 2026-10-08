@@ -199,6 +199,9 @@
          </widget>
         </item>
         <item>
+         <widget class="CollapsibleText" name="detail_error"/>
+        </item>
+        <item>
          <widget class="QLabel" name="detail_curve">
           <property name="minimumSize">
            <size>
@@ -311,6 +314,11 @@
   </layout>
  </widget>
  <customwidgets>
+  <customwidget>
+   <class>CollapsibleText</class>
+   <extends>QWidget</extends>
+   <header>app.widgets.collapsible_text</header>
+  </customwidget>
   <customwidget>
    <class>CheckChip</class>
    <extends>QCheckBox</extends>

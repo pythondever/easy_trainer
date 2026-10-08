@@ -77,13 +77,15 @@ def _split_detail(text):
     return text
 
 
-def _summary_of(text):
+def summary_of(text):
+    """长文本压成一行摘要: 详情折叠时用它当预览, 展开前也能看出个大概."""
     lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
     if not lines:
         return text
-    # traceback 开头是 "Traceback (most recent call last):", 有信息量的是末行异常
-    if lines[0].startswith("Traceback (most recent call last)"):
-        return lines[-1]
+    # 有 traceback 就是末行异常, 别被"训练过程中发生错误, Err:"这类引导语挡住
+    for ln in lines:
+        if ln.startswith("Traceback (most recent call last)"):
+            return lines[-1]
     # "训练过程中发生错误, Err:" 这类引导语本身不带信息, 摘要取它后面第一行
     if len(lines) > 1 and lines[0].endswith((":", "：")):
         return lines[1]
@@ -289,7 +291,7 @@ class MessageBox:
         """错误弹窗: 多行/超长内容(如 traceback)拆成摘要 + 可复制的详情区."""
         detail = _split_detail(text)
         if detail is not None:
-            text = _summary_of(text)
+            text = summary_of(text)
         MessageBox._show("critical", title, text, parent, detail=detail)
 
     @staticmethod

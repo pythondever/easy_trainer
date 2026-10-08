@@ -21,6 +21,7 @@ from PySide6.QtWidgets import (QAbstractItemView, QApplication, QComboBox, QDial
     QTableWidgetItem, QVBoxLayout, QWidget)
 
 from app.widgets.check_chip import CheckChip
+from app.widgets.collapsible_text import CollapsibleText
 
 class Ui_ModelDialog(object):
     def setupUi(self, ModelDialog):
@@ -118,6 +119,11 @@ class Ui_ModelDialog(object):
         self.detail_info.setTextInteractionFlags(Qt.TextSelectableByMouse)
 
         self.detail_layout.addWidget(self.detail_info)
+
+        self.detail_error = CollapsibleText(self.detail_panel)
+        self.detail_error.setObjectName(u"detail_error")
+
+        self.detail_layout.addWidget(self.detail_error)
 
         self.detail_curve = QLabel(self.detail_panel)
         self.detail_curve.setObjectName(u"detail_curve")

@@ -610,6 +610,7 @@ class ModelDialog(QDialog):
         u = self.ui
         if rec is None:
             u.detail_info.setText(self.tr("选中一行查看详情"))
+            u.detail_error.clear()
             u.detail_curve.setPixmap(QPixmap())
             u.detail_curve.setText("")
             for b in (u.detail_metrics_btn, u.detail_compare_btn,
@@ -657,15 +658,10 @@ class ModelDialog(QDialog):
                      "white-space:nowrap'>{}</td><td>{}</td></tr>".format(
                          _esc(k), val))
         err = str(rec.get("error") or "").strip()
-        if err:
-            html += ("<tr><td style='color:#8b8b8b;padding-right:6px;"
-                     "vertical-align:top;white-space:nowrap'>{}</td>"
-                     "<td><pre style='margin:0;white-space:pre-wrap;"
-                     "font-family:inherit;color:{}'>{{}}</pre></td></tr>"
-                     .format(self.tr("失败原因"), status_color("失败"))
-                     .format(_esc(err[:800])))
         u.detail_info.setText(
             "<table style='font-size:12px;line-height:150%'>{}</table>".format(html))
+        u.detail_error.set_content(self.tr("失败原因"), err[:4000],
+                                   status_color("失败"))
         self._draw_curve(rec)
         has_model = bool(rec.get("model_path"))
         u.detail_metrics_btn.setEnabled(True)
