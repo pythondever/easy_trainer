@@ -98,10 +98,10 @@ _OPS_BTN = ("QPushButton{font-size:12px;padding:2px 6px;border-radius:"
             + ";border-color:" + theme.hexof("border_subtle")
             + ";color:" + theme.hexof("text_disabled") + ";}")
 OPS_BTN_QSS = {
-    "opsGo": _OPS_BTN % (theme.hexof("bg_control"), theme.hexof("border"),
-                         theme.hexof("text_2"), theme.hexof("bg_hover"),
-                         theme.hexof("border_hover"),
-                         theme.hexof("bg_pressed_2")),
+    "opsGo": _OPS_BTN % (theme.hexof("ok_bg"), theme.hexof("ok_border"),
+                         theme.hexof("ok_text"), theme.hexof("ok_bg_hover"),
+                         theme.hexof("ok_border_hover"),
+                         theme.hexof("ok_bg_pressed")),
     "opsDel": _OPS_BTN % (theme.hexof("danger_bg"), theme.hexof("danger_border"),
                           theme.hexof("danger_text"),
                           theme.hexof("danger_bg_hover"),

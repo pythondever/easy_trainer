@@ -60,6 +60,14 @@ PALETTE = {
     "danger_solid": "#d64545",
     "danger_solid_hover": "#e05555",
 
+    # 成功(行内正向操作: 测试 / 导出)
+    "ok_bg": "#1d3327",
+    "ok_bg_hover": "#25402f",
+    "ok_bg_pressed": "#172a20",
+    "ok_border": "#37694a",
+    "ok_border_hover": "#4f8f64",
+    "ok_text": "#8fe1a8",
+
     # 状态
     "st_ok": "#7be39a",
     "st_warn": "#ffd166",
