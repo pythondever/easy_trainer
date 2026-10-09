@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""训练工作线程: 以子进程方式运行 RF-DETR 训练, 定时轮询指标并转发信号."""
+"""训练工作线程: 以子进程方式运行训练脚本, 定时轮询指标并转发信号."""
 
 import collections
 import copy
@@ -30,7 +30,6 @@ WORKSPACE = os.path.dirname(os.path.dirname(os.path.dirname(
 # 打包后 runner 是 .pyd(脚本文件不存在), 子进程只能 -c 导入本模块再调 main()
 TRAIN_RUNNER = "app.train.train_runner"
 CLASSIFY_TRAIN_RUNNER = "app.train.classify_train_runner"
-YOLO_TRAIN_RUNNER = "app.train.yolo_train_runner"
 AD_TRAIN_RUNNER = "app.train.ad_train_runner"
 OCR_TRAIN_RUNNER = "app.train.ocr_train_runner"
 # 判定一个 epoch 是否已产出指标(val 有了, 或 train 行到了)的列
@@ -38,7 +37,7 @@ _EPOCH_KEYS = ("val/mAP_50", "val/segm_mAP_50", "val/loss", "train/loss")
 
 
 def runner_module(config):
-    """按任务与网络架构选训练脚本: 分类是 resnet, 异常检测是 anomalib, 其余是 rf-detr."""
+    """按任务选训练脚本: 分类是 resnet, 异常检测是 anomalib, 其余交给 train_runner 按架构分."""
     task = config.get("task")
     if task == "classify":
         return CLASSIFY_TRAIN_RUNNER
@@ -46,8 +45,6 @@ def runner_module(config):
         return AD_TRAIN_RUNNER
     if task in ("ocr", "ocr_det", "ocr_rec"):
         return OCR_TRAIN_RUNNER
-    if config.get("family") == "cnn":
-        return YOLO_TRAIN_RUNNER
     return TRAIN_RUNNER
 
 

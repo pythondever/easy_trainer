@@ -4495,62 +4495,62 @@
 <context>
     <name>TestRunner</name>
     <message>
-        <location filename="../app/train/test_runner.py" line="282"/>
+        <location filename="../app/train/test_runner.py" line="278"/>
         <source>覆盖已有标注 {}</source>
         <translation>覆寫已有標註 {}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_runner.py" line="312"/>
+        <location filename="../app/train/test_runner.py" line="308"/>
         <source>明细初始化失败: {}</source>
         <translation>明細初始化失敗: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_runner.py" line="321"/>
+        <location filename="../app/train/test_runner.py" line="317"/>
         <source>明细目录创建失败: {}</source>
         <translation>明細目錄建立失敗: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_runner.py" line="349"/>
+        <location filename="../app/train/test_runner.py" line="345"/>
         <source>明细写入失败: {}</source>
         <translation>明細寫入失敗: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_runner.py" line="431"/>
+        <location filename="../app/train/test_runner.py" line="427"/>
         <source>当前安装缺少所需组件, 无法执行测试</source>
         <translation>目前安裝缺少所需元件, 無法執行測試</translation>
     </message>
     <message>
-        <location filename="../app/train/test_runner.py" line="433"/>
+        <location filename="../app/train/test_runner.py" line="429"/>
         <source>加载模型: {}</source>
         <translation>載入模型: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_runner.py" line="449"/>
+        <location filename="../app/train/transformer_backend.py" line="36"/>
         <source>推理已优化: {}</source>
         <translation>推論已優化: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_runner.py" line="465"/>
+        <location filename="../app/train/test_runner.py" line="446"/>
         <source>测试图片 {} 张</source>
         <translation>測試圖片 {} 張</translation>
     </message>
     <message>
-        <location filename="../app/train/test_runner.py" line="515"/>
+        <location filename="../app/train/test_runner.py" line="496"/>
         <source>预测失败 {}: {}</source>
         <translation>預測失敗 {}: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_runner.py" line="529"/>
+        <location filename="../app/train/test_runner.py" line="510"/>
         <source>输出标注失败 {}: {}</source>
         <translation>輸出標註失敗 {}: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_runner.py" line="584"/>
+        <location filename="../app/train/test_runner.py" line="565"/>
         <source>WARN 标签目录存在但所有 {} 张图都没读到 GT,请确认标签是 .txt (YOLO) 或 .json (labelme)</source>
         <translation>WARN 標籤目錄存在但所有 {} 張圖都沒讀到 GT,請確認標籤是 .txt (YOLO) 或 .json (labelme)</translation>
     </message>
     <message>
-        <location filename="../app/train/test_runner.py" line="589"/>
+        <location filename="../app/train/test_runner.py" line="570"/>
         <source>WARN {} 张图缺标签文件</source>
         <translation>WARN {} 張圖缺少標籤檔案</translation>
     </message>
@@ -4852,17 +4852,17 @@
         <translation>請先選擇輸出路徑</translation>
     </message>
     <message>
-        <location filename="../app/train/task_spec.py" line="22"/>
+        <location filename="../app/train/task_spec.py" line="23"/>
         <source>数据集&quot;{}/{}&quot;不是分类数据集(标签格式={}), 无法训练{}</source>
         <translation>資料集「{}/{}」不是分類資料集(標籤格式={}), 無法訓練{}</translation>
     </message>
     <message>
-        <location filename="../app/train/task_spec.py" line="28"/>
+        <location filename="../app/train/task_spec.py" line="29"/>
         <source>未知</source>
         <translation>未知</translation>
     </message>
     <message>
-        <location filename="../app/train/task_spec.py" line="24"/>
+        <location filename="../app/train/task_spec.py" line="25"/>
         <source>数据集&quot;{}/{}&quot;是分类数据集, 无法训练{}任务</source>
         <translation>資料集「{}/{}」是分類資料集, 無法訓練{}任務</translation>
     </message>
@@ -4907,7 +4907,7 @@
         <translation>影像分割建議尺寸: 648(需為 {} 的倍數)</translation>
     </message>
     <message>
-        <location filename="../app/train/task_spec.py" line="26"/>
+        <location filename="../app/train/task_spec.py" line="27"/>
         <source>数据集&quot;{}/{}&quot;没有文本标注, 无法训练{}</source>
         <translation>資料集&quot;{}/{}&quot;沒有文字標註, 無法訓練{}</translation>
     </message>
@@ -5573,67 +5573,67 @@
 <context>
     <name>TrainRunner</name>
     <message>
-        <location filename="../app/train/train_runner.py" line="114"/>
+        <location filename="../app/train/transformer_train_runner.py" line="114"/>
         <source>数据增强需要 kornia 或 albumentations, 当前环境两者都没有.
 请把训练参数里的&quot;数据增强&quot;全部取消勾选, 或补装组件后重试</source>
         <translation>資料增強需要 kornia 或 albumentations, 目前環境兩者都沒有.
 請把訓練參數裡的「資料增強」全部取消勾選, 或補裝組件後重試</translation>
     </message>
     <message>
-        <location filename="../app/train/train_runner.py" line="131"/>
-        <location filename="../app/train/yolo_train_runner.py" line="217"/>
+        <location filename="../app/train/cnn_train_runner.py" line="203"/>
+        <location filename="../app/train/transformer_train_runner.py" line="131"/>
         <source>输出路径: {}</source>
         <translation>輸出路徑: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/train_runner.py" line="132"/>
-        <location filename="../app/train/yolo_train_runner.py" line="218"/>
+        <location filename="../app/train/cnn_train_runner.py" line="204"/>
+        <location filename="../app/train/transformer_train_runner.py" line="132"/>
         <source>本次训练输出目录(时间戳): {}</source>
         <translation>本次訓練輸出目錄(時間戳): {}</translation>
     </message>
     <message>
-        <location filename="../app/train/train_runner.py" line="134"/>
+        <location filename="../app/train/transformer_train_runner.py" line="134"/>
         <source>训练配置文件已保存 → {}</source>
         <translation>訓練設定檔已儲存 → {}</translation>
     </message>
     <message>
-        <location filename="../app/train/train_runner.py" line="156"/>
+        <location filename="../app/train/transformer_train_runner.py" line="156"/>
         <source>分割模型 resolution 已自动取整: {} → {} (block={})</source>
         <translation>分割模型 resolution 已自動取整: {} → {} (block={})</translation>
     </message>
     <message>
-        <location filename="../app/train/train_runner.py" line="158"/>
-        <location filename="../app/train/yolo_train_runner.py" line="255"/>
+        <location filename="../app/train/cnn_train_runner.py" line="241"/>
+        <location filename="../app/train/transformer_train_runner.py" line="158"/>
         <source>使用模型 {} device={} epochs={} batch={} resolution={}</source>
         <translation>使用模型 {} device={} epochs={} batch={} resolution={}</translation>
     </message>
     <message>
-        <location filename="../app/train/train_runner.py" line="169"/>
-        <location filename="../app/train/yolo_train_runner.py" line="267"/>
+        <location filename="../app/train/cnn_train_runner.py" line="253"/>
+        <location filename="../app/train/transformer_train_runner.py" line="169"/>
         <source>数据增强: {}</source>
         <translation>資料增強: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/train_runner.py" line="172"/>
-        <location filename="../app/train/yolo_train_runner.py" line="270"/>
+        <location filename="../app/train/cnn_train_runner.py" line="256"/>
+        <location filename="../app/train/transformer_train_runner.py" line="172"/>
         <source>数据增强: 未启用</source>
         <translation>資料增強: 未啟用</translation>
     </message>
     <message>
-        <location filename="../app/train/train_runner.py" line="240"/>
-        <location filename="../app/train/yolo_train_runner.py" line="296"/>
+        <location filename="../app/train/cnn_train_runner.py" line="282"/>
+        <location filename="../app/train/transformer_train_runner.py" line="240"/>
         <source>训练完成</source>
         <translation>訓練完成</translation>
     </message>
     <message>
-        <location filename="../app/train/train_runner.py" line="249"/>
-        <location filename="../app/train/yolo_train_runner.py" line="303"/>
+        <location filename="../app/train/cnn_train_runner.py" line="289"/>
+        <location filename="../app/train/transformer_train_runner.py" line="249"/>
         <source>生成类别文件: {}</source>
         <translation>產生類別檔案: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/train_runner.py" line="143"/>
-        <location filename="../app/train/yolo_train_runner.py" line="224"/>
+        <location filename="../app/train/cnn_train_runner.py" line="210"/>
+        <location filename="../app/train/transformer_train_runner.py" line="143"/>
         <source>预训练权重缺失: 请先在权重管理里下载 {} 档的模型</source>
         <translation>預訓練權重缺失: 請先在權重管理裡下載 {} 檔的模型</translation>
     </message>
@@ -5641,7 +5641,7 @@
 <context>
     <name>TrainWorker</name>
     <message>
-        <location filename="../app/train/train_worker.py" line="486"/>
+        <location filename="../app/train/train_worker.py" line="483"/>
         <source>训练监控异常, 已终止.
 
 {}</source>
@@ -5650,7 +5650,7 @@
 {}</translation>
     </message>
     <message>
-        <location filename="../app/train/train_worker.py" line="495"/>
+        <location filename="../app/train/train_worker.py" line="492"/>
         <source>训练结果文件读取失败: {}
 
 {}</source>
@@ -5659,7 +5659,7 @@
 {}</translation>
     </message>
     <message>
-        <location filename="../app/train/train_worker.py" line="500"/>
+        <location filename="../app/train/train_worker.py" line="497"/>
         <source>训练进程异常退出 (code={})
 
 --- 子进程输出(尾部) ---

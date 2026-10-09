@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-"""YOLO(ultralytics) 训练执行脚本(由 UI 以子进程方式启动).
-
+"""
+YOLO(ultralytics) 训练执行脚本(由 UI 以子进程方式启动).
 用法与 config 字段同 train_runner, 产物也对齐同一套约定:
   <ts_dir>/metrics.csv     每 epoch 的 val 指标(列名同 rf-detr 侧, 下游零改动)
   <ts_dir>/weights/best.pt 最佳权重
@@ -21,13 +21,9 @@ for _p in (_WORKSPACE, os.path.join(_WORKSPACE, "app")):
 
 from PySide6.QtCore import QCoreApplication as QC
 
-try:
-    import torch
-except ImportError:
-    torch = None
-
 from app.core import i18n, model_assets
 from app.core.metrics import best_map50_from_csv
+from app.train.cnn_backend import device_arg
 from app.train.data_prep import prepare_dataset
 
 # UI 的档位 → YOLO 权重名里那一段
@@ -155,7 +151,6 @@ def _read_results(path):
 def _write_metrics(rows, dst):
     """
     整体重写 metrics.csv(临时文件 + replace).
-
     下游 train_worker 每 5 秒全量重解析这个文件, 按 mtime 判变化; 半截文件会被
     它的"末行没有换行"检查挡掉, 这里再保证替换是原子的.
     """
@@ -179,16 +174,6 @@ def _sync_metrics(csv_path, metrics_path, task):
         return 0
     _write_metrics(rows, metrics_path)
     return len(rows)
-
-
-def _device_arg(device):
-    """UI 存的 cuda:0 → ultralytics 认的 0; cuda 不可用时退 cpu."""
-    if not str(device).startswith("cuda"):
-        return "cpu"
-    if torch is None or not torch.cuda.is_available():
-        return "cpu"
-    parts = str(device).split(":")
-    return int(parts[1]) if len(parts) > 1 and parts[1].isdigit() else 0
 
 
 def _pretrained_path(cfg, task):
@@ -277,7 +262,7 @@ def main():
         lr0=float(cfg["lr"]),
         optimizer=_OPTIMIZERS.get(str(cfg.get("optimizer", "sgd")).lower(),
                                   "auto"),
-        device=_device_arg(cfg.get("device", "cpu")),
+        device=device_arg(cfg.get("device", "cpu")),
         workers=int(cfg.get("num_workers", 8)),
         # 产物落在时间戳目录下: 父目录当 project, 目录名当 name
         project=os.path.dirname(ts_dir), name=os.path.basename(ts_dir),

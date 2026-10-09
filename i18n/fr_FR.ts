@@ -4495,62 +4495,62 @@ Le rapport pèse environ 120 Ko par image ; réduire cette valeur diminue nettem
 <context>
     <name>TestRunner</name>
     <message>
-        <location filename="../app/train/test_runner.py" line="282"/>
+        <location filename="../app/train/test_runner.py" line="278"/>
         <source>覆盖已有标注 {}</source>
         <translation>Écrasement des annotations existantes {}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_runner.py" line="312"/>
+        <location filename="../app/train/test_runner.py" line="308"/>
         <source>明细初始化失败: {}</source>
         <translation>Échec de l&apos;initialisation des détails : {}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_runner.py" line="321"/>
+        <location filename="../app/train/test_runner.py" line="317"/>
         <source>明细目录创建失败: {}</source>
         <translation>Échec de la création du dossier de détails : {}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_runner.py" line="349"/>
+        <location filename="../app/train/test_runner.py" line="345"/>
         <source>明细写入失败: {}</source>
         <translation>Échec de l&apos;écriture des détails : {}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_runner.py" line="431"/>
+        <location filename="../app/train/test_runner.py" line="427"/>
         <source>当前安装缺少所需组件, 无法执行测试</source>
         <translation>Cette installation ne contient pas les composants requis, test impossible</translation>
     </message>
     <message>
-        <location filename="../app/train/test_runner.py" line="433"/>
+        <location filename="../app/train/test_runner.py" line="429"/>
         <source>加载模型: {}</source>
         <translation>Chargement du modèle : {}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_runner.py" line="449"/>
+        <location filename="../app/train/transformer_backend.py" line="36"/>
         <source>推理已优化: {}</source>
         <translation>Inférence optimisée : {}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_runner.py" line="465"/>
+        <location filename="../app/train/test_runner.py" line="446"/>
         <source>测试图片 {} 张</source>
         <translation>{} images de test</translation>
     </message>
     <message>
-        <location filename="../app/train/test_runner.py" line="515"/>
+        <location filename="../app/train/test_runner.py" line="496"/>
         <source>预测失败 {}: {}</source>
         <translation>Échec de la prédiction {} : {}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_runner.py" line="529"/>
+        <location filename="../app/train/test_runner.py" line="510"/>
         <source>输出标注失败 {}: {}</source>
         <translation>Échec de l&apos;écriture des annotations {} : {}</translation>
     </message>
     <message>
-        <location filename="../app/train/test_runner.py" line="584"/>
+        <location filename="../app/train/test_runner.py" line="565"/>
         <source>WARN 标签目录存在但所有 {} 张图都没读到 GT,请确认标签是 .txt (YOLO) 或 .json (labelme)</source>
         <translation>WARN Le dossier d&apos;étiquettes existe mais aucune GT n&apos;a pu être lue pour les {} images ; vérifiez que les étiquettes sont au format .txt (YOLO) ou .json (labelme)</translation>
     </message>
     <message>
-        <location filename="../app/train/test_runner.py" line="589"/>
+        <location filename="../app/train/test_runner.py" line="570"/>
         <source>WARN {} 张图缺标签文件</source>
         <translation>WARN {} images sans fichier d&apos;étiquettes</translation>
     </message>
@@ -4852,17 +4852,17 @@ Le rapport pèse environ 120 Ko par image ; réduire cette valeur diminue nettem
         <translation>Sélectionnez d&apos;abord un chemin de sortie</translation>
     </message>
     <message>
-        <location filename="../app/train/task_spec.py" line="22"/>
+        <location filename="../app/train/task_spec.py" line="23"/>
         <source>数据集&quot;{}/{}&quot;不是分类数据集(标签格式={}), 无法训练{}</source>
         <translation>Le jeu de données « {}/{} » n&apos;est pas un jeu de classification (format des étiquettes={}) ; impossible d&apos;entraîner {}</translation>
     </message>
     <message>
-        <location filename="../app/train/task_spec.py" line="28"/>
+        <location filename="../app/train/task_spec.py" line="29"/>
         <source>未知</source>
         <translation>Inconnu</translation>
     </message>
     <message>
-        <location filename="../app/train/task_spec.py" line="24"/>
+        <location filename="../app/train/task_spec.py" line="25"/>
         <source>数据集&quot;{}/{}&quot;是分类数据集, 无法训练{}任务</source>
         <translation>Le jeu de données « {}/{} » est un jeu de classification ; impossible d&apos;entraîner une tâche de {}</translation>
     </message>
@@ -4907,7 +4907,7 @@ Le rapport pèse environ 120 Ko par image ; réduire cette valeur diminue nettem
         <translation>Taille recommandée pour la segmentation d&apos;images : 648 (doit être un multiple de {})</translation>
     </message>
     <message>
-        <location filename="../app/train/task_spec.py" line="26"/>
+        <location filename="../app/train/task_spec.py" line="27"/>
         <source>数据集&quot;{}/{}&quot;没有文本标注, 无法训练{}</source>
         <translation>Le jeu de données &quot;{}/{}&quot; n&apos;a pas d&apos;annotations de texte ; impossible d&apos;entraîner {}</translation>
     </message>
@@ -5573,67 +5573,67 @@ Les remettre en file et démarrer l&apos;entraînement ?</translation>
 <context>
     <name>TrainRunner</name>
     <message>
-        <location filename="../app/train/train_runner.py" line="114"/>
+        <location filename="../app/train/transformer_train_runner.py" line="114"/>
         <source>数据增强需要 kornia 或 albumentations, 当前环境两者都没有.
 请把训练参数里的&quot;数据增强&quot;全部取消勾选, 或补装组件后重试</source>
         <translation>L&apos;augmentation de données nécessite kornia ou albumentations, aucun des deux n&apos;est installé.
 Décochez tout dans « Augmentation de données » des paramètres d&apos;entraînement, ou installez-en un puis réessayez</translation>
     </message>
     <message>
-        <location filename="../app/train/train_runner.py" line="131"/>
-        <location filename="../app/train/yolo_train_runner.py" line="217"/>
+        <location filename="../app/train/cnn_train_runner.py" line="203"/>
+        <location filename="../app/train/transformer_train_runner.py" line="131"/>
         <source>输出路径: {}</source>
         <translation>Chemin de sortie : {}</translation>
     </message>
     <message>
-        <location filename="../app/train/train_runner.py" line="132"/>
-        <location filename="../app/train/yolo_train_runner.py" line="218"/>
+        <location filename="../app/train/cnn_train_runner.py" line="204"/>
+        <location filename="../app/train/transformer_train_runner.py" line="132"/>
         <source>本次训练输出目录(时间戳): {}</source>
         <translation>Dossier de sortie de cet entraînement (horodatage) : {}</translation>
     </message>
     <message>
-        <location filename="../app/train/train_runner.py" line="134"/>
+        <location filename="../app/train/transformer_train_runner.py" line="134"/>
         <source>训练配置文件已保存 → {}</source>
         <translation>Fichier de configuration d&apos;entraînement enregistré → {}</translation>
     </message>
     <message>
-        <location filename="../app/train/train_runner.py" line="156"/>
+        <location filename="../app/train/transformer_train_runner.py" line="156"/>
         <source>分割模型 resolution 已自动取整: {} → {} (block={})</source>
         <translation>Résolution du modèle de segmentation arrondie automatiquement : {} → {} (block={})</translation>
     </message>
     <message>
-        <location filename="../app/train/train_runner.py" line="158"/>
-        <location filename="../app/train/yolo_train_runner.py" line="255"/>
+        <location filename="../app/train/cnn_train_runner.py" line="241"/>
+        <location filename="../app/train/transformer_train_runner.py" line="158"/>
         <source>使用模型 {} device={} epochs={} batch={} resolution={}</source>
         <translation>Modèle utilisé {} device={} epochs={} batch={} resolution={}</translation>
     </message>
     <message>
-        <location filename="../app/train/train_runner.py" line="169"/>
-        <location filename="../app/train/yolo_train_runner.py" line="267"/>
+        <location filename="../app/train/cnn_train_runner.py" line="253"/>
+        <location filename="../app/train/transformer_train_runner.py" line="169"/>
         <source>数据增强: {}</source>
         <translation>Augmentation de données: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/train_runner.py" line="172"/>
-        <location filename="../app/train/yolo_train_runner.py" line="270"/>
+        <location filename="../app/train/cnn_train_runner.py" line="256"/>
+        <location filename="../app/train/transformer_train_runner.py" line="172"/>
         <source>数据增强: 未启用</source>
         <translation>Augmentation : aucune</translation>
     </message>
     <message>
-        <location filename="../app/train/train_runner.py" line="240"/>
-        <location filename="../app/train/yolo_train_runner.py" line="296"/>
+        <location filename="../app/train/cnn_train_runner.py" line="282"/>
+        <location filename="../app/train/transformer_train_runner.py" line="240"/>
         <source>训练完成</source>
         <translation>Entraînement terminé</translation>
     </message>
     <message>
-        <location filename="../app/train/train_runner.py" line="249"/>
-        <location filename="../app/train/yolo_train_runner.py" line="303"/>
+        <location filename="../app/train/cnn_train_runner.py" line="289"/>
+        <location filename="../app/train/transformer_train_runner.py" line="249"/>
         <source>生成类别文件: {}</source>
         <translation>Génération du fichier de classes : {}</translation>
     </message>
     <message>
-        <location filename="../app/train/train_runner.py" line="143"/>
-        <location filename="../app/train/yolo_train_runner.py" line="224"/>
+        <location filename="../app/train/cnn_train_runner.py" line="210"/>
+        <location filename="../app/train/transformer_train_runner.py" line="143"/>
         <source>预训练权重缺失: 请先在权重管理里下载 {} 档的模型</source>
         <translation>Poids pré-entraînés manquants : téléchargez d&apos;abord le modèle de niveau {} dans Poids du modèle</translation>
     </message>
@@ -5641,7 +5641,7 @@ Décochez tout dans « Augmentation de données » des paramètres d&apos;entra�
 <context>
     <name>TrainWorker</name>
     <message>
-        <location filename="../app/train/train_worker.py" line="486"/>
+        <location filename="../app/train/train_worker.py" line="483"/>
         <source>训练监控异常, 已终止.
 
 {}</source>
@@ -5650,7 +5650,7 @@ Décochez tout dans « Augmentation de données » des paramètres d&apos;entra�
 {}</translation>
     </message>
     <message>
-        <location filename="../app/train/train_worker.py" line="495"/>
+        <location filename="../app/train/train_worker.py" line="492"/>
         <source>训练结果文件读取失败: {}
 
 {}</source>
@@ -5659,7 +5659,7 @@ Décochez tout dans « Augmentation de données » des paramètres d&apos;entra�
 {}</translation>
     </message>
     <message>
-        <location filename="../app/train/train_worker.py" line="500"/>
+        <location filename="../app/train/train_worker.py" line="497"/>
         <source>训练进程异常退出 (code={})
 
 --- 子进程输出(尾部) ---

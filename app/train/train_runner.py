@@ -1,275 +1,29 @@
 # -*- coding: utf-8 -*-
-"""RF-DETR 训练执行脚本(由 UI 以子进程方式启动).
+"""检测/分割训练的入口: 按网络架构转发到 rf-detr 或 CNN 的实现.
 
-用法: main(), 由 train_worker 以 -c 导入后调用(打包后是 pyd, 不能 python -m 启动)
-config 字段见 dialogs.py _build_train_config.
+train_worker 以 -c 方式导入本模块再调 main(), config 路径走 argv[1]; 两个实现
+自己会再读一次同一个文件, 这里只管挑一个交出去.
+
+导入放在函数里是刻意的: 两个实现分别拖着 rfdetr + pytorch_lightning 与
+ultralytics, 子进程只该加载自己那套框架.
 """
 
 import json
-import math
-import os
-import shutil
 import sys
-import traceback
-from importlib.util import find_spec
 
-_WORKSPACE = os.path.dirname(os.path.dirname(os.path.dirname(
-    os.path.abspath(__file__))))
-for _p in (_WORKSPACE, os.path.join(_WORKSPACE, "app")):
-    if _p not in sys.path:
-        sys.path.insert(0, _p)
-
-from PySide6.QtCore import QCoreApplication as QC
-
-try:
-    import torch
-except ImportError:
-    torch = None
-
-from pytorch_lightning.callbacks import Callback
-import rfdetr.training as T
-from rfdetr.training.callbacks import coco_eval as _ce
-from rfdetr import (RFDETRNano, RFDETRSmall, RFDETRMedium, RFDETRLarge,
-                    RFDETRSegNano, RFDETRSegSmall, RFDETRSegMedium,
-                    RFDETRSegLarge)
-
-from app.train.data_prep import prepare_dataset
-from app.core import i18n, model_assets
-from app.core.metrics import best_map50_from_csv
-
-
-def _pretrained_path(cfg, task):
-    """训练起步用的预训练权重绝对路径; 缺文件返回空串(UI 已负责提示下载)."""
-    given = cfg.get("pretrained_path")
-    if given and os.path.isfile(given):
-        return given
-    return model_assets.resolve_path(
-        task, cfg.get("architecture", "nano"),
-        cfg.get("family") or "transformer")
-
-
-def _make_model(architecture, task="detect", pretrained_path=""):
-    if task == "segment":
-        variants = {
-            "nano": RFDETRSegNano, "small": RFDETRSegSmall,
-            "medium": RFDETRSegMedium, "large": RFDETRSegLarge,
-        }
-    else:
-        variants = {
-            "nano": RFDETRNano, "small": RFDETRSmall,
-            "medium": RFDETRMedium, "large": RFDETRLarge,
-        }
-    cls = variants.get(architecture, variants["nano"])
-    # 必须显式给路径: rfdetr 只在拿到纯文件名时才去 RF_HOME 找, 而我们的文件按档位命名,
-    # 官方名在那边根本不存在. 给了完整路径它就直接用, 不看 RF_HOME
-    return cls(pretrain_weights=pretrained_path)
-
-
-# 勾选代号 → rfdetr 的 aug_config 片段. 界面只存代号串, 到这里才展开成字典:
-# GUI 进程不导入 rfdetr, 免得为了几个字面量让启动多等一两秒
-AUG_TRANSFORMS = {
-    "hflip": {"HorizontalFlip": {"p": 0.5}},
-    "vflip": {"VerticalFlip": {"p": 0.5}},
-    "rotate": {"Rotate": {"limit": 15, "p": 0.5}},
-    "affine": {"Affine": {"scale": (0.8, 1.2), "translate_percent": (-0.1, 0.1),
-                          "rotate": (-15, 15), "shear": (-5, 5), "p": 0.5}},
-    "brightness": {"RandomBrightnessContrast": {"brightness_limit": 0.1,
-                                                "contrast_limit": 0.1, "p": 0.3}},
-    "colorjitter": {"ColorJitter": {"brightness": 0.2, "contrast": 0.2,
-                                    "saturation": 0.2, "hue": 0.1, "p": 0.5}},
-    "blur": {"GaussianBlur": {"blur_limit": 3, "p": 0.3}},
-    "noise": {"GaussNoise": {"std_range": (0.01, 0.05), "p": 0.3}},
-}
-
-# 改造前的记录存的是单档预设代号, 展开成勾选组合才能对上
-AUG_LEGACY_CODES = {
-    "off": (),
-    "default": ("hflip",),
-    "conservative": ("hflip", "brightness"),
-    "industrial": ("hflip", "brightness", "blur", "noise"),
-    "aggressive": ("hflip", "vflip", "rotate", "affine", "colorjitter"),
-}
-
-
-def _resolve_aug_config(value):
-    """勾选代号串 → aug_config 字典. 空值/没勾/代号全不认识都给 {} (空字典即不增强)."""
-    text = str(value or "").strip().lower()
-    if not text:
-        return {}
-    codes = AUG_LEGACY_CODES.get(text, text.split(","))
-    out = {}
-    for code in codes:
-        frag = AUG_TRANSFORMS.get(str(code).strip())
-        if frag:
-            out.update(frag)
-    return out
-
-
-def _check_aug_available(aug_config):
-    """缺组件时提前报错: rfdetr 抛的那条 ImportError 埋在子进程 traceback 里很难认."""
-    if not aug_config:
-        return
-    if find_spec("kornia") or find_spec("albumentations"):
-        return
-    raise RuntimeError(QC.translate(
-        "TrainRunner",
-        "数据增强需要 kornia 或 albumentations, 当前环境两者都没有.\n"
-        "请把训练参数里的\"数据增强\"全部取消勾选, 或补装组件后重试"))
+from app.train.transformer_backend import uses_transformer
 
 
 def main():
     cfg_path = sys.argv[1]
     with open(cfg_path, "r", encoding="utf-8") as f:
         cfg = json.load(f)
-    i18n.apply_cli(cfg.get("language", ""))
-
-    out_root = cfg["out_root"]
-    project = cfg["project"]
-    ts_dir = cfg["timestamp_dir"]
-    os.makedirs(out_root, exist_ok=True)
-    os.makedirs(ts_dir, exist_ok=True)
-    print("[train] " + QC.translate("TrainRunner", "输出路径: {}").format(out_root), flush=True)
-    print("[train] " + QC.translate("TrainRunner", "本次训练输出目录(时间戳): {}").format(ts_dir), flush=True)
-    shutil.copy2(cfg_path, os.path.join(ts_dir, "config.json"))
-    print("[train] " + QC.translate("TrainRunner", "训练配置文件已保存 → {}").format(
-        os.path.join(ts_dir, "config.json")), flush=True)
-
-    task = cfg.get("task", "detect")
-    labels = prepare_dataset(out_root, project, cfg["datasets"], task)
-
-    # 2) 训练:
-    weights = _pretrained_path(cfg, task)
-    if not weights:
-        raise RuntimeError(QC.translate(
-            "TrainRunner",
-            "预训练权重缺失: 请先在权重管理里下载 {} 档的模型").format(
-            cfg.get("architecture", "nano")))
-    model = _make_model(cfg.get("architecture", "nano"), task, weights)
-    device = cfg.get("device", "cpu")
-    if device.startswith("cuda"):
-        device = "cuda" if (torch is not None and torch.cuda.is_available()) else "cpu"
-    resolution = int(cfg.get("img_size", 640))
-    if task == "segment":
-        block = model.model_config.patch_size * model.model_config.num_windows
-        if resolution % block != 0:
-            resolution = resolution // block * block
-            print("[train] " + QC.translate("TrainRunner", "分割模型 resolution 已自动取整: {} → {} (block={})").format(
-                cfg.get("img_size", 640), resolution, block), flush=True)
-    print("[train] " + QC.translate("TrainRunner", "使用模型 {} device={} epochs={} batch={} resolution={}").format(
-        cfg.get("architecture", "nano"), device, cfg["epochs"],
-        cfg["batch_size"], resolution), flush=True)
-
-    aug_config = _resolve_aug_config(cfg.get("aug"))
-    _check_aug_available(aug_config)
-    # config.json 里只有代号, 另存一份展开后的定义方便事后复现
-    with open(os.path.join(ts_dir, "augmentations.json"), "w",
-              encoding="utf-8") as f:
-        json.dump(aug_config, f, ensure_ascii=False, indent=2)
-    if aug_config:
-        print("[train] " + QC.translate("TrainRunner", "数据增强: {}").format(
-            json.dumps(aug_config, ensure_ascii=False)), flush=True)
+    if uses_transformer(cfg):
+        from app.train.transformer_train_runner import main as run
     else:
-        print("[train] " + QC.translate("TrainRunner", "数据增强: 未启用"), flush=True)
-
-    def _patch_training_hooks():
-        class _FlushCsv(Callback):
-            def on_train_epoch_end(self, trainer, pl_module):
-                for lg in trainer.loggers:
-                    if lg.__class__.__name__ == "CSVLogger":
-                        try:
-                            lg.save()
-                        except Exception:
-                            pass
-
-        _orig_build_rows = _ce.COCOEvalCallback._build_per_class_rows
-
-        def _patched_build_rows(self, metrics, pfx, split, pl_module,
-                                ar_by_cid, f1_by_cid, metric_prefix=""):
-            rows = _orig_build_rows(self, metrics, pfx, split, pl_module,
-                                    ar_by_cid, f1_by_cid, metric_prefix)
-            if not self._log_per_class_metrics:
-                return rows
-            base = "{}/{}".format(split, metric_prefix)
-            for row in rows:
-                name = row["name"]
-                for key, col in (("ar", "AR"), ("f1", "F1"),
-                                 ("precision", "Precision"), ("recall", "Recall")):
-                    v = row.get(key)
-                    if v is None:
-                        continue
-                    try:
-                        if math.isnan(float(v)):
-                            continue
-                    except (TypeError, ValueError):
-                        pass
-                    pl_module.log("{}{}/{}".format(base, col, name), v)
-            return rows
-
-        _ce.COCOEvalCallback._build_per_class_rows = _patched_build_rows
-
-        _orig = T.build_trainer
-
-        def _patched(config, model_config, **kwargs):
-            trainer = _orig(config, model_config, **kwargs)
-            trainer.callbacks.extend([_FlushCsv()])
-            return trainer
-
-        T.build_trainer = _patched
-
-    _patch_training_hooks()
-    model.train(
-        dataset_dir=out_root,
-        dataset_file="yolo",
-        output_dir=ts_dir,
-        epochs=cfg["epochs"],
-        batch_size=cfg["batch_size"],
-        grad_accum_steps=cfg.get("grad_accum", 4),
-        num_workers=cfg.get("num_workers", 8),
-        lr=cfg["lr"],
-        optimizer=cfg.get("optimizer", "adamw"),
-        device=device,
-        resolution=resolution,
-        use_ema=cfg.get("use_ema", True),
-        checkpoint_interval=cfg.get("checkpoint_interval", 10),
-        # 早停: UI 填 0 禁用, >0 启用且值为 patience
-        early_stopping=cfg.get("early_stop", 0) > 0,
-        early_stopping_patience=max(cfg.get("early_stop", 0), 1),
-        aug_config=aug_config,
-        log_per_class_metrics=True,
-    )
-    print("[train] " + QC.translate("TrainRunner", "训练完成"), flush=True)
-
-    # 3) 结果汇总: best ckpt + metrics.csv 末行指标
-    # 在模型目录生成 classes.txt: 每行 "id 类别名"(交付他人使用时显式对照)
-    classes_path = os.path.join(ts_dir, "classes.txt")
-    try:
-        with open(classes_path, "w", encoding="utf-8") as f:
-            for i, lb in enumerate(labels):
-                f.write("{} {}\n".format(i, lb))
-        print("[train] " + QC.translate("TrainRunner", "生成类别文件: {}").format(classes_path), flush=True)
-    except Exception:
-        pass
-    result = {"ok": True, "metrics_csv": os.path.join(ts_dir, "metrics.csv")}
-    best = os.path.join(ts_dir, "checkpoint_best_ema.pth")
-    if not os.path.exists(best):
-        best = os.path.join(ts_dir, "checkpoint_best_regular.pth")
-    if os.path.exists(best):
-        result["model_path"] = best
-    csv_path = result["metrics_csv"]
-    if os.path.exists(csv_path):
-        try:
-            result.update(best_map50_from_csv(csv_path))
-        except Exception:
-            pass
-    with open(os.path.join(ts_dir, "result.json"), "w", encoding="utf-8") as f:
-        json.dump(result, f, ensure_ascii=False)
-    print("[train] RESULT {}".format(json.dumps(result, ensure_ascii=False)),
-          flush=True)
+        from app.train.cnn_train_runner import main as run
+    run()
 
 
 if __name__ == "__main__":
-    try:
-        main()
-    except Exception:
-        traceback.print_exc()
-        sys.exit(1)
+    main()

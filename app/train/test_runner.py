@@ -48,16 +48,12 @@ except ImportError:
     np = None
 
 try:
-    import torch
-except ImportError:
-    torch = None
-
-try:
     from rfdetr import RFDETR   # from_checkpoint 自动推断检测/分割模型类
 except ImportError:
     RFDETR = None
 
-from app.train.yolo_backend import YoloPredictor, uses_cnn
+from app.train.cnn_backend import YoloPredictor, uses_cnn
+from app.train.transformer_backend import DetrPredictor
 
 try:
     from app.core.label_utils import (load_json_shapes, load_yolo_shapes,
@@ -435,22 +431,7 @@ def _make_predictor(cfg):
     device = cfg.get("device", "cuda")
     if cnn:
         return YoloPredictor(cfg["model_path"], device)
-
-    model = RFDETR.from_checkpoint(cfg["model_path"])
-    if device.startswith("cuda") and hasattr(model, "to") \
-            and torch is not None and torch.cuda.is_available():
-        model.to(device)
-    if hasattr(model, "inference"):
-        try:
-            dtype = torch.float16 if device.startswith("cuda") \
-                and torch is not None and torch.cuda.is_available() \
-                else torch.float32
-            model.inference(dtype=dtype, compile=False)
-            print("[test] " + QC.translate(
-                "TestRunner", "推理已优化: {}").format(dtype), flush=True)
-        except Exception:
-            pass
-    return model
+    return DetrPredictor(cfg["model_path"], device)
 
 
 def main():

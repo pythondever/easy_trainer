@@ -12,7 +12,7 @@ import tempfile
 
 from PySide6.QtCore import QCoreApplication as QC
 
-from app.train.yolo_backend import uses_cnn
+from app.train.cnn_backend import uses_cnn
 
 
 def _torch():

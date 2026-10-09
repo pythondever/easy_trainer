@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-"""YOLO(ultralytics) 后端的公共件: 后端判定 + 设备参数转换 + 推理结果适配.
-
+"""
+CNN(ultralytics) 后端的公共件: 后端判定 + 设备参数转换 + 推理结果适配.
 测试流程(test_runner)与导出(onnx_export)吃的都是 rf-detr 的形状 —— predict
 返回 .xyxy / .confidence / .class_id / .mask / .data['class_name']. 这里把
 YOLO 的 Results 包成同样的形状, 下游那两个后端就能共用同一套代码.
