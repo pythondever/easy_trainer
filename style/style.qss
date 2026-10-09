@@ -1371,6 +1371,29 @@ QFrame#msgFrame QPlainTextEdit#msgDetail {
     padding: 6px 8px;
     selection-background-color: {{accent}};
 }
+/* 路径清单块: 标题 + 复制 + 带警示色点的条目(失效目录/失效图像这类多项提示) */
+QFrame#msgFrame QFrame#msgList {
+    background-color: {{bg_sunken}};
+    border: 1px solid {{border_subtle}};
+    border-radius: {{r_md}};
+}
+QFrame#msgFrame QLabel#msgListTitle {
+    color: {{text_3}}; font-size: {{font_sm}}; background: transparent;
+}
+QFrame#msgFrame QPushButton#msgListCopy {
+    background: transparent; border: none; padding: 0 2px;
+    color: {{accent_soft}}; font-size: {{font_sm}};
+}
+QFrame#msgFrame QPushButton#msgListCopy:hover { color: {{accent_hover}}; }
+QFrame#msgFrame QLabel#msgListDot {
+    background-color: {{icon_warning}}; border-radius: {{r_sm}};
+}
+QFrame#msgFrame QLabel#msgListItem {
+    color: {{text_2}}; font-size: {{font_md}}; background: transparent;
+}
+QFrame#msgFrame QLabel#msgListMore {
+    color: {{text_3}}; font-size: {{font_sm}}; background: transparent;
+}
 
 /* ---------------- ProgressDialog ---------------- */
 /* 进度框也走 message_box 的无边框外壳, 样式挂 msgFrame 前缀, 按钮复用 msgBtn */

@@ -10,7 +10,7 @@
     </message>
     <message>
         <location filename="../app/train/ad_common.py" line="153"/>
-        <location filename="../app/train/ad_common.py" line="655"/>
+        <location filename="../app/train/ad_common.py" line="659"/>
         <source>(根目录散图)</source>
         <translation>(根目錄散圖)</translation>
     </message>
@@ -398,17 +398,17 @@
 <context>
     <name>AnnotationDialog</name>
     <message>
-        <location filename="../app/annotation/annotation_canvas.py" line="208"/>
+        <location filename="../app/annotation/annotation_canvas.py" line="209"/>
         <source>复制</source>
         <translation>複製</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_canvas.py" line="210"/>
+        <location filename="../app/annotation/annotation_canvas.py" line="211"/>
         <source>填充</source>
         <translation>填滿</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_canvas.py" line="220"/>
+        <location filename="../app/annotation/annotation_canvas.py" line="221"/>
         <source>粘贴</source>
         <translation>貼上</translation>
     </message>
@@ -485,12 +485,12 @@
         <translation>目前像素精度 {}, 點擊修改</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_canvas.py" line="563"/>
+        <location filename="../app/annotation/annotation_canvas.py" line="582"/>
         <source>先在画布上点选一个多边形</source>
         <translation>請先在畫布上點選一個多邊形</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_canvas.py" line="566"/>
+        <location filename="../app/annotation/annotation_canvas.py" line="585"/>
         <source>亮度调节只对多边形有效</source>
         <translation>亮度調整僅對多邊形有效</translation>
     </message>
@@ -540,57 +540,57 @@
         <translation>(無影像)</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_canvas.py" line="696"/>
+        <location filename="../app/annotation/annotation_canvas.py" line="720"/>
         <location filename="../app/annotation/annotation_dialog.py" line="820"/>
         <location filename="../app/annotation/annotation_dialog.py" line="826"/>
         <source>添加标签</source>
         <translation>新增標籤</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_canvas.py" line="697"/>
+        <location filename="../app/annotation/annotation_canvas.py" line="721"/>
         <source>请先添加标签(点击&quot;+&quot;)</source>
         <translation>請先新增標籤(點擊「+」)</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_canvas.py" line="733"/>
+        <location filename="../app/annotation/annotation_canvas.py" line="757"/>
         <source>标注文字</source>
         <translation>標註文字</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_canvas.py" line="734"/>
+        <location filename="../app/annotation/annotation_canvas.py" line="758"/>
         <source>请输入框内的文字</source>
         <translation>請輸入框內的文字</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_canvas.py" line="833"/>
+        <location filename="../app/annotation/annotation_canvas.py" line="857"/>
         <source>剪切板  {}/{}</source>
         <translation>剪貼簿  {}/{}</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_canvas.py" line="858"/>
+        <location filename="../app/annotation/annotation_canvas.py" line="882"/>
         <source>第 {} 个模板  {}x{}
 左键选中用于粘贴, 右键 删除/导入/导出/清空</source>
         <translation>第 {} 個範本  {}x{}
 左鍵選取用於貼上, 右鍵 刪除/匯入/匯出/清空</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_canvas.py" line="890"/>
+        <location filename="../app/annotation/annotation_canvas.py" line="914"/>
         <location filename="../app/annotation/annotation_dialog.py" line="685"/>
         <source>删除</source>
         <translation>刪除</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_canvas.py" line="893"/>
+        <location filename="../app/annotation/annotation_canvas.py" line="917"/>
         <source>导入</source>
         <translation>匯入</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_canvas.py" line="894"/>
+        <location filename="../app/annotation/annotation_canvas.py" line="918"/>
         <source>导出</source>
         <translation>匯出</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_canvas.py" line="896"/>
+        <location filename="../app/annotation/annotation_canvas.py" line="920"/>
         <source>清空</source>
         <translation>清空</translation>
     </message>
@@ -912,17 +912,17 @@
         <translation>資料集: train={} val={} 類別({})={}</translation>
     </message>
     <message>
-        <location filename="../app/train/classify_train_runner.py" line="285"/>
+        <location filename="../app/train/classify_train_runner.py" line="290"/>
         <source>早停触发: 连续 {} 个 epoch 精度无提升</source>
         <translation>早停觸發: 連續 {} 個 epoch 精度無提升</translation>
     </message>
     <message>
-        <location filename="../app/train/classify_train_runner.py" line="290"/>
+        <location filename="../app/train/classify_train_runner.py" line="295"/>
         <source>训练完成 best_acc={:.4f}</source>
         <translation>訓練完成 best_acc={:.4f}</translation>
     </message>
     <message>
-        <location filename="../app/train/classify_train_runner.py" line="298"/>
+        <location filename="../app/train/classify_train_runner.py" line="303"/>
         <source>生成类别文件: {}</source>
         <translation>產生類別檔案: {}</translation>
     </message>
@@ -938,22 +938,22 @@
 <context>
     <name>ColorPickerDialog</name>
     <message>
-        <location filename="../app/annotation/annotation_canvas.py" line="395"/>
+        <location filename="../app/annotation/annotation_canvas.py" line="396"/>
         <source>选择颜色</source>
         <translation>選擇顏色</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_canvas.py" line="407"/>
+        <location filename="../app/annotation/annotation_canvas.py" line="408"/>
         <source>十六进制:</source>
         <translation>十六進位:</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_canvas.py" line="428"/>
+        <location filename="../app/annotation/annotation_canvas.py" line="429"/>
         <source>基本颜色:</source>
         <translation>基本顏色:</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_canvas.py" line="440"/>
+        <location filename="../app/annotation/annotation_canvas.py" line="441"/>
         <source>自定义 RGB:</source>
         <translation>自訂 RGB:</translation>
     </message>
@@ -1092,32 +1092,32 @@
 <context>
     <name>DataPrep</name>
     <message>
-        <location filename="../app/train/data_prep.py" line="189"/>
+        <location filename="../app/train/data_prep.py" line="207"/>
         <source>解析到类别 {} 个: {}</source>
         <translation>解析到類別 {} 個: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/data_prep.py" line="209"/>
+        <location filename="../app/train/data_prep.py" line="227"/>
         <source>复制数据集 {}: 图像 {} 张, 标签 {} 个 → {}</source>
         <translation>複製資料集 {}: 影像 {} 張, 標籤 {} 個 → {}</translation>
     </message>
     <message>
-        <location filename="../app/train/data_prep.py" line="296"/>
+        <location filename="../app/train/data_prep.py" line="314"/>
         <source>合并 {} 数据集 → {} ({} 个文件)</source>
         <translation>合併 {} 資料集 → {} ({} 個檔案)</translation>
     </message>
     <message>
-        <location filename="../app/train/data_prep.py" line="313"/>
+        <location filename="../app/train/data_prep.py" line="331"/>
         <source>生成 data.yaml → {}</source>
         <translation>產生 data.yaml → {}</translation>
     </message>
     <message>
-        <location filename="../app/train/data_prep.py" line="326"/>
+        <location filename="../app/train/data_prep.py" line="345"/>
         <source>未从数据集中解析到任何标签类别, 请检查标签文件</source>
         <translation>未從資料集中解析到任何標籤類別, 請檢查標籤檔案</translation>
     </message>
     <message>
-        <location filename="../app/train/data_prep.py" line="333"/>
+        <location filename="../app/train/data_prep.py" line="352"/>
         <source>数据准备完成: {} 个类别, 输出目录 {}</source>
         <translation>資料準備完成: {} 個類別, 輸出目錄 {}</translation>
     </message>
@@ -1125,95 +1125,140 @@
 <context>
     <name>DatasetViewMixin</name>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="266"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="279"/>
         <source>删除全部未标注图像({} 张)</source>
         <translation>刪除全部未標註影像({} 張)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="272"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="285"/>
         <source>删除所选图像({} 张)</source>
         <translation>刪除所選影像({} 張)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="386"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="310"/>
+        <source>图像文件不存在, 无法打开标注: {}</source>
+        <translation>影像檔案不存在, 無法開啟標註: {}</translation>
+    </message>
+    <message>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="314"/>
+        <source>图像文件不存在</source>
+        <translation>影像檔案不存在</translation>
+    </message>
+    <message>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="315"/>
+        <source>该图像已不在磁盘上, 无法打开标注. 文件可能被移动、改名或删除了.</source>
+        <translation>該影像已不在磁碟上, 無法開啟標註. 檔案可能被移動、重新命名或刪除了.</translation>
+    </message>
+    <message>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="318"/>
+        <source>失效文件</source>
+        <translation>失效檔案</translation>
+    </message>
+    <message>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="415"/>
         <source>重载跳过: 数据集 {}/{} 无图像目录</source>
         <translation>重載略過: 資料集 {}/{} 無影像目錄</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="387"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="416"/>
         <source>重载</source>
         <translation>重新載入</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="388"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="417"/>
         <source>该数据集还没有图像目录, 请先右键&quot;导入&quot;</source>
         <translation>該資料集還沒有影像目錄, 請先按右鍵「匯入」</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="392"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="421"/>
         <source>重载跳过: 数据集 {}/{} 正在载入</source>
         <translation>重載略過: 資料集 {}/{} 正在載入</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="394"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="423"/>
         <source>重载数据集: {}/{}</source>
         <translation>重載資料集: {}/{}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="609"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="647"/>
         <source>数据集 {}/{} 含 OCR 文本标注, 已标为字符检测数据集</source>
         <translation>資料集 {}/{} 含 OCR 文字標註, 已標為文字偵測資料集</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="950"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="1024"/>
         <source>第 {} / {} 页</source>
         <translation>第 {} / {} 頁</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="954"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="1028"/>
         <source>第 {}/{} 页 · 共 {} 个</source>
         <translation>第 {}/{} 頁 · 共 {} 個</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="956"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="1030"/>
         <source>第 {}/{} 页 · 共 {} 张</source>
         <translation>第 {}/{} 頁 · 共 {} 張</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="969"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="1043"/>
         <source>未选择标签</source>
         <translation>未選擇標籤</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="971"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="1045"/>
         <source>暂无数据</source>
         <translation>暫無資料</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="1008"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="1086"/>
         <source>开始导入: {}/{} | 图像路径={} | 标签路径={} | 格式={}</source>
         <translation>開始匯入: {}/{} | 影像路徑={} | 標籤路徑={} | 格式={}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="1009"/>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="1078"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="1087"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="1156"/>
         <source>(无)</source>
         <translation>(無)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="1073"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="1151"/>
         <source>{}: {}个</source>
         <translation>{}: {}個</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="1075"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="1153"/>
         <source>数据集导入完成: {}/{} | 图像 {} 张, 已标注 {} 张 | 标签({}类): {}</source>
         <translation>資料集匯入完成: {}/{} | 影像 {} 張, 已標註 {} 張 | 標籤({}類): {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="1120"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="1199"/>
         <source>数据集 {}/{} 未导入, 右键&quot;导入&quot;选择图像与标签目录</source>
         <translation>資料集 {}/{} 未匯入, 請按右鍵「匯入」選擇影像與標籤目錄</translation>
+    </message>
+    <message>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="1210"/>
+        <source>数据集 {}/{} 有 {} 个图像目录不存在, 已跳过</source>
+        <translation>資料集 {}/{} 有 {} 個影像目錄不存在, 已略過</translation>
+    </message>
+    <message>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="1224"/>
+        <source>数据集 {}/{} 的图像目录不存在, 无法载入</source>
+        <translation>資料集 {}/{} 的影像目錄不存在, 無法載入</translation>
+    </message>
+    <message>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="1228"/>
+        <source>图像目录不存在</source>
+        <translation>影像目錄不存在</translation>
+    </message>
+    <message>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="1229"/>
+        <source>数据集「{}」的图像目录已不在磁盘上, 无法载入图像. 目录可能被移动、改名或删除了.</source>
+        <translation>資料集「{}」的影像目錄已不在磁碟上, 無法載入影像. 目錄可能被移動、重新命名或刪除了.</translation>
+    </message>
+    <message>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="1232"/>
+        <source>失效目录 · {} 个</source>
+        <translation>失效目錄 · {} 個</translation>
     </message>
 </context>
 <context>
@@ -1773,34 +1818,49 @@
 <context>
     <name>MessageBox</name>
     <message>
-        <location filename="../app/widgets/message_box.py" line="274"/>
-        <location filename="../app/widgets/message_box.py" line="302"/>
+        <location filename="../app/widgets/message_box.py" line="343"/>
+        <location filename="../app/widgets/message_box.py" line="384"/>
         <source>确定</source>
         <translation>確定</translation>
     </message>
     <message>
-        <location filename="../app/widgets/message_box.py" line="98"/>
+        <location filename="../app/widgets/message_box.py" line="105"/>
         <source>详情已复制到剪贴板</source>
         <translation>詳細資訊已複製到剪貼簿</translation>
     </message>
     <message>
-        <location filename="../app/widgets/message_box.py" line="267"/>
+        <location filename="../app/widgets/message_box.py" line="253"/>
+        <source>复制</source>
+        <translation>複製</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/message_box.py" line="284"/>
+        <source>…还有 {} 个</source>
+        <translation>…還有 {} 個</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/message_box.py" line="335"/>
         <source>关闭</source>
         <translation>關閉</translation>
     </message>
     <message>
-        <location filename="../app/widgets/message_box.py" line="269"/>
+        <location filename="../app/widgets/message_box.py" line="337"/>
         <source>复制详情</source>
         <translation>複製詳細資訊</translation>
     </message>
     <message>
-        <location filename="../app/widgets/message_box.py" line="303"/>
-        <location filename="../app/widgets/message_box.py" line="350"/>
+        <location filename="../app/widgets/message_box.py" line="364"/>
+        <source>知道了</source>
+        <translation>知道了</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/message_box.py" line="385"/>
+        <location filename="../app/widgets/message_box.py" line="432"/>
         <source>取消</source>
         <translation>取消</translation>
     </message>
     <message>
-        <location filename="../app/widgets/message_box.py" line="374"/>
+        <location filename="../app/widgets/message_box.py" line="456"/>
         <source>取消中...</source>
         <translation>取消中...</translation>
     </message>
@@ -3153,7 +3213,7 @@
     <message>
         <location filename="../app/mixins/project_mixin.py" line="49"/>
         <location filename="../app/mixins/project_mixin.py" line="53"/>
-        <location filename="../app/mixins/project_mixin.py" line="106"/>
+        <location filename="../app/mixins/project_mixin.py" line="107"/>
         <source>修改名称</source>
         <translation>修改名稱</translation>
     </message>
@@ -3164,7 +3224,7 @@
     </message>
     <message>
         <location filename="../app/mixins/project_mixin.py" line="61"/>
-        <location filename="../app/mixins/project_mixin.py" line="107"/>
+        <location filename="../app/mixins/project_mixin.py" line="108"/>
         <source>删除项目</source>
         <translation>刪除專案</translation>
     </message>
@@ -3181,100 +3241,100 @@
         <translation>刪除專案: {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="103"/>
-        <location filename="../app/mixins/project_mixin.py" line="147"/>
-        <location filename="../app/mixins/project_mixin.py" line="156"/>
+        <location filename="../app/mixins/project_mixin.py" line="104"/>
+        <location filename="../app/mixins/project_mixin.py" line="148"/>
+        <location filename="../app/mixins/project_mixin.py" line="157"/>
         <source>添加数据集</source>
         <translation>新增資料集</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="105"/>
+        <location filename="../app/mixins/project_mixin.py" line="106"/>
         <source>导出项目</source>
         <translation>匯出專案</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="122"/>
+        <location filename="../app/mixins/project_mixin.py" line="123"/>
         <source>导入</source>
         <translation>匯入</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="123"/>
+        <location filename="../app/mixins/project_mixin.py" line="124"/>
         <source>导出</source>
         <translation>匯出</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="124"/>
+        <location filename="../app/mixins/project_mixin.py" line="125"/>
         <source>重载</source>
         <translation>重新載入</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="125"/>
+        <location filename="../app/mixins/project_mixin.py" line="126"/>
         <source>移动</source>
         <translation>移動</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="126"/>
+        <location filename="../app/mixins/project_mixin.py" line="127"/>
         <source>修改</source>
         <translation>修改</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="127"/>
+        <location filename="../app/mixins/project_mixin.py" line="128"/>
         <source>删除</source>
         <translation>刪除</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="148"/>
+        <location filename="../app/mixins/project_mixin.py" line="149"/>
         <source>数据集名称</source>
         <translation>資料集名稱</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="156"/>
-        <location filename="../app/mixins/project_mixin.py" line="167"/>
+        <location filename="../app/mixins/project_mixin.py" line="157"/>
+        <location filename="../app/mixins/project_mixin.py" line="168"/>
         <source>该项目下已存在同名数据集!</source>
         <translation>該專案下已存在同名資料集!</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="158"/>
+        <location filename="../app/mixins/project_mixin.py" line="159"/>
         <source>创建数据集: {}/{}</source>
         <translation>建立資料集: {}/{}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="163"/>
-        <location filename="../app/mixins/project_mixin.py" line="167"/>
+        <location filename="../app/mixins/project_mixin.py" line="164"/>
+        <location filename="../app/mixins/project_mixin.py" line="168"/>
         <source>修改数据集</source>
         <translation>修改資料集</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="169"/>
+        <location filename="../app/mixins/project_mixin.py" line="170"/>
         <source>重命名数据集: {} → {}</source>
         <translation>重新命名資料集: {} → {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="174"/>
+        <location filename="../app/mixins/project_mixin.py" line="175"/>
         <source>删除数据集</source>
         <translation>刪除資料集</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="175"/>
+        <location filename="../app/mixins/project_mixin.py" line="176"/>
         <source>确定删除数据集&quot;{}&quot;吗?
 </source>
         <translation>確定要刪除資料集「{}」嗎?
 </translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="179"/>
+        <location filename="../app/mixins/project_mixin.py" line="180"/>
         <source>删除数据集: {}/{}</source>
         <translation>刪除資料集: {}/{}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="198"/>
-        <location filename="../app/mixins/project_mixin.py" line="211"/>
-        <location filename="../app/mixins/project_mixin.py" line="228"/>
+        <location filename="../app/mixins/project_mixin.py" line="200"/>
+        <location filename="../app/mixins/project_mixin.py" line="213"/>
+        <location filename="../app/mixins/project_mixin.py" line="230"/>
         <source>移动数据集</source>
         <translation>移動資料集</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="199"/>
+        <location filename="../app/mixins/project_mixin.py" line="201"/>
         <source>是否将&quot;{}&quot;的数据从
 {} / {} 移动到 {} / {}?
 移动后源数据集将清空.</source>
@@ -3283,42 +3343,42 @@
 移動後來源資料集將清空.</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="208"/>
+        <location filename="../app/mixins/project_mixin.py" line="210"/>
         <source>移动失败</source>
         <translation>移動失敗</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="212"/>
+        <location filename="../app/mixins/project_mixin.py" line="214"/>
         <source>已从 {} / {} 移动到 {} / {}</source>
         <translation>已從 {} / {} 移動到 {} / {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="229"/>
+        <location filename="../app/mixins/project_mixin.py" line="231"/>
         <source>没有可移动到的目标数据集(本项目之外无数据集)</source>
         <translation>沒有可移動的目標資料集(本專案之外無資料集)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="233"/>
+        <location filename="../app/mixins/project_mixin.py" line="235"/>
         <source>选择目标数据集</source>
         <translation>選擇目標資料集</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="237"/>
+        <location filename="../app/mixins/project_mixin.py" line="239"/>
         <source>选择要将数据移动到的目标数据集:</source>
         <translation>選擇要將資料移動到的目標資料集:</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="318"/>
+        <location filename="../app/mixins/project_mixin.py" line="324"/>
         <source>{}: {}个</source>
         <translation>{}: {}個</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="320"/>
+        <location filename="../app/mixins/project_mixin.py" line="326"/>
         <source>数据集移动: {}/{} → {}/{} | 移动图像 {} 张 | 目标标签统计({}类): {}</source>
         <translation>資料集移動: {}/{} → {}/{} | 移動影像 {} 張 | 目標標籤統計({}類): {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/project_mixin.py" line="323"/>
+        <location filename="../app/mixins/project_mixin.py" line="329"/>
         <source>(无)</source>
         <translation>(無)</translation>
     </message>
@@ -4897,7 +4957,7 @@
         <translation>影像分類建議尺寸: 224(小圖用 224, 較大圖可到 256)</translation>
     </message>
     <message>
-        <location filename="../app/train/ad_common.py" line="695"/>
+        <location filename="../app/train/ad_common.py" line="699"/>
         <source>异常检测推荐尺寸: 256; 缺陷很小时调到 512 更稳, 显存和耗时随之上升</source>
         <translation>異常偵測建議尺寸: 256; 缺陷很小時調到 512 更穩, 顯示記憶體和耗時隨之上升</translation>
     </message>
@@ -4927,7 +4987,7 @@
         <translation>建議 224</translation>
     </message>
     <message>
-        <location filename="../app/train/ad_common.py" line="700"/>
+        <location filename="../app/train/ad_common.py" line="704"/>
         <source>建议 256</source>
         <translation>建議 256</translation>
     </message>
@@ -5072,17 +5132,17 @@
         <translation>目前網路架構不支援此增強</translation>
     </message>
     <message>
-        <location filename="../app/train/ad_common.py" line="722"/>
+        <location filename="../app/train/ad_common.py" line="726"/>
         <source>异常检测算法自带学习率与优化器, 不需要设置</source>
         <translation>異常偵測演算法自帶學習率與優化器, 不需要設定</translation>
     </message>
     <message>
-        <location filename="../app/train/ad_common.py" line="728"/>
+        <location filename="../app/train/ad_common.py" line="732"/>
         <source>建库型算法只提取特征建立记忆库, 没有训练轮次</source>
         <translation>建庫型演算法只提取特徵建立記憶庫, 沒有訓練輪次</translation>
     </message>
     <message>
-        <location filename="../app/train/ad_common.py" line="669"/>
+        <location filename="../app/train/ad_common.py" line="673"/>
         <source>仅建库</source>
         <translation>僅建庫</translation>
     </message>

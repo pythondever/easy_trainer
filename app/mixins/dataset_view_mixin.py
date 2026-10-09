@@ -298,9 +298,25 @@ class DatasetViewMixin(object):
         if item is None:
             return
         image_path = item.data(0)
-        if not image_path or not os.path.exists(image_path):
+        if not image_path:
+            return
+        if not os.path.exists(image_path):
+            self._prompt_missing_file(image_path)
             return
         self._open_annotation(image_path)
+
+    def _prompt_missing_file(self, image_path):
+        """双击格子却发现图像文件没了: 与目录失效共用一套弹窗, 免得看着像程序没反应."""
+        self._log(QC.translate("DatasetViewMixin",
+                 "图像文件不存在, 无法打开标注: {}").format(image_path))
+        MessageBox.missing_paths(
+            self,
+            QC.translate("DatasetViewMixin", "图像文件不存在"),
+            QC.translate("DatasetViewMixin",
+                         "该图像已不在磁盘上, 无法打开标注. "
+                         "文件可能被移动、改名或删除了."),
+            QC.translate("DatasetViewMixin", "失效文件"),
+            [image_path])
 
     def _open_annotation(self, image_path):
         cur_ds = getattr(self, "_current_dataset", None)
@@ -1178,15 +1194,43 @@ class DatasetViewMixin(object):
             # 还是上一个数据集的, 这里作废; 正常路径单击已重展开过, 不受影响
             self._view_cache = None
         self._current_dataset = (project, dataset)
+        binding = self.db.get_dataset_import(project, dataset)
+        if not binding:
+            self._log(QC.translate("DatasetViewMixin", "数据集 {}/{} 未导入, 右键\"导入\"选择图像与标签目录").format(
+                project, dataset))
+            return
+        image_paths = get_paths(binding, "image")
+        alive = [p for p in image_paths if p and os.path.isdir(p)]
+        missing = [p for p in image_paths if p and not os.path.isdir(p)]
+        if missing and not alive:
+            self._prompt_missing_dirs(project, dataset, missing)
+            return
+        if missing:
+            # 还有活着的目录能看图, 不值得弹窗打断; 但不能静默少图, 记一行
+            self._log(QC.translate("DatasetViewMixin",
+                     "数据集 {}/{} 有 {} 个图像目录不存在, 已跳过").format(
+                         project, dataset, len(missing)))
         if self.dataset_cache.get(project, {}).get(dataset):
             return
         if (project, dataset) in self._loading_tasks:
             return
-        if not self.db.get_dataset_import(project, dataset):
-            self._log(QC.translate("DatasetViewMixin", "数据集 {}/{} 未导入, 右键\"导入\"选择图像与标签目录").format(
-                project, dataset))
-            return
         self.show_dataset_images(project, dataset, update_stats=True)
+
+    def _prompt_missing_dirs(self, project, dataset, missing):
+        """
+        双击载入却发现图像目录全没了: 光清屏用户分不清"数据集本来没图"和"路径丢了".
+        部分失效还有图可看, 不弹窗, 由调用方记日志.
+        """
+        self._log(QC.translate("DatasetViewMixin",
+                 "数据集 {}/{} 的图像目录不存在, 无法载入").format(project, dataset))
+        MessageBox.missing_paths(
+            self,
+            QC.translate("DatasetViewMixin", "图像目录不存在"),
+            QC.translate("DatasetViewMixin",
+                         "数据集「{}」的图像目录已不在磁盘上, 无法载入图像. "
+                         "目录可能被移动、改名或删除了.").format(dataset),
+            QC.translate("DatasetViewMixin", "失效目录 · {} 个").format(len(missing)),
+            missing)
 
     def _on_sidebar_project_clicked(self, project):
         self._current_dataset = None

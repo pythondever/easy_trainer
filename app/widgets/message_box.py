@@ -30,6 +30,12 @@ DETAIL_MIN_H = 96         # 详情区按行数自适应高度, 两行也占满 1
 DETAIL_MAX_H = 180
 DETAIL_LINE_H = 17
 
+LIST_MAX_ITEMS = 8        # 清单块最多列几条, 再多折成"…还有 N 个", 免得弹窗高过屏幕
+LIST_PAD_L = 14
+LIST_PAD_R = 12
+LIST_DOT_W = 6            # 条目左侧的警示色点
+LIST_GAP = 10
+
 # QMessageBox 的 Role 枚举对应 QSS 里的 class
 _ROLE_MAP = {
     QMessageBox.AcceptRole: "primary",
@@ -92,8 +98,9 @@ def summary_of(text):
     return lines[0]
 
 
-def _copy_detail(edit, btn):
-    QApplication.clipboard().setText(edit.toPlainText())
+def _copy_text(text, btn):
+    """复制到剪贴板并在按钮上弹个提示, 否则用户不知道到底复制上没有."""
+    QApplication.clipboard().setText(text)
     QToolTip.showText(btn.mapToGlobal(btn.rect().center()),
                       QC.translate("MessageBox", "详情已复制到剪贴板"), btn)
 
@@ -224,6 +231,67 @@ class _FramelessBox(QDialog):
         self._content.addLayout(row)
         return edit
 
+    def add_list_block(self, title, items):
+        """
+        路径清单块: 标题行右侧是"复制", 下面每条一个警示色点 + 一条路径.
+        点复制拿到的是换行拼接的完整清单, 不带标题与色点.
+        """
+        frame = QFrame()
+        frame.setObjectName("msgList")
+        # 宽度定死: 路径里没有空格, 不限宽时一条长路径能把弹窗撑到屏幕外
+        frame.setFixedWidth(TEXT_MAX_W)
+        col = QVBoxLayout(frame)
+        col.setContentsMargins(LIST_PAD_L, 12, LIST_PAD_R, 12)
+        col.setSpacing(0)
+
+        head = QHBoxLayout()
+        head.setSpacing(8)
+        head_lbl = QLabel(title)
+        head_lbl.setObjectName("msgListTitle")
+        head.addWidget(head_lbl)
+        head.addStretch(1)
+        copy_btn = QPushButton(QC.translate("MessageBox", "复制"))
+        copy_btn.setObjectName("msgListCopy")
+        copy_btn.setCursor(Qt.PointingHandCursor)
+        copy_btn.clicked.connect(lambda: _copy_text("\n".join(items), copy_btn))
+        head.addWidget(copy_btn)
+        col.addLayout(head)
+
+        shown = items[:LIST_MAX_ITEMS]
+        for n, path in enumerate(shown):
+            col.addSpacing(11 if n == 0 else 7)
+            row = QHBoxLayout()
+            row.setSpacing(LIST_GAP)
+            dot = QLabel()
+            dot.setObjectName("msgListDot")
+            dot.setFixedSize(LIST_DOT_W, LIST_DOT_W)
+            # 包一层竖排: 路径换行时色点跟首行走, 而不是跟着整块居中
+            dot_col = QVBoxLayout()
+            dot_col.setContentsMargins(0, 5, 0, 0)
+            dot_col.setSpacing(0)
+            dot_col.addWidget(dot)
+            dot_col.addStretch(1)
+            row.addLayout(dot_col)
+            lbl = QLabel(path)
+            lbl.setObjectName("msgListItem")
+            lbl.setWordWrap(True)
+            lbl.setToolTip(path)
+            lbl.setTextInteractionFlags(Qt.TextSelectableByMouse)
+            row.addWidget(lbl, 1)
+            col.addLayout(row)
+        if len(shown) < len(items):
+            col.addSpacing(7)
+            more = QLabel(QC.translate("MessageBox", "…还有 {} 个").format(
+                len(items) - len(shown)))
+            more.setObjectName("msgListMore")
+            col.addWidget(more)
+
+        outer = QHBoxLayout()
+        outer.setContentsMargins(_ICON_COL_W + 12, 0, 0, 0)
+        outer.addWidget(frame)
+        self._content.addLayout(outer)
+        return frame
+
     # ---- 按钮 ----
     def _add_button(self, text, role="normal", default=False, accept=True):
         btn = QPushButton(text)
@@ -267,7 +335,8 @@ class MessageBox:
                 QC.translate("MessageBox", "关闭"), "primary", True))
             copy_btn = box._add_button(
                 QC.translate("MessageBox", "复制详情"), "normal", accept=False)
-            copy_btn.clicked.connect(lambda: _copy_detail(edit, copy_btn))
+            copy_btn.clicked.connect(
+                lambda: _copy_text(edit.toPlainText(), copy_btn))
             added.append(copy_btn)
         else:
             added.append(box._add_button(
@@ -281,6 +350,19 @@ class MessageBox:
     @staticmethod
     def warning(parent, title, text):
         MessageBox._show("warning", title, text, parent)
+
+    @staticmethod
+    def missing_paths(parent, title, text, block_title, paths):
+        """
+        路径失效提示: 正文 + 失效路径清单 + 一个"知道了"(主色)收尾.
+        图像目录被删与图像文件被删共用这一套, 标题/正文/清单标题由调用方给.
+        """
+        box = _FramelessBox(title, parent)
+        box.add_icon_text("warning", text)
+        box._content.addSpacing(14)
+        box.add_list_block(block_title, paths)
+        box._add_button(QC.translate("MessageBox", "知道了"), "primary", True)
+        box.exec()
 
     @staticmethod
     def information(parent, title, text):
