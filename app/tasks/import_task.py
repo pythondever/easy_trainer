@@ -165,7 +165,7 @@ class ImportTask(QThread):
             except Exception:
                 return None, [], False, label_file_has_content(
                     label_file, fmt), False
-            # 解析统一走 label_utils, id→名 的映射同时被记进 _seen_ids
+            # 解析统一走 label_utils, id 到名的映射同时被记进 _seen_ids
             shapes = load_yolo_shapes(label_file, iw, ih, self._id_names,
                                       self._seen_ids)
         else:

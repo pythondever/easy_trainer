@@ -23,7 +23,7 @@ from app.core.utils import project_root
 ENV_MODELS_DIR = "EASY_TRAINER_MODELS"
 _SUBDIR = "pretrained"
 
-# 本地权重清单(放权重根目录, 跟着目录一起搬): 根下相对路径 -> {src, size, name}.
+# 本地权重清单(放权重根目录, 跟着目录一起搬): 根下相对路径映射到 {src, size, name}.
 # 用户的文件原地引用不进权重目录, 所以清单是唯一的来源记录
 LOCAL_MANIFEST = ".local_weights.json"
 LOCAL_EXTS = (".pt", ".pth", ".ckpt")
@@ -80,7 +80,6 @@ _YOLO_FILES = {
 }
 
 # ultralytics 训练前跑 AMP 自检时固定去 WEIGHTS_DIR 找这个文件名, 找不到就联网下一份.
-# 我们 cnn 目录下的 nano.pt 就是它, 所以由 ensure_amp_weight 指过去.
 _AMP_FILENAME = "yolo26n.pt"
 
 # 前四档的描述与 rf-detr 用同一批文案(同 context 同文本, 共用已有译文)
@@ -361,7 +360,7 @@ def is_ready(asset, directory=None):
 
 
 def asset_task(task, family="transformer"):
-    """(任务, 架构) → 权重清单里的任务键: CNN 的检测/分割各占一组."""
+    """(任务, 架构) 对应的权重清单任务键: CNN 的检测/分割各占一组."""
     if family != "cnn":
         return task
     if task == DETECT:
@@ -396,7 +395,7 @@ def resolve_path(task, level, family="transformer"):
 
 def ensure_amp_weight(weights_dir):
     """
-    ultralytics 训练前固定去 weights_dir 找 yolo26n.pt 做 AMP 自检, 缺了就联网下一份 ——
+    ultralytics 训练前固定去 weights_dir 找 yolo26n.pt 做 AMP 自检, 缺了就联网下一份;
     它和我们下载的 cnn/nano.pt 是同一个文件. 同卷建硬链接(不占额外空间), 跨卷退回复制;
     没下 nano 档就返回空串, 让它照原样去下或跳过.
     """

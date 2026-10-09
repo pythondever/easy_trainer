@@ -33,7 +33,7 @@ def _simplify_track(pts, max_pts=32):
 
 def _bgra_view(img):
     """
-    QImage(ARGB32 系) → HxWx4 BGRA 视图(小端内存序), 不拷贝;
+    QImage(ARGB32 系) 转成 HxWx4 BGRA 视图(小端内存序), 不拷贝;
     img 必须在结果使用期间存活, 否则段错误.
     """
     w, h = img.width(), img.height()
@@ -88,7 +88,7 @@ class AnnotationScene(QGraphicsScene):
         self.blend_strength = 0.7        # 粘贴融合力度 0~1(由标注界面输入框设置)
         # 亮度编辑
         self._bright_edit = None         # 正在调亮度的区域基准, 见 set_polygon_brightness
-        self._bright_cache = {}          # 多边形 -> 亮度基准, 切回同一个框再调时不叠加
+        self._bright_cache = {}          # 多边形对应亮度基准, 切回同一个框再调时不叠加
         # 外观
         self.label_colors = {}
         # "显示标注"开关状态(由标注界面同步): 只影响粘贴出来的框, 手绘的照常显示
@@ -199,7 +199,7 @@ class AnnotationScene(QGraphicsScene):
         return patch
 
     def _finish_fp_trace(self):
-        """松开左键: 轨迹闭环成功 → 抠图生成模板并进入刷子模式; 否则清空重画."""
+        """松开左键: 轨迹闭环成功就抠图生成模板并进入刷子模式; 否则清空重画."""
         pts = self.fp_track
         self.fp_track = []
         self._clear_fp_items()
@@ -662,7 +662,7 @@ class AnnotationScene(QGraphicsScene):
         gone = None
         if item is not None and item.scene() is self:
             # 光 removeItem 不够: 视图(SmartViewportUpdate)可能保留旧轮廓, 表现为
-            # "图案撤销了但多边形还在" → 与 delete_item 走同一套释放 + 整屏重绘
+            # 表现为"图案撤销了但多边形还在", 与 delete_item 走同一套释放 + 整屏重绘
             gone = item.sceneBoundingRect()
             self._dispose_item(item)
             if self._last_box is item:
@@ -678,7 +678,7 @@ class AnnotationScene(QGraphicsScene):
 
     def set_annotations_visible(self, show):
         """
-        "显示标注"开关. 浮动粘贴(图案还没进像素)只藏轮廓留图案 ——
+        "显示标注"开关. 浮动粘贴(图案还没进像素)只藏轮廓留图案,
         整个 item 一起藏的话, 粘上去还没保存的效果就看不见了.
         """
         self.show_annotations = bool(show)

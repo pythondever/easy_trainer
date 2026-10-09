@@ -188,5 +188,5 @@ class TestWorker(SubprocessWorker):
             pass
         rc = self._proc.poll()
         if rc != 0 and not result_emitted:
-            # 尾部输出已逐行进过日志(落 app.log), 弹窗不再复述: 里面多半是堆栈
+            # 尾部输出已逐行进过日志(落 app.log), 弹窗里不必重复: 里面多半是堆栈
             self.failed.emit(self.tr("测试未能完成, 详情见日志"))

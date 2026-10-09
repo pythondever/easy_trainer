@@ -30,8 +30,8 @@ class _Redirect(urllib.request.HTTPRedirectHandler):
     跟随 308.
 
     hf-mirror 的 /resolve/ 会间歇性用 308 跳到实际文件地址, 而 CPython 3.10 的
-    HTTPRedirectHandler 只挂了 301/302/303/307, redirect_request 里也只放行这四个
-    —— 单加 http_error_308 别名会在里面被判非法, 照样抛 HTTPError. 308 与 307 同属
+    HTTPRedirectHandler 只挂了 301/302/303/307, redirect_request 里也只放行这四个,
+    单加 http_error_308 别名会在里面被判非法, 照样抛 HTTPError. 308 与 307 同属
     "保持原方法"的跳转, 折成 307 交给基类即可.
     """
 

@@ -126,7 +126,7 @@ def _device_of(cfg):
 def _locate_rec(model_path, det_arch):
     """
     在同一次训练的输出目录里找同档位的识别模型: 检测段只出框, 字要靠识别段读.
-    按目录名倒序取最新的那个 —— 检测/识别是两条记录, 重训过识别段时该用新的.
+    按目录名倒序取最新的那个: 检测/识别是两条记录, 重训过识别段时该用新的.
     """
     parent = os.path.dirname(os.path.dirname(os.path.abspath(model_path)))
     if not os.path.isdir(parent):
@@ -172,7 +172,7 @@ def _build_rec_predictor(path, device):
 
 
 def _read_texts(rec, crops):
-    """识别一批字条 → [str]; 空条返回空串, 保持与框一一对应."""
+    """识别一批字条得到 [str]; 空条返回空串, 保持与框一一对应."""
     out = [""] * len(crops)
     if rec is None:
         return out
@@ -211,7 +211,7 @@ def _write_json(img_path, iw, ih, boxes, texts):
 
 
 def _gt_boxes(json_path):
-    """labelme 里的文本框 → [[x1,y1,x2,y2]], 只取保留标签这一类."""
+    """labelme 里的文本框转成 [[x1,y1,x2,y2]], 只取保留标签这一类."""
     boxes = []
     for label, pts, _text in load_json_shapes(json_path):
         if not is_text_label(label):

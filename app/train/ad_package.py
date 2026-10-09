@@ -6,7 +6,7 @@ AD 模型是"骨干 + 良品特征库"的组合结构, 不是一条前向网络,
 训练时那个 ad_model.pt, 外加几份旁挂文件: 阈值单独成文本(不装软件也能一眼看到判定线),
 训练时的验证集指标留档, README 写清新机器上怎么把它跑起来.
 
-模型文件本身是自包含的 —— 构造参数、全部权重、判定阈值都在里面, 外部按 kwargs
+模型文件本身是自包含的: 构造参数、全部权重、判定阈值都在里面, 外部按 kwargs
 重建即可, 实测分数与软件里逐位一致.
 """
 
@@ -20,7 +20,7 @@ THRESHOLD_FILE = "threshold.txt"
 RESULT_FILE = "result.json"
 README_FILE = "README.txt"
 
-# 面向拿到文件夹就要跑起来的人, 中文纯文本 —— 交付物不是界面, 不进 i18n
+# 面向拿到文件夹就要跑起来的人, 中文纯文本: 交付物不是界面, 不进 i18n
 _README = """异常检测模型
 ==============
 
@@ -93,7 +93,7 @@ def build(model_path, out_dir, base, log=print):
         f.write("{:.6f}\n".format(info["threshold"]))
     copied.append(THRESHOLD_FILE)
 
-    # 训练时那次验证集评估的结论, 有就带上 —— 交付方要讲精度只能拿它
+    # 训练时那次验证集评估的结论, 有就带上: 交付方要讲精度只能拿它
     src = os.path.join(os.path.dirname(model_path), RESULT_FILE)
     if os.path.isfile(src):
         shutil.copy2(src, os.path.join(out_dir, RESULT_FILE))

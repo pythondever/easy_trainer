@@ -403,7 +403,7 @@ class DatasetViewMixin(object):
     def _filter_records(self, data):
         """
         当前筛选命中的图像记录, 保持 index["all"] 的原始顺序.
-        未选择标签 → 空(图区空白); 否则是所勾各项的并集(未标注按"没有有效框"判).
+        未选择标签则为空(图区空白); 否则是所勾各项的并集(未标注按"没有有效框"判).
         分页与渲染都以它的长度为准, 所以勾选一变页数就跟着变.
         """
         all_records = data.get("all", [])
@@ -461,7 +461,7 @@ class DatasetViewMixin(object):
         if data:
             bpi = getattr(self, "_by_path_index", None)
             if not (bpi and bpi.get("ds") == (project_name, dataset_name)):
-                # 缓存命中直接渲染时补齐 path->rec 索引(仅切换数据集时一次, 低频)
+                # 缓存命中直接渲染时补齐 path 到 rec 的索引(仅切换数据集时一次, 低频)
                 self._by_path_index = {
                     "ds": (project_name, dataset_name),
                     "map": {r.get("image_path"): r for r in data.get("all", [])},
@@ -487,7 +487,7 @@ class DatasetViewMixin(object):
         把导入结果构造成 项目-数据集-标签 索引:
         {"all": [全部图像记录...], "labels": {标签名: [图像记录...]}}
         一张图可出现在多个标签下(一图多缺陷).
-        统一归一化 rec.labels / rec.boxes 的标签名(class_N → N),
+        统一归一化 rec.labels / rec.boxes 的标签名(class_N 归一成 N),
         保证缓存索引与筛选下拉/重命名/删除使用的标签名一致.
         """
         index = {"all": [], "labels": {}}
@@ -573,7 +573,7 @@ class DatasetViewMixin(object):
             for label in set(lbls):
                 index["labels"].setdefault(label, []).append(rec)
         proj_cache[dataset_name] = index
-        # 构建/刷新 path->rec 索引(一次性 O(N), 供缩略图/ROI 回调 O(1) 定位,
+        # 构建/刷新 path 到 rec 的索引(一次性 O(N), 供缩略图/ROI 回调 O(1) 定位,
         # 避免每个批次全量重建 dict); 带数据集标识, 切换数据集时自动失效.
         self._by_path_index = {
             "ds": (project_name, dataset_name),
@@ -690,7 +690,7 @@ class DatasetViewMixin(object):
 
     def _roi_for_render(self, rec, box_idx):
         """按 box 取 ROI: 缓存命中直接返回; 未命中先给灰块占位并提交后台解码
-        (不显示整图缩略图, 避免"灰块→整图闪现→ROI"三段式), 解好自动重渲当前页.
+        (不显示整图缩略图, 避免"灰块、整图闪现、ROI"三段式), 解好自动重渲当前页.
         缓存按 box 自己的标签分桶, 多标签混排时各框互不串图.
         """
         boxes = rec.get("boxes") or []
@@ -954,7 +954,7 @@ class DatasetViewMixin(object):
         def on_finished(result):
             cls_mode = fmt == "cls"
             total = len(result)
-            # YOLO txt: 把扫描到的 id→显示名映射持久化,重命名跨重启生效
+            # YOLO txt: 把扫描到的 id 到显示名映射持久化,重命名跨重启生效
             if fmt == ".txt" and getattr(task, "_seen_ids", None):
                 seen = task._seen_ids
                 merged = dict(self.db.get_dataset_label_ids(

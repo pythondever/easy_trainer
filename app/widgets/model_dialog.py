@@ -45,7 +45,7 @@ TASK_FILE_TAG = {"detect": "检测", "segment": "分割", "classify": "分类",
 
 
 def _parse_classes_txt(path):
-    """classes.txt → [(id, 类名)]. 兼容 "id 类名" 与 只有类名(行号即 id) 两种."""
+    """classes.txt 解析成 [(id, 类名)]. 兼容 "id 类名" 与 只有类名(行号即 id) 两种."""
     out = []
     try:
         with open(path, "r", encoding="utf-8") as f:
@@ -66,7 +66,7 @@ def _parse_classes_txt(path):
 
 
 def _parse_data_yaml_names(path):
-    """data.yaml 的 names 段 → [(id, 类名)]."""
+    """data.yaml 的 names 段解析成 [(id, 类名)]."""
     out = []
     try:
         with open(path, "r", encoding="utf-8") as f:
@@ -781,7 +781,7 @@ class ModelDialog(QDialog):
 
     def _test(self, record):
         """
-        点击测试 → 弹 TestDialog, 默认选中当前行的模型.
+        点击测试就弹 TestDialog, 默认选中当前行的模型.
         模型界面是独立入口(显示全部项目),传 record 自己的 project/dataset
         才能让 TestDialog 正确填充数据/模型下拉.
         """
@@ -855,7 +855,7 @@ class ModelDialog(QDialog):
         write_log(QC.translate("ModelDialog", "开始导出模型: 项目={} 任务={} 架构={} 尺寸={} | {}").format(
             project, TASK_FILE_TAG.get(task, task) or QC.translate("ModelDialog", "未知"), model_size, img_size,
             model_path))
-        # maximum=0 → 忙碌进度条(不确定时长); 统一深色样式见 message_box.ProgressDialog
+        # maximum=0 表示忙碌进度条(不确定时长); 统一深色样式见 message_box.ProgressDialog
         self._exp_dlg = ProgressDialog(self.tr("导出模型"),
                                        self.tr("正在导出 ONNX..."), self,
                                        maximum=0, cancellable=False)
@@ -903,8 +903,8 @@ class ModelDialog(QDialog):
 
     def _write_export_label_map(self):
         """
-        类别来源按优先级取: 模型目录的 classes.txt → data.yaml 的 names(检测/分割)
-        → ckpt 的 classes(分类). 三种取法都最终写成 label_map.json.
+        类别来源按优先级取: 模型目录的 classes.txt、data.yaml 的 names(检测/分割)、
+        ckpt 的 classes(分类). 三种取法都最终写成 label_map.json.
         """
         model_dir = self._exp["model_dir"]
         model_path = self._exp["model_path"]
@@ -969,7 +969,7 @@ class ModelDialog(QDialog):
     def _write_label_map(self, pairs):
         """
         label_map.json = {类名: id}.
-        下游按名字查 id 就不受训练时重编号影响 —— 类名是身份, 序号只是当次编号.
+        下游按名字查 id 就不受训练时重编号影响: 类名是身份, 序号只是当次编号.
         """
         if not pairs:
             return

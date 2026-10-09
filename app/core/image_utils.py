@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""图像工具: PIL 打开, PIL→QImage 转换, 统一规格缩略图."""
+"""图像工具: PIL 打开, PIL 转 QImage, 统一规格缩略图."""
 from PIL.ImageQt import ImageQt
 from PySide6.QtGui import QImage
 
@@ -11,7 +11,7 @@ def pil_open(path):
 
 
 def pil_to_qimage(pil_img):
-    """PIL RGB -> QImage(ARGB32,主线程转 QPixmap 使用)."""
+    """PIL RGB 转 QImage(ARGB32,主线程再转 QPixmap 使用)."""
     try:
         qimg = ImageQt(pil_img).copy()
         return qimg

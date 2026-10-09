@@ -1954,99 +1954,99 @@ This rewrites the dataset&apos;s source label files and cannot be undone.</trans
 <context>
     <name>ModelAssets</name>
     <message>
-        <location filename="../app/core/model_assets.py" line="88"/>
-        <location filename="../app/core/model_assets.py" line="122"/>
+        <location filename="../app/core/model_assets.py" line="87"/>
+        <location filename="../app/core/model_assets.py" line="121"/>
         <source>速度最快, 精度够用</source>
         <translation>Fastest, accuracy is sufficient</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="89"/>
-        <location filename="../app/core/model_assets.py" line="126"/>
+        <location filename="../app/core/model_assets.py" line="88"/>
+        <location filename="../app/core/model_assets.py" line="125"/>
         <source>精度更好, 稍慢一些</source>
         <translation>Better accuracy, slightly slower</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="90"/>
-        <location filename="../app/core/model_assets.py" line="130"/>
+        <location filename="../app/core/model_assets.py" line="89"/>
+        <location filename="../app/core/model_assets.py" line="129"/>
         <source>精度更高</source>
         <translation>Higher accuracy</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="91"/>
+        <location filename="../app/core/model_assets.py" line="90"/>
         <source>精度最高, 显存占用大</source>
         <translation>Highest accuracy, but uses more VRAM</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="92"/>
+        <location filename="../app/core/model_assets.py" line="91"/>
         <source>精度极致, 显存占用很大</source>
         <translation>Ultimate accuracy, uses much more VRAM</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="95"/>
-        <location filename="../app/core/model_assets.py" line="141"/>
+        <location filename="../app/core/model_assets.py" line="94"/>
+        <location filename="../app/core/model_assets.py" line="140"/>
         <source>轻量分割</source>
         <translation>Lightweight segmentation</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="96"/>
-        <location filename="../app/core/model_assets.py" line="145"/>
+        <location filename="../app/core/model_assets.py" line="95"/>
+        <location filename="../app/core/model_assets.py" line="144"/>
         <source>速度与精度平衡</source>
         <translation>Balanced speed and accuracy</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="97"/>
-        <location filename="../app/core/model_assets.py" line="149"/>
+        <location filename="../app/core/model_assets.py" line="96"/>
+        <location filename="../app/core/model_assets.py" line="148"/>
         <source>细节更完整</source>
         <translation>More complete details</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="98"/>
-        <location filename="../app/core/model_assets.py" line="153"/>
+        <location filename="../app/core/model_assets.py" line="97"/>
+        <location filename="../app/core/model_assets.py" line="152"/>
         <source>最精细</source>
         <translation>Most refined</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="99"/>
+        <location filename="../app/core/model_assets.py" line="98"/>
         <source>最精细, 显存占用很大</source>
         <translation>Most refined, uses much more VRAM</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="137"/>
+        <location filename="../app/core/model_assets.py" line="136"/>
         <source>结构与 medium 相同</source>
         <translation>Same architecture as medium</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="295"/>
+        <location filename="../app/core/model_assets.py" line="294"/>
         <source>文件不存在: {}</source>
         <translation>File not found: {}</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="298"/>
+        <location filename="../app/core/model_assets.py" line="297"/>
         <source>只支持 {} 格式</source>
         <translation>Only {} files are supported</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="303"/>
+        <location filename="../app/core/model_assets.py" line="302"/>
         <source>读不到文件大小: {}</source>
         <translation>Cannot read file size: {}</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="305"/>
+        <location filename="../app/core/model_assets.py" line="304"/>
         <source>文件只有 {}, 不像完整的权重</source>
         <translation>The file is only {}, too small to be a complete weight file</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="316"/>
+        <location filename="../app/core/model_assets.py" line="315"/>
         <source>这看着是 Transformer 权重, 当前档位是 CNN(YOLO)</source>
         <translation>This looks like a Transformer weight, but the selected slot is CNN (YOLO)</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="320"/>
+        <location filename="../app/core/model_assets.py" line="319"/>
         <source>这看着是 CNN(YOLO) 权重, 当前档位是 Transformer</source>
         <translation>This looks like a CNN (YOLO) weight, but the selected slot is Transformer</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="340"/>
+        <location filename="../app/core/model_assets.py" line="339"/>
         <source>权重目录不可写: {}</source>
         <translation>Weights directory is not writable: {}</translation>
     </message>

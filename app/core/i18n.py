@@ -60,7 +60,7 @@ def label(code):
 
 
 def index_of(code):
-    """语言代码 -> 下拉框下标(未知代码落到默认语言那一项)."""
+    """语言代码对应的下拉框下标(未知代码落到默认语言那一项)."""
     code = normalize(code)
     for i, (known, _) in enumerate(LANGUAGES):
         if known == code:
@@ -73,7 +73,7 @@ def qm_path(code):
 
 
 def flag_path(code):
-    """语言代码 -> 国旗图标绝对路径(文件缺失返回空串, 调用方按无图标处理)."""
+    """语言代码对应的国旗图标绝对路径(文件缺失返回空串, 调用方按无图标处理)."""
     name = _FLAG.get(normalize(code))
     path = (os.path.join(project_root(), "resources", "flags", name + ".svg")
             if name else "")

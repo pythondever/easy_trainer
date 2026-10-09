@@ -19,7 +19,7 @@ from app.core import model_assets
 
 _SUBDIR = "ocr"
 
-# 架构 -> (本地档位名, docTR 缓存名). 缓存名与 doctr==1.0.1 的 default_cfgs 对齐,
+# 架构对应 (本地档位名, docTR 缓存名). 缓存名与 doctr==1.0.1 的 default_cfgs 对齐,
 # 升 doctr 要一起改.
 # 检测段走 pretrained=True 取整模型权重; 识别段只复用骨干, 要的是骨干那一份.
 # nano 与 small 的识别段是同一个网络, 所以识别骨干只有三份, 没有 small-rec.pt.

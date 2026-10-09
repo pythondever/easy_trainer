@@ -66,7 +66,7 @@ def seed_everything(seed=DEFAULT_SEED):
 
 
 def is_ascii_path(path):
-    """路径是否全为 ASCII 可打印字符 —— 与 anomalib 的校验规则同一口径."""
+    """路径是否全为 ASCII 可打印字符, 与 anomalib 的校验规则同一口径."""
     return all(_ASCII_MIN <= ord(ch) <= _ASCII_MAX for ch in str(path))
 
 
@@ -74,7 +74,7 @@ def ascii_stage_dir(hint):
     """
     给 anomalib 用的暂存目录: 绝对路径纯 ASCII 才建得起来.
     优先用调用方给的位置(和输出放一起, 出问题好找); 输出选在"项目\\结果"
-    这类中文目录下时退到系统临时目录, 再不行退到盘根 —— 宁可换个地方铺,
+    这类中文目录下时退到系统临时目录, 再不行退到盘根: 宁可换个地方铺,
     也不要让用户为了跑算法去改自己的目录名.
     """
     drive = os.path.splitdrive(os.path.abspath(hint))[0]
@@ -106,7 +106,7 @@ def collect_classes(datasets, split):
 def collect_from_roots(roots):
     """
     {类别名: [图像路径]}, 类别取每个根目录下的第一级子文件夹名.
-    图像散在根目录时归到 UNNAMED, 不再往下猜层级 —— 与导入侧
+    图像散在根目录时归到 UNNAMED, 不再往下猜层级, 与导入侧
     (import_task.py 的 cls 分支) 取类别的口径一致, 免得同一批图在导入界面
     和训练时属于不同的类. 更深的层级只影响路径, 不产生新的类.
     """
@@ -168,7 +168,7 @@ def resolve_normal(train_map, val_map):
     """
     定出"哪个类别名代表正常", 返回 (正常类名, 训练侧被忽略的张数).
     常见叫法自动认 > 训练侧只有一类就用它. 认不出直接报错: 建库集里混进异常样本
-    是无监督训练最致命的错误 —— 模型照样训完、指标照样出, 事后从结果里看不出来,
+    是无监督训练最致命的错误: 模型照样训完、指标照样出, 事后从结果里看不出来,
     所以宁可拦住, 让用户把良品类目录改成 NORMAL_NAMES 里的叫法再训.
     """
     all_names = set(train_map) | set(val_map)
@@ -232,7 +232,7 @@ def arrange(ad_root, datasets):
       <ad_root>/test/c1, c2 .../**   测试集异常样本, 一个缺陷类一个目录
     每次整目录重建: 上一轮的类残留在里面会让这一轮凭空多出异常类.
     返回 (布局, 正常类名): 布局含 train / test_normal / abnormal{原类名: 张数} /
-    ignored(训练侧被忽略的异常图张数) / dir_to_class(目录名 → 原始类名)
+    ignored(训练侧被忽略的异常图张数) / dir_to_class(目录名对应原始类名)
     """
     train_map = collect_classes(datasets, "train")
     val_map = collect_classes(datasets, "val")
@@ -267,7 +267,7 @@ def stage_test(ad_root, roots, normal_name=""):
     把测试用的原始目录也铺一份, 返回 {dir_to_class, normal, total, origins}.
     测试侧本来可以直接在用户的原始目录上打分, 但 anomalib 不吃中文路径,
     用户的目录叫"数据\\划痕"就当场报错, 所以照样复制一份到 ASCII 目录下.
-    origins 是"副本 → 原图", 结果里要显示用户原本那张图.
+    origins 是"副本对应原图", 结果里要显示用户原本那张图.
     """
     class_map = collect_from_roots(roots)
     if not class_map:
@@ -298,7 +298,7 @@ def stage_test(ad_root, roots, normal_name=""):
 def _rebuild(dst, paths, mapping=None):
     """
     清空并重建一个类别目录, 复制进 paths, 返回实际张数.
-    mapping 非空时顺带记下"副本 → 原图", 明细和报告要显示用户原本那张图.
+    mapping 非空时顺带记下"副本对应原图", 明细和报告要显示用户原本那张图.
     """
     if os.path.isdir(dst):
         shutil.rmtree(dst, ignore_errors=True)
@@ -356,7 +356,7 @@ def ensure_backbone_cache():
     anomalib 建 TimmFeatureExtractor 时写死了 timm.create_model(pretrained=True),
     没有传本地文件的口子, 而 timm 只认 HF 缓存. 所以离线交付只能反过来做:
     安装器把权重要到 pretrained/ad/ 下, 这里在首次训练前按 HF 的目录约定摆好.
-    缓存里已经有就什么都不做 —— 联网机器自己下过的那份不能被覆盖. 摆不进去也不报错,
+    缓存里已经有就什么都不做: 联网机器自己下过的那份不能被覆盖. 摆不进去也不报错,
     让 timm 照它原来的路子去联网, 失败信息由它给.
     """
     from huggingface_hub import constants as hf
@@ -434,7 +434,7 @@ def is_epoch_model(code):
 def build_model(code, img_size=0, device="cpu"):
     """
     建 anomalib 模型; 返回 (模型, 类名, 可 JSON 化的构造参数).
-    返回的构造参数存进模型文件, 测试时按它把模型原样重建 —— 只靠
+    返回的构造参数存进模型文件, 测试时按它把模型原样重建: 只靠
     state_dict 恢复不了骨干结构, 而 anomalib 各算法的构造签名差异很大.
     这里顺带把骨干权重备到 HF 缓存(离线机器靠这一步, 见 ensure_backbone_cache).
     """
@@ -517,11 +517,11 @@ def predict_scores(engine, model, root, img_size=0, on_batch=None,
 
 def anomaly_rings(anomaly_map, score, width, height, threshold):
     """
-    像素级热力图 → 原图坐标下的多边形顶点列表, 供写成 labelme json 复核.
+    像素级热力图转成原图坐标下的多边形顶点列表, 供写成 labelme json 复核.
     threshold 用图像级那个判定阈值, 但先按该图的 score/map.max 折算到像素域:
     anomalib 的图像分数是 anomaly map 的聚合(带平滑), 两者不严格相等(实测比值
     中位 1.03, 低分区波动到 1.15), 直接拿图像级阈值切会让"刚过判定线"的图切不出
-    任何区域 —— 51 张测试图里有 1 张这样. 折算后两处才是同一口径.
+    任何区域: 51 张测试图里有 1 张这样. 折算后两处才是同一口径.
 
     也不能逐图 min-max 归一化后取固定阈值: 良品图的 map 分布偏右, 归一化会把
     过半像素推到 0.5 以上, 实测切出的区域比真缺陷图还大(良品 0.115~0.868,
@@ -589,7 +589,7 @@ def evaluate(scored, normal_name, threshold=None):
     调用方先用 dir_to_class 映回来; 真值口径就一句话: 类名等于
     normal_name 的是良品, 其余一律不良品.
 
-    threshold 传空才现挑(F1 最优). 只有训练侧该现挑 —— 那是唯一手里有带真值
+    threshold 传空才现挑(F1 最优). 只有训练侧该现挑: 那是唯一手里有带真值
     验证集、要给模型定交付阈值的时刻. 测试侧必须沿用模型里存的阈值: 换一批
     数据重挑等于拿测试集调参, 精度会虚高; 同一批数据上重挑又与训练侧数字对不上.
 
@@ -651,7 +651,7 @@ def evaluate(scored, normal_name, threshold=None):
 
 
 def display_name(cls_dir):
-    """类别名 → 给人看的名字(只有"根目录散图"这个空类名要换个说法)."""
+    """类别名对应的显示名(只有"根目录散图"这个空类名要换个说法)."""
     return cls_dir or QC.translate("AdCommon", "(根目录散图)")
 
 

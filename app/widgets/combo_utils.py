@@ -7,7 +7,7 @@ from PySide6.QtCore import QEvent, QObject, Qt, QTimer
 
 
 class ClickToPopupFilter(QObject):
-    """点击下拉框(或其 lineEdit)任意位置 → 展开下拉."""
+    """点击下拉框(或其 lineEdit)任意位置就展开下拉."""
 
     def __init__(self, combo, parent=None):
         super().__init__(parent)

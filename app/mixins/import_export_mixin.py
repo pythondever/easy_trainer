@@ -129,7 +129,7 @@ class ImportExportMixin(object):
             task.start()
 
         def update_tips():
-            """实时统计图像目录 + 已标注数 → 更新 tips_lbl 显示.
+            """实时统计图像目录 + 已标注数, 更新 tips_lbl 显示.
 
             判定"已标注"要逐图解析标签文件, 上万张图会卡住一两秒, 所以这里
             只做立刻能判的检查, 数字扫描交给后台线程.

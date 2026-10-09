@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-OCR 数据铺设: labelme 文本标注 → docTR 的两种数据集目录.
+OCR 数据铺设: labelme 文本标注转成 docTR 的两种数据集目录.
 只在子进程被 runner 导入(主进程不装 doctr), 与 classify_common 同理.
 """
 
@@ -35,7 +35,7 @@ def _find_json(img_path, label_dirs):
 
 
 def _to_quad(points):
-    """labelme 的点 → 4 点多边形: 矩形补四角, 多于 4 点退成外接框."""
+    """labelme 的点补成 4 点多边形: 矩形补四角, 多于 4 点退成外接框."""
     if len(points) == 4:
         return [[float(p[0]), float(p[1])] for p in points]
     xs = [float(p[0]) for p in points]

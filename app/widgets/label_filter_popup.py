@@ -490,7 +490,7 @@ class LabelFilterPanel(QWidget):
         tx = rect.x() + 2 + DOT + 6
         fm = QFontMetrics(p.font())
         # 名字最多占这么宽, 后面还得留得下勾选框; 钉在格子最右会让勾选框贴上
-        # 下一格的色块, 所以让它跟着名字走
+        # 下一格的色块, 所以勾选圈跟着名字的实际宽度走
         avail = max(10, mark_limit - 6 - tx)
         text = fm.elidedText(name, Qt.ElideRight, int(avail))
         mark_cx = min(mark_limit, tx + fm.horizontalAdvance(text) + 6) + CHECK / 2.0

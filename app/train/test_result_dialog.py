@@ -54,7 +54,7 @@ def _fit_table_size(table, stretch_last=False, fit_height=False):
     QTableWidget 不把列宽算进自己的最小宽度, 窗口一窄就冒横向滚动条、
     末列被挡在视野外. 卡片区变窄时(长语言反而会更宽)就会挤到表格.
     高度正相反: 默认策略会把剩余空间全吃掉, 只有一两行时下面空出一大片.
-    fit_height 只给异常检测用 —— 它的表固定一行, 而检测/分类的行数不定,
+    fit_height 只给异常检测用: 它的表固定一行, 而检测/分类的行数不定,
     它们靠表格吃掉剩余高度才不会把卡片撑开.
     """
     table.ensurePolished()          # 列宽要在样式表生效后量, 否则字体字号还没定
@@ -108,11 +108,11 @@ class TestResultDialog(QDialog):
         margin = ui.mainLayout.contentsMargins()
         spacing = ui.mainLayout.spacing() * (ui.mainLayout.count() - 1)
         contents = ui.scrollAreaWidgetContents
-        # 内容尺寸是按 sizeHint 估的, 真排下来会差一两像素 —— 不留余量默认尺寸下就平白多出滚动条
+        # 内容尺寸是按 sizeHint 估的, 真排下来会差一两像素, 不留余量默认尺寸下就平白多出滚动条
         want_h = (contents.sizeHint().height() + ui.btn_row.sizeHint().height()
                   + spacing + margin.top() + margin.bottom() + 6)
-        # 表格的列宽原来靠 minimumWidth 把窗口撑开, 进了滚动区就撑不动了:
-        # 长语言下表头会整块被横向滚动条挡在视野外, 这里把宽度补回来
+        # 表格进了滚动区, minimumWidth 就撑不开窗口了, 得把宽度算进来:
+        # 否则长语言下表头会整块被横向滚动条挡在视野外
         want_w = (contents.sizeHint().width() + margin.left() + margin.right()
                   + ui.scroll_area.verticalScrollBar().sizeHint().width() + 6)
         scr = self.screen() or QApplication.primaryScreen()
@@ -124,7 +124,7 @@ class TestResultDialog(QDialog):
         if self._fitted:
             return
         self._fitted = True
-        # showEvent 里布局还没排完, 滚动条状态不作数 —— 挪到事件循环第一轮再量
+        # showEvent 里布局还没排完, 滚动条状态不作数, 要挪到事件循环第一轮再量
         QTimer.singleShot(0, self, self._grow_to_fit)
 
     def _grow_to_fit(self):

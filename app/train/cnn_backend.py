@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 CNN(ultralytics) 后端的公共件: 后端判定 + 设备参数转换 + 推理结果适配.
-测试流程(test_runner)与导出(onnx_export)吃的都是 rf-detr 的形状 —— predict
+测试流程(test_runner)与导出(onnx_export)吃的都是 rf-detr 的形状: predict
 返回 .xyxy / .confidence / .class_id / .mask / .data['class_name']. 这里把
 YOLO 的 Results 包成同样的形状, 下游那两个后端就能共用同一套代码.
 """
@@ -22,7 +22,7 @@ def uses_cnn(cfg):
     cfg 指向的模型该用 ultralytics 还是 rf-detr 来加载.
 
     以训练记录里写的 family 为准; 没有 family 才退回看后缀(ultralytics 权重的
-    后缀是 .pt, rf-detr 训练产物是 .pth). 后缀只兜"路径是手工拼的"那种情况 ——
+    后缀是 .pt, rf-detr 训练产物是 .pth). 后缀只兜"路径是手工拼的"那种情况:
     rf-detr 的分割*预训练*权重也叫 .pt, 所以凡是有 family 的地方必须传进来.
     """
     family = str(cfg.get("family") or "")
@@ -32,7 +32,7 @@ def uses_cnn(cfg):
 
 
 def device_arg(device):
-    """UI 存的 cuda:0 → ultralytics 认的 0; 非 cuda 或不可用时退 cpu."""
+    """UI 存的 cuda:0 转成 ultralytics 认的 0; 非 cuda 或不可用时退 cpu."""
     if not str(device).startswith("cuda"):
         return "cpu"
     try:
@@ -47,7 +47,7 @@ def device_arg(device):
 
 def _polys_to_masks(polys, width, height):
     """
-    多边形顶点 → 原图尺寸的二值 mask, 喂给 test_runner 的 _mask_to_rings.
+    多边形顶点转成原图尺寸的二值 mask, 喂给 test_runner 的 _mask_to_rings.
 
     不用 Results.masks.data: 那是 letterbox 之后推理尺寸上的 mask, 直接当原图用
     会整体偏缩. masks.xy 已经还原到原图坐标, 按它填回来最省事也最准.
@@ -78,7 +78,7 @@ class YoloDetections(object):
 
 
 def to_detections(result):
-    """ultralytics 单个 Results → YoloDetections."""
+    """ultralytics 单个 Results 转成 YoloDetections."""
     boxes = getattr(result, "boxes", None)
     xyxy, confs, cids = [], [], []
     if boxes is not None and len(boxes):

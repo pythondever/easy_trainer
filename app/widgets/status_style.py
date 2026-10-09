@@ -32,7 +32,7 @@ STATUS_TEXT = {
     "已中断": QT_TRANSLATE_NOOP("StatusText", "已中断"),
 }
 
-# 任务类型: 库里的 task 字段(detect/segment/classify) → 界面显示名
+# 任务类型: 库里的 task 字段(detect/segment/classify)对应界面显示名
 TASK_TEXT = {
     "detect": QT_TRANSLATE_NOOP("TaskText", "检测"),
     "segment": QT_TRANSLATE_NOOP("TaskText", "分割"),
@@ -64,17 +64,17 @@ DEFAULT_COLOR = theme.hexof("text")
 
 
 def status_text(status):
-    """状态键 → 当前语言的显示文案; 未登记的原样返回, 宁可显示原始键也不丢信息."""
+    """状态键对应的当前语言显示文案; 未登记的原样返回, 宁可显示原始键也不丢信息."""
     s = str(status or "")
     return QC.translate("StatusText", STATUS_TEXT.get(s, s))
 
 
 def task_text(task):
-    """任务键 → 当前语言的显示文案; 未登记的原样返回."""
+    """任务键对应的当前语言显示文案; 未登记的原样返回."""
     s = str(task or "")
     return QC.translate("TaskText", TASK_TEXT.get(s, s))
 
 
 def status_color(status, default=DEFAULT_COLOR):
-    """状态键 → 颜色; 中英文键都认."""
+    """状态键对应的颜色; 中英文键都认."""
     return STATUS_COLOR.get(str(status or ""), default)

@@ -25,7 +25,7 @@ def model_codes():
 
 
 def split_arch(code):
-    """代号 → (检测架构, 识别架构); 认不出来时按表里第一条兜底."""
+    """代号转成 (检测架构, 识别架构); 认不出来时按表里第一条兜底."""
     for m in OCR_MODELS:
         if m[0] == code:
             return m[1], m[2]

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 rf-detr(Transformer) 后端的公共件: 后端判定 + 推理封装.
-与 cnn_backend 对称 —— 那边把 ultralytics 的 Results 包成 rf-detr 的形状, 这边
+与 cnn_backend 对称: 那边把 ultralytics 的 Results 包成 rf-detr 的形状, 这边
 rf-detr 本身就是那个形状, 所以只做加载与推理优化. rfdetr 惰性导入, 顶层不拖它.
 """
 
@@ -11,7 +11,7 @@ from app.train.cnn_backend import uses_cnn
 
 
 def uses_transformer(cfg):
-    """cfg 指向的模型该用 rf-detr 加载 —— uses_cnn 的对偶, 判据共用免得两处分叉."""
+    """cfg 指向的模型该用 rf-detr 加载, 是 uses_cnn 的对偶, 判据共用免得两处分叉."""
     return not uses_cnn(cfg)
 
 

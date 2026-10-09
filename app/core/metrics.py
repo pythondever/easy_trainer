@@ -22,8 +22,8 @@ CSV_KEYS = (
     ("train_loss", "train/loss"), ("val_loss", "val/loss"),
 )
 
-# 任务 → 主指标. base 交给 metric_key 解析实际列(分割的 mask_ 前缀, ema 优先都在那);
-# field 是训练记录里存这个值的字段名 —— 异常检测的 AUROC 落在 map50 字段上是历史包袱,
+# 任务对应主指标. base 交给 metric_key 解析实际列(分割的 mask_ 前缀, ema 优先都在那);
+# field 是训练记录里存这个值的字段名: 异常检测的 AUROC 落在 map50 字段上是历史包袱,
 # 换字段名老记录就读不出精度了; direction 1=越大越好, -1=越小越好, 错误率类指标取
 # max 不报错, 只会静默把最差的那一轮当成最好.
 Primary = namedtuple("Primary", "base field label direction decimals")
@@ -93,7 +93,7 @@ def metric_key(series, base):
 
 
 def primary_for(task):
-    """任务键 → 主指标定义; 未登记返回 None."""
+    """任务键对应的主指标定义; 未登记返回 None."""
     return PRIMARY.get(str(task or ""))
 
 
@@ -101,7 +101,7 @@ def primary_of(series, task=""):
     """
     该 series 的主指标定义: 有 task 一律用 task, 否则按 series 内容推断.
 
-    推断只认得出 auroc/accuracy —— CER 这类错误率指标在 series 里没有特征,
+    推断只认得出 auroc/accuracy: CER 这类错误率指标在 series 里没有特征,
     不靠 task 就会被当成 mAP@50 取不到值, 所以新任务必须登记进 PRIMARY.
     """
     p = primary_for(task)
@@ -129,7 +129,7 @@ def best_value(series, base, direction=1):
 
 
 def best_map50_from_csv(csv_path):
-    """metrics.csv → 交付精度与 mAP@50-95; 读不到返回 {}."""
+    """从 metrics.csv 取交付精度与 mAP@50-95; 读不到返回 {}."""
     series = series_from_csv(csv_path)
     out = {}
     for key, base in (("map50", "mAP@50"), ("map50_95", "mAP@50-95")):
@@ -162,7 +162,7 @@ def cer(refs, hyps):
 
     微平均让长串权重更大, 口径是"这批字整体有多少读错", 与产线报数一致;
     宏平均(逐框算 CER 再取平均)会把只错一个字的短串放大成 100% 后拉平.
-    参考总长为 0 时返回 None, 不返回 0 —— 0 会被当成完美.
+    参考总长为 0 时返回 None, 不返回 0: 0 会被当成完美.
     """
     if len(refs) != len(hyps):
         raise ValueError("CER 要求参考与预测成对: {} vs {}".format(

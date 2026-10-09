@@ -110,7 +110,7 @@ def _decimate(pts, max_pts):
 
 def _mask_to_rings(mask, max_rings=6):
     """
-    分割 mask → 轮廓环列表 [[[x,y],...], ...](原图像素坐标), 失败返回 None.
+    分割 mask 转成轮廓环列表 [[[x,y],...], ...](原图像素坐标), 失败返回 None.
     一个实例被遮挡时 mask 会断成好几块, 只留最大的那块画出来会比框小一大圈,
     看着像模型只分割出了一部分; 所以按面积保留主要连通块, 太小的碎片丢掉.
     """
@@ -155,7 +155,7 @@ def _mask_to_rings(mask, max_rings=6):
 
 def _read_yolo_label(txt_path, img_w, img_h):
     """
-    YOLO txt → [(cls, 像素[x1,y1,x2,y2], poly)] 列表, poly 为 None 表示检测框.
+    YOLO txt 转成 [(cls, 像素[x1,y1,x2,y2], poly)] 列表, poly 为 None 表示检测框.
     解析统一走 label_utils.load_yolo_shapes(与导入/标注/训练同一套脏行规则:
     字段数异常的行直接丢弃, 不猜格式), 这里只转成评估口径并抽稀轮廓.
     """
@@ -171,7 +171,7 @@ def _read_yolo_label(txt_path, img_w, img_h):
 
 def _read_labelme_label(js_path):
     """
-    labelme json → [(cls, box, poly)], poly 是像素坐标顶点或 None.
+    labelme json 转成 [(cls, box, poly)], poly 是像素坐标顶点或 None.
     保留 polygon 顶点而不是只取外接框: 分割验证要靠轮廓算 IoU,
     只取框会把 mask 丢掉. 解析统一走 label_utils.load_json_shapes.
     """

@@ -16,7 +16,7 @@ config 字段见 dialogs.py make_train_config:
   - 落盘: ts_dir/ad_model.pt + result.json + metrics.json
 
 与检测/分割/分类的差别:
-  * 真值不像标注框那样存在标签目录里, 而是按"子文件夹名"现推 ——
+  * 真值不像标注框那样存在标签目录里, 而是按"子文件夹名"现推,
     导入侧(import_task.py 的 cls 分支)也是这个口径.
   * 指标不用 anomalib 的 Evaluator: 它要求验证集里每张图都带 mask,
     FastFlow 这类训练期不产出 anomaly_map 的算法会在验证回路里直接抛错.
@@ -79,7 +79,7 @@ class _EpochProbe(pl.Callback):
     loss 自己在 on_train_batch_end 里累, 不读 trainer.callback_metrics:
     barebones 模式下 Lightning 的日志全被丢掉(loggers=[] 且
     log_every_n_steps=0), callback_metrics 恒为空, 读它一个值都拿不到.
-    精度仍然在训练结束后逐图打分另算 —— anomalib 的 Evaluator 回调排在自定义
+    精度仍然在训练结束后逐图打分另算: anomalib 的 Evaluator 回调排在自定义
     回调之后, 训练回路里本来也读不到本轮的 AUROC.
     """
 
@@ -128,7 +128,7 @@ def _build_engine(root, epochs, device, probe, skip_val=False):
     """root 要传纯 ASCII 的目录(见 ascii_stage_dir).
 
     skip_val 给 CFA 用: 它得走 fit(datamodule=...) 才起得来(见 main), 而传
-    datamodule 就一定会起验证回路, 这里把验证批次数压成 0 挡掉 —— anomalib
+    datamodule 就一定会起验证回路, 这里把验证批次数压成 0 挡掉: anomalib
     的 Evaluator 要求验证集每张图带 mask, 放它跑会在验证回路里抛错.
     """
     use_cuda = str(device).lower().startswith("cuda") and torch.cuda.is_available()

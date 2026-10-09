@@ -21,8 +21,8 @@ def is_checked(state):
     """勾选状态判真, 两种形态都要认.
 
     同一个 CheckStateRole, 存进去的方式不同, 取出来的类型就不同:
-    item.setCheckState() 存 -> index.data() 给裸 int; model.setData(..., Qt.Checked)
-    存 -> 给 Qt.CheckState 枚举(普通 Enum, 与 int 不相等). 两种写法都在用, 只认一种会漏.
+    item.setCheckState() 存进去, index.data() 给裸 int; model.setData(..., Qt.Checked)
+    存进去给 Qt.CheckState 枚举(普通 Enum, 与 int 不相等). 两种写法都在用, 只认一种会漏.
     """
     if state is None:
         return False
@@ -58,7 +58,7 @@ MARK_BORDER_HOVER = "#5a6379"
 
 
 def project_colors(model):
-    """项目名 → 颜色, 只认确实出现在该模型里的项目."""
+    """项目名对应的颜色, 只认确实出现在该模型里的项目."""
     out = {}
     for i in range(model.rowCount()):
         item = model.item(i)

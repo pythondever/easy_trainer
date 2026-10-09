@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 测试结果 PDF 报告: 逐图定位漏检/误检样本, 数据源是 details.jsonl.
-页面顺序: 汇总首页(模型 + 标注分布 + 指标 + 按类别)→ 缩略图 → 改进建议.
+页面顺序: 汇总首页(模型 + 标注分布 + 指标 + 按类别)、缩略图、改进建议.
 零错误时没有缩略图页, 首页与建议页照常.
 """
 
@@ -205,7 +205,7 @@ def _cell(ax, row, thumb_w, confuse_iou=CONFUSE_IOU):
     ax.set_xticks([]); ax.set_yticks([])
 
     fig = ax.figure
-    # 数据单位 → 屏幕像素, 用来估算标签宽度: 小框上贴长标签会糊成一片
+    # 数据单位换算成屏幕像素, 用来估算标签宽度: 小框上贴长标签会糊成一片
     pos = ax.get_position()
     px_per_unit = (pos.width * fig.get_size_inches()[0] * fig.dpi / w
                    if w else 1.0)
@@ -265,7 +265,7 @@ def _cell(ax, row, thumb_w, confuse_iou=CONFUSE_IOU):
     _draw(row.get("hits") or [], C_HIT, 1.0, "-", False)
     _draw(miss_boxes, C_MISSING, 2.2, "-", True)
     _draw(spur_boxes, C_SPURIOUS, 2.2, "--", True)
-    # 认错的两个框位置基本重合,只画 GT 框, 标签里写明 GT → 预测
+    # 认错的两个框位置基本重合,只画 GT 框, 标签里写明 GT 判成了预测
     for p in pairs:
         mb = p["gt"].get("box") or []
         if len(mb) != 4:
@@ -358,7 +358,7 @@ def _legend_slots(legend, col_w, sw_w, f_meta, tw):
     """
     给图例算 (列, 行, 是否独占整行) 位置.
     条数会随"认错/轮廓"两条增减, 长语言(西/法/越)的说明半栏放不下,
-    这种就让它独占一整行 —— 否则会被省略号吃掉后半句.
+    这种就让它独占一整行, 否则会被省略号吃掉后半句.
     """
     slots, row, col = [], 0, 0
     for _, _, label in legend:
@@ -725,7 +725,7 @@ def _is_cjk(ch):
 def _split_units(text):
     """切最小排版单元: 拉丁按词, CJK 和全角标点逐字, 空格单独成单元.
 
-    拉丁按词是重点 —— 逐字符推进会把 "for" 断成 "fo" + "r".
+    拉丁按词是重点: 逐字符推进会把 "for" 断成 "fo" + "r".
     """
     units, buf = [], ""
     for ch in text:

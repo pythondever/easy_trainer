@@ -56,7 +56,7 @@ class MetricTabs(QWidget):
         for btn in self._buttons:
             self._layout.removeWidget(btn)
             # 只 removeWidget 不动父级的话, 旧按钮会带着原 geometry 继续画,
-            # 而 deleteLater 要等事件循环才回收 —— 切指标时新旧两层文字会叠在同一处
+            # 而 deleteLater 要等事件循环才回收, 切指标时新旧两层文字会叠在同一处
             btn.setParent(None)
             btn.deleteLater()
         self._buttons = []

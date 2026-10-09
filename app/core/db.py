@@ -513,7 +513,7 @@ class DataBase:
         return True
 
     def get_dataset_label_ids(self, project_name, dataset_name):
-        """返回该数据集 class_id→标签名 映射 {str_id: 标签名}(YOLO txt 数字 id 的显示名)."""
+        """返回该数据集 class_id 到标签名的映射 {str_id: 标签名}(YOLO txt 数字 id 的显示名)."""
         info = self._find_info(project_name, dataset_name)
         return dict(info.get('label_ids') or {}) if info is not None else {}
 

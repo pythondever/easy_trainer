@@ -30,7 +30,7 @@ DETAIL_MIN_H = 96         # 详情区按行数自适应高度, 两行也占满 1
 DETAIL_MAX_H = 180
 DETAIL_LINE_H = 17
 
-# QMessageBox 的 Role 枚举 → QSS 里的 class
+# QMessageBox 的 Role 枚举对应 QSS 里的 class
 _ROLE_MAP = {
     QMessageBox.AcceptRole: "primary",
     QMessageBox.YesRole: "primary",

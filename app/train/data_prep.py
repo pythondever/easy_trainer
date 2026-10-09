@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-训练数据准备: 复制图像/标签到输出路径, labelme json→yolo txt, 生成 data.yaml.
+训练数据准备: 复制图像/标签到输出路径, labelme json 转 yolo txt, 生成 data.yaml.
 目录结构(输出路径根):
   data.yaml                      # yolo 配置(train/val 指向合并目录, names 类别)
   <项目>/<数据集>/images|labels    # 原始副本(需求: 项目/数据集 结构)
@@ -41,7 +41,7 @@ def _img_size_of_stem(img_dir, stem):
 def _img_size(path):
     """
     图像尺寸(带进程内缓存).
-    labelme json → yolo txt 需要对每张图取尺寸, 而同一张图在"标签目录转换"
+    labelme json 转 yolo txt 需要对每张图取尺寸, 而同一张图在"标签目录转换"
     和"图像同路径 json 转换"两处都会被查询, 缓存可省掉重复的文件打开.
     """
     cached = _img_size_cache.get(path)
@@ -57,7 +57,7 @@ def _img_size(path):
 
 
 def _write_yolo_txt(dst_labels, base, shapes, iw, ih, label_to_id, as_polygon):
-    """shapes → dst_labels/base. 空 shapes 写空文件(用于覆盖来源里的旧标注)."""
+    """shapes 写到 dst_labels/base. 空 shapes 写空文件(用于覆盖来源里的旧标注)."""
     if not shapes:
         return
     txt = shapes_to_yolo_text(shapes, iw, ih, label_to_id, as_polygon)
@@ -179,7 +179,7 @@ def _sort_labels(labels):
 
 def copy_datasets(out_root, project, datasets, task="detect"):
     """
-    把勾选数据集复制到 <out_root>/<项目>/<数据集>/images|labels(json/txt→yolo txt).
+    把勾选数据集复制到 <out_root>/<项目>/<数据集>/images|labels(json/txt 转 yolo txt).
     task=segment 时写 yolo-seg 多边形顶点, 检测写 cx cy w h.
     每张图的标签来源以图像同路径 json 为准(存在即覆盖, 空的也算: 表示这张图没有目标).
     """
@@ -276,7 +276,7 @@ def _unique_dst(d, fn, used=None):
 
 def merge_split(out_root, datasets):
     """把勾选数据集副本合并进 <out_root>/train 或 val(同名自动加序号, 不覆盖)."""
-    used_names = {}          # (split, sub) → 该目录已占用的文件名集合
+    used_names = {}          # (split, sub) 对应的该目录已占用文件名集合
     for info in datasets:
         src = os.path.join(out_root, info.get("project", ""), info["dataset_name"])
         merged = 0

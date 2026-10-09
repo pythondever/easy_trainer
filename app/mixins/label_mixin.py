@@ -280,7 +280,7 @@ class LabelMixin(object):
                                     new_name, merge_mode)
 
     def _merge_label_files(self, project_name, dataset_name, old_name, new_name):
-        """合并模式的文件层: 后台改 txt(行首旧 id → 新 id), 项目树行内进度条."""
+        """合并模式的文件层: 后台改 txt(行首旧 id 改成新 id), 项目树行内进度条."""
         binding = self.db.get_dataset_import(project_name, dataset_name) or {}
         label_fmt = binding.get("label_fmt", "") or ""
         label_paths = get_paths(binding, "label")

@@ -1954,99 +1954,99 @@ Thao tác này ghi đè tệp nhãn nguồn của bộ dữ liệu và không th
 <context>
     <name>ModelAssets</name>
     <message>
-        <location filename="../app/core/model_assets.py" line="88"/>
-        <location filename="../app/core/model_assets.py" line="122"/>
+        <location filename="../app/core/model_assets.py" line="87"/>
+        <location filename="../app/core/model_assets.py" line="121"/>
         <source>速度最快, 精度够用</source>
         <translation>Nhanh nhất, độ chính xác đủ dùng</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="89"/>
-        <location filename="../app/core/model_assets.py" line="126"/>
+        <location filename="../app/core/model_assets.py" line="88"/>
+        <location filename="../app/core/model_assets.py" line="125"/>
         <source>精度更好, 稍慢一些</source>
         <translation>Độ chính xác tốt hơn, hơi chậm</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="90"/>
-        <location filename="../app/core/model_assets.py" line="130"/>
+        <location filename="../app/core/model_assets.py" line="89"/>
+        <location filename="../app/core/model_assets.py" line="129"/>
         <source>精度更高</source>
         <translation>Độ chính xác cao hơn</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="91"/>
+        <location filename="../app/core/model_assets.py" line="90"/>
         <source>精度最高, 显存占用大</source>
         <translation>Độ chính xác cao nhất, tốn nhiều bộ nhớ GPU</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="92"/>
+        <location filename="../app/core/model_assets.py" line="91"/>
         <source>精度极致, 显存占用很大</source>
         <translation>Độ chính xác tối đa, tốn rất nhiều bộ nhớ GPU</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="95"/>
-        <location filename="../app/core/model_assets.py" line="141"/>
+        <location filename="../app/core/model_assets.py" line="94"/>
+        <location filename="../app/core/model_assets.py" line="140"/>
         <source>轻量分割</source>
         <translation>Phân đoạn nhẹ</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="96"/>
-        <location filename="../app/core/model_assets.py" line="145"/>
+        <location filename="../app/core/model_assets.py" line="95"/>
+        <location filename="../app/core/model_assets.py" line="144"/>
         <source>速度与精度平衡</source>
         <translation>Cân bằng tốc độ và độ chính xác</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="97"/>
-        <location filename="../app/core/model_assets.py" line="149"/>
+        <location filename="../app/core/model_assets.py" line="96"/>
+        <location filename="../app/core/model_assets.py" line="148"/>
         <source>细节更完整</source>
         <translation>Chi tiết đầy đủ hơn</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="98"/>
-        <location filename="../app/core/model_assets.py" line="153"/>
+        <location filename="../app/core/model_assets.py" line="97"/>
+        <location filename="../app/core/model_assets.py" line="152"/>
         <source>最精细</source>
         <translation>Chi tiết nhất</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="99"/>
+        <location filename="../app/core/model_assets.py" line="98"/>
         <source>最精细, 显存占用很大</source>
         <translation>Chi tiết nhất, tốn rất nhiều bộ nhớ GPU</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="137"/>
+        <location filename="../app/core/model_assets.py" line="136"/>
         <source>结构与 medium 相同</source>
         <translation>Cùng kiến trúc với medium</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="295"/>
+        <location filename="../app/core/model_assets.py" line="294"/>
         <source>文件不存在: {}</source>
         <translation>Tệp không tồn tại: {}</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="298"/>
+        <location filename="../app/core/model_assets.py" line="297"/>
         <source>只支持 {} 格式</source>
         <translation>Chỉ hỗ trợ định dạng {}</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="303"/>
+        <location filename="../app/core/model_assets.py" line="302"/>
         <source>读不到文件大小: {}</source>
         <translation>Không đọc được kích thước tệp: {}</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="305"/>
+        <location filename="../app/core/model_assets.py" line="304"/>
         <source>文件只有 {}, 不像完整的权重</source>
         <translation>Tệp chỉ có {}, không giống một tệp trọng số hoàn chỉnh</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="316"/>
+        <location filename="../app/core/model_assets.py" line="315"/>
         <source>这看着是 Transformer 权重, 当前档位是 CNN(YOLO)</source>
         <translation>Có vẻ đây là trọng số Transformer, nhưng mục đang chọn là CNN (YOLO)</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="320"/>
+        <location filename="../app/core/model_assets.py" line="319"/>
         <source>这看着是 CNN(YOLO) 权重, 当前档位是 Transformer</source>
         <translation>Có vẻ đây là trọng số CNN (YOLO), nhưng mục đang chọn là Transformer</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="340"/>
+        <location filename="../app/core/model_assets.py" line="339"/>
         <source>权重目录不可写: {}</source>
         <translation>Không ghi được vào thư mục trọng số: {}</translation>
     </message>

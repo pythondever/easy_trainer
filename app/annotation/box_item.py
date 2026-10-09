@@ -27,7 +27,7 @@ LABEL_COLORS = [
 @functools.lru_cache(maxsize=None)
 def label_color(label):
     """
-    标签固定颜色(确定性哈希, md5 → 调色板索引).
+    标签固定颜色(确定性哈希, md5 取模得调色板索引).
     同一标签名在任何进程/会话中颜色都一致
     lru_cache: 标注重绘热路径(paint)高频调用, 避免每次重复 md5 计算
     """
@@ -148,7 +148,7 @@ class AnnotationBoxItem(QGraphicsRectItem):
         """
         命中测试范围 = 框本体 + 标签 chip + 缩放手柄.
         QGraphicsRectItem.shape() 默认只有框本体矩形, 而 chip 画在框上方
-        22px(框外), 手柄一半在框外 → 场景命中测试(scene.items/itemAt)
+        22px(框外), 手柄一半在框外, 于是场景命中测试(scene.items/itemAt)
         根本不会把点击事件派发给本 item. 必须重载 shape 包含这些区域,
         否则点击标签名改类别, 点手柄外侧调整大小都"没反应".
         """
@@ -174,8 +174,8 @@ class AnnotationBoxItem(QGraphicsRectItem):
         """
         每个矩形固定 6 个圆形手柄: 4 个角点 + 2 个长边中点.
         按实际方向判断长边是哪一对:
-        - w ≥ h: 长边是 top/bottom 边(长 = w)→ 中点 H_TM/H_BM(分布在水平中线 cx 上)
-        - h > w: 长边是 left/right 边(长 = h)→ 中点 H_ML/H_MR(分布在垂直中线 cy 上)
+        - w ≥ h: 长边是 top/bottom 边(长 = w), 中点取 H_TM/H_BM(分布在水平中线 cx 上)
+        - h > w: 长边是 left/right 边(长 = h), 中点取 H_ML/H_MR(分布在垂直中线 cy 上)
         中点放长边保证手柄间距足够大, 避免粘连.
         """
         r = self.rect()

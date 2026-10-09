@@ -55,7 +55,7 @@ def _fit_points_to_patch(pts, png_path, patch):
 
 def _load_labelme(json_path):
     """
-    读取 labelme json → [{label, x1,y1,x2,y2} 或 {label, points, shape_type}].
+    读取 labelme json 得到 [{label, x1,y1,x2,y2} 或 {label, points, shape_type}].
     解析统一走 label_utils.load_json_shapes, 这里只转成场景要的字典形态.
     """
     return shapes_to_boxes(load_json_shapes(json_path))
@@ -174,7 +174,7 @@ class _PrefetchWorker(QThread):
 class AnnotationIOMixin:
     def _on_image_pixels_changed(self):
         """
-        图像像素被改写(粘贴/填充/撤销) → 刷新缓存 + 标记落盘.
+        图像像素被改写(粘贴/填充/撤销)时刷新缓存 + 标记落盘.
         QPixmap 是写时复制: 场景里 QPainter 画的是副本, _pix_cache 里那份原地不动,
         不换掉的话 A/D 翻走再翻回来会命中旧图(看起来"图像没改, 只剩多边形").
         """
@@ -193,7 +193,7 @@ class AnnotationIOMixin:
 
     def _on_boxes_changed(self):
         """
-        标注内容变化(画/删/改类别/拖动缩放)→ 标记 dirty + 刷新右侧列表.
+        标注内容变化(画/删/改类别/拖动缩放)时标记 dirty + 刷新右侧列表.
         load_boxes 加载时也会 emit boxes_changed, 但 _loading=True 期间不标记.
         """
         if not getattr(self, "_loading", False):
@@ -343,8 +343,8 @@ class AnnotationIOMixin:
 
     def _delete_current_image(self):
         """
-        标注界面单张删除: 弹窗确认 -> 调 _delete_images_core 删文件+更新缓存/db
-        -> 自动切到下一张(列表前移即指向原 next; 删最后一张则回退一张; 删光则清空场景)
+        标注界面单张删除: 弹窗确认后调 _delete_images_core 删文件+更新缓存/db,
+        再自动切到下一张(列表前移即指向原 next; 删最后一张则回退一张; 删光则清空场景)
         """
         if not (0 <= self.index < len(self.image_list)):
             return
@@ -554,7 +554,7 @@ class AnnotationIOMixin:
         格式刷粘贴修改过图像像素时, 一并把图像写盘.
 
         commit_pending 只在用户显式要求保存时给(Ctrl+S / 切图 / 关闭 / 删图):
-        浮动粘贴挨到这一刻才写进图像像素. 自动保存(150ms 定时器)不带它 ——
+        浮动粘贴挨到这一刻才写进图像像素. 自动保存(150ms 定时器)不带它,
         否则刚粘上去就被烧进图里, 根本没机会拖到位.
         """
         if commit_pending:

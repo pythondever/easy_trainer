@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """分类任务的规格.
 
-只被 dialogs 在主进程读, 所以这里不能 import torch —— 分类的模型构造在
+只被 dialogs 在主进程读, 所以这里不能 import torch: 分类的模型构造在
 classify_model.py, 那份才是子进程用的.
 """
 
 from app.train.task_spec import QT_TRANSLATE_NOOP, NeedsClsSpec
 
-# 档位 → resnet 深度; 分类固定 from scratch 训练那一档
+# 档位对应 resnet 深度; 分类固定 from scratch 训练那一档
 ARCHS = {"nano": "resnet18", "small": "resnet34",
          "medium": "resnet50", "large": "resnet101"}
 

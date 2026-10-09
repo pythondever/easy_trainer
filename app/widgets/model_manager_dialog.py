@@ -28,7 +28,7 @@ BAR_W = 144
 BAR_H = 14
 W_NAME = 54
 W_SIZE = 62
-# 描述列原 136: '精度极致, 显存占用很大' 实测 137px. 进度条让 8px 给状态列,
+# 最长的档位描述实测 137px, 所以描述列给到 140; 进度条再让 8px 给状态列,
 # 否则下载中 '1.2 MB/s · 还剩 12m30s' 这种长 ETA 会贴边被裁
 W_DESC = 140
 W_STATUS = 158
@@ -91,7 +91,7 @@ class _ModelRow(QFrame):
             model_assets.human_size(asset.nbytes), "modelSize", W_SIZE)
         lay.addWidget(self._label(asset.level, "modelName", W_NAME))
         lay.addWidget(self.size_label)
-        # 描述列是唯一的弹性列: 余量全给它. 早先是行尾一个 addStretch,
+        # 描述列是唯一的弹性列: 余量全给它. 行尾再放 addStretch 的话,
         # 窗口一拉宽多出来的宽度全堆成描述列与状态列之间的中缝
         desc = self._label(QC.translate("ModelAssets", asset.desc), "modelDesc", 0)
         desc.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
@@ -261,7 +261,7 @@ class ModelManagerDialog(QDialog):
         self.ui.setupUi(self)
         self._db = db
         self._rows = []
-        # 权重标识(根目录下相对路径) → 行. 本地文件名只到档位, nano.pt 在 cnn 和
+        # 权重标识(根目录下相对路径)对应一行. 本地文件名只到档位, nano.pt 在 cnn 和
         # transformer 下各有一份, 拿文件名当键会让进度画到另一个架构的行上
         self._rows_by_key = {}
         self._downloader = None
@@ -419,8 +419,8 @@ class ModelManagerDialog(QDialog):
         if not ok:
             MessageBox.warning(self, self.tr("模型权重"), reason)
             return
-        # 目录里现在有可用权重了, 立刻把 RF_HOME 指过来: 不然界面显示就绪,
-        # 训练子进程还按上次记的位置找
+        # RF_HOME 要在这里一起指过来: 否则界面显示就绪了, 训练子进程
+        # 还按上次记的位置找
         model_assets.set_models_dir(self._dir, sync_rf_home=True)
         if self._db is not None:
             self._db.set_models_dir(self._dir)

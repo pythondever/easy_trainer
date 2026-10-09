@@ -1954,99 +1954,99 @@
 <context>
     <name>ModelAssets</name>
     <message>
-        <location filename="../app/core/model_assets.py" line="88"/>
-        <location filename="../app/core/model_assets.py" line="122"/>
+        <location filename="../app/core/model_assets.py" line="87"/>
+        <location filename="../app/core/model_assets.py" line="121"/>
         <source>速度最快, 精度够用</source>
         <translation>가장 빠르고 정확도는 충분함</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="89"/>
-        <location filename="../app/core/model_assets.py" line="126"/>
+        <location filename="../app/core/model_assets.py" line="88"/>
+        <location filename="../app/core/model_assets.py" line="125"/>
         <source>精度更好, 稍慢一些</source>
         <translation>정확도가 더 좋고 약간 느림</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="90"/>
-        <location filename="../app/core/model_assets.py" line="130"/>
+        <location filename="../app/core/model_assets.py" line="89"/>
+        <location filename="../app/core/model_assets.py" line="129"/>
         <source>精度更高</source>
         <translation>정확도가 더 높음</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="91"/>
+        <location filename="../app/core/model_assets.py" line="90"/>
         <source>精度最高, 显存占用大</source>
         <translation>정확도가 가장 높지만 VRAM 사용량이 큼</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="92"/>
+        <location filename="../app/core/model_assets.py" line="91"/>
         <source>精度极致, 显存占用很大</source>
         <translation>정확도가 최고 수준, VRAM 사용량이 매우 큼</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="95"/>
-        <location filename="../app/core/model_assets.py" line="141"/>
+        <location filename="../app/core/model_assets.py" line="94"/>
+        <location filename="../app/core/model_assets.py" line="140"/>
         <source>轻量分割</source>
         <translation>경량 세그멘테이션</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="96"/>
-        <location filename="../app/core/model_assets.py" line="145"/>
+        <location filename="../app/core/model_assets.py" line="95"/>
+        <location filename="../app/core/model_assets.py" line="144"/>
         <source>速度与精度平衡</source>
         <translation>속도와 정확도의 균형</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="97"/>
-        <location filename="../app/core/model_assets.py" line="149"/>
+        <location filename="../app/core/model_assets.py" line="96"/>
+        <location filename="../app/core/model_assets.py" line="148"/>
         <source>细节更完整</source>
         <translation>디테일이 더 완전함</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="98"/>
-        <location filename="../app/core/model_assets.py" line="153"/>
+        <location filename="../app/core/model_assets.py" line="97"/>
+        <location filename="../app/core/model_assets.py" line="152"/>
         <source>最精细</source>
         <translation>가장 정밀함</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="99"/>
+        <location filename="../app/core/model_assets.py" line="98"/>
         <source>最精细, 显存占用很大</source>
         <translation>가장 정밀함, VRAM 사용량이 매우 큼</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="137"/>
+        <location filename="../app/core/model_assets.py" line="136"/>
         <source>结构与 medium 相同</source>
         <translation>medium와 동일한 구조</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="295"/>
+        <location filename="../app/core/model_assets.py" line="294"/>
         <source>文件不存在: {}</source>
         <translation>파일이 없습니다: {}</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="298"/>
+        <location filename="../app/core/model_assets.py" line="297"/>
         <source>只支持 {} 格式</source>
         <translation>{} 형식만 지원합니다</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="303"/>
+        <location filename="../app/core/model_assets.py" line="302"/>
         <source>读不到文件大小: {}</source>
         <translation>파일 크기를 읽을 수 없습니다: {}</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="305"/>
+        <location filename="../app/core/model_assets.py" line="304"/>
         <source>文件只有 {}, 不像完整的权重</source>
         <translation>파일이 {}뿐이라 완전한 가중치 파일로 보이지 않습니다</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="316"/>
+        <location filename="../app/core/model_assets.py" line="315"/>
         <source>这看着是 Transformer 权重, 当前档位是 CNN(YOLO)</source>
         <translation>Transformer 가중치로 보이지만 현재 선택은 CNN(YOLO)입니다</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="320"/>
+        <location filename="../app/core/model_assets.py" line="319"/>
         <source>这看着是 CNN(YOLO) 权重, 当前档位是 Transformer</source>
         <translation>CNN(YOLO) 가중치로 보이지만 현재 선택은 Transformer입니다</translation>
     </message>
     <message>
-        <location filename="../app/core/model_assets.py" line="340"/>
+        <location filename="../app/core/model_assets.py" line="339"/>
         <source>权重目录不可写: {}</source>
         <translation>가중치 디렉터리에 쓸 수 없습니다: {}</translation>
     </message>

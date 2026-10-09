@@ -26,7 +26,7 @@ class ResponsiveMixin(object):
             self._header_overflow_actions.append(act)
         menu.addSeparator()
         self._append_font_scale_menu(menu)
-        # 按钮文案随语言和队列条数变, 建菜单时抄一遍就再也跟不上 —— 改成弹出前现取
+        # 按钮文案随语言和队列条数变, 建菜单时抄一遍就再也跟不上, 所以弹出前现取
         menu.aboutToShow.connect(self._sync_header_more_menu)
         btn.setMenu(menu)
         self.datasetHeaderLayout.addWidget(btn)

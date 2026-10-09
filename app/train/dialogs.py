@@ -49,7 +49,7 @@ DISABLEABLE_FIELDS = tuple(sorted(
 
 
 def spec_for(task):
-    """任务代号 → 任务规格. 字符检测的记录里是 ocr_det/ocr_rec 两条, 都归到 ocr."""
+    """任务代号对应的任务规格. 字符检测的记录里是 ocr_det/ocr_rec 两条, 都归到 ocr."""
     if occ.is_ocr(task):
         return occ.SPEC
     return _SPEC_BY_CODE.get(str(task or ""), detect_common.SPEC)
@@ -127,7 +127,7 @@ AUG_LEGACY = {
 
 
 def parse_aug_codes(value):
-    """记录里的增强值 → 勾选代号集合: 新值是逗号串, 旧值是单档预设代号."""
+    """记录里的增强值转成勾选代号集合: 新值是逗号串, 旧值是单档预设代号."""
     text = str(value or "").strip().lower()
     if not text:
         return set()
@@ -190,7 +190,7 @@ def make_train_record(config, db, project_fallback=""):
 
 
 def params_to_record(params):
-    """队列项参数快照 → 训练对话框 preset_record 的字段格式(用于"编辑"回填)."""
+    """队列项参数快照转成训练对话框 preset_record 的字段格式(用于"编辑"回填)."""
     def _names(pairs):
         return ", ".join("{}/{}".format(p[0], p[1]) for p in (pairs or []))
     return {
@@ -478,7 +478,7 @@ class TrainDialog(QDialog):
         self._preset_record = preset_record
         self.queue_edit_qid = None   # 队列面板"编辑"时回填用: 保存即更新该队列项
         self._pending_device = None   # 设备列表探测期间没回填上的设备串
-        self._aug_checks = {}      # 增强代号 -> 勾选框
+        self._aug_checks = {}      # 增强代号对应勾选框
         self._build()
 
     def closeEvent(self, event):
@@ -509,7 +509,7 @@ class TrainDialog(QDialog):
                  + ui.button_line.sizeHint().height()
                  + ui.bottom_row.sizeHint().height())
         spacing = ui.mainLayout.spacing() * (ui.mainLayout.count() - 1)
-        # 内容高是按 sizeHint 估的, 真排下来会差一两像素 —— 不留余量默认尺寸下就平白多出滚动条
+        # 内容高是按 sizeHint 估的, 真排下来会差一两像素, 不留余量默认尺寸下就平白多出滚动条
         want = (ui.scrollAreaWidgetContents.sizeHint().height() + fixed + spacing
                 + margin.top() + margin.bottom() + 6)
         self.resize(740, max(520, want))
@@ -552,7 +552,7 @@ class TrainDialog(QDialog):
             combo = getattr(self.ui, combo_name, None)
             if combo is not None:
                 combo.setFixedHeight(CONTROL_H)
-        # 下拉的 sizeHint 按最长条目算, GPU 全名会把整列撑宽, 改成按固定字符数估宽
+        # 下拉的 sizeHint 按最长条目算, GPU 全名会把整列撑宽, 所以按固定字符数估宽
         for name in ("dataset_combo", "val_combo", "device_combo"):
             combo = getattr(self.ui, name, None)
             if combo is not None:
@@ -904,7 +904,7 @@ class TrainDialog(QDialog):
     def _set_aug_enabled(self):
         """
         整块不可用(任务不吃)就全灰; 整块可用时再按后端逐项分.
-        不可用只改可用性和可见性, 勾选留着 —— 切回原来那套还是原样.
+        不可用只改可用性和可见性, 勾选留着, 切回原来那套还是原样.
         """
         body = getattr(self.ui, "aug_body", None)
         if body is None:
@@ -1142,7 +1142,7 @@ class TrainDialog(QDialog):
                     combo.setCurrentIndex(idx)
         # 型号回填: 异常检测与字符检测的代号在 itemData, 其余任务存的就是显示名.
         # 挡掉信号是因为 currentIndexChanged 那条路按"用户换算法"处理, 会把轮次
-        # 重置成默认值、盖掉刚回填的记录值 —— 被挡掉的联动在下面手动补回来
+        # 重置成默认值、盖掉刚回填的记录值; 被挡掉的联动在下面手动补回来
         combo = self.ui.network_combo
         idx = combo.findData(str(rec.get("model_size") or ""))
         if idx < 0:
@@ -1257,7 +1257,7 @@ class TrainDialog(QDialog):
 
     def _family_ready(self):
         """
-        CNN 走 ultralytics 后端, 没装就别放行 —— 否则要等子进程起来才报 ImportError.
+        CNN 走 ultralytics 后端, 没装就别放行, 否则要等子进程起来才报 ImportError.
         用 find_spec 而不是 import: 后者在 GUI 线程里要花一两秒.
         """
         if not self._spec().needs_cnn_runtime(self._arch()):

@@ -42,7 +42,7 @@ class TaskSpec:
 
     # ---------- 落盘配置 ----------
     def resolve_architecture(self, raw):
-        """界面上的档位名 → 写进配置的架构名."""
+        """界面上的档位名对应的架构名(写进配置)."""
         return raw or "nano"
 
     def resolve_family(self, raw):

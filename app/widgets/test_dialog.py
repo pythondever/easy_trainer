@@ -85,7 +85,7 @@ class TestDialog(QDialog):
                  + ui.button_line.sizeHint().height()
                  + ui.bottom_row.sizeHint().height())
         spacing = ui.mainLayout.spacing() * (ui.mainLayout.count() - 1)
-        # 内容高是按 sizeHint 估的, 真排下来会差一两像素 —— 不留余量默认尺寸下就平白多出滚动条
+        # 内容高是按 sizeHint 估的, 真排下来会差一两像素, 不留余量默认尺寸下就平白多出滚动条
         want = (ui.scrollAreaWidgetContents.sizeHint().height() + fixed + spacing
                 + margin.top() + margin.bottom() + 6)
         self.resize(max(self.sizeHint().width(), 680), max(520, want))
@@ -98,7 +98,7 @@ class TestDialog(QDialog):
             if w is not None:
                 w.setFixedHeight(CONTROL_H)
         # 下拉的 sizeHint 按最长条目算, GPU 全名会把弹窗撑到 680+;
-        # 改成按固定字符数估宽, 实际列宽交给 minimumSize 决定
+        # 所以按固定字符数估宽, 实际列宽交给 minimumSize 决定
         for name in ("test_data_combo", "test_device_combo"):
             combo = getattr(self.ui, name, None)
             if combo is not None:

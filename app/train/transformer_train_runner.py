@@ -65,7 +65,7 @@ def _make_model(architecture, task="detect", pretrained_path=""):
     return cls(pretrain_weights=pretrained_path)
 
 
-# 勾选代号 → rfdetr 的 aug_config 片段. 界面只存代号串, 到这里才展开成字典:
+# 勾选代号对应 rfdetr 的 aug_config 片段. 界面只存代号串, 到这里才展开成字典:
 # GUI 进程不导入 rfdetr, 免得为了几个字面量让启动多等一两秒
 AUG_TRANSFORMS = {
     "hflip": {"HorizontalFlip": {"p": 0.5}},
@@ -92,7 +92,7 @@ AUG_LEGACY_CODES = {
 
 
 def _resolve_aug_config(value):
-    """勾选代号串 → aug_config 字典. 空值/没勾/代号全不认识都给 {} (空字典即不增强)."""
+    """勾选代号串转成 aug_config 字典. 空值/没勾/代号全不认识都给 {} (空字典即不增强)."""
     text = str(value or "").strip().lower()
     if not text:
         return {}

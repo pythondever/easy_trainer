@@ -21,7 +21,7 @@ def _torch():
 
 
 def export_detr_onnx(model_path, out_file, log=print):
-    """RF-DETR 检测/分割 → ONNX. 返回写好的 onnx 路径."""
+    """RF-DETR 检测/分割导出 ONNX. 返回写好的 onnx 路径."""
     from rfdetr import RFDETR
 
     model = RFDETR.from_checkpoint(model_path)
@@ -44,7 +44,7 @@ def export_detr_onnx(model_path, out_file, log=print):
 
 
 def export_classify_onnx(model_path, out_file, img_size=224, log=print):
-    """分类模型(resnet 系列)→ ONNX. 返回写好的 onnx 路径."""
+    """分类模型(resnet 系列)导出 ONNX. 返回写好的 onnx 路径."""
     torch = _torch()
     import torch.nn as nn
     from torchvision import models
@@ -76,7 +76,7 @@ def export_classify_onnx(model_path, out_file, img_size=224, log=print):
 
 
 def export_yolo_onnx(model_path, out_file, img_size=0, log=print):
-    """YOLO(ultralytics) 检测/分割 → ONNX. 返回写好的 onnx 路径."""
+    """YOLO(ultralytics) 检测/分割导出 ONNX. 返回写好的 onnx 路径."""
     from ultralytics import YOLO
 
     model = YOLO(model_path)
@@ -94,9 +94,9 @@ def export_yolo_onnx(model_path, out_file, img_size=0, log=print):
 
 def export_ocr_onnx(model_path, out_file, img_size=0, log=print):
     """
-    字符检测/识别 → ONNX. 返回写好的 onnx 路径.
+    字符检测/识别导出 ONNX. 返回写好的 onnx 路径.
     docTR 的模型在 exportable=True 下只吐 logits(检测是概率图, 识别是字符
-    序列), 后处理留给部署侧 —— 官方 predictor 里那套二值化/CTC 解码带着
+    序列), 后处理留给部署侧: 官方 predictor 里那套二值化/CTC 解码带着
     numpy 与动态控制流, 进不了 onnx. 输入尺寸取训练时的 img_size: 骨干是
     全卷积, 换尺寸能跑但部署侧得自己 resize, 动态轴反而容易在 LinkNet 的
     插值上翻车.

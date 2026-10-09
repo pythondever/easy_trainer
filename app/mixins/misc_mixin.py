@@ -319,7 +319,7 @@ class MiscMixin(object):
                                         if norm(r.get("image_path", "")) not in norm_set]
                 if not index["labels"][lbl]:
                     del index["labels"][lbl]
-            # label_counts: 按被删图的 boxes/labels 减(关键: 之前删除后 label_counts 不会减, 导致统计界面虚高)
+            # label_counts: 按被删图的 boxes/labels 减; 不减的话统计界面上每类的框数会虚高
             if removed_recs:
                 lc = dict(self.db.get_dataset_label_counts(project, dataset))
                 for r in removed_recs:

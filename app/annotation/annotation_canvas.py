@@ -533,7 +533,7 @@ class AnnotationCanvasMixin:
         self._normalize_blend_strength()
 
     def _sync_brightness_slider(self):
-        """输入框 -> 滑块(不碰图像); 空值/非法值回默认, 返回收敛后的值."""
+        """输入框同步到滑块(不碰图像); 空值/非法值回默认, 返回收敛后的值."""
         edit = self.ui.brightness_lineEdit
         try:
             v = float(edit.text().strip())
@@ -773,7 +773,7 @@ class AnnotationCanvasMixin:
         self.scene.invalidate()
 
     def _paste_angle_range(self):
-        """角度范围输入框 → (lo, hi); 空/非整数回默认."""
+        """角度范围输入框解析成 (lo, hi); 空/非整数回默认."""
         try:
             lo = int(self.ui.min_ange_lineEdit.text())
         except (ValueError, TypeError):
@@ -903,7 +903,7 @@ class AnnotationCanvasMixin:
         if act is act_del:
             was_current = self.scene.fp_template is _clip_templates[i]
             _clip_templates.pop(i)
-            # 删掉的正是当前粘贴模板且剪切板已空 → 置空; 手绘轨迹模板不在剪切板, 不受影响
+            # 删掉的正是当前粘贴模板且剪切板已空时才置空; 手绘轨迹模板不在剪切板, 不受影响
             if was_current and not _clip_templates:
                 self.scene.fp_template = None
             self._rebuild_clipboard(select=0 if _clip_templates else None)

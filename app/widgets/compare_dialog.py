@@ -102,7 +102,7 @@ def _fmt(v, key):
 
 
 def _fmt_dur(secs):
-    """秒数 → hh:mm:ss; 没有时长字段给空串."""
+    """秒数转成 hh:mm:ss; 没有时长字段给空串."""
     try:
         secs = int(secs or 0)
     except (TypeError, ValueError):
@@ -120,7 +120,7 @@ def _time_short(t):
 
 
 def _aug_label(value):
-    """增强值 → 中文名, 不增强给空串."""
+    """增强值转成中文名, 不增强给空串."""
     codes = [c.strip() for c in str(value or "").split(",")]
     names = [QC.translate("TrainDialog", _AUG_NAMES[c])
              for c in codes if c in _AUG_NAMES]
@@ -132,7 +132,7 @@ def _aug_label(value):
 
 
 def _aug_codes(value):
-    """增强值 → 英文代码列表, 表格列直接展示."""
+    """增强值转成英文代码列表, 表格列直接展示."""
     return [c.strip() for c in str(value or "").split(",") if c.strip()]
 
 

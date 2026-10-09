@@ -26,14 +26,14 @@ from app.core.metrics import best_map50_from_csv
 from app.train.cnn_backend import device_arg
 from app.train.data_prep import prepare_dataset
 
-# UI 的档位 → YOLO 权重名里那一段
+# UI 的档位对应 YOLO 权重名里那一段
 _LEVELS = {"nano": "n", "small": "s", "medium": "m", "large": "l", "x-large": "x"}
 
-# UI 的优化器名 → ultralytics 认的写法
+# UI 的优化器名对应 ultralytics 认的写法
 _OPTIMIZERS = {"adamw": "AdamW", "adam": "Adam", "sgd": "SGD"}
 
 # ultralytics 的增强默认值全是开着的(马赛克 1.0、hsv_s 0.7、fliplr 0.5...), 所以先把
-# 这批全置 0, 再按勾选覆盖 —— 界面上"不勾选"才等于真的不增强
+# 这批全置 0, 再按勾选覆盖: 界面上"不勾选"才等于真的不增强
 YOLO_AUG_OFF = {
     "mosaic": 0.0, "mixup": 0.0, "cutmix": 0.0, "copy_paste": 0.0,
     "perspective": 0.0, "bgr": 0.0,
@@ -42,7 +42,7 @@ YOLO_AUG_OFF = {
     "flipud": 0.0, "fliplr": 0.0,
 }
 
-# 勾选代号 → ultralytics 超参. 模糊/噪声没有原生参数(ultralytics 自己那两项是靠
+# 勾选代号对应 ultralytics 超参. 模糊/噪声没有原生参数(ultralytics 自己那两项是靠
 # albumentations 实现的), 界面在 CNN 下把这两项置灰; 亮度也只有 hsv_v 一项可对应
 YOLO_AUG_PARAMS = {
     "hflip": {"fliplr": 0.5},
@@ -65,7 +65,7 @@ AUG_LEGACY_CODES = {
 
 
 def _resolve_yolo_aug(value):
-    """勾选代号串 → ultralytics 增强超参; 空值/没勾/代号全不认识都给全 0."""
+    """勾选代号串转成 ultralytics 增强超参; 空值/没勾/代号全不认识都给全 0."""
     out = dict(YOLO_AUG_OFF)
     text = str(value or "").strip().lower()
     if not text:
@@ -84,7 +84,7 @@ _CSV_FIELDS = ("epoch", "time", "val/mAP_50", "val/mAP_50_95",
                "val/segm_mAP_50", "val/segm_mAP_50_95",
                "train/loss", "val/loss")
 
-# ultralytics 列 → 内部列. (B)=box, (M)=mask; 内部沿用 rf-detr 那套名字
+# ultralytics 列映射到内部列. (B)=box, (M)=mask; 内部沿用 rf-detr 那套名字
 _BOX_MAP = (("metrics/mAP50(B)", "val/mAP_50"),
             ("metrics/mAP50-95(B)", "val/mAP_50_95"),
             ("metrics/precision(B)", "val/precision"),
@@ -121,7 +121,7 @@ def _f1(row):
 
 
 def _to_internal(row, task):
-    """results.csv 的一行 → 内部 metrics.csv 的一行(time 原样带过, 供下游看耗时)."""
+    """results.csv 的一行转成内部 metrics.csv 的一行(time 原样带过, 供下游看耗时)."""
     out = {"time": row.get("time", "")}
     for src, dst in _BOX_MAP + (_MASK_MAP if task == "segment" else ()):
         v = _f(row.get(src))

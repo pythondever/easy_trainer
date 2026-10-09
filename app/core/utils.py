@@ -164,7 +164,7 @@ _TEXT_ENCODINGS = tuple(dict.fromkeys(
 
 def decode_text_bytes(raw):
     """
-    解码子进程产出的 bytes, 按 UTF-8 → 本机 ANSI 码页 → 常见码页降级.
+    解码子进程产出的 bytes, 按 UTF-8, 本机 ANSI 码页, 常见码页依次降级.
     训练子进程的文本编码由它自己的环境决定, 不能假设是 utf-8: Windows 上当
     stdout 是管道(不是控制台)时 Python 取 ANSI 码页(中文=gbk), 从 PyCharm
     之类注入过 PYTHONIOENCODING 的环境启动才是 utf-8; 而且 C 层库(torch 等)

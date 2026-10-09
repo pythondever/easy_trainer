@@ -571,7 +571,7 @@ class AnnotationDialog(QDialog, AnnotationCanvasMixin, AnnotationIOMixin):
         return _dot_icon(QColor(color).name())
 
     def _on_label_change_requested(self, item):
-        """点击标注框上的标签 chip → 弹出所有标签下拉, 选择后修改该框类别."""
+        """点击标注框上的标签 chip 就弹出所有标签下拉, 选择后修改该框类别."""
         if not self.label_colors:
             return
         menu = QMenu(self)
@@ -975,7 +975,7 @@ class AnnotationDialog(QDialog, AnnotationCanvasMixin, AnnotationIOMixin):
 
     def _sync_labeled_selection(self, _sel=None):
         """
-        场景选中 → 同步右侧行高亮(与左侧标签列表同款底色).
+        场景选中后同步右侧行高亮(与左侧标签列表同款底色).
         只改"状态变化的那两行": 右侧列表可能有上千行, 每次全量 setStyleSheet
         会触发整行 unpolish/polish, 是框多时卡顿的主因之一.
         """
@@ -990,7 +990,7 @@ class AnnotationDialog(QDialog, AnnotationCanvasMixin, AnnotationIOMixin):
 
     def _sync_brightness_for(self, item):
         """
-        换选标注 → 亮度滑块摆到这个框自己的值(没调过的一律 0.50).
+        换选标注后亮度滑块摆到这个框自己的值(没调过的一律 0.50).
         上一个框调的亮度不能顺延: 停在 0.80 时点另一个多边形, 再拖一下就把新框也调亮了,
         而用户看到的滑块还以为是 0.50.
         """

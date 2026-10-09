@@ -211,7 +211,7 @@ class QueueMixin(object):
         return None
 
     def _start_queue_item(self, item):
-        """出队五步: 解析 → 校验 → 落盘 → 建记录 → 启动."""
+        """出队五步: 解析、校验、落盘、建记录、启动."""
         params = item["params"]
         # 出队时不弹窗打断队列, 只记一条: 权重可能在入队之后被删或换了目录
         family = params.get("family") or "transformer"

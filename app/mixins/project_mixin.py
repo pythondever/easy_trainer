@@ -187,7 +187,7 @@ class ProjectMixin(object):
             self.refresh_project_list()
 
     def _on_dataset_move(self, project_name, ds_name):
-        """右键"移动": 选择目标数据集 → 确认 → 移动数据."""
+        """右键"移动": 选目标数据集、确认、移动数据."""
         # 1. 选择目标数据集(本项目之外的其他项目数据集)
         target = self._select_move_target(project_name, ds_name)
         if target is None:
