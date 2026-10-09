@@ -11,22 +11,6 @@ from PySide6.QtWidgets import (QButtonGroup, QFrame, QHBoxLayout,
                                QScrollArea, QSizePolicy, QToolButton,
                                QWidget)
 
-from app.core import theme
-
-_STYLE = """
-#metricTabsBox { background-color: {{bg_control}};
-                 border: 1px solid {{border}}; border-radius: 7px; }
-#metricTabsBox QScrollArea, #metricTabsBox QWidget#metricTabsInner {
-    background: transparent; border: none; }
-#metricTabsBox QToolButton { background: transparent; border: none;
-    border-radius: 5px; padding: 5px 12px; color: {{text_3}}; }
-#metricTabsBox QToolButton:hover:!disabled { background-color: {{bg_hover}};
-    color: {{text}}; }
-#metricTabsBox QToolButton:checked { background-color: {{accent}};
-    color: {{text_strong}}; }
-#metricTabsBox QToolButton:disabled { color: {{text_disabled}}; }
-"""
-
 _SCROLL_STEP = 48
 
 
@@ -38,7 +22,6 @@ class MetricTabs(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setObjectName("metricTabsBox")
-        self.setStyleSheet(theme.substitute(_STYLE)[0])
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.setMinimumWidth(240)
 

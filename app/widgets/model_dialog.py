@@ -87,27 +87,6 @@ COL_TASK, COL_DATA, COL_METRIC, COL_TIME, COL_DUR, COL_IMG, COL_OPS = range(7)
 METRIC_GOOD, METRIC_MID, METRIC_BAD = (theme.hexof("st_ok"), theme.hexof("st_warn"),
                                        theme.hexof("st_err"))
 
-# 操作列按钮: 行内样式会盖掉全局, disabled 态要自己补. 配色取 theme 令牌,
-# 写死十六进制的话换主题时这两只按钮还是旧色
-_OPS_BTN = ("QPushButton{font-size:12px;padding:2px 6px;border-radius:"
-            + theme.TOKENS["r_md"] + ";background-color:%s;border:1px solid %s;"
-            "color:%s;}"
-            "QPushButton:hover{background-color:%s;border-color:%s;}"
-            "QPushButton:pressed{background-color:%s;}"
-            "QPushButton:disabled{background-color:" + theme.hexof("bg_panel")
-            + ";border-color:" + theme.hexof("border_subtle")
-            + ";color:" + theme.hexof("text_disabled") + ";}")
-OPS_BTN_QSS = {
-    "opsGo": _OPS_BTN % (theme.hexof("ok_bg"), theme.hexof("ok_border"),
-                         theme.hexof("ok_text"), theme.hexof("ok_bg_hover"),
-                         theme.hexof("ok_border_hover"),
-                         theme.hexof("ok_bg_pressed")),
-    "opsDel": _OPS_BTN % (theme.hexof("danger_bg"), theme.hexof("danger_border"),
-                          theme.hexof("danger_text"),
-                          theme.hexof("danger_bg_hover"),
-                          theme.hexof("danger_border_hover"),
-                          theme.hexof("danger_bg_pressed")),
-}
 CURVE_BG, CURVE_LINE = theme.color("bg_base"), theme.color("accent")
 
 
@@ -526,7 +505,6 @@ class ModelDialog(QDialog):
     @staticmethod
     def _transparent_wrap(wrap):
         wrap.setObjectName("cellWrap")
-        wrap.setStyleSheet("#cellWrap{background:transparent;}")
         return wrap
 
     def _make_metric_cell(self, value, status=None, error=None):
@@ -593,7 +571,6 @@ class ModelDialog(QDialog):
         for b in buttons:
             b.setMinimumSize(38, 24)
             b.setMaximumWidth(46)
-            b.setStyleSheet(OPS_BTN_QSS[b.objectName()])
             h.addWidget(b)
         h.addStretch(1)
         return self._transparent_wrap(wrap)

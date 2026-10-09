@@ -801,20 +801,8 @@ class AnnotationCanvasMixin:
         self._update_clip_label()
 
     # ---------------- 剪切板缩略图(全局粘贴模板) ----------------
-    CLIP_W, CLIP_H = 120, 90
+    CLIP_W, CLIP_H = theme.CLIP_THUMB_W + 4, theme.CLIP_THUMB_H + 4
     CLIP_ROWS = 3   # 剪切板可视行数, 超出后滚动
-
-    def _clip_qss(self):
-        w, h = self.CLIP_W - 4, self.CLIP_H - 4
-        return ("QPushButton#clipThumb {{ border: 2px solid {bd};"
-                " border-radius: 4px; padding: 0px; background: #22252d;"
-                " min-width: {w}px; max-width: {w}px;"
-                " min-height: {h}px; max-height: {h}px; }}"
-                "QPushButton#clipThumb:hover {{ border-color: {ah}; }}"
-                "QPushButton#clipThumb:checked {{ border-color: {ac};"
-                " background: #1d2735; }}").format(
-                    w=w, h=h, bd=theme.hexof("border_strong"),
-                    ah=theme.hexof("accent_hover"), ac=theme.hexof("accent"))
 
     def _copy_template(self, item):
         """右键"复制"入口: 抠模板入全局剪切板并选中最新缩略图."""
@@ -826,7 +814,6 @@ class AnnotationCanvasMixin:
     def _setup_clipboard(self):
         u = self.ui
         u.clipboard_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        u.clipboard_container.setStyleSheet(self._clip_qss())
         u.clipboard_scroll.setMinimumHeight(
             self.CLIP_ROWS * (self.CLIP_H + 6))
         for w in (u.clipboard_container, u.clipboard_scroll,

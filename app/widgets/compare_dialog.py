@@ -82,10 +82,6 @@ _AUG_NAMES = {code: name for _g, code, name, _p in AUG_ITEMS}
 AUG_DIFF_MAX = 2
 
 
-def _muted(size=13):
-    return "color: {}; font-size: {}px;".format(theme.hexof("text_3"), size)
-
-
 def _esc(text):
     return (str(text).replace("&", "&amp;").replace("<", "&lt;")
             .replace(">", "&gt;"))
@@ -277,17 +273,6 @@ class CompareDialog(QDialog):
         self._metric = ""
         self._guard = False
 
-        self.ui.metric_caption.setStyleSheet(_muted())
-        self.ui.range_caption.setStyleSheet(_muted())
-        self.ui.records_caption.setStyleSheet(_muted(12))
-        self.ui.diff_caption.setStyleSheet(_muted(12))
-        self.ui.chart_title_label.setStyleSheet(_muted(13))
-        self.ui.table_title_label.setStyleSheet(_muted(13))
-        self.ui.legend_label.setStyleSheet(_muted(11))
-        self.ui.hint_label.setStyleSheet(_muted(12))
-        self.ui.source_label.setStyleSheet(_muted(12))
-        self.ui.status_legend_label.setStyleSheet(_muted(12))
-        self.ui.selected_count_label.setStyleSheet(_muted(11))
         self.ui.selected_count_label.setAlignment(Qt.AlignCenter)
 
         # 底部固定文案: 状态色标 + 数据来源

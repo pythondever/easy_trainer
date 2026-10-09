@@ -27,15 +27,6 @@ BODY_SQUEEZE_H = 40     # 版面不够时的兜底高度
 BODY_LINE_H = 17
 MIN_W = 120
 
-_STYLE = """
-CollapsibleText { font-size: {{font_md}}; }
-#foldBody { background-color: {{bg_sunken}};
-            border: 1px solid {{border_subtle}}; border-radius: {{r_sm}};
-            padding: 3px 5px; color: {{text_2}}; }
-#foldBody:focus { border: 1px solid {{border_subtle}}; }
-"""
-
-
 class CollapsibleText(QWidget):
     """折叠块: set_content(标题, 正文) 填内容, 正文为空时整块收起."""
 
@@ -49,7 +40,6 @@ class CollapsibleText(QWidget):
         self._expanded = False
         self._hover = False
         self._tint = QColor(theme.hexof("text_2"))
-        self.setStyleSheet(theme.substitute(_STYLE)[0])
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         self.setMinimumWidth(MIN_W)
         self.setCursor(Qt.PointingHandCursor)

@@ -15,19 +15,6 @@ DIFF_FIELDS = (("任务", "task"), ("模型", "model"), ("数据集", "dataset")
 # 没跑完的状态: 不参与最佳判定
 _UNFINISHED = ("失败", "失败/已停止", "已停止", "已中断", "已跳过")
 
-_STYLE = """
-#diffCard { background-color: {{bg_control}}; border: 1px solid {{border_strong}};
-            border-radius: 8px; }
-#diffCardTitle { color: {{text_2}}; font-weight: 600; }
-#diffCardHint { color: {{text_faint}}; font-weight: 400; }
-#diffBestName { color: {{text_strong}}; font-weight: 600; }
-#diffBestMeta { color: {{text_3}}; }
-#diffKeyValue { color: {{text_2}}; }
-#diffKeyTime { color: {{text_faint}}; }
-#diffCommon { color: {{text_3}}; }
-#diffConcl { color: {{text_2}}; }
-"""
-
 
 def _dot(color):
     return "<span style='color:{}'>●</span>".format(color)
@@ -43,7 +30,6 @@ class DiffPanel(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setStyleSheet(theme.substitute(_STYLE)[0])
         self._layout = QVBoxLayout(self)
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(9)

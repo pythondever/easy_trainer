@@ -88,6 +88,10 @@ H_CTRL_DIALOG = 22            # 弹窗控件内容高 -> 22 + 12 + 2 = 36
 # 弹窗按钮实测高度, 供 Python 侧 setMinimumHeight 用(与 QSS 的 h_ctrl_dialog 同源)
 BTN_HEIGHT = H_CTRL_DIALOG + 12 + 2
 
+# 标注剪切板缩略图: 内容盒尺寸(QSS 里 +2px 边框 ×2 = 各 +4 为总尺寸).
+# 标注画布是独立子主题, 不随界面倍率缩放, 所以这里也不走 px().
+CLIP_THUMB_W, CLIP_THUMB_H = 116, 86
+
 # ---------------- 字号 ----------------
 FONT = {
     "font_xs": 10,        # 行内迷你进度条
@@ -142,6 +146,8 @@ def _rebuild_tokens():
         "pad_field": "{}px {}px".format(px(PAD_FIELD[0]), px(PAD_FIELD[1])),
         # rgba() 里要的是裸三元组, 不能带 #
         "accent_rgb": "79,125,255",
+        "clip_w": "{}px".format(CLIP_THUMB_W),
+        "clip_h": "{}px".format(CLIP_THUMB_H),
     })
 
 

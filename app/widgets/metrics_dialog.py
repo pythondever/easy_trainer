@@ -36,11 +36,6 @@ def load_run_series(record, db_path=None):
         return {}
 
 
-def _muted_style(size=13):
-    """辅助说明文字: 中性灰 + 指定字号."""
-    return "color: {}; font-size: {}px;".format(theme.hexof("text_3"), size)
-
-
 class MetricsDialog(QDialog):
     """
     展示一次训练的指标曲线.
@@ -82,7 +77,7 @@ class MetricsDialog(QDialog):
         row = QHBoxLayout()
         row.addStretch(1)
         lbl = QLabel(self.tr("标签筛选"))
-        lbl.setStyleSheet(_muted_style())
+        lbl.setObjectName("metricsFilterLabel")
         row.addWidget(lbl)
         self._combo = QComboBox()
         self._all_text = self.tr("全部指标")
@@ -124,7 +119,7 @@ class MetricsDialog(QDialog):
                   if isinstance(v, list) and v}
         if not epochs or not series:
             tip = QLabel(self.tr("暂无该标签的指标数据(训练完成后可查看)"))
-            tip.setStyleSheet(_muted_style())
+            tip.setObjectName("metricsTipLabel")
             tip.setAlignment(Qt.AlignCenter)
             self._chart = tip
             self._body.addWidget(tip)

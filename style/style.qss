@@ -1534,3 +1534,116 @@ QPushButton#pre_page_btn:disabled, QPushButton#next_page_btn:disabled {
     color: {{text_3}};
     padding: 0 12px;
 }
+
+/* ================ 迁移自 Python 的内联样式 ================
+ * 这些规则原先以 setStyleSheet 字符串写在各 .py 里。搬来此处有两个好处：
+ * ①配色不再散落在代码里；②原先只在控件构造时替换一次令牌，界面倍率变化后
+ * 用的还是旧值，放到这里会随 style.qss 一起重新加载。
+ * 选择器都已用对象名限定，不会外溢到别的界面。
+ * 特异性注意：落在 #ModelDialog / #AnnotationDialog 里的控件必须带对话框 ID
+ * 前缀（凑够 2 个 ID），否则盖不住那两段「1 ID + 2 类型」的通用按钮规则。 */
+
+/* --- 模型详情：可折叠长文本块（app/widgets/collapsible_text.py） --- */
+CollapsibleText { font-size: {{font_md}}; }
+#foldBody {
+    background-color: {{bg_sunken}};
+    border: 1px solid {{border_subtle}};
+    border-radius: {{r_sm}};
+    padding: 3px 5px;
+    color: {{text_2}};
+}
+#foldBody:focus { border: 1px solid {{border_subtle}}; }
+
+/* --- 对比多次训练：指标切换 tab（app/widgets/metric_tabs.py） --- */
+#metricTabsBox {
+    background-color: {{bg_control}};
+    border: 1px solid {{border}};
+    border-radius: 7px;
+}
+#metricTabsBox QScrollArea, #metricTabsBox QWidget#metricTabsInner {
+    background: transparent;
+    border: none;
+}
+#metricTabsBox QToolButton {
+    background: transparent;
+    border: none;
+    border-radius: 5px;
+    padding: 5px 12px;
+    color: {{text_3}};
+}
+#metricTabsBox QToolButton:hover:!disabled {
+    background-color: {{bg_hover}};
+    color: {{text}};
+}
+#metricTabsBox QToolButton:checked {
+    background-color: {{accent}};
+    color: {{text_strong}};
+}
+#metricTabsBox QToolButton:disabled { color: {{text_disabled}}; }
+
+/* --- 对比多次训练：右栏 最佳记录 / 参数差异 / 结论（app/widgets/compare_diff.py） --- */
+#diffCard {
+    background-color: {{bg_control}};
+    border: 1px solid {{border_strong}};
+    border-radius: 8px;
+}
+#diffCardTitle { color: {{text_2}}; font-weight: 600; }
+#diffCardHint { color: {{text_faint}}; font-weight: 400; }
+#diffBestName { color: {{text_strong}}; font-weight: 600; }
+#diffBestMeta { color: {{text_3}}; }
+#diffKeyValue { color: {{text_2}}; }
+#diffKeyTime { color: {{text_faint}}; }
+#diffCommon { color: {{text_3}}; }
+#diffConcl { color: {{text_2}}; }
+
+/* --- 弱化说明文字：原 compare_dialog._muted / metrics_dialog._muted_style --- */
+#metric_caption, #range_caption,
+#chart_title_label, #table_title_label,
+#metricsFilterLabel, #metricsTipLabel { color: {{text_3}}; font-size: {{font_base}}; }
+#records_caption, #diff_caption, #hint_label,
+#source_label, #status_legend_label { color: {{text_3}}; font-size: {{font_md}}; }
+#legend_label, #selected_count_label { color: {{text_3}}; font-size: {{font_sm}}; }
+
+/* --- 模型管理：表格单元格容器（app/widgets/model_dialog.py）
+ * 全局 QWidget 背景会把容器刷成整块深色，用 id 只对容器本身透明 --- */
+#cellWrap { background: transparent; }
+
+/* --- 模型管理：行内 测试 / 导出(opsGo) 与 删除(opsDel) --- */
+QDialog#ModelDialog QPushButton#opsGo {
+    background-color: {{ok_bg}}; border: 1px solid {{ok_border}}; color: {{ok_text}};
+    border-radius: {{r_md}}; padding: 2px 6px; font-size: {{font_md}};
+}
+QDialog#ModelDialog QPushButton#opsGo:hover {
+    background-color: {{ok_bg_hover}}; border-color: {{ok_border_hover}};
+}
+QDialog#ModelDialog QPushButton#opsGo:pressed { background-color: {{ok_bg_pressed}}; }
+QDialog#ModelDialog QPushButton#opsGo:disabled {
+    background-color: {{bg_panel}}; border-color: {{border_subtle}}; color: {{text_disabled}};
+}
+QDialog#ModelDialog QPushButton#opsDel {
+    background-color: {{danger_bg}}; border: 1px solid {{danger_border}}; color: {{danger_text}};
+    border-radius: {{r_md}}; padding: 2px 6px; font-size: {{font_md}};
+}
+QDialog#ModelDialog QPushButton#opsDel:hover {
+    background-color: {{danger_bg_hover}}; border-color: {{danger_border_hover}};
+}
+QDialog#ModelDialog QPushButton#opsDel:pressed { background-color: {{danger_bg_pressed}}; }
+QDialog#ModelDialog QPushButton#opsDel:disabled {
+    background-color: {{bg_panel}}; border-color: {{border_subtle}}; color: {{text_disabled}};
+}
+
+/* --- 标注对话框：剪切板缩略图（app/annotation/annotation_canvas.py）
+ * 底色是标注子主题专用色，暂未令牌化，保持原值 --- */
+#AnnotationDialog QPushButton#clipThumb {
+    border: 2px solid {{border_strong}};
+    border-radius: {{r_sm}};
+    padding: 0px;
+    background: #22252d;
+    min-width: {{clip_w}}; max-width: {{clip_w}};
+    min-height: {{clip_h}}; max-height: {{clip_h}};
+}
+#AnnotationDialog QPushButton#clipThumb:hover { border-color: {{accent_hover}}; }
+#AnnotationDialog QPushButton#clipThumb:checked {
+    border-color: {{accent}};
+    background: #1d2735;
+}
