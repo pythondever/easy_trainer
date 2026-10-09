@@ -859,7 +859,7 @@ Confirmer la suppression ?</translation>
         <translation>Chargement du modèle de classification : {}</translation>
     </message>
     <message>
-        <location filename="../app/train/classify_test_runner.py" line="111"/>
+        <location filename="../app/train/classify_test_runner.py" line="112"/>
         <source>测试图片 {} 张</source>
         <translation>{} images de test</translation>
     </message>
@@ -1125,93 +1125,93 @@ Confirmer la suppression ?</translation>
 <context>
     <name>DatasetViewMixin</name>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="261"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="266"/>
         <source>删除全部未标注图像({} 张)</source>
         <translation>Supprimer toutes les images non étiquetées ({} images)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="267"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="272"/>
         <source>删除所选图像({} 张)</source>
         <translation>Supprimer les images sélectionnées ({} images)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="381"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="386"/>
         <source>重载跳过: 数据集 {}/{} 无图像目录</source>
         <translation>Rechargement ignoré : le jeu de données {}/{} n&apos;a pas de dossier d&apos;images</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="382"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="387"/>
         <source>重载</source>
         <translation>Recharger</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="383"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="388"/>
         <source>该数据集还没有图像目录, 请先右键&quot;导入&quot;</source>
         <translation>Ce jeu de données n&apos;a pas encore de dossier d&apos;images ; faites d&apos;abord un clic droit sur « Importer »</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="387"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="392"/>
         <source>重载跳过: 数据集 {}/{} 正在载入</source>
         <translation>Rechargement ignoré : le jeu de données {}/{} est en cours de chargement</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="389"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="394"/>
         <source>重载数据集: {}/{}</source>
         <translation>Rechargement du jeu de données : {}/{}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="598"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="609"/>
         <source>数据集 {}/{} 含 OCR 文本标注, 已标为字符检测数据集</source>
         <translation>Le jeu de données {}/{} contient des annotations de texte OCR, marqué comme jeu de détection de texte</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="880"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="950"/>
         <source>第 {} / {} 页</source>
         <translation>Page {} / {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="884"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="954"/>
         <source>第 {}/{} 页 · 共 {} 个</source>
         <translation>Page {}/{} · {} éléments</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="886"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="956"/>
         <source>第 {}/{} 页 · 共 {} 张</source>
         <translation>Page {}/{} · {} images</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="899"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="969"/>
         <source>未选择标签</source>
         <translation>Aucune étiquette sélectionnée</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="901"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="971"/>
         <source>暂无数据</source>
         <translation>Aucune donnée</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="938"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="1008"/>
         <source>开始导入: {}/{} | 图像路径={} | 标签路径={} | 格式={}</source>
         <translation>Début de l&apos;import : {}/{} | Chemin des images={} | Chemin des étiquettes={} | Format={}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="939"/>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="1008"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="1009"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="1078"/>
         <source>(无)</source>
         <translation>(aucun)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="1003"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="1073"/>
         <source>{}: {}个</source>
         <translation>{} : {} boîtes</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="1005"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="1075"/>
         <source>数据集导入完成: {}/{} | 图像 {} 张, 已标注 {} 张 | 标签({}类): {}</source>
         <translation>Import du jeu de données terminé : {}/{} | {} images, {} étiquetées | Étiquettes ({} classes) : {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/dataset_view_mixin.py" line="1050"/>
+        <location filename="../app/mixins/dataset_view_mixin.py" line="1120"/>
         <source>数据集 {}/{} 未导入, 右键&quot;导入&quot;选择图像与标签目录</source>
         <translation>Jeu de données {}/{} non importé ; clic droit sur « Importer » pour choisir les dossiers d&apos;images et d&apos;étiquettes</translation>
     </message>
@@ -2406,8 +2406,8 @@ Heure de début={}
         <location filename="../app/widgets/model_dialog.py" line="825"/>
         <location filename="../app/widgets/model_dialog.py" line="843"/>
         <location filename="../app/widgets/model_dialog.py" line="859"/>
-        <location filename="../app/widgets/model_dialog.py" line="1150"/>
-        <location filename="../app/widgets/model_dialog.py" line="1160"/>
+        <location filename="../app/widgets/model_dialog.py" line="1151"/>
+        <location filename="../app/widgets/model_dialog.py" line="1161"/>
         <source>导出模型</source>
         <translation>Exporter le modèle</translation>
     </message>
@@ -2516,7 +2516,7 @@ Heure de début={}
     </message>
     <message>
         <location filename="../app/widgets/model_dialog.py" line="1002"/>
-        <location filename="../app/widgets/model_dialog.py" line="1083"/>
+        <location filename="../app/widgets/model_dialog.py" line="1084"/>
         <source>正在生成模型报告...</source>
         <translation>Génération du rapport du modèle...</translation>
     </message>
@@ -2536,24 +2536,24 @@ Heure de début={}
         <translation>Échec de l&apos;évaluation, rapport ignoré : {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1102"/>
+        <location filename="../app/widgets/model_dialog.py" line="1103"/>
         <source>导出模型报告跳过: 验证集没有标注</source>
         <translation>Export du rapport du modèle ignoré : le jeu de validation n&apos;a pas d&apos;annotations</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1103"/>
+        <location filename="../app/widgets/model_dialog.py" line="1104"/>
         <source>验证集没有标注, 已跳过评估报告</source>
         <translation>Jeu de validation sans annotations, rapport d&apos;évaluation ignoré</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1109"/>
+        <location filename="../app/widgets/model_dialog.py" line="1110"/>
         <source>[export] 生成评估报告失败:
 {}</source>
         <translation>[export] Échec de la génération du rapport d&apos;évaluation :
 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1106"/>
+        <location filename="../app/widgets/model_dialog.py" line="1107"/>
         <source>生成评估报告失败: {}</source>
         <translation>Échec de la génération du rapport d&apos;évaluation : {}</translation>
     </message>
@@ -2568,22 +2568,22 @@ Heure de début={}
         <translation>[export] Échec de la lecture de la liste des classes : {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1098"/>
+        <location filename="../app/widgets/model_dialog.py" line="1099"/>
         <source>导出模型报告完成: {}</source>
         <translation>Export du rapport du modèle terminé : {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1110"/>
+        <location filename="../app/widgets/model_dialog.py" line="1111"/>
         <source>评估完成, 但报告生成失败</source>
         <translation>Évaluation terminée, mais la génération du rapport a échoué</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1144"/>
+        <location filename="../app/widgets/model_dialog.py" line="1145"/>
         <source>导出模型完成: {} | 包含: {}</source>
         <translation>Export du modèle terminé : {} | contient : {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1146"/>
+        <location filename="../app/widgets/model_dialog.py" line="1147"/>
         <source>已导出到:
 {}
 
@@ -2594,33 +2594,33 @@ Heure de début={}
 Contient : {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1108"/>
-        <location filename="../app/widgets/model_dialog.py" line="1157"/>
+        <location filename="../app/widgets/model_dialog.py" line="1109"/>
+        <location filename="../app/widgets/model_dialog.py" line="1158"/>
         <source>未知错误</source>
         <translation>Erreur inconnue</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1161"/>
+        <location filename="../app/widgets/model_dialog.py" line="1162"/>
         <source>模型导出失败, 详情见日志</source>
         <translation>Échec de l&apos;exportation du modèle, voir le journal</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1156"/>
+        <location filename="../app/widgets/model_dialog.py" line="1157"/>
         <source>导出模型失败: {}</source>
         <translation>Échec de l&apos;export du modèle : {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1158"/>
+        <location filename="../app/widgets/model_dialog.py" line="1159"/>
         <source>[export] ONNX 导出失败: {}</source>
         <translation>[export] Échec de l&apos;export ONNX : {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1175"/>
+        <location filename="../app/widgets/model_dialog.py" line="1176"/>
         <source>复制导出示例失败: {}</source>
         <translation>Échec de la copie de l&apos;exemple d&apos;export : {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1176"/>
+        <location filename="../app/widgets/model_dialog.py" line="1177"/>
         <source>[export] 复制示例失败: {}</source>
         <translation>[export] Échec de la copie de l&apos;exemple : {}</translation>
     </message>
@@ -3755,54 +3755,54 @@ Le jeu de données source sera vidé.</translation>
         <translation>La reconnaissance de texte a besoin des zones annotées pour découper les extraits de texte ; veuillez choisir un jeu de données annoté</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="482"/>
+        <location filename="../app/widgets/test_dialog.py" line="483"/>
         <source>[test] 启动测试 worker: model={} 数据集={} 图像目录={} device={} cfg={}</source>
         <translation>[test] Lancement du worker de test : model={} jeu de données={} dossier d&apos;images={} device={} cfg={}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="487"/>
+        <location filename="../app/widgets/test_dialog.py" line="488"/>
         <source>测试准备中...</source>
         <translation>Préparation du test...</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="504"/>
         <location filename="../app/widgets/test_dialog.py" line="505"/>
+        <location filename="../app/widgets/test_dialog.py" line="506"/>
         <source>测试即将开始</source>
         <translation>Le test va bientôt démarrer</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="551"/>
+        <location filename="../app/widgets/test_dialog.py" line="552"/>
         <source>测试中 {}/{}</source>
         <translation>Test en cours {}/{}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="571"/>
+        <location filename="../app/widgets/test_dialog.py" line="572"/>
         <source>[test-dialog] 测试完成, ok={}</source>
         <translation>[test-dialog] Test terminé, ok={}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="579"/>
-        <location filename="../app/widgets/test_dialog.py" line="589"/>
+        <location filename="../app/widgets/test_dialog.py" line="580"/>
+        <location filename="../app/widgets/test_dialog.py" line="590"/>
         <source>测试结果</source>
         <translation>Résultats du test</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="580"/>
+        <location filename="../app/widgets/test_dialog.py" line="581"/>
         <source>测试未正常完成</source>
         <translation>Le test ne s&apos;est pas terminé correctement</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="590"/>
+        <location filename="../app/widgets/test_dialog.py" line="591"/>
         <source>字条 {} 条 · CER {:.4f} · 全对 {} 条</source>
         <translation>{} extraits de texte · CER {:.4f} · {} entièrement corrects</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="597"/>
+        <location filename="../app/widgets/test_dialog.py" line="598"/>
         <source>[test-dialog] 测试失败: {}</source>
         <translation>[test-dialog] Échec du test : {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="604"/>
+        <location filename="../app/widgets/test_dialog.py" line="605"/>
         <source>测试失败</source>
         <translation>Échec du test</translation>
     </message>

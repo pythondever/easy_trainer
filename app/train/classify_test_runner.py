@@ -93,7 +93,8 @@ def main():
     model = make_resnet(arch, fc_out)
     model.load_state_dict(ckpt["state_dict"])
     model.to(device).eval()
-    img_size = int(cfg.get("img_size", 224))
+    # 旧 checkpoint 没存 img_size, 兜底用分类的默认尺寸 224
+    img_size = int(cfg.get("img_size") or ckpt.get("img_size") or 224)
     tf = transforms.Compose([
         transforms.Resize((img_size, img_size)),
         transforms.ToTensor(),

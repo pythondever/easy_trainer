@@ -1070,6 +1070,7 @@ class ModelDialog(QDialog):
             "total": total, "output_labels": False,
             "task": self._eval_task(rec, cls_mode),
             "family": rec.get("family") or "",
+            "img_size": rec.get("img_size") or 224,
             "report_dir": report_dir, "_cfg_path": cfg_path,
             "language": i18n.current(),
         }

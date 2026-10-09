@@ -472,6 +472,7 @@ class TestDialog(QDialog):
             "total": total, "output_labels": output_labels,
             "task": self._test_task(cls_mode),
             "family": self._record.get("family") or "",
+            "img_size": self._record.get("img_size") or 224,
             "report_dir": report_dir,
             "_cfg_path": cfg_path,
             "language": i18n.current(),

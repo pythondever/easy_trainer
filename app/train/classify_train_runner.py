@@ -277,7 +277,7 @@ def main():
             best_acc = acc
             no_improve = 0
             torch.save({"state_dict": model.state_dict(), "classes": classes,
-                        "architecture": arch},
+                        "architecture": arch, "img_size": img_size},
                        os.path.join(ts_dir, "checkpoint_best.pth"))
         else:
             no_improve += 1

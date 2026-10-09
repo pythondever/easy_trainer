@@ -6,7 +6,7 @@ from app.core.db import get_paths
 from app.annotation.annotation_dialog import AnnotationDialog
 from app.widgets.paginator import Paginator
 from app.core.constants import (PAGE_SIZE, THUMB_CACHE_MAX,
-                                ROI_CACHE_MAX)
+                                ROI_CACHE_MAX, IMG_CACHE_BYTES_MAX)
 from app.mixins.label_mixin import UNLABELED_KEY
 from app.core.label_utils import (OCR_JSON_FLAG, is_text_label,
                                   normalize_label, label_sort_key,
@@ -104,6 +104,11 @@ class _ThumbDecodeWorker(QThread):
                 results.append((path, qimg))
             self.batch_done.emit(results)
 
+
+# 缓存里的 QImage 统一 200x200(见 _decode_roi 的 setScaledSize 与
+# make_uniform_thumb 的 size), 按 4 字节/像素折算, 用来估算缓存体量.
+# 走常量而不是逐张 sizeInBytes: 全量扫描动辄几十万条, 方法调用能占掉大半时间.
+_CACHE_IMG_PX = 200 * 200 * 4
 
 _THUMB_PLACEHOLDER = None
 
@@ -456,6 +461,12 @@ class DatasetViewMixin(object):
         推理/标注新写的标签 json 重扫后同步统计).
         """
         self._select_all_mode = False
+        # 换页只淘汰当前数据集(见 _evict_img_cache), 切走的那份永不释放;
+        # 借切换这个低频时机回收最久未用的数据集.
+        shown = (project_name, dataset_name)
+        if getattr(self, "_last_shown_ds", None) != shown:
+            self._last_shown_ds = shown
+            self._evict_img_cache_global()
         proj_cache = self.dataset_cache.get(project_name, {})
         data = proj_cache.get(dataset_name)
         if data:
@@ -652,6 +663,12 @@ class DatasetViewMixin(object):
         内存淘汰走 _throttled_evict 节流(翻页/切筛选仍有 _render_scene 全量兜底)."""
         if getattr(self, "_closing", False):
             return
+        # 出队无条件执行: 切到项目级或数据集被删时下面会早退, 残留的 path
+        # 会让 _get_thumb 判定成"已在解码中"而拒绝重新提交, 该格永久灰块.
+        pending = getattr(self, "_thumb_pending", None)
+        if pending:
+            for path, _qimg in results:
+                pending.discard(path)
         cur_ds = getattr(self, "_current_dataset", None)
         if not cur_ds:
             return
@@ -663,8 +680,6 @@ class DatasetViewMixin(object):
         by_path = bpi.get("map") if bpi and bpi.get("ds") == (proj, ds) else {}
         changed = False
         for path, qimg in results:
-            if path in getattr(self, "_thumb_pending", set()):
-                self._thumb_pending.discard(path)
             rec = by_path.get(path)
             if rec is not None and rec.get("thumb") is None:
                 rec["thumb"] = qimg if qimg is not None else _thumb_placeholder()
@@ -715,6 +730,12 @@ class DatasetViewMixin(object):
         内存淘汰走 _throttled_evict 节流(翻页/切筛选仍有 _render_scene 全量兜底)."""
         if getattr(self, "_closing", False):
             return
+        # 出队无条件执行: 切到项目级或数据集被删时下面会早退, 残留的 key
+        # 会让 _roi_for_render 判定成"已在解码中"而拒绝重新提交, 该格永久灰块.
+        pending = getattr(self, "_roi_pending", None)
+        if pending:
+            for path, label, box_idx, _qimg in results:
+                pending.discard((path, label, box_idx))
         cur_ds = getattr(self, "_current_dataset", None)
         if not cur_ds:
             return
@@ -726,9 +747,6 @@ class DatasetViewMixin(object):
         by_path = bpi.get("map") if bpi and bpi.get("ds") == (proj, ds) else {}
         changed = False
         for path, label, box_idx, qimg in results:
-            key = (path, label, box_idx)
-            if key in getattr(self, "_roi_pending", set()):
-                self._roi_pending.discard(key)
             rec = by_path.get(path)
             if rec is not None:
                 cache = rec.setdefault("rois_by_idx", {}).setdefault(label, {})
@@ -789,22 +807,27 @@ class DatasetViewMixin(object):
         thumbs = []
         rois = []
         roi_entries = 0
+        cur_bytes = 0
         for rec in records:
-            if rec.get("image_path", "") in protected:
-                continue
+            on_page = rec.get("image_path", "") in protected
             th = rec.get("thumb")
             if th is not None and th is not placeholder:
-                thumbs.append(rec)
+                cur_bytes += _CACHE_IMG_PX
+                if not on_page:
+                    thumbs.append(rec)
             bucket = rec.get("rois_by_idx")
             if bucket:
                 n = sum(len(v) for v in bucket.values())
                 if n:
-                    rois.append((rec, n))
-                    roi_entries += n
+                    cur_bytes += n * _CACHE_IMG_PX
+                    if not on_page:
+                        rois.append((rec, n))
+                        roi_entries += n
         if len(thumbs) > t_max:
             thumbs.sort(key=lambda r: r.get("_thumb_t", 0), reverse=True)
             for rec in thumbs[t_max:]:
                 rec["thumb"] = None
+                cur_bytes -= _CACHE_IMG_PX
         if roi_entries > r_max:
             rois.sort(key=lambda item: item[0].get("_roi_t", 0), reverse=True)
             # 从最久未访问的一端整图清, 直到条目数落回上限内
@@ -813,6 +836,53 @@ class DatasetViewMixin(object):
                     break
                 rec["rois_by_idx"] = {}
                 roi_entries -= n
+                cur_bytes -= n * _CACHE_IMG_PX
+        # 记下本数据集的缓存体量. 缓存只能由渲染产生, 所以切走的数据集这个
+        # 值不再变, 全局回收靠这份记账就能免掉每次切换的全量扫描.
+        db_cache = getattr(self, "_ds_cache_bytes", None)
+        if db_cache is None:
+            db_cache = self._ds_cache_bytes = {}
+        db_cache[cur] = cur_bytes
+
+    def _evict_img_cache_global(self):
+        """
+        切换数据集时按全局字节上限回收 QImage, 超限就整集释放最久未用的那个.
+        缓存只能由渲染产生, 数据集一切走, 体量就冻结在 _ds_cache_bytes 里;
+        回收时按"最后使用时刻"从最旧的整集清起, 不必逐条收集排序(45 万条记录
+        逐条排要 500ms, 整集清只遍历被清的那一个数据集).
+        当前数据集刚看过, 不参与回收; 只动 QImage, 不碰 rec 元数据与 labels 索引.
+        """
+        cap = getattr(self, "_img_cache_bytes_max", IMG_CACHE_BYTES_MAX)
+        used = getattr(self, "_ds_last_used", None)
+        if used is None:
+            used = self._ds_last_used = {}
+        cur = getattr(self, "_current_dataset", None)
+        if cur:
+            used[cur] = self._img_clock_now()
+        known = getattr(self, "_ds_cache_bytes", None) or {}
+        total = sum(known.values())
+        if total <= cap:
+            return
+        placeholder = _thumb_placeholder()
+        order = [k for k, v in known.items() if v and k != cur]
+        order.sort(key=lambda k: used.get(k, 0))
+        for key in order:
+            if total <= cap:
+                break
+            index = self.dataset_cache.get(key[0], {}).get(key[1])
+            freed = 0
+            for rec in (index or {}).get("all", []) or []:
+                thumb = rec.get("thumb")
+                if thumb is not None and thumb is not placeholder:
+                    rec["thumb"] = None
+                    freed += _CACHE_IMG_PX
+                bucket = rec.get("rois_by_idx")
+                if bucket:
+                    freed += sum(len(v) for v in bucket.values()) * _CACHE_IMG_PX
+                    rec["rois_by_idx"] = {}
+            total -= freed or known.get(key, 0)
+            known[key] = 0
+        self._ds_cache_bytes = {k: v for k, v in known.items() if v > 0}
 
     def _render_scene(self, records):
         """
