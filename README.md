@@ -65,7 +65,7 @@
 </p>
 
 ### 🚀 训练
-**子进程执行不阻塞 UI**，实时进度条、剩余时间、显存占用，支持手动停止（5 秒倒计时）。检测/分割走 RF-DETR，分类走 ResNet（18/34/50/101），异常检测走 PatchCore（只用正常样本，无需标注），OCR 走 docTR 两段（检测 DB / LinkNet + 识别 CRNN），所有网络尺寸下拉映射。支持**训练队列**：多组配置排队串行执行，可随时停止，中断或失败后可一键重新入队；OCR 一次入队两项（字符检测 + 字符识别），前一项跑完等显存回落到开训前水平再起下一项。
+**子进程执行不阻塞 UI**，实时进度条、剩余时间、显存占用，支持手动停止（5 秒倒计时）。检测/分割可选 RF-DETR（Transformer）或 ultralytics YOLO（CNN）两套后端，分类走 ResNet（18/34/50/101），异常检测走 PatchCore（只用正常样本，无需标注），OCR 走 docTR 两段（检测 DB / LinkNet + 识别 CRNN），所有网络尺寸下拉映射。支持**训练队列**：多组配置排队串行执行，可随时停止，中断或失败后可一键重新入队；OCR 一次入队两项（字符检测 + 字符识别），前一项跑完等显存回落到开训前水平再起下一项。
 
 <p align="center">
   <img src="docs/images/训练参数与队列.png" width="48%" />
@@ -109,6 +109,7 @@
 |------|------|------|
 | Python | ≥ 3.10 | RF-DETR 要求 Python 3.10+ |
 | PySide6 | ≥ 6.6 | GUI 框架 |
+| typing-extensions | ≥ 4.0 | 修正 3.10 下 typing.Self 与 PySide6 的冲突 |
 | lmdb | ≥ 1.4 | 本地数据存储 |
 | Pillow | ≥ 9.0 | 图像处理 |
 | matplotlib | ≥ 3.5 | 指标曲线绘制 |
@@ -119,9 +120,13 @@
 
 ```bash
 pip install torch torchvision
-pip install "rfdetr>=1.9.2"        # 检测 / 分割
-pip install "python-doctr>=1.0.1"  # OCR（字符检测 + 字符识别）
+pip install "rfdetr[train]>=1.9.2" kornia   # 检测 / 分割（train extra 带 pytorch-lightning，增强需 kornia）
+pip install "ultralytics>=8.3.0"            # 检测 / 分割（CNN 后端，可选）
+pip install "anomalib>=2.6.2" scikit-learn  # 异常检测（ROC-AUC 评估用 roc_auc_score）
+pip install "python-doctr>=1.0.1"           # OCR（字符检测 + 字符识别）
 ```
+
+> 装 ultralytics 时建议加 `--no-deps` 再单独补它缺的纯 Python 依赖，避免它把 GUI 版 opencv 装进来覆盖项目使用的 `opencv-python-headless`。
 
 **模型导出 ONNX 额外依赖**（仅使用「模型管理 → 导出」时需要）：
 
@@ -136,7 +141,7 @@ pip install onnx onnxsim onnxruntime
 pip install -r requirements.txt
 
 # 2. 安装训练依赖（Python 3.10+）
-pip install torch torchvision "rfdetr>=1.9.2"
+pip install torch torchvision "rfdetr[train]>=1.9.2" kornia "python-doctr>=1.0.1"
 
 # 3. 安装导出依赖（可选，需要导出 ONNX 时）
 pip install onnx onnxsim onnxruntime
@@ -233,9 +238,16 @@ easy_trainer/
 │   │   └── metrics_dialog.py   # 训练指标折线图
 │   ├── mixins/             # 主窗口功能扩展（项目/数据集/标注/训练/队列/导入导出）
 │   └── train/              # 训练与测试执行
+│       ├── proc_utils.py   # 训练/测试子进程公共底座（启动表达式、收尾）
 │       ├── train_worker.py # 训练子进程线程（进度/指标/结果信号转发）
-│       ├── train_runner.py # 检测/分割训练脚本（RF-DETR）
-│       ├── classify_common.py / classify_train_runner.py  # 分类架构表 / 训练脚本（ResNet + 每类精度）
+│       ├── train_runner.py # 训练入口调度壳（按架构转发到下面两个实现）
+│       ├── transformer_train_runner.py  # 检测/分割训练（RF-DETR）
+│       ├── cnn_train_runner.py          # 检测/分割训练（ultralytics YOLO）
+│       ├── transformer_backend.py / cnn_backend.py  # 两套后端的适配层（推理加载 / 设备解析 / 结果归一）
+│       ├── task_spec.py    # 任务规格基类（各任务差异的唯一落点）
+│       ├── detect_common.py / segment_common.py     # 检测 / 分割的任务规格
+│       ├── classify_common.py / classify_model.py   # 分类架构表 / 模型构建（ResNet）
+│       ├── classify_train_runner.py   # 分类训练脚本（每类精度）
 │       ├── ad_common.py / ad_package.py    # 异常检测骨干缓存与模型打包
 │       ├── ad_train_runner.py / ad_test_runner.py     # 异常检测训练 / 测试
 │       ├── ocr_common.py / ocr_data.py / ocr_weights.py   # OCR 架构表 / 数据铺设 / 权重预置

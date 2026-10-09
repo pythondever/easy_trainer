@@ -65,7 +65,7 @@ Shows dataset paths and a label-distribution bar chart (descending by count; Top
 </p>
 
 ### 🚀 Training
-Runs in a **child process without blocking the UI**: live progress bar, ETA, GPU memory usage, manual stop (5-second countdown). Detection/segmentation use RF-DETR; classification uses ResNet (18/34/50/101); anomaly detection uses PatchCore (normal samples only, no labelling needed); OCR uses docTR in two stages (detection DB / LinkNet + recognition CRNN). All network sizes map from a dropdown. A **training queue** is supported: several configurations run back to back, and it can be stopped at any time, with one-click re-queue after an interruption or failure. OCR enqueues two items at once (text detection + text recognition); the second starts once GPU memory falls back to the pre-run level.
+Runs in a **child process without blocking the UI**: live progress bar, ETA, GPU memory usage, manual stop (5-second countdown). Detection/segmentation can use either RF-DETR (Transformer) or ultralytics YOLO (CNN); classification uses ResNet (18/34/50/101); anomaly detection uses PatchCore (normal samples only, no labelling needed); OCR uses docTR in two stages (detection DB / LinkNet + recognition CRNN). All network sizes map from a dropdown. A **training queue** is supported: several configurations run back to back, and it can be stopped at any time, with one-click re-queue after an interruption or failure. OCR enqueues two items at once (text detection + text recognition); the second starts once GPU memory falls back to the pre-run level.
 
 <p align="center">
   <img src="docs/images/训练参数与队列.png" width="48%" />
@@ -109,6 +109,7 @@ Real-time training / testing / operation logs; errors pop up automatically. Logs
 |------|------|------|
 | Python | ≥ 3.10 | RF-DETR requires Python 3.10+ |
 | PySide6 | ≥ 6.6 | GUI framework |
+| typing-extensions | ≥ 4.0 | Fixes the typing.Self conflict with PySide6 on 3.10 |
 | lmdb | ≥ 1.4 | Local data store |
 | Pillow | ≥ 9.0 | Image processing |
 | matplotlib | ≥ 3.5 | Metric charts |
@@ -119,9 +120,13 @@ Real-time training / testing / operation logs; errors pop up automatically. Logs
 
 ```bash
 pip install torch torchvision
-pip install "rfdetr>=1.9.2"        # detection / segmentation
-pip install "python-doctr>=1.0.1"  # OCR (text detection + recognition)
+pip install "rfdetr[train]>=1.9.2" kornia   # detection / segmentation (train extra brings pytorch-lightning; augmentation needs kornia)
+pip install "ultralytics>=8.3.0"            # detection / segmentation (CNN backend, optional)
+pip install "anomalib>=2.6.2" scikit-learn  # anomaly detection (roc_auc_score for evaluation)
+pip install "python-doctr>=1.0.1"           # OCR (text detection + recognition)
 ```
+
+> When installing ultralytics, add `--no-deps` and install just the pure-Python deps it lacks — otherwise it pulls the GUI build of OpenCV and overwrites the project's `opencv-python-headless`.
 
 **Additional dependencies for ONNX export** (only needed by Model Manager → Export):
 
@@ -136,7 +141,7 @@ pip install onnx onnxsim onnxruntime
 pip install -r requirements.txt
 
 # 2. Install training dependencies (Python 3.10+)
-pip install torch torchvision "rfdetr>=1.9.2" "python-doctr>=1.0.1"
+pip install torch torchvision "rfdetr[train]>=1.9.2" kornia "python-doctr>=1.0.1"
 
 # 3. Install export dependencies (optional, for ONNX export)
 pip install onnx onnxsim onnxruntime
@@ -233,9 +238,16 @@ easy_trainer/
 │   │   └── metrics_dialog.py   # Training metric charts
 │   ├── mixins/             # Main-window mixins (projects/datasets/annotation/training/queue/import-export)
 │   └── train/              # Training & testing execution
+│       ├── proc_utils.py   # Shared base for training/testing subprocesses (launch expression, teardown)
 │       ├── train_worker.py # Training subprocess thread (progress/metrics/result signals)
-│       ├── train_runner.py # Detect/segment training script (RF-DETR)
-│       ├── classify_common.py / classify_train_runner.py  # Classification architecture table / training script (ResNet + per-class accuracy)
+│       ├── train_runner.py # Training entry dispatcher (forwards by architecture to the two impls below)
+│       ├── transformer_train_runner.py  # Detect/segment training (RF-DETR)
+│       ├── cnn_train_runner.py          # Detect/segment training (ultralytics YOLO)
+│       ├── transformer_backend.py / cnn_backend.py  # Backend adapters (model loading / device / result normalisation)
+│       ├── task_spec.py    # Task-spec base class (single home for per-task differences)
+│       ├── detect_common.py / segment_common.py     # Detect / segment task specs
+│       ├── classify_common.py / classify_model.py   # Classification architecture table / model builder (ResNet)
+│       ├── classify_train_runner.py   # Classification training script (per-class accuracy)
 │       ├── ad_common.py / ad_package.py    # Anomaly detection: backbone cache & model packaging
 │       ├── ad_train_runner.py / ad_test_runner.py     # Anomaly detection training / testing
 │       ├── ocr_common.py / ocr_data.py / ocr_weights.py   # OCR architecture table / data layout / weight provisioning
