@@ -17,7 +17,7 @@ from app.tasks.import_task import ImportTask
 from app.widgets.message_box import MessageBox
 from PySide6.QtGui import QPixmap, QPainter, QColor, QImage, QImageReader
 from PySide6.QtCore import (Qt, Signal, QThread, QMutex, QMutexLocker, QTimer,
-                            QRect, QSize)
+                            QRect, QRectF, QSize)
 from PySide6.QtCore import QCoreApplication as QC
 from PySide6.QtWidgets import QMenu, QGraphicsView, QGraphicsScene
 
@@ -199,7 +199,8 @@ class DatasetViewMixin(object):
         self.graphics_view.setDragMode(QGraphicsView.NoDrag)
         self.graphics_view.setCursor(Qt.ArrowCursor)
         self.graphics_view.setMouseTracking(True)
-        self.graphics_view.setAlignment(Qt.AlignLeft | Qt.AlignTop)
+        # 网格比视口小时居中排, 而不是贴着左上角(场景矩形取满页容量, 见 _render_scene)
+        self.graphics_view.setAlignment(Qt.AlignCenter)
         self.graphics_view.viewport().installEventFilter(self)
         self.graphics_view.viewport().setMouseTracking(True)
         layout = self.thumbnailsLayout
@@ -957,6 +958,11 @@ class DatasetViewMixin(object):
         vp = self.graphics_view.viewport()
         return max(1, int((vp.width() - 2 * CELL_PAD) // (CELL_W + CELL_PAD)))
 
+    def _grid_rows(self):
+        """可视高度能排几行(与 _grid_cols 对称, 别各算一份)."""
+        vp = self.graphics_view.viewport()
+        return max(1, int((vp.height() - 2 * CELL_PAD) // (CELL_H + CELL_PAD)))
+
     def _calc_page_size(self):
         """
         每页条数 = 列数 × 可视行数, 一页正好铺满视口, 翻页不用滚动.
@@ -968,11 +974,11 @@ class DatasetViewMixin(object):
         if view is None:
             return False
         cols = self._grid_cols()
-        rows = max(1, int((view.viewport().height() - 2 * CELL_PAD)
-                          // (CELL_H + CELL_PAD)))
+        rows = self._grid_rows()
         size = cols * rows
         old = getattr(self, "page_size", None) or size
         self.page_cols = cols
+        self.page_rows = rows
         if size == old:
             return False
         # 按"当前页首条"重新落页: 尺寸一改每页条数就变, 直接用旧页码会丢掉位置
@@ -1026,6 +1032,7 @@ class DatasetViewMixin(object):
                 self._current_page_paths.add(path)
         cell_w, cell_h, pad = CELL_W, CELL_H, CELL_PAD
         cols = getattr(self, "page_cols", 0) or self._grid_cols()
+        rows = getattr(self, "page_rows", 0) or self._grid_rows()
         pos = 0
         for n in range(begin, end):
             rec = recs[n]
@@ -1050,11 +1057,20 @@ class DatasetViewMixin(object):
             item.setToolTip(rec.get("image_path", ""))
             item.setData(0, rec.get("image_path", ""))  # 双击定位用
             pos += 1
-        scene.setSceneRect(scene.itemsBoundingRect().adjusted(
-            -CELL_PAD, -CELL_PAD, 2 * CELL_PAD, 2 * CELL_PAD))
-        # 内容高度一变滚动条有无也跟着变, 而滚动条占着视口宽高, 会反过来改每页行数
-        if self._calc_page_size() or self.graphics_view.verticalScrollBar().isVisible():
+        # 场景矩形取满页容量(列×行)而不是条目包围盒: 条目在格子里本来就居中, 容量矩形
+        # 与整块网格同心, 居中交给视图的 AlignCenter 做. 用容量不用包围盒, 最后一页行数
+        # 不足时整块不跟着缩到视口中间, 各页的首格位置保持一致.
+        grid = QRectF(0, 0, cols * (cell_w + pad) + pad,
+                      rows * (cell_h + pad) + pad)
+        scene.setSceneRect(grid.united(scene.itemsBoundingRect()))
+        # 内容高度一变滚动条有无也跟着变, 而滚动条占着视口宽高, 会反过来改每页行数.
+        # 判据取"刚出现"而不是"可见": 视口本来就放不下一行时滚动条会一直亮着,
+        # 按可见判定则每一拍重排都满足条件, 120ms 一轮自己触发自己, 永不收敛.
+        changed = self._calc_page_size()
+        sb_on = self.graphics_view.verticalScrollBar().isVisible()
+        if changed or (sb_on and not getattr(self, "_last_vsb", False)):
             self._schedule_grid_relayout()
+        self._last_vsb = sb_on
         # 同页重复重绘(批次解码完成后回渲)不做全量淘汰: 缓存增长只来自当前页,
         # 有 _throttled_evict 兜底; 换页/换筛选才是缓存规模真会变的时机.
         paths = self._current_page_paths

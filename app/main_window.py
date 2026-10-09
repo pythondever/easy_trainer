@@ -218,6 +218,12 @@ class App(QWidget, MainUI, LabelMixin, ProjectMixin, ImportExportMixin,
                 and event.type() == QEvent.MouseButtonDblClick):
             self._on_graphics_double_click(event.position().toPoint())
             return True
+        if obj is self.graphics_view.viewport() and event.type() == QEvent.Resize:
+            # 视口尺寸是所有来路的汇合点(窗口缩放/首次布局/换界面字号/滚动条进出);
+            # 主窗口 resizeEvent 只覆盖"窗口尺寸变了"那一条, 且那一刻子控件还没布局
+            if self._calc_page_size():
+                self._schedule_grid_relayout()
+            return False
         if obj is self.datasetHeader and event.type() == QEvent.LayoutRequest:
             # 顶栏内容变了(换语言/开始训练/队列条数/数据集名变长)都要重判一次
             self._fit_header()
@@ -226,9 +232,8 @@ class App(QWidget, MainUI, LabelMixin, ProjectMixin, ImportExportMixin,
     def resizeEvent(self, event):
         super().resizeEvent(event)
         self._fit_header()
-        # 视口一变每页条数就变(见 _calc_page_size), 真变了才重排当前页
-        if self._calc_page_size():
-            self._schedule_grid_relayout()
+        # 每页条数不在这里重算: 只有视口尺寸说了算, 统一交给 eventFilter 的视口
+        # Resize 分支(窗口尺寸变了视口必然跟着变, 那里读到的才是布局后的尺寸)
 
     def show_ui(self):
         self.showMaximized()
