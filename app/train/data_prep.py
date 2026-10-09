@@ -158,6 +158,23 @@ def _collect_labels(datasets):
     return labels
 
 
+def _clone_file(src, dst):
+    """
+    硬链接优先: 同卷时两份路径指向同一份数据, 不用把整份像素再写一遍; 源与输出
+    不同卷(或文件系统不支持)就退回复制. 源图是只读素材, 训练读的是输出目录.
+    """
+    if os.path.exists(dst):
+        # 目标可能是先前的图像建的硬链接, 就地覆盖会顺着同一个数据块改到那份源图
+        try:
+            os.remove(dst)
+        except OSError:
+            pass
+    try:
+        os.link(src, dst)
+    except OSError:
+        shutil.copy2(src, dst)
+
+
 def _copy_images(src_img_path, dst_images):
     """复制图像(扁平目录). 返回图像文件名集合."""
     copied = set()
@@ -165,7 +182,8 @@ def _copy_images(src_img_path, dst_images):
         return copied
     for fn in os.listdir(src_img_path):
         if fn.lower().endswith(IMAGE_EXTS):
-            shutil.copy2(os.path.join(src_img_path, fn), os.path.join(dst_images, fn))
+            _clone_file(os.path.join(src_img_path, fn),
+                        os.path.join(dst_images, fn))
             copied.add(fn)
     return copied
 
@@ -291,7 +309,7 @@ def merge_split(out_root, datasets):
                 used_names[key] = set(os.listdir(d))
             used = used_names[key]
             for fn in os.listdir(s):
-                shutil.copy2(os.path.join(s, fn), _unique_dst(d, fn, used))
+                _clone_file(os.path.join(s, fn), _unique_dst(d, fn, used))
                 merged += 1
         print("[train] " + QC.translate("DataPrep", "合并 {} 数据集 → {} ({} 个文件)").format(
             info["dataset_name"], info["split"], merged), flush=True)
@@ -318,7 +336,8 @@ def prepare_dataset(out_root, project, datasets, task="detect"):
     """
     训练前的数据准备(两个训练后端共用), 返回类别名列表.
 
-    顺序有讲究: merge_split 会从 <项目>/<数据集> 里取图, 取完才能删掉那份副本.
+    顺序有讲究: merge_split 会从 <项目>/<数据集> 里取图, 取完才能删掉那份副本
+    (两级之间走硬链接, 删副本只减一个链接计数, 不影响 train/val 里那份).
     """
     datasets = list(datasets)
     labels, _ = copy_datasets(out_root, project, datasets, task)

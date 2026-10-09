@@ -5,7 +5,7 @@ import random
 import numpy as np
 from PySide6.QtCore import QRectF, QPointF, Qt, Signal
 from PySide6.QtGui import (QPen, QColor, QBrush, QPolygonF, QPainterPath,
-                           QPainter, QImage)
+                           QPainter, QImage, QPixmap)
 from PySide6.QtWidgets import (QGraphicsScene, QGraphicsPixmapItem, QGraphicsItem,
                                QGraphicsPathItem, QGraphicsPolygonItem)
 from app.annotation.blend import blend_patch
@@ -15,6 +15,8 @@ from app.core.label_utils import is_text_label
 
 # 文本框(OCR)固定配色: 走标签哈希色会和用户自己的类别撞色, 一眼分不出哪个是文本框
 TEXT_COLOR = "#2ec4b6"
+# 亮度基准按多边形各存一份(几万像素级的 ROI 要几十 MB), 只留最近调过的这几个
+_BRIGHT_CACHE_MAX = 2
 
 
 def _simplify_track(pts, max_pts=32):
@@ -86,9 +88,10 @@ class AnnotationScene(QGraphicsScene):
         self._stamp_angle = None
         self.angle_range = (-180, 180)   # 粘贴随机旋转角度范围(由标注界面输入框设置)
         self.blend_strength = 0.7        # 粘贴融合力度 0~1(由标注界面输入框设置)
-        # 亮度编辑
-        self._bright_edit = None         # 正在调亮度的区域基准, 见 set_polygon_brightness
+        # 亮度编辑: 拖动中只画预览层, 松手才写进图像像素
         self._bright_cache = {}          # 多边形对应亮度基准, 切回同一个框再调时不叠加
+        self._bright_overlay = None      # 亮度预览层: 显示还没落盘的调亮结果
+        self._bright_buf = None          # 重算亮度时的临时缓冲, 见 _bright_scratch
         # 外观
         self.label_colors = {}
         # "显示标注"开关状态(由标注界面同步): 只影响粘贴出来的框, 手绘的照常显示
@@ -96,7 +99,9 @@ class AnnotationScene(QGraphicsScene):
         self.selectionChanged.connect(self._on_selection_changed)
 
     def set_image(self, pixmap):
+        self.commit_brightness()   # 旧图没落盘的亮度先写进旧像素, clear 之后就找不回它了
         self.clear()
+        self._bright_overlay = None     # clear 已把预览层一并删掉, 引用要跟着作废
         self._reset_draw_state()
         self.image_item = QGraphicsPixmapItem(pixmap)
         self.image_item.setZValue(0)
@@ -106,7 +111,7 @@ class AnnotationScene(QGraphicsScene):
         self._pending_pastes = []
         self._stamp_ghost = None
         self._stamp_angle = None
-        self.drop_brightness()
+        self.drop_brightness(commit=False)
         self.addItem(self.image_item)
         self.image_rect = QRectF(0, 0, pixmap.width(), pixmap.height())
         self.setSceneRect(self.image_rect.adjusted(-50, -50, 50, 50))
@@ -363,9 +368,17 @@ class AnnotationScene(QGraphicsScene):
         p.end()
         return out
 
-    def _blend_stamp_at(self, patch, center, angle):
-        """把 patch 按 angle 围绕 center 融合进图像像素, 返回撤销所需的 (原图区域, ox, oy)."""
-        pix = self.image_item.pixmap() if self.image_item is not None else None
+    def _blend_stamp_at(self, patch, center, angle, pix=None):
+        """
+        把 patch 按 angle 围绕 center 融合进图像像素, 返回撤销所需的 (原图区域, ox, oy).
+        pix 由调用方传入时直接改写这一份: 一批粘贴共用同一个引用, 只有第一次会触发
+        整图写时复制, 否则每贴一个都要把整幅像素拷一遍.
+        """
+        # 亮度还没落盘的话先写进去, 下面取到的 pix 才是最终要融合的像素
+        self.drop_brightness()
+        own = pix is None
+        if own:
+            pix = self.image_item.pixmap() if self.image_item is not None else None
         if pix is None or patch is None:
             return None
         pw, ph = patch.width(), patch.height()
@@ -381,7 +394,6 @@ class AnnotationScene(QGraphicsScene):
         before = pix.copy(ox, oy, max(0, bw), max(0, bh))
         if before.isNull():
             before = None
-        self.drop_brightness()
         p = QPainter(pix)
         strength = float(getattr(self, "blend_strength", 0.0) or 0.0)
         if strength > 0.0 and bw > 0 and bh > 0:
@@ -394,7 +406,8 @@ class AnnotationScene(QGraphicsScene):
             p.rotate(angle)
             p.drawImage(-pw / 2.0, -ph / 2.0, patch)
         p.end()
-        self.image_item.setPixmap(pix)
+        if own:
+            self.image_item.setPixmap(pix)
         return before, ox, oy
 
     def start_stamp_ghost(self):
@@ -498,6 +511,8 @@ class AnnotationScene(QGraphicsScene):
         self.drop_brightness()
         pending = self._pending_pastes
         self._pending_pastes = []
+        # 整批共用一份像素引用: 落到最后才回写, 中途每贴一个都回写要拷一遍整图
+        pix = self.image_item.pixmap() if self.image_item is not None else None
         done = 0
         for item in pending:
             meta = getattr(item, "pending_meta", None)
@@ -506,7 +521,7 @@ class AnnotationScene(QGraphicsScene):
             off = item.pos()
             center = QPointF(meta["center"].x() + off.x(),
                              meta["center"].y() + off.y())
-            res = self._blend_stamp_at(meta["patch"], center, meta["angle"])
+            res = self._blend_stamp_at(meta["patch"], center, meta["angle"], pix)
             item.clear_pending_stamp()
             # 图案已进像素, 框从此只是框: 开关关着就该整体隐藏
             item.set_outline_visible(self.show_annotations)
@@ -517,6 +532,8 @@ class AnnotationScene(QGraphicsScene):
                 {"before": before, "ox": ox, "oy": oy, "item": item})
             done += 1
         if done:
+            if pix is not None:
+                self.image_item.setPixmap(pix)
             self.image_modified = True
             self.image_pixels_changed.emit()
             self._force_full_redraw()
@@ -524,6 +541,8 @@ class AnnotationScene(QGraphicsScene):
 
     def fill_polygon(self, item, value):
         """把多边形区域内像素填成 value 颜色, value 可为 (r,g,b) 或单通道灰度, 入同一撤销栈供 Ctrl+Z 恢复."""
+        # 亮度还没落盘的话先写进去, 下面取到的 pix 才是最终要填的像素
+        self.drop_brightness()
         pix = self.image_item.pixmap() if self.image_item is not None else None
         poly = item.polygon() if item is not None else None
         if pix is None or poly is None or poly.isEmpty():
@@ -542,7 +561,6 @@ class AnnotationScene(QGraphicsScene):
         before = pix.copy(ox, oy, bw, bh)
         if before.isNull():
             return False
-        self.drop_brightness()
         p = QPainter(pix)
         p.setRenderHint(QPainter.Antialiasing)
         path = QPainterPath()
@@ -570,12 +588,14 @@ class AnnotationScene(QGraphicsScene):
         # mask 是局部的, 必须 copy: 直接留视图会在 QImage 销毁后悬空
         return _bgra_view(mask)[..., 3].copy()
 
-    def set_polygon_brightness(self, item, value):
-        """0.5=原样, 1=两倍, 0=全黑; 只改多边形框内像素, 拖动过程不叠加."""
-        if not isinstance(item, AnnotationPolygonItem):
-            return False
-        pix = self.image_item.pixmap() if self.image_item is not None else None
-        if pix is None:
+    def set_polygon_brightness(self, item, value, commit=False):
+        """
+        0.5=原样, 1=两倍, 0=全黑; 只改多边形框内像素, 拖动过程不叠加.
+        commit=False 只把结果画到预览层, 图像像素不动: 写一次图像就要整幅写时复制,
+        拖动中每格都写的话光拷贝就把主线程占满, 所以留到松手时一次落地.
+        """
+        if not isinstance(item, AnnotationPolygonItem) or self.image_item is None \
+                or self.image_rect is None:
             return False
         poly = item.mapToScene(item.polygon())
         if poly.count() < 3:
@@ -583,54 +603,142 @@ class AnnotationScene(QGraphicsScene):
         box = poly.boundingRect()
         ox = max(0, int(box.left()))
         oy = max(0, int(box.top()))
-        bw = min(int(box.right()) + 1, pix.width()) - ox
-        bh = min(int(box.bottom()) + 1, pix.height()) - oy
+        bw = min(int(box.right()) + 1, int(self.image_rect.width())) - ox
+        bh = min(int(box.bottom()) + 1, int(self.image_rect.height())) - oy
         if bw <= 0 or bh <= 0:
             return False
         # 基准按多边形各存一份: 调完 A 去调 B 再回来调 A, 不会在已调亮的像素上再叠一层
         e = self._bright_cache.get(item)
         if (e is None or e["ox"] != ox or e["oy"] != oy
                 or e["w"] != bw or e["h"] != bh):
-            before = pix.copy(ox, oy, bw, bh)
-            if before.isNull():
+            e = self._make_bright_base(item, poly, ox, oy, bw, bh)
+            if e is None:
                 return False
-            e = {"item": item, "before": before, "ox": ox, "oy": oy,
-                 "w": bw, "h": bh,
-                 "cov": self._polygon_coverage(poly, ox, oy, bw, bh)}
             self._bright_cache[item] = e
-            # 一次调节只入一条撤销: 每次拖动都从这份基准重算, 拖十下 Ctrl+Z 也是一步回原样
-            self._fp_undo_stack.append(
-                {"before": before, "ox": ox, "oy": oy, "item": None})
-        self._bright_edit = e
-        e["value"] = value
-        factor = max(0.0, value / 0.5)
-        base_q = e["before"].toImage().convertToFormat(QImage.Format_ARGB32)
-        base = _bgra_view(base_q)[..., :3].astype(np.float32)
-        k = 1.0 + (factor - 1.0) * (e["cov"].astype(np.float32) / 255.0)[..., None]
-        layer = QImage(e["w"], e["h"], QImage.Format_ARGB32)
-        lv = _bgra_view(layer)
-        lv[..., :3] = np.clip(base * k, 0, 255).astype(np.uint8)
-        lv[..., 3] = 255
-        p = QPainter(pix)
-        p.drawImage(e["ox"], e["oy"], layer)
-        p.end()
-        self.image_item.setPixmap(pix)
-        self.image_modified = True
-        self._force_full_redraw()
+            while len(self._bright_cache) > _BRIGHT_CACHE_MAX:
+                victim = next((k for k, v in self._bright_cache.items()
+                               if not v["dirty"]), None)
+                if victim is None:
+                    break
+                self._bright_cache.pop(victim)
+        if e["value"] != value or e["layer"] is None:
+            e["value"] = value
+            self._render_bright(e, value)
+            e["dirty"] = True
+        if commit:
+            self.commit_brightness()
+        else:
+            self._show_bright_preview(e)
         return True
 
+    def _make_bright_base(self, item, poly, ox, oy, bw, bh):
+        """
+        固化亮度基准: 区域原像素 + 覆盖度.
+        覆盖度铺成 3 通道是为了让重算走连续内存: 拿 (h,w,1) 广播乘同一批像素要慢
+        一倍. 基准不随滑块变, 这笔内存和这一次彩色转换只付一次.
+        """
+        before = self.image_item.pixmap().copy(ox, oy, bw, bh)
+        if before.isNull():
+            return None
+        base_q = before.toImage().convertToFormat(QImage.Format_ARGB32)
+        covf = self._polygon_coverage(poly, ox, oy, bw, bh).astype(np.float32) / 255.0
+        layer = QImage(bw, bh, QImage.Format_ARGB32)
+        # 一次调节只入一条撤销: 每次拖动都从这份基准重算, 拖十下 Ctrl+Z 也是一步回原样
+        self._fp_undo_stack.append(
+            {"before": before, "ox": ox, "oy": oy, "item": None})
+        return {"item": item, "ox": ox, "oy": oy, "w": bw, "h": bh,
+                "base": _bgra_view(base_q)[..., :3].astype(np.float32),
+                "cov3": np.repeat(covf[..., None], 3, axis=2),
+                "layer": layer, "lv": _bgra_view(layer),
+                "value": None, "dirty": False}
+
+    def _render_bright(self, e, value):
+        """按 value 重算 ROI: 与原来的 base*(1 + t*cov) 同一个运算顺序, 只是不再每格重取基准."""
+        buf = self._bright_scratch(e["w"], e["h"])
+        np.multiply(e["cov3"], value / 0.5 - 1.0, out=buf)
+        np.add(buf, 1.0, out=buf)
+        np.multiply(e["base"], buf, out=buf)
+        np.clip(buf, 0, 255, out=buf)
+        # 值已夹到 0~255, 这里只剩取整; 直接写进预览层的缓冲, 不额外拷一份
+        np.copyto(e["lv"][..., :3], buf, casting="unsafe")
+        e["lv"][..., 3] = 255
+
+    def _bright_scratch(self, w, h):
+        """乘加用的临时缓冲: 按 ROI 尺寸留一份, 相邻几格反复调时不必反复分配."""
+        buf = self._bright_buf
+        if buf is None or buf.shape[0] != h or buf.shape[1] != w:
+            buf = np.empty((h, w, 3), np.float32)
+            self._bright_buf = buf
+        return buf
+
+    def commit_brightness(self):
+        """
+        把预览层里的亮度结果写进图像像素, 返回是否有改动.
+        待落盘的区域共用一份像素引用: 整批只触发一次整图写时复制.
+        """
+        if self.image_item is None:
+            return False
+        dirty = [e for e in self._bright_cache.values() if e["dirty"]]
+        self._hide_bright_preview()
+        if not dirty:
+            return False
+        pix = self.image_item.pixmap()
+        for e in dirty:
+            p = QPainter(pix)
+            p.drawImage(e["ox"], e["oy"], e["layer"])
+            p.end()
+            e["dirty"] = False
+        self.image_item.setPixmap(pix)
+        self.image_modified = True
+        return True
+
+    def _ensure_bright_overlay(self):
+        """亮度预览层: 夹在图像与标注框之间, 只显示还没落盘的调亮结果."""
+        it = self._bright_overlay
+        if it is not None:
+            return it
+        it = QGraphicsPixmapItem()
+        it.setZValue(1)
+        it.setAcceptedMouseButtons(Qt.NoButton)
+        self.addItem(it)
+        self._bright_overlay = it
+        return it
+
+    def _show_bright_preview(self, e):
+        if e["layer"] is None:
+            return
+        it = self._ensure_bright_overlay()
+        it.setPixmap(QPixmap.fromImage(e["layer"]))
+        it.setPos(e["ox"], e["oy"])
+        it.setVisible(True)
+
+    def _hide_bright_preview(self):
+        it = self._bright_overlay
+        if it is None:
+            return
+        try:
+            it.setVisible(False)
+        except RuntimeError:
+            # 场景清空时 C++ 对象已被销毁, 引用在这里顺手作废
+            self._bright_overlay = None
+
     def has_pending_brightness(self):
-        return self._bright_edit is not None
+        return any(e["dirty"] for e in self._bright_cache.values())
 
     def brightness_of(self, item):
         """该多边形当前的亮度值(没调过就是 0.5), 切回同一个框时把滑块摆回原位."""
         e = self._bright_cache.get(item)
-        return e["value"] if e is not None else 0.5
+        return e["value"] if e is not None and e["value"] is not None else 0.5
 
-    def drop_brightness(self):
-        """换图或像素被别的操作改写时调: 基准作废, 下次按当下像素重取一份."""
-        self._bright_edit = None
+    def drop_brightness(self, commit=True):
+        """
+        换图或像素被别的操作改写时调: 基准作废, 下次按当下像素重取一份.
+        默认先把没落盘的亮度写进像素, 否则拖了半天再点一下粘贴, 这次调节就白做了.
+        """
+        if commit:
+            self.commit_brightness()
         self._bright_cache.clear()
+        self._hide_bright_preview()
 
     def undo_last_paste(self):
         """撤销最近一次粘贴/填充: 浮动层直接丢掉(像素没动过), 已落地的恢复像素 + 删标注."""
@@ -804,9 +912,9 @@ class AnnotationScene(QGraphicsScene):
 
     def _dispose_item(self, item):
         """彻底释放 item: 隐藏 + 取消缓存, 防视图缓存残留."""
+        if self._bright_cache.get(item, {}).get("dirty"):
+            self.commit_brightness()    # 框删了但像素上的调亮要留下
         self._bright_cache.pop(item, None)
-        if self._bright_edit is not None and self._bright_edit["item"] is item:
-            self._bright_edit = None
         try:
             item.hide()
             item.setCacheMode(QGraphicsItem.NoCache)

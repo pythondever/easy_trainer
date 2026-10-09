@@ -29,6 +29,7 @@ BLEND_STRENGTH_DEFAULT = "0.7"     # 粘贴融合力度: 0=原始硬贴, 1=完�
 FILL_COLOR_DEFAULT = "#ffffff"     # 多边形右键"填充"用的默认颜色
 ANGLE_RANGE_DEFAULT = (-180, 180)  # 粘贴时随机旋转的角度范围
 BRIGHTNESS_DEFAULT = "0.50"        # 多边形亮度: 0.5=原样, 1=两倍, 0=全黑
+BRIGHTNESS_THROTTLE_MS = 40        # 亮度拖动节流: 每刻度都算一遍纯属浪费, 像素由预览层承担
 
 # 填充色点(黑 白 灰 红 橙 黄 绿 青 蓝 紫)
 FILL_COLOR_PRESETS = (
@@ -554,10 +555,28 @@ class AnnotationCanvasMixin:
     def _on_brightness_slider(self, value):
         v = min(1.0, max(0.0, value / 100.0))
         self.ui.brightness_lineEdit.setText("{:.2f}".format(v))
-        self._apply_brightness(v)
+        self._bright_pending = v
+        timer = getattr(self, "_bright_timer", None)
+        if timer is None:
+            timer = QTimer(self)
+            timer.setSingleShot(True)
+            timer.setInterval(BRIGHTNESS_THROTTLE_MS)
+            timer.timeout.connect(self._flush_brightness)
+            self._bright_timer = timer
+        if not timer.isActive():
+            # 第一格立刻画, 之后攒到节流窗口结束: 起手不滞后, 拖动也不会把事件堆起来
+            self._flush_brightness()
+            timer.start()
+
+    def _flush_brightness(self):
+        """把节流窗口内攒下的最后一个值画到预览层."""
+        v = getattr(self, "_bright_pending", None)
+        self._bright_pending = None
+        if v is not None:
+            self._apply_brightness(v)
 
     def _apply_brightness(self, v):
-        """只改选中多边形框内的像素; 没选中或选中的是矩形就提示一下."""
+        """把亮度画到选中多边形的预览层(像素等落定才写); 没选中或选中的是矩形就提示一下."""
         item = self.scene.selected_item() if self.scene is not None else None
         if item is None:
             QToolTip.showText(QCursor.pos(), QC.translate("AnnotationDialog", "先在画布上点选一个多边形"))
@@ -567,12 +586,17 @@ class AnnotationCanvasMixin:
 
     def _commit_brightness(self):
         """
-        亮度改完落定: 只刷新图像缓存, 不设 _pix_unsaved 也不启动 150ms 自动保存.
-        后者会让"松手后随手画个框"触发的自动保存把亮度一起写掉, 等于拖一下就写一次盘;
-        真正写盘统一等 _save_current 里用户显式保存的那一次.
+        亮度改完落定: 把攒下的值和预览层一起写进图像像素, 再只刷新图像缓存.
+        不设 _pix_unsaved 也不启动 150ms 自动保存: 后者会让"松手后随手画个框"触发的
+        自动保存把亮度一起写掉, 等于拖一下就写一次盘; 真正写盘统一等 _save_current
+        里用户显式保存的那一次.
         """
+        timer = getattr(self, "_bright_timer", None)
+        if timer is not None:
+            timer.stop()
+        self._flush_brightness()
         scene = getattr(self, "scene", None)
-        if scene is None or not scene.has_pending_brightness():
+        if scene is None or not scene.commit_brightness():
             return
         if not (0 <= self.index < len(self.image_list)):
             return
