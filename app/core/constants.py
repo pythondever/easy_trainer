@@ -4,7 +4,11 @@
 """
 
 IMAGE_EXTS = (".jpg", ".jpeg", ".png", ".bmp", ".webp")
-# 缩略图分页大小
+# 首页缩略图网格的单元尺寸与间距, 每页条数 = 列数 × 可视行数(见 _calc_page_size)
+CELL_W = 230
+CELL_H = 230
+CELL_PAD = 10
+# 页面还没布局时的兜底每页条数, 布局完成后由 _calc_page_size 按视口覆盖
 PAGE_SIZE = 50
 # 缩略图/ROI 缓存张数上限(单个数据集内, 换页时按此淘汰)
 THUMB_CACHE_MAX = 2000

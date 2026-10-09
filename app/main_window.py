@@ -49,6 +49,8 @@ class App(QWidget, MainUI, LabelMixin, ProjectMixin, ImportExportMixin,
         self._combo_popup_flat = ComboPopupFlattener()
         QApplication.instance().installEventFilter(self._combo_popup_flat)
         self.init_widget()
+        # 每页条数按视口算, 得等控件建好; 之后窗口尺寸一变 resizeEvent 会重算
+        self._calc_page_size()
         self.register_event()
         self.fill_setting()
         self._log_dialog = LogDialog(self)
@@ -224,6 +226,9 @@ class App(QWidget, MainUI, LabelMixin, ProjectMixin, ImportExportMixin,
     def resizeEvent(self, event):
         super().resizeEvent(event)
         self._fit_header()
+        # 视口一变每页条数就变(见 _calc_page_size), 真变了才重排当前页
+        if self._calc_page_size():
+            self._schedule_grid_relayout()
 
     def show_ui(self):
         self.showMaximized()

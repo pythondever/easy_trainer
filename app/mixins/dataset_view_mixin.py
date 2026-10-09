@@ -5,7 +5,8 @@ from app.core import theme
 from app.core.db import get_paths
 from app.annotation.annotation_dialog import AnnotationDialog
 from app.core.constants import (PAGE_SIZE, THUMB_CACHE_MAX,
-                                ROI_CACHE_MAX, IMG_CACHE_BYTES_MAX)
+                                ROI_CACHE_MAX, IMG_CACHE_BYTES_MAX,
+                                CELL_W, CELL_H, CELL_PAD)
 from app.mixins.label_mixin import UNLABELED_KEY
 from app.core.label_utils import (OCR_JSON_FLAG, is_text_label,
                                   normalize_label, label_sort_key,
@@ -951,6 +952,51 @@ class DatasetViewMixin(object):
         index = self.dataset_cache.get(project, {}).get(dataset)
         ledger[(project, dataset)] = _ds_cache_bytes_of(index)
 
+    def _grid_cols(self):
+        """可视宽度能排几列(与 _render_scene 用同一套算式, 别各算一份)."""
+        vp = self.graphics_view.viewport()
+        return max(1, int((vp.width() - 2 * CELL_PAD) // (CELL_W + CELL_PAD)))
+
+    def _calc_page_size(self):
+        """
+        每页条数 = 列数 × 可视行数, 一页正好铺满视口, 翻页不用滚动.
+        算式里扣掉场景四周的 CELL_PAD 留白, 内容落在视口内就不长滚动条: 滚动条
+        会占掉视口宽高, 量出来的行列数跟着变, 两边来回打架.
+        返回是否变了, 调用方据此决定要不要重排.
+        """
+        view = getattr(self, "graphics_view", None)
+        if view is None:
+            return False
+        cols = self._grid_cols()
+        rows = max(1, int((view.viewport().height() - 2 * CELL_PAD)
+                          // (CELL_H + CELL_PAD)))
+        size = cols * rows
+        old = getattr(self, "page_size", None) or size
+        self.page_cols = cols
+        if size == old:
+            return False
+        # 按"当前页首条"重新落页: 尺寸一改每页条数就变, 直接用旧页码会丢掉位置
+        first = getattr(self, "current_page", 0) * old
+        self.page_size = size
+        self.current_page = first // size
+        return True
+
+    def _schedule_grid_relayout(self):
+        """尺寸变化后重排当前页: 防抖, 拖窗口时不必每个 resize 事件都重建 scene."""
+        timer = getattr(self, "_grid_relayout_timer", None)
+        if timer is None:
+            timer = self._grid_relayout_timer = QTimer(self)
+            timer.setSingleShot(True)
+            timer.setInterval(120)
+            timer.timeout.connect(self._relayout_grid)
+        timer.start()
+
+    def _relayout_grid(self):
+        """只重排不重展开: 页大小变了但筛选没变, _view_cache 照旧复用."""
+        if getattr(self, "_view_cache", None) is None:
+            return
+        self._render_scene()
+
     def _render_scene(self, records=None):
         """
         渲染当前页图像网格. 选到真实标签时每个 cell 一个 ROI(按命中框计数),
@@ -978,9 +1024,8 @@ class DatasetViewMixin(object):
             path = recs[n].get("image_path")
             if path:
                 self._current_page_paths.add(path)
-        cell_w, cell_h = 230, 230
-        pad = 10
-        cols = max(1, int((self.graphics_view.viewport().width() - pad) // cell_w))
+        cell_w, cell_h, pad = CELL_W, CELL_H, CELL_PAD
+        cols = getattr(self, "page_cols", 0) or self._grid_cols()
         pos = 0
         for n in range(begin, end):
             rec = recs[n]
@@ -1005,7 +1050,11 @@ class DatasetViewMixin(object):
             item.setToolTip(rec.get("image_path", ""))
             item.setData(0, rec.get("image_path", ""))  # 双击定位用
             pos += 1
-        scene.setSceneRect(scene.itemsBoundingRect().adjusted(-10, -10, 20, 20))
+        scene.setSceneRect(scene.itemsBoundingRect().adjusted(
+            -CELL_PAD, -CELL_PAD, 2 * CELL_PAD, 2 * CELL_PAD))
+        # 内容高度一变滚动条有无也跟着变, 而滚动条占着视口宽高, 会反过来改每页行数
+        if self._calc_page_size() or self.graphics_view.verticalScrollBar().isVisible():
+            self._schedule_grid_relayout()
         # 同页重复重绘(批次解码完成后回渲)不做全量淘汰: 缓存增长只来自当前页,
         # 有 _throttled_evict 兜底; 换页/换筛选才是缓存规模真会变的时机.
         paths = self._current_page_paths
