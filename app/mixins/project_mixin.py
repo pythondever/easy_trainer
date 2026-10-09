@@ -65,6 +65,7 @@ class ProjectMixin(object):
             self.db.delete_project_info(name)
             self.db.delete_project_records(name)
             self.dataset_cache.pop(name, None)
+            self._forget_ds_cache(name)
             cur_ds = getattr(self, "_current_dataset", None)
             if cur_ds and cur_ds[0] == name:
                 self._current_dataset = None
@@ -179,6 +180,7 @@ class ProjectMixin(object):
             self._log(QC.translate("ProjectMixin", "删除数据集: {}/{}").format(project_name, ds_name))
             proj_cache = self.dataset_cache.get(project_name, {})
             proj_cache.pop(ds_name, None)
+            self._forget_ds_cache(project_name, ds_name)
             if getattr(self, "_current_dataset", None) == (project_name, ds_name):
                 self._current_dataset = None
                 self.current_page = 0
@@ -272,6 +274,10 @@ class ProjectMixin(object):
         if src_index:
             src_index["all"] = []
             src_index["labels"] = {}
+        # 记账跟着搬: 源那份体量已经转到目标(rec 对象是同一批), 不重算会算进全局上限,
+        # 把还活着的数据集提前挤掉
+        self._sync_ds_cache_bytes(src_proj, src_ds)
+        self._sync_ds_cache_bytes(dst_proj, dst_ds)
 
         # ---- 2. db: 目标合并导入绑定 + 重算统计 ----
         src_binding = self.db.get_dataset_import(src_proj, src_ds) or {}

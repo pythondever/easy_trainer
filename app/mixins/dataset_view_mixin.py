@@ -122,6 +122,20 @@ def _thumb_placeholder():
     return _THUMB_PLACEHOLDER
 
 
+def _ds_cache_bytes_of(index):
+    """按记录里实际的缓存内容折算体量(与 _evict_img_cache 同一折算口径, 字节)."""
+    total = 0
+    placeholder = _thumb_placeholder()
+    for rec in (index or {}).get("all", []) or []:
+        thumb = rec.get("thumb")
+        if thumb is not None and thumb is not placeholder:
+            total += _CACHE_IMG_PX
+        bucket = rec.get("rois_by_idx")
+        if bucket:
+            total += sum(len(v) for v in bucket.values()) * _CACHE_IMG_PX
+    return total
+
+
 try:
     import PIL.Image as PILImage
 except ImportError:
@@ -851,6 +865,8 @@ class DatasetViewMixin(object):
         回收时按"最后使用时刻"从最旧的整集清起, 不必逐条收集排序(45 万条记录
         逐条排要 500ms, 整集清只遍历被清的那一个数据集).
         当前数据集刚看过, 不参与回收; 只动 QImage, 不碰 rec 元数据与 labels 索引.
+        数据集已被删掉时, 它那份记账要当场作废: 留着会算进全局上限, 把回收引到一个
+        空数据集上, 该释放的没释放.
         """
         cap = getattr(self, "_img_cache_bytes_max", IMG_CACHE_BYTES_MAX)
         used = getattr(self, "_ds_last_used", None)
@@ -860,6 +876,10 @@ class DatasetViewMixin(object):
         if cur:
             used[cur] = self._img_clock_now()
         known = getattr(self, "_ds_cache_bytes", None) or {}
+        for key in [k for k in known
+                    if self.dataset_cache.get(k[0], {}).get(k[1]) is None]:
+            known.pop(key, None)
+            used.pop(key, None)
         total = sum(known.values())
         if total <= cap:
             return
@@ -883,6 +903,28 @@ class DatasetViewMixin(object):
             total -= freed or known.get(key, 0)
             known[key] = 0
         self._ds_cache_bytes = {k: v for k, v in known.items() if v > 0}
+
+    def _forget_ds_cache(self, project, dataset=None):
+        """
+        数据集被移除时同步销账. 只 pop dataset_cache 的话, _ds_cache_bytes 里那份
+        陈旧体量还会算进全局上限, 把还活着的数据集提前挤掉; dataset=None 表示整个
+        项目都没了.
+        """
+        for attr in ("_ds_cache_bytes", "_ds_last_used"):
+            ledger = getattr(self, attr, None)
+            if not ledger:
+                continue
+            for key in [k for k in ledger if k[0] == project
+                        and (dataset is None or k[1] == dataset)]:
+                ledger.pop(key, None)
+
+    def _sync_ds_cache_bytes(self, project, dataset):
+        """按记录集重算某数据集的记账体量(记录搬进搬出后, 记账要跟着走)."""
+        ledger = getattr(self, "_ds_cache_bytes", None)
+        if ledger is None:
+            ledger = self._ds_cache_bytes = {}
+        index = self.dataset_cache.get(project, {}).get(dataset)
+        ledger[(project, dataset)] = _ds_cache_bytes_of(index)
 
     def _render_scene(self, records):
         """
