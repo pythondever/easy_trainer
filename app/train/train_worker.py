@@ -159,7 +159,6 @@ class TrainWorker(SubprocessWorker):
     def _should_apply(self, series, ep, row):
         """
         该 epoch 是否需要写入: 尚未记录, 或已记录但值无效且本行有效.
-
         stdout 通道会先收到训练前的预热表(全 0), 之后才是真实值(CSV 通道同样
         会补到). 若一律"先到为准", 全 0 的预热表会永久占位, mAP 永远显示 0.
         """
@@ -303,7 +302,6 @@ class TrainWorker(SubprocessWorker):
         def _sync_csv():
             """
             把 CSV 全量重解析并幂等写进 series, 返回是否有变化.
-
             rf-detr 每个 epoch 会写多行(中间步的 lr 行, val 行, train 行), 且
             写入时间分散. 若只解析"上次之后的新增行", 同一 epoch 的行一旦跨了
             轮询批次, 迟到的 train/loss 就再也补不进去(train_loss 隔帧为 None).
