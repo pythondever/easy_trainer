@@ -505,11 +505,15 @@ def predict_scores(engine, model, root, img_size=0, on_batch=None,
         if ps is None or paths is None:
             continue
         am = getattr(batch, "anomaly_map", None) if with_maps else None
-        for i in range(ps.shape[0]):
+        # 整批一次搬回 CPU: 逐张 .cpu() 会让 GPU 每张图同步一次
+        n = ps.shape[0]
+        scores = ps.detach().cpu().reshape(n, -1)[:, 0].tolist()
+        maps = am.detach().cpu().numpy() if am is not None else None
+        for i in range(n):
             heat = None
-            if am is not None:
-                heat = am[i].squeeze().detach().cpu().numpy()
-            scored.append((str(paths[i]), float(ps[i].flatten()[0]), heat))
+            if maps is not None:
+                heat = maps[i].squeeze()
+            scored.append((str(paths[i]), float(scores[i]), heat))
         if on_batch is not None:
             on_batch(len(scored))
     return scored

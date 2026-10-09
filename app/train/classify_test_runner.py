@@ -119,10 +119,10 @@ def main():
     batch_size = max(1, int(cfg.get("batch_size", 32) or 32))
     num_workers = max(0, min(int(cfg.get("num_workers", 4) or 0),
                              (os.cpu_count() or 1)))
+    _pin = getattr(device, "type", str(device)) == "cuda"
     loader = DataLoader(_ImageListDS(images, tf), batch_size=batch_size,
                         shuffle=False, num_workers=num_workers,
-                        collate_fn=_collate,
-                        pin_memory=getattr(device, "type", str(device)) == "cuda")
+                        collate_fn=_collate, pin_memory=_pin)
 
     preds = ["?"] * len(images)     # 解码失败的保持 "?", 与原逻辑一致
     done = 0
@@ -130,7 +130,7 @@ def main():
         if xs is None:
             continue
         with torch.no_grad():
-            out = model(xs.to(device))
+            out = model(xs.to(device, non_blocking=_pin))
         top = out.argmax(1).tolist()
         for j, i in enumerate(idxs.tolist()):
             k = int(top[j])

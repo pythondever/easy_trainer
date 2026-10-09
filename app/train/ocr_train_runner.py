@@ -238,7 +238,7 @@ def _run(cfg, ts_dir, model, arch, train_set, val_set, primary):
         seen = 0
         optimizer.zero_grad()
         for i, (x, tgt) in enumerate(train_loader):
-            x = x.to(device)
+            x = x.to(device, non_blocking=pin)
             loss = model(x, tgt)["loss"]
             (loss / accum).backward()
             run_loss += float(loss.item())
@@ -255,7 +255,7 @@ def _run(cfg, ts_dir, model, arch, train_set, val_set, primary):
         metric = LocalizationConfusion(iou_thresh=0.5)
         with torch.no_grad():
             for x, tgt in val_loader:
-                x = x.to(device)
+                x = x.to(device, non_blocking=pin)
                 out = model(x, tgt, return_preds=True)
                 val_loss += float(out["loss"].item())
                 seen += 1

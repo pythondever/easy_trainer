@@ -4,7 +4,6 @@ import json
 from app.core import theme
 from app.core.db import get_paths
 from app.annotation.annotation_dialog import AnnotationDialog
-from app.widgets.paginator import Paginator
 from app.core.constants import (PAGE_SIZE, THUMB_CACHE_MAX,
                                 ROI_CACHE_MAX, IMG_CACHE_BYTES_MAX)
 from app.mixins.label_mixin import UNLABELED_KEY
@@ -447,26 +446,33 @@ class DatasetViewMixin(object):
 
     def _expand_by_label_filter(self, records):
         """
-        标签筛选下把记录按 box 展开成 (rec, box_idx), 一个命中框占一个格子;
-        多选时各标签的格子就混在同一页里, 顺序仍是图像顺序.
-        只选未标注 / 分类数据集 原样返回(一图一格).
+        标签筛选下把记录按 box 展开成格子, 一个命中框占一个格子; 多选时各标签的
+        格子就混在同一页里, 顺序仍是图像顺序. 返回 (recs, idxs) 两个平行列表:
+        第 n 格是 recs[n] 的第 idxs[n] 个框, idxs 为 None 表示这格按整图缩略.
+        只选未标注 / 分类数据集原样返回(一图一格, idxs 为 None).
+
+        不存 (rec, box_idx) 元组: 45 万图按 6 框展开是 270 万个格子, 光元组就要
+        150MB, 平行列表省四倍.
         """
         if not self._by_box_mode():
-            return records
+            return records, None
         wanted = {k for k in self.filter_labels if k != UNLABELED_KEY}
-        out = []
+        recs, idxs = [], []
         for rec in records:
             if rec.get("cls"):
-                out.append(rec)
+                recs.append(rec)
+                idxs.append(None)
                 continue
             boxes = rec.get("boxes") or []
             if not boxes:
-                out.append(rec)
+                recs.append(rec)
+                idxs.append(None)
                 continue
             for box_idx, box in enumerate(boxes):
                 if len(box) >= 5 and box[-1] in wanted:
-                    out.append((rec, box_idx))
-        return out
+                    recs.append(rec)
+                    idxs.append(box_idx)
+        return recs, idxs
 
     def show_dataset_images(self, project_name, dataset_name, update_stats=False):
         """
@@ -475,6 +481,8 @@ class DatasetViewMixin(object):
         推理/标注新写的标签 json 重扫后同步统计).
         """
         self._select_all_mode = False
+        # 数据集内容或筛选可能变了, 上一次展开的结果作废(翻页不走这里)
+        self._view_cache = None
         # 换页只淘汰当前数据集(见 _evict_img_cache), 切走的那份永不释放;
         # 借切换这个低频时机回收最久未用的数据集.
         shown = (project_name, dataset_name)
@@ -637,6 +645,7 @@ class DatasetViewMixin(object):
         与图像显示区(_clear_scene)一起重置,避免显示残留的旧数据集状态.
         """
         self._clear_scene()
+        self._view_cache = None
         self._reset_page_info()
         self.current_page = 0
         self._reset_label_filter_text()
@@ -926,35 +935,42 @@ class DatasetViewMixin(object):
         index = self.dataset_cache.get(project, {}).get(dataset)
         ledger[(project, dataset)] = _ds_cache_bytes_of(index)
 
-    def _render_scene(self, records):
+    def _render_scene(self, records=None):
         """
         渲染当前页图像网格. 选到真实标签时每个 cell 一个 ROI(按命中框计数),
         未标注按整图缩略(按图像计数); 多选时两种混在同一页.
+
+        records 非 None 表示数据集内容或筛选变了, 重新展开一份; 翻页传 None 复用
+        上次展开的结果: 按 box 展开 45 万图实测 1.7s, 每翻一页重算一遍纯属白等.
         """
         scene = self.graphics_view.scene()
         scene.clear()
         page_size = getattr(self, "page_size", PAGE_SIZE)
-        view_data = self._expand_by_label_filter(records)
-        total_pages = max(1, (len(view_data) + page_size - 1) // page_size)
+        if records is not None:
+            self._view_cache = self._expand_by_label_filter(records)
+        view = getattr(self, "_view_cache", None)
+        if view is None:
+            view = ([], None)
+        recs, idxs = view
+        total_pages = max(1, (len(recs) + page_size - 1) // page_size)
         self.current_page = max(0, min(getattr(self, "current_page", 0),
                                        total_pages - 1))
-        page_data = list(Paginator(view_data, page_size)[self.current_page])
+        begin = self.current_page * page_size
+        end = min(begin + page_size, len(recs))
         self._current_page_paths = set()
-        for entry in page_data:
-            rec = entry[0] if isinstance(entry, tuple) else entry
-            if rec.get("image_path"):
-                self._current_page_paths.add(rec.get("image_path", ""))
+        for n in range(begin, end):
+            path = recs[n].get("image_path")
+            if path:
+                self._current_page_paths.add(path)
         cell_w, cell_h = 230, 230
         pad = 10
         cols = max(1, int((self.graphics_view.viewport().width() - pad) // cell_w))
         pos = 0
-        for entry in page_data:
-            if isinstance(entry, tuple):
-                rec, box_idx = entry
-                qimg = self._roi_for_render(rec, box_idx)
-            else:
-                rec = entry
-                qimg = self._get_thumb(rec)
+        for n in range(begin, end):
+            rec = recs[n]
+            box_idx = idxs[n] if idxs is not None else None
+            qimg = (self._roi_for_render(rec, box_idx) if box_idx is not None
+                    else self._get_thumb(rec))
             if qimg is None:
                 continue
             pix = QPixmap.fromImage(qimg)
@@ -980,7 +996,7 @@ class DatasetViewMixin(object):
         if paths != getattr(self, "_evict_page_paths", None):
             self._evict_page_paths = paths
             self._evict_img_cache()
-        self._set_page_info(self._by_box_mode(), total_pages, len(view_data))
+        self._set_page_info(self._by_box_mode(), total_pages, len(recs))
 
     def _set_page_info(self, by_box, total_pages, count):
         """底栏只放"第 N / M 页", 当前页数字化亮; 总数与量词进 tooltip, 免得居中那组随内容横移."""
@@ -1034,9 +1050,13 @@ class DatasetViewMixin(object):
         data = self.dataset_cache.get(cur_ds[0], {}).get(cur_ds[1])
         if not data:
             return
+        if getattr(self, "_view_cache", None) is None:
+            # 正常路径已由 show_dataset_images 展开好, 这里只是兜底
+            self._view_cache = self._expand_by_label_filter(
+                self._filter_records(data))
         # 越界交给 _render_scene 夹到合法页, 这里不必先算一遍总页数
         self.current_page += offset
-        self._render_scene(self._filter_records(data))
+        self._render_scene()
 
     def pre_page(self):
         self._show_page(-1)
@@ -1153,6 +1173,10 @@ class DatasetViewMixin(object):
         已载入的直接忽略 - 重扫代价高(整目录重新读盘解标签), 不该被误触;
         需要重扫的只有推理回写标签那一条链(_load_dataset_view).
         """
+        if getattr(self, "_current_dataset", None) != (project, dataset):
+            # 只双击没先单击时(信号顺序不保证)下面命中缓存会直接返回, 展开缓存
+            # 还是上一个数据集的, 这里作废; 正常路径单击已重展开过, 不受影响
+            self._view_cache = None
         self._current_dataset = (project, dataset)
         if self.dataset_cache.get(project, {}).get(dataset):
             return

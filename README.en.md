@@ -227,7 +227,6 @@ easy_trainer/
 │   │   ├── message_box.py  # Message & progress dialogs
 │   │   ├── dialog_buttons.py     # Unified dialog buttons & icons
 │   │   ├── name_input_dialog.py  # Name input dialog
-│   │   ├── paginator.py    # Pagination control
 │   │   ├── project_sidebar.py    # Home project/dataset sidebar (card tree)
 │   │   ├── charts.py       # Custom charts (label distribution bars)
 │   │   ├── status_style.py # Task status text & colors

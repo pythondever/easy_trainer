@@ -227,7 +227,6 @@ easy_trainer/
 │   │   ├── message_box.py  # 统一消息框/进度对话框
 │   │   ├── dialog_buttons.py     # 弹窗按钮与图标统一样式
 │   │   ├── name_input_dialog.py  # 命名输入弹窗
-│   │   ├── paginator.py    # 分页控件
 │   │   ├── project_sidebar.py    # 首页项目/数据集侧栏（卡片式树）
 │   │   ├── charts.py       # 自绘图表（标签分布柱状图）
 │   │   ├── status_style.py # 任务状态文案与配色
