@@ -35,6 +35,7 @@ try:
     import torch
     from torch.utils.data import DataLoader
     import doctr.transforms as T
+    import torchvision.transforms as tv_transforms
     from doctr.datasets import DetectionDataset, RecognitionDataset
     from doctr.models import detection, recognition
     from doctr.utils.metrics import LocalizationConfusion
@@ -48,9 +49,6 @@ from app.core.metrics import cer
 from app.train import ocr_common as occ
 from app.train import ocr_data
 from app.train import ocr_weights
-
-RECO_SIZE = (32, 128)     # 识别段输入固定, 不吃界面上的 img_size
-
 
 def _collate(batch):
     """图像堆成 tensor, 真值保持 list(每张图的框数不一样, 堆不动)."""
@@ -173,10 +171,30 @@ def _train_rec(cfg, ts_dir):
     if not vocab:
         raise RuntimeError(QC.translate(
             "OcrTrainRunner", "标注里没有任何文字, 无法训练字符识别"))
+    # 骨干在宽度上总步长 4, 时间步 T = 宽 / 4; CTC 要求 T 不小于标注长度,
+    # 不够时底层只会抛 "Expected tensor to have size at least N", 这里先拦
+    steps = int(occ.RECO_SIZE[1]) // 4
+    longest = max((len(str(t)) for s in tr_samples + va_samples
+                   for t in s["texts"]), default=0)
+    if longest > steps:
+        raise RuntimeError(QC.translate(
+            "OcrTrainRunner",
+            "标注最长 {} 字, 超过识别段能输出的 {} 步, 请加大输入宽度").format(
+            longest, steps))
     model = _build_rec(arch, vocab)
+    # docTR 的 CRNN 把 max_length 写死成 32, CTC 真值按它补宽, 长行会被截断;
+    # 它只服务训练时的真值编码, 推理与导出都不读, 所以按画布放宽即可
+    model.max_length = steps
+    # 画布写进 cfg: 推理与导出都照它取, 三处必须同值
+    model.cfg["input_shape"] = (3,) + tuple(occ.RECO_SIZE)
     tr_dir, tr_lab = ocr_data.write_rec(os.path.join(root, "train"), tr_samples)
     va_dir, va_lab = ocr_data.write_rec(os.path.join(root, "val"), va_samples)
-    tf = T.Resize(RECO_SIZE)
+    # 与推理侧 predictor 同一套预处理: 先保长宽比缩放, 再按 cfg 的 mean/std 归一化.
+    # 少了这一步, 训练喂的是 [0,1] 原图, 与推理的取值域差好几倍
+    tf = tv_transforms.Compose([
+        T.Resize(occ.RECO_SIZE, preserve_aspect_ratio=True),
+        tv_transforms.Normalize(mean=model.cfg["mean"], std=model.cfg["std"]),
+    ])
     train_set = RecognitionDataset(tr_dir, tr_lab, img_transforms=tf)
     val_set = RecognitionDataset(va_dir, va_lab, img_transforms=tf)
     print("[train] " + QC.translate(
@@ -286,7 +304,8 @@ def _run(cfg, ts_dir, model, arch, train_set, val_set, primary):
             no_improve = 0
             torch.save({"state_dict": model.state_dict(),
                         "architecture": arch, "vocab": getattr(model, "vocab", ""),
-                        "task": cfg.get("task", "")}, ckpt)
+                        "task": cfg.get("task", ""),
+                        "reco_size": list(occ.RECO_SIZE)}, ckpt)
         else:
             no_improve += 1
             if early_stop > 0 and no_improve >= early_stop:

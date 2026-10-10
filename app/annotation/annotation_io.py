@@ -15,7 +15,8 @@ from app.annotation.box_item import assign_label_color, label_color
 from app.core.label_utils import (OCR_JSON_FLAG, is_text_label,
                                   load_json_shapes, load_yolo_shapes,
                                   normalize_label, same_dir_json,
-                                  shapes_to_boxes, shapes_to_labelme_json)
+                                  shapes_to_boxes, shapes_to_labelme_json,
+                                  text_label)
 from app.widgets.message_box import MessageBox, ProgressDialog
 from app.core.log import write_log
 
@@ -128,6 +129,52 @@ def save_labelme(image_path, shapes, width=None, height=None,
     with open(json_path, "w", encoding="utf-8") as f:
         json.dump(payload, f, ensure_ascii=False, indent=2)
     return json_path
+
+
+def text_line_path(image_path):
+    """字条标注的落点: 与图同目录同名的 labelme json."""
+    return os.path.splitext(image_path)[0] + ".json"
+
+
+def text_line_shapes(text, width, height):
+    """字条图的标注: 整张图就是一个文本框, 与首页/训练侧按框展开的口径一致."""
+    return [{
+        "label": text_label(),
+        "points": [[0, 0], [width, 0], [width, height], [0, height]],
+        "group_id": None,
+        "shape_type": "polygon",
+        "flags": {},
+        "text": text,
+    }]
+
+
+def save_text_line(image_path, text, width=None, height=None):
+    """
+    字条图落盘: labelme json(整图框 + 保留标签 + 文字 + 顶层 ocr 标志位).
+    与老的 OCR 集同格式, 首页筛选/训练/测试/重载都走既有那条路.
+    """
+    if width is None or height is None:
+        try:
+            img = QImage(image_path)
+            w, h = img.width(), img.height()
+        except Exception:
+            w = h = 0
+    else:
+        w, h = int(width), int(height)
+    text = (text or "").strip()
+    return save_labelme(image_path, text_line_shapes(text, w, h),
+                        width=w, height=h, ocr=True)
+
+
+def read_text_line(image_path):
+    """读回字条图里那行字; 没有 json 或里面没有文本框时返回空串."""
+    json_path = same_dir_json(image_path)
+    if not json_path:
+        return ""
+    for label, _pts, text in load_json_shapes(json_path):
+        if is_text_label(label):
+            return text
+    return ""
 
 
 class _PrefetchWorker(QThread):
@@ -276,7 +323,12 @@ class AnnotationIOMixin:
             if (0 <= nxt < len(self.image_list)
                     and self.image_list[nxt] not in self._pix_cache):
                 self._prefetch_worker.request(nxt)
-        if self.cls_mode:
+        if self.textline_mode:
+            # 字条图整张就是一行字: 一个框都不加载, 已录的文字回填到输入框
+            boxes = []
+            self.ui.textline_edit.setText(read_text_line(image_path))
+            self._textline_dirty = False
+        elif self.cls_mode:
             # 图像分类: 只读看图,无框可标注;类别 = 父文件夹名
             boxes = []
             cls = os.path.basename(os.path.dirname(image_path))
@@ -326,6 +378,8 @@ class AnnotationIOMixin:
                 QC.translate("AnnotationDialog", "    类别: {}").format(cls)
                 if self.cls_mode else ""))
         self._refresh_labeled_list()
+        if self.textline_mode:
+            self._update_textline_progress()
         self._dirty = False
         # 新载入的图以磁盘内容为准, 清掉上一张遗留的待写标记
         self._pix_unsaved = False
@@ -557,6 +611,10 @@ class AnnotationIOMixin:
         浮动粘贴挨到这一刻才写进图像像素. 自动保存(150ms 定时器)不带它,
         否则刚粘上去就被烧进图里, 根本没机会拖到位.
         """
+        if self.textline_mode:
+            # 字条模式只有一行文字要写, 与画框/像素那套完全无关
+            self._save_textline()
+            return
         if commit_pending:
             # 亮度只在用户显式保存时落地: 让自动保存(150ms)也带上的话, 拖一下就写一次盘
             self._commit_brightness()

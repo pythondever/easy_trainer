@@ -53,10 +53,20 @@ def det_boxes(logits, orig_wh, bin_thr, box_thr):
 
 
 def rec_input(crop, width, height):
-    """字条 → 识别段输入。固定 32x128 拉伸（与训练一致，不保持宽高比）。"""
+    """
+    字条 → 识别段输入。保长宽比缩到能放进 (height, width), 右侧与下方补零。
+    训练侧是 T.Resize(..., preserve_aspect_ratio=True), 这里直接拉伸会把
+    16:1 的字条横向压扁好几倍。
+    """
     rgb = cv2.cvtColor(crop, cv2.COLOR_BGR2RGB)
-    resized = cv2.resize(rgb, (width, height), interpolation=cv2.INTER_LINEAR)
-    x = resized.astype(np.float32) / 255.0
+    ih, iw = rgb.shape[:2]
+    scale = min(height / float(ih), width / float(iw))
+    nh = max(int(round(ih * scale)), 1)
+    nw = max(int(round(iw * scale)), 1)
+    resized = cv2.resize(rgb, (nw, nh), interpolation=cv2.INTER_LINEAR)
+    canvas = np.zeros((height, width, 3), dtype=np.uint8)
+    canvas[:nh, :nw] = resized
+    x = canvas.astype(np.float32) / 255.0
     x = (x - MEAN) / STD
     return np.ascontiguousarray(np.transpose(x, (2, 0, 1))[None])
 
@@ -143,7 +153,7 @@ def main():
     logits = det.run(None, {"images": preprocess(img, size)})[0]
     boxes = det_boxes(logits, (w, h), args.bin_thr, args.box_thr)
 
-    rec, vocab, rec_wh = None, "", (128, 32)
+    rec, vocab, rec_wh = None, "", (768, 32)
     if args.rec:
         vocab = read_vocab(args.vocab or os.path.join(
             os.path.dirname(os.path.abspath(args.rec)), "vocab.txt"))

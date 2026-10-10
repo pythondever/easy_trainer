@@ -73,6 +73,14 @@ def _place(local, cached):
         return dst
     try:
         os.makedirs(os.path.dirname(dst), exist_ok=True)
+        if os.path.isfile(dst):
+            # 能走到这里说明缓存里那份内容不对(下载中断会留下半截文件).
+            # 不先删掉, os.link 会因为目标已存在而失败, 后面的拷贝又被"文件在"跳过,
+            # 这个坏文件被当成功返回后 doctr 会拒收并重新联网, 离线时就静默退化了
+            try:
+                os.remove(dst)
+            except OSError:
+                pass
         try:
             os.link(src, dst)
         except OSError:

@@ -76,7 +76,18 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="8,2">
        <item>
-        <widget class="QGraphicsView" name="image_label_show"/>
+        <layout class="QVBoxLayout" name="verticalLayout_left">
+         <item>
+          <widget class="QGraphicsView" name="image_label_show"/>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="textline_edit">
+           <property name="placeholderText">
+            <string>输入本图文字</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
        <item>
         <layout class="QVBoxLayout" name="verticalLayout_4">

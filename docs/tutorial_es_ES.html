@@ -485,7 +485,7 @@
 
 <p>En Tipo de tarea seleccione <strong>OCR</strong>.</p>
 
-<p>El Tamaño de imagen es la entrada del tramo de detección (por defecto 1024 y debe ser múltiplo de 32); el tramo de reconocimiento está fijo en <code>32×128</code> y no se ve afectado por esta opción.</p>
+<p>El Tamaño de imagen no se utiliza al entrenar el reconocimiento de caracteres (la etapa de reconocimiento está fija en <code>32×768</code>; el campo está deshabilitado y muestra 768).</p>
 
 <p>Al pulsar «Iniciar entrenamiento», la tarea se divide automáticamente en dos elementos en cola: primero la Detección de texto y luego el Reconocimiento de texto. Cuando termina el primero, hay que esperar a que la VRAM baje al nivel previo al inicio del entrenamiento para arrancar el siguiente; durante ese tiempo, la zona de progreso muestra «Esperando liberar VRAM · siguiente:Reconocimiento de texto» y no queda vacía.</p>
 

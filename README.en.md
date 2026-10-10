@@ -293,7 +293,7 @@ easy_trainer/
 6. **Review metrics**: Model management → "Metrics" opens the accuracy curves
 7. **Export model**: Model management → record "Export". Detect/segment/classify produce `project_task_size_scale.onnx` + `label_map.json` + evaluation report PDF + usage examples; OCR exports one ONNX per stage (the recognition stage also ships `vocab.txt`); anomaly detection cannot export ONNX and ships a `.pt` package (`threshold.txt` / `result.json`)
 
-> 💡 Training image sizes: detection default **640** (multiple of 32), segmentation default **648** (multiple of 12 for nano, 24 for the other three scales), classification default **224**, text detection default **1024** (multiple of 32; the recognition stage is fixed at 32×128 and ignores this). The note beside the input and the hover tooltip show the valid values for the current scale.
+> 💡 Training image sizes: detection default **640** (multiple of 32), segmentation default **648** (multiple of 12 for nano, 24 for the other three scales), classification default **224**, character recognition default **128** (the field is disabled and unused; the recognition stage is fixed at 32×128). The note beside the input and the hover tooltip show the valid values for the current scale.
 
 ## 💾 Data Storage
 

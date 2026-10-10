@@ -114,7 +114,7 @@ class TaskSpec:
         return arch == "cnn"
 
     def accepts_dataset_type(self, dataset_type):
-        """数据集下拉里要不要列这一条: 字符检测只列打过 ocr 标记的."""
+        """数据集下拉里要不要列这一条: 非 OCR 任务不列已标记为 OCR 的数据集."""
         return dataset_type != "ocr"
 
 

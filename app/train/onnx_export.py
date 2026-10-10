@@ -125,6 +125,11 @@ def export_ocr_onnx(model_path, out_file, img_size=0, log=print):
                **kwargs)
     model.load_state_dict(ckpt["state_dict"])
     model.eval()
+    if is_rec:
+        # 识别段画布由训练时定(CTC 要求时间步够装标注), 导出跟着 ckpt 走
+        _rec = ckpt.get("reco_size")
+        if isinstance(_rec, (list, tuple)) and len(_rec) == 2:
+            model.cfg["input_shape"] = (3, int(_rec[0]), int(_rec[1]))
     channels, height, width = tuple(model.cfg["input_shape"])
     if not is_rec and img_size:
         height = width = int(img_size)

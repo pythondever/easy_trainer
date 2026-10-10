@@ -17,11 +17,9 @@ from PySide6.QtWidgets import (QDialog, QWidget, QApplication, QVBoxLayout,
 from app.annotation.scene import AnnotationScene
 from app.annotation.box_item import AnnotationPolygonItem
 from app.core import theme
-from app.core.label_utils import is_text_label, text_label
 from app.core.utils import project_root, ui_font_family
 from app.widgets.dialog_buttons import add_ok_cancel
 from app.widgets.message_box import MessageBox
-from app.widgets.name_input_dialog import NameInputDialog
 from PySide6.QtWidgets import QGraphicsView
 
 
@@ -364,6 +362,8 @@ class SwitchButton(QWidget):
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
+            if not self.isEnabled():
+                return
             self._checked = not self._checked
             self.toggled.emit(self._checked)
             self.update()
@@ -693,15 +693,13 @@ class AnnotationCanvasMixin:
 
     def _update_draw_buttons(self):
         """无标签或未选中标签时禁用矩形/多边形/格式刷按钮."""
-        if self.cls_mode:
-            # 图像分类只读,始终禁用绘制
+        if self.cls_mode or self.textline_mode:
+            # 分类只读看图; 字条模式整张图就是一行字, 没有可画的东西
             for w in (self.ui.draw_rect_btn, self.ui.poly_btn):
                 w.setEnabled(False)
             return
-        # 文本标注模式下不必先建标签: 类别是保留标签
-        can_draw = self.text_mode or (
-            bool(self.label_colors)
-            and self.scene.current_label in self.label_colors)
+        can_draw = (bool(self.label_colors)
+                    and self.scene.current_label in self.label_colors)
         self.ui.draw_rect_btn.setEnabled(can_draw)
         self.ui.poly_btn.setEnabled(can_draw)
         if not can_draw:
@@ -715,7 +713,7 @@ class AnnotationCanvasMixin:
         self.scene.set_draw_mode(True, shape)
         self._apply_draw_cursor()
         self._set_draw_button_states(True)
-        if not self.label_colors and not self.text_mode:
+        if not self.label_colors:
             MessageBox.information(
                 self, QC.translate("AnnotationDialog", "添加标签"),
                 QC.translate("AnnotationDialog", "请先添加标签(点击\"+\")"))
@@ -743,25 +741,6 @@ class AnnotationCanvasMixin:
         """画完一个框: 保持画模式(需求: 只有 ESC 才退出), 维持对应光标与按钮高亮."""
         self._apply_draw_cursor()
         self._set_draw_button_states(True)
-        if self.text_mode and item is not None:
-            # 延到下一轮事件循环: 此刻还在 mouseRelease 里, 直接 exec 会卡住绘制态
-            QTimer.singleShot(0, lambda it=item: self._prompt_item_text(it))
-
-    def _on_box_edit_requested(self, item):
-        self._prompt_item_text(item)
-
-    def _prompt_item_text(self, item):
-        """给文本框录/改文字. 取消就保持原样(空框留着, 之后双击还能补录)."""
-        old = getattr(item, "text", "") or ""
-        text, ok = NameInputDialog.get_name(
-            self, QC.translate("AnnotationDialog", "标注文字"), old,
-            QC.translate("AnnotationDialog", "请输入框内的文字"))
-        if not ok or text == old:
-            return
-        item.text = text
-        self.scene._force_full_redraw(item.sceneBoundingRect())
-        # 走 boxes_changed: 右侧列表刷新 + 标记 dirty + 自动落盘
-        self.scene.boxes_changed.emit()
 
     def _cancel_draw_mode(self):
         """主动退出画模式(不创建标注): 恢复光标 + 按钮样式; 顺带收掉剪切板预览虚线."""
@@ -775,22 +754,6 @@ class AnnotationCanvasMixin:
         self._set_draw_button_states(False)
 
     # ---------------- 复制/粘贴(格式刷改造: 右键复制多边形 + 随机旋转粘贴) ----------------
-    def _toggle_text_mode(self, checked):
-        """"
-        文本标注"开关: 打开后类别是保留标签, 不必先建标签.
-        关掉时退回开关前的那个标签, 否则下一个框会莫名其妙继续带着它画出来.
-        """
-        self.text_mode = bool(checked)
-        if self.text_mode:
-            self._label_before_text_mode = self.scene.current_label
-            self.scene.current_label = text_label()
-        else:
-            back = self._label_before_text_mode
-            if not back or is_text_label(back):
-                back = sorted(self.label_colors)[0] if self.label_colors else ""
-            self.scene.current_label = back
-        self._update_draw_buttons()
-
     def _toggle_show_boxes(self, checked):
         """"显示标注"开关: 关闭时隐藏标注轮廓, 右侧列表信息保留."""
         self.scene.set_annotations_visible(checked)

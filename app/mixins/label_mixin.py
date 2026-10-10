@@ -178,7 +178,12 @@ class LabelMixin(object):
         kept = [k for k in self.filter_labels if k in valid]
         was_all = self._filter_all_selected()   # 要用重建前的选项判定
         self._label_filter_items = items
-        if reset or was_all:
+        # OCR 集默认落在保留标签上: 全选会带上"未标注", 而字条集整批都算已标注,
+        # 只有落在"文本"上才看得见图; 其他数据集没有这一项, 行为不变
+        text_keys = [k for _n, _c, k in items if is_text_label(k)]
+        if reset and text_keys:
+            self.filter_labels = text_keys
+        elif reset or was_all:
             self._select_all_labels()
         else:
             self.filter_labels = kept

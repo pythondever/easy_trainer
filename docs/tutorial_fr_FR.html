@@ -485,7 +485,7 @@
 
 <p>Choisissez <strong>OCR</strong> comme type de tâche.</p>
 
-<p>La taille d'image est l'entrée du segment de détection (1024 par défaut, doit être un multiple de 32) ; le segment de reconnaissance est fixé à <code>32×128</code> et n'est pas concerné par ce réglage.</p>
+<p>La taille d'image n'est pas utilisée lors de l'entraînement de la reconnaissance de caractères (l'étape de reconnaissance est fixée à <code>32×768</code> ; le champ est désactivé et affiche 768).</p>
 
 <p>Après avoir cliqué sur « Démarrer l'entraînement », le travail est automatiquement scindé en deux tâches mises en file : d'abord la détection de texte, puis la reconnaissance de texte. Une fois la première terminée, la suivante ne démarre qu'après le retour de la VRAM à son niveau d'avant l'entraînement ; pendant ce temps, la zone de progression affiche « Attente de la libération de la VRAM · suivant : Reconnaissance de texte », sans temps mort.</p>
 

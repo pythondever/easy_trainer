@@ -239,10 +239,20 @@ class Ui_annotationDialog(object):
 
         self.horizontalLayout_5 = QHBoxLayout()
         self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
+        self.verticalLayout_left = QVBoxLayout()
+        self.verticalLayout_left.setObjectName(u"verticalLayout_left")
         self.image_label_show = QGraphicsView(annotationDialog)
         self.image_label_show.setObjectName(u"image_label_show")
 
-        self.horizontalLayout_5.addWidget(self.image_label_show)
+        self.verticalLayout_left.addWidget(self.image_label_show)
+
+        self.textline_edit = QLineEdit(annotationDialog)
+        self.textline_edit.setObjectName(u"textline_edit")
+
+        self.verticalLayout_left.addWidget(self.textline_edit)
+
+
+        self.horizontalLayout_5.addLayout(self.verticalLayout_left)
 
         self.verticalLayout_4 = QVBoxLayout()
         self.verticalLayout_4.setObjectName(u"verticalLayout_4")
@@ -426,6 +436,7 @@ class Ui_annotationDialog(object):
         self.poly_btn.setText(QCoreApplication.translate("annotationDialog", u"\u591a\u8fb9\u5f62", None))
         self.delete_image_btn.setText(QCoreApplication.translate("annotationDialog", u"\u5220\u9664\u56fe\u50cf", None))
         self.settings_btn.setText(QCoreApplication.translate("annotationDialog", u"\u8bbe\u7f6e", None))
+        self.textline_edit.setPlaceholderText(QCoreApplication.translate("annotationDialog", u"\u8f93\u5165\u672c\u56fe\u6587\u5b57", None))
         self.label_list.setText(QCoreApplication.translate("annotationDialog", u"\u6807\u7b7e\u5217\u8868", None))
 #if QT_CONFIG(tooltip)
         self.add_label.setToolTip(QCoreApplication.translate("annotationDialog", u"\u6dfb\u52a0\u6807\u7b7e", None))

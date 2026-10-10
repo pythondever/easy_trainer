@@ -15,8 +15,10 @@ from PySide6.QtCore import QCoreApplication as QC
 from PySide6.QtGui import (QDoubleValidator, QStandardItem,
                            QStandardItemModel, QValidator)
 from PySide6.QtWidgets import QDialog, QFormLayout, QComboBox
+from PIL import Image
 
 from app.core import i18n
+from app.core.constants import IMAGE_EXTS
 from app.core.db import get_paths
 from app.core.log import write_log
 from app.core.metrics import primary_for
@@ -32,6 +34,11 @@ from app.train.ocr_common import is_ocr
 from app.train.test_result_dialog import TestResultDialog
 from app.train.test_worker import TestWorker
 from ui.test_dialog import Ui_TestDialog
+
+
+# 字条是矮扁的窄条: 抽这么多张看高度, 中位高度超过下面这个值就当给的是整幅原图
+TEXTLINE_SAMPLE = 16
+TEXTLINE_MAX_HEIGHT = 200
 
 
 class _RatioValidator(QDoubleValidator):
@@ -456,6 +463,11 @@ class TestDialog(QDialog):
                 self, self.tr("测试"),
                 self.tr("字符识别要拿标注框裁字条才能测, 请选择已标注的数据集"))
             return
+        if self._ocr_task() and self._images_too_large_for_textline(items):
+            MessageBox.warning(
+                self, self.tr("测试"),
+                self.tr("图像尺寸过大,文字识别需要裁剪出文字区域的图像再做推理"))
+            return
         device = self.ui.test_device_combo.currentData() or "cuda"
         report_dir = ""
         if model_path:
@@ -550,6 +562,34 @@ class TestDialog(QDialog):
             pct = done * 100.0 / total if total else 0
             self.app._show_train_task(
                 self.tr("测试中 {}/{}").format(done, total), pct)
+
+    def _images_too_large_for_textline(self, items):
+        """
+        抽几张图看尺寸: 字条是矮扁的窄条, 一水儿的高图说明给的是整幅原图,
+        识别模型吃不了(它按 32x768 归一化, 整幅图进去等于把文字压成一团).
+        取高度中位数判定, 免得个别异常图把结论带偏.
+        """
+        heights = []
+        for item in items:
+            if len(heights) >= TEXTLINE_SAMPLE:
+                break
+            img_dir = item.get("image_path", "")
+            if not img_dir or not os.path.isdir(img_dir):
+                continue
+            names = [fn for fn in sorted(os.listdir(img_dir))
+                     if os.path.splitext(fn)[1].lower() in IMAGE_EXTS]
+            for fn in names:
+                if len(heights) >= TEXTLINE_SAMPLE:
+                    break
+                try:
+                    with Image.open(os.path.join(img_dir, fn)) as im:
+                        heights.append(im.size[1])
+                except Exception:
+                    continue
+        if not heights:
+            return False
+        heights.sort()
+        return heights[len(heights) // 2] > TEXTLINE_MAX_HEIGHT
 
     def _ocr_task(self):
         """OCR 的任务键: 检测/识别是两条独立记录, 各按各的跑."""

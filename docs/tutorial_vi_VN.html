@@ -485,7 +485,7 @@
 
 <p>Loại tác vụ chọn <strong>OCR</strong>.</p>
 
-<p>Kích thước ảnh là đầu vào của giai đoạn phát hiện (mặc định 1024, phải là bội số của 32); giai đoạn nhận dạng cố định <code>32×128</code>, không bị mục này ảnh hưởng.</p>
+<p>Kích thước ảnh không được dùng khi huấn luyện nhận dạng ký tự (giai đoạn nhận dạng cố định <code>32×768</code>; ô nhập đã bị làm mờ và hiển thị 768).</p>
 
 <p>Sau khi bấm “Bắt đầu huấn luyện” sẽ tự động tách thành hai mục xếp hàng: phát hiện văn bản trước, rồi nhận dạng văn bản. Mục trước chạy xong, phải đợi bộ nhớ GPU hạ về mức trước khi huấn luyện mới khởi động mục kế tiếp, trong khoảng thời gian đó vùng tiến độ hiển thị “Đang đợi giải phóng bộ nhớ GPU · Mục tiếp theo: Nhận dạng văn bản”, ở giữa không bị bỏ trống.</p>
 

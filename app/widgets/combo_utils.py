@@ -15,6 +15,9 @@ class ClickToPopupFilter(QObject):
 
     def eventFilter(self, obj, event):
         if event.type() == QEvent.MouseButtonPress and event.button() == Qt.LeftButton:
+            # 事件过滤器跑在 Qt 的禁用判定之前, 不自己挡一下的话置灰的下拉照样能点开
+            if not self._combo.isEnabled():
+                return True
             QTimer.singleShot(0, self._combo.showPopup)
             return True
         return False

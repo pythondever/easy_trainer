@@ -485,7 +485,7 @@
 
 <p>Set the task type to <strong>OCR</strong>.</p>
 
-<p>Image Size is the input of the detection stage (default 1024, and it must be a multiple of 32); the recognition stage is fixed at <code>32×128</code> and is not affected by this setting.</p>
+<p>Image Size is not used when training character recognition (the recognition stage is fixed at <code>32×768</code>; the field is greyed out and shows 768).</p>
 
 <p>After you click "Start Training" it is automatically split into two queued items: Text Detection first, then Text Recognition. When the first one finishes, the next one only starts after VRAM has fallen back to the level it was at before training began; during that time the progress area shows "Waiting for VRAM release · next:Text Recognition", so there is no idle gap in between.</p>
 

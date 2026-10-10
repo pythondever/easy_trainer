@@ -17,7 +17,7 @@ from PySide6.QtGui import (QColor, QPixmap, QKeySequence, QShortcut,
                            QDoubleValidator, QRegularExpressionValidator)
 from PySide6.QtWidgets import (QDialog, QWidget, QApplication, QVBoxLayout,
                                QHBoxLayout, QLabel, QLineEdit, QPushButton,
-                               QFrame, QMenu)
+                               QFrame, QMenu, QProgressBar)
 
 from ui.annotation import Ui_annotationDialog as AnnotationUI
 from ui.add_label import Ui_addLabelDialog as AddLabelUI
@@ -32,12 +32,13 @@ from app.annotation.annotation_canvas import (ANGLE_RANGE_DEFAULT,
                                               SwitchButton, _fill_dot_qss,
                                               _resource_path,
                                               _upgrade_graphics_view)
-from app.annotation.annotation_io import AnnotationIOMixin, _PrefetchWorker
+from app.annotation.annotation_io import (AnnotationIOMixin, _PrefetchWorker,
+                                          read_text_line, save_text_line,
+                                          text_line_path)
 from app.core import name_rules, theme
 from app.annotation.box_item import (AnnotationBoxItem, LABEL_COLORS,
                                      assign_label_color, label_color)
-from app.core.label_utils import (label_sort_key, normalize_label,
-                                  text_label)
+from app.core.label_utils import label_sort_key, normalize_label
 from app.widgets.dialog_buttons import (add_ok_cancel, apply_icon,
                                         _icon_path, _tinted)
 from app.widgets.message_box import MessageBox
@@ -343,9 +344,9 @@ class AnnotationDialog(QDialog, AnnotationCanvasMixin, AnnotationIOMixin):
         self.label_ids = (db.get_dataset_label_ids(project, dataset)
                           if db else {})
         self.cls_mode = cls_mode
-        # "文本标注"开关(OCR): 打开后免建标签直接拉框, 类别是保留标签
-        self.text_mode = False
-        self._label_before_text_mode = ""
+        # "文本标注"开关: 打开后整张图就是一行字, 内容落到同目录同名 .txt
+        self.textline_mode = False
+        self._textline_dirty = False
         self._cls_changes = []
         self._label_files_touched = False   # 本会话改过标签文件(删除/改名)
         self.image_list = list(image_list) if image_list else []
@@ -486,6 +487,24 @@ class AnnotationDialog(QDialog, AnnotationCanvasMixin, AnnotationIOMixin):
         u.text_switch.toggled.connect(self._toggle_text_mode)
         u.text_switch_label = QLabel(self.tr("文本标注"), self)
         u.text_switch_label.setObjectName("text_switch_label")
+        # 字条模式那一行: 图像下方满宽输入框 + 一行提示, 默认收起
+        u.textline_edit.setAlignment(Qt.AlignCenter)
+        u.textline_edit.setMaxLength(200)
+        u.textline_edit.textEdited.connect(self._on_textline_edited)
+        u.textline_edit.returnPressed.connect(self._on_textline_return)
+        u.textline_edit.hide()
+        # 右侧"图像信息"块底部挂一行录入进度, 只有字条模式露出来
+        u.textline_progress = QProgressBar(self)
+        u.textline_progress.setObjectName("textlineProgress")
+        u.textline_progress.setTextVisible(False)
+        u.textline_progress.setFixedHeight(6)
+        u.textline_progress.setRange(0, 100)
+        u.textline_count = QLabel("", self)
+        u.textline_count.setObjectName("textlineCount")
+        u.verticalLayout_3.addWidget(u.textline_progress)
+        u.verticalLayout_3.addWidget(u.textline_count)
+        u.textline_progress.hide()
+        u.textline_count.hide()
         # 参数收进"设置"弹层后, 工具条右侧只剩两个开关和设置按钮
         idx = u.horizontalLayout.indexOf(u.settings_btn)
         u.horizontalLayout.insertWidget(idx, u.switchButton)
@@ -505,7 +524,6 @@ class AnnotationDialog(QDialog, AnnotationCanvasMixin, AnnotationIOMixin):
         u.next_page_btn.clicked.connect(lambda: self._switch(1))
         u.delete_image_btn.clicked.connect(self._delete_current_image)
         self.scene.box_drawn.connect(self._on_box_drawn)
-        self.scene.box_edit_requested.connect(self._on_box_edit_requested)
         self.scene.draw_cancel_requested.connect(self._cancel_draw_mode)
         self._labeled_refresh_timer = QTimer(self)
         self._labeled_refresh_timer.setSingleShot(True)
@@ -541,13 +559,105 @@ class AnnotationDialog(QDialog, AnnotationCanvasMixin, AnnotationIOMixin):
         return False
 
     def _setup_shortcuts(self):
-        QShortcut(QKeySequence("A"), self, activated=lambda: self._switch(-1))
-        QShortcut(QKeySequence("D"), self, activated=lambda: self._switch(1))
+        # A/D 翻页. 翻页前会落盘, 字条模式下这就是主要的保存时机
+        QShortcut(QKeySequence("A"), self, activated=lambda: self._nav(-1))
+        QShortcut(QKeySequence("D"), self, activated=lambda: self._nav(1))
         QShortcut(QKeySequence("Delete"), self, activated=self.scene.delete_selected)
         QShortcut(QKeySequence("Ctrl+S"), self,
                   activated=lambda: self._save_current(commit_pending=True))
         QShortcut(QKeySequence("Ctrl+Z"), self, activated=self._undo_fp_paste)
         QShortcut(QKeySequence(Qt.Key_Escape), self, activated=self._cancel_draw_mode)
+
+    def _nav(self, offset):
+        """
+        A/D 翻页. 字条模式下输入框有焦点时让位给打字: 拼音的 a/d 也是字母,
+        被快捷键抢过去就没法录文字了; 要翻页先把输入框失焦(回车或点一下图像区).
+        """
+        if self.textline_mode and QApplication.focusWidget() is self.ui.textline_edit:
+            return
+        self._switch(offset)
+
+    def _toggle_text_mode(self, checked):
+        """
+        "文本标注"开关: 打开后整张图当作一行字来标, 关掉退回画框那套.
+        换模式前先按旧模式收尾, 否则字条那行字会盖掉盘上原来的框标注.
+        """
+        self._save_current(commit_pending=True)
+        self.textline_mode = bool(checked)
+        self._apply_textline_mode()
+        self._load_current()
+        if self.textline_mode:
+            self.ui.textline_edit.setFocus()
+
+    def _apply_textline_mode(self):
+        """字条模式: 收起画框控件与右侧三块, 露出图像下方的文字输入行."""
+        on = self.textline_mode
+        for w in (self.ui.draw_rect_btn, self.ui.poly_btn, self.ui.settings_btn,
+                  self.ui.add_label, self.ui.label_list,
+                  self.ui.label_scrollArea, self.ui.labeled_list,
+                  self.ui.label_info_scrollArea, self.ui.px_scale_btn,
+                  self.ui.clipboard_label, self.ui.clipboard_scroll):
+            w.setEnabled(not on)
+        self.ui.switchButton.setEnabled(not on)
+        self.ui.show_boxes_label.setEnabled(not on)
+        self.ui.textline_edit.setVisible(on)
+        self.ui.textline_progress.setVisible(on)
+        self.ui.textline_count.setVisible(on)
+        self._cancel_draw_mode()
+        self._update_draw_buttons()
+        if on:
+            self._update_textline_progress()
+
+    def _on_textline_edited(self, _text):
+        self._textline_dirty = True
+
+    def _on_textline_return(self):
+        """回车: 明确确认这张(空内容也算"确认没有字"), 落盘后跳下一张."""
+        if not self.textline_mode:
+            return
+        self._save_textline(force=True)
+        self._switch(1)
+
+    def _save_textline(self, force=False):
+        """
+        字条落盘: 把输入框那行字写进同目录同名 .json(整图框 + 保留标签 + 文字).
+
+        没动过输入框就不写: 直接翻页只表示"这张还没标", 凭空造个空标注会把进度顶上去.
+        回车是显式确认(force=True), 空内容也写; 文字为空的 json 代表"这张确认过没有字".
+        """
+        if not (0 <= self.index < len(self.image_list)):
+            return
+        if not force and not self._textline_dirty:
+            return
+        path = self.image_list[self.index]
+        text = self.ui.textline_edit.text().strip()
+        if (os.path.isfile(text_line_path(path))
+                and text == read_text_line(path)):
+            # 盘上那份与输入框一致就不重写, 省掉每次翻页都摸一次盘
+            self._textline_dirty = False
+            return
+        try:
+            save_text_line(path, text)
+        except OSError:
+            MessageBox.warning(self, self.tr("保存失败"),
+                               self.tr("写文字标签失败:\n{}").format(path))
+            return
+        self._textline_dirty = False
+        # 让外层会话知道这张改过: 关窗口时只重扫这些图, 首页的已标注计数才跟得上
+        self._modified_paths.add(path)
+        self._update_textline_progress()
+
+    def _update_textline_progress(self):
+        """统计多少张已经落了字条标注, 刷新右侧进度."""
+        if not self.textline_mode:
+            return
+        done = sum(1 for p in self.image_list
+                   if os.path.isfile(text_line_path(p)))
+        total = len(self.image_list)
+        self.ui.textline_count.setText(
+            self.tr("已标注 {} · 未标注 {}").format(done, total - done))
+        self.ui.textline_progress.setValue(
+            int(round(done * 100.0 / total)) if total else 0)
 
     def closeEvent(self, event):
         self._save_current(commit_pending=True)
@@ -631,11 +741,8 @@ class AnnotationDialog(QDialog, AnnotationCanvasMixin, AnnotationIOMixin):
     def _refresh_labels(self):
         """刷新左侧标签列表(颜色块 + 名称), 点击切换当前标签."""
         self.label_colors = dict(self.db.get_dataset_labels(self.project, self.dataset))
-        if self.text_mode:
-            # 文本标注的类别是保留标签, 与数据集有没有自建标签无关
-            self.scene.current_label = text_label()
         if not self.label_colors:
-            self.scene.current_label = "" if not self.text_mode else text_label()
+            self.scene.current_label = ""
             self._update_draw_buttons()
             return
         self._update_draw_buttons()

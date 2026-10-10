@@ -158,6 +158,18 @@ def _locate_rec(model_path, det_arch):
     return ""
 
 
+def _rec_predictor(ckpt, model, device):
+    """按训练时的画布装识别器: 画布记在 ckpt 里, 推理必须与训练同一几何."""
+    size = ckpt.get("reco_size")
+    if isinstance(size, (list, tuple)) and len(size) == 2:
+        model.cfg["input_shape"] = (3, int(size[0]), int(size[1]))
+    model.eval().to(device)
+    pred = recognition_predictor(arch=model, pretrained=False)
+    # 训练喂的是整条字条, 推理再按 ar>8 切块就与训练分布对不上了
+    pred.split_wide_crops = False
+    return pred
+
+
 def _build_rec_predictor(path, device):
     ckpt = torch.load(path, map_location="cpu", weights_only=False)
     arch = str(ckpt.get("architecture") or REC_ARCH)
@@ -167,8 +179,7 @@ def _build_rec_predictor(path, device):
         return None
     model = fn(vocab=vocab, pretrained=False, pretrained_backbone=False)
     model.load_state_dict(ckpt["state_dict"])
-    model.eval().to(device)
-    return recognition_predictor(arch=model, pretrained=False)
+    return _rec_predictor(ckpt, model, device)
 
 
 def _read_texts(rec, crops):
@@ -417,8 +428,7 @@ def _run_rec(cfg, ckpt):
     model = fn(vocab=vocab, pretrained=False, pretrained_backbone=False)
     model.load_state_dict(ckpt["state_dict"])
     device = _device_of(cfg)
-    model.eval().to(device)
-    predictor = recognition_predictor(arch=model, pretrained=False)
+    predictor = _rec_predictor(ckpt, model, device)
 
     pairs = _collect_pairs(cfg)
     if not pairs:

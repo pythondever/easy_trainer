@@ -9,8 +9,9 @@ from app.core.constants import (PAGE_SIZE, THUMB_CACHE_MAX,
                                 CELL_W, CELL_H, CELL_PAD)
 from app.mixins.label_mixin import UNLABELED_KEY
 from app.core.label_utils import (OCR_JSON_FLAG, is_text_label,
-                                  normalize_label, label_sort_key,
-                                  rec_is_labeled, same_dir_json)
+                                  is_text_line_label, normalize_label,
+                                  label_sort_key, rec_is_labeled,
+                                  same_dir_json)
 from app.core.image_utils import pil_to_qimage, make_uniform_thumb
 from app.annotation.scene_items import SelectablePixmapItem
 from app.tasks.import_task import ImportTask
@@ -594,7 +595,10 @@ class DatasetViewMixin(object):
                                 ys = [p[1] for p in pts]
                                 x, y = int(min(xs)), int(min(ys))
                                 w, h = int(max(xs) - min(xs)), int(max(ys) - min(ys))
-                                boxes.append((max(0, x), max(0, y), max(1, w), max(1, h), lbl))
+                                # 与导入扫描同一口径 (x, y, w, h, text, label):
+                                # 少写 text 会让缩略图上的文字条在重扫后消失
+                                boxes.append((max(0, x), max(0, y), max(1, w), max(1, h),
+                                              str(shape.get("text") or ""), lbl))
                         rec["labels"] = labels
                         rec["boxes"] = boxes if boxes else None
                         rec["rois_by_idx"] = {}
@@ -610,6 +614,12 @@ class DatasetViewMixin(object):
                     rec["boxes"] = None
                     rec["rois_by_idx"] = {}
                     rec["_has_annotation_json"] = False
+                if not json_path:
+                    # 字条集的真值写在同一目录的同名 .txt 里, 标完这一张
+                    # 要让首页的"已标注"跟着动
+                    if is_text_line_label(
+                            os.path.splitext(img_path)[0] + ".txt"):
+                        rec["_has_label_file"] = True
 
         for rec in index.get("all", []):
             if rec.get("labels"):
@@ -1180,7 +1190,10 @@ class DatasetViewMixin(object):
             if update_stats:
                 new_label_path = label_path
                 new_fmt = fmt
-                if labeled > 0 and not cls_mode:
+                # 只有 labelme 要补这一步: 它的标签写在图旁边, 没填标签路径
+                # 也能被 same_dir_json 认出来; yolo 的标签是 .txt, 记成 .json
+                # 会让删图不连带删标签
+                if labeled > 0 and not cls_mode and fmt == ".json":
                     binding = self.db.get_dataset_import(
                         project_name, dataset_name)
                     old_label = get_paths(binding, "label")

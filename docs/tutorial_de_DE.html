@@ -485,7 +485,7 @@
 
 <p>Als <strong>Aufgabentyp</strong> OCR wählen.</p>
 
-<p>Die Bildgröße ist die Eingabe der Detektionsstufe (Standard 1024, muss ein Vielfaches von 32 sein); die Erkennungsstufe ist fest auf <code>32×128</code> und wird von diesem Wert nicht beeinflusst.</p>
+<p>Die Bildgröße wird beim Training der Zeichenerkennung nicht verwendet (die Erkennungsstufe ist fest auf <code>32×768</code>; das Feld ist deaktiviert und zeigt 768).</p>
 
 <p>Nach dem Klick auf „Training starten" wird automatisch in zwei Warteschlangen-Aufgaben aufgeteilt: zuerst TextDetektion, dann Texterkennung. Erst wenn die vorige Aufgabe fertig ist und der VRAM wieder auf das Niveau vor dem Start gefallen ist, beginnt die nächste; währenddessen zeigt der Fortschrittsbereich „Warte auf freien VRAM · Nächstes:Texterkennung", es bleibt also keine Lücke.</p>
 

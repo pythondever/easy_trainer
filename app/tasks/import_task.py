@@ -115,8 +115,12 @@ class ImportTask(QThread):
         self.finished_signal.emit(result)
 
     def _label_of(self, img_path):
-        """在多个标签目录中找同名的标签文件(txt/json), 返回存在的第一个; 无则空."""
-        if not self.label_paths or not self.fmt:
+        """在多个标签目录中找同名的标签文件(txt/json), 返回存在的第一个; 无则空.
+
+        标签目录都没有时再往图旁边找一份同名的: 字条集与部分 yolo 集就是
+        扁平排布, 导入时不填标签路径也应该认得出.
+        """
+        if not self.fmt:
             return ""
         base = os.path.splitext(os.path.basename(img_path))[0]
         ext = ".txt" if self.fmt == ".txt" else ".json"
@@ -126,6 +130,10 @@ class ImportTask(QThread):
             candidate = os.path.join(lp, base + ext)
             if os.path.exists(candidate):
                 return candidate
+        if ext == ".txt":
+            beside = os.path.splitext(img_path)[0] + ext
+            if os.path.exists(beside):
+                return beside
         return ""
 
     def _read_boxes(self, img_path, label_path=""):

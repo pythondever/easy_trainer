@@ -673,6 +673,30 @@ QPushButton#done_btn:pressed {
     background: transparent;
     color: {{text}};
 }
+/* 上面这些 #AnnotationDialog 规则特异性高过全局的 :disabled, 不补这几条的话
+   字条模式里禁用的控件颜色不变淡, 看着还像能点 */
+#AnnotationDialog QPushButton:disabled,
+#AnnotationDialog QLabel:disabled,
+#AnnotationDialog QLineEdit:disabled {
+    color: {{text_disabled}};
+}
+/* 字条模式: 图像下方的文字输入框 + 右侧的录入进度 */
+#AnnotationDialog QLineEdit#textline_edit {
+    min-height: 24px;
+    font-size: {{font_lg}};
+}
+#AnnotationDialog QLabel#textlineCount {
+    color: {{text_2}};
+}
+#AnnotationDialog QProgressBar#textlineProgress {
+    background-color: {{bg_sunken}};
+    border: none;
+    border-radius: {{r_sm}};
+}
+#AnnotationDialog QProgressBar#textlineProgress::chunk {
+    background-color: {{accent}};
+    border-radius: {{r_sm}};
+}
 #AnnotationDialog QLineEdit {
     background-color: {{bg_deep_2}};
     border: 1px solid {{border_strong}};

@@ -34,6 +34,32 @@ def _find_json(img_path, label_dirs):
     return ""
 
 
+def _image_size(img_path):
+    try:
+        with Image.open(img_path) as im:
+            return im.size
+    except Exception:
+        return 0, 0
+
+
+def _find_text(img_path, label_dirs):
+    """
+    字条集的真值: 与图同目录(或标签目录)同名的 .txt, 整个文件就是那一行字.
+    返回 None 表示这张图压根没有标签文件, 返回 "" 表示标签是空的.
+    """
+    stem = os.path.splitext(os.path.basename(img_path))[0]
+    cands = [os.path.join(os.path.dirname(img_path), stem + ".txt")]
+    cands += [os.path.join(d, stem + ".txt") for d in label_dirs if d]
+    for p in cands:
+        if os.path.isfile(p):
+            try:
+                with open(p, "r", encoding="utf-8-sig") as f:
+                    return f.read().strip()
+            except OSError:
+                return ""
+    return None
+
+
 def _to_quad(points):
     """labelme 的点补成 4 点多边形: 矩形补四角, 多于 4 点退成外接框."""
     if len(points) == 4:
@@ -45,7 +71,11 @@ def _to_quad(points):
 
 
 def collect(datasets, split):
-    """[{"image", "polygons": [[4 点]], "texts": [str]}], 只收文本标注."""
+    """[{"image", "polygons": [[4 点]], "texts": [str]}].
+
+    两种来源都收: 老的 labelme 文本框(多边形 = 框), 以及字条集
+    (整张图就是一行字, 多边形取整图外框, 下游照常按框裁).
+    """
     samples = []
     for ds in datasets:
         if ds.get("split") != split:
@@ -56,17 +86,27 @@ def collect(datasets, split):
                 continue
             for img_path in _image_files(img_dir):
                 jp = _find_json(img_path, label_dirs)
-                if not jp:
+                if jp:
+                    polys, texts = [], []
+                    for label, pts, text in load_json_shapes(jp):
+                        if not is_text_label(label) or len(pts) < 2:
+                            continue
+                        polys.append(_to_quad(pts))
+                        texts.append(str(text or ""))
+                    if polys:
+                        samples.append({"image": img_path, "polygons": polys,
+                                        "texts": texts})
                     continue
-                polys, texts = [], []
-                for label, pts, text in load_json_shapes(jp):
-                    if not is_text_label(label) or len(pts) < 2:
-                        continue
-                    polys.append(_to_quad(pts))
-                    texts.append(str(text or ""))
-                if polys:
-                    samples.append({"image": img_path, "polygons": polys,
-                                    "texts": texts})
+                text = _find_text(img_path, label_dirs)
+                if text is None:
+                    continue
+                w, h = _image_size(img_path)
+                if w < 2 or h < 2:
+                    continue
+                samples.append({
+                    "image": img_path,
+                    "polygons": [[[0, 0], [w, 0], [w, h], [0, h]]],
+                    "texts": [text]})
     return samples
 
 

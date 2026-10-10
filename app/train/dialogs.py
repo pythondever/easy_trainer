@@ -27,6 +27,7 @@ from app.widgets.model_manager_dialog import ensure_weight
 from app.widgets.dialog_fit import fit_dialog_height
 from app.core import i18n
 from app.core import theme
+from app.core.constants import IMAGE_EXTS
 from app.core.db import get_paths
 from app.core.log import write_log
 from app.train import ad_common as adc
@@ -213,11 +214,31 @@ def params_to_record(params):
     }
 
 
+def _has_label_beside(img_dir, fmt):
+    """
+    图像目录里有没有与图同名的标签文件.
+
+    字条集把 .txt 跟图放一起, 自己标注出来的 json 也落在图旁边;
+    读取侧本来就优先看图同目录, 校验跟上这一步, 免得"导入时还没标注"被当成错误.
+    """
+    exts = {".txt": (".txt",), ".json": (".json",)}.get(fmt, (".json", ".txt"))
+    try:
+        entries = os.listdir(img_dir)
+    except OSError:
+        return False
+    stems = {os.path.splitext(fn)[0] for fn in entries
+             if os.path.splitext(fn)[1].lower() in exts}
+    if not stems:
+        return False
+    return any(os.path.splitext(fn)[0] in stems for fn in entries
+               if os.path.splitext(fn)[1].lower() in IMAGE_EXTS)
+
+
 def check_dataset_imported(name, info):
     """
     校验数据集已导入且路径有效(防止未导入/加载中的数据集直接训练).
     分类数据集(fmt=="cls")标签即子文件夹名,无需单独 label_path 目录,
-    所以跳过标签目录存在性检查.
+    所以跳过标签目录存在性检查. 标签目录没填/失效时, 再看图旁边有没有同名标签.
     """
     img = info.get("image_path", "")
     lab = info.get("label_path", "")
@@ -229,7 +250,10 @@ def check_dataset_imported(name, info):
             .format(name))
     if fmt == "cls":
         return
-    if not lab or not os.path.isdir(lab):
+    # 标签目录没填/失效时再看图旁边: 导入时通常还没有标签(标注是后面的事),
+    # 只要图旁边有同名标签文件就允许开始训练
+    if ((not lab or not os.path.isdir(lab))
+            and not _has_label_beside(img, fmt)):
         raise ValueError(QC.translate(
             "TrainDialog",
             "数据集\"{}\"尚未导入标签或路径无效, 请先导入该数据集再训练")
@@ -1319,16 +1343,13 @@ class TrainDialog(QDialog):
         _TrainStartDialog(parent=self).exec()
 
     def _start_ocr(self, params):
-        """字符检测一次起两段: 检测段与识别段各入队一项, 各留一条训练记录."""
-        names = []
-        for stage in (occ.DET_TASK, occ.RECO_TASK):
-            stage_params = dict(params)
-            stage_params["task"] = stage
-            names.append(self.app.enqueue_train(stage_params)["name"])
+        """字符识别只训识别段: 入队一项, 留一条训练记录."""
+        stage_params = dict(params)
+        stage_params["task"] = occ.RECO_TASK
+        name = self.app.enqueue_train(stage_params)["name"]
         self.app.start_train_queue()
         write_log(QC.translate(
-            "TrainDialog",
-            "开始训练: 字符检测分两段入队 | {} | {}").format(*names))
+            "TrainDialog", "开始训练: 字符识别 | {}").format(name))
         self.accept()
         _TrainStartDialog(parent=self).exec()
 
@@ -1385,16 +1406,13 @@ class TrainDialog(QDialog):
         self.accept()
 
     def _enqueue_ocr(self, params):
-        """字符检测入队两段, 队列里是两项, 跑完各自留一条记录."""
-        orders = []
-        for stage in (occ.DET_TASK, occ.RECO_TASK):
-            stage_params = dict(params)
-            stage_params["task"] = stage
-            orders.append(self.app.enqueue_train(stage_params)["order"] + 1)
+        """字符识别入队一项."""
+        stage_params = dict(params)
+        stage_params["task"] = occ.RECO_TASK
+        order = self.app.enqueue_train(stage_params)["order"] + 1
         MessageBox.information(
             self, self.tr("加入队列"),
-            self.tr("字符检测已拆成检测段与识别段, 分别排在第 {} 和第 {} 个")
-            .format(*orders))
+            self.tr("字符识别已加入队列, 排在第 {} 个").format(order))
         self.accept()
 
     def collect_train_params(self):

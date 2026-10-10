@@ -202,6 +202,39 @@ def shapes_to_detections(shapes):
     return out
 
 
+def _is_number(text):
+    """yolo 字段是不是数字; 只用来分辨 yolo 标签与字条文本."""
+    try:
+        float(text)
+    except ValueError:
+        return False
+    return True
+
+
+def is_text_line_label(path):
+    """
+    同目录同名的 .txt 是不是字条集标签(整个文件就是一行文字).
+
+    字条集与 yolo 检测集共用 .txt, 只能看行内容: yolo 行是
+    "类别 cx cy w h" 这样的数字字段, 字条行是任意文字. 空文件两边都算没内容;
+    含至少一行完整 yolo 字段的按 yolo 走, 这里不抢.
+    """
+    if not path or not os.path.isfile(path):
+        return False
+    try:
+        with open(path, "r", encoding="utf-8-sig", errors="ignore") as f:
+            rows = [line.split() for line in f]
+    except OSError:
+        return False
+    rows = [r for r in rows if r]
+    if not rows:
+        return False
+    for row in rows:
+        if len(row) < 5 or not all(_is_number(x) for x in row):
+            return True
+    return False
+
+
 def label_file_has_content(path, fmt):
     """
     标签文件是否存在且含至少一个有效目标(空文件, 空 shapes 都算没有).
@@ -211,7 +244,7 @@ def label_file_has_content(path, fmt):
     if not path or not os.path.isfile(path):
         return False
     if fmt == ".txt":
-        return bool(load_yolo_shapes(path, 1, 1))
+        return bool(load_yolo_shapes(path, 1, 1)) or is_text_line_label(path)
     return bool(load_json_shapes(path))
 
 
@@ -230,7 +263,12 @@ def image_has_label(image_path, label_dirs, fmt):
         return False
     ext = ".txt" if fmt == ".txt" else ".json"
     stem = os.path.splitext(os.path.basename(image_path))[0]
-    for d in label_dirs or []:
+    dirs = list(label_dirs or [])
+    if ext == ".txt":
+        # 扁平排布: 字条集与部分 yolo 集把标签跟图放同一目录, 不该逼用户
+        # 再把标签路径指回图像目录
+        dirs.append(os.path.dirname(image_path))
+    for d in dirs:
         # 不在这里判 d 是不是目录: label_file_has_content 的 isfile 已经兜住,
         # 而这个函数是逐图调用的, 每张图多一次 stat 没必要
         if d and label_file_has_content(os.path.join(d, stem + ext), ext):
