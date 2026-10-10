@@ -1737,22 +1737,22 @@ Vị trí: {}</translation>
     </message>
     <message>
         <location filename="../app/mixins/label_mixin.py" line="100"/>
-        <location filename="../app/mixins/label_mixin.py" line="175"/>
+        <location filename="../app/mixins/label_mixin.py" line="176"/>
         <source>未标注</source>
         <translation>Chưa gán nhãn</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="213"/>
+        <location filename="../app/mixins/label_mixin.py" line="214"/>
         <source>重命名</source>
         <translation>Đổi tên</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="219"/>
+        <location filename="../app/mixins/label_mixin.py" line="220"/>
         <source>合并标签</source>
         <translation>Hợp nhất nhãn</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="220"/>
+        <location filename="../app/mixins/label_mixin.py" line="221"/>
         <source>标签&quot;{}&quot;已存在.
 确定把&quot;{}&quot;的所有标注合并到&quot;{}&quot;吗?
 此操作会改写数据集源标签文件, 且不可恢复.</source>
@@ -1761,44 +1761,44 @@ Hợp nhất tất cả chú thích của &quot;{}&quot; vào &quot;{}&quot;?
 Thao tác này ghi đè tệp nhãn nguồn của bộ dữ liệu và không thể khôi phục.</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="275"/>
+        <location filename="../app/mixins/label_mixin.py" line="276"/>
         <source>合并标签: {} → {} ({}/{}) | 启动后台文件合并, 完成后输出统计</source>
         <translation>Hợp nhất nhãn: {} → {} ({}/{}) | khởi động hợp nhất tệp chạy nền, xuất thống kê khi xong</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="278"/>
+        <location filename="../app/mixins/label_mixin.py" line="279"/>
         <source>重命名标签: {} → {} ({}/{})</source>
         <translation>Đổi tên nhãn: {} → {} ({}/{})</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="354"/>
+        <location filename="../app/mixins/label_mixin.py" line="355"/>
         <source>{}: {}个</source>
         <translation>{}: {} khung</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="357"/>
+        <location filename="../app/mixins/label_mixin.py" line="358"/>
         <source>删除标签完成: {} | 修改 {} 个标签文件 | 删除后标签统计({}类): {}</source>
         <translation>Xóa nhãn xong: {} | sửa {} tệp nhãn | thống kê nhãn sau khi xóa ({} lớp): {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="360"/>
-        <location filename="../app/mixins/label_mixin.py" line="365"/>
-        <location filename="../app/mixins/label_mixin.py" line="370"/>
+        <location filename="../app/mixins/label_mixin.py" line="361"/>
+        <location filename="../app/mixins/label_mixin.py" line="366"/>
+        <location filename="../app/mixins/label_mixin.py" line="371"/>
         <source>(无)</source>
         <translation>(không có)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="362"/>
+        <location filename="../app/mixins/label_mixin.py" line="363"/>
         <source>合并标签: {} → {} | 修改 {} 个标签文件 | 合并后标签统计({}类): {}</source>
         <translation>Hợp nhất nhãn: {} → {} | sửa {} tệp nhãn | thống kê nhãn sau khi hợp nhất ({} lớp): {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="367"/>
+        <location filename="../app/mixins/label_mixin.py" line="368"/>
         <source>合并标签: {} → {} | 无标签文件被修改 | 合并后标签统计({}类): {}</source>
         <translation>Hợp nhất nhãn: {} → {} | không có tệp nhãn nào bị sửa | thống kê nhãn sau khi hợp nhất ({} lớp): {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="461"/>
+        <location filename="../app/mixins/label_mixin.py" line="462"/>
         <source>删除标签: {} ({}/{})</source>
         <translation>Xóa nhãn: {} ({}/{})</translation>
     </message>
@@ -4881,11 +4881,11 @@ Báo cáo tốn khoảng 120 KB mỗi ảnh; khi có nhiều mẫu, giảm số 
     </message>
     <message>
         <location filename="../ui/train.ui" line="916"/>
-        <location filename="../app/train/dialogs.py" line="1364"/>
-        <location filename="../app/train/dialogs.py" line="1373"/>
-        <location filename="../app/train/dialogs.py" line="1384"/>
-        <location filename="../app/train/dialogs.py" line="1403"/>
-        <location filename="../app/train/dialogs.py" line="1414"/>
+        <location filename="../app/train/dialogs.py" line="1354"/>
+        <location filename="../app/train/dialogs.py" line="1363"/>
+        <location filename="../app/train/dialogs.py" line="1374"/>
+        <location filename="../app/train/dialogs.py" line="1393"/>
+        <location filename="../app/train/dialogs.py" line="1404"/>
         <source>加入队列</source>
         <translation>Thêm vào hàng đợi</translation>
     </message>
@@ -4925,7 +4925,7 @@ Báo cáo tốn khoảng 120 KB mỗi ảnh; khi có nhiều mẫu, giảm số 
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="286"/>
-        <location filename="../app/train/dialogs.py" line="1374"/>
+        <location filename="../app/train/dialogs.py" line="1364"/>
         <source>请先选择输出路径</source>
         <translation>Chọn đường dẫn đầu ra trước</translation>
     </message>
@@ -5145,12 +5145,7 @@ Báo cáo tốn khoảng 120 KB mỗi ảnh; khi có nhiều mẫu, giảm số 
         <translation>Kiến trúc mạng hiện tại không hỗ trợ tăng cường này</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1351"/>
-        <source>开始训练: 字符识别 | {}</source>
-        <translation>Bắt đầu huấn luyện: nhận dạng văn bản | {}</translation>
-    </message>
-    <message>
-        <location filename="../app/train/dialogs.py" line="1415"/>
+        <location filename="../app/train/dialogs.py" line="1405"/>
         <source>字符识别已加入队列, 排在第 {} 个</source>
         <translation>Đã thêm nhận dạng văn bản vào hàng đợi, vị trí {}</translation>
     </message>
@@ -5219,7 +5214,7 @@ Vui lòng cài đặt lại phần mềm rồi thử lại</translation>
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="1304"/>
-        <location filename="../app/train/dialogs.py" line="1360"/>
+        <location filename="../app/train/dialogs.py" line="1350"/>
         <source>参数校验</source>
         <translation>Kiểm tra tham số</translation>
     </message>
@@ -5246,27 +5241,27 @@ Vui lòng cài đặt lại phần mềm rồi thử lại</translation>
         <translation>Bắt đầu huấn luyện: loại tác vụ={} tập huấn luyện={} tập xác thực={}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1389"/>
+        <location filename="../app/train/dialogs.py" line="1379"/>
         <source>队列</source>
         <translation>Hàng đợi</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1390"/>
+        <location filename="../app/train/dialogs.py" line="1380"/>
         <source>已更新该队列任务的参数</source>
         <translation>Đã cập nhật tham số của tác vụ trong hàng đợi</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1396"/>
+        <location filename="../app/train/dialogs.py" line="1386"/>
         <source>加入队列失败</source>
         <translation>Thêm vào hàng đợi thất bại</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1399"/>
+        <location filename="../app/train/dialogs.py" line="1389"/>
         <source>加入训练队列: {} | {}</source>
         <translation>Thêm vào hàng đợi huấn luyện: {} | {}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1404"/>
+        <location filename="../app/train/dialogs.py" line="1394"/>
         <source>已加入队列(第 {} 个), 可在首页&quot;队列&quot;中查看或启动.</source>
         <translation>Đã thêm vào hàng đợi (vị trí {}), có thể xem hoặc khởi động trong &quot;Hàng đợi&quot; ở trang chủ.</translation>
     </message>
@@ -5344,32 +5339,37 @@ Vui lòng cài đặt lại phần mềm rồi thử lại</translation>
         <translation>{} đang huấn luyện {}/{}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/train_mixin.py" line="147"/>
-        <source>进度 | 当前最好 {}</source>
-        <translation>Tiến độ | {} tốt nhất hiện tại</translation>
-    </message>
-    <message>
-        <location filename="../app/mixins/train_mixin.py" line="211"/>
+        <location filename="../app/mixins/train_mixin.py" line="215"/>
         <source>更新训练指标: record={} 已完成epoch={} {}={} 类别数={}</source>
         <translation>Cập nhật chỉ số huấn luyện: record={} epoch đã xong={} {}={} số lớp={}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/train_mixin.py" line="310"/>
+        <location filename="../app/mixins/train_mixin.py" line="314"/>
         <source>等待显存释放 · 下一项:{}</source>
         <translation>Đang chờ giải phóng bộ nhớ GPU · mục tiếp:{}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/train_mixin.py" line="187"/>
+        <location filename="../app/mixins/train_mixin.py" line="191"/>
         <source>训练失败(队列模式, 已跳过弹窗): {}</source>
         <translation>Huấn luyện thất bại (chế độ hàng đợi, đã bỏ qua hộp thoại): {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/train_mixin.py" line="189"/>
+        <location filename="../app/mixins/train_mixin.py" line="149"/>
+        <source>进度 | 当前最好 {}(越小越好)</source>
+        <translation>Tiến độ | {} tốt nhất hiện tại (nhỏ hơn là tốt hơn)</translation>
+    </message>
+    <message>
+        <location filename="../app/mixins/train_mixin.py" line="151"/>
+        <source>进度 | 当前最好 {}(越大越好)</source>
+        <translation>Tiến độ | {} tốt nhất hiện tại (lớn hơn là tốt hơn)</translation>
+    </message>
+    <message>
+        <location filename="../app/mixins/train_mixin.py" line="193"/>
         <source>训练失败</source>
         <translation>Huấn luyện thất bại</translation>
     </message>
     <message>
-        <location filename="../app/mixins/train_mixin.py" line="190"/>
+        <location filename="../app/mixins/train_mixin.py" line="194"/>
         <source>训练过程中发生错误, Err:
 
 {}</source>
@@ -5378,7 +5378,7 @@ Vui lòng cài đặt lại phần mềm rồi thử lại</translation>
 {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/train_mixin.py" line="283"/>
+        <location filename="../app/mixins/train_mixin.py" line="287"/>
         <source>已保存模型记录: {} | {}</source>
         <translation>Đã lưu bản ghi mô hình: {} | {}</translation>
     </message>

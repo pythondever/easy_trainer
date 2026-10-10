@@ -21,6 +21,16 @@ def is_text_label(name):
     return name in (TEXT_LABEL_ZH, TEXT_LABEL_EN)
 
 
+def display_label(name):
+    """界面上的写法: 保留标签跟随当前语言, 其余标签原样.
+
+    盘上的 json 里可能是「文本」, 也可能是 text(取决于标注时用的是哪种界面语言),
+    所以显示时统一折成当前语言的写法; 筛选与匹配仍旧按原值走, 不改存储.
+    界面若已经切过语言, 这里在渲染时重算, 缓存不必重读.
+    """
+    return text_label() if is_text_label(name) else name
+
+
 # labelme json 顶层的 OCR 标志位. 推理写出的文本标注靠它跟普通检测/分割
 # 区分: 重载扫到就给数据集打上 ocr 类型, 否则训练页认不出这是文本数据集.
 OCR_JSON_FLAG = "ocr"

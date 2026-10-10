@@ -1737,22 +1737,22 @@ Emplacement : {}</translation>
     </message>
     <message>
         <location filename="../app/mixins/label_mixin.py" line="100"/>
-        <location filename="../app/mixins/label_mixin.py" line="175"/>
+        <location filename="../app/mixins/label_mixin.py" line="176"/>
         <source>未标注</source>
         <translation>Non étiqueté</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="213"/>
+        <location filename="../app/mixins/label_mixin.py" line="214"/>
         <source>重命名</source>
         <translation>Renommer</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="219"/>
+        <location filename="../app/mixins/label_mixin.py" line="220"/>
         <source>合并标签</source>
         <translation>Fusionner les étiquettes</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="220"/>
+        <location filename="../app/mixins/label_mixin.py" line="221"/>
         <source>标签&quot;{}&quot;已存在.
 确定把&quot;{}&quot;的所有标注合并到&quot;{}&quot;吗?
 此操作会改写数据集源标签文件, 且不可恢复.</source>
@@ -1761,44 +1761,44 @@ Fusionner toutes les annotations de « {} » dans « {} » ?
 Cette opération réécrit les fichiers d&apos;étiquettes source du jeu de données et est irréversible.</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="275"/>
+        <location filename="../app/mixins/label_mixin.py" line="276"/>
         <source>合并标签: {} → {} ({}/{}) | 启动后台文件合并, 完成后输出统计</source>
         <translation>Fusion des étiquettes : {} → {} ({}/{}) | fusion des fichiers lancée en arrière-plan, statistiques affichées à la fin</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="278"/>
+        <location filename="../app/mixins/label_mixin.py" line="279"/>
         <source>重命名标签: {} → {} ({}/{})</source>
         <translation>Renommage de l&apos;étiquette : {} → {} ({}/{})</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="354"/>
+        <location filename="../app/mixins/label_mixin.py" line="355"/>
         <source>{}: {}个</source>
         <translation>{} : {} boîtes</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="357"/>
+        <location filename="../app/mixins/label_mixin.py" line="358"/>
         <source>删除标签完成: {} | 修改 {} 个标签文件 | 删除后标签统计({}类): {}</source>
         <translation>Suppression d&apos;étiquette terminée : {} | {} fichiers d&apos;étiquettes modifiés | statistiques après suppression ({} classes) : {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="360"/>
-        <location filename="../app/mixins/label_mixin.py" line="365"/>
-        <location filename="../app/mixins/label_mixin.py" line="370"/>
+        <location filename="../app/mixins/label_mixin.py" line="361"/>
+        <location filename="../app/mixins/label_mixin.py" line="366"/>
+        <location filename="../app/mixins/label_mixin.py" line="371"/>
         <source>(无)</source>
         <translation>(aucun)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="362"/>
+        <location filename="../app/mixins/label_mixin.py" line="363"/>
         <source>合并标签: {} → {} | 修改 {} 个标签文件 | 合并后标签统计({}类): {}</source>
         <translation>Fusion des étiquettes : {} → {} | {} fichiers d&apos;étiquettes modifiés | statistiques après fusion ({} classes) : {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="367"/>
+        <location filename="../app/mixins/label_mixin.py" line="368"/>
         <source>合并标签: {} → {} | 无标签文件被修改 | 合并后标签统计({}类): {}</source>
         <translation>Fusion des étiquettes : {} → {} | aucun fichier d&apos;étiquettes modifié | statistiques après fusion ({} classes) : {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="461"/>
+        <location filename="../app/mixins/label_mixin.py" line="462"/>
         <source>删除标签: {} ({}/{})</source>
         <translation>Supprimer l&apos;étiquette : {} ({}/{})</translation>
     </message>
@@ -4881,11 +4881,11 @@ Le rapport pèse environ 120 Ko par image ; réduire cette valeur diminue nettem
     </message>
     <message>
         <location filename="../ui/train.ui" line="916"/>
-        <location filename="../app/train/dialogs.py" line="1364"/>
-        <location filename="../app/train/dialogs.py" line="1373"/>
-        <location filename="../app/train/dialogs.py" line="1384"/>
-        <location filename="../app/train/dialogs.py" line="1403"/>
-        <location filename="../app/train/dialogs.py" line="1414"/>
+        <location filename="../app/train/dialogs.py" line="1354"/>
+        <location filename="../app/train/dialogs.py" line="1363"/>
+        <location filename="../app/train/dialogs.py" line="1374"/>
+        <location filename="../app/train/dialogs.py" line="1393"/>
+        <location filename="../app/train/dialogs.py" line="1404"/>
         <source>加入队列</source>
         <translation>Ajouter à la file d&apos;attente</translation>
     </message>
@@ -4925,7 +4925,7 @@ Le rapport pèse environ 120 Ko par image ; réduire cette valeur diminue nettem
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="286"/>
-        <location filename="../app/train/dialogs.py" line="1374"/>
+        <location filename="../app/train/dialogs.py" line="1364"/>
         <source>请先选择输出路径</source>
         <translation>Sélectionnez d&apos;abord un chemin de sortie</translation>
     </message>
@@ -5145,12 +5145,7 @@ Le rapport pèse environ 120 Ko par image ; réduire cette valeur diminue nettem
         <translation>L&apos;architecture réseau actuelle ne prend pas en charge cette augmentation</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1351"/>
-        <source>开始训练: 字符识别 | {}</source>
-        <translation>Démarrer l&apos;entraînement : reconnaissance de texte | {}</translation>
-    </message>
-    <message>
-        <location filename="../app/train/dialogs.py" line="1415"/>
+        <location filename="../app/train/dialogs.py" line="1405"/>
         <source>字符识别已加入队列, 排在第 {} 个</source>
         <translation>Reconnaissance de texte ajoutée à la file, numéro {}</translation>
     </message>
@@ -5219,7 +5214,7 @@ Veuillez réinstaller le logiciel</translation>
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="1304"/>
-        <location filename="../app/train/dialogs.py" line="1360"/>
+        <location filename="../app/train/dialogs.py" line="1350"/>
         <source>参数校验</source>
         <translation>Validation des paramètres</translation>
     </message>
@@ -5246,27 +5241,27 @@ Veuillez réinstaller le logiciel</translation>
         <translation>Début de l&apos;entraînement : type de tâche={} jeu d&apos;entraînement={} jeu de validation={}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1389"/>
+        <location filename="../app/train/dialogs.py" line="1379"/>
         <source>队列</source>
         <translation>File d&apos;attente</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1390"/>
+        <location filename="../app/train/dialogs.py" line="1380"/>
         <source>已更新该队列任务的参数</source>
         <translation>Paramètres de la tâche de la file d&apos;attente mis à jour</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1396"/>
+        <location filename="../app/train/dialogs.py" line="1386"/>
         <source>加入队列失败</source>
         <translation>Échec de l&apos;ajout à la file d&apos;attente</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1399"/>
+        <location filename="../app/train/dialogs.py" line="1389"/>
         <source>加入训练队列: {} | {}</source>
         <translation>Ajout à la file d&apos;attente d&apos;entraînement : {} | {}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1404"/>
+        <location filename="../app/train/dialogs.py" line="1394"/>
         <source>已加入队列(第 {} 个), 可在首页&quot;队列&quot;中查看或启动.</source>
         <translation>Ajouté à la file d&apos;attente (position {}) ; consultez-le ou lancez-le depuis « File d&apos;attente » sur la page d&apos;accueil.</translation>
     </message>
@@ -5344,32 +5339,37 @@ Attendez un instant avant de lancer la tâche suivante.</translation>
         <translation>{} entraînement {}/{}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/train_mixin.py" line="147"/>
-        <source>进度 | 当前最好 {}</source>
-        <translation>Progression | meilleur score : {}</translation>
-    </message>
-    <message>
-        <location filename="../app/mixins/train_mixin.py" line="211"/>
+        <location filename="../app/mixins/train_mixin.py" line="215"/>
         <source>更新训练指标: record={} 已完成epoch={} {}={} 类别数={}</source>
         <translation>Mise à jour des métriques d&apos;entraînement : record={} epoch terminés={} {}={} nombre de classes={}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/train_mixin.py" line="310"/>
+        <location filename="../app/mixins/train_mixin.py" line="314"/>
         <source>等待显存释放 · 下一项:{}</source>
         <translation>Attente libération VRAM · suivant : {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/train_mixin.py" line="187"/>
+        <location filename="../app/mixins/train_mixin.py" line="191"/>
         <source>训练失败(队列模式, 已跳过弹窗): {}</source>
         <translation>Échec de l&apos;entraînement (mode file d&apos;attente, boîte de dialogue ignorée) : {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/train_mixin.py" line="189"/>
+        <location filename="../app/mixins/train_mixin.py" line="149"/>
+        <source>进度 | 当前最好 {}(越小越好)</source>
+        <translation>Progression | meilleur score : {} (plus petit est mieux)</translation>
+    </message>
+    <message>
+        <location filename="../app/mixins/train_mixin.py" line="151"/>
+        <source>进度 | 当前最好 {}(越大越好)</source>
+        <translation>Progression | meilleur score : {} (plus grand est mieux)</translation>
+    </message>
+    <message>
+        <location filename="../app/mixins/train_mixin.py" line="193"/>
         <source>训练失败</source>
         <translation>Échec de l&apos;entraînement</translation>
     </message>
     <message>
-        <location filename="../app/mixins/train_mixin.py" line="190"/>
+        <location filename="../app/mixins/train_mixin.py" line="194"/>
         <source>训练过程中发生错误, Err:
 
 {}</source>
@@ -5378,7 +5378,7 @@ Attendez un instant avant de lancer la tâche suivante.</translation>
 {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/train_mixin.py" line="283"/>
+        <location filename="../app/mixins/train_mixin.py" line="287"/>
         <source>已保存模型记录: {} | {}</source>
         <translation>Enregistrement de modèle sauvegardé : {} | {}</translation>
     </message>

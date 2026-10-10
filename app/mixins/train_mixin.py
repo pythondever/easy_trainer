@@ -144,9 +144,13 @@ class TrainMixin(object):
         if best is not None:
             self._best_map50 = best
             self._metric_decimals = p.decimals
-            self._progress_tip = QC.translate(
-                "TrainMixin", "进度 | 当前最好 {}").format(
-                    QC.translate("MetricLabel", p.label))
+            # 方向跟着指标走: mAP/准确率这类越大越好, CER 这类错误率越小越好
+            if p.direction < 0:
+                tip = QC.translate("TrainMixin", "进度 | 当前最好 {}(越小越好)")
+            else:
+                tip = QC.translate("TrainMixin", "进度 | 当前最好 {}(越大越好)")
+            self._progress_tip = tip.format(
+                QC.translate("MetricLabel", p.label))
             self._apply_progress_format()
         self._pending_metrics = metrics
         if self._training_record_id:

@@ -1737,22 +1737,22 @@
     </message>
     <message>
         <location filename="../app/mixins/label_mixin.py" line="100"/>
-        <location filename="../app/mixins/label_mixin.py" line="175"/>
+        <location filename="../app/mixins/label_mixin.py" line="176"/>
         <source>未标注</source>
         <translation>미라벨</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="213"/>
+        <location filename="../app/mixins/label_mixin.py" line="214"/>
         <source>重命名</source>
         <translation>이름 바꾸기</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="219"/>
+        <location filename="../app/mixins/label_mixin.py" line="220"/>
         <source>合并标签</source>
         <translation>라벨 병합</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="220"/>
+        <location filename="../app/mixins/label_mixin.py" line="221"/>
         <source>标签&quot;{}&quot;已存在.
 确定把&quot;{}&quot;的所有标注合并到&quot;{}&quot;吗?
 此操作会改写数据集源标签文件, 且不可恢复.</source>
@@ -1761,44 +1761,44 @@
 이 작업은 데이터셋 원본 라벨 파일을 다시 쓰며 복구할 수 없습니다.</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="275"/>
+        <location filename="../app/mixins/label_mixin.py" line="276"/>
         <source>合并标签: {} → {} ({}/{}) | 启动后台文件合并, 完成后输出统计</source>
         <translation>라벨 병합: {} → {} ({}/{}) | 백그라운드에서 파일 병합을 시작했습니다. 완료 후 통계를 출력합니다</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="278"/>
+        <location filename="../app/mixins/label_mixin.py" line="279"/>
         <source>重命名标签: {} → {} ({}/{})</source>
         <translation>라벨 이름 바꾸기: {} → {} ({}/{})</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="354"/>
+        <location filename="../app/mixins/label_mixin.py" line="355"/>
         <source>{}: {}个</source>
         <translation>{}: {}개</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="357"/>
+        <location filename="../app/mixins/label_mixin.py" line="358"/>
         <source>删除标签完成: {} | 修改 {} 个标签文件 | 删除后标签统计({}类): {}</source>
         <translation>라벨 삭제 완료: {} | 라벨 파일 {}개 수정 | 삭제 후 라벨 통계({}개 클래스): {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="360"/>
-        <location filename="../app/mixins/label_mixin.py" line="365"/>
-        <location filename="../app/mixins/label_mixin.py" line="370"/>
+        <location filename="../app/mixins/label_mixin.py" line="361"/>
+        <location filename="../app/mixins/label_mixin.py" line="366"/>
+        <location filename="../app/mixins/label_mixin.py" line="371"/>
         <source>(无)</source>
         <translation>(없음)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="362"/>
+        <location filename="../app/mixins/label_mixin.py" line="363"/>
         <source>合并标签: {} → {} | 修改 {} 个标签文件 | 合并后标签统计({}类): {}</source>
         <translation>라벨 병합: {} → {} | 라벨 파일 {}개 수정 | 병합 후 라벨 통계({}개 클래스): {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="367"/>
+        <location filename="../app/mixins/label_mixin.py" line="368"/>
         <source>合并标签: {} → {} | 无标签文件被修改 | 合并后标签统计({}类): {}</source>
         <translation>라벨 병합: {} → {} | 수정된 라벨 파일 없음 | 병합 후 라벨 통계({}개 클래스): {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/label_mixin.py" line="461"/>
+        <location filename="../app/mixins/label_mixin.py" line="462"/>
         <source>删除标签: {} ({}/{})</source>
         <translation>라벨 삭제: {} ({}/{})</translation>
     </message>
@@ -4881,11 +4881,11 @@
     </message>
     <message>
         <location filename="../ui/train.ui" line="916"/>
-        <location filename="../app/train/dialogs.py" line="1364"/>
-        <location filename="../app/train/dialogs.py" line="1373"/>
-        <location filename="../app/train/dialogs.py" line="1384"/>
-        <location filename="../app/train/dialogs.py" line="1403"/>
-        <location filename="../app/train/dialogs.py" line="1414"/>
+        <location filename="../app/train/dialogs.py" line="1354"/>
+        <location filename="../app/train/dialogs.py" line="1363"/>
+        <location filename="../app/train/dialogs.py" line="1374"/>
+        <location filename="../app/train/dialogs.py" line="1393"/>
+        <location filename="../app/train/dialogs.py" line="1404"/>
         <source>加入队列</source>
         <translation>대기열에 추가</translation>
     </message>
@@ -4925,7 +4925,7 @@
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="286"/>
-        <location filename="../app/train/dialogs.py" line="1374"/>
+        <location filename="../app/train/dialogs.py" line="1364"/>
         <source>请先选择输出路径</source>
         <translation>먼저 출력 경로를 선택하세요</translation>
     </message>
@@ -5145,12 +5145,7 @@
         <translation>현재 네트워크 아키텍처에서는 이 증강을 지원하지 않습니다</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1351"/>
-        <source>开始训练: 字符识别 | {}</source>
-        <translation>학습 시작: 문자 인식 | {}</translation>
-    </message>
-    <message>
-        <location filename="../app/train/dialogs.py" line="1415"/>
+        <location filename="../app/train/dialogs.py" line="1405"/>
         <source>字符识别已加入队列, 排在第 {} 个</source>
         <translation>문자 인식이 대기열에 추가되었습니다, {}번째</translation>
     </message>
@@ -5219,7 +5214,7 @@
     </message>
     <message>
         <location filename="../app/train/dialogs.py" line="1304"/>
-        <location filename="../app/train/dialogs.py" line="1360"/>
+        <location filename="../app/train/dialogs.py" line="1350"/>
         <source>参数校验</source>
         <translation>파라미터 검증</translation>
     </message>
@@ -5246,27 +5241,27 @@
         <translation>학습 시작: 작업 유형={} 학습 세트={} 검증 세트={}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1389"/>
+        <location filename="../app/train/dialogs.py" line="1379"/>
         <source>队列</source>
         <translation>대기열</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1390"/>
+        <location filename="../app/train/dialogs.py" line="1380"/>
         <source>已更新该队列任务的参数</source>
         <translation>대기열 작업의 파라미터를 업데이트했습니다</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1396"/>
+        <location filename="../app/train/dialogs.py" line="1386"/>
         <source>加入队列失败</source>
         <translation>대기열 추가 실패</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1399"/>
+        <location filename="../app/train/dialogs.py" line="1389"/>
         <source>加入训练队列: {} | {}</source>
         <translation>학습 대기열에 추가: {} | {}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1404"/>
+        <location filename="../app/train/dialogs.py" line="1394"/>
         <source>已加入队列(第 {} 个), 可在首页&quot;队列&quot;中查看或启动.</source>
         <translation>대기열에 추가되었습니다({}번째). 홈 화면의 &quot;대기열&quot;에서 확인하거나 시작할 수 있습니다.</translation>
     </message>
@@ -5344,32 +5339,37 @@
         <translation>{} 학습 중 {}/{}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/train_mixin.py" line="147"/>
-        <source>进度 | 当前最好 {}</source>
-        <translation>진행률 | 현재 최고 {}</translation>
-    </message>
-    <message>
-        <location filename="../app/mixins/train_mixin.py" line="211"/>
+        <location filename="../app/mixins/train_mixin.py" line="215"/>
         <source>更新训练指标: record={} 已完成epoch={} {}={} 类别数={}</source>
         <translation>학습 지표 업데이트: record={} 완료 epoch={} {}={} 클래스 수={}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/train_mixin.py" line="310"/>
+        <location filename="../app/mixins/train_mixin.py" line="314"/>
         <source>等待显存释放 · 下一项:{}</source>
         <translation>VRAM 해제 대기 · 다음:{}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/train_mixin.py" line="187"/>
+        <location filename="../app/mixins/train_mixin.py" line="191"/>
         <source>训练失败(队列模式, 已跳过弹窗): {}</source>
         <translation>학습 실패(대기열 모드, 팝업 건너뜀): {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/train_mixin.py" line="189"/>
+        <location filename="../app/mixins/train_mixin.py" line="149"/>
+        <source>进度 | 当前最好 {}(越小越好)</source>
+        <translation>진행률 | 현재 최고 {}(작을수록 좋음)</translation>
+    </message>
+    <message>
+        <location filename="../app/mixins/train_mixin.py" line="151"/>
+        <source>进度 | 当前最好 {}(越大越好)</source>
+        <translation>진행률 | 현재 최고 {}(클수록 좋음)</translation>
+    </message>
+    <message>
+        <location filename="../app/mixins/train_mixin.py" line="193"/>
         <source>训练失败</source>
         <translation>학습 실패</translation>
     </message>
     <message>
-        <location filename="../app/mixins/train_mixin.py" line="190"/>
+        <location filename="../app/mixins/train_mixin.py" line="194"/>
         <source>训练过程中发生错误, Err:
 
 {}</source>
@@ -5378,7 +5378,7 @@
 {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/train_mixin.py" line="283"/>
+        <location filename="../app/mixins/train_mixin.py" line="287"/>
         <source>已保存模型记录: {} | {}</source>
         <translation>모델 기록 저장됨: {} | {}</translation>
     </message>

@@ -1314,8 +1314,8 @@ class TrainDialog(QDialog):
             return
         params = self.collect_train_params()
         if self._spec().split_stages:
-            self._start_ocr(params)
-            return
+            # 一次训练只入识别段, 但记录里落的是 ocr_rec: runner 按它选识别骨架
+            params["task"] = occ.RECO_TASK
         try:
             config = make_train_config(self.app.db, params)
         except Exception as exc:
@@ -1337,19 +1337,9 @@ class TrainDialog(QDialog):
         write_log(QC.translate(
             "TrainDialog",
             "开始训练: 任务类型={} 训练集={} 验证集={}").format(
-            self._task_text(), record["dataset"], record["val_dataset"]))
+            task_text(params["task"]), record["dataset"],
+            record["val_dataset"]))
         # 启动成功:立即关闭训练窗口 + 弹倒计时提示(5s 自动确认/点击立即确认)
-        self.accept()
-        _TrainStartDialog(parent=self).exec()
-
-    def _start_ocr(self, params):
-        """字符识别只训识别段: 入队一项, 留一条训练记录."""
-        stage_params = dict(params)
-        stage_params["task"] = occ.RECO_TASK
-        name = self.app.enqueue_train(stage_params)["name"]
-        self.app.start_train_queue()
-        write_log(QC.translate(
-            "TrainDialog", "开始训练: 字符识别 | {}").format(name))
         self.accept()
         _TrainStartDialog(parent=self).exec()
 

@@ -3,7 +3,7 @@ import time
 
 from app.core import name_rules
 from app.core.db import get_paths
-from app.core.label_utils import (is_text_label, normalize_label,
+from app.core.label_utils import (display_label, is_text_label, normalize_label,
                                   label_sort_key, rec_is_labeled)
 from app.annotation.box_item import assign_label_color
 from app.widgets.label_filter_popup import (ALL_COLOR, DIM_DOT,
@@ -169,8 +169,9 @@ class LabelMixin(object):
                 color = assign_label_color(lbl, used)
                 labels[lbl] = color
                 used.add(color)
-        # 标签按排序放前面, 未标注固定排最后
-        items = [(name, color, name) for name, color in
+        # 标签按排序放前面, 未标注固定排最后. 显示名跟随当前语言(保留标签),
+        # 第三列 key 仍是存储值, 筛选与匹配不动
+        items = [(display_label(name), color, name) for name, color in
                  sorted(labels.items(), key=lambda kv: label_sort_key(kv[0]))]
         items.append((QC.translate("LabelMixin", "未标注"), UNLABELED_COLOR,
                       UNLABELED_KEY))
