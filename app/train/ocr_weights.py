@@ -21,7 +21,8 @@ _SUBDIR = "ocr"
 
 # 架构对应 (本地档位名, docTR 缓存名). 缓存名与 doctr==1.0.1 的 default_cfgs 对齐,
 # 升 doctr 要一起改.
-# 检测段走 pretrained=True 取整模型权重; 识别段只复用骨干, 要的是骨干那一份.
+# 检测段走 pretrained=True 取整模型权重; 识别段的骨干与整模型两份都要: 整模型用于
+# 热启动, 骨干留给拿不到整模型时的回退.
 # nano 与 small 的识别段是同一个网络, 所以识别骨干只有三份, 没有 small-rec.pt.
 DET_FILES = {
     "db_mobilenet_v3_large": ("nano.pt", "db_mobilenet_v3_large-21748dd0.pt"),
@@ -33,6 +34,16 @@ RECO_FILES = {
     "crnn_mobilenet_v3_small": ("nano-rec.pt", "mobilenet_v3_small_r-1a8a3530.pt"),
     "crnn_mobilenet_v3_large": ("medium-rec.pt", "mobilenet_v3_large_r-74a22066.pt"),
     "crnn_vgg16_bn": ("large-rec.pt", "vgg16_bn_r-d108c19c.pt"),
+}
+# 识别段的整模型权重. 官方那三份是在法文词表上训好的, 换词表后 doctr 只丢
+# linear.weight/linear.bias, LSTM 解码器照样能装, 比只用 ImageNet 骨干收敛快得多;
+# 缺这一份时训练会退到"每帧都出 blank", 所以离线机器也必须预置.
+RECO_FULL_FILES = {
+    "crnn_mobilenet_v3_small": ("nano-rec-full.pt",
+                                "crnn_mobilenet_v3_small_pt-3b919a02.pt"),
+    "crnn_mobilenet_v3_large": ("medium-rec-full.pt",
+                                "crnn_mobilenet_v3_large_pt-f5259ec2.pt"),
+    "crnn_vgg16_bn": ("large-rec-full.pt", "crnn_vgg16_bn-0417f351.pt"),
 }
 _HASH_IN_NAME = re.compile(r"-([a-f0-9]*)\.")
 
@@ -94,5 +105,27 @@ def _place(local, cached):
 
 def ensure(arch):
     """把权重根目录 ocr/ 下该架构的权重摆进 docTR 缓存, 返回缓存路径(没有则空串)."""
-    pair = DET_FILES.get(arch) or RECO_FILES.get(arch)
-    return _place(*pair) if pair else ""
+    pair = DET_FILES.get(arch)
+    if pair:
+        return _place(*pair)
+    placed = [_place(*p)
+              for p in (RECO_FILES.get(arch), RECO_FULL_FILES.get(arch)) if p]
+    return next((p for p in placed if p), "")
+
+
+def full_cache_path(arch):
+    """整模型权重在 docTR 缓存里的路径, 没有或内容不对时返回空串.
+
+    训练侧要先问这里再决定试不试 pretrained=True: docTR 的下载函数没设超时,
+    权重不在本地而站点又连不通时, 建模型会一直挂住不返回.
+    """
+    entry = RECO_FULL_FILES.get(arch)
+    if not entry:
+        return ""
+    m = _HASH_IN_NAME.search(entry[1])
+    if not m:
+        return ""
+    dst = os.path.join(_cache_dir(), entry[1])
+    if os.path.isfile(dst) and _hash_ok(dst, m.group(1)):
+        return dst
+    return ""

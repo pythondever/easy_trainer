@@ -122,13 +122,22 @@ def _build_det(arch):
 
 
 def _build_rec(arch, vocab):
-    """识别段的输出层要按我们的词表重建, 只能复用骨干, 不能用官方完整权重."""
+    """识别段优先拿官方整模型热启动: 词表不同时 doctr 只丢 linear 输出层.
+
+    只给 ImageNet 骨干时, LSTM 解码器与输出层都是随机的, 两三千类的新词表要从零学,
+    梯度会先落到"每帧都出 blank"的退化解上(表现是 CER 恒为 1 且一直不降).
+    整模型不在本地就不试它: docTR 下载权重没设超时, 连不通的站点会把建模型挂住.
+    """
     ocr_weights.ensure(arch)
     fn = getattr(recognition, arch)
-    for kw, tag in (({"pretrained": False, "pretrained_backbone": True},
-                     "backbone"),
-                    ({"pretrained": False, "pretrained_backbone": False},
-                     "scratch")):
+    candidates = []
+    if ocr_weights.full_cache_path(arch):
+        candidates.append(({"pretrained": True}, "pretrained"))
+    candidates += [({"pretrained": False, "pretrained_backbone": True},
+                    "backbone"),
+                   ({"pretrained": False, "pretrained_backbone": False},
+                    "scratch")]
+    for kw, tag in candidates:
         try:
             model = fn(vocab=vocab, **kw)
         except Exception:

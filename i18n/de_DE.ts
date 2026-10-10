@@ -3100,67 +3100,67 @@ Trotzdem schließen?</translation>
         <translation>Aufbau {} fehlgeschlagen (TextDetektion)</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="136"/>
+        <location filename="../app/train/ocr_train_runner.py" line="145"/>
         <source>识别模型 {} 权重来源: {}</source>
         <translation>Texterkennungsmodell {}: Gewichte aus {}</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="140"/>
+        <location filename="../app/train/ocr_train_runner.py" line="149"/>
         <source>识别模型 {} 构建失败</source>
         <translation>Aufbau {} fehlgeschlagen (Texterkennung)</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="172"/>
+        <location filename="../app/train/ocr_train_runner.py" line="181"/>
         <source>标注里没有任何文字, 无法训练字符识别</source>
         <translation>Ohne Annotationstext kein Texterkennungstraining</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="180"/>
+        <location filename="../app/train/ocr_train_runner.py" line="189"/>
         <source>标注最长 {} 字, 超过识别段能输出的 {} 步, 请加大输入宽度</source>
         <translation>Die längste Beschriftung umfasst {} Zeichen und überschreitet die {} Schritte der Erkennungsstufe; bitte die Eingabebreite erhöhen</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="200"/>
+        <location filename="../app/train/ocr_train_runner.py" line="209"/>
         <source>词表 {} 个字符</source>
         <translation>Vokabular: {} Zeichen</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="213"/>
+        <location filename="../app/train/ocr_train_runner.py" line="222"/>
         <source>字符{}训练: model={} device={} epochs={} batch={} lr={}</source>
         <translation>Training der {}: model={} device={} epochs={} batch={} lr={}</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="216"/>
+        <location filename="../app/train/ocr_train_runner.py" line="225"/>
         <source>识别</source>
         <translation>Texterkennung</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="217"/>
+        <location filename="../app/train/ocr_train_runner.py" line="226"/>
         <source>检测</source>
         <translation>Erkennung</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="220"/>
+        <location filename="../app/train/ocr_train_runner.py" line="229"/>
         <source>训练集没有可用的文本标注</source>
         <translation>Trainingsdatensatz ohne Textannotationen</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="223"/>
+        <location filename="../app/train/ocr_train_runner.py" line="232"/>
         <source>验证集没有可用的文本标注</source>
         <translation>Validierungsdatensatz ohne Textannotationen</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="225"/>
+        <location filename="../app/train/ocr_train_runner.py" line="234"/>
         <source>数据集: train={} val={}</source>
         <translation>Datensatz: train={} val={}</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="312"/>
+        <location filename="../app/train/ocr_train_runner.py" line="321"/>
         <source>早停触发: 连续 {} 个 epoch 无提升</source>
         <translation>Early Stopping ausgelöst: {} epochs ohne Verbesserung</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="341"/>
+        <location filename="../app/train/ocr_train_runner.py" line="350"/>
         <source>本次训练输出目录(时间戳): {}</source>
         <translation>Ausgabeordner (Zeitstempel): {}</translation>
     </message>

@@ -3100,67 +3100,67 @@ Bao gồm: {}</translation>
         <translation>Xây dựng mô hình phát hiện {} thất bại</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="136"/>
+        <location filename="../app/train/ocr_train_runner.py" line="145"/>
         <source>识别模型 {} 权重来源: {}</source>
         <translation>Mô hình nhận dạng {} nguồn trọng số: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="140"/>
+        <location filename="../app/train/ocr_train_runner.py" line="149"/>
         <source>识别模型 {} 构建失败</source>
         <translation>Xây dựng mô hình nhận dạng {} thất bại</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="172"/>
+        <location filename="../app/train/ocr_train_runner.py" line="181"/>
         <source>标注里没有任何文字, 无法训练字符识别</source>
         <translation>Chú thích không có văn bản nào, không thể huấn luyện nhận dạng văn bản</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="180"/>
+        <location filename="../app/train/ocr_train_runner.py" line="189"/>
         <source>标注最长 {} 字, 超过识别段能输出的 {} 步, 请加大输入宽度</source>
         <translation>Nhãn dài nhất {} ký tự, vượt quá {} bước mà giai đoạn nhận dạng có thể xuất ra; hãy tăng chiều rộng đầu vào</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="200"/>
+        <location filename="../app/train/ocr_train_runner.py" line="209"/>
         <source>词表 {} 个字符</source>
         <translation>Từ vựng {} ký tự</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="213"/>
+        <location filename="../app/train/ocr_train_runner.py" line="222"/>
         <source>字符{}训练: model={} device={} epochs={} batch={} lr={}</source>
         <translation>Huấn luyện {} văn bản: model={} device={} epochs={} batch={} lr={}</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="216"/>
+        <location filename="../app/train/ocr_train_runner.py" line="225"/>
         <source>识别</source>
         <translation>nhận dạng</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="217"/>
+        <location filename="../app/train/ocr_train_runner.py" line="226"/>
         <source>检测</source>
         <translation>Phát hiện</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="220"/>
+        <location filename="../app/train/ocr_train_runner.py" line="229"/>
         <source>训练集没有可用的文本标注</source>
         <translation>Tập huấn luyện không có chú thích văn bản khả dụng</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="223"/>
+        <location filename="../app/train/ocr_train_runner.py" line="232"/>
         <source>验证集没有可用的文本标注</source>
         <translation>Tập kiểm định không có chú thích văn bản khả dụng</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="225"/>
+        <location filename="../app/train/ocr_train_runner.py" line="234"/>
         <source>数据集: train={} val={}</source>
         <translation>Tập dữ liệu: train={} val={}</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="312"/>
+        <location filename="../app/train/ocr_train_runner.py" line="321"/>
         <source>早停触发: 连续 {} 个 epoch 无提升</source>
         <translation>Kích hoạt dừng sớm: {} epoch liên tiếp không cải thiện</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="341"/>
+        <location filename="../app/train/ocr_train_runner.py" line="350"/>
         <source>本次训练输出目录(时间戳): {}</source>
         <translation>Thư mục đầu ra của lần huấn luyện này (dấu thời gian): {}</translation>
     </message>

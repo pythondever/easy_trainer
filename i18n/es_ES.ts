@@ -3100,67 +3100,67 @@ Contiene: {}</translation>
         <translation>Error al construir el modelo de detección {}</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="136"/>
+        <location filename="../app/train/ocr_train_runner.py" line="145"/>
         <source>识别模型 {} 权重来源: {}</source>
         <translation>Modelo de reconocimiento {}, pesos procedentes de: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="140"/>
+        <location filename="../app/train/ocr_train_runner.py" line="149"/>
         <source>识别模型 {} 构建失败</source>
         <translation>Error al construir el modelo de reconocimiento {}</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="172"/>
+        <location filename="../app/train/ocr_train_runner.py" line="181"/>
         <source>标注里没有任何文字, 无法训练字符识别</source>
         <translation>No hay texto en las anotaciones; no se puede entrenar el reconocimiento de texto</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="180"/>
+        <location filename="../app/train/ocr_train_runner.py" line="189"/>
         <source>标注最长 {} 字, 超过识别段能输出的 {} 步, 请加大输入宽度</source>
         <translation>La etiqueta más larga tiene {} caracteres y supera los {} pasos de la etapa de reconocimiento; aumente el ancho de entrada</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="200"/>
+        <location filename="../app/train/ocr_train_runner.py" line="209"/>
         <source>词表 {} 个字符</source>
         <translation>Vocabulario: {} caracteres</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="213"/>
+        <location filename="../app/train/ocr_train_runner.py" line="222"/>
         <source>字符{}训练: model={} device={} epochs={} batch={} lr={}</source>
         <translation>Entrenamiento de texto {}: model={} device={} epochs={} batch={} lr={}</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="216"/>
+        <location filename="../app/train/ocr_train_runner.py" line="225"/>
         <source>识别</source>
         <translation>reconocimiento</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="217"/>
+        <location filename="../app/train/ocr_train_runner.py" line="226"/>
         <source>检测</source>
         <translation>Detección</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="220"/>
+        <location filename="../app/train/ocr_train_runner.py" line="229"/>
         <source>训练集没有可用的文本标注</source>
         <translation>No hay anotaciones de texto utilizables en el conjunto de entrenamiento</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="223"/>
+        <location filename="../app/train/ocr_train_runner.py" line="232"/>
         <source>验证集没有可用的文本标注</source>
         <translation>No hay anotaciones de texto utilizables en el conjunto de validación</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="225"/>
+        <location filename="../app/train/ocr_train_runner.py" line="234"/>
         <source>数据集: train={} val={}</source>
         <translation>Conjunto de datos: train={} val={}</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="312"/>
+        <location filename="../app/train/ocr_train_runner.py" line="321"/>
         <source>早停触发: 连续 {} 个 epoch 无提升</source>
         <translation>Parada anticipada activada: sin mejora durante {} epoch consecutivos</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="341"/>
+        <location filename="../app/train/ocr_train_runner.py" line="350"/>
         <source>本次训练输出目录(时间戳): {}</source>
         <translation>Directorio de salida de esta ejecución (marca de tiempo): {}</translation>
     </message>

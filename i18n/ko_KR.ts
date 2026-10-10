@@ -3100,67 +3100,67 @@
         <translation>검출 모델 {} 구성 실패</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="136"/>
+        <location filename="../app/train/ocr_train_runner.py" line="145"/>
         <source>识别模型 {} 权重来源: {}</source>
         <translation>인식 모델 {} 가중치 출처: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="140"/>
+        <location filename="../app/train/ocr_train_runner.py" line="149"/>
         <source>识别模型 {} 构建失败</source>
         <translation>인식 모델 {} 구성 실패</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="172"/>
+        <location filename="../app/train/ocr_train_runner.py" line="181"/>
         <source>标注里没有任何文字, 无法训练字符识别</source>
         <translation>어노테이션에 텍스트가 없어 텍스트 인식을 학습할 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="180"/>
+        <location filename="../app/train/ocr_train_runner.py" line="189"/>
         <source>标注最长 {} 字, 超过识别段能输出的 {} 步, 请加大输入宽度</source>
         <translation>라벨 최대 길이는 {}자로, 인식 단계가 출력할 수 있는 {} 스텝을 초과합니다. 입력 너비를 늘리세요</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="200"/>
+        <location filename="../app/train/ocr_train_runner.py" line="209"/>
         <source>词表 {} 个字符</source>
         <translation>어휘 {}자</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="213"/>
+        <location filename="../app/train/ocr_train_runner.py" line="222"/>
         <source>字符{}训练: model={} device={} epochs={} batch={} lr={}</source>
         <translation>텍스트 {} 학습: model={} device={} epochs={} batch={} lr={}</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="216"/>
+        <location filename="../app/train/ocr_train_runner.py" line="225"/>
         <source>识别</source>
         <translation>인식</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="217"/>
+        <location filename="../app/train/ocr_train_runner.py" line="226"/>
         <source>检测</source>
         <translation>객체 검출</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="220"/>
+        <location filename="../app/train/ocr_train_runner.py" line="229"/>
         <source>训练集没有可用的文本标注</source>
         <translation>학습 세트에 사용할 수 있는 텍스트 어노테이션이 없습니다</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="223"/>
+        <location filename="../app/train/ocr_train_runner.py" line="232"/>
         <source>验证集没有可用的文本标注</source>
         <translation>검증 세트에 사용할 수 있는 텍스트 어노테이션이 없습니다</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="225"/>
+        <location filename="../app/train/ocr_train_runner.py" line="234"/>
         <source>数据集: train={} val={}</source>
         <translation>데이터셋: train={} val={}</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="312"/>
+        <location filename="../app/train/ocr_train_runner.py" line="321"/>
         <source>早停触发: 连续 {} 个 epoch 无提升</source>
         <translation>조기 종료 발동: {} epoch 연속 향상 없음</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_train_runner.py" line="341"/>
+        <location filename="../app/train/ocr_train_runner.py" line="350"/>
         <source>本次训练输出目录(时间戳): {}</source>
         <translation>이번 학습 출력 디렉터리(타임스탬프): {}</translation>
     </message>
