@@ -26,7 +26,8 @@ from app.core.db import get_paths
 from app.core.label_utils import text_label
 from app.core.log import write_log
 from app.core.utils import fmt_duration
-from app.core.metrics import best_value, metric_key, primary_for, primary_of
+from app.core.metrics import (SCORE_GOOD, SCORE_MID, best_value, metric_key,
+                              primary_for, primary_of, score_of)
 from app.widgets.message_box import MessageBox, ProgressDialog
 from app.widgets.status_style import status_color, status_text, task_text
 from app.widgets.compare_dialog import CompareDialog
@@ -418,9 +419,12 @@ class ModelDialog(QDialog):
     def _sort_records(self, recs):
         # 无精度的(训练中/失败)无论升降序都沉到最后, 否则按精度升序时它们霸占榜首
         if self._sort_col == COL_METRIC:
+            # 按好坏分排: 错误率类指标(CER)折算后小值在前,
+            # 与 mAP 的"精度高在前"是同一个语义
             has = [r for r in recs if _metric_value(r) is not None]
             none = [r for r in recs if _metric_value(r) is None]
-            has.sort(key=_metric_value, reverse=self._sort_desc)
+            has.sort(key=lambda r: score_of(r.get("task"), _metric_value(r)),
+                     reverse=self._sort_desc)
             return has + none
 
         def key(r):
@@ -476,7 +480,7 @@ class ModelDialog(QDialog):
             t.setCellWidget(i, COL_DATA,
                             self._make_data_cell(data_text, label_text))
             t.setCellWidget(i, COL_METRIC, self._make_metric_cell(
-                m, st if st != "已完成" else None, r.get("error")))
+                m, st if st != "已完成" else None, r.get("error"), r.get("task")))
             btns = []
             tbtn = QPushButton(self.tr("测试"))
             tbtn.setObjectName("opsGo")
@@ -507,26 +511,31 @@ class ModelDialog(QDialog):
         wrap.setObjectName("cellWrap")
         return wrap
 
-    def _make_metric_cell(self, value, status=None, error=None):
+    def _make_metric_cell(self, value, status=None, error=None, task=""):
         # 数值 / 进度条 / 状态三个槽位恒定: 状态槽没内容也占位, 否则数值
         # 会随有无状态上下跳 12px, 整列看着在抖
-        if value is None:
+        p = primary_for(task)
+        score = score_of(task, value)
+        if score is None:
             color = theme.hexof("text_3")
         else:
-            color = METRIC_GOOD if value >= 0.8 else (
-                METRIC_MID if value >= 0.5 else METRIC_BAD)
+            # 分档按好坏分: 错误率类指标先折成 1-x, 越大越绿与 mAP 同一套
+            color = METRIC_GOOD if score >= SCORE_GOOD else (
+                METRIC_MID if score >= SCORE_MID else METRIC_BAD)
         wrap = QWidget()
         v = QVBoxLayout(wrap)
         # 垂直内边距压到 1px: 行高扣掉单元格 padding 后只剩 39px,
         # 三个槽(数值/进度条/状态)要刚好放下
         v.setContentsMargins(6, 1, 6, 1)
         v.setSpacing(2)
-        lbl = QLabel("{:.3f}".format(value) if value is not None else "—")
+        decimals = p.decimals if p is not None else 3
+        lbl = QLabel("{:.{}f}".format(value, decimals)
+                     if value is not None else "—")
         lbl.setAlignment(Qt.AlignCenter)
         lbl.setStyleSheet("font-size:12px;color:%s;" % color)
         bar = QProgressBar()
         bar.setRange(0, 100)
-        bar.setValue(int(round(value * 100)) if value is not None else 0)
+        bar.setValue(int(round(score * 100)) if score is not None else 0)
         bar.setTextVisible(False)
         bar.setFixedHeight(5)
         # 控件一旦有 setStyleSheet, 高度就归 QSS 管, setFixedHeight 会被撑回默认高度,
@@ -595,6 +604,7 @@ class ModelDialog(QDialog):
                 b.setEnabled(False)
             return
         m = _metric_value(rec)
+        p = primary_for(rec.get("task"))
         labels = rec.get("labels") or []
         if not isinstance(labels, (list, tuple)):
             labels = [labels]
@@ -607,7 +617,9 @@ class ModelDialog(QDialog):
              "{} · {}".format(task_text(rec.get("task", "") or "-"),
                               rec.get("model_size", "-"))),
             (status_key, status_text(_status(rec))),
-            (self.tr("精度"), "{:.3f}".format(m) if m is not None else "-"),
+            (self.tr("精度"), "{:.{}f}".format(
+                m, p.decimals if p is not None else 3)
+             if m is not None else "-"),
             (self.tr("训练集"), rec.get("dataset", "-")),
             (self.tr("验证集"), rec.get("val_dataset", "-")),
             (self.tr("图像尺寸"), rec.get("img_size", "-")),

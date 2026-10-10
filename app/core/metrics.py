@@ -128,6 +128,26 @@ def best_value(series, base, direction=1):
     return max(vals) if direction >= 0 else min(vals)
 
 
+# 好坏分的着色门槛: 折算后 0.8 以上绿、0.5 以上黄.
+# 要给某个任务单独收紧就改这两个值, 别在界面组件里另写一份阈值.
+SCORE_GOOD, SCORE_MID = 0.8, 0.5
+
+
+def score_of(task, value):
+    """
+    主指标值折算成 0~1 的好坏分, 方向内置: 越大越好直接用, 越小越好取 1-x.
+
+    只服务进度条、颜色分档与按好坏排序这类显示, 存储值不动.
+    欠训练的 CER 会大于 1, 截断到 0~1 免得进度条越界.
+    """
+    if value is None:
+        return None
+    p = primary_for(task)
+    score = (1.0 - float(value) if (p is not None and p.direction < 0)
+             else float(value))
+    return min(1.0, max(0.0, score))
+
+
 def best_map50_from_csv(csv_path):
     """从 metrics.csv 取交付精度与 mAP@50-95; 读不到返回 {}."""
     series = series_from_csv(csv_path)
