@@ -1396,7 +1396,6 @@ class TrainDialog(QDialog):
         self.accept()
 
     def _enqueue_ocr(self, params):
-        """字符识别入队一项."""
         stage_params = dict(params)
         stage_params["task"] = occ.RECO_TASK
         order = self.app.enqueue_train(stage_params)["order"] + 1

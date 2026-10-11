@@ -344,7 +344,7 @@ class AnnotationDialog(QDialog, AnnotationCanvasMixin, AnnotationIOMixin):
         self.label_ids = (db.get_dataset_label_ids(project, dataset)
                           if db else {})
         self.cls_mode = cls_mode
-        # "文本标注"开关: 打开后整张图就是一行字, 内容落到同目录同名 .txt
+        # "文本标注"开关: 打开后整张图就是一行字, 内容落到同目录同名 .json
         self.textline_mode = False
         self._textline_dirty = False
         self._cls_changes = []
@@ -590,7 +590,6 @@ class AnnotationDialog(QDialog, AnnotationCanvasMixin, AnnotationIOMixin):
             self.ui.textline_edit.setFocus()
 
     def _apply_textline_mode(self):
-        """字条模式: 收起画框控件与右侧三块, 露出图像下方的文字输入行."""
         on = self.textline_mode
         for w in (self.ui.draw_rect_btn, self.ui.poly_btn, self.ui.settings_btn,
                   self.ui.add_label, self.ui.label_list,
@@ -648,7 +647,6 @@ class AnnotationDialog(QDialog, AnnotationCanvasMixin, AnnotationIOMixin):
         self._update_textline_progress()
 
     def _update_textline_progress(self):
-        """统计多少张已经落了字条标注, 刷新右侧进度."""
         if not self.textline_mode:
             return
         done = sum(1 for p in self.image_list
