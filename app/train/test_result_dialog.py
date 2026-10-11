@@ -6,15 +6,21 @@ import os
 import re
 
 from PySide6.QtCore import Qt, QTimer
+from PySide6.QtCore import QCoreApplication as QC
 from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, \
     QSizePolicy, QTableWidgetItem
 from app.core import theme
 from app.core.label_utils import label_sort_key
+from app.core.metrics import SCORE_GOOD, SCORE_MID
 from app.train.export_worker import ReportWorker
 from app.widgets.message_box import MessageBox
 from app.widgets.dialog_buttons import apply_icon
 from app.widgets.dialog_fit import fit_dialog_height
 from ui.test_result import Ui_TestResultDialog
+
+
+# 错误字条明细里真值/预测列的限宽: 一行字条几十个字, 不限宽会撑爆窗口
+OCR_TEXT_COL_W = 260
 
 
 def _pct(v):
@@ -26,11 +32,13 @@ def _ratio(a, b):
 
 
 def _rate_color(v, lower_better=False):
-    """阈值与模型评估表格保持一致."""
+    """着色门槛与模型界面同源: 好坏分 0.8 以上绿、0.5 以上黄, 其余红."""
     score = 1.0 - v if lower_better else v
-    if score >= 0.85:
-        return "#7be39a"
-    return theme.hexof("text") if score >= 0.6 else theme.hexof("st_err_soft")
+    if score >= SCORE_GOOD:
+        return theme.hexof("st_ok")
+    if score >= SCORE_MID:
+        return theme.hexof("st_warn")
+    return theme.hexof("st_err_soft")
 
 
 def _rate_span(v, lower_better=False):
@@ -48,7 +56,8 @@ def _card(u, name, text, rate=None, rate_prefix="", lower_better=False):
                                        _rate_span(rate, lower_better)))
 
 
-def _fit_table_size(table, stretch_last=False, fit_height=False):
+def _fit_table_size(table, stretch_last=False, fit_height=False,
+                    max_col_width=None):
     """
     给表格量出贴合内容的下限宽度, 上限高度.
     QTableWidget 不把列宽算进自己的最小宽度, 窗口一窄就冒横向滚动条、
@@ -56,9 +65,14 @@ def _fit_table_size(table, stretch_last=False, fit_height=False):
     高度正相反: 默认策略会把剩余空间全吃掉, 只有一两行时下面空出一大片.
     fit_height 只给异常检测用: 它的表固定一行, 而检测/分类的行数不定,
     它们靠表格吃掉剩余高度才不会把卡片撑开.
+    max_col_width 给长文本列用: 真值/预测这类内容不限宽会把窗口撑到屏幕外.
     """
     table.ensurePolished()          # 列宽要在样式表生效后量, 否则字体字号还没定
     table.resizeColumnsToContents()
+    if max_col_width:
+        for c in range(table.columnCount()):
+            if table.columnWidth(c) > max_col_width:
+                table.setColumnWidth(c, max_col_width)
     total = sum(table.columnWidth(c) for c in range(table.columnCount()))
     total += table.frameWidth() * 2 + table.verticalScrollBar().sizeHint().width()
     vh = table.verticalHeader()     # 行号列也占视野宽度
@@ -153,6 +167,9 @@ class TestResultDialog(QDialog):
         elif self._res.get("task") == "ad":
             # 异常检测的逐图明细是 CSV(没有框可画), PDF 报告是给带框任务做的
             tip = self.tr("异常检测的逐图结果已写成 CSV, 不支持导出画框 PDF")
+        elif self._res.get("task") == "ocr_rec":
+            # 识别按字条统计, 逐图明细是文本对照, 没有框可画
+            tip = self.tr("字符识别的逐图明细是文本对照, 不支持导出画框 PDF")
         else:
             tip = self.tr("本次测试没有逐图错误明细, 无法导出")
         self._ui.export_pdf_btn.setToolTip(tip)
@@ -224,6 +241,9 @@ class TestResultDialog(QDialog):
             return
         if res.get("task") == "ad":
             self._fill_ad(res)
+            return
+        if res.get("task") == "ocr_rec":
+            self._fill_ocr(res)
             return
         total = res.get("total", 0) or 0
         tp = res.get("TP", 0)
@@ -299,6 +319,106 @@ class TestResultDialog(QDialog):
                     acc * 100, worst[0], worst[1].get("error", 0)))
         else:
             u.conclusion_label.setText("")
+
+    def _fill_ocr(self, res):
+        """
+        字符识别: 字条维度看整体读对了多少, 字符维度拆开看错在哪.
+        识别没有"框"这一层, 检测面板的漏检/误检换成字符级的漏字与多字.
+        """
+        u = self._ui
+        # 识别没有可画框的逐图明细, 导出本就禁用, 样本数一栏收起来
+        u.sample_lbl.setVisible(False)
+        u.sample_spin.setVisible(False)
+        total = res.get("total", 0) or 0
+        exact = res.get("exact", 0) or 0
+        value = float(res.get("cer") or 0.0)
+        wrong = max(0, total - exact)
+        u.dim_img_tag.setText(self.tr("字条维度"))
+        u.dim_img_note.setText(self.tr("按\"字条\"统计 · 整条读对才算全对"))
+        u.img_total_value.setText(str(total))
+        u.img_total_lbl.setText(self.tr("测试字条"))
+        u.img_total_rate.setText("")
+        u.img_ok_value.setText(str(exact))
+        _card(u, "img_ok", self.tr("全对字条"), _ratio(exact, total),
+              self.tr("全对率 "))
+        u.img_fn_value.setText(str(wrong))
+        _card(u, "img_fn", self.tr("有错字条"), _ratio(wrong, total),
+              self.tr("有错率 "), lower_better=True)
+        u.img_fp_value.setText("{:.4f}".format(value))
+        u.img_fp_lbl.setText(QC.translate("MetricLabel", "CER"))
+        u.img_fp_rate.setText("")
+        u.img_fp_value.setStyleSheet(
+            "color:{}".format(_rate_color(value, lower_better=True)))
+        shown = self._fill_ocr_table(res.get("errors") or [])
+
+        chars = res.get("chars", 0) or 0
+        u.dim_lbl_tag.setText(self.tr("字符维度"))
+        u.dim_lbl_note.setText(
+            self.tr("按\"字符\"统计 · 共 {} 个字符").format(chars))
+        correct = res.get("correct", 0) or 0
+        u.tp_value.setText(str(correct))
+        _card(u, "tp", self.tr("正确字符"), _ratio(correct, chars),
+              self.tr("字符正确率 "))
+        sub = res.get("sub", 0) or 0
+        u.fn_value.setText(str(sub))
+        _card(u, "fn", self.tr("替换"), _ratio(sub, chars),
+              self.tr("替换率 "), lower_better=True)
+        dele = res.get("dele", 0) or 0
+        u.fp_value.setText(str(dele))
+        _card(u, "fp", self.tr("漏字"), _ratio(dele, chars),
+              self.tr("漏字率 "), lower_better=True)
+        ins = res.get("ins", 0) or 0
+        u.precision_value.setText(str(ins))
+        u.precision_value.setStyleSheet("")
+        _card(u, "precision", self.tr("多字"), _ratio(ins, chars),
+              self.tr("多字率 "), lower_better=True)
+        u.conclusion_label.setText(self._conclusion_ocr(res, shown))
+
+    def _fill_ocr_table(self, errors):
+        """错误字条明细: 真值对预测, 错字最多的排前面; 返回实际列出的行数."""
+        u = self._ui
+        u.result_table.setVisible(bool(errors))
+        u.result_table.setColumnCount(4)
+        u.result_table.setHorizontalHeaderLabels(
+            [self.tr("图像"), self.tr("真值"), self.tr("预测"), self.tr("错字")])
+        u.result_table.setRowCount(len(errors))
+        for i, e in enumerate(errors):
+            vals = [str(e.get("image", "")), str(e.get("ref", "")),
+                    str(e.get("hyp", "")), str(e.get("errs", 0))]
+            for j, v in enumerate(vals):
+                item = QTableWidgetItem(v)
+                item.setTextAlignment(
+                    Qt.AlignLeft | Qt.AlignVCenter if j < 3
+                    else Qt.AlignCenter)
+                if j in (1, 2):
+                    # 长字条会被截成省略号, 完整内容挂在悬停提示上
+                    item.setToolTip(v)
+                u.result_table.setItem(i, j, item)
+        _fit_table_size(u.result_table, max_col_width=OCR_TEXT_COL_W)
+        return len(errors)
+
+    def _conclusion_ocr(self, res, shown):
+        """结论: CER 水平, 以及错在哪类操作上(替换 / 漏字 / 多字)."""
+        total = res.get("total", 0) or 0
+        if not total:
+            return ""
+        err_total = res.get("err_total", 0) or 0
+        if not err_total:
+            return self.tr("{} 条字条全部读对, 没有错字.").format(total)
+        kinds = sorted(((self.tr("替换"), res.get("sub", 0) or 0),
+                        (self.tr("漏字"), res.get("dele", 0) or 0),
+                        (self.tr("多字"), res.get("ins", 0) or 0)),
+                       key=lambda kv: -kv[1])
+        text = self.tr("共 {} 条字条, {} 条全对, CER {:.4f}; {} 条有错,"
+                       " 错误以\"{}\"为主({} 个字符).").format(
+            total, res.get("exact", 0) or 0, float(res.get("cer") or 0.0),
+            err_total, kinds[0][0], kinds[0][1])
+        if kinds[1][1] > 0:
+            text += self.tr(" 其次是\"{}\", {} 个字符.").format(
+                kinds[1][0], kinds[1][1])
+        if err_total > shown:
+            text += self.tr(" 表格只列出错字最多的前 {} 条.").format(shown)
+        return text
 
     def _fill_ad(self, res):
         """

@@ -32,7 +32,7 @@ from app.core import i18n
 from app.core.constants import IMAGE_EXTS
 from app.core.label_utils import (is_text_label, load_json_shapes,
                                   shapes_to_labelme_json, text_label)
-from app.core.metrics import cer
+from app.core.metrics import cer, cer_detail, edit_ops
 
 try:
     import numpy as np
@@ -49,6 +49,9 @@ except Exception as e:
 
 DET_ARCH = "db_mobilenet_v3_large"
 REC_ARCH = "crnn_mobilenet_v3_small"
+
+# 结果面板的错误字条明细表最多列这么多行: 验证集上千条时窗口不会拖成长条
+ERR_LIMIT = 50
 
 
 def _list_images(img_dir):
@@ -438,7 +441,7 @@ def _run_rec(cfg, ckpt):
         arch, len(vocab)), flush=True)
     print("[test] " + QC.translate(
         "OcrTestRunner", "测试图片 {} 张").format(len(pairs)), flush=True)
-    refs, hyps = [], []
+    refs, hyps, sources = [], [], []
     no_label = 0
     for i, (img_path, label_dir) in enumerate(pairs):
         jp = ocr_data._find_json(img_path, [label_dir])
@@ -463,6 +466,7 @@ def _run_rec(cfg, ckpt):
             for text, hyp in zip(texts, _read_texts(predictor, crops)):
                 refs.append(text)
                 hyps.append(hyp)
+                sources.append(os.path.basename(img_path))
         except Exception as exc:
             print("[test] " + QC.translate(
                 "OcrTestRunner", "识别失败 {}: {}").format(
@@ -476,6 +480,17 @@ def _run_rec(cfg, ckpt):
             "没有取到任何字条: 该数据集没有文本标注, 识别段只能拿标注框裁图来测"))
     value = cer(refs, hyps)
     exact = sum(1 for a, b in zip(refs, hyps) if a == b)
+    chars = cer_detail(refs, hyps)
+    # 错误字条按错字数降序: 结果面板的明细表直接照这个顺序列
+    errors = []
+    for src, ref, hyp in zip(sources, refs, hyps):
+        if ref == hyp:
+            continue
+        sub, dele, ins = edit_ops(ref, hyp)
+        errors.append({"image": src, "ref": ref, "hyp": hyp,
+                       "sub": sub, "dele": dele, "ins": ins,
+                       "errs": sub + dele + ins})
+    errors.sort(key=lambda e: (-e["errs"], e["image"]))
     if no_label:
         print("[test] " + QC.translate(
             "OcrTestRunner", "WARN {} 张图没有文本标注, 已跳过").format(no_label),
@@ -483,10 +498,19 @@ def _run_rec(cfg, ckpt):
     print("[test] " + QC.translate(
         "OcrTestRunner", "字条 {} 条, CER={:.4f}, 全对 {} 条").format(
         len(refs), value, exact), flush=True)
+    print("[test] " + QC.translate(
+        "OcrTestRunner",
+        "字符 {} 个: 正确 {} 替换 {} 删除 {} 插入 {}").format(
+        chars["chars"], chars["correct"], chars["sub"], chars["dele"],
+        chars["ins"]), flush=True)
     result = {"ok": True, "task": occ.RECO_TASK, "total": len(refs),
               "cer": value, "exact": exact, "no_label": no_label,
               "model": os.path.basename(cfg.get("model_path", "") or ""),
-              "datasets": _dataset_list(cfg)}
+              "datasets": _dataset_list(cfg),
+              "chars": chars["chars"], "correct": chars["correct"],
+              "sub": chars["sub"], "dele": chars["dele"],
+              "ins": chars["ins"], "err_total": len(errors),
+              "errors": errors[:ERR_LIMIT]}
     print("[test] RESULT " + json.dumps(result, ensure_ascii=False),
           flush=True)
 

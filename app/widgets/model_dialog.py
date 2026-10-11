@@ -22,6 +22,7 @@ from PySide6.QtCore import QTimer
 
 from app.core import i18n
 from app.core import theme
+from app.core.ckpt_paths import resolve_ckpt
 from app.core.db import get_paths
 from app.core.label_utils import text_label
 from app.core.log import write_log
@@ -825,14 +826,7 @@ class ModelDialog(QDialog):
         + 验证集评估报告 PDF + 调用示例.
         """
         model_path = rec.get("model_path", "") if isinstance(rec, dict) else rec
-        if not model_path or not os.path.exists(model_path):
-            model_dir = os.path.dirname(model_path) if model_path else ""
-            for cand in ("checkpoint_best.pth", "checkpoint_best_ema.pth",
-                         "checkpoint_best_regular.pth"):
-                p = os.path.join(model_dir, cand)
-                if os.path.exists(p):
-                    model_path = p
-                    break
+        model_path = resolve_ckpt(model_path)
         if not model_path or not os.path.exists(model_path):
             MessageBox.warning(self, self.tr("导出模型"),
                                self.tr("模型文件不存在:\n{}").format(model_path))

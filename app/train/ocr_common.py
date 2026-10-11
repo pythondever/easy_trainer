@@ -66,6 +66,10 @@ class OcrSpec(TaskSpec):
     def resolve_family(self, raw):
         return "ocr"
 
+    def checkpoint_name(self, family):
+        """识别段的落盘名由 runner 写死; 基类给的 ema 名是 rf-detr 那条线的."""
+        return "checkpoint_best.pth"
+
     def img_tip(self, arch):
         return QT_TRANSLATE_NOOP(
             "TrainDialog",

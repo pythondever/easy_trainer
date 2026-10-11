@@ -186,7 +186,7 @@
               </item>
               <item>
                 <property name="text">
-                  <string>字符检测</string>
+                  <string>字符识别</string>
                 </property>
               </item>
             </widget>

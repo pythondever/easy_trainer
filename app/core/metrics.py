@@ -191,3 +191,63 @@ def cer(refs, hyps):
     if not total:
         return None
     return sum(edit_distance(r, h) for r, h in zip(refs, hyps)) / float(total)
+
+
+def edit_ops(ref, hyp):
+    """
+    一对文本的编辑操作计数, 返回 (替换, 删除, 插入).
+
+    回溯要留整张 DP 表, 内存 O(len(ref) × len(hyp)); 字条集一行几十字,
+    换取循环好读比省这点内存划算.
+    """
+    n, m = len(ref), len(hyp)
+    if not n:
+        return 0, 0, m
+    if not m:
+        return 0, n, 0
+    dp = [list(range(m + 1))]
+    for i in range(1, n + 1):
+        prev = dp[i - 1]
+        row = [i] + [0] * m
+        ca = ref[i - 1]
+        for j in range(1, m + 1):
+            row[j] = min(prev[j] + 1, row[j - 1] + 1,
+                         prev[j - 1] + (ca != hyp[j - 1]))
+        dp.append(row)
+    sub = dele = ins = 0
+    i, j = n, m
+    while i > 0 or j > 0:
+        if i > 0 and j > 0 and dp[i][j] == dp[i - 1][j - 1] \
+                and ref[i - 1] == hyp[j - 1]:
+            i, j = i - 1, j - 1
+        elif i > 0 and dp[i][j] == dp[i - 1][j] + 1:
+            dele += 1
+            i -= 1
+        elif j > 0 and dp[i][j] == dp[i][j - 1] + 1:
+            ins += 1
+            j -= 1
+        else:
+            sub += 1
+            i, j = i - 1, j - 1
+    return sub, dele, ins
+
+
+def cer_detail(refs, hyps):
+    """
+    一批文本的字符级分解: 正确/替换/删除/插入 + 参考字符总数.
+    口径与 cer() 同源, 替换加删除加插入等于逐对编辑距离之和;
+    正确字符由参考长度减去替换与删除得到.
+    """
+    if len(refs) != len(hyps):
+        raise ValueError("CER 要求参考与预测成对: {} vs {}".format(
+            len(refs), len(hyps)))
+    total = correct = sub = dele = ins = 0
+    for r, h in zip(refs, hyps):
+        s, d, i = edit_ops(r, h)
+        sub += s
+        dele += d
+        ins += i
+        correct += len(r) - s - d
+        total += len(r)
+    return {"chars": total, "correct": correct, "sub": sub,
+            "dele": dele, "ins": ins}

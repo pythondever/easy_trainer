@@ -18,6 +18,7 @@ from PySide6.QtWidgets import QDialog, QFormLayout, QComboBox
 from PIL import Image
 
 from app.core import i18n
+from app.core.ckpt_paths import resolve_ckpt
 from app.core.constants import IMAGE_EXTS
 from app.core.db import get_paths
 from app.core.log import write_log
@@ -68,7 +69,9 @@ class TestDialog(QDialog):
         self._record = record or {}
         self._worker = None
         self._combo_filters = []
-        self._model_path = str(self._record.get("model_path", "") or "")
+        # 记录里的路径可能停在训练期的预期名上, 交给同目录候选回找
+        self._model_path = resolve_ckpt(
+            str(self._record.get("model_path", "") or ""))
         self._init_style()
         self._fill_model_card()
         self._fill_data_combo()
@@ -333,10 +336,16 @@ class TestDialog(QDialog):
         ad_mode = str(self._record.get("task") or "") == "ad"
         # 分类模式只保留 数据/设备 两个下拉, 隐藏整个"测试参数"分组;
         # 异常检测不需要置信度/iou, 但保留"输出标签文件"那一行
+        # 字符识别的两个阈值都不参与计算, 跟分类一样整组收起
+        ocr_rec_mode = self._ocr_task() == "ocr_rec"
+        show_params = not cls_mode and not ocr_rec_mode
         for row in (0, 1, 2):
             self._set_form_row_visible(
-                "form_param", row, not cls_mode or (ad_mode and row == 2))
-        self.ui.group_param_title.setVisible(not cls_mode or ad_mode)
+                "form_param", row, show_params or (ad_mode and row == 2))
+        self.ui.group_param_title.setVisible(show_params or ad_mode)
+        self.ui.group_param_line.setVisible(show_params or ad_mode)
+        self.ui.confidence_txt.setEnabled(show_params)
+        self.ui.iou_treshold_txt.setEnabled(show_params)
         box = self.ui.output_label_file_checkBox
         if ad_mode:
             box.setToolTip(self.tr(
@@ -352,7 +361,8 @@ class TestDialog(QDialog):
         ocr_task = self._ocr_task()
         if ocr_task:
             labeled = int(info.get("labeled") or 0)
-            self.ui.iou_treshold_txt.setEnabled(labeled > 0)
+            self.ui.iou_treshold_txt.setEnabled(
+                not ocr_rec_mode and labeled > 0)
             if ocr_task == "ocr_rec":
                 # 识别段只算 CER, 没有框可写
                 box.setEnabled(False)
@@ -380,7 +390,7 @@ class TestDialog(QDialog):
         self.ui.out_note.setToolTip(self.ui.out_note.text())
         labeled = int(info.get("labeled") or 0)
         has_label = labeled > 0
-        self.ui.iou_treshold_txt.setEnabled(has_label)
+        self.ui.iou_treshold_txt.setEnabled(show_params and has_label)
         if not has_label:
             # 推理模式: 强制输出标注文件
             box.setChecked(True)
@@ -626,11 +636,8 @@ class TestDialog(QDialog):
             self._fill_label_stats(res)
             TestResultDialog(res, parent=self.app).exec()
         elif res.get("task") == "ocr_rec":
-            MessageBox.information(
-                self, self.tr("测试结果"),
-                self.tr("字条 {} 条 · CER {:.4f} · 全对 {} 条").format(
-                    res.get("total", 0), float(res.get("cer", 0.0)),
-                    res.get("exact", 0)))
+            # 识别也走这个面板: 字条维度看读对多少, 字符维度看错在替换/漏字/多字
+            TestResultDialog(res, parent=self.app).exec()
         else:
             self.app._load_dataset_view(self._project, self._dataset)
 
