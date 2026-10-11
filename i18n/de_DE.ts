@@ -419,13 +419,13 @@ Bitte die Gutbilder in einen Unterordner mit einem der Namen {} legen oder den D
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="393"/>
-        <location filename="../app/annotation/annotation_dialog.py" line="981"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="951"/>
         <source>矩形</source>
         <translation>Rechteck</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="394"/>
-        <location filename="../app/annotation/annotation_dialog.py" line="987"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="957"/>
         <source>多边形</source>
         <translation>Polygon</translation>
     </message>
@@ -465,39 +465,34 @@ Bitte die Gutbilder in einen Unterordner mit einem der Namen {} legen oder den D
         <translation>Textannotation</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="642"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="625"/>
         <source>保存失败</source>
         <translation>Speichern fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="643"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="626"/>
         <source>写文字标签失败:
 {}</source>
         <translation>Textlabel konnte nicht geschrieben werden:
 {}</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="658"/>
-        <source>已标注 {} · 未标注 {}</source>
-        <translation>Beschriftet {} · Unbeschriftet {}</translation>
-    </message>
-    <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="820"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="790"/>
         <source>编辑标签</source>
         <translation>Label bearbeiten</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1139"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1109"/>
         <source>转换</source>
         <translation>Umrechnen</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1140"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1110"/>
         <source>设置像素精度, 在像素面积后显示物理面积</source>
         <translation>Pixelmaßstab setzen, um nach der Pixel-Fläche die physische Fläche anzuzeigen</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1144"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1114"/>
         <source>当前像素精度 {}, 点击修改</source>
         <translation>Aktueller Pixelmaßstab {}, zum Ändern klicken</translation>
     </message>
@@ -517,23 +512,23 @@ Bitte die Gutbilder in einen Unterordner mit einem der Namen {} legen oder den D
         <translation>    Klasse: {}</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="408"/>
+        <location filename="../app/annotation/annotation_io.py" line="406"/>
         <source>删除本地文件</source>
         <translation>Lokale Datei löschen</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="409"/>
+        <location filename="../app/annotation/annotation_io.py" line="407"/>
         <source>取消</source>
         <translation>Abbrechen</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="411"/>
-        <location filename="../app/annotation/annotation_io.py" line="420"/>
+        <location filename="../app/annotation/annotation_io.py" line="409"/>
+        <location filename="../app/annotation/annotation_io.py" line="418"/>
         <source>删除图像</source>
         <translation>Bild löschen</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="412"/>
+        <location filename="../app/annotation/annotation_io.py" line="410"/>
         <source>是否删除当前图像?
 
 {}</source>
@@ -542,24 +537,24 @@ Bitte die Gutbilder in einen Unterordner mit einem der Namen {} legen oder den D
 {}</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="415"/>
+        <location filename="../app/annotation/annotation_io.py" line="413"/>
         <source>图像与同名标注文件将从磁盘删除, 不可恢复</source>
         <translation>Bild und gleichnamige Labeldatei werden von der Festplatte gelöscht. Nicht wiederherstellbar</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="421"/>
+        <location filename="../app/annotation/annotation_io.py" line="419"/>
         <source>无法访问主窗口, 删除失败</source>
         <translation>Kein Zugriff auf das Hauptfenster; Löschen fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="434"/>
+        <location filename="../app/annotation/annotation_io.py" line="432"/>
         <source>(无图像)</source>
         <translation>(kein Bild)</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_canvas.py" line="718"/>
-        <location filename="../app/annotation/annotation_dialog.py" line="927"/>
-        <location filename="../app/annotation/annotation_dialog.py" line="933"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="897"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="903"/>
         <source>添加标签</source>
         <translation>Label hinzufügen</translation>
     </message>
@@ -582,7 +577,7 @@ Linksklick zum Auswählen fürs Einfügen; Rechtsklick: Löschen / Importieren /
     </message>
     <message>
         <location filename="../app/annotation/annotation_canvas.py" line="877"/>
-        <location filename="../app/annotation/annotation_dialog.py" line="792"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="762"/>
         <source>删除</source>
         <translation>Löschen</translation>
     </message>
@@ -602,126 +597,126 @@ Linksklick zum Auswählen fürs Einfügen; Rechtsklick: Löschen / Importieren /
         <translation>Leeren</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="474"/>
-        <location filename="../app/annotation/annotation_io.py" line="503"/>
-        <location filename="../app/annotation/annotation_io.py" line="508"/>
+        <location filename="../app/annotation/annotation_io.py" line="472"/>
+        <location filename="../app/annotation/annotation_io.py" line="501"/>
+        <location filename="../app/annotation/annotation_io.py" line="506"/>
         <source>导出剪切板</source>
         <translation>Zwischenablage exportieren</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="475"/>
+        <location filename="../app/annotation/annotation_io.py" line="473"/>
         <source>剪切板是空的, 没有可导出的模板</source>
         <translation>Die Zwischenablage ist leer; keine Vorlagen zum Exportieren</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="478"/>
+        <location filename="../app/annotation/annotation_io.py" line="476"/>
         <source>选择导出目录</source>
         <translation>Exportordner wählen</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="504"/>
+        <location filename="../app/annotation/annotation_io.py" line="502"/>
         <source>导出中断: {}
 (已写出 {} 个)</source>
         <translation>Export abgebrochen: {}
 ({} geschrieben)</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="509"/>
+        <location filename="../app/annotation/annotation_io.py" line="507"/>
         <source>已导出 {} 个模板(png + 同名 json)到:
 {}</source>
         <translation>{} Vorlage(n) exportiert (png + gleichnamige json) nach:
 {}</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="515"/>
+        <location filename="../app/annotation/annotation_io.py" line="513"/>
         <source>选择导入目录</source>
         <translation>Importordner wählen</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="522"/>
-        <location filename="../app/annotation/annotation_io.py" line="526"/>
-        <location filename="../app/annotation/annotation_io.py" line="560"/>
+        <location filename="../app/annotation/annotation_io.py" line="520"/>
+        <location filename="../app/annotation/annotation_io.py" line="524"/>
+        <location filename="../app/annotation/annotation_io.py" line="558"/>
         <source>导入剪切板</source>
         <translation>Zwischenablage importieren</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="523"/>
+        <location filename="../app/annotation/annotation_io.py" line="521"/>
         <source>读取目录失败: {}</source>
         <translation>Ordner konnte nicht gelesen werden: {}</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="527"/>
+        <location filename="../app/annotation/annotation_io.py" line="525"/>
         <source>这个目录里没有 png 文件</source>
         <translation>In diesem Ordner gibt es keine png-Dateien</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="555"/>
+        <location filename="../app/annotation/annotation_io.py" line="553"/>
         <source>已导入 {} 个模板到剪切板</source>
         <translation>{} Vorlage(n) in die Zwischenablage importiert</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="557"/>
+        <location filename="../app/annotation/annotation_io.py" line="555"/>
         <source>
 其中 {} 个没有同名 json, 按矩形导入</source>
         <translation>
 Davon {} ohne gleichnamige json, als Rechteck importiert</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="559"/>
+        <location filename="../app/annotation/annotation_io.py" line="557"/>
         <source>
 {} 个文件读不出来, 已跳过</source>
         <translation>
 {} Datei(en) nicht lesbar, übersprungen</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="732"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="702"/>
         <source>修改类别</source>
         <translation>Klasse ändern</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="733"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="703"/>
         <source>移动图像文件失败:
 {}</source>
         <translation>Bilddatei konnte nicht verschoben werden:
 {}</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="791"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="761"/>
         <source>编辑</source>
         <translation>Bearbeiten</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="887"/>
-        <location filename="../app/annotation/annotation_dialog.py" line="894"/>
-        <location filename="../app/annotation/annotation_io.py" line="578"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="857"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="864"/>
+        <location filename="../app/annotation/annotation_io.py" line="576"/>
         <source>删除标签</source>
         <translation>Label löschen</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="579"/>
+        <location filename="../app/annotation/annotation_io.py" line="577"/>
         <source>正在统计标注文件...</source>
         <translation>Labeldateien werden gezählt...</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="888"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="858"/>
         <source>标签&quot;{}&quot;已有 {} 处标注, 删除后这些标注将被一并删除且不可恢复.
 确定删除吗?</source>
         <translation>Label „{}&quot; hat {} Annotation(en). Beim Löschen werden sie mit entfernt und können nicht wiederhergestellt werden.
 Trotzdem löschen?</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="895"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="865"/>
         <source>确定删除标签&quot;{}&quot;吗?</source>
         <translation>Label „{}&quot; löschen?</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="821"/>
-        <location filename="../app/annotation/annotation_dialog.py" line="928"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="791"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="898"/>
         <source>标签名称不能为空</source>
         <translation>Labelname darf nicht leer sein</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="988"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="958"/>
         <source>{} 个顶点</source>
         <translation>{} Eckpunkte</translation>
     </message>
@@ -5028,7 +5023,7 @@ Der Bericht umfasst ca. 120 KB pro Bild; bei vielen Stichproben verkleinert ein 
         <location filename="../app/train/dialogs.py" line="1363"/>
         <location filename="../app/train/dialogs.py" line="1374"/>
         <location filename="../app/train/dialogs.py" line="1393"/>
-        <location filename="../app/train/dialogs.py" line="1404"/>
+        <location filename="../app/train/dialogs.py" line="1403"/>
         <source>加入队列</source>
         <translation>Zur Warteschlange</translation>
     </message>
@@ -5288,7 +5283,7 @@ Der Bericht umfasst ca. 120 KB pro Bild; bei vielen Stichproben verkleinert ein 
         <translation>Die aktuelle Netzwerkarchitektur unterstützt diese Augmentierung nicht</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1405"/>
+        <location filename="../app/train/dialogs.py" line="1404"/>
         <source>字符识别已加入队列, 排在第 {} 个</source>
         <translation>Texterkennung zur Warteschlange hinzugefügt, Nummer {}</translation>
     </message>

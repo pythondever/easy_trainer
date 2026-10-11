@@ -17,7 +17,7 @@ from PySide6.QtGui import (QColor, QPixmap, QKeySequence, QShortcut,
                            QDoubleValidator, QRegularExpressionValidator)
 from PySide6.QtWidgets import (QDialog, QWidget, QApplication, QVBoxLayout,
                                QHBoxLayout, QLabel, QLineEdit, QPushButton,
-                               QFrame, QMenu, QProgressBar)
+                               QFrame, QMenu)
 
 from ui.annotation import Ui_annotationDialog as AnnotationUI
 from ui.add_label import Ui_addLabelDialog as AddLabelUI
@@ -487,24 +487,12 @@ class AnnotationDialog(QDialog, AnnotationCanvasMixin, AnnotationIOMixin):
         u.text_switch.toggled.connect(self._toggle_text_mode)
         u.text_switch_label = QLabel(self.tr("文本标注"), self)
         u.text_switch_label.setObjectName("text_switch_label")
-        # 字条模式那一行: 图像下方满宽输入框 + 一行提示, 默认收起
+        # 字条模式那一行: 图像下方满宽输入框, 默认收起
         u.textline_edit.setAlignment(Qt.AlignCenter)
         u.textline_edit.setMaxLength(200)
         u.textline_edit.textEdited.connect(self._on_textline_edited)
         u.textline_edit.returnPressed.connect(self._on_textline_return)
         u.textline_edit.hide()
-        # 右侧"图像信息"块底部挂一行录入进度, 只有字条模式露出来
-        u.textline_progress = QProgressBar(self)
-        u.textline_progress.setObjectName("textlineProgress")
-        u.textline_progress.setTextVisible(False)
-        u.textline_progress.setFixedHeight(6)
-        u.textline_progress.setRange(0, 100)
-        u.textline_count = QLabel("", self)
-        u.textline_count.setObjectName("textlineCount")
-        u.verticalLayout_3.addWidget(u.textline_progress)
-        u.verticalLayout_3.addWidget(u.textline_count)
-        u.textline_progress.hide()
-        u.textline_count.hide()
         # 参数收进"设置"弹层后, 工具条右侧只剩两个开关和设置按钮
         idx = u.horizontalLayout.indexOf(u.settings_btn)
         u.horizontalLayout.insertWidget(idx, u.switchButton)
@@ -600,12 +588,8 @@ class AnnotationDialog(QDialog, AnnotationCanvasMixin, AnnotationIOMixin):
         self.ui.switchButton.setEnabled(not on)
         self.ui.show_boxes_label.setEnabled(not on)
         self.ui.textline_edit.setVisible(on)
-        self.ui.textline_progress.setVisible(on)
-        self.ui.textline_count.setVisible(on)
         self._cancel_draw_mode()
         self._update_draw_buttons()
-        if on:
-            self._update_textline_progress()
 
     def _on_textline_edited(self, _text):
         self._textline_dirty = True
@@ -644,18 +628,6 @@ class AnnotationDialog(QDialog, AnnotationCanvasMixin, AnnotationIOMixin):
         self._textline_dirty = False
         # 让外层会话知道这张改过: 关窗口时只重扫这些图, 首页的已标注计数才跟得上
         self._modified_paths.add(path)
-        self._update_textline_progress()
-
-    def _update_textline_progress(self):
-        if not self.textline_mode:
-            return
-        done = sum(1 for p in self.image_list
-                   if os.path.isfile(text_line_path(p)))
-        total = len(self.image_list)
-        self.ui.textline_count.setText(
-            self.tr("已标注 {} · 未标注 {}").format(done, total - done))
-        self.ui.textline_progress.setValue(
-            int(round(done * 100.0 / total)) if total else 0)
 
     def closeEvent(self, event):
         self._save_current(commit_pending=True)

@@ -378,8 +378,6 @@ class AnnotationIOMixin:
                 QC.translate("AnnotationDialog", "    类别: {}").format(cls)
                 if self.cls_mode else ""))
         self._refresh_labeled_list()
-        if self.textline_mode:
-            self._update_textline_progress()
         self._dirty = False
         # 新载入的图以磁盘内容为准, 清掉上一张遗留的待写标记
         self._pix_unsaved = False

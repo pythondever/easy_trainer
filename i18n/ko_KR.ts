@@ -419,13 +419,13 @@
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="393"/>
-        <location filename="../app/annotation/annotation_dialog.py" line="981"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="951"/>
         <source>矩形</source>
         <translation>사각형</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="394"/>
-        <location filename="../app/annotation/annotation_dialog.py" line="987"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="957"/>
         <source>多边形</source>
         <translation>다각형</translation>
     </message>
@@ -465,39 +465,34 @@
         <translation>텍스트 어노테이션</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="642"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="625"/>
         <source>保存失败</source>
         <translation>저장 실패</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="643"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="626"/>
         <source>写文字标签失败:
 {}</source>
         <translation>텍스트 레이블 쓰기 실패:
 {}</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="658"/>
-        <source>已标注 {} · 未标注 {}</source>
-        <translation>레이블됨 {} · 레이블 안 됨 {}</translation>
-    </message>
-    <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="820"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="790"/>
         <source>编辑标签</source>
         <translation>라벨 편집</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1139"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1109"/>
         <source>转换</source>
         <translation>변환</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1140"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1110"/>
         <source>设置像素精度, 在像素面积后显示物理面积</source>
         <translation>픽셀 정밀도를 설정하면 픽셀 면적 뒤에 물리 면적이 표시됩니다</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="1144"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="1114"/>
         <source>当前像素精度 {}, 点击修改</source>
         <translation>현재 픽셀 정밀도 {}, 클릭하여 수정</translation>
     </message>
@@ -517,23 +512,23 @@
         <translation>    클래스: {}</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="408"/>
+        <location filename="../app/annotation/annotation_io.py" line="406"/>
         <source>删除本地文件</source>
         <translation>로컬 파일 삭제</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="409"/>
+        <location filename="../app/annotation/annotation_io.py" line="407"/>
         <source>取消</source>
         <translation>취소</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="411"/>
-        <location filename="../app/annotation/annotation_io.py" line="420"/>
+        <location filename="../app/annotation/annotation_io.py" line="409"/>
+        <location filename="../app/annotation/annotation_io.py" line="418"/>
         <source>删除图像</source>
         <translation>이미지 삭제</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="412"/>
+        <location filename="../app/annotation/annotation_io.py" line="410"/>
         <source>是否删除当前图像?
 
 {}</source>
@@ -542,24 +537,24 @@
 {}</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="415"/>
+        <location filename="../app/annotation/annotation_io.py" line="413"/>
         <source>图像与同名标注文件将从磁盘删除, 不可恢复</source>
         <translation>이미지와 같은 이름의 라벨 파일이 디스크에서 삭제되며 복구할 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="421"/>
+        <location filename="../app/annotation/annotation_io.py" line="419"/>
         <source>无法访问主窗口, 删除失败</source>
         <translation>메인 창에 접근할 수 없어 삭제에 실패했습니다</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="434"/>
+        <location filename="../app/annotation/annotation_io.py" line="432"/>
         <source>(无图像)</source>
         <translation>(이미지 없음)</translation>
     </message>
     <message>
         <location filename="../app/annotation/annotation_canvas.py" line="718"/>
-        <location filename="../app/annotation/annotation_dialog.py" line="927"/>
-        <location filename="../app/annotation/annotation_dialog.py" line="933"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="897"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="903"/>
         <source>添加标签</source>
         <translation>라벨 추가</translation>
     </message>
@@ -582,7 +577,7 @@
     </message>
     <message>
         <location filename="../app/annotation/annotation_canvas.py" line="877"/>
-        <location filename="../app/annotation/annotation_dialog.py" line="792"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="762"/>
         <source>删除</source>
         <translation>삭제</translation>
     </message>
@@ -602,126 +597,126 @@
         <translation>비우기</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="474"/>
-        <location filename="../app/annotation/annotation_io.py" line="503"/>
-        <location filename="../app/annotation/annotation_io.py" line="508"/>
+        <location filename="../app/annotation/annotation_io.py" line="472"/>
+        <location filename="../app/annotation/annotation_io.py" line="501"/>
+        <location filename="../app/annotation/annotation_io.py" line="506"/>
         <source>导出剪切板</source>
         <translation>클립보드 내보내기</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="475"/>
+        <location filename="../app/annotation/annotation_io.py" line="473"/>
         <source>剪切板是空的, 没有可导出的模板</source>
         <translation>클립보드가 비어 있어 내보낼 템플릿이 없습니다</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="478"/>
+        <location filename="../app/annotation/annotation_io.py" line="476"/>
         <source>选择导出目录</source>
         <translation>내보내기 디렉터리 선택</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="504"/>
+        <location filename="../app/annotation/annotation_io.py" line="502"/>
         <source>导出中断: {}
 (已写出 {} 个)</source>
         <translation>내보내기 중단: {}
 ({}개 작성됨)</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="509"/>
+        <location filename="../app/annotation/annotation_io.py" line="507"/>
         <source>已导出 {} 个模板(png + 同名 json)到:
 {}</source>
         <translation>템플릿 {}개(png + 같은 이름 json)를 다음 위치로 내보냈습니다:
 {}</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="515"/>
+        <location filename="../app/annotation/annotation_io.py" line="513"/>
         <source>选择导入目录</source>
         <translation>가져오기 디렉터리 선택</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="522"/>
-        <location filename="../app/annotation/annotation_io.py" line="526"/>
-        <location filename="../app/annotation/annotation_io.py" line="560"/>
+        <location filename="../app/annotation/annotation_io.py" line="520"/>
+        <location filename="../app/annotation/annotation_io.py" line="524"/>
+        <location filename="../app/annotation/annotation_io.py" line="558"/>
         <source>导入剪切板</source>
         <translation>클립보드 가져오기</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="523"/>
+        <location filename="../app/annotation/annotation_io.py" line="521"/>
         <source>读取目录失败: {}</source>
         <translation>디렉터리를 읽지 못했습니다: {}</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="527"/>
+        <location filename="../app/annotation/annotation_io.py" line="525"/>
         <source>这个目录里没有 png 文件</source>
         <translation>이 디렉터리에 png 파일이 없습니다</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="555"/>
+        <location filename="../app/annotation/annotation_io.py" line="553"/>
         <source>已导入 {} 个模板到剪切板</source>
         <translation>템플릿 {}개를 클립보드로 가져왔습니다</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="557"/>
+        <location filename="../app/annotation/annotation_io.py" line="555"/>
         <source>
 其中 {} 个没有同名 json, 按矩形导入</source>
         <translation>
 그중 {}개는 같은 이름의 json이 없어 사각형으로 가져왔습니다</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="559"/>
+        <location filename="../app/annotation/annotation_io.py" line="557"/>
         <source>
 {} 个文件读不出来, 已跳过</source>
         <translation>
 {}개 파일을 읽지 못해 건너뛰었습니다</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="732"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="702"/>
         <source>修改类别</source>
         <translation>클래스 수정</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="733"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="703"/>
         <source>移动图像文件失败:
 {}</source>
         <translation>이미지 파일 이동 실패:
 {}</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="791"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="761"/>
         <source>编辑</source>
         <translation>편집</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="887"/>
-        <location filename="../app/annotation/annotation_dialog.py" line="894"/>
-        <location filename="../app/annotation/annotation_io.py" line="578"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="857"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="864"/>
+        <location filename="../app/annotation/annotation_io.py" line="576"/>
         <source>删除标签</source>
         <translation>라벨 삭제</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_io.py" line="579"/>
+        <location filename="../app/annotation/annotation_io.py" line="577"/>
         <source>正在统计标注文件...</source>
         <translation>라벨 파일 집계 중...</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="888"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="858"/>
         <source>标签&quot;{}&quot;已有 {} 处标注, 删除后这些标注将被一并删除且不可恢复.
 确定删除吗?</source>
         <translation>라벨 &quot;{}&quot;에 어노테이션 {}개가 있습니다. 삭제하면 해당 어노테이션도 함께 삭제되며 복구할 수 없습니다.
 삭제하시겠습니까?</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="895"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="865"/>
         <source>确定删除标签&quot;{}&quot;吗?</source>
         <translation>라벨 &quot;{}&quot;을(를) 삭제하시겠습니까?</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="821"/>
-        <location filename="../app/annotation/annotation_dialog.py" line="928"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="791"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="898"/>
         <source>标签名称不能为空</source>
         <translation>라벨 이름은 비워둘 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../app/annotation/annotation_dialog.py" line="988"/>
+        <location filename="../app/annotation/annotation_dialog.py" line="958"/>
         <source>{} 个顶点</source>
         <translation>꼭짓점 {}개</translation>
     </message>
@@ -5028,7 +5023,7 @@
         <location filename="../app/train/dialogs.py" line="1363"/>
         <location filename="../app/train/dialogs.py" line="1374"/>
         <location filename="../app/train/dialogs.py" line="1393"/>
-        <location filename="../app/train/dialogs.py" line="1404"/>
+        <location filename="../app/train/dialogs.py" line="1403"/>
         <source>加入队列</source>
         <translation>대기열에 추가</translation>
     </message>
@@ -5288,7 +5283,7 @@
         <translation>현재 네트워크 아키텍처에서는 이 증강을 지원하지 않습니다</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1405"/>
+        <location filename="../app/train/dialogs.py" line="1404"/>
         <source>字符识别已加入队列, 排在第 {} 个</source>
         <translation>문자 인식이 대기열에 추가되었습니다, {}번째</translation>
     </message>
