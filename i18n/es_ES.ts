@@ -3039,6 +3039,7 @@ Contiene: {}</translation>
     </message>
     <message>
         <location filename="../app/train/ocr_test_runner.py" line="386"/>
+        <location filename="../app/train/ocr_test_runner.py" line="493"/>
         <source>输出标注失败 {}: {}</source>
         <translation>Error al escribir las anotaciones {}: {}</translation>
     </message>
@@ -3063,27 +3064,27 @@ Contiene: {}</translation>
         <translation>Cargando modelo de reconocimiento de texto: {} vocabulario {} caracteres</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_test_runner.py" line="471"/>
+        <location filename="../app/train/ocr_test_runner.py" line="480"/>
         <source>识别失败 {}: {}</source>
         <translation>Reconocimiento fallido {}: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_test_runner.py" line="478"/>
-        <source>没有取到任何字条: 该数据集没有文本标注, 识别段只能拿标注框裁图来测</source>
-        <translation>No se obtuvieron recortes de texto: este conjunto de datos no tiene anotaciones de texto y la etapa de reconocimiento solo puede probarse recortando con los cuadros anotados</translation>
+        <location filename="../app/train/ocr_test_runner.py" line="497"/>
+        <source>没有取到任何字条: 该数据集里既没有文本框标注, 也没有同名文本文件</source>
+        <translation>No se obtuvo ninguna línea de texto: este conjunto de datos no tiene anotaciones de cuadro de texto ni archivos de texto con el mismo nombre</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_test_runner.py" line="495"/>
-        <source>WARN {} 张图没有文本标注, 已跳过</source>
-        <translation>WARN {} imágenes no tienen anotaciones de texto, se omitieron</translation>
+        <location filename="../app/train/ocr_test_runner.py" line="531"/>
+        <source>无真值, 已识别 {} 张图并写出文本标注</source>
+        <translation>Sin verdad de referencia: se reconocieron {} imágenes y se escribieron anotaciones de texto</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_test_runner.py" line="498"/>
+        <location filename="../app/train/ocr_test_runner.py" line="514"/>
         <source>字条 {} 条, CER={:.4f}, 全对 {} 条</source>
         <translation>{} recortes de texto, CER={:.4f}, {} completamente correctos</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_test_runner.py" line="501"/>
+        <location filename="../app/train/ocr_test_runner.py" line="517"/>
         <source>字符 {} 个: 正确 {} 替换 {} 删除 {} 插入 {}</source>
         <translation>{} caracteres: {} correctos, {} sustituidos, {} omitidos, {} insertados</translation>
     </message>
@@ -3750,137 +3751,146 @@ El conjunto de datos de origen quedará vacío.</translation>
         <translation>Parcialmente etiquetado; los conjuntos de datos etiquetados y sin etiquetar no se pueden probar juntos</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="352"/>
+        <location filename="../app/widgets/test_dialog.py" line="355"/>
         <source>为判定为不良品的图写 &lt;同名&gt;.json 到图像目录, 多边形标出异常区域, 标注工具可直接打开;该处已有人工标注会被覆盖</source>
         <translation>Escribe &lt;mismo nombre&gt;.json junto a las imágenes juzgadas como defectuosas; los polígonos marcan las regiones anómalas y la herramienta de anotación puede abrirlos directamente; si ya hay una anotación manual, se sobrescribe</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="356"/>
+        <location filename="../app/widgets/test_dialog.py" line="359"/>
         <source>把异常区域写成 labelme json, 便于重载复核</source>
         <translation>Escribe las regiones anómalas como json de labelme para recargarlas y revisarlas fácilmente</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="370"/>
-        <source>字符识别只报告字条识别率, 不输出标注文件</source>
-        <translation>El reconocimiento de texto solo informa la tasa de acierto de los recortes de texto; no se escriben archivos de anotación</translation>
+        <location filename="../app/widgets/test_dialog.py" line="375"/>
+        <source>没有真值的图会把识别出的文字写成 &lt;同名&gt;.json 到图像同目录, 可重载数据集查看;有真值算 CER 时不写</source>
+        <translation>Las imágenes sin verdad de referencia guardan el texto reconocido como &lt;mismo-nombre&gt;.json en el directorio de imágenes, revisable al recargar el conjunto de datos; no se escribe cuando se calcula el CER con la verdad de referencia</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="376"/>
         <location filename="../app/widgets/test_dialog.py" line="382"/>
+        <location filename="../app/widgets/test_dialog.py" line="388"/>
         <source>为每张图写 &lt;同名&gt;.json 到图像目录, 框出文本区域, 标注工具可直接打开;该处已有人工标注会被覆盖</source>
         <translation>Escribe &lt;mismo-nombre&gt;.json en el directorio de cada imagen, enmarcando las regiones de texto; se puede abrir directamente en la herramienta de anotación; las anotaciones manuales existentes se sobrescribirán</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="385"/>
+        <location filename="../app/widgets/test_dialog.py" line="392"/>
+        <source>把识别出的文字写成 labelme json, 便于重载复核</source>
+        <translation>Escribe el texto reconocido en labelme json para revisarlo después de recargar</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/test_dialog.py" line="395"/>
         <source>把检测到的文本框写成 labelme json, 便于重载复核</source>
         <translation>Escribe los cuadros de texto detectados en labelme json para revisarlos después de recargar</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="388"/>
+        <location filename="../app/widgets/test_dialog.py" line="398"/>
         <source>为每张图写 &lt;同名&gt;.json 到图像目录, 标注工具可直接打开;该处已有人工标注会被覆盖</source>
         <translation>Escribe &lt;mismo nombre&gt;.json junto a cada imagen para que la herramienta de anotación pueda abrirlo directamente; las anotaciones manuales existentes se sobrescribirán</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="405"/>
-        <location filename="../app/widgets/test_dialog.py" line="409"/>
-        <location filename="../app/widgets/test_dialog.py" line="423"/>
-        <location filename="../app/widgets/test_dialog.py" line="429"/>
-        <location filename="../app/widgets/test_dialog.py" line="442"/>
+        <location filename="../app/widgets/test_dialog.py" line="415"/>
+        <location filename="../app/widgets/test_dialog.py" line="419"/>
+        <location filename="../app/widgets/test_dialog.py" line="433"/>
+        <location filename="../app/widgets/test_dialog.py" line="439"/>
         <location filename="../app/widgets/test_dialog.py" line="452"/>
-        <location filename="../app/widgets/test_dialog.py" line="458"/>
-        <location filename="../app/widgets/test_dialog.py" line="473"/>
-        <location filename="../app/widgets/test_dialog.py" line="478"/>
+        <location filename="../app/widgets/test_dialog.py" line="462"/>
+        <location filename="../app/widgets/test_dialog.py" line="468"/>
+        <location filename="../app/widgets/test_dialog.py" line="483"/>
         <source>测试</source>
         <translation>Probar</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="405"/>
+        <location filename="../app/widgets/test_dialog.py" line="415"/>
         <source>已有测试在进行中</source>
         <translation>Ya hay una prueba en curso</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="409"/>
+        <location filename="../app/widgets/test_dialog.py" line="419"/>
         <source>请至少选择一个数据集</source>
         <translation>Seleccione al menos un conjunto de datos</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="424"/>
+        <location filename="../app/widgets/test_dialog.py" line="434"/>
         <source>置信度/iou阈值必须是数字</source>
         <translation>La confianza / el umbral IoU deben ser un número</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="430"/>
+        <location filename="../app/widgets/test_dialog.py" line="440"/>
         <source>模型文件不存在, 请重新选择</source>
         <translation>El archivo del modelo no existe; selecciónelo de nuevo</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="443"/>
+        <location filename="../app/widgets/test_dialog.py" line="453"/>
         <source>数据集 {}/{} 未导入图像</source>
         <translation>El conjunto de datos {}/{} no tiene imágenes importadas</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="453"/>
+        <location filename="../app/widgets/test_dialog.py" line="463"/>
         <source>分类数据集与检测/分割数据集不能同时测试: {}/{}</source>
         <translation>Los conjuntos de datos de clasificación y de detección/segmentación no se pueden probar juntos: {}/{}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="459"/>
+        <location filename="../app/widgets/test_dialog.py" line="469"/>
         <source>已标注与未标注的数据集不能同时测试: {}/{}</source>
         <translation>Los conjuntos de datos etiquetados y sin etiquetar no se pueden probar juntos: {}/{}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="474"/>
-        <source>字符识别要拿标注框裁字条才能测, 请选择已标注的数据集</source>
-        <translation>El reconocimiento de texto necesita cuadros anotados para recortar el texto; seleccione un conjunto de datos ya anotado</translation>
-    </message>
-    <message>
-        <location filename="../app/widgets/test_dialog.py" line="479"/>
+        <location filename="../app/widgets/test_dialog.py" line="484"/>
         <source>图像尺寸过大,文字识别需要裁剪出文字区域的图像再做推理</source>
         <translation>La imagen es demasiado grande. El reconocimiento de texto necesita imágenes recortadas al área de texto antes de poder inferir</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="505"/>
+        <location filename="../app/widgets/test_dialog.py" line="510"/>
         <source>[test] 启动测试 worker: model={} 数据集={} 图像目录={} device={} cfg={}</source>
         <translation>[test] Iniciando worker de prueba: model={} conjunto de datos={} directorio de imágenes={} device={} cfg={}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="510"/>
+        <location filename="../app/widgets/test_dialog.py" line="515"/>
         <source>测试准备中...</source>
         <translation>Preparando la prueba...</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="527"/>
-        <location filename="../app/widgets/test_dialog.py" line="528"/>
+        <location filename="../app/widgets/test_dialog.py" line="532"/>
+        <location filename="../app/widgets/test_dialog.py" line="533"/>
         <source>测试即将开始</source>
         <translation>La prueba está a punto de comenzar</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="574"/>
+        <location filename="../app/widgets/test_dialog.py" line="579"/>
         <source>测试中 {}/{}</source>
         <translation>Probando {}/{}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="622"/>
+        <location filename="../app/widgets/test_dialog.py" line="627"/>
         <source>[test-dialog] 测试完成, ok={}</source>
         <translation>[test-dialog] Prueba completada, ok={}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="630"/>
+        <location filename="../app/widgets/test_dialog.py" line="635"/>
+        <location filename="../app/widgets/test_dialog.py" line="650"/>
         <source>测试结果</source>
         <translation>Resultados de la prueba</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="631"/>
+        <location filename="../app/widgets/test_dialog.py" line="636"/>
         <source>测试未正常完成</source>
         <translation>La prueba no finalizó correctamente</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="645"/>
+        <location filename="../app/widgets/test_dialog.py" line="651"/>
+        <source>推理模式: 已识别 {} 张图, 文本标注已写到图像同目录:
+{}
+可在首页重载该数据集查看</source>
+        <translation>Modo de inferencia: se reconocieron {} imágenes; anotaciones de texto escritas junto a las imágenes:
+{}
+Vuelve a cargar este conjunto en la página de inicio para verlas</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/test_dialog.py" line="657"/>
         <source>[test-dialog] 测试失败: {}</source>
         <translation>[test-dialog] Prueba fallida: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="652"/>
+        <location filename="../app/widgets/test_dialog.py" line="664"/>
         <source>测试失败</source>
         <translation>Prueba fallida</translation>
     </message>

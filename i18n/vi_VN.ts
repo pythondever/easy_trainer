@@ -3039,6 +3039,7 @@ Bao gồm: {}</translation>
     </message>
     <message>
         <location filename="../app/train/ocr_test_runner.py" line="386"/>
+        <location filename="../app/train/ocr_test_runner.py" line="493"/>
         <source>输出标注失败 {}: {}</source>
         <translation>Ghi chú thích thất bại {}: {}</translation>
     </message>
@@ -3063,27 +3064,27 @@ Bao gồm: {}</translation>
         <translation>Đang tải mô hình nhận dạng văn bản: {} từ vựng {} ký tự</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_test_runner.py" line="471"/>
+        <location filename="../app/train/ocr_test_runner.py" line="480"/>
         <source>识别失败 {}: {}</source>
         <translation>Nhận dạng thất bại {}: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_test_runner.py" line="478"/>
-        <source>没有取到任何字条: 该数据集没有文本标注, 识别段只能拿标注框裁图来测</source>
-        <translation>Không lấy được đoạn văn bản đã cắt (crop) nào: tập dữ liệu này không có chú thích văn bản, giai đoạn nhận dạng chỉ có thể cắt ảnh theo ô chú thích để kiểm tra</translation>
+        <location filename="../app/train/ocr_test_runner.py" line="497"/>
+        <source>没有取到任何字条: 该数据集里既没有文本框标注, 也没有同名文本文件</source>
+        <translation>Không lấy được dòng chữ nào: tập dữ liệu này không có chú thích khung văn bản lẫn tệp văn bản cùng tên</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_test_runner.py" line="495"/>
-        <source>WARN {} 张图没有文本标注, 已跳过</source>
-        <translation>WARN {} ảnh không có chú thích văn bản, đã bỏ qua</translation>
+        <location filename="../app/train/ocr_test_runner.py" line="531"/>
+        <source>无真值, 已识别 {} 张图并写出文本标注</source>
+        <translation>Không có nhãn gốc: đã nhận dạng {} ảnh và ghi chú thích văn bản</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_test_runner.py" line="498"/>
+        <location filename="../app/train/ocr_test_runner.py" line="514"/>
         <source>字条 {} 条, CER={:.4f}, 全对 {} 条</source>
         <translation>Đoạn văn bản đã cắt (crop): {} đoạn, CER={:.4f}, đúng hoàn toàn {} đoạn</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_test_runner.py" line="501"/>
+        <location filename="../app/train/ocr_test_runner.py" line="517"/>
         <source>字符 {} 个: 正确 {} 替换 {} 删除 {} 插入 {}</source>
         <translation>{} ký tự: đúng {} thay thế {} thiếu {} thêm {}</translation>
     </message>
@@ -3750,137 +3751,146 @@ Bộ dữ liệu nguồn sẽ bị xóa hết sau khi di chuyển.</translation>
         <translation>Gán nhãn một phần, không thể kiểm thử chung bộ dữ liệu đã gán nhãn và chưa gán nhãn</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="352"/>
+        <location filename="../app/widgets/test_dialog.py" line="355"/>
         <source>为判定为不良品的图写 &lt;同名&gt;.json 到图像目录, 多边形标出异常区域, 标注工具可直接打开;该处已有人工标注会被覆盖</source>
         <translation>Ghi &lt;cùng tên&gt;.json vào thư mục ảnh cho những ảnh bị kết luận là sản phẩm lỗi, dùng đa giác đánh dấu vùng bất thường, công cụ chú thích mở được trực tiếp; chú thích thủ công đã có ở đó sẽ bị ghi đè</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="356"/>
+        <location filename="../app/widgets/test_dialog.py" line="359"/>
         <source>把异常区域写成 labelme json, 便于重载复核</source>
         <translation>Ghi vùng bất thường thành labelme json để dễ tải lại và kiểm tra</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="370"/>
-        <source>字符识别只报告字条识别率, 不输出标注文件</source>
-        <translation>Nhận dạng văn bản chỉ báo cáo tỷ lệ nhận dạng đoạn văn bản đã cắt (crop), không ghi tệp chú thích</translation>
+        <location filename="../app/widgets/test_dialog.py" line="375"/>
+        <source>没有真值的图会把识别出的文字写成 &lt;同名&gt;.json 到图像同目录, 可重载数据集查看;有真值算 CER 时不写</source>
+        <translation>Ảnh không có nhãn tham chiếu sẽ ghi văn bản đã nhận dạng thành &lt;cùng-tên&gt;.json trong thư mục ảnh, có thể xem lại sau khi tải lại bộ dữ liệu; không ghi khi tính CER từ nhãn tham chiếu</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="376"/>
         <location filename="../app/widgets/test_dialog.py" line="382"/>
+        <location filename="../app/widgets/test_dialog.py" line="388"/>
         <source>为每张图写 &lt;同名&gt;.json 到图像目录, 框出文本区域, 标注工具可直接打开;该处已有人工标注会被覆盖</source>
         <translation>Ghi &lt;cùng tên&gt;.json vào thư mục ảnh cho mỗi ảnh, đóng ô vùng văn bản, có thể mở trực tiếp bằng công cụ chú thích;chú thích thủ công có sẵn ở đó sẽ bị ghi đè</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="385"/>
+        <location filename="../app/widgets/test_dialog.py" line="392"/>
+        <source>把识别出的文字写成 labelme json, 便于重载复核</source>
+        <translation>Ghi văn bản đã nhận dạng thành labelme json để tiện kiểm tra lại sau khi tải lại</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/test_dialog.py" line="395"/>
         <source>把检测到的文本框写成 labelme json, 便于重载复核</source>
         <translation>Ghi các ô văn bản được phát hiện thành labelme json để tiện kiểm tra lại sau khi tải lại</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="388"/>
+        <location filename="../app/widgets/test_dialog.py" line="398"/>
         <source>为每张图写 &lt;同名&gt;.json 到图像目录, 标注工具可直接打开;该处已有人工标注会被覆盖</source>
         <translation>Ghi &lt;cùng tên&gt;.json vào thư mục ảnh, công cụ gán nhãn mở được trực tiếp; chú thích thủ công có sẵn ở đó sẽ bị ghi đè</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="405"/>
-        <location filename="../app/widgets/test_dialog.py" line="409"/>
-        <location filename="../app/widgets/test_dialog.py" line="423"/>
-        <location filename="../app/widgets/test_dialog.py" line="429"/>
-        <location filename="../app/widgets/test_dialog.py" line="442"/>
+        <location filename="../app/widgets/test_dialog.py" line="415"/>
+        <location filename="../app/widgets/test_dialog.py" line="419"/>
+        <location filename="../app/widgets/test_dialog.py" line="433"/>
+        <location filename="../app/widgets/test_dialog.py" line="439"/>
         <location filename="../app/widgets/test_dialog.py" line="452"/>
-        <location filename="../app/widgets/test_dialog.py" line="458"/>
-        <location filename="../app/widgets/test_dialog.py" line="473"/>
-        <location filename="../app/widgets/test_dialog.py" line="478"/>
+        <location filename="../app/widgets/test_dialog.py" line="462"/>
+        <location filename="../app/widgets/test_dialog.py" line="468"/>
+        <location filename="../app/widgets/test_dialog.py" line="483"/>
         <source>测试</source>
         <translation>Kiểm thử</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="405"/>
+        <location filename="../app/widgets/test_dialog.py" line="415"/>
         <source>已有测试在进行中</source>
         <translation>Đang có một lượt kiểm thử chạy</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="409"/>
+        <location filename="../app/widgets/test_dialog.py" line="419"/>
         <source>请至少选择一个数据集</source>
         <translation>Chọn ít nhất một bộ dữ liệu</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="424"/>
+        <location filename="../app/widgets/test_dialog.py" line="434"/>
         <source>置信度/iou阈值必须是数字</source>
         <translation>Độ tin cậy/ngưỡng IoU phải là số</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="430"/>
+        <location filename="../app/widgets/test_dialog.py" line="440"/>
         <source>模型文件不存在, 请重新选择</source>
         <translation>Tệp mô hình không tồn tại, chọn lại</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="443"/>
+        <location filename="../app/widgets/test_dialog.py" line="453"/>
         <source>数据集 {}/{} 未导入图像</source>
         <translation>Bộ dữ liệu {}/{} chưa nhập ảnh</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="453"/>
+        <location filename="../app/widgets/test_dialog.py" line="463"/>
         <source>分类数据集与检测/分割数据集不能同时测试: {}/{}</source>
         <translation>Không thể kiểm thử chung bộ dữ liệu phân loại và phát hiện/phân đoạn: {}/{}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="459"/>
+        <location filename="../app/widgets/test_dialog.py" line="469"/>
         <source>已标注与未标注的数据集不能同时测试: {}/{}</source>
         <translation>Không thể kiểm thử chung bộ dữ liệu đã gán nhãn và chưa gán nhãn: {}/{}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="474"/>
-        <source>字符识别要拿标注框裁字条才能测, 请选择已标注的数据集</source>
-        <translation>Nhận dạng văn bản chỉ kiểm tra được khi dùng ô chú thích cắt ra đoạn văn bản đã cắt (crop), vui lòng chọn tập dữ liệu đã chú thích</translation>
-    </message>
-    <message>
-        <location filename="../app/widgets/test_dialog.py" line="479"/>
+        <location filename="../app/widgets/test_dialog.py" line="484"/>
         <source>图像尺寸过大,文字识别需要裁剪出文字区域的图像再做推理</source>
         <translation>Ảnh quá lớn. Nhận dạng văn bản cần ảnh được cắt theo vùng văn bản trước khi suy luận</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="505"/>
+        <location filename="../app/widgets/test_dialog.py" line="510"/>
         <source>[test] 启动测试 worker: model={} 数据集={} 图像目录={} device={} cfg={}</source>
         <translation>[test] Khởi động worker kiểm thử: model={} bộ dữ liệu={} thư mục ảnh={} device={} cfg={}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="510"/>
+        <location filename="../app/widgets/test_dialog.py" line="515"/>
         <source>测试准备中...</source>
         <translation>Đang chuẩn bị kiểm thử...</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="527"/>
-        <location filename="../app/widgets/test_dialog.py" line="528"/>
+        <location filename="../app/widgets/test_dialog.py" line="532"/>
+        <location filename="../app/widgets/test_dialog.py" line="533"/>
         <source>测试即将开始</source>
         <translation>Kiểm thử sắp bắt đầu</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="574"/>
+        <location filename="../app/widgets/test_dialog.py" line="579"/>
         <source>测试中 {}/{}</source>
         <translation>Đang kiểm thử {}/{}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="622"/>
+        <location filename="../app/widgets/test_dialog.py" line="627"/>
         <source>[test-dialog] 测试完成, ok={}</source>
         <translation>[test-dialog] Kiểm thử xong, ok={}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="630"/>
+        <location filename="../app/widgets/test_dialog.py" line="635"/>
+        <location filename="../app/widgets/test_dialog.py" line="650"/>
         <source>测试结果</source>
         <translation>Kết quả kiểm thử</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="631"/>
+        <location filename="../app/widgets/test_dialog.py" line="636"/>
         <source>测试未正常完成</source>
         <translation>Kiểm thử không hoàn tất bình thường</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="645"/>
+        <location filename="../app/widgets/test_dialog.py" line="651"/>
+        <source>推理模式: 已识别 {} 张图, 文本标注已写到图像同目录:
+{}
+可在首页重载该数据集查看</source>
+        <translation>Chế độ suy luận: đã nhận dạng {} ảnh; chú thích văn bản đã được ghi cạnh ảnh:
+{}
+Tải lại tập dữ liệu này ở trang chủ để xem</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/test_dialog.py" line="657"/>
         <source>[test-dialog] 测试失败: {}</source>
         <translation>[test-dialog] Kiểm thử thất bại: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="652"/>
+        <location filename="../app/widgets/test_dialog.py" line="664"/>
         <source>测试失败</source>
         <translation>Kiểm thử thất bại</translation>
     </message>

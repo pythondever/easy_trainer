@@ -3039,6 +3039,7 @@
     </message>
     <message>
         <location filename="../app/train/ocr_test_runner.py" line="386"/>
+        <location filename="../app/train/ocr_test_runner.py" line="493"/>
         <source>输出标注失败 {}: {}</source>
         <translation>輸出標註失敗 {}: {}</translation>
     </message>
@@ -3063,27 +3064,27 @@
         <translation>載入文字辨識模型: {} 詞彙表 {} 個字元</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_test_runner.py" line="471"/>
+        <location filename="../app/train/ocr_test_runner.py" line="480"/>
         <source>识别失败 {}: {}</source>
         <translation>辨識失敗 {}: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_test_runner.py" line="478"/>
-        <source>没有取到任何字条: 该数据集没有文本标注, 识别段只能拿标注框裁图来测</source>
-        <translation>沒有取到任何文字條: 此資料集沒有文字標註, 辨識階段只能拿標註框裁圖來測</translation>
+        <location filename="../app/train/ocr_test_runner.py" line="497"/>
+        <source>没有取到任何字条: 该数据集里既没有文本框标注, 也没有同名文本文件</source>
+        <translation>沒有取到任何字條: 該資料集裡既沒有文字框標註, 也沒有同名文字檔</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_test_runner.py" line="495"/>
-        <source>WARN {} 张图没有文本标注, 已跳过</source>
-        <translation>WARN {} 張圖沒有文字標註, 已跳過</translation>
+        <location filename="../app/train/ocr_test_runner.py" line="531"/>
+        <source>无真值, 已识别 {} 张图并写出文本标注</source>
+        <translation>無真值, 已辨識 {} 張圖並寫出文字標註</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_test_runner.py" line="498"/>
+        <location filename="../app/train/ocr_test_runner.py" line="514"/>
         <source>字条 {} 条, CER={:.4f}, 全对 {} 条</source>
         <translation>文字條 {} 條, CER={:.4f}, 全對 {} 條</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_test_runner.py" line="501"/>
+        <location filename="../app/train/ocr_test_runner.py" line="517"/>
         <source>字符 {} 个: 正确 {} 替换 {} 删除 {} 插入 {}</source>
         <translation>字符 {} 個: 正確 {} 替換 {} 刪除 {} 插入 {}</translation>
     </message>
@@ -3750,137 +3751,146 @@
         <translation>部分已標註, 已標註與未標註的資料集不能一起測試</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="352"/>
+        <location filename="../app/widgets/test_dialog.py" line="355"/>
         <source>为判定为不良品的图写 &lt;同名&gt;.json 到图像目录, 多边形标出异常区域, 标注工具可直接打开;该处已有人工标注会被覆盖</source>
         <translation>為判定為不良品的圖寫 &lt;同名&gt;.json 到影像目錄, 多邊形標出異常區域, 標註工具可直接開啟;該處已有人工標註會被覆寫</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="356"/>
+        <location filename="../app/widgets/test_dialog.py" line="359"/>
         <source>把异常区域写成 labelme json, 便于重载复核</source>
         <translation>把異常區域寫成 labelme json, 便於重載複核</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="370"/>
-        <source>字符识别只报告字条识别率, 不输出标注文件</source>
-        <translation>文字辨識只回報文字條辨識率, 不輸出標註檔案</translation>
+        <location filename="../app/widgets/test_dialog.py" line="375"/>
+        <source>没有真值的图会把识别出的文字写成 &lt;同名&gt;.json 到图像同目录, 可重载数据集查看;有真值算 CER 时不写</source>
+        <translation>沒有真值的圖會把辨識出的文字寫成 &lt;同名&gt;.json 到影像同目錄, 可重載資料集查看;有真值算 CER 時不寫</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="376"/>
         <location filename="../app/widgets/test_dialog.py" line="382"/>
+        <location filename="../app/widgets/test_dialog.py" line="388"/>
         <source>为每张图写 &lt;同名&gt;.json 到图像目录, 框出文本区域, 标注工具可直接打开;该处已有人工标注会被覆盖</source>
         <translation>為每張圖寫入 &lt;同名&gt;.json 到影像目錄, 框出文字區域, 標註工具可直接開啟;該處已有的人工標註會被覆寫</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="385"/>
+        <location filename="../app/widgets/test_dialog.py" line="392"/>
+        <source>把识别出的文字写成 labelme json, 便于重载复核</source>
+        <translation>把辨識出的文字寫成 labelme json, 便於重新載入複核</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/test_dialog.py" line="395"/>
         <source>把检测到的文本框写成 labelme json, 便于重载复核</source>
         <translation>把偵測到的文字框寫成 labelme json, 便於重新載入複核</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="388"/>
+        <location filename="../app/widgets/test_dialog.py" line="398"/>
         <source>为每张图写 &lt;同名&gt;.json 到图像目录, 标注工具可直接打开;该处已有人工标注会被覆盖</source>
         <translation>為每張圖寫 &lt;同名&gt;.json 到影像目錄, 標註工具可直接開啟;該處已有人工標註會被覆寫</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="405"/>
-        <location filename="../app/widgets/test_dialog.py" line="409"/>
-        <location filename="../app/widgets/test_dialog.py" line="423"/>
-        <location filename="../app/widgets/test_dialog.py" line="429"/>
-        <location filename="../app/widgets/test_dialog.py" line="442"/>
+        <location filename="../app/widgets/test_dialog.py" line="415"/>
+        <location filename="../app/widgets/test_dialog.py" line="419"/>
+        <location filename="../app/widgets/test_dialog.py" line="433"/>
+        <location filename="../app/widgets/test_dialog.py" line="439"/>
         <location filename="../app/widgets/test_dialog.py" line="452"/>
-        <location filename="../app/widgets/test_dialog.py" line="458"/>
-        <location filename="../app/widgets/test_dialog.py" line="473"/>
-        <location filename="../app/widgets/test_dialog.py" line="478"/>
+        <location filename="../app/widgets/test_dialog.py" line="462"/>
+        <location filename="../app/widgets/test_dialog.py" line="468"/>
+        <location filename="../app/widgets/test_dialog.py" line="483"/>
         <source>测试</source>
         <translation>測試</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="405"/>
+        <location filename="../app/widgets/test_dialog.py" line="415"/>
         <source>已有测试在进行中</source>
         <translation>已有測試正在進行中</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="409"/>
+        <location filename="../app/widgets/test_dialog.py" line="419"/>
         <source>请至少选择一个数据集</source>
         <translation>請至少選擇一個資料集</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="424"/>
+        <location filename="../app/widgets/test_dialog.py" line="434"/>
         <source>置信度/iou阈值必须是数字</source>
         <translation>信賴度/iou閾值必須是數字</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="430"/>
+        <location filename="../app/widgets/test_dialog.py" line="440"/>
         <source>模型文件不存在, 请重新选择</source>
         <translation>模型檔案不存在, 請重新選擇</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="443"/>
+        <location filename="../app/widgets/test_dialog.py" line="453"/>
         <source>数据集 {}/{} 未导入图像</source>
         <translation>資料集 {}/{} 未匯入影像</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="453"/>
+        <location filename="../app/widgets/test_dialog.py" line="463"/>
         <source>分类数据集与检测/分割数据集不能同时测试: {}/{}</source>
         <translation>分類資料集與偵測/分割資料集不能同時測試: {}/{}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="459"/>
+        <location filename="../app/widgets/test_dialog.py" line="469"/>
         <source>已标注与未标注的数据集不能同时测试: {}/{}</source>
         <translation>已標註與未標註的資料集不能同時測試: {}/{}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="474"/>
-        <source>字符识别要拿标注框裁字条才能测, 请选择已标注的数据集</source>
-        <translation>文字辨識需拿標註框裁出文字條才能測試, 請選擇已標註的資料集</translation>
-    </message>
-    <message>
-        <location filename="../app/widgets/test_dialog.py" line="479"/>
+        <location filename="../app/widgets/test_dialog.py" line="484"/>
         <source>图像尺寸过大,文字识别需要裁剪出文字区域的图像再做推理</source>
         <translation>影像尺寸過大,文字辨識需要先裁剪出文字區域的影像再做推理</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="505"/>
+        <location filename="../app/widgets/test_dialog.py" line="510"/>
         <source>[test] 启动测试 worker: model={} 数据集={} 图像目录={} device={} cfg={}</source>
         <translation>[test] 啟動測試 worker: model={} 資料集={} 影像目錄={} device={} cfg={}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="510"/>
+        <location filename="../app/widgets/test_dialog.py" line="515"/>
         <source>测试准备中...</source>
         <translation>測試準備中...</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="527"/>
-        <location filename="../app/widgets/test_dialog.py" line="528"/>
+        <location filename="../app/widgets/test_dialog.py" line="532"/>
+        <location filename="../app/widgets/test_dialog.py" line="533"/>
         <source>测试即将开始</source>
         <translation>測試即將開始</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="574"/>
+        <location filename="../app/widgets/test_dialog.py" line="579"/>
         <source>测试中 {}/{}</source>
         <translation>測試中 {}/{}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="622"/>
+        <location filename="../app/widgets/test_dialog.py" line="627"/>
         <source>[test-dialog] 测试完成, ok={}</source>
         <translation>[test-dialog] 測試完成, ok={}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="630"/>
+        <location filename="../app/widgets/test_dialog.py" line="635"/>
+        <location filename="../app/widgets/test_dialog.py" line="650"/>
         <source>测试结果</source>
         <translation>測試結果</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="631"/>
+        <location filename="../app/widgets/test_dialog.py" line="636"/>
         <source>测试未正常完成</source>
         <translation>測試未正常完成</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="645"/>
+        <location filename="../app/widgets/test_dialog.py" line="651"/>
+        <source>推理模式: 已识别 {} 张图, 文本标注已写到图像同目录:
+{}
+可在首页重载该数据集查看</source>
+        <translation>推理模式: 已辨識 {} 張圖, 文字標註已寫到影像同目錄:
+{}
+可在首頁重新載入該資料集查看</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/test_dialog.py" line="657"/>
         <source>[test-dialog] 测试失败: {}</source>
         <translation>[test-dialog] 測試失敗: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="652"/>
+        <location filename="../app/widgets/test_dialog.py" line="664"/>
         <source>测试失败</source>
         <translation>測試失敗</translation>
     </message>

@@ -339,11 +339,14 @@ class TestDialog(QDialog):
         # 字符识别的两个阈值都不参与计算, 跟分类一样整组收起
         ocr_rec_mode = self._ocr_task() == "ocr_rec"
         show_params = not cls_mode and not ocr_rec_mode
+        # 第 3 行(输出标签文件)在异常检测与字符识别下都保留: 这两种任务没有
+        # 置信度与 iou 可调, 但把结果写成 json 落回图像目录是它们的主要产物
+        keep_out_row = ad_mode or ocr_rec_mode
         for row in (0, 1, 2):
             self._set_form_row_visible(
-                "form_param", row, show_params or (ad_mode and row == 2))
-        self.ui.group_param_title.setVisible(show_params or ad_mode)
-        self.ui.group_param_line.setVisible(show_params or ad_mode)
+                "form_param", row, show_params or (keep_out_row and row == 2))
+        self.ui.group_param_title.setVisible(show_params or keep_out_row)
+        self.ui.group_param_line.setVisible(show_params or keep_out_row)
         self.ui.confidence_txt.setEnabled(show_params)
         self.ui.iou_treshold_txt.setEnabled(show_params)
         box = self.ui.output_label_file_checkBox
@@ -364,10 +367,13 @@ class TestDialog(QDialog):
             self.ui.iou_treshold_txt.setEnabled(
                 not ocr_rec_mode and labeled > 0)
             if ocr_task == "ocr_rec":
-                # 识别段只算 CER, 没有框可写
+                # 识别没有框可写; 但无真值的图会把识别出的文字写成 json 落回
+                # 图像同目录, 那是推理模式唯一的产物, 固定勾上不给取消
                 box.setEnabled(False)
-                box.setChecked(False)
-                box.setToolTip(self.tr("字符识别只报告字条识别率, 不输出标注文件"))
+                box.setChecked(True)
+                box.setToolTip(self.tr(
+                    "没有真值的图会把识别出的文字写成 <同名>.json 到图像同目录, "
+                    "可重载数据集查看;有真值算 CER 时不写"))
             elif labeled == 0:
                 # 推理模式: 没有真值可比, 写出的标注是这次唯一产物
                 box.setEnabled(False)
@@ -381,8 +387,12 @@ class TestDialog(QDialog):
                 box.setToolTip(self.tr(
                     "为每张图写 <同名>.json 到图像目录, 框出文本区域, "
                     "标注工具可直接打开;该处已有人工标注会被覆盖"))
-            self.ui.out_note.setToolTip(self.tr(
-                "把检测到的文本框写成 labelme json, 便于重载复核"))
+            if ocr_rec_mode:
+                self.ui.out_note.setToolTip(self.tr(
+                    "把识别出的文字写成 labelme json, 便于重载复核"))
+            else:
+                self.ui.out_note.setToolTip(self.tr(
+                    "把检测到的文本框写成 labelme json, 便于重载复核"))
             return
         # 同一个弹窗可能被换数据集复用, 切回检测/分割要把 tooltip 还原
         box.setToolTip(self.tr("为每张图写 <同名>.json 到图像目录, "
@@ -468,11 +478,6 @@ class TestDialog(QDialog):
                 })
             total += int(binding.get("total") or 0)
         has_label = bool(base_labeled)
-        if self._ocr_task() == "ocr_rec" and not has_label:
-            MessageBox.warning(
-                self, self.tr("测试"),
-                self.tr("字符识别要拿标注框裁字条才能测, 请选择已标注的数据集"))
-            return
         if self._ocr_task() and self._images_too_large_for_textline(items):
             MessageBox.warning(
                 self, self.tr("测试"),
@@ -636,8 +641,15 @@ class TestDialog(QDialog):
             self._fill_label_stats(res)
             TestResultDialog(res, parent=self.app).exec()
         elif res.get("task") == "ocr_rec":
-            # 识别也走这个面板: 字条维度看读对多少, 字符维度看错在替换/漏字/多字
-            TestResultDialog(res, parent=self.app).exec()
+            if res.get("total"):
+                # 有真值: 字条维度看读对多少, 字符维度看错在替换/漏字/多字
+                TestResultDialog(res, parent=self.app).exec()
+            else:
+                # 推理模式没有真值, 算不了 CER; 识别文本已写成标注落在图像同目录
+                MessageBox.information(
+                    self, self.tr("测试结果"),
+                    self.tr("推理模式: 已识别 {} 张图, 文本标注已写到图像同目录:\n{}\n可在首页重载该数据集查看").format(
+                        res.get("infer", 0), res.get("infer_dir", "")))
         else:
             self.app._load_dataset_view(self._project, self._dataset)
 

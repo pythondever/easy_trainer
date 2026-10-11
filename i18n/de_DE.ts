@@ -3039,6 +3039,7 @@ Trotzdem schließen?</translation>
     </message>
     <message>
         <location filename="../app/train/ocr_test_runner.py" line="386"/>
+        <location filename="../app/train/ocr_test_runner.py" line="493"/>
         <source>输出标注失败 {}: {}</source>
         <translation>Annotationen ausgeben fehlgeschlagen {}: {}</translation>
     </message>
@@ -3063,27 +3064,27 @@ Trotzdem schließen?</translation>
         <translation>Lade Texterkennungsmodell: {} Vokabular {} Zeichen</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_test_runner.py" line="471"/>
+        <location filename="../app/train/ocr_test_runner.py" line="480"/>
         <source>识别失败 {}: {}</source>
         <translation>Texterkennung fehlgeschlagen {}: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_test_runner.py" line="478"/>
-        <source>没有取到任何字条: 该数据集没有文本标注, 识别段只能拿标注框裁图来测</source>
-        <translation>Keine Textausschnitte: Datensatz ohne Textannotationen; nur Felder-Zuschnitte prüfbar</translation>
+        <location filename="../app/train/ocr_test_runner.py" line="497"/>
+        <source>没有取到任何字条: 该数据集里既没有文本框标注, 也没有同名文本文件</source>
+        <translation>Keine Textzeilen gefunden: Dieser Datensatz hat weder Textbox-Annotationen noch gleichnamige Textdateien</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_test_runner.py" line="495"/>
-        <source>WARN {} 张图没有文本标注, 已跳过</source>
-        <translation>WARN {} Bilder ohne Textannotationen, übersprungen</translation>
+        <location filename="../app/train/ocr_test_runner.py" line="531"/>
+        <source>无真值, 已识别 {} 张图并写出文本标注</source>
+        <translation>Keine Ground Truth: {} Bilder erkannt und Textannotationen geschrieben</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_test_runner.py" line="498"/>
+        <location filename="../app/train/ocr_test_runner.py" line="514"/>
         <source>字条 {} 条, CER={:.4f}, 全对 {} 条</source>
         <translation>Textausschnitte {}, CER={:.4f}, vollständig richtig {}</translation>
     </message>
     <message>
-        <location filename="../app/train/ocr_test_runner.py" line="501"/>
+        <location filename="../app/train/ocr_test_runner.py" line="517"/>
         <source>字符 {} 个: 正确 {} 替换 {} 删除 {} 插入 {}</source>
         <translation>{} Zeichen: {} korrekt, {} ersetzt, {} fehlend, {} eingefügt</translation>
     </message>
@@ -3750,137 +3751,146 @@ Der Quell-Datensatz wird danach geleert.</translation>
         <translation>Teilweise annotiert; annotierte und nicht annotierte Datensätze können nicht zusammen getestet werden</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="352"/>
+        <location filename="../app/widgets/test_dialog.py" line="355"/>
         <source>为判定为不良品的图写 &lt;同名&gt;.json 到图像目录, 多边形标出异常区域, 标注工具可直接打开;该处已有人工标注会被覆盖</source>
         <translation>Schreibt für als Schlechtteil bewertete Bilder &lt;gleichnamig&gt;.json neben das Bild, Polygone markieren die Anomaliebereiche, das Annotationstool kann sie direkt öffnen; vorhandene manuelle Annotationen dort werden überschrieben</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="356"/>
+        <location filename="../app/widgets/test_dialog.py" line="359"/>
         <source>把异常区域写成 labelme json, 便于重载复核</source>
         <translation>Schreibt die Anomaliebereiche als labelme json, um sie zum Prüfen neu laden zu können</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="370"/>
-        <source>字符识别只报告字条识别率, 不输出标注文件</source>
-        <translation>Nur Erkennungsrate je Ausschnitt; keine Annotationsdatei</translation>
+        <location filename="../app/widgets/test_dialog.py" line="375"/>
+        <source>没有真值的图会把识别出的文字写成 &lt;同名&gt;.json 到图像同目录, 可重载数据集查看;有真值算 CER 时不写</source>
+        <translation>Bilder ohne Ground Truth: erkannter Text wird als &lt;gleichnamige&gt;.json im Bildordner abgelegt, nach dem Neuladen des Datensatzes prüfbar; wird nicht geschrieben, wenn CER aus Ground Truth berechnet wird</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="376"/>
         <location filename="../app/widgets/test_dialog.py" line="382"/>
+        <location filename="../app/widgets/test_dialog.py" line="388"/>
         <source>为每张图写 &lt;同名&gt;.json 到图像目录, 框出文本区域, 标注工具可直接打开;该处已有人工标注会被覆盖</source>
         <translation>Je Bild &lt;gleicher Name&gt;.json neben das Bild; rahmt Textbereiche ein, im Annotationstool öffenbar; überschreibt bestehende Annotationen</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="385"/>
+        <location filename="../app/widgets/test_dialog.py" line="392"/>
+        <source>把识别出的文字写成 labelme json, 便于重载复核</source>
+        <translation>Erkannte Texte als labelme json; zur Kontrolle nach dem Laden</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/test_dialog.py" line="395"/>
         <source>把检测到的文本框写成 labelme json, 便于重载复核</source>
         <translation>Erkannte Textfelder als labelme json; zur Kontrolle nach dem Laden</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="388"/>
+        <location filename="../app/widgets/test_dialog.py" line="398"/>
         <source>为每张图写 &lt;同名&gt;.json 到图像目录, 标注工具可直接打开;该处已有人工标注会被覆盖</source>
         <translation>Schreibt &lt;gleicher Name&gt;.json neben jedes Bild, sodass das Annotationstool sie direkt öffnen kann; vorhandene manuelle Labels dort werden überschrieben</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="405"/>
-        <location filename="../app/widgets/test_dialog.py" line="409"/>
-        <location filename="../app/widgets/test_dialog.py" line="423"/>
-        <location filename="../app/widgets/test_dialog.py" line="429"/>
-        <location filename="../app/widgets/test_dialog.py" line="442"/>
+        <location filename="../app/widgets/test_dialog.py" line="415"/>
+        <location filename="../app/widgets/test_dialog.py" line="419"/>
+        <location filename="../app/widgets/test_dialog.py" line="433"/>
+        <location filename="../app/widgets/test_dialog.py" line="439"/>
         <location filename="../app/widgets/test_dialog.py" line="452"/>
-        <location filename="../app/widgets/test_dialog.py" line="458"/>
-        <location filename="../app/widgets/test_dialog.py" line="473"/>
-        <location filename="../app/widgets/test_dialog.py" line="478"/>
+        <location filename="../app/widgets/test_dialog.py" line="462"/>
+        <location filename="../app/widgets/test_dialog.py" line="468"/>
+        <location filename="../app/widgets/test_dialog.py" line="483"/>
         <source>测试</source>
         <translation>Testen</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="405"/>
+        <location filename="../app/widgets/test_dialog.py" line="415"/>
         <source>已有测试在进行中</source>
         <translation>Ein Test läuft bereits</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="409"/>
+        <location filename="../app/widgets/test_dialog.py" line="419"/>
         <source>请至少选择一个数据集</source>
         <translation>Mindestens einen Datensatz auswählen</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="424"/>
+        <location filename="../app/widgets/test_dialog.py" line="434"/>
         <source>置信度/iou阈值必须是数字</source>
         <translation>Konfidenz/IoU-Schwelle muss eine Zahl sein</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="430"/>
+        <location filename="../app/widgets/test_dialog.py" line="440"/>
         <source>模型文件不存在, 请重新选择</source>
         <translation>Die Modelldatei existiert nicht; bitte erneut auswählen</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="443"/>
+        <location filename="../app/widgets/test_dialog.py" line="453"/>
         <source>数据集 {}/{} 未导入图像</source>
         <translation>Datensatz {}/{} hat keine Bilder importiert</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="453"/>
+        <location filename="../app/widgets/test_dialog.py" line="463"/>
         <source>分类数据集与检测/分割数据集不能同时测试: {}/{}</source>
         <translation>Klassifizierungs- und Erkennungs-/Segmentierungs-Datensätze können nicht zusammen getestet werden: {}/{}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="459"/>
+        <location filename="../app/widgets/test_dialog.py" line="469"/>
         <source>已标注与未标注的数据集不能同时测试: {}/{}</source>
         <translation>Annotierte und nicht annotierte Datensätze können nicht zusammen getestet werden: {}/{}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="474"/>
-        <source>字符识别要拿标注框裁字条才能测, 请选择已标注的数据集</source>
-        <translation>Texterkennung braucht Felder-Zuschnitte; Datensatz muss annotiert sein</translation>
-    </message>
-    <message>
-        <location filename="../app/widgets/test_dialog.py" line="479"/>
+        <location filename="../app/widgets/test_dialog.py" line="484"/>
         <source>图像尺寸过大,文字识别需要裁剪出文字区域的图像再做推理</source>
         <translation>Das Bild ist zu groß. Die Texterkennung benötigt auf den Textbereich zugeschnittene Bilder, bevor sie inferieren kann</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="505"/>
+        <location filename="../app/widgets/test_dialog.py" line="510"/>
         <source>[test] 启动测试 worker: model={} 数据集={} 图像目录={} device={} cfg={}</source>
         <translation>[test] Test-Worker starten: model={} Datensatz={} Bildordner={} device={} cfg={}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="510"/>
+        <location filename="../app/widgets/test_dialog.py" line="515"/>
         <source>测试准备中...</source>
         <translation>Test wird vorbereitet...</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="527"/>
-        <location filename="../app/widgets/test_dialog.py" line="528"/>
+        <location filename="../app/widgets/test_dialog.py" line="532"/>
+        <location filename="../app/widgets/test_dialog.py" line="533"/>
         <source>测试即将开始</source>
         <translation>Test startet gleich</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="574"/>
+        <location filename="../app/widgets/test_dialog.py" line="579"/>
         <source>测试中 {}/{}</source>
         <translation>Test läuft {}/{}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="622"/>
+        <location filename="../app/widgets/test_dialog.py" line="627"/>
         <source>[test-dialog] 测试完成, ok={}</source>
         <translation>[test-dialog] Test abgeschlossen, ok={}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="630"/>
+        <location filename="../app/widgets/test_dialog.py" line="635"/>
+        <location filename="../app/widgets/test_dialog.py" line="650"/>
         <source>测试结果</source>
         <translation>Testergebnisse</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="631"/>
+        <location filename="../app/widgets/test_dialog.py" line="636"/>
         <source>测试未正常完成</source>
         <translation>Der Test wurde nicht regulär abgeschlossen</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="645"/>
+        <location filename="../app/widgets/test_dialog.py" line="651"/>
+        <source>推理模式: 已识别 {} 张图, 文本标注已写到图像同目录:
+{}
+可在首页重载该数据集查看</source>
+        <translation>Inferenzmodus: {} Bilder erkannt; Textannotationen neben den Bildern geschrieben:
+{}
+Laden Sie diesen Datensatz auf der Startseite neu, um sie zu sehen</translation>
+    </message>
+    <message>
+        <location filename="../app/widgets/test_dialog.py" line="657"/>
         <source>[test-dialog] 测试失败: {}</source>
         <translation>[test-dialog] Test fehlgeschlagen: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/test_dialog.py" line="652"/>
+        <location filename="../app/widgets/test_dialog.py" line="664"/>
         <source>测试失败</source>
         <translation>Test fehlgeschlagen</translation>
     </message>

@@ -442,31 +442,40 @@ def _run_rec(cfg, ckpt):
     print("[test] " + QC.translate(
         "OcrTestRunner", "测试图片 {} 张").format(len(pairs)), flush=True)
     refs, hyps, sources = [], [], []
-    no_label = 0
+    infer = []                      # 无真值的图: (路径, 宽, 高, 框, 识别文本)
     for i, (img_path, label_dir) in enumerate(pairs):
         jp = ocr_data._find_json(img_path, [label_dir])
-        if not jp:
-            no_label += 1
-            continue
         try:
             with Image.open(img_path) as im:
                 page = np.asarray(im.convert("RGB"))
             ih, iw = page.shape[:2]
-            boxes, texts = [], []
-            for box, text in _crop_boxes(jp):
-                box = [max(0.0, box[0]), max(0.0, box[1]),
-                       min(float(iw), box[2]), min(float(ih), box[3])]
-                if box[2] - box[0] < 2 or box[3] - box[1] < 2:
-                    continue
-                boxes.append(box)
-                texts.append(text)
+            boxes, texts, truth = [], [], True
+            if jp:
+                for box, text in _crop_boxes(jp):
+                    box = [max(0.0, box[0]), max(0.0, box[1]),
+                           min(float(iw), box[2]), min(float(ih), box[3])]
+                    if box[2] - box[0] < 2 or box[3] - box[1] < 2:
+                        continue
+                    boxes.append(box)
+                    texts.append(text)
+            else:
+                # 训练侧 collect 的第二级: 字条集(图 + 同名 .txt)整图当一条字条.
+                # 连 .txt 也没有就是纯图像, 走推理模式, 真值留空只出预测
+                found = ocr_data._find_text(img_path, [label_dir])
+                truth = found is not None
+                boxes = [[0.0, 0.0, float(iw), float(ih)]]
+                texts = [found or ""]
             if not boxes:
                 continue
             crops = _quad_arrays(page, boxes)
-            for text, hyp in zip(texts, _read_texts(predictor, crops)):
-                refs.append(text)
-                hyps.append(hyp)
-                sources.append(os.path.basename(img_path))
+            hyps_i = _read_texts(predictor, crops)
+            if truth:
+                for text, hyp in zip(texts, hyps_i):
+                    refs.append(text)
+                    hyps.append(hyp)
+                    sources.append(os.path.basename(img_path))
+            else:
+                infer.append((img_path, iw, ih, boxes, hyps_i))
         except Exception as exc:
             print("[test] " + QC.translate(
                 "OcrTestRunner", "识别失败 {}: {}").format(
@@ -474,43 +483,62 @@ def _run_rec(cfg, ckpt):
         if (i + 1) % 10 == 0 or i + 1 == len(pairs):
             print("[test] PROGRESS {}/{}".format(i + 1, len(pairs)),
                   flush=True)
-    if not refs:
+    # 纯图像没有真值可比, 把识别文本写成标注落回图像同目录, 用户在首页重载即可看
+    written = 0
+    for img_path, iw, ih, boxes, texts in infer:
+        try:
+            _write_json(img_path, iw, ih, boxes, texts)
+            written += 1
+        except OSError as exc:
+            print("[test] " + QC.translate(
+                "OcrTestRunner", "输出标注失败 {}: {}").format(
+                    os.path.basename(img_path), exc), flush=True)
+    if not refs and not infer:
         raise RuntimeError(QC.translate(
             "OcrTestRunner",
-            "没有取到任何字条: 该数据集没有文本标注, 识别段只能拿标注框裁图来测"))
-    value = cer(refs, hyps)
-    exact = sum(1 for a, b in zip(refs, hyps) if a == b)
-    chars = cer_detail(refs, hyps)
-    # 错误字条按错字数降序: 结果面板的明细表直接照这个顺序列
-    errors = []
-    for src, ref, hyp in zip(sources, refs, hyps):
-        if ref == hyp:
-            continue
-        sub, dele, ins = edit_ops(ref, hyp)
-        errors.append({"image": src, "ref": ref, "hyp": hyp,
-                       "sub": sub, "dele": dele, "ins": ins,
-                       "errs": sub + dele + ins})
-    errors.sort(key=lambda e: (-e["errs"], e["image"]))
-    if no_label:
+            "没有取到任何字条: 该数据集里既没有文本框标注, 也没有同名文本文件"))
+    if refs:
+        value = cer(refs, hyps)
+        exact = sum(1 for a, b in zip(refs, hyps) if a == b)
+        chars = cer_detail(refs, hyps)
+        # 错误字条按错字数降序: 结果面板的明细表直接照这个顺序列
+        errors = []
+        for src, ref, hyp in zip(sources, refs, hyps):
+            if ref == hyp:
+                continue
+            sub, dele, ins = edit_ops(ref, hyp)
+            errors.append({"image": src, "ref": ref, "hyp": hyp,
+                           "sub": sub, "dele": dele, "ins": ins,
+                           "errs": sub + dele + ins})
+        errors.sort(key=lambda e: (-e["errs"], e["image"]))
         print("[test] " + QC.translate(
-            "OcrTestRunner", "WARN {} 张图没有文本标注, 已跳过").format(no_label),
-            flush=True)
-    print("[test] " + QC.translate(
-        "OcrTestRunner", "字条 {} 条, CER={:.4f}, 全对 {} 条").format(
-        len(refs), value, exact), flush=True)
-    print("[test] " + QC.translate(
-        "OcrTestRunner",
-        "字符 {} 个: 正确 {} 替换 {} 删除 {} 插入 {}").format(
-        chars["chars"], chars["correct"], chars["sub"], chars["dele"],
-        chars["ins"]), flush=True)
-    result = {"ok": True, "task": occ.RECO_TASK, "total": len(refs),
-              "cer": value, "exact": exact, "no_label": no_label,
-              "model": os.path.basename(cfg.get("model_path", "") or ""),
-              "datasets": _dataset_list(cfg),
-              "chars": chars["chars"], "correct": chars["correct"],
-              "sub": chars["sub"], "dele": chars["dele"],
-              "ins": chars["ins"], "err_total": len(errors),
-              "errors": errors[:ERR_LIMIT]}
+            "OcrTestRunner", "字条 {} 条, CER={:.4f}, 全对 {} 条").format(
+            len(refs), value, exact), flush=True)
+        print("[test] " + QC.translate(
+            "OcrTestRunner",
+            "字符 {} 个: 正确 {} 替换 {} 删除 {} 插入 {}").format(
+            chars["chars"], chars["correct"], chars["sub"], chars["dele"],
+            chars["ins"]), flush=True)
+        result = {"ok": True, "task": occ.RECO_TASK, "total": len(refs),
+                  "cer": value, "exact": exact, "no_label": len(infer),
+                  "model": os.path.basename(cfg.get("model_path", "") or ""),
+                  "datasets": _dataset_list(cfg),
+                  "chars": chars["chars"], "correct": chars["correct"],
+                  "sub": chars["sub"], "dele": chars["dele"],
+                  "ins": chars["ins"], "err_total": len(errors),
+                  "errors": errors[:ERR_LIMIT]}
+    else:
+        print("[test] " + QC.translate(
+            "OcrTestRunner", "无真值, 已识别 {} 张图并写出文本标注").format(
+            written), flush=True)
+        result = {"ok": True, "task": occ.RECO_TASK, "total": 0, "cer": None,
+                  "exact": 0, "no_label": len(infer),
+                  "model": os.path.basename(cfg.get("model_path", "") or ""),
+                  "datasets": _dataset_list(cfg)}
+    if infer:
+        result["infer"] = len(infer)
+        result["written"] = written
+        result["infer_dir"] = os.path.dirname(infer[0][0])
     print("[test] RESULT " + json.dumps(result, ensure_ascii=False),
           flush=True)
 
