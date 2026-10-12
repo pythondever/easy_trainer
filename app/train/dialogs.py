@@ -3,6 +3,9 @@
 
 import os
 import json
+import subprocess
+import sys
+import tempfile
 import traceback
 import uuid
 from datetime import datetime
@@ -39,6 +42,8 @@ from ui.train import Ui_TrainDialog
 CONTROL_H = 36
 
 PROBING_TEXT = QT_TRANSLATE_NOOP("TrainDialog", "正在检测显卡...")
+PROBE_FAILED_TEXT = QT_TRANSLATE_NOOP(
+    "TrainDialog", "本机训练库(torch)加载失败, 只能使用 CPU; 训练很可能起不来")
 
 # 与任务下拉的顺序一致
 TASK_SPECS = (detect_common.SPEC, segment_common.SPEC, classify_common.SPEC,
@@ -397,40 +402,88 @@ class _TrainStartDialog(QDialog):
 
 
 _DEVICES = None
+_DEVICES_ERROR = ""       # torch 探测失败的原因(空 = 正常)
+
+
+# 子进程侧脚本: 不依赖工程内任何代码, 结果写进 argv[1] 指定的 json.
+# 探测必须隔一层子进程: torch 的加载在个别机器上是硬崩(非法指令/访问冲突), Python 接不住
+# 那种崩, 留在界面进程里就是整个窗口跟着消失, 而打包后跑的是 pythonw, 连提示都没有.
+DEVICE_PROBE_SCRIPT = """
+import json, sys
+
+out = {"ok": True, "err": "", "devices": []}
+try:
+    import torch
+    if torch.cuda.is_available():
+        for i in range(torch.cuda.device_count()):
+            try:
+                # 下拉宽度放不下全名, 而 ElideLeft 先吃掉的正是前缀, 反倒把型号挤没
+                name = torch.cuda.get_device_name(i).removeprefix("NVIDIA ")
+                total = torch.cuda.get_device_properties(i).total_memory
+                text = "{} ({:.0f} GB)".format(name, total / 1024 ** 3)
+            except Exception:
+                text = "GPU {}".format(i)
+            out["devices"].append([text, "cuda:{}".format(i)])
+except BaseException as exc:
+    # Windows 上 DLL 加载失败抛的是 OSError 而不是 ImportError, 所以连 BaseException 一起收
+    out["ok"] = False
+    out["err"] = "{}: {}".format(type(exc).__name__, exc)
+out["devices"].append(["CPU", "CPU"])
+with open(sys.argv[1], "w", encoding="utf-8") as f:
+    json.dump(out, f)
+"""
+
+PROBE_TIMEOUT = 180        # 含 import torch, 机械盘老机器上要几十秒
+_CREATE_NO_WINDOW = 0x08000000
+
+
+def _probe_in_subprocess():
+    """
+    跑一次探测子进程, 返回 (设备列表, 失败原因).
+    结果走临时文件而不是管道: 打包后宿主是 pythonw.exe, sys.stdout 是 None, 管道里拿不到东西.
+    """
+    fd, path = tempfile.mkstemp(suffix=".json", prefix="devprobe_")
+    os.close(fd)
+    try:
+        proc = subprocess.run(
+            [sys.executable, "-c", DEVICE_PROBE_SCRIPT, path],
+            cwd=tempfile.gettempdir(), capture_output=True,
+            creationflags=_CREATE_NO_WINDOW if sys.platform == "win32" else 0,
+            timeout=PROBE_TIMEOUT)
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                payload = json.load(f)
+        except (OSError, ValueError):
+            # 硬崩时临时文件是空的, 只有退出码能当线索
+            return ([("CPU", "CPU")],
+                    "探测进程异常退出(0x%08X)" % (proc.returncode & 0xFFFFFFFF))
+        devices = [(str(t), str(v)) for t, v in payload.get("devices") or []]
+        err = "" if payload.get("ok") else str(payload.get("err") or "探测失败")
+        return devices or [("CPU", "CPU")], err
+    except (OSError, subprocess.SubprocessError) as exc:
+        return [("CPU", "CPU")], "探测进程起不来: {}".format(exc)
+    finally:
+        try:
+            os.remove(path)
+        except OSError:
+            pass
 
 
 def collect_devices():
     """
     [(显示名, 设备串)]: 列表显示 GPU 型号, 实际下发的是 cuda:0 这类设备串.
-    torch 延迟到这里导入: 本模块被 queue_mixin 在启动时引入, 带着 torch 会让
-    GUI 启动多花约 2s(耗时全在 import 本身). 结果缓存, 同一进程只探测一次.
+    探测放子进程做, 结果缓存, 同一进程只探一次.
     """
-    global _DEVICES
+    global _DEVICES, _DEVICES_ERROR
     if _DEVICES is None:
-        try:
-            import torch
-        except ImportError:
-            torch = None
-        if torch is None or not torch.cuda.is_available():
-            _DEVICES = [("CPU", "CPU")]
-        else:
-            _DEVICES = []
-            for i in range(torch.cuda.device_count()):
-                try:
-                    name = torch.cuda.get_device_name(i)
-                    # 下拉宽度放不下全名, 而 ElideLeft 先吃掉的正是前缀, 反倒把型号挤没
-                    name = name.removeprefix("NVIDIA ")
-                    total = torch.cuda.get_device_properties(i).total_memory
-                    text = "{} ({:.0f} GB)".format(name, total / 1024 ** 3)
-                except Exception:
-                    text = "GPU {}".format(i)
-                _DEVICES.append((text, "cuda:{}".format(i)))
-            _DEVICES.append(("CPU", "CPU"))
+        _DEVICES, _DEVICES_ERROR = _probe_in_subprocess()
+        if _DEVICES_ERROR:
+            write_log("设备探测未通过: {}".format(_DEVICES_ERROR))
     return list(_DEVICES)
 
 
 class _DeviceProbe(QThread):
-    """后台探测显卡. 同步探测要等 import torch(约 2s), 弹窗会晚 2s 才出现."""
+    """后台探测显卡. 探测要走子进程(见 collect_devices), 同步做会把弹窗卡住."""
 
     ready = Signal(list)
 
@@ -793,6 +846,7 @@ class TrainDialog(QDialog):
         return self.ui.device_combo.currentText() or "cpu"
 
     def _fill_device_combo(self):
+        write_log("开始检测显卡")
         fill_device_combo_async(self, self.ui.device_combo, self.ui.start_train)
 
     def _on_devices_ready(self, devices):
@@ -802,6 +856,11 @@ class TrainDialog(QDialog):
         combo.setEnabled(True)
         combo.setCurrentIndex(0)
         self._center_combo_items(combo)
+        if _DEVICES_ERROR:
+            # 探测失败时列表只剩 CPU, 不说清楚用户只会当成"这台机器没显卡"
+            combo.setToolTip("{}:\n{}".format(
+                self.tr(PROBE_FAILED_TEXT), _DEVICES_ERROR))
+        write_log("设备检测完成: {}".format([text for text, _v in devices]))
         self._sync_start_enabled()
         if self._pending_device:
             pending, self._pending_device = self._pending_device, None
@@ -817,8 +876,13 @@ class TrainDialog(QDialog):
         btn.setEnabled(ready and not busy)
         if not ready:
             btn.setToolTip(QC.translate("TrainDialog", PROBING_TEXT))
+        elif busy:
+            btn.setToolTip(self.tr("已有训练在进行中, 请先停止"))
+        elif _DEVICES_ERROR:
+            btn.setToolTip("{}:\n{}".format(
+                self.tr(PROBE_FAILED_TEXT), _DEVICES_ERROR))
         else:
-            btn.setToolTip(self.tr("已有训练在进行中, 请先停止") if busy else "")
+            btn.setToolTip("")
 
     def _fill_optimizer(self):
         """

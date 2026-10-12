@@ -979,16 +979,16 @@ Trotzdem löschen?</translation>
     </message>
     <message>
         <location filename="../ui/compare.ui" line="65"/>
-        <location filename="../app/widgets/compare_dialog.py" line="680"/>
-        <location filename="../app/widgets/compare_dialog.py" line="684"/>
-        <location filename="../app/widgets/compare_dialog.py" line="701"/>
+        <location filename="../app/widgets/compare_dialog.py" line="705"/>
+        <location filename="../app/widgets/compare_dialog.py" line="709"/>
+        <location filename="../app/widgets/compare_dialog.py" line="726"/>
         <source>导出对比报告</source>
         <translation>Vergleichsbericht exportieren</translation>
     </message>
     <message>
         <location filename="../ui/compare.ui" line="72"/>
-        <location filename="../app/widgets/compare_dialog.py" line="708"/>
-        <location filename="../app/widgets/compare_dialog.py" line="712"/>
+        <location filename="../app/widgets/compare_dialog.py" line="733"/>
+        <location filename="../app/widgets/compare_dialog.py" line="737"/>
         <source>删除选中</source>
         <translation>Auswahl löschen</translation>
     </message>
@@ -1008,85 +1008,85 @@ Trotzdem löschen?</translation>
         <translation>Unterschiede und Fazit</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="305"/>
+        <location filename="../app/widgets/compare_dialog.py" line="319"/>
         <source>勾选要对比的训练记录(最多 {} 条), 双击查看单次指标</source>
         <translation>Zu vergleichende Trainingsläufe anhaken (max. {}); Doppelklick zeigt die Metriken eines Laufs</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="280"/>
+        <location filename="../app/widgets/compare_dialog.py" line="294"/>
         <source>数据来源：LMDB train_history + metrics.csv / metrics json</source>
         <translation>Datenquelle: LMDB train_history + metrics.csv / metrics json</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="501"/>
+        <location filename="../app/widgets/compare_dialog.py" line="521"/>
         <source>一次最多对比 {} 条记录</source>
         <translation>Es können höchstens {} Läufe gleichzeitig verglichen werden</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="529"/>
+        <location filename="../app/widgets/compare_dialog.py" line="549"/>
         <source>{} 训练曲线（按 epoch）</source>
         <translation>{}-Trainingskurve (nach Epoche)</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="536"/>
+        <location filename="../app/widgets/compare_dialog.py" line="556"/>
         <source>已选 {} 条（上限 {}）</source>
         <translation>{} ausgewählt (max. {})</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="538"/>
+        <location filename="../app/widgets/compare_dialog.py" line="558"/>
         <source>已选 {} 条(上限 {}), 双击左侧记录可查看单次指标</source>
         <translation>{} ausgewählt (Grenze {}); Doppelklick auf einen Lauf links zeigt dessen Metriken</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="540"/>
-        <location filename="../app/widgets/compare_dialog.py" line="566"/>
+        <location filename="../app/widgets/compare_dialog.py" line="560"/>
+        <location filename="../app/widgets/compare_dialog.py" line="586"/>
         <source>勾选左侧的训练记录后这里显示对比曲线</source>
         <translation>Läufe links anhaken, um hier die Vergleichskurven anzuzeigen</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="634"/>
+        <location filename="../app/widgets/compare_dialog.py" line="656"/>
         <source>无</source>
         <translation>Keine</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="647"/>
+        <location filename="../app/widgets/compare_dialog.py" line="672"/>
         <source>至少勾选 2 条记录&lt;br&gt;才能比较差异</source>
         <translation>Mindestens 2 Aufzeichnungen auswählen,&lt;br&gt;um Unterschiede zu vergleichen</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="681"/>
+        <location filename="../app/widgets/compare_dialog.py" line="706"/>
         <source>当前没有可导出的对比图表</source>
         <translation>Kein Vergleichsdiagramm zum Exportieren</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="685"/>
+        <location filename="../app/widgets/compare_dialog.py" line="710"/>
         <source>PNG 图片 (*.png)</source>
         <translation>PNG-Bild (*.png)</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="699"/>
+        <location filename="../app/widgets/compare_dialog.py" line="724"/>
         <source>已导出: {}
 {}</source>
         <translation>Exportiert: {}
 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="702"/>
+        <location filename="../app/widgets/compare_dialog.py" line="727"/>
         <source>导出失败: {}</source>
         <translation>Export fehlgeschlagen: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="709"/>
+        <location filename="../app/widgets/compare_dialog.py" line="734"/>
         <source>请先勾选要删除的训练记录</source>
         <translation>Bitte zuerst zu löschende Trainingsaufzeichnungen wählen</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="713"/>
+        <location filename="../app/widgets/compare_dialog.py" line="738"/>
         <source>确定删除选中的 {} 条训练记录? 对应指标文件会一并删除.</source>
         <translation>Die {} ausgewählten Trainingsaufzeichnungen löschen? Die zugehörigen Kennzahlendateien werden ebenfalls entfernt.</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="570"/>
+        <location filename="../app/widgets/compare_dialog.py" line="590"/>
         <source>所选记录没有&quot;{}&quot;的数据</source>
         <translation>Die ausgewählten Läufe haben keine &quot;{}&quot;-Daten</translation>
     </message>
@@ -1326,7 +1326,7 @@ Trotzdem löschen?</translation>
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="221"/>
         <location filename="../app/mixins/import_export_mixin.py" line="278"/>
-        <location filename="../app/mixins/misc_mixin.py" line="123"/>
+        <location filename="../app/mixins/misc_mixin.py" line="125"/>
         <location filename="../app/widgets/dialog_buttons.py" line="110"/>
         <source>确定</source>
         <translation>OK</translation>
@@ -1350,72 +1350,72 @@ Trotzdem löschen?</translation>
         <translation>nach {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_diff.py" line="112"/>
+        <location filename="../app/widgets/compare_diff.py" line="113"/>
         <source>参数差异</source>
         <translation>Parameterunterschiede</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_diff.py" line="112"/>
+        <location filename="../app/widgets/compare_diff.py" line="113"/>
         <source>仅列取值不同的项</source>
         <translation>Nur abweichende Werte</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_diff.py" line="121"/>
+        <location filename="../app/widgets/compare_diff.py" line="122"/>
         <source>所选记录参数完全一致</source>
         <translation>Die ausgewählten Aufzeichnungen haben identische Parameter</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_diff.py" line="130"/>
+        <location filename="../app/widgets/compare_diff.py" line="131"/>
         <source>共同</source>
         <translation>Gemeinsam</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_diff.py" line="160"/>
+        <location filename="../app/widgets/compare_diff.py" line="161"/>
         <source>结论</source>
         <translation>Fazit</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_diff.py" line="175"/>
+        <location filename="../app/widgets/compare_diff.py" line="176"/>
         <source>最佳</source>
         <translation>Beste</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_diff.py" line="185"/>
+        <location filename="../app/widgets/compare_diff.py" line="186"/>
         <source>它独有的设置</source>
         <translation>nur hier gesetzt</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_diff.py" line="189"/>
+        <location filename="../app/widgets/compare_diff.py" line="190"/>
         <source>启用增强 {}/{} 条</source>
         <translation>Augmentierung bei {}/{} aktiv</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_diff.py" line="192"/>
+        <location filename="../app/widgets/compare_diff.py" line="193"/>
         <source>所选记录都没有启用数据增强</source>
         <translation>Keine der ausgewählten Aufzeichnungen nutzt Datenaugmentierung</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_diff.py" line="197"/>
+        <location filename="../app/widgets/compare_diff.py" line="198"/>
         <source>仍在训练</source>
         <translation>trainiert noch</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_diff.py" line="199"/>
+        <location filename="../app/widgets/compare_diff.py" line="200"/>
         <source>曲线未收敛， 对比仅供参考</source>
         <translation>Kurve nicht konvergiert, nur zur Orientierung</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_diff.py" line="204"/>
+        <location filename="../app/widgets/compare_diff.py" line="205"/>
         <source>未跑完</source>
         <translation>nicht abgeschlossen</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_diff.py" line="204"/>
+        <location filename="../app/widgets/compare_diff.py" line="205"/>
         <source>不参与最佳判定</source>
         <translation>nicht in Bestenwahl einbezogen</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_diff.py" line="207"/>
+        <location filename="../app/widgets/compare_diff.py" line="208"/>
         <source>训练时长</source>
         <translation>Trainingsdauer</translation>
     </message>
@@ -1904,7 +1904,7 @@ Dies überschreibt die Quell-Labeldateien des Datensatzes und kann nicht rückg�
 <context>
     <name>MetricTabs</name>
     <message>
-        <location filename="../app/widgets/metric_tabs.py" line="73"/>
+        <location filename="../app/widgets/metric_tabs.py" line="75"/>
         <source>所选记录都没有 {} 的数据</source>
         <translation>Keine der ausgewählten Aufzeichnungen hat {}-Daten</translation>
     </message>
@@ -1912,42 +1912,42 @@ Dies überschreibt die Quell-Labeldateien des Datensatzes und kann nicht rückg�
 <context>
     <name>MetricsDialog</name>
     <message>
-        <location filename="../app/widgets/metrics_dialog.py" line="50"/>
+        <location filename="../app/widgets/metrics_dialog.py" line="59"/>
         <source>训练指标</source>
         <translation>Trainingsmetriken</translation>
     </message>
     <message>
-        <location filename="../app/widgets/metrics_dialog.py" line="79"/>
+        <location filename="../app/widgets/metrics_dialog.py" line="88"/>
         <source>标签筛选</source>
         <translation>Labelfilter</translation>
     </message>
     <message>
-        <location filename="../app/widgets/metrics_dialog.py" line="83"/>
+        <location filename="../app/widgets/metrics_dialog.py" line="92"/>
         <source>全部指标</source>
         <translation>Alle Metriken</translation>
     </message>
     <message>
-        <location filename="../app/widgets/metrics_dialog.py" line="84"/>
+        <location filename="../app/widgets/metrics_dialog.py" line="93"/>
         <source>全部标签-P</source>
         <translation>Alle Labels - P</translation>
     </message>
     <message>
-        <location filename="../app/widgets/metrics_dialog.py" line="85"/>
+        <location filename="../app/widgets/metrics_dialog.py" line="94"/>
         <source>全部标签-R</source>
         <translation>Alle Labels - R</translation>
     </message>
     <message>
-        <location filename="../app/widgets/metrics_dialog.py" line="121"/>
+        <location filename="../app/widgets/metrics_dialog.py" line="130"/>
         <source>暂无该标签的指标数据(训练完成后可查看)</source>
         <translation>Noch keine Metrikdaten für dieses Label (nach Abschluss des Trainings verfügbar)</translation>
     </message>
     <message>
-        <location filename="../app/widgets/metrics_dialog.py" line="169"/>
+        <location filename="../app/widgets/metrics_dialog.py" line="178"/>
         <source>loss 值</source>
         <translation>Loss</translation>
     </message>
     <message>
-        <location filename="../app/widgets/metrics_dialog.py" line="170"/>
+        <location filename="../app/widgets/metrics_dialog.py" line="179"/>
         <source>指标值 (mAP/P/R)</source>
         <translation>Metrik (mAP/P/R)</translation>
     </message>
@@ -1960,47 +1960,47 @@ Dies überschreibt die Quell-Labeldateien des Datensatzes und kann nicht rückg�
         <translation>Oberflächensprache: {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="115"/>
+        <location filename="../app/mixins/misc_mixin.py" line="117"/>
         <source>数据集统计</source>
         <translation>Datensatz-Statistik</translation>
     </message>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="124"/>
+        <location filename="../app/mixins/misc_mixin.py" line="126"/>
         <source>应用所选数据集</source>
         <translation>Ausgewählte Datensätze übernehmen</translation>
     </message>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="215"/>
+        <location filename="../app/mixins/misc_mixin.py" line="217"/>
         <source>[{}/{}](未设置)</source>
         <translation>[{}/{}](nicht gesetzt)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="218"/>
+        <location filename="../app/mixins/misc_mixin.py" line="220"/>
         <source>(未选择数据集)</source>
         <translation>(kein Datensatz gewählt)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="338"/>
+        <location filename="../app/mixins/misc_mixin.py" line="340"/>
         <source>删除图像: {} 张 | 本地删除文件={} | 项目={}, 数据集={}</source>
         <translation>Bilder löschen: {} | lokale Datei gelöscht={} | Projekt={}, Datensatz={}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="376"/>
+        <location filename="../app/mixins/misc_mixin.py" line="378"/>
         <source>删除</source>
         <translation>Löschen</translation>
     </message>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="377"/>
+        <location filename="../app/mixins/misc_mixin.py" line="379"/>
         <source>取消</source>
         <translation>Abbrechen</translation>
     </message>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="379"/>
+        <location filename="../app/mixins/misc_mixin.py" line="381"/>
         <source>删除图像</source>
         <translation>Bilder löschen</translation>
     </message>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="380"/>
+        <location filename="../app/mixins/misc_mixin.py" line="382"/>
         <source>将从系统删除所选 {} 张图像?
 
 (图像与同名标注文件不可恢复)</source>
@@ -2009,7 +2009,7 @@ Dies überschreibt die Quell-Labeldateien des Datensatzes und kann nicht rückg�
 (Bilder und gleichnamige Labeldateien können nicht wiederhergestellt werden)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="384"/>
+        <location filename="../app/mixins/misc_mixin.py" line="386"/>
         <source>图像与同名标注文件将从磁盘删除, 不可恢复</source>
         <translation>Bilder und gleichnamige Labeldateien werden von der Festplatte gelöscht. Nicht wiederherstellbar</translation>
     </message>
@@ -2934,7 +2934,7 @@ Trotzdem schließen?</translation>
 <context>
     <name>MultiCombo</name>
     <message>
-        <location filename="../app/widgets/multi_combo.py" line="350"/>
+        <location filename="../app/widgets/multi_combo.py" line="336"/>
         <source>请选择数据集</source>
         <translation>Datensätze wählen</translation>
     </message>
@@ -4855,7 +4855,7 @@ Der Bericht umfasst ca. 120 KB pro Bild; bei vielen Stichproben verkleinert ein 
     <message>
         <location filename="../ui/train.ui" line="14"/>
         <location filename="../ui/train.ui" line="40"/>
-        <location filename="../app/train/dialogs.py" line="517"/>
+        <location filename="../app/train/dialogs.py" line="570"/>
         <source>训练</source>
         <translation>Training</translation>
     </message>
@@ -4902,7 +4902,7 @@ Der Bericht umfasst ca. 120 KB pro Bild; bei vielen Stichproben verkleinert ein 
     </message>
     <message>
         <location filename="../ui/train.ui" line="210"/>
-        <location filename="../app/train/dialogs.py" line="739"/>
+        <location filename="../app/train/dialogs.py" line="792"/>
         <source>训练集</source>
         <translation>Trainingsset</translation>
     </message>
@@ -4928,7 +4928,7 @@ Der Bericht umfasst ca. 120 KB pro Bild; bei vielen Stichproben verkleinert ein 
     </message>
     <message>
         <location filename="../ui/train.ui" line="336"/>
-        <location filename="../app/train/dialogs.py" line="613"/>
+        <location filename="../app/train/dialogs.py" line="666"/>
         <source>轮次</source>
         <translation>Epochen</translation>
     </message>
@@ -4939,7 +4939,7 @@ Der Bericht umfasst ca. 120 KB pro Bild; bei vielen Stichproben verkleinert ein 
     </message>
     <message>
         <location filename="../ui/train.ui" line="362"/>
-        <location filename="../app/train/dialogs.py" line="616"/>
+        <location filename="../app/train/dialogs.py" line="669"/>
         <source>早停</source>
         <translation>Early Stop</translation>
     </message>
@@ -4950,7 +4950,7 @@ Der Bericht umfasst ca. 120 KB pro Bild; bei vielen Stichproben verkleinert ein 
     </message>
     <message>
         <location filename="../ui/train.ui" line="415"/>
-        <location filename="../app/train/dialogs.py" line="619"/>
+        <location filename="../app/train/dialogs.py" line="672"/>
         <source>学习率</source>
         <translation>Lernrate</translation>
     </message>
@@ -4961,13 +4961,13 @@ Der Bericht umfasst ca. 120 KB pro Bild; bei vielen Stichproben verkleinert ein 
     </message>
     <message>
         <location filename="../ui/train.ui" line="468"/>
-        <location filename="../app/train/dialogs.py" line="611"/>
+        <location filename="../app/train/dialogs.py" line="664"/>
         <source>批次</source>
         <translation>Batch</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="481"/>
-        <location filename="../app/train/dialogs.py" line="615"/>
+        <location filename="../app/train/dialogs.py" line="668"/>
         <source>图像尺寸</source>
         <translation>Bildgröße</translation>
     </message>
@@ -4978,7 +4978,7 @@ Der Bericht umfasst ca. 120 KB pro Bild; bei vielen Stichproben verkleinert ein 
     </message>
     <message>
         <location filename="../ui/train.ui" line="528"/>
-        <location filename="../app/train/dialogs.py" line="612"/>
+        <location filename="../app/train/dialogs.py" line="665"/>
         <source>梯度累积</source>
         <translation>Grad-Akkum.</translation>
     </message>
@@ -4989,7 +4989,7 @@ Der Bericht umfasst ca. 120 KB pro Bild; bei vielen Stichproben verkleinert ein 
     </message>
     <message>
         <location filename="../ui/train.ui" line="581"/>
-        <location filename="../app/train/dialogs.py" line="614"/>
+        <location filename="../app/train/dialogs.py" line="667"/>
         <source>线程数</source>
         <translation>Threads</translation>
     </message>
@@ -5025,63 +5025,63 @@ Der Bericht umfasst ca. 120 KB pro Bild; bei vielen Stichproben verkleinert ein 
     </message>
     <message>
         <location filename="../ui/train.ui" line="855"/>
-        <location filename="../app/train/dialogs.py" line="705"/>
+        <location filename="../app/train/dialogs.py" line="758"/>
         <source>请选择训练集与验证集</source>
         <translation>Trainings- und Validierungsset wählen</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="903"/>
-        <location filename="../app/train/dialogs.py" line="628"/>
+        <location filename="../app/train/dialogs.py" line="681"/>
         <source>取消</source>
         <translation>Abbrechen</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="916"/>
-        <location filename="../app/train/dialogs.py" line="1354"/>
-        <location filename="../app/train/dialogs.py" line="1363"/>
-        <location filename="../app/train/dialogs.py" line="1374"/>
-        <location filename="../app/train/dialogs.py" line="1393"/>
-        <location filename="../app/train/dialogs.py" line="1403"/>
+        <location filename="../app/train/dialogs.py" line="1418"/>
+        <location filename="../app/train/dialogs.py" line="1427"/>
+        <location filename="../app/train/dialogs.py" line="1438"/>
+        <location filename="../app/train/dialogs.py" line="1457"/>
+        <location filename="../app/train/dialogs.py" line="1467"/>
         <source>加入队列</source>
         <translation>Zur Warteschlange</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="929"/>
-        <location filename="../app/train/dialogs.py" line="1298"/>
-        <location filename="../app/train/dialogs.py" line="1308"/>
-        <location filename="../app/train/dialogs.py" line="1334"/>
+        <location filename="../app/train/dialogs.py" line="1362"/>
+        <location filename="../app/train/dialogs.py" line="1372"/>
+        <location filename="../app/train/dialogs.py" line="1398"/>
         <source>开始训练</source>
         <translation>Training starten</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="41"/>
+        <location filename="../app/train/dialogs.py" line="44"/>
         <source>正在检测显卡...</source>
         <translation>GPUs werden erkannt...</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="84"/>
-        <location filename="../app/train/dialogs.py" line="86"/>
+        <location filename="../app/train/dialogs.py" line="89"/>
+        <location filename="../app/train/dialogs.py" line="91"/>
         <source>0.5</source>
         <translation>0.5</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="90"/>
+        <location filename="../app/train/dialogs.py" line="95"/>
         <source>±20%</source>
         <translation>±20%</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="247"/>
+        <location filename="../app/train/dialogs.py" line="252"/>
         <source>数据集&quot;{}&quot;尚未导入图像或路径无效, 请先导入该数据集再训练</source>
         <translation>Datensatz „{}&quot; hat keine importierten Bilder oder der Pfad ist ungültig. Zuerst importieren, dann trainieren</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="257"/>
+        <location filename="../app/train/dialogs.py" line="262"/>
         <source>数据集&quot;{}&quot;尚未导入标签或路径无效, 请先导入该数据集再训练</source>
         <translation>Datensatz „{}&quot; hat keine importierten Labels oder der Pfad ist ungültig. Zuerst importieren, dann trainieren</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="286"/>
-        <location filename="../app/train/dialogs.py" line="1364"/>
+        <location filename="../app/train/dialogs.py" line="291"/>
+        <location filename="../app/train/dialogs.py" line="1428"/>
         <source>请先选择输出路径</source>
         <translation>Zuerst einen Ausgabepfad wählen</translation>
     </message>
@@ -5101,17 +5101,17 @@ Der Bericht umfasst ca. 120 KB pro Bild; bei vielen Stichproben verkleinert ein 
         <translation>Datensatz „{}/{}&quot; ist ein Klassifizierungs-Datensatz; {} kann nicht trainiert werden</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="313"/>
+        <location filename="../app/train/dialogs.py" line="318"/>
         <source>请至少选择一个训练集数据集</source>
         <translation>Mindestens einen Trainings-Datensatz wählen</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="315"/>
+        <location filename="../app/train/dialogs.py" line="320"/>
         <source>请至少选择一个验证集数据集</source>
         <translation>Mindestens einen Validierungs-Datensatz wählen</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="355"/>
+        <location filename="../app/train/dialogs.py" line="360"/>
         <source>未选数据集</source>
         <translation>kein Datensatz gewählt</translation>
     </message>
@@ -5146,7 +5146,7 @@ Der Bericht umfasst ca. 120 KB pro Bild; bei vielen Stichproben verkleinert ein 
         <translation>Datensatz &quot;{}/{}&quot; ohne Textannotationen; {} nicht trainierbar</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="490"/>
+        <location filename="../app/train/dialogs.py" line="543"/>
         <source>{} 的倍数</source>
         <translation>Vielfaches von {}</translation>
     </message>
@@ -5161,147 +5161,152 @@ Der Bericht umfasst ca. 120 KB pro Bild; bei vielen Stichproben verkleinert ein 
         <translation>256 empfohlen</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="715"/>
+        <location filename="../app/train/dialogs.py" line="768"/>
         <source>训练集 {} 个 · 验证集 {} 个 · 共 {} 张图</source>
         <translation>Trainingssets {} · Validierungssets {} · {} Bilder gesamt</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="718"/>
+        <location filename="../app/train/dialogs.py" line="771"/>
         <source>未选择验证集</source>
         <translation>kein Validierungsset gewählt</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="720"/>
+        <location filename="../app/train/dialogs.py" line="773"/>
         <source>已标注, 可直接训练</source>
         <translation>annotiert, direkt trainierbar</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="722"/>
+        <location filename="../app/train/dialogs.py" line="775"/>
         <source>有 {} 个数据集尚未标注</source>
         <translation>{} Datensatz/Datensätze noch nicht annotiert</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="736"/>
+        <location filename="../app/train/dialogs.py" line="789"/>
         <source>请选择验证集</source>
         <translation>Validierungs-Datensätze wählen</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="821"/>
+        <location filename="../app/train/dialogs.py" line="880"/>
         <source>已有训练在进行中, 请先停止</source>
         <translation>Ein Training läuft bereits; zuerst stoppen</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="77"/>
+        <location filename="../app/train/dialogs.py" line="82"/>
         <source>几何变换</source>
         <translation>Geometrisch</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="78"/>
+        <location filename="../app/train/dialogs.py" line="45"/>
+        <source>本机训练库(torch)加载失败, 只能使用 CPU; 训练很可能起不来</source>
+        <translation>Die Trainingsbibliothek (torch) konnte auf diesem Rechner nicht geladen werden; es steht nur die CPU zur Verfügung und das Training wird sich höchstwahrscheinlich nicht starten lassen</translation>
+    </message>
+    <message>
+        <location filename="../app/train/dialogs.py" line="83"/>
         <source>标注框会跟着一起变换</source>
         <translation>Boxen werden mit transformiert</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="79"/>
+        <location filename="../app/train/dialogs.py" line="84"/>
         <source>像素变换</source>
         <translation>Pixel</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="80"/>
+        <location filename="../app/train/dialogs.py" line="85"/>
         <source>只改画面，标注框不动</source>
         <translation>Nur Bild, Boxen unverändert</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="83"/>
+        <location filename="../app/train/dialogs.py" line="88"/>
         <source>水平翻转</source>
         <translation>Horizontal spiegeln</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="85"/>
+        <location filename="../app/train/dialogs.py" line="90"/>
         <source>垂直翻转</source>
         <translation>Vertikal spiegeln</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="87"/>
+        <location filename="../app/train/dialogs.py" line="92"/>
         <source>旋转</source>
         <translation>Drehung</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="88"/>
+        <location filename="../app/train/dialogs.py" line="93"/>
         <source>±15°</source>
         <translation>±15°</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="89"/>
+        <location filename="../app/train/dialogs.py" line="94"/>
         <source>仿射</source>
         <translation>Affin</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="91"/>
+        <location filename="../app/train/dialogs.py" line="96"/>
         <source>马赛克</source>
         <translation>Mosaik</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="92"/>
+        <location filename="../app/train/dialogs.py" line="97"/>
         <source>4 图拼接</source>
         <translation>4 Bilder</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="93"/>
+        <location filename="../app/train/dialogs.py" line="98"/>
         <source>亮度/对比度</source>
         <translation>Helligkeit/Kontrast</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="94"/>
+        <location filename="../app/train/dialogs.py" line="99"/>
         <source>±0.1</source>
         <translation>±0.1</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="95"/>
+        <location filename="../app/train/dialogs.py" line="100"/>
         <source>颜色抖动</source>
         <translation>Farb-Jitter</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="96"/>
+        <location filename="../app/train/dialogs.py" line="101"/>
         <source>饱和/色相</source>
         <translation>Sättigung/Farbton</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="97"/>
+        <location filename="../app/train/dialogs.py" line="102"/>
         <source>高斯模糊</source>
         <translation>Gaußscher Weichzeichner</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="98"/>
+        <location filename="../app/train/dialogs.py" line="103"/>
         <source>核 3</source>
         <translation>Kernel 3</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="99"/>
+        <location filename="../app/train/dialogs.py" line="104"/>
         <source>高斯噪声</source>
         <translation>Gaußsches Rauschen</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="100"/>
+        <location filename="../app/train/dialogs.py" line="105"/>
         <source>σ 0.05</source>
         <translation>σ 0.05</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="102"/>
+        <location filename="../app/train/dialogs.py" line="107"/>
         <source>已启用 {} 项</source>
         <translation>{} aktiv</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="103"/>
+        <location filename="../app/train/dialogs.py" line="108"/>
         <source>该任务不支持配置数据增强</source>
         <translation>Diese Aufgabe unterstützt keine konfigurierbare Datenaugmentierung</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="105"/>
+        <location filename="../app/train/dialogs.py" line="110"/>
         <source>当前网络架构不支持该增强</source>
         <translation>Die aktuelle Netzwerkarchitektur unterstützt diese Augmentierung nicht</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1404"/>
+        <location filename="../app/train/dialogs.py" line="1468"/>
         <source>字符识别已加入队列, 排在第 {} 个</source>
         <translation>Texterkennung zur Warteschlange hinzugefügt, Nummer {}</translation>
     </message>
@@ -5321,103 +5326,103 @@ Der Bericht umfasst ca. 120 KB pro Bild; bei vielen Stichproben verkleinert ein 
         <translation>Nur Speicherbank</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1234"/>
+        <location filename="../app/train/dialogs.py" line="1298"/>
         <source>请至少选择一个数据集</source>
         <translation>Mindestens einen Datensatz auswählen</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1238"/>
-        <location filename="../app/train/dialogs.py" line="1248"/>
+        <location filename="../app/train/dialogs.py" line="1302"/>
+        <location filename="../app/train/dialogs.py" line="1312"/>
         <source>&quot;{}&quot;不能为空</source>
         <translation>„{}&quot; darf nicht leer sein</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1243"/>
+        <location filename="../app/train/dialogs.py" line="1307"/>
         <source>&quot;{}&quot;必须是整数(当前: {})</source>
         <translation>„{}&quot; muss eine ganze Zahl sein (aktuell: {})</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1253"/>
+        <location filename="../app/train/dialogs.py" line="1317"/>
         <source>&quot;{}&quot;必须是数字(当前: {})</source>
         <translation>„{}&quot; muss eine Zahl sein (aktuell: {})</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1262"/>
+        <location filename="../app/train/dialogs.py" line="1326"/>
         <source>图像尺寸需为 {} 的倍数(当前 {}), 可改为 {}</source>
         <translation>Die Bildgröße muss ein Vielfaches von {} sein (aktuell {}); z. B. {}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1278"/>
+        <location filename="../app/train/dialogs.py" line="1342"/>
         <source>选择输出目录</source>
         <translation>Ausgabeordner wählen</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1292"/>
+        <location filename="../app/train/dialogs.py" line="1356"/>
         <source>当前安装缺少 CNN 架构所需的组件, 无法训练.
 请重新安装软件后再试</source>
         <translation>In dieser Installation fehlen die für die CNN-Architektur erforderlichen Komponenten, Training nicht möglich.
 Bitte installieren Sie die Software erneut</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1299"/>
+        <location filename="../app/train/dialogs.py" line="1363"/>
         <source>当前已有训练在进行中, 请先停止!</source>
         <translation>Ein Training läuft bereits; zuerst stoppen!</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1303"/>
+        <location filename="../app/train/dialogs.py" line="1367"/>
         <source>参数校验未通过: {}</source>
         <translation>Parametervalidierung fehlgeschlagen: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1304"/>
-        <location filename="../app/train/dialogs.py" line="1350"/>
+        <location filename="../app/train/dialogs.py" line="1368"/>
+        <location filename="../app/train/dialogs.py" line="1414"/>
         <source>参数校验</source>
         <translation>Parametervalidierung</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1324"/>
+        <location filename="../app/train/dialogs.py" line="1388"/>
         <source>训练启动失败: {}
 {}</source>
         <translation>Training starten fehlgeschlagen: {}
 {}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1327"/>
+        <location filename="../app/train/dialogs.py" line="1391"/>
         <source>训练启动失败</source>
         <translation>Training konnte nicht starten</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1335"/>
+        <location filename="../app/train/dialogs.py" line="1399"/>
         <source>已有训练在进行中, 请先停止!</source>
         <translation>Ein Training läuft bereits; zuerst stoppen!</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1337"/>
+        <location filename="../app/train/dialogs.py" line="1401"/>
         <source>开始训练: 任务类型={} 训练集={} 验证集={}</source>
         <translation>Training starten: Aufgabentyp={} Trainingsset={} Validierungsset={}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1379"/>
+        <location filename="../app/train/dialogs.py" line="1443"/>
         <source>队列</source>
         <translation>Warteschlange</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1380"/>
+        <location filename="../app/train/dialogs.py" line="1444"/>
         <source>已更新该队列任务的参数</source>
         <translation>Parameter der Warteschlangen-Aufgabe aktualisiert</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1386"/>
+        <location filename="../app/train/dialogs.py" line="1450"/>
         <source>加入队列失败</source>
         <translation>Hinzufügen zur Warteschlange fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1389"/>
+        <location filename="../app/train/dialogs.py" line="1453"/>
         <source>加入训练队列: {} | {}</source>
         <translation>Zur Trainings-Warteschlange hinzufügen: {} | {}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1394"/>
+        <location filename="../app/train/dialogs.py" line="1458"/>
         <source>已加入队列(第 {} 个), 可在首页&quot;队列&quot;中查看或启动.</source>
         <translation>Zur Warteschlange hinzugefügt (Position {}). Auf der Startseite unter „Warteschlange&quot; prüfen oder starten.</translation>
     </message>
@@ -6015,13 +6020,13 @@ Bitte alle Einträge unter „Daten-Augmentierung“ abwählen oder ein Paket in
 <context>
     <name>_TrainStartDialog</name>
     <message>
-        <location filename="../app/train/dialogs.py" line="365"/>
+        <location filename="../app/train/dialogs.py" line="370"/>
         <source>训练即将开始</source>
         <translation>Training startet gleich</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="375"/>
-        <location filename="../app/train/dialogs.py" line="388"/>
+        <location filename="../app/train/dialogs.py" line="380"/>
+        <location filename="../app/train/dialogs.py" line="393"/>
         <source>确认({})</source>
         <translation>OK ({})</translation>
     </message>

@@ -106,6 +106,8 @@ class MiscMixin(object):
         dlg.activateWindow()
 
     def _on_train_clicked(self):
+        # 界面进程里第一次加载 torch 就在这条路上(设备探测线程), 崩了日志会断在这行
+        write_log("打开训练界面")
         dlg = TrainDialog(self)
         dlg.exec()
 

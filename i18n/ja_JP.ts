@@ -979,16 +979,16 @@
     </message>
     <message>
         <location filename="../ui/compare.ui" line="65"/>
-        <location filename="../app/widgets/compare_dialog.py" line="680"/>
-        <location filename="../app/widgets/compare_dialog.py" line="684"/>
-        <location filename="../app/widgets/compare_dialog.py" line="701"/>
+        <location filename="../app/widgets/compare_dialog.py" line="705"/>
+        <location filename="../app/widgets/compare_dialog.py" line="709"/>
+        <location filename="../app/widgets/compare_dialog.py" line="726"/>
         <source>导出对比报告</source>
         <translation>比較レポートをエクスポート</translation>
     </message>
     <message>
         <location filename="../ui/compare.ui" line="72"/>
-        <location filename="../app/widgets/compare_dialog.py" line="708"/>
-        <location filename="../app/widgets/compare_dialog.py" line="712"/>
+        <location filename="../app/widgets/compare_dialog.py" line="733"/>
+        <location filename="../app/widgets/compare_dialog.py" line="737"/>
         <source>删除选中</source>
         <translation>選択を削除</translation>
     </message>
@@ -1008,85 +1008,85 @@
         <translation>差分と結論</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="305"/>
+        <location filename="../app/widgets/compare_dialog.py" line="319"/>
         <source>勾选要对比的训练记录(最多 {} 条), 双击查看单次指标</source>
         <translation>比較する学習記録を選択してください(最大 {} 件), ダブルクリックで単回の指標を表示</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="280"/>
+        <location filename="../app/widgets/compare_dialog.py" line="294"/>
         <source>数据来源：LMDB train_history + metrics.csv / metrics json</source>
         <translation>データソース：LMDB train_history + metrics.csv / metrics json</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="501"/>
+        <location filename="../app/widgets/compare_dialog.py" line="521"/>
         <source>一次最多对比 {} 条记录</source>
         <translation>一度に比較できるのは {} 件までです</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="529"/>
+        <location filename="../app/widgets/compare_dialog.py" line="549"/>
         <source>{} 训练曲线（按 epoch）</source>
         <translation>{} 学習曲線（epoch ごと）</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="536"/>
+        <location filename="../app/widgets/compare_dialog.py" line="556"/>
         <source>已选 {} 条（上限 {}）</source>
         <translation>選択 {} 件（上限 {}）</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="538"/>
+        <location filename="../app/widgets/compare_dialog.py" line="558"/>
         <source>已选 {} 条(上限 {}), 双击左侧记录可查看单次指标</source>
         <translation>{} 件選択中(上限 {}), 左側の記録をダブルクリックすると単回の指標を表示</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="540"/>
-        <location filename="../app/widgets/compare_dialog.py" line="566"/>
+        <location filename="../app/widgets/compare_dialog.py" line="560"/>
+        <location filename="../app/widgets/compare_dialog.py" line="586"/>
         <source>勾选左侧的训练记录后这里显示对比曲线</source>
         <translation>左側の学習記録を選択すると、ここに比較曲線が表示されます</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="634"/>
+        <location filename="../app/widgets/compare_dialog.py" line="656"/>
         <source>无</source>
         <translation>なし</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="647"/>
+        <location filename="../app/widgets/compare_dialog.py" line="672"/>
         <source>至少勾选 2 条记录&lt;br&gt;才能比较差异</source>
         <translation>差異を比較するには&lt;br&gt;2 件以上選択してください</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="681"/>
+        <location filename="../app/widgets/compare_dialog.py" line="706"/>
         <source>当前没有可导出的对比图表</source>
         <translation>エクスポートできる比較チャートがありません</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="685"/>
+        <location filename="../app/widgets/compare_dialog.py" line="710"/>
         <source>PNG 图片 (*.png)</source>
         <translation>PNG 画像 (*.png)</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="699"/>
+        <location filename="../app/widgets/compare_dialog.py" line="724"/>
         <source>已导出: {}
 {}</source>
         <translation>エクスポート済み: {}
 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="702"/>
+        <location filename="../app/widgets/compare_dialog.py" line="727"/>
         <source>导出失败: {}</source>
         <translation>エクスポート失敗: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="709"/>
+        <location filename="../app/widgets/compare_dialog.py" line="734"/>
         <source>请先勾选要删除的训练记录</source>
         <translation>削除する学習記録を選択してください</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="713"/>
+        <location filename="../app/widgets/compare_dialog.py" line="738"/>
         <source>确定删除选中的 {} 条训练记录? 对应指标文件会一并删除.</source>
         <translation>選択した {} 件の学習記録を削除しますか? 対応する指標ファイルも削除されます.</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_dialog.py" line="570"/>
+        <location filename="../app/widgets/compare_dialog.py" line="590"/>
         <source>所选记录没有&quot;{}&quot;的数据</source>
         <translation>選択した記録に&quot;{}&quot;のデータがありません</translation>
     </message>
@@ -1326,7 +1326,7 @@
     <message>
         <location filename="../app/annotation/annotation_dialog.py" line="221"/>
         <location filename="../app/mixins/import_export_mixin.py" line="278"/>
-        <location filename="../app/mixins/misc_mixin.py" line="123"/>
+        <location filename="../app/mixins/misc_mixin.py" line="125"/>
         <location filename="../app/widgets/dialog_buttons.py" line="110"/>
         <source>确定</source>
         <translation>OK</translation>
@@ -1350,72 +1350,72 @@
         <translation>{} 基準</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_diff.py" line="112"/>
+        <location filename="../app/widgets/compare_diff.py" line="113"/>
         <source>参数差异</source>
         <translation>パラメータ差分</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_diff.py" line="112"/>
+        <location filename="../app/widgets/compare_diff.py" line="113"/>
         <source>仅列取值不同的项</source>
         <translation>値が異なる項目のみ表示</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_diff.py" line="121"/>
+        <location filename="../app/widgets/compare_diff.py" line="122"/>
         <source>所选记录参数完全一致</source>
         <translation>選択した記録のパラメータは完全に一致しています</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_diff.py" line="130"/>
+        <location filename="../app/widgets/compare_diff.py" line="131"/>
         <source>共同</source>
         <translation>共通</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_diff.py" line="160"/>
+        <location filename="../app/widgets/compare_diff.py" line="161"/>
         <source>结论</source>
         <translation>結論</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_diff.py" line="175"/>
+        <location filename="../app/widgets/compare_diff.py" line="176"/>
         <source>最佳</source>
         <translation>最良</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_diff.py" line="185"/>
+        <location filename="../app/widgets/compare_diff.py" line="186"/>
         <source>它独有的设置</source>
         <translation>この記録だけの設定</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_diff.py" line="189"/>
+        <location filename="../app/widgets/compare_diff.py" line="190"/>
         <source>启用增强 {}/{} 条</source>
         <translation>データ拡張を有効化 {}/{} 件</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_diff.py" line="192"/>
+        <location filename="../app/widgets/compare_diff.py" line="193"/>
         <source>所选记录都没有启用数据增强</source>
         <translation>選択した記録はどれもデータ拡張を有効化していません</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_diff.py" line="197"/>
+        <location filename="../app/widgets/compare_diff.py" line="198"/>
         <source>仍在训练</source>
         <translation>学習中</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_diff.py" line="199"/>
+        <location filename="../app/widgets/compare_diff.py" line="200"/>
         <source>曲线未收敛， 对比仅供参考</source>
         <translation>曲線が未収束， 参考値</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_diff.py" line="204"/>
+        <location filename="../app/widgets/compare_diff.py" line="205"/>
         <source>未跑完</source>
         <translation>未完了</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_diff.py" line="204"/>
+        <location filename="../app/widgets/compare_diff.py" line="205"/>
         <source>不参与最佳判定</source>
         <translation>最良判定の対象外</translation>
     </message>
     <message>
-        <location filename="../app/widgets/compare_diff.py" line="207"/>
+        <location filename="../app/widgets/compare_diff.py" line="208"/>
         <source>训练时长</source>
         <translation>学習時間</translation>
     </message>
@@ -1904,7 +1904,7 @@
 <context>
     <name>MetricTabs</name>
     <message>
-        <location filename="../app/widgets/metric_tabs.py" line="73"/>
+        <location filename="../app/widgets/metric_tabs.py" line="75"/>
         <source>所选记录都没有 {} 的数据</source>
         <translation>選択した記録に {} のデータがありません</translation>
     </message>
@@ -1912,42 +1912,42 @@
 <context>
     <name>MetricsDialog</name>
     <message>
-        <location filename="../app/widgets/metrics_dialog.py" line="50"/>
+        <location filename="../app/widgets/metrics_dialog.py" line="59"/>
         <source>训练指标</source>
         <translation>学習指標</translation>
     </message>
     <message>
-        <location filename="../app/widgets/metrics_dialog.py" line="79"/>
+        <location filename="../app/widgets/metrics_dialog.py" line="88"/>
         <source>标签筛选</source>
         <translation>ラベル絞り込み</translation>
     </message>
     <message>
-        <location filename="../app/widgets/metrics_dialog.py" line="83"/>
+        <location filename="../app/widgets/metrics_dialog.py" line="92"/>
         <source>全部指标</source>
         <translation>すべての指標</translation>
     </message>
     <message>
-        <location filename="../app/widgets/metrics_dialog.py" line="84"/>
+        <location filename="../app/widgets/metrics_dialog.py" line="93"/>
         <source>全部标签-P</source>
         <translation>全ラベル - P</translation>
     </message>
     <message>
-        <location filename="../app/widgets/metrics_dialog.py" line="85"/>
+        <location filename="../app/widgets/metrics_dialog.py" line="94"/>
         <source>全部标签-R</source>
         <translation>全ラベル - R</translation>
     </message>
     <message>
-        <location filename="../app/widgets/metrics_dialog.py" line="121"/>
+        <location filename="../app/widgets/metrics_dialog.py" line="130"/>
         <source>暂无该标签的指标数据(训练完成后可查看)</source>
         <translation>このラベルの指標データはまだありません(学習完了後に表示されます)</translation>
     </message>
     <message>
-        <location filename="../app/widgets/metrics_dialog.py" line="169"/>
+        <location filename="../app/widgets/metrics_dialog.py" line="178"/>
         <source>loss 值</source>
         <translation>loss 値</translation>
     </message>
     <message>
-        <location filename="../app/widgets/metrics_dialog.py" line="170"/>
+        <location filename="../app/widgets/metrics_dialog.py" line="179"/>
         <source>指标值 (mAP/P/R)</source>
         <translation>指標値 (mAP/P/R)</translation>
     </message>
@@ -1960,47 +1960,47 @@
         <translation>表示言語: {}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="115"/>
+        <location filename="../app/mixins/misc_mixin.py" line="117"/>
         <source>数据集统计</source>
         <translation>データセット統計</translation>
     </message>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="124"/>
+        <location filename="../app/mixins/misc_mixin.py" line="126"/>
         <source>应用所选数据集</source>
         <translation>選択したデータセットを適用</translation>
     </message>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="215"/>
+        <location filename="../app/mixins/misc_mixin.py" line="217"/>
         <source>[{}/{}](未设置)</source>
         <translation>[{}/{}](未設定)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="218"/>
+        <location filename="../app/mixins/misc_mixin.py" line="220"/>
         <source>(未选择数据集)</source>
         <translation>(データセット未選択)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="338"/>
+        <location filename="../app/mixins/misc_mixin.py" line="340"/>
         <source>删除图像: {} 张 | 本地删除文件={} | 项目={}, 数据集={}</source>
         <translation>画像の削除: {} 枚 | ローカルファイル削除={} | プロジェクト={}, データセット={}</translation>
     </message>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="376"/>
+        <location filename="../app/mixins/misc_mixin.py" line="378"/>
         <source>删除</source>
         <translation>削除</translation>
     </message>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="377"/>
+        <location filename="../app/mixins/misc_mixin.py" line="379"/>
         <source>取消</source>
         <translation>キャンセル</translation>
     </message>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="379"/>
+        <location filename="../app/mixins/misc_mixin.py" line="381"/>
         <source>删除图像</source>
         <translation>画像を削除</translation>
     </message>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="380"/>
+        <location filename="../app/mixins/misc_mixin.py" line="382"/>
         <source>将从系统删除所选 {} 张图像?
 
 (图像与同名标注文件不可恢复)</source>
@@ -2009,7 +2009,7 @@
 (画像と同名のアノテーションファイルは復元できません)</translation>
     </message>
     <message>
-        <location filename="../app/mixins/misc_mixin.py" line="384"/>
+        <location filename="../app/mixins/misc_mixin.py" line="386"/>
         <source>图像与同名标注文件将从磁盘删除, 不可恢复</source>
         <translation>画像と同名のアノテーションファイルがディスクから削除され、復元できません</translation>
     </message>
@@ -2934,7 +2934,7 @@
 <context>
     <name>MultiCombo</name>
     <message>
-        <location filename="../app/widgets/multi_combo.py" line="350"/>
+        <location filename="../app/widgets/multi_combo.py" line="336"/>
         <source>请选择数据集</source>
         <translation>データセットを選択してください</translation>
     </message>
@@ -4855,7 +4855,7 @@
     <message>
         <location filename="../ui/train.ui" line="14"/>
         <location filename="../ui/train.ui" line="40"/>
-        <location filename="../app/train/dialogs.py" line="517"/>
+        <location filename="../app/train/dialogs.py" line="570"/>
         <source>训练</source>
         <translation>学習</translation>
     </message>
@@ -4902,7 +4902,7 @@
     </message>
     <message>
         <location filename="../ui/train.ui" line="210"/>
-        <location filename="../app/train/dialogs.py" line="739"/>
+        <location filename="../app/train/dialogs.py" line="792"/>
         <source>训练集</source>
         <translation>学習セット</translation>
     </message>
@@ -4928,7 +4928,7 @@
     </message>
     <message>
         <location filename="../ui/train.ui" line="336"/>
-        <location filename="../app/train/dialogs.py" line="613"/>
+        <location filename="../app/train/dialogs.py" line="666"/>
         <source>轮次</source>
         <translation>エポック</translation>
     </message>
@@ -4939,7 +4939,7 @@
     </message>
     <message>
         <location filename="../ui/train.ui" line="362"/>
-        <location filename="../app/train/dialogs.py" line="616"/>
+        <location filename="../app/train/dialogs.py" line="669"/>
         <source>早停</source>
         <translation>早期終了</translation>
     </message>
@@ -4950,7 +4950,7 @@
     </message>
     <message>
         <location filename="../ui/train.ui" line="415"/>
-        <location filename="../app/train/dialogs.py" line="619"/>
+        <location filename="../app/train/dialogs.py" line="672"/>
         <source>学习率</source>
         <translation>学習率</translation>
     </message>
@@ -4961,13 +4961,13 @@
     </message>
     <message>
         <location filename="../ui/train.ui" line="468"/>
-        <location filename="../app/train/dialogs.py" line="611"/>
+        <location filename="../app/train/dialogs.py" line="664"/>
         <source>批次</source>
         <translation>バッチ</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="481"/>
-        <location filename="../app/train/dialogs.py" line="615"/>
+        <location filename="../app/train/dialogs.py" line="668"/>
         <source>图像尺寸</source>
         <translation>画像サイズ</translation>
     </message>
@@ -4978,7 +4978,7 @@
     </message>
     <message>
         <location filename="../ui/train.ui" line="528"/>
-        <location filename="../app/train/dialogs.py" line="612"/>
+        <location filename="../app/train/dialogs.py" line="665"/>
         <source>梯度累积</source>
         <translation>勾配累積</translation>
     </message>
@@ -4989,7 +4989,7 @@
     </message>
     <message>
         <location filename="../ui/train.ui" line="581"/>
-        <location filename="../app/train/dialogs.py" line="614"/>
+        <location filename="../app/train/dialogs.py" line="667"/>
         <source>线程数</source>
         <translation>スレッド数</translation>
     </message>
@@ -5025,63 +5025,63 @@
     </message>
     <message>
         <location filename="../ui/train.ui" line="855"/>
-        <location filename="../app/train/dialogs.py" line="705"/>
+        <location filename="../app/train/dialogs.py" line="758"/>
         <source>请选择训练集与验证集</source>
         <translation>学習セットと検証セットを選択してください</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="903"/>
-        <location filename="../app/train/dialogs.py" line="628"/>
+        <location filename="../app/train/dialogs.py" line="681"/>
         <source>取消</source>
         <translation>キャンセル</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="916"/>
-        <location filename="../app/train/dialogs.py" line="1354"/>
-        <location filename="../app/train/dialogs.py" line="1363"/>
-        <location filename="../app/train/dialogs.py" line="1374"/>
-        <location filename="../app/train/dialogs.py" line="1393"/>
-        <location filename="../app/train/dialogs.py" line="1403"/>
+        <location filename="../app/train/dialogs.py" line="1418"/>
+        <location filename="../app/train/dialogs.py" line="1427"/>
+        <location filename="../app/train/dialogs.py" line="1438"/>
+        <location filename="../app/train/dialogs.py" line="1457"/>
+        <location filename="../app/train/dialogs.py" line="1467"/>
         <source>加入队列</source>
         <translation>キューに追加</translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="929"/>
-        <location filename="../app/train/dialogs.py" line="1298"/>
-        <location filename="../app/train/dialogs.py" line="1308"/>
-        <location filename="../app/train/dialogs.py" line="1334"/>
+        <location filename="../app/train/dialogs.py" line="1362"/>
+        <location filename="../app/train/dialogs.py" line="1372"/>
+        <location filename="../app/train/dialogs.py" line="1398"/>
         <source>开始训练</source>
         <translation>学習を開始</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="41"/>
+        <location filename="../app/train/dialogs.py" line="44"/>
         <source>正在检测显卡...</source>
         <translation>GPU を検出中...</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="84"/>
-        <location filename="../app/train/dialogs.py" line="86"/>
+        <location filename="../app/train/dialogs.py" line="89"/>
+        <location filename="../app/train/dialogs.py" line="91"/>
         <source>0.5</source>
         <translation>0.5</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="90"/>
+        <location filename="../app/train/dialogs.py" line="95"/>
         <source>±20%</source>
         <translation>±20%</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="247"/>
+        <location filename="../app/train/dialogs.py" line="252"/>
         <source>数据集&quot;{}&quot;尚未导入图像或路径无效, 请先导入该数据集再训练</source>
         <translation>データセット「{}」は画像が未インポートかパスが無効です。先にこのデータセットをインポートしてから学習してください</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="257"/>
+        <location filename="../app/train/dialogs.py" line="262"/>
         <source>数据集&quot;{}&quot;尚未导入标签或路径无效, 请先导入该数据集再训练</source>
         <translation>データセット「{}」はラベルが未インポートかパスが無効です。先にこのデータセットをインポートしてから学習してください</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="286"/>
-        <location filename="../app/train/dialogs.py" line="1364"/>
+        <location filename="../app/train/dialogs.py" line="291"/>
+        <location filename="../app/train/dialogs.py" line="1428"/>
         <source>请先选择输出路径</source>
         <translation>先に出力パスを選択してください</translation>
     </message>
@@ -5101,17 +5101,17 @@
         <translation>データセット「{}/{}」は分類データセットです。{} タスクを学習できません</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="313"/>
+        <location filename="../app/train/dialogs.py" line="318"/>
         <source>请至少选择一个训练集数据集</source>
         <translation>学習セットのデータセットを少なくとも 1 つ選択してください</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="315"/>
+        <location filename="../app/train/dialogs.py" line="320"/>
         <source>请至少选择一个验证集数据集</source>
         <translation>検証セットのデータセットを少なくとも 1 つ選択してください</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="355"/>
+        <location filename="../app/train/dialogs.py" line="360"/>
         <source>未选数据集</source>
         <translation>データセット未選択</translation>
     </message>
@@ -5146,7 +5146,7 @@
         <translation>データセット&quot;{}/{}&quot;にはテキストアノテーションがなく, {}を学習できない</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="490"/>
+        <location filename="../app/train/dialogs.py" line="543"/>
         <source>{} 的倍数</source>
         <translation>{} の倍数</translation>
     </message>
@@ -5161,147 +5161,152 @@
         <translation>256 を推奨</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="715"/>
+        <location filename="../app/train/dialogs.py" line="768"/>
         <source>训练集 {} 个 · 验证集 {} 个 · 共 {} 张图</source>
         <translation>学習セット {} 件 · 検証セット {} 件 · 画像 全 {} 枚</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="718"/>
+        <location filename="../app/train/dialogs.py" line="771"/>
         <source>未选择验证集</source>
         <translation>検証セット未選択</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="720"/>
+        <location filename="../app/train/dialogs.py" line="773"/>
         <source>已标注, 可直接训练</source>
         <translation>ラベル付き、そのまま学習できます</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="722"/>
+        <location filename="../app/train/dialogs.py" line="775"/>
         <source>有 {} 个数据集尚未标注</source>
         <translation>{} 件のデータセットが未ラベルです</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="736"/>
+        <location filename="../app/train/dialogs.py" line="789"/>
         <source>请选择验证集</source>
         <translation>検証セットを選択してください</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="821"/>
+        <location filename="../app/train/dialogs.py" line="880"/>
         <source>已有训练在进行中, 请先停止</source>
         <translation>学習が既に実行中です。先に停止してください</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="77"/>
+        <location filename="../app/train/dialogs.py" line="82"/>
         <source>几何变换</source>
         <translation>幾何変換</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="78"/>
+        <location filename="../app/train/dialogs.py" line="45"/>
+        <source>本机训练库(torch)加载失败, 只能使用 CPU; 训练很可能起不来</source>
+        <translation>本機で学習ライブラリ(torch)の読み込みに失敗しました。CPU のみ使用でき、学習は起動しない可能性が高いです</translation>
+    </message>
+    <message>
+        <location filename="../app/train/dialogs.py" line="83"/>
         <source>标注框会跟着一起变换</source>
         <translation>ボックスも一緒に変換</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="79"/>
+        <location filename="../app/train/dialogs.py" line="84"/>
         <source>像素变换</source>
         <translation>ピクセル変換</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="80"/>
+        <location filename="../app/train/dialogs.py" line="85"/>
         <source>只改画面，标注框不动</source>
         <translation>画像のみ変更、ボックスは不変</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="83"/>
+        <location filename="../app/train/dialogs.py" line="88"/>
         <source>水平翻转</source>
         <translation>水平反転</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="85"/>
+        <location filename="../app/train/dialogs.py" line="90"/>
         <source>垂直翻转</source>
         <translation>垂直反転</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="87"/>
+        <location filename="../app/train/dialogs.py" line="92"/>
         <source>旋转</source>
         <translation>回転</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="88"/>
+        <location filename="../app/train/dialogs.py" line="93"/>
         <source>±15°</source>
         <translation>±15°</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="89"/>
+        <location filename="../app/train/dialogs.py" line="94"/>
         <source>仿射</source>
         <translation>アフィン</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="91"/>
+        <location filename="../app/train/dialogs.py" line="96"/>
         <source>马赛克</source>
         <translation>モザイク</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="92"/>
+        <location filename="../app/train/dialogs.py" line="97"/>
         <source>4 图拼接</source>
         <translation>4 枚結合</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="93"/>
+        <location filename="../app/train/dialogs.py" line="98"/>
         <source>亮度/对比度</source>
         <translation>明るさ/コントラスト</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="94"/>
+        <location filename="../app/train/dialogs.py" line="99"/>
         <source>±0.1</source>
         <translation>±0.1</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="95"/>
+        <location filename="../app/train/dialogs.py" line="100"/>
         <source>颜色抖动</source>
         <translation>カラージッター</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="96"/>
+        <location filename="../app/train/dialogs.py" line="101"/>
         <source>饱和/色相</source>
         <translation>彩度/色相</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="97"/>
+        <location filename="../app/train/dialogs.py" line="102"/>
         <source>高斯模糊</source>
         <translation>ガウスぼかし</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="98"/>
+        <location filename="../app/train/dialogs.py" line="103"/>
         <source>核 3</source>
         <translation>カーネル 3</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="99"/>
+        <location filename="../app/train/dialogs.py" line="104"/>
         <source>高斯噪声</source>
         <translation>ガウスノイズ</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="100"/>
+        <location filename="../app/train/dialogs.py" line="105"/>
         <source>σ 0.05</source>
         <translation>σ 0.05</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="102"/>
+        <location filename="../app/train/dialogs.py" line="107"/>
         <source>已启用 {} 项</source>
         <translation>{} 件 有効</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="103"/>
+        <location filename="../app/train/dialogs.py" line="108"/>
         <source>该任务不支持配置数据增强</source>
         <translation>このタスクはデータ拡張の設定に対応していません</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="105"/>
+        <location filename="../app/train/dialogs.py" line="110"/>
         <source>当前网络架构不支持该增强</source>
         <translation>現在のネットワーク構成ではこの拡張を利用できません</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1404"/>
+        <location filename="../app/train/dialogs.py" line="1468"/>
         <source>字符识别已加入队列, 排在第 {} 个</source>
         <translation>文字認識をキューに追加しました ({} 番目)</translation>
     </message>
@@ -5321,103 +5326,103 @@
         <translation>構築のみ</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1234"/>
+        <location filename="../app/train/dialogs.py" line="1298"/>
         <source>请至少选择一个数据集</source>
         <translation>少なくとも 1 つのデータセットを選択してください</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1238"/>
-        <location filename="../app/train/dialogs.py" line="1248"/>
+        <location filename="../app/train/dialogs.py" line="1302"/>
+        <location filename="../app/train/dialogs.py" line="1312"/>
         <source>&quot;{}&quot;不能为空</source>
         <translation>「{}」は空にできません</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1243"/>
+        <location filename="../app/train/dialogs.py" line="1307"/>
         <source>&quot;{}&quot;必须是整数(当前: {})</source>
         <translation>「{}」は整数でなければなりません(現在: {})</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1253"/>
+        <location filename="../app/train/dialogs.py" line="1317"/>
         <source>&quot;{}&quot;必须是数字(当前: {})</source>
         <translation>「{}」は数値でなければなりません(現在: {})</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1262"/>
+        <location filename="../app/train/dialogs.py" line="1326"/>
         <source>图像尺寸需为 {} 的倍数(当前 {}), 可改为 {}</source>
         <translation>画像サイズは {} の倍数である必要があります(現在 {})。{} に変更できます</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1278"/>
+        <location filename="../app/train/dialogs.py" line="1342"/>
         <source>选择输出目录</source>
         <translation>出力フォルダを選択</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1292"/>
+        <location filename="../app/train/dialogs.py" line="1356"/>
         <source>当前安装缺少 CNN 架构所需的组件, 无法训练.
 请重新安装软件后再试</source>
         <translation>現在のインストールには CNN アーキテクチャに必要なコンポーネントが不足しているため、学習を開始できません.
 ソフトウェアを再インストールしてからお試しください</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1299"/>
+        <location filename="../app/train/dialogs.py" line="1363"/>
         <source>当前已有训练在进行中, 请先停止!</source>
         <translation>現在すでに学習が実行中です。先に停止してください!</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1303"/>
+        <location filename="../app/train/dialogs.py" line="1367"/>
         <source>参数校验未通过: {}</source>
         <translation>パラメータ検証に失敗しました: {}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1304"/>
-        <location filename="../app/train/dialogs.py" line="1350"/>
+        <location filename="../app/train/dialogs.py" line="1368"/>
+        <location filename="../app/train/dialogs.py" line="1414"/>
         <source>参数校验</source>
         <translation>パラメータ検証</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1324"/>
+        <location filename="../app/train/dialogs.py" line="1388"/>
         <source>训练启动失败: {}
 {}</source>
         <translation>学習の起動に失敗しました: {}
 {}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1327"/>
+        <location filename="../app/train/dialogs.py" line="1391"/>
         <source>训练启动失败</source>
         <translation>学習の起動に失敗しました</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1335"/>
+        <location filename="../app/train/dialogs.py" line="1399"/>
         <source>已有训练在进行中, 请先停止!</source>
         <translation>学習が既に実行中です。先に停止してください!</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1337"/>
+        <location filename="../app/train/dialogs.py" line="1401"/>
         <source>开始训练: 任务类型={} 训练集={} 验证集={}</source>
         <translation>学習開始: タスク種別={} 学習セット={} 検証セット={}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1379"/>
+        <location filename="../app/train/dialogs.py" line="1443"/>
         <source>队列</source>
         <translation>キュー</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1380"/>
+        <location filename="../app/train/dialogs.py" line="1444"/>
         <source>已更新该队列任务的参数</source>
         <translation>このキュータスクのパラメータを更新しました</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1386"/>
+        <location filename="../app/train/dialogs.py" line="1450"/>
         <source>加入队列失败</source>
         <translation>キューの追加に失敗しました</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1389"/>
+        <location filename="../app/train/dialogs.py" line="1453"/>
         <source>加入训练队列: {} | {}</source>
         <translation>学習キューに追加: {} | {}</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="1394"/>
+        <location filename="../app/train/dialogs.py" line="1458"/>
         <source>已加入队列(第 {} 个), 可在首页&quot;队列&quot;中查看或启动.</source>
         <translation>キューに追加しました({} 番目)。ホームの「キュー」で確認または開始できます。</translation>
     </message>
@@ -6015,13 +6020,13 @@
 <context>
     <name>_TrainStartDialog</name>
     <message>
-        <location filename="../app/train/dialogs.py" line="365"/>
+        <location filename="../app/train/dialogs.py" line="370"/>
         <source>训练即将开始</source>
         <translation>まもなく学習を開始します</translation>
     </message>
     <message>
-        <location filename="../app/train/dialogs.py" line="375"/>
-        <location filename="../app/train/dialogs.py" line="388"/>
+        <location filename="../app/train/dialogs.py" line="380"/>
+        <location filename="../app/train/dialogs.py" line="393"/>
         <source>确认({})</source>
         <translation>確認({})</translation>
     </message>
