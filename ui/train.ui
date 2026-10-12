@@ -181,12 +181,12 @@
               </item>
               <item>
                 <property name="text">
-                  <string>异常检测</string>
+                  <string>AD</string>
                 </property>
               </item>
               <item>
                 <property name="text">
-                  <string>字符识别</string>
+                  <string>OCR</string>
                 </property>
               </item>
             </widget>

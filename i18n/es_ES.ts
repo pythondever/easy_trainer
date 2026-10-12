@@ -2240,7 +2240,7 @@ Esta operación reescribe los archivos de etiquetas originales del conjunto de d
     </message>
     <message>
         <location filename="../ui/model.ui" line="227"/>
-        <location filename="../app/widgets/model_dialog.py" line="746"/>
+        <location filename="../app/widgets/model_dialog.py" line="748"/>
         <source>对比多次训练</source>
         <translation>Comparar entrenamientos</translation>
     </message>
@@ -2360,59 +2360,59 @@ Esta operación reescribe los archivos de etiquetas originales del conjunto de d
         <translation>Sin curva</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="693"/>
+        <location filename="../app/widgets/model_dialog.py" line="695"/>
         <source>{}  最佳 {:.3f}</source>
         <translation>{}  mejor {:.3f}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="701"/>
-        <location filename="../app/widgets/model_dialog.py" line="712"/>
+        <location filename="../app/widgets/model_dialog.py" line="703"/>
+        <location filename="../app/widgets/model_dialog.py" line="714"/>
         <source>打开目录</source>
         <translation>Abrir directorio</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="702"/>
+        <location filename="../app/widgets/model_dialog.py" line="704"/>
         <source>模型目录不存在:
 {}</source>
         <translation>El directorio del modelo no existe:
 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="730"/>
+        <location filename="../app/widgets/model_dialog.py" line="732"/>
         <source>[model_dialog] 打开指标失败: {}
 {}</source>
         <translation>[model_dialog] Error al abrir las métricas: {}
 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="732"/>
+        <location filename="../app/widgets/model_dialog.py" line="734"/>
         <source>查看指标失败</source>
         <translation>Error al abrir las métricas</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="747"/>
+        <location filename="../app/widgets/model_dialog.py" line="749"/>
         <source>当前没有可对比的训练记录</source>
         <translation>No hay entrenamientos que comparar</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="754"/>
+        <location filename="../app/widgets/model_dialog.py" line="756"/>
         <source>[model_dialog] 打开对比失败: {}
 {}</source>
         <translation>[model_dialog] No se pudo abrir la comparación: {}
 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="756"/>
+        <location filename="../app/widgets/model_dialog.py" line="758"/>
         <source>打开对比失败</source>
         <translation>No se pudo abrir la comparación</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="763"/>
+        <location filename="../app/widgets/model_dialog.py" line="765"/>
         <source>删除模型记录</source>
         <translation>Eliminar registro del modelo</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="764"/>
+        <location filename="../app/widgets/model_dialog.py" line="766"/>
         <source>确定删除该条模型记录?
 项目={}
 数据集={}
@@ -2425,228 +2425,228 @@ Hora de inicio={}
 </translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="768"/>
+        <location filename="../app/widgets/model_dialog.py" line="770"/>
         <source>删除模型记录: 项目={} 数据集={} 任务={} 开始时间={}</source>
         <translation>Eliminar registro de modelo: proyecto={} conjunto de datos={} tarea={} hora de inicio={}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="782"/>
+        <location filename="../app/widgets/model_dialog.py" line="784"/>
         <source>删除模型记录失败: {} | {}</source>
         <translation>Error al eliminar el registro del modelo: {} | {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="783"/>
+        <location filename="../app/widgets/model_dialog.py" line="785"/>
         <source>[model_dialog] 删除失败: {}
 {}</source>
         <translation>[model_dialog] Error al eliminar: {}
 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="792"/>
+        <location filename="../app/widgets/model_dialog.py" line="794"/>
         <source>[model_dialog] 打开训练失败: {}
 {}</source>
         <translation>[model_dialog] Error al abrir el entrenamiento: {}
 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="793"/>
+        <location filename="../app/widgets/model_dialog.py" line="795"/>
         <source>打开训练失败</source>
         <translation>Error al abrir el entrenamiento</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="818"/>
+        <location filename="../app/widgets/model_dialog.py" line="820"/>
         <source>[model_dialog] 打开测试失败: {}
 {}</source>
         <translation>[model_dialog] Error al abrir la prueba: {}
 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="820"/>
+        <location filename="../app/widgets/model_dialog.py" line="822"/>
         <source>打开测试失败</source>
         <translation>Error al abrir la prueba</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="831"/>
-        <location filename="../app/widgets/model_dialog.py" line="849"/>
-        <location filename="../app/widgets/model_dialog.py" line="865"/>
-        <location filename="../app/widgets/model_dialog.py" line="1157"/>
-        <location filename="../app/widgets/model_dialog.py" line="1167"/>
+        <location filename="../app/widgets/model_dialog.py" line="833"/>
+        <location filename="../app/widgets/model_dialog.py" line="851"/>
+        <location filename="../app/widgets/model_dialog.py" line="867"/>
+        <location filename="../app/widgets/model_dialog.py" line="1159"/>
+        <location filename="../app/widgets/model_dialog.py" line="1169"/>
         <source>导出模型</source>
         <translation>Exportar modelo</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="832"/>
+        <location filename="../app/widgets/model_dialog.py" line="834"/>
         <source>模型文件不存在:
 {}</source>
         <translation>El archivo del modelo no existe:
 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="833"/>
+        <location filename="../app/widgets/model_dialog.py" line="835"/>
         <source>导出模型失败: 模型文件不存在 {}</source>
         <translation>Error al exportar el modelo: el archivo del modelo no existe {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="835"/>
+        <location filename="../app/widgets/model_dialog.py" line="837"/>
         <source>选择导出目录</source>
         <translation>Seleccionar directorio de exportación</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="850"/>
+        <location filename="../app/widgets/model_dialog.py" line="852"/>
         <source>创建目录失败: {}</source>
         <translation>Error al crear el directorio: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="851"/>
+        <location filename="../app/widgets/model_dialog.py" line="853"/>
         <source>导出模型失败: 创建目录失败 {} | {}</source>
         <translation>Error al exportar el modelo: no se pudo crear el directorio {} | {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="861"/>
+        <location filename="../app/widgets/model_dialog.py" line="863"/>
         <source>开始导出模型: 项目={} 任务={} 架构={} 尺寸={} | {}</source>
         <translation>Iniciando exportación del modelo: proyecto={} tarea={} arquitectura={} tamaño={} | {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="862"/>
-        <location filename="../app/widgets/model_dialog.py" line="1016"/>
+        <location filename="../app/widgets/model_dialog.py" line="864"/>
+        <location filename="../app/widgets/model_dialog.py" line="1018"/>
         <source>未知</source>
         <translation>desconocido</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="866"/>
+        <location filename="../app/widgets/model_dialog.py" line="868"/>
         <source>正在导出 ONNX...</source>
         <translation>Exportando ONNX...</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="887"/>
+        <location filename="../app/widgets/model_dialog.py" line="889"/>
         <source>正在导出模型包...</source>
         <translation>Exportando paquete de modelo...</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="898"/>
+        <location filename="../app/widgets/model_dialog.py" line="900"/>
         <source>导出模型包完成: 包含 {}</source>
         <translation>Paquete de modelo exportado, contiene: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="905"/>
+        <location filename="../app/widgets/model_dialog.py" line="907"/>
         <source>ONNX 导出完成: {} ({:.1f} MB)</source>
         <translation>Exportación ONNX completada: {} ({:.1f} MB)</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="962"/>
+        <location filename="../app/widgets/model_dialog.py" line="964"/>
         <source>读取词表失败: {}</source>
         <translation>Error al leer el vocabulario: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="973"/>
+        <location filename="../app/widgets/model_dialog.py" line="975"/>
         <source>生成 vocab.txt 失败: {}</source>
         <translation>Error al generar vocab.txt: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="989"/>
+        <location filename="../app/widgets/model_dialog.py" line="991"/>
         <source>生成 label_map.json 失败: {}</source>
         <translation>Error al generar label_map.json: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="995"/>
+        <location filename="../app/widgets/model_dialog.py" line="997"/>
         <source>导出模型报告跳过: 分类任务不出评估报告</source>
         <translation>Exportación del informe del modelo omitida: las tareas de clasificación no generan informe de evaluación</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="996"/>
+        <location filename="../app/widgets/model_dialog.py" line="998"/>
         <source>分类任务不生成评估报告</source>
         <translation>Las tareas de clasificación no generan informe de evaluación</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1000"/>
+        <location filename="../app/widgets/model_dialog.py" line="1002"/>
         <source>导出模型报告跳过: 字符识别不出评估报告</source>
         <translation>Informe del modelo omitido: el reconocimiento de texto no genera informe de evaluación</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1001"/>
+        <location filename="../app/widgets/model_dialog.py" line="1003"/>
         <source>字符识别不生成评估报告</source>
         <translation>El reconocimiento de texto no genera informe de evaluación</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1005"/>
+        <location filename="../app/widgets/model_dialog.py" line="1007"/>
         <source>导出模型报告跳过: 未找到验证集</source>
         <translation>Exportación del informe del modelo omitida: no se encontró conjunto de validación</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1006"/>
+        <location filename="../app/widgets/model_dialog.py" line="1008"/>
         <source>未找到验证集, 已跳过评估报告</source>
         <translation>No se encontró conjunto de validación; informe de evaluación omitido</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1008"/>
-        <location filename="../app/widgets/model_dialog.py" line="1090"/>
+        <location filename="../app/widgets/model_dialog.py" line="1010"/>
+        <location filename="../app/widgets/model_dialog.py" line="1092"/>
         <source>正在生成模型报告...</source>
         <translation>Generando informe del modelo...</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1012"/>
+        <location filename="../app/widgets/model_dialog.py" line="1014"/>
         <source>正在生成模型报告 {}/{}</source>
         <translation>Generando informe del modelo {}/{}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1015"/>
+        <location filename="../app/widgets/model_dialog.py" line="1017"/>
         <source>导出模型评估失败: {}</source>
         <translation>Error al exportar la evaluación del modelo: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1018"/>
+        <location filename="../app/widgets/model_dialog.py" line="1020"/>
         <source>评估失败, 已跳过报告: {}</source>
         <translation>Evaluación fallida; informe omitido: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1109"/>
+        <location filename="../app/widgets/model_dialog.py" line="1111"/>
         <source>导出模型报告跳过: 验证集没有标注</source>
         <translation>Exportación del informe del modelo omitida: el conjunto de validación no tiene anotaciones</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1110"/>
+        <location filename="../app/widgets/model_dialog.py" line="1112"/>
         <source>验证集没有标注, 已跳过评估报告</source>
         <translation>El conjunto de validación no tiene anotaciones; se omitió el informe de evaluación</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1116"/>
+        <location filename="../app/widgets/model_dialog.py" line="1118"/>
         <source>[export] 生成评估报告失败:
 {}</source>
         <translation>[export] Error al generar el informe de evaluación:
 {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1113"/>
+        <location filename="../app/widgets/model_dialog.py" line="1115"/>
         <source>生成评估报告失败: {}</source>
         <translation>Error al generar el informe de evaluación: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="947"/>
+        <location filename="../app/widgets/model_dialog.py" line="949"/>
         <source>读取类别表失败: {}</source>
         <translation>Error al leer la lista de clases: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="948"/>
+        <location filename="../app/widgets/model_dialog.py" line="950"/>
         <source>[export] 读取类别表失败: {}</source>
         <translation>[export] Error al leer la lista de clases: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1105"/>
+        <location filename="../app/widgets/model_dialog.py" line="1107"/>
         <source>导出模型报告完成: {}</source>
         <translation>Exportación del informe del modelo completada: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1117"/>
+        <location filename="../app/widgets/model_dialog.py" line="1119"/>
         <source>评估完成, 但报告生成失败</source>
         <translation>La evaluación terminó, pero no se pudo generar el informe</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1151"/>
+        <location filename="../app/widgets/model_dialog.py" line="1153"/>
         <source>导出模型完成: {} | 包含: {}</source>
         <translation>Exportación del modelo completada: {} | contiene: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1153"/>
+        <location filename="../app/widgets/model_dialog.py" line="1155"/>
         <source>已导出到:
 {}
 
@@ -2657,33 +2657,33 @@ Hora de inicio={}
 Contiene: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1115"/>
-        <location filename="../app/widgets/model_dialog.py" line="1164"/>
+        <location filename="../app/widgets/model_dialog.py" line="1117"/>
+        <location filename="../app/widgets/model_dialog.py" line="1166"/>
         <source>未知错误</source>
         <translation>Error desconocido</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1168"/>
+        <location filename="../app/widgets/model_dialog.py" line="1170"/>
         <source>模型导出失败, 详情见日志</source>
         <translation>Error al exportar el modelo, consulte el registro para más detalles</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1163"/>
+        <location filename="../app/widgets/model_dialog.py" line="1165"/>
         <source>导出模型失败: {}</source>
         <translation>Error al exportar el modelo: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1165"/>
+        <location filename="../app/widgets/model_dialog.py" line="1167"/>
         <source>[export] ONNX 导出失败: {}</source>
         <translation>[export] Error de exportación ONNX: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1182"/>
+        <location filename="../app/widgets/model_dialog.py" line="1184"/>
         <source>复制导出示例失败: {}</source>
         <translation>Error al copiar el ejemplo de exportación: {}</translation>
     </message>
     <message>
-        <location filename="../app/widgets/model_dialog.py" line="1183"/>
+        <location filename="../app/widgets/model_dialog.py" line="1185"/>
         <source>[export] 复制示例失败: {}</source>
         <translation>[export] Error al copiar el ejemplo: {}</translation>
     </message>
@@ -4869,13 +4869,13 @@ El informe ocupa unos 120 KB por imagen; con muchas muestras, reducirlo disminuy
     </message>
     <message>
         <location filename="../ui/train.ui" line="184"/>
-        <source>异常检测</source>
-        <translation>Detección de anomalías</translation>
+        <source>AD</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="189"/>
-        <source>字符识别</source>
-        <translation>Reconocimiento de texto</translation>
+        <source>OCR</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/train.ui" line="197"/>

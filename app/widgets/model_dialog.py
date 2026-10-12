@@ -689,8 +689,10 @@ class ModelDialog(QDialog):
         for i in range(1, len(pts)):
             p.drawLine(int(pts[i - 1][0]), int(pts[i - 1][1]),
                        int(pts[i][0]), int(pts[i][1]))
+        # 错误率类指标(CER)越小越好, 取哪端跟着主指标的 direction 走
+        best = min(ys) if primary_of(series, rec.get("task")).direction < 0 else hi
         p.setPen(QColor("#8b8b8b"))
-        p.drawText(6, 14, self.tr("{}  最佳 {:.3f}").format(key, hi))
+        p.drawText(6, 14, self.tr("{}  最佳 {:.3f}").format(key, best))
         p.end()
         label.setPixmap(pix)
 
