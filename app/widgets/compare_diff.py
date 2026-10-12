@@ -101,7 +101,8 @@ class DiffPanel(QWidget):
         meta.setWordWrap(True)
         value = QLabel(_esc(it["best_text"]))
         value.setStyleSheet("color: {}; font-size: 16px; font-weight: 700;"
-                            .format(theme.hexof("st_ok")))
+                            .format(it.get("best_color")
+                                    or theme.hexof("st_ok")))
         for w in (name, meta, value):
             w.setWordWrap(w is not value)
             lay.addWidget(w)

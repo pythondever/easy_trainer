@@ -37,16 +37,16 @@ PALETTE = {
     "text_strong": "#ffffff",
     "text": "#e8eaf0",             # 正文
     "text_2": "#c3c9d6",           # 次要
-    "text_dim": "#9aa2b4",         # 更弱的正文(空数据集行名 / 拒绝图标)
-    "text_3": "#949cae",           # 弱化: 说明 / 表头 / 元信息
-    "text_faint": "#757d90",       # 极弱: 分组小标题 / 禁用菜单项
+    "text_dim": "#a8b0c0",         # 更弱的正文(空数据集行名 / 拒绝图标)
+    "text_3": "#9ca5b5",           # 弱化: 说明 / 表头 / 元信息
+    "text_faint": "#8d96ab",       # 极弱: 分组小标题 / 禁用菜单项
     "text_disabled": "#5c6270",    # 置灰控件文字
 
     # 主色
     "accent": "#5a7ae0",
     "accent_hover": "#6b89ea",
     "accent_pressed": "#4c68c8",
-    "accent_dim": "#404e70",       # 选中态底色 / 勾选态底色
+    "accent_dim": "#4e639c",       # 选中态底色 / 勾选态底色
     "accent_text": "#93aef0",      # 主色底上的浅色文字
     "accent_soft": "#7d98f0",      # 进度条渐变末端
 
@@ -76,6 +76,12 @@ PALETTE = {
     "st_info": "#33c2da",
     "icon_warning": "#f5b84b",
     "icon_critical": "#f2645a",
+
+    # 顶栏显存胶囊: 实心块 + 白字, 比 danger_bg 系更重
+    "chip_alert": "#8a2424",
+    "chip_alert_hover": "#a03131",
+    "chip_ok": "#1f6b45",
+    "chip_ok_hover": "#278a5a",
 }
 
 # ---------------- 控件盒模型 ----------------

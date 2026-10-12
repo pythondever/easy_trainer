@@ -34,19 +34,19 @@ DOT = 15
 CHECK = 15
 LIST_FONT_PX = 12
 
-ALL_COLOR = "#e03737"
+ALL_COLOR = theme.hexof("danger_solid")
 DIM_DOT = theme.hexof("text_disabled")
 
 BG = theme.hexof("bg_control")
 BORDER = theme.hexof("border_strong")
-SEP = "#31353f"
+SEP = theme.hexof("bg_raised")
 TEXT = theme.hexof("text")
 TEXT_SUB = theme.hexof("text_3")
-TEXT_DIM = "#55555e"
+TEXT_DIM = theme.hexof("text_disabled")
 HOVER_BG = theme.hexof("hover_chip")
-TRACK = "#1e1e26"
-SLIDER = "#55555f"
-SLIDER_HOVER = "#6a6a75"
+TRACK = theme.hexof("bg_base")
+SLIDER = theme.hexof("border_strong")
+SLIDER_HOVER = theme.hexof("border_hover")
 ARROW_DIM = theme.hexof("border_strong")
 
 

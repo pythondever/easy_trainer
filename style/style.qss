@@ -1643,28 +1643,33 @@ CollapsibleText { font-size: {{font_md}}; }
  * 全局 QWidget 背景会把容器刷成整块深色，用 id 只对容器本身透明 --- */
 #cellWrap { background: transparent; }
 
-/* --- 模型管理：行内 测试 / 导出(opsGo) 与 删除(opsDel) --- */
+/* --- 模型管理：行内 测试 / 导出(opsGo) 与 删除(opsDel)
+ * 常态统一中性描边：一行三颗语义色块太吵，悬停才亮出绿 / 红 --- */
 QDialog#ModelDialog QPushButton#opsGo {
-    background-color: {{ok_bg}}; border: 1px solid {{ok_border}}; color: {{ok_text}};
+    background: transparent; border: 1px solid {{border_subtle}}; color: {{text_2}};
     border-radius: {{r_md}}; padding: 2px 6px; font-size: {{font_md}};
 }
 QDialog#ModelDialog QPushButton#opsGo:hover {
-    background-color: {{ok_bg_hover}}; border-color: {{ok_border_hover}};
+    background-color: {{ok_bg_hover}}; border-color: {{ok_border_hover}}; color: {{ok_text}};
 }
-QDialog#ModelDialog QPushButton#opsGo:pressed { background-color: {{ok_bg_pressed}}; }
+QDialog#ModelDialog QPushButton#opsGo:pressed {
+    background-color: {{ok_bg_pressed}}; border-color: {{ok_border}}; color: {{ok_text}};
+}
 QDialog#ModelDialog QPushButton#opsGo:disabled {
-    background-color: {{bg_panel}}; border-color: {{border_subtle}}; color: {{text_disabled}};
+    background: transparent; border-color: {{border_subtle}}; color: {{text_disabled}};
 }
 QDialog#ModelDialog QPushButton#opsDel {
-    background-color: {{danger_bg}}; border: 1px solid {{danger_border}}; color: {{danger_text}};
+    background: transparent; border: 1px solid {{border_subtle}}; color: {{text_2}};
     border-radius: {{r_md}}; padding: 2px 6px; font-size: {{font_md}};
 }
 QDialog#ModelDialog QPushButton#opsDel:hover {
-    background-color: {{danger_bg_hover}}; border-color: {{danger_border_hover}};
+    background-color: {{danger_bg_hover}}; border-color: {{danger_border_hover}}; color: {{danger_text}};
 }
-QDialog#ModelDialog QPushButton#opsDel:pressed { background-color: {{danger_bg_pressed}}; }
+QDialog#ModelDialog QPushButton#opsDel:pressed {
+    background-color: {{danger_bg_pressed}}; border-color: {{danger_border}}; color: {{danger_text}};
+}
 QDialog#ModelDialog QPushButton#opsDel:disabled {
-    background-color: {{bg_panel}}; border-color: {{border_subtle}}; color: {{text_disabled}};
+    background: transparent; border-color: {{border_subtle}}; color: {{text_disabled}};
 }
 
 /* --- 标注对话框：剪切板缩略图（app/annotation/annotation_canvas.py）

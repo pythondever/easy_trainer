@@ -17,6 +17,14 @@ from app.core.utils import setup_matplotlib_chinese
 from app.widgets.combo_utils import style_combo
 
 
+def _flat_series(data):
+    """指标文件把 epochs 放在顶层、曲线放在 series 里, 画图要拍平成一份."""
+    series = dict(data.get("series") or {})
+    if not series.get("epochs") and data.get("epochs"):
+        series["epochs"] = data["epochs"]
+    return series
+
+
 def load_run_series(record, db_path=None):
     """
     一次训练用于画图的曲线: 优先训练目录里的 metrics.csv(rf-detr 真源).
@@ -31,9 +39,10 @@ def load_run_series(record, db_path=None):
         if s.get("epochs"):
             return s
     try:
-        return (load_train_metrics(record, db_path) or {}).get("series") or {}
+        data = load_train_metrics(record, db_path) or {}
     except Exception:
         return {}
+    return _flat_series(data)
 
 
 class MetricsDialog(QDialog):

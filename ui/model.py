@@ -43,6 +43,8 @@ class Ui_ModelDialog(object):
         self.task_combo.addItem("")
         self.task_combo.addItem("")
         self.task_combo.addItem("")
+        self.task_combo.addItem("")
+        self.task_combo.addItem("")
         self.task_combo.setObjectName(u"task_combo")
         self.task_combo.setMinimumWidth(96)
 
@@ -203,6 +205,8 @@ class Ui_ModelDialog(object):
         self.task_combo.setItemText(1, QCoreApplication.translate("ModelDialog", u"\u68c0\u6d4b", None))
         self.task_combo.setItemText(2, QCoreApplication.translate("ModelDialog", u"\u5206\u5272", None))
         self.task_combo.setItemText(3, QCoreApplication.translate("ModelDialog", u"\u5206\u7c7b", None))
+        self.task_combo.setItemText(4, QCoreApplication.translate("ModelDialog", u"\u5f02\u5e38\u68c0\u6d4b", None))
+        self.task_combo.setItemText(5, QCoreApplication.translate("ModelDialog", u"\u5b57\u7b26\u8bc6\u522b", None))
 
         self.status_combo.setItemText(0, QCoreApplication.translate("ModelDialog", u"\u5168\u90e8\u72b6\u6001", None))
         self.status_combo.setItemText(1, QCoreApplication.translate("ModelDialog", u"\u5df2\u5b8c\u6210", None))

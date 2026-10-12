@@ -46,7 +46,7 @@ from app.core.log import write_log
 
 
 # 左右两个列表行的高亮底色(左侧标签列表 / 右侧标注列表同款)
-ROW_BG_SELECTED = "#2a3f6b"
+ROW_BG_SELECTED = theme.hexof("accent_dim")
 ROW_BG_NORMAL = theme.hexof("bg_control")
 _ROW_QSS = "QFrame {{ background: {0}; border-radius: 6px; }}"
 
@@ -125,7 +125,8 @@ class _PixelScaleDialog(QDialog):
         row.addStretch(1)
         layout.addLayout(row)
         self._hint = QLabel("")
-        self._hint.setStyleSheet("color: #e5677a; font-size: 12px;")
+        self._hint.setStyleSheet(
+            "color: {}; font-size: 12px;".format(theme.hexof("danger_text")))
         layout.addWidget(self._hint)
         btns = QHBoxLayout()
         btns.addStretch(1)
@@ -275,7 +276,7 @@ class AddLabelDialog(QDialog):
         # 高亮选中按钮
         for i in range(1, 11):
             b = getattr(self.ui, "color{}_btn".format(i))
-            border = "2px solid #ffffff" if (btn is not None and b is btn) else "2px solid transparent"
+            border = ("2px solid " + theme.hexof("text_strong")) if (btn is not None and b is btn) else "2px solid transparent"
             b.setStyleSheet(
                 "QPushButton {{ background-color: {0}; border: {1};"
                 " padding: 0; min-width: 26px; max-width: 26px;"
@@ -287,8 +288,8 @@ class AddLabelDialog(QDialog):
                 if c.lower() == color.lower():
                     b = getattr(self.ui, "color{}_btn".format(i))
                     b.setStyleSheet(
-                        "QPushButton {{ background-color: {0}; border: 2px solid #ffffff;"
-                        " border-radius: 6px; }}".format(color))
+                        "QPushButton {{ background-color: {0}; border: 2px solid {1};"
+                        " border-radius: 6px; }}".format(color, theme.hexof("text_strong")))
                     break
 
     def _pick_custom_color(self):
@@ -398,7 +399,7 @@ class AnnotationDialog(QDialog, AnnotationCanvasMixin, AnnotationIOMixin):
                                (u.delete_image_btn, "删除.png")):
             ipath = _icon_path(icon_file)
             if ipath:
-                btn.setIcon(_tinted(ipath, "#b8c0d0"))
+                btn.setIcon(_tinted(ipath, theme.hexof("text_2")))
                 btn.setIconSize(QSize(18, 18))
         u.label_list.setText(self.tr("标签列表"))
         u.labeled_list.setText(self.tr("标注信息"))
@@ -767,7 +768,7 @@ class AnnotationDialog(QDialog, AnnotationCanvasMixin, AnnotationIOMixin):
                 ibtn.setStyleSheet(btn_style)
                 ipath = _icon_path(icon_file)
                 if ipath:
-                    ibtn.setIcon(_tinted(ipath, "#b8c0d0"))
+                    ibtn.setIcon(_tinted(ipath, theme.hexof("text_2")))
                     ibtn.setIconSize(QSize(14, 14))
                 ibtn.clicked.connect(
                     lambda _=False, n=name, f=handler: f(n))
@@ -1103,7 +1104,7 @@ class AnnotationDialog(QDialog, AnnotationCanvasMixin, AnnotationIOMixin):
         btn = self.ui.px_scale_btn
         icon = _resource_path("编辑.png")
         if icon:
-            btn.setIcon(_tinted(icon, "#b8c0d0"))
+            btn.setIcon(_tinted(icon, theme.hexof("text_2")))
             btn.setIconSize(QSize(13, 13))
         if _PX_SCALE is None:
             btn.setText(self.tr("转换"))

@@ -54,6 +54,16 @@
          <string>分类</string>
         </property>
        </item>
+       <item>
+        <property name="text">
+         <string>异常检测</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>字符识别</string>
+        </property>
+       </item>
       </widget>
      </item>
      <item>

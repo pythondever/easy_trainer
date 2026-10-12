@@ -251,8 +251,8 @@ class AnnotationScene(QGraphicsScene):
         if self.fp_ghost_item is None:
             self.fp_ghost_item = QGraphicsPolygonItem(
                 QPolygonF([QPointF(*p) for p in pts]))
-            self.fp_ghost_item.setPen(QPen(QColor(91, 140, 255, 160), 1.0))
-            self.fp_ghost_item.setBrush(QBrush(QColor(91, 140, 255, 36)))
+            self.fp_ghost_item.setPen(QPen(theme.alpha("accent", 160), 1.0))
+            self.fp_ghost_item.setBrush(QBrush(theme.alpha("accent", 36)))
             self.fp_ghost_item.setZValue(15)
             self.addItem(self.fp_ghost_item)
         else:
@@ -421,11 +421,11 @@ class AnnotationScene(QGraphicsScene):
         lo, hi = getattr(self, "angle_range", (-180, 180))
         self._stamp_angle = random.uniform(lo, hi)
         item = QGraphicsPolygonItem()
-        pen = QPen(QColor(91, 140, 255, 230), 1.4)
+        pen = QPen(theme.alpha("accent", 230), 1.4)
         pen.setCosmetic(True)
         pen.setStyle(Qt.DashLine)
         item.setPen(pen)
-        item.setBrush(QBrush(QColor(91, 140, 255, 30)))
+        item.setBrush(QBrush(theme.alpha("accent", 30)))
         item.setZValue(18)
         item.setAcceptedMouseButtons(Qt.NoButton)
         self.addItem(item)

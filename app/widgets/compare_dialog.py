@@ -19,9 +19,10 @@ from PySide6.QtWidgets import (QAbstractItemView, QApplication, QDialog,
                                QTableWidgetItem)
 
 from app.core import theme
-from app.core.metrics import metric_key, primary_for
+from app.core.metrics import (SCORE_GOOD, SCORE_MID, metric_key,
+                              primary_for, score_of)
 from app.train.dialogs import AUG_ITEMS
-from app.widgets.combo_utils import style_combo
+from app.widgets.combo_utils import is_checked, style_combo
 from app.widgets.compare_chart import CompareChart, series_color
 from app.widgets.compare_diff import DiffPanel
 from app.widgets.metrics_dialog import MetricsDialog, load_run_series
@@ -76,7 +77,7 @@ ROLE_TASK = Qt.UserRole + 3
 ROLE_TAG = Qt.UserRole + 4
 ROLE_MODEL = Qt.UserRole + 5
 ROLE_BEST = Qt.UserRole + 6
-ROLE_BAD = Qt.UserRole + 7
+ROLE_BEST_COLOR = Qt.UserRole + 7
 
 _AUG_NAMES = {code: name for _g, code, name, _p in AUG_ITEMS}
 AUG_DIFF_MAX = 2
@@ -99,6 +100,18 @@ def _fmt(v, key):
         return ""
     return "{:.4f}".format(v) if key in ("CER", "WER", "accuracy") \
         else "{:.3f}".format(v)
+
+
+def _score_color(task, value):
+    """主指标按好坏分取色: 0.8 以上绿、0.5 以上黄、其余红, 方向由任务定."""
+    score = score_of(task, value)
+    if score is None:
+        return theme.hexof("text_faint")
+    if score >= SCORE_GOOD:
+        return theme.hexof("st_ok")
+    if score >= SCORE_MID:
+        return theme.hexof("st_warn")
+    return theme.hexof("danger_text")
 
 
 def _fmt_dur(secs):
@@ -158,11 +171,11 @@ class _RecordDelegate(QStyledItemDelegate):
         painter.save()
         painter.setRenderHint(QPainter.Antialiasing)
         r = option.rect.adjusted(2, 2, -2, -2)
-        checked = index.data(Qt.CheckStateRole) == Qt.Checked
-        bg = "#1c2433" if checked else "#1a2130"
-        border = "#2b6ee8" if checked else "#28334a"
+        checked = is_checked(index.data(Qt.CheckStateRole))
+        bg = theme.hexof("accent_dim") if checked else theme.hexof("bg_panel")
+        border = theme.hexof("accent") if checked else theme.hexof("border_subtle")
         if option.state & QStyle.State_MouseOver:
-            bg = "#1e2838"
+            bg = theme.hexof("bg_raised")
         painter.setPen(QPen(QColor(border), 1))
         painter.setBrush(QColor(bg))
         painter.drawRoundedRect(r, 8, 8)
@@ -170,17 +183,17 @@ class _RecordDelegate(QStyledItemDelegate):
         # 复选框: 勾选蓝底白勾, 未勾灰边框
         cb = QRect(r.left() + 10, r.top() + 10, 13, 13)
         if checked:
-            painter.setBrush(QColor("#2b6ee8"))
+            painter.setBrush(theme.color("accent"))
             painter.setPen(Qt.NoPen)
             painter.drawRoundedRect(cb, 3, 3)
-            painter.setPen(QPen(QColor("#ffffff"), 1.6))
+            painter.setPen(QPen(theme.color("text_strong"), 1.6))
             painter.drawLine(cb.left() + 3, cb.center().y(),
                              cb.left() + 6, cb.bottom() - 3)
             painter.drawLine(cb.left() + 6, cb.bottom() - 3,
                              cb.right() - 2, cb.top() + 3)
         else:
             painter.setBrush(Qt.NoBrush)
-            painter.setPen(QPen(QColor("#4a5670"), 1))
+            painter.setPen(QPen(theme.color("border"), 1))
             painter.drawRoundedRect(cb, 3, 3)
 
         # 状态点
@@ -192,7 +205,7 @@ class _RecordDelegate(QStyledItemDelegate):
         f_small = QFont(option.font)
         f_small.setPointSizeF(8.5)
         painter.setFont(f_small)
-        painter.setPen(QColor("#77829a"))
+        painter.setPen(theme.color("text_faint"))
         painter.drawText(QRect(r.left() + 43, r.top() + 4, r.width() - 60, 24),
                          Qt.AlignVCenter | Qt.AlignLeft,
                          str(index.data(ROLE_TIME) or ""))
@@ -205,7 +218,7 @@ class _RecordDelegate(QStyledItemDelegate):
         name = str(index.data(ROLE_TASK) or "")
         name_w = painter.fontMetrics().horizontalAdvance(name)
         name_rect = QRect(r.left() + 10, r.top() + 30, r.width() - 20, 24)
-        painter.setPen(QColor("#e8edf6"))
+        painter.setPen(theme.color("text"))
         painter.drawText(name_rect, Qt.AlignVCenter | Qt.AlignLeft, name)
         tag_text, tag_bg, tag_fg = TASK_TAG.get(
             str(index.data(ROLE_TAG) or ""), ("", "#1f2a3d", "#7c879c"))
@@ -225,7 +238,7 @@ class _RecordDelegate(QStyledItemDelegate):
         f_meta = QFont(option.font)
         f_meta.setPointSizeF(8.5)
         painter.setFont(f_meta)
-        painter.setPen(QColor("#77829a"))
+        painter.setPen(theme.color("text_faint"))
         meta_rect = QRect(r.left() + 10, r.top() + 52, r.width() - 20, 20)
         painter.drawText(meta_rect, Qt.AlignVCenter | Qt.AlignLeft,
                          str(index.data(ROLE_MODEL) or ""))
@@ -235,8 +248,8 @@ class _RecordDelegate(QStyledItemDelegate):
             f_best.setPointSizeF(9.5)
             f_best.setBold(True)
             painter.setFont(f_best)
-            painter.setPen(QColor("#ff8aa0" if index.data(ROLE_BAD)
-                                  else "#3ddc84"))
+            painter.setPen(QColor(index.data(ROLE_BEST_COLOR)
+                                  or theme.hexof("text_faint")))
             painter.drawText(meta_rect, Qt.AlignVCenter | Qt.AlignRight, best)
         painter.restore()
 
@@ -244,7 +257,8 @@ class _RecordDelegate(QStyledItemDelegate):
         # 单击整卡切换勾选; 双击返回 False, 交给 QListWidget 发 itemDoubleClicked
         if (event.type() == QEvent.MouseButtonRelease
                 and event.button() == Qt.LeftButton):
-            state = (Qt.Unchecked if model.data(index, Qt.CheckStateRole) == Qt.Checked
+            state = (Qt.Unchecked
+                     if is_checked(model.data(index, Qt.CheckStateRole))
                      else Qt.Checked)
             model.setData(index, state, Qt.CheckStateRole)
             return True
@@ -323,6 +337,8 @@ class CompareDialog(QDialog):
         self.ui.main_splitter.setStretchFactor(1, 1)
         self.ui.main_splitter.setStretchFactor(2, 0)
         self.ui.main_splitter.setSizes([280, 700, 320])
+        # 指标胶囊行吃掉工具栏的剩余宽度, 否则右侧弹簧会把它挤成一小条
+        self.ui.toolbarLayout.setStretch(1, 1)
 
         self._populate_list()
         self._preselect(current)
@@ -403,25 +419,29 @@ class CompareDialog(QDialog):
         return max(vals) if _direction(key) >= 0 else min(vals)
 
     def _best_text(self, idx):
-        """卡片主指标: 训练中/失败/停止显示状态, 完成显示'短名 数值'."""
+        """卡片主指标: 返回 (文本, 颜色).
+
+        颜色按指标好坏分走, 不看数值大小: CER 越小越好, 直接比数值会
+        把 0.9851 这种读错的识别结果也染成绿色.
+        """
         rec = self._records[idx]
         st = str(rec.get("status") or "")
         if st == "训练中":
             done = len(self._series[idx].get("epochs") or [])
             total = rec.get("epochs") or ""
             return ("进行中 {}/{}".format(done, total) if total
-                    else "进行中"), False
+                    else "进行中"), theme.hexof("st_ok")
         if st in _STATUS_LABEL:
-            return _STATUS_LABEL[st], True
+            return _STATUS_LABEL[st], theme.hexof("danger_text")
         p = primary_for(rec.get("task") or "")
         if p is None:
-            return "", False
+            return "", ""
         v = self._best_of(idx, p.base)
         if v is None:
-            return "", False
+            return "", ""
         text = "{} {:.{}f}".format(_PRIMARY_SHORT.get(p.label, p.label),
                                    v, p.decimals)
-        return text, False
+        return text, _score_color(rec.get("task") or "", v)
 
     def _populate_list(self):
         """按当前可见集合重建列表; 保留仍在范围内的勾选."""
@@ -438,9 +458,9 @@ class CompareDialog(QDialog):
             item.setData(ROLE_TASK, task_text(rec.get("task") or ""))
             item.setData(ROLE_TAG, str(rec.get("task") or ""))
             item.setData(ROLE_MODEL, str(rec.get("model_size") or ""))
-            best, bad = self._best_text(i)
+            best, color = self._best_text(i)
             item.setData(ROLE_BEST, best)
-            item.setData(ROLE_BAD, bad)
+            item.setData(ROLE_BEST_COLOR, color)
             self.ui.record_list.addItem(item)
 
     def _preselect(self, current):
@@ -605,12 +625,14 @@ class CompareDialog(QDialog):
         self.ui.summary_table.setRowCount(len(rows))
         cur_bg = QColor(theme.hexof("accent_dim"))
         for r, idx in enumerate(rows):
+            task = self._records[idx].get("task") or ""
             for c, text in enumerate(self._row_cells(idx)):
                 item = QTableWidgetItem(text)
                 if c == cur_col:
                     item.setBackground(cur_bg)
                 if c in hl_cols and text and text != "—":
-                    item.setForeground(QColor("#3ddc84"))
+                    value = self._best_of(idx, _COLUMNS[c])
+                    item.setForeground(QColor(_score_color(task, value)))
                     f = item.font()
                     f.setBold(True)
                     item.setFont(f)
@@ -638,6 +660,9 @@ class CompareDialog(QDialog):
                 "dur": _fmt_dur(rec.get("duration_secs")),
                 "best": best,
                 "best_text": _fmt(best, metric) if best is not None else "—",
+                "best_color": (_score_color(rec.get("task") or "", best)
+                               if best is not None
+                               else theme.hexof("text_faint")),
             })
         return items
 

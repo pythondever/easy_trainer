@@ -18,8 +18,8 @@ SIDE = 2            # 左右各留的余量
 ROW_H = 26
 
 HOVER_BG = theme.hexof("hover_chip")
-CHECK_BORDER = "#464d5e"
-CHECK_BORDER_HOVER = "#5a6379"
+CHECK_BORDER = theme.hexof("border_subtle")
+CHECK_BORDER_HOVER = theme.hexof("border_strong")
 
 
 def is_dark(color):
@@ -48,7 +48,7 @@ def paint_mark(p, cx, cy, color, checked, hovered):
         p.setPen(Qt.NoPen)
         p.setBrush(QColor(color))
         p.drawEllipse(mark)
-        pen = QPen(QColor("#ffffff"), 1.8)
+        pen = QPen(theme.color("text_strong"), 1.8)
         pen.setCapStyle(Qt.RoundCap)
         pen.setJoinStyle(Qt.RoundJoin)
         p.setPen(pen)

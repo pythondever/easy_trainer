@@ -63,7 +63,7 @@ class SelectablePixmapItem(QGraphicsPixmapItem):
         if self.isSelected():
             bg = theme.color("accent_dim")
         elif self._hover:
-            bg = QColor("#2b2f3b")
+            bg = theme.color("hover_chip")
         else:
             bg = theme.color("bg_control")
         painter.setPen(QPen(theme.color("border"), 1))
@@ -101,7 +101,7 @@ class SelectablePixmapItem(QGraphicsPixmapItem):
             painter.setPen(Qt.NoPen)
             painter.setBrush(color)
             painter.drawRoundedRect(QRectF(cx, y, tw, chip_h), 3, 3)
-            painter.setPen(QColor("#ffffff"))
+            painter.setPen(theme.color("text_strong"))
             painter.drawText(QRectF(cx + 2, y, tw - 4, chip_h),
                              Qt.AlignCenter, txt)
             cx += tw + 4
@@ -109,7 +109,7 @@ class SelectablePixmapItem(QGraphicsPixmapItem):
             more = "+{}".format(len(self._labels) - 3)
             tw = fm.horizontalAdvance(more) + 8
             painter.setPen(Qt.NoPen)
-            painter.setBrush(QColor(60, 66, 82))
+            painter.setBrush(theme.color("bg_control"))
             painter.drawRoundedRect(QRectF(cx, y, tw, chip_h), 3, 3)
             painter.setPen(theme.color("text_2"))
             painter.drawText(QRectF(cx, y, tw, chip_h), Qt.AlignCenter, more)

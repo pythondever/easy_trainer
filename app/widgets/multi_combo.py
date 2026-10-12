@@ -12,23 +12,9 @@ from PySide6.QtGui import (QColor, QFont, QFontMetrics, QPainter, QPainterPath,
                            QPen, QPolygonF)
 from PySide6.QtWidgets import QLineEdit, QStyle, QStyledItemDelegate
 from app.core import theme
+from app.widgets.combo_utils import is_checked
 
 ROLE_DATASET = Qt.UserRole
-CHECKED_VALUE = Qt.CheckState.Checked.value
-
-
-def is_checked(state):
-    """勾选状态判真, 两种形态都要认.
-
-    同一个 CheckStateRole, 存进去的方式不同, 取出来的类型就不同:
-    item.setCheckState() 存进去, index.data() 给裸 int; model.setData(..., Qt.Checked)
-    存进去给 Qt.CheckState 枚举(普通 Enum, 与 int 不相等). 两种写法都在用, 只认一种会漏.
-    """
-    if state is None:
-        return False
-    if isinstance(state, int):
-        return state == CHECKED_VALUE
-    return state == Qt.Checked
 
 
 ROW_H = 30              # 列表行高
@@ -45,16 +31,16 @@ LIST_FONT_PX = 12
 CHIP_FONT_PX = 11
 
 # 项目色按在列表里出现的顺序取用, 相邻项目不会撞色; 超出色板长度后从头循环
-PROJECT_COLORS = ("#4f7dff", "#9a7bff", "#33c2a0", "#e0a34d", "#e8708a", "#5aa9e6")
+PROJECT_COLORS = (theme.hexof("accent"), "#9a7bff", "#33c2a0", "#e0a34d", "#e8708a", "#5aa9e6")
 
-PROJECT_TEXT = "#7f8a9e"
-SEP_TEXT = "#525a6b"
-NAME_TEXT = "#c8cdd8"
-NAME_TEXT_CHECKED = "#e3e7f0"
-HOVER_BG = "#262a34"
+PROJECT_TEXT = theme.hexof("text_faint")
+SEP_TEXT = theme.hexof("border")
+NAME_TEXT = theme.hexof("text_2")
+NAME_TEXT_CHECKED = theme.hexof("text")
+HOVER_BG = theme.hexof("hover_chip")
 PLACEHOLDER_TEXT = theme.hexof("text_disabled")
-MARK_BORDER = "#464d5e"
-MARK_BORDER_HOVER = "#5a6379"
+MARK_BORDER = theme.hexof("border_subtle")
+MARK_BORDER_HOVER = theme.hexof("border_strong")
 
 
 def project_colors(model):
@@ -210,7 +196,7 @@ class MultiComboDelegate(QStyledItemDelegate):
             p.setPen(Qt.NoPen)
             p.setBrush(color)
             p.drawEllipse(mark)
-            pen = QPen(QColor("#ffffff"), 1.8)
+            pen = QPen(theme.color("text_strong"), 1.8)
             pen.setCapStyle(Qt.RoundCap)
             pen.setJoinStyle(Qt.RoundJoin)
             p.setPen(pen)

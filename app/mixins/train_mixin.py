@@ -7,6 +7,7 @@ from app.widgets.message_box import MessageBox
 from app.core.log import write_log
 from app.core.metrics import best_value, primary_for, primary_of
 from app.core.utils import fmt_duration
+from app.core import theme
 from PySide6.QtCore import QTimer, QTime
 from PySide6.QtCore import QCoreApplication as QC
 
@@ -397,8 +398,8 @@ class TrainMixin(object):
     @staticmethod
     def _gpu_btn_style(high):
         """显存 chip 配色:超 55% 深红发黑,否则深绿(胶囊形)."""
-        color = "#8a2424" if high else "#1f6b45"
-        hover = "#a03131" if high else "#278a5a"
+        color = theme.hexof("chip_alert") if high else theme.hexof("chip_ok")
+        hover = theme.hexof("chip_alert_hover") if high else theme.hexof("chip_ok_hover")
         return (
             "QPushButton {{ background-color: {}; color: white;"
             " border: none; border-radius: 12px; padding: 4px 14px;"

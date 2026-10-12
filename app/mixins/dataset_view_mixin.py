@@ -119,7 +119,7 @@ def _thumb_placeholder():
     global _THUMB_PLACEHOLDER
     if _THUMB_PLACEHOLDER is None:
         _THUMB_PLACEHOLDER = QImage(200, 200, QImage.Format_RGB32)
-        _THUMB_PLACEHOLDER.fill(QColor(56, 58, 66))
+        _THUMB_PLACEHOLDER.fill(theme.color("bg_control"))
     return _THUMB_PLACEHOLDER
 
 

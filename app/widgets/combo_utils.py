@@ -5,6 +5,20 @@
 
 from PySide6.QtCore import QEvent, QObject, Qt, QTimer
 
+# 勾选态判定: 同一个 CheckStateRole, 存进去的方式不同取出来的类型就不同.
+# item.setCheckState() 存进去, index.data() 给裸 int; model.setData(..., Qt.Checked)
+# 存进去给 Qt.CheckState 枚举(PySide6 里是普通 Enum, 与 int 不相等).
+CHECKED_VALUE = Qt.CheckState.Checked.value
+
+
+def is_checked(state):
+    """勾选状态判真: int 与 Qt.CheckState 两种形态都认, 只认一种会漏."""
+    if state is None:
+        return False
+    if isinstance(state, int):
+        return state == CHECKED_VALUE
+    return state == Qt.Checked
+
 
 class ClickToPopupFilter(QObject):
     """点击下拉框(或其 lineEdit)任意位置就展开下拉."""

@@ -2,11 +2,11 @@
 """
 指标分段按钮: 一排 pill, 当前项高亮; 所选记录都没有的指标置灰不可点.
 指标多时整排的最小宽度会把窗口撑到屏幕外, 所以按钮排在内部横向
-QScrollArea 里: 控件自身最小宽度小, 滚轮映射为横向滚动; 滚动条常隐
-(AlwaysOff) 避免出现/消失引发的宽度抖动.
+QScrollArea 里: 控件自身最小宽度小, 滚轮映射为横向滚动, 真的放不下时
+滚动条才出现; 行高按需补足, 免得滚动条压住按钮.
 """
 
-from PySide6.QtCore import QEvent, Qt, Signal
+from PySide6.QtCore import QEvent, Qt, QTimer, Signal
 from PySide6.QtWidgets import (QButtonGroup, QFrame, QHBoxLayout,
                                QScrollArea, QSizePolicy, QToolButton,
                                QWidget)
@@ -30,7 +30,7 @@ class MetricTabs(QWidget):
         self._scroll = QScrollArea(self)
         self._scroll.setWidgetResizable(True)
         self._scroll.setFrameShape(QFrame.NoFrame)
-        self._scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self._scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self._scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self._scroll.setFocusPolicy(Qt.NoFocus)
         self._inner = QWidget()
@@ -38,6 +38,8 @@ class MetricTabs(QWidget):
         self._layout = QHBoxLayout(self._inner)
         self._layout.setContentsMargins(3, 3, 3, 3)
         self._layout.setSpacing(2)
+        # 末尾垫一根弹簧: 没有它, 宽度富余时布局会把按钮拉长填满整行
+        self._layout.addStretch(1)
         self._scroll.setWidget(self._inner)
         outer.addWidget(self._scroll)
         self._scroll.viewport().installEventFilter(self)
@@ -74,7 +76,8 @@ class MetricTabs(QWidget):
             btn.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
             btn.clicked.connect(self._on_clicked)
             self._group.addButton(btn)
-            self._layout.addWidget(btn)
+            # 插在尾部弹簧之前, 否则新按钮会排到弹簧后面
+            self._layout.insertWidget(self._layout.count() - 1, btn)
             self._buttons.append(btn)
             if key == current:
                 # 回填当前项不能回调出去: 调用方正处在自己的刷新里
@@ -82,8 +85,7 @@ class MetricTabs(QWidget):
                 btn.setChecked(True)
                 btn.blockSignals(False)
         self._current = current
-        # 行高跟着按钮走, 滚动区纵向不留空
-        self._scroll.setFixedHeight(self._inner.sizeHint().height())
+        self._sync_height()
 
     def current(self):
         for key, btn in zip(self._keys, self._buttons):
@@ -91,14 +93,27 @@ class MetricTabs(QWidget):
                 return key
         return self._current if self._keys else ""
 
+    def _sync_height(self):
+        """行高跟着按钮走; 要出横向滚动条时再补上它那点高度, 免得压住按钮."""
+        self._layout.activate()
+        bar = self._scroll.horizontalScrollBar()
+        reserve = bar.sizeHint().height() if bar.maximum() > 0 else 0
+        h = self._inner.sizeHint().height() + reserve
+        if h != self._scroll.height():
+            self._scroll.setFixedHeight(h)
+
     def eventFilter(self, obj, event):
-        if obj is self._scroll.viewport() and event.type() == QEvent.Wheel:
-            bar = self._scroll.horizontalScrollBar()
-            delta = event.angleDelta().y() or event.angleDelta().x()
-            if bar.maximum() > 0 and delta:
-                bar.setValue(bar.value() - (_SCROLL_STEP if delta > 0
-                                            else -_SCROLL_STEP))
-                return True
+        if obj is self._scroll.viewport():
+            if event.type() == QEvent.Wheel:
+                bar = self._scroll.horizontalScrollBar()
+                delta = event.angleDelta().y() or event.angleDelta().x()
+                if bar.maximum() > 0 and delta:
+                    bar.setValue(bar.value() - (_SCROLL_STEP if delta > 0
+                                                else -_SCROLL_STEP))
+                    return True
+            elif event.type() == QEvent.Resize:
+                # 滚动条出不出现、多高, 这轮布局算完才知道
+                QTimer.singleShot(0, self._sync_height)
         return super().eventFilter(obj, event)
 
     def _on_clicked(self):

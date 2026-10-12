@@ -45,6 +45,12 @@ TASK_FILE_TAG = {"detect": "检测", "segment": "分割", "classify": "分类",
                  "ad": "异常", "ocr": "字符", "ocr_det": "字符检测",
                  "ocr_rec": "字符识别"}
 
+# 任务筛选下拉的 itemData, 顺序必须与 ui/model.ui 的项一一对应:
+# 空元组表示不过滤; 字符识别把已废弃的 OCR 历史键一并纳入,
+# 否则那批记录只能靠"全部任务"翻到.
+TASK_FILTER_KEYS = ((), ("detect",), ("segment",), ("classify",), ("ad",),
+                    ("ocr_rec", "ocr_det", "ocr"))
+
 
 def _parse_classes_txt(path):
     """classes.txt 解析成 [(id, 类名)]. 兼容 "id 类名" 与 只有类名(行号即 id) 两种."""
@@ -370,7 +376,7 @@ class ModelDialog(QDialog):
         """给筛选下拉挂 itemData(任务键 / 状态键): 筛的是键不是显示文本, 界面切英文后
         按文本筛会全部落空.
         """
-        for i, key in enumerate(("", "detect", "segment", "classify")):
+        for i, key in enumerate(TASK_FILTER_KEYS):
             self.ui.task_combo.setItemData(i, key)
         for i, key in enumerate(("", "已完成", "训练中", "失败", "已停止")):
             self.ui.status_combo.setItemData(i, key)
@@ -383,7 +389,7 @@ class ModelDialog(QDialog):
         status = self.ui.status_combo.currentData()
         recs = []
         for r in self._all_records:
-            if task and r.get("task", "") != task:
+            if task and r.get("task", "") not in task:
                 continue
             if status:
                 st = _status(r)
@@ -644,9 +650,9 @@ class ModelDialog(QDialog):
             if k == status_key:
                 val = "<span style='color:{}'>{}</span>".format(
                     status_color(st_key), val)
-            html += ("<tr><td style='color:#8b8b8b;padding-right:6px;"
+            html += ("<tr><td style='color:{};padding-right:6px;"
                      "white-space:nowrap'>{}</td><td>{}</td></tr>".format(
-                         _esc(k), val))
+                         theme.hexof("text_3"), _esc(k), val))
         err = str(rec.get("error") or "").strip()
         u.detail_info.setText(
             "<table style='font-size:12px;line-height:150%'>{}</table>".format(html))
@@ -674,7 +680,7 @@ class ModelDialog(QDialog):
         pix.fill(CURVE_BG)
         p = QPainter(pix)
         p.setRenderHint(QPainter.Antialiasing)
-        p.setPen(QPen(QColor("#3a3f4b"), 1))
+        p.setPen(QPen(theme.color("border_subtle"), 1))
         p.drawRect(0, 0, w - 1, h - 1)
         lo, hi = min(ys), max(ys)
         span = max(hi - lo, 1e-6)
@@ -691,7 +697,7 @@ class ModelDialog(QDialog):
                        int(pts[i][0]), int(pts[i][1]))
         # 错误率类指标(CER)越小越好, 取哪端跟着主指标的 direction 走
         best = min(ys) if primary_of(series, rec.get("task")).direction < 0 else hi
-        p.setPen(QColor("#8b8b8b"))
+        p.setPen(theme.color("text_3"))
         p.drawText(6, 14, self.tr("{}  最佳 {:.3f}").format(key, best))
         p.end()
         label.setPixmap(pix)
