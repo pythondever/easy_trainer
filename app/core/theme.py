@@ -14,24 +14,24 @@ from PySide6.QtGui import QColor
 # ---------------- 颜色 ----------------
 # 表面: 由深到浅
 PALETTE = {
-    "bg_sunken": "#0f1117",        # 凹陷槽: 进度条 / 时间框
-    "bg_base": "#15181e",          # 窗口底 / 输入框底 / 列表表格底
-    "bg_panel": "#1e212a",         # 面板: 对话框 / 分组框 / 侧栏 / 菜单
-    "bg_raised": "#252933",        # 抬升面: 顶栏 / 表头 / 交替行 / 分组块
-    "bg_control": "#2b303d",       # 控件面: 按钮 / 项目卡片 / 选中行
-    "bg_control_2": "#323846",     # 次级控件面: 弹窗按钮 / 弹窗输入框
-    "hover_chip": "#2b2f3b",       # 勾选条目悬停底: 比控件面再暗一档
-    "bg_hover": "#3b4252",         # 悬停
-    "bg_pressed": "#171921",       # 按下(控件面系, 比常态暗)
-    "bg_pressed_2": "#3f4657",     # 按下(次级控件面系, 比常态亮)
-    "bg_deep": "#0e1015",          # 标注对话框子主题底色 / 图像画布底色
-    "bg_deep_2": "#1e222b",        # 标注子主题内的输入类控件
+    "bg_sunken": "#0b0e16",        # 凹陷槽: 进度条 / 时间框
+    "bg_base": "#171a22",          # 窗口底 / 输入框底 / 列表表格底
+    "bg_panel": "#23262e",         # 面板: 对话框 / 分组框 / 侧栏 / 菜单
+    "bg_raised": "#2f323a",        # 抬升面: 顶栏 / 表头 / 交替行 / 分组块
+    "bg_control": "#3b3e46",       # 控件面: 按钮 / 项目卡片 / 选中行
+    "bg_control_2": "#474a52",     # 次级控件面: 弹窗按钮 / 弹窗输入框
+    "hover_chip": "#2d3038",       # 勾选条目悬停底: 比控件面再暗一档
+    "bg_hover": "#53565e",         # 悬停
+    "bg_pressed": "#272a32",       # 按下(控件面系, 比常态暗)
+    "bg_pressed_2": "#555860",     # 按下(次级控件面系, 比常态亮)
+    "bg_deep": "#0c0f17",          # 标注对话框子主题底色 / 图像画布底色
+    "bg_deep_2": "#21242d",        # 标注子主题内的输入类控件
 
     # 描边
-    "border_subtle": "#383e4c",    # 结构分隔: 面板边框 / 网格线 / 分割条
-    "border": "#3f4554",           # 控件描边(按钮与输入框同一支)
-    "border_strong": "#4a5164",    # 结构描边: 卡片与面板分隔 / 弹层边框 / 滚动条滑块
-    "border_hover": "#5c6480",     # 描边悬停
+    "border_subtle": "#464c5a",    # 结构分隔: 面板边框 / 网格线 / 分割条
+    "border": "#4d5362",           # 控件描边(按钮与输入框同一支)
+    "border_strong": "#585f72",    # 结构描边: 卡片与面板分隔 / 弹层边框 / 滚动条滑块
+    "border_hover": "#6a728e",     # 描边悬停
 
     # 文字
     "text_strong": "#ffffff",
@@ -43,12 +43,12 @@ PALETTE = {
     "text_disabled": "#5c6270",    # 置灰控件文字
 
     # 主色
-    "accent": "#4f7dff",
-    "accent_hover": "#638cff",
-    "accent_pressed": "#3f6ceb",
-    "accent_dim": "#304067",       # 选中态底色 / 勾选态底色
-    "accent_text": "#8fb0ff",      # 主色底上的浅色文字
-    "accent_soft": "#7ba2ff",      # 进度条渐变末端
+    "accent": "#5a7ae0",
+    "accent_hover": "#6b89ea",
+    "accent_pressed": "#4c68c8",
+    "accent_dim": "#404e70",       # 选中态底色 / 勾选态底色
+    "accent_text": "#93aef0",      # 主色底上的浅色文字
+    "accent_soft": "#7d98f0",      # 进度条渐变末端
 
     # 危险
     "danger_bg": "#3a2329",
@@ -119,6 +119,12 @@ RADIUS = {
 FONT_SCALE = 1.0
 
 
+def _rgb_of(hex_color):
+    """rgba() 里要的是裸三元组, 不能带 #."""
+    c = QColor(hex_color)
+    return "{},{},{}".format(c.red(), c.green(), c.blue())
+
+
 def px(value):
     """Python 侧写死的像素尺寸(字号)走这里, 才能跟界面倍率一起变."""
     return max(1, int(round(value * FONT_SCALE)))
@@ -144,8 +150,7 @@ def _rebuild_tokens():
         "h_ctrl_dialog": "{}px".format(px(H_CTRL_DIALOG)),
         "pad_btn": "{}px {}px".format(px(PAD_BTN[0]), px(PAD_BTN[1])),
         "pad_field": "{}px {}px".format(px(PAD_FIELD[0]), px(PAD_FIELD[1])),
-        # rgba() 里要的是裸三元组, 不能带 #
-        "accent_rgb": "79,125,255",
+        "accent_rgb": _rgb_of(PALETTE["accent"]),
         "clip_w": "{}px".format(CLIP_THUMB_W),
         "clip_h": "{}px".format(CLIP_THUMB_H),
     })

@@ -421,7 +421,7 @@ class AnnotationBoxItem(QGraphicsRectItem):
         label_rect = self._chip_rect_local()
         self._draw_label(painter, label_rect)
         if self.isSelected():
-            painter.setPen(QPen(QColor("#4f7dff"), 1.0))
+            painter.setPen(QPen(theme.color("accent"), 1.0))
             painter.setBrush(QBrush(QColor("#ffffff")))
             s = self._compute_handle_size()
             self._handle_size = s
@@ -763,7 +763,7 @@ class AnnotationPolygonItem(QGraphicsPolygonItem):
         self._draw_label(painter, label_rect)
 
         if self.isSelected() and not self.is_floating():
-            painter.setPen(QPen(QColor("#4f7dff"), 1.0))
+            painter.setPen(QPen(theme.color("accent"), 1.0))
             painter.setBrush(QBrush(QColor("#ffffff")))
             s = self._compute_handle_size()
             self._handle_size = s

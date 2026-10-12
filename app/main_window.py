@@ -7,6 +7,7 @@ from app.widgets.dialog_buttons import resource_icon
 from ui.app import Ui_AppUI as MainUI
 from app.core import i18n, theme
 from app.core.constants import PAGE_SIZE
+from app.core.window_chrome import DialogChrome
 from app.core.utils import (setup_matplotlib_chinese, load_style_sheet,
                             project_root)
 from app.core.log import write_log
@@ -48,6 +49,9 @@ class App(QWidget, MainUI, LabelMixin, ProjectMixin, ImportExportMixin,
         # 全局装一次即可覆盖所有对话框里的下拉框; 引用要留着, 否则被回收
         self._combo_popup_flat = ComboPopupFlattener()
         QApplication.instance().installEventFilter(self._combo_popup_flat)
+        # 同理: 模态框压暗底窗与深色标题栏也挂在应用级, 各处对话框不用各自改
+        self._dialog_chrome = DialogChrome(QApplication.instance())
+        QApplication.instance().installEventFilter(self._dialog_chrome)
         self.init_widget()
         # 每页条数按视口算, 得等控件建好; 之后窗口尺寸一变 resizeEvent 会重算
         self._calc_page_size()
@@ -153,7 +157,6 @@ class App(QWidget, MainUI, LabelMixin, ProjectMixin, ImportExportMixin,
 
     def _setup_header_groups(self):
         """首页顶部工具栏分组: 标签区/统计区/训练区 用竖线分隔"""
-        self.train_btn.setProperty("class", "primary")
         self._tighten_gpu_pair()
 
         def vline():

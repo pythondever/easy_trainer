@@ -503,7 +503,7 @@ class ColorPickerDialog(QDialog):
         return self._color
 
     @staticmethod
-    def get_color(initial=QColor("#4f7dff"), parent=None):
+    def get_color(initial=theme.color("accent"), parent=None):
         dlg = ColorPickerDialog(initial, parent)
         if dlg.exec() == QDialog.Accepted:
             return dlg.selected_color()
