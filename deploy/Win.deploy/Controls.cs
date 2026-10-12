@@ -17,7 +17,7 @@ internal static class BackDrop
     }
 
     // 四边各外扩 1px 再填: 开抗锯齿后 GDI+ 把矩形最外一行/一列的覆盖率算成 50%(角上 25%),
-    // 而缓冲区初始全透明 -> 这圈半透明像素拷到屏幕上就是圆角外那几像素的"黑边". 外扩后可见像素全在矩形内部, 覆盖率回到 100%
+    // 而缓冲区初始全透明, 于是这圈半透明像素拷到屏幕上就是圆角外那几像素的"黑边". 外扩后可见像素全在矩形内部, 覆盖率回到 100%
     internal static void Fill(Control c, Graphics g, Brush brush)
     {
         var rc = c.ClientRectangle;

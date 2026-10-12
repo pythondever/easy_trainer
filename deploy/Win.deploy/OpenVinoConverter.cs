@@ -16,7 +16,7 @@ public sealed class IrResult
 }
 
 /// <summary>
-/// onnx -> OpenVINO IR(.xml + .bin). OpenVINO 的 C API 里没有序列化接口(只有绑定设备的
+/// onnx 转成 OpenVINO IR(.xml + .bin). OpenVINO 的 C API 里没有序列化接口(只有绑定设备的
 /// compiled blob), 所以走自编的 C++ 桥接 ovbridge.dll. 与 TensorRT 那条路的关键区别:
 /// IR 不绑显卡架构, 转换期既不需要 GPU 也不需要任何设备插件, 中文路径也吃得下.
 /// </summary>

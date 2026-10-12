@@ -27,7 +27,7 @@ TEXT_LABEL = "文本"     # 与软件内保留的文本标签一致
 
 def det_boxes(logits, orig_wh, bin_thr, box_thr):
     """
-    检测段输出 → [(x1, y1, x2, y2, 得分)]，已还原到原图像素。
+    检测段输出转成 [(x1, y1, x2, y2, 得分)]，已还原到原图像素。
     模型吐的是没过 sigmoid 的 logits（官方 predictor 里才做），这里补上；
     形状 (1, 1, h, w)，单通道概率图。开运算是照官方后处理抄的：不加的话
     概率图边缘的零星激活会碎成一堆 1~2 像素的假框。
@@ -54,7 +54,7 @@ def det_boxes(logits, orig_wh, bin_thr, box_thr):
 
 def rec_input(crop, width, height):
     """
-    字条 → 识别段输入。保长宽比缩到能放进 (height, width), 右侧与下方补零。
+    字条转成识别段输入。保长宽比缩到能放进 (height, width), 右侧与下方补零。
     训练侧是 T.Resize(..., preserve_aspect_ratio=True), 这里直接拉伸会把
     16:1 的字条横向压扁好几倍。
     """
@@ -73,7 +73,7 @@ def rec_input(crop, width, height):
 
 def ctc_decode(logits, vocab, blank):
     """
-    (T, C) logits → (文本, 置信度)。
+    (T, C) logits 得到 (文本, 置信度)。
     C = len(vocab) + 1，blank 在最后一维（不是第 0 维，常见 CTC 实现里
     blank 放首位，这里不是）。置信度取各时间步最高概率的最小值，和官方
     predictor 的口径一致。

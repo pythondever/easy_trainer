@@ -29,18 +29,26 @@ cmake --build build --config Release
 
 | 文件 | 作用 |
 |---|---|
-| `common.h` | 预处理（方形缩放 + ImageNet 归一化）、检测后处理、读类别表 |
-| `detect.cpp` | 目标检测，结果画到 `detect_result.jpg` |
-| `segment.cpp` | 实例分割，掩码叠加到 `segment_result.jpg` |
+| `common.h` | 预处理、检测后处理、读类别表（两套架构各一份） |
+| `detect.cpp` | 目标检测（架构选 Transformer），结果画到 `detect_result.jpg` |
+| `segment.cpp` | 实例分割（架构选 Transformer），掩码叠加到 `segment_result.jpg` |
+| `detect_cnn.cpp` | 目标检测（架构选 CNN），结果画到 `detect_cnn_result.jpg` |
+| `segment_cnn.cpp` | 实例分割（架构选 CNN），掩码叠加到 `segment_cnn_result.jpg` |
 | `classify.cpp` | 图像分类，打印 top-5 |
 
 ## 调用方式
 
 ```bash
-detect.exe   模型.onnx test.jpg ..\label_map.json
-segment.exe  模型.onnx test.jpg ..\label_map.json
-classify.exe 模型.onnx test.jpg ..\label_map.json
+detect.exe    模型.onnx test.jpg ..\label_map.json
+segment.exe   模型.onnx test.jpg ..\label_map.json
+detect_cnn.exe  模型.onnx test.jpg ..\label_map.json
+segment_cnn.exe 模型.onnx test.jpg ..\label_map.json
+classify.exe  模型.onnx test.jpg ..\label_map.json
 ```
+
+检测与分割按**训练时选的架构**分成两套模型，示例也跟着分：架构选 Transformer（RF-DETR）
+用 `detect.cpp` / `segment.cpp`，选 CNN（YOLO）用 `detect_cnn.cpp` / `segment_cnn.cpp`。
+两者的预处理（方形缩放 / 保比例补边）与输出层名称都不同，**不能互换**。
 
 分辨率不用改：示例自动从模型输入 shape 读取(`INPUT_SIZE`),阈值在各自 cpp 顶部的 `SCORE_THR` 常量里改。
 需要 GPU 时给 `Ort::SessionOptions` 追加 `OrtSessionOptionsAppendExecutionProvider_CUDA(opt, 0);`。

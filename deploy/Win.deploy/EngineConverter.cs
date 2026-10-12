@@ -53,7 +53,7 @@ public sealed class ProbeResult
 }
 
 /// <summary>
-/// onnx -> engine. 走 JYPPX 的 C ABI 桥接在进程内建 engine, 不用 trtexec
+/// onnx 转成 engine. 走 JYPPX 的 C ABI 桥接在进程内建 engine, 不用 trtexec
 /// (trtexec 是 developer tool, 许可上不能随产品分发, 见 skill 第 7.3 节).
 /// </summary>
 public static class EngineConverter
@@ -428,7 +428,7 @@ public static class EngineConverter
         return null;
     }
 
-    /// <summary>"images:1x3x640x640" 或 "images:min,opt,max" 三段 -> 输入名到尺寸段的映射.</summary>
+    /// <summary>"images:1x3x640x640" 或 "images:min,opt,max" 三段转成输入名到尺寸段的映射.</summary>
     private static Dictionary<string, int[][]> ParseShapes(IReadOnlyList<string> items, out string error)
     {
         error = "";

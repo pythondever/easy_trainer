@@ -14,7 +14,7 @@ set(ONNXRUNTIME_DIR "" CACHE PATH "ONNX Runtime 解压目录(含 include/ 与 li
 include_directories(${OpenCV_INCLUDE_DIRS} ${ONNXRUNTIME_DIR}/include)
 link_directories(${ONNXRUNTIME_DIR}/lib)
 
-foreach(target detect segment classify)
+foreach(target detect detect_cnn segment segment_cnn classify)
     add_executable(${target} ${target}.cpp)
     target_link_libraries(${target} ${OpenCV_LIBS} onnxruntime)
 endforeach()

@@ -5,10 +5,10 @@
    新增样式一律引用已有令牌，不要再写十六进制 —— 同一层级的近似色各自写死，
    想整体调深一档就得改十几处（历史上有过 #3a3f4e/#3a3f4d 只差 1 的两套边框色）。
    表面由深到浅：bg_sunken / bg_base / bg_panel / bg_raised / bg_control /
-   bg_control_2 / bg_hover；描边 border_subtle → border → border_strong →
-   border_hover；文字 text → text_2 → text_3 → text_faint → text_disabled。
+   bg_control_2 / bg_hover；描边 border_subtle、border、border_strong、
+   border_hover；文字 text、text_2、text_3、text_faint、text_disabled。
    控件盒模型：总高 = 内容高 + 上下 padding 6 + 边框 2。
-   主窗口 h_ctrl 18 → 32；弹窗 h_ctrl_dialog 22 → 36。
+   主窗口 h_ctrl 18 到 32；弹窗 h_ctrl_dialog 22 到 36。
    标注对话框是独立子主题（底色 bg_deep），有意比全局更暗。
    ============================================================ */
 
@@ -863,7 +863,7 @@ QDialog#TrainQueueDialog { background-color: {{bg_panel}}; }
 /* 队列面板:状态徽标跟随队列状态变色 */
 QDialog#TrainQueueDialog QLabel#queue_badge { color: {{text_3}}; }
 
-/* 面板内控件比对话框底亮一档(bg_panel → bg_control_2)，聚焦只换边框色不改变盒子尺寸 */
+/* 面板内控件比对话框底亮一档(bg_panel 到 bg_control_2)，聚焦只换边框色不改变盒子尺寸 */
 QDialog#TrainDialog QLineEdit,
 QDialog#TrainDialog QComboBox {
     background-color: {{bg_control_2}};
@@ -951,7 +951,7 @@ QLabel[class~="dialogTitle"] {
     font-size: {{font_xl}};
     font-weight: bold;
 }
-/* 分组标题：比字段名的 13px 大两号，撑起「组 → 字段」的层次 */
+/* 分组标题：比字段名的 13px 大两号，撑起分组与字段的层次 */
 QLabel[class~="dialogSectionTitle"] {
     color: {{accent_text}};
     font-size: {{font_xl}};

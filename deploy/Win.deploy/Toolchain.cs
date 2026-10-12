@@ -185,7 +185,7 @@ public static class Toolchain
 
     private static string? SmOf(string fileName)
     {
-        // nvinfer_builder_resource_sm89_10.dll -> sm89
+        // 从 nvinfer_builder_resource_sm89_10.dll 的文件名里取 sm89
         var t = fileName.Replace("nvinfer_builder_resource_", "").Replace("_10.dll", "");
         return t.Length > 0 ? t : null;
     }

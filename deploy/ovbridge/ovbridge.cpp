@@ -1,4 +1,4 @@
-// OpenVINO 转换桥接: onnx -> IR(.xml + .bin).
+// OpenVINO 转换桥接: onnx 转成 IR(.xml + .bin).
 //
 // deploy 是 C# 程序, 而 OpenVINO 的 C API(openvino_c.dll)里没有序列化接口
 // (只有导出的 compiled blob, 那是绑定设备的, 不能当交付格式), 所以自己封一层 C++.

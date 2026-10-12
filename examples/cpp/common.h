@@ -15,6 +15,10 @@
 #include <onnxruntime_cxx_api.h>
 
 #ifdef _WIN32
+// NOMINMAX: windef.h 会把 min/max 定义成宏, 吃掉后面 CNN 分支的 std::min/std::max
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
 #include <windows.h>
 #include <shellapi.h>
 #pragma comment(lib, "shell32.lib")
@@ -30,7 +34,7 @@ struct Det {
 static const float MEAN[3] = {0.485f, 0.456f, 0.406f};
 static const float STD[3] = {0.229f, 0.224f, 0.225f};
 
-// BGR 图 → NCHW float, 方形缩放到 size（不保持宽高比, 与训练一致）
+// BGR 图转成 NCHW float, 方形缩放到 size（不保持宽高比, 与训练一致）
 inline std::vector<float> preprocess(const cv::Mat& bgr, int size) {
     cv::Mat rgb, resized, f32;
     cv::cvtColor(bgr, rgb, cv::COLOR_BGR2RGB);
@@ -52,7 +56,7 @@ inline std::vector<float> preprocess(const cv::Mat& bgr, int size) {
 
 inline float sigmoid(float v) { return 1.0f / (1.0f + std::exp(-v)); }
 
-// dets [300,4] (cx cy w h 归一化) + labels [300, C+1] logits → 原图像素框
+// dets [300,4] (cx cy w h 归一化) + labels [300, C+1] logits 转成原图像素框
 // 最后一列是「无目标」, 只在前 C 列取类别; 300 个候选已端到端去重, 不需要 NMS
 inline std::vector<Det> decodeDets(const float* dets, const float* labels,
                                    int numQueries, int numClasses,
@@ -81,6 +85,216 @@ inline std::vector<Det> decodeDets(const float* dets, const float* labels,
         res.push_back(d);
     }
     return res;
+}
+
+// ---- CNN(YOLO) 分支: 预处理与输出约定都和上面那套不同, 别混用 ----
+
+static const int PAD_COLOR = 114;   // letterbox 的补边色, 与 ultralytics 一致
+static const int MASK_DIM = 32;     // 分割 head 输出的掩码系数个数
+
+// letterbox 的几何量, 还原坐标时按它反算
+struct LetterBox {
+    float ratio = 1.0f;
+    int left = 0, top = 0, size = 0, innerW = 0, innerH = 0;
+};
+
+// BGR 图转成 CNN 分支的模型输入: 保比例缩放到 size 后居中补灰边.
+// 不像 preprocess 那样直接拉成方形, 拉伸会让框的位置系统性偏移.
+inline std::vector<float> letterbox(const cv::Mat& bgr, int size, LetterBox& geo) {
+    int h = bgr.rows, w = bgr.cols;
+    float ratio = std::min(size / (float)h, size / (float)w);
+    // nearbyint 走默认的「四舍六入五取偶」, 与 Python 的 round 一致
+    int innerW = (int)std::nearbyint(w * ratio);
+    int innerH = (int)std::nearbyint(h * ratio);
+    // 减 0.1 再取整是照 ultralytics 的 LetterBox 抄的, 补边落半像素会让框整体偏一格
+    int left = (int)std::nearbyint((size - innerW) / 2.0 - 0.1);
+    int top = (int)std::nearbyint((size - innerH) / 2.0 - 0.1);
+
+    cv::Mat inner, padded, rgb, f32;
+    cv::resize(bgr, inner, cv::Size(innerW, innerH), 0, 0, cv::INTER_LINEAR);
+    cv::copyMakeBorder(inner, padded, top, size - innerH - top, left,
+                       size - innerW - left, cv::BORDER_CONSTANT,
+                       cv::Scalar(PAD_COLOR, PAD_COLOR, PAD_COLOR));
+    cv::cvtColor(padded, rgb, cv::COLOR_BGR2RGB);
+    rgb.convertTo(f32, CV_32FC3, 1.0 / 255.0);
+
+    std::vector<float> out(3 * size * size);
+    for (int y = 0; y < size; ++y) {
+        for (int x = 0; x < size; ++x) {
+            cv::Vec3f p = f32.at<cv::Vec3f>(y, x);
+            for (int c = 0; c < 3; ++c)
+                out[c * size * size + y * size + x] = p[c];
+        }
+    }
+    geo.ratio = ratio;
+    geo.left = left;
+    geo.top = top;
+    geo.size = size;
+    geo.innerW = innerW;
+    geo.innerH = innerH;
+    return out;
+}
+
+inline float clampf(float v, float lo, float hi) {
+    return v < lo ? lo : (v > hi ? hi : v);
+}
+
+// rows x cols 的行优先布局里取 (r, c)
+inline int yoloIdx(int r, int c, int cols) { return r * cols + c; }
+
+inline float boxIoU(const std::vector<float>& a, int ai,
+                    const std::vector<float>& b, int bi) {
+    float ax1 = a[ai * 4], ay1 = a[ai * 4 + 1];
+    float ax2 = a[ai * 4 + 2], ay2 = a[ai * 4 + 3];
+    float bx1 = b[bi * 4], by1 = b[bi * 4 + 1];
+    float bx2 = b[bi * 4 + 2], by2 = b[bi * 4 + 3];
+    float iw = std::max(0.0f, std::min(ax2, bx2) - std::max(ax1, bx1));
+    float ih = std::max(0.0f, std::min(ay2, by2) - std::max(ay1, by1));
+    float inter = iw * ih;
+    float areaA = (ax2 - ax1) * (ay2 - ay1);
+    float areaB = (bx2 - bx1) * (by2 - by1);
+    return inter / std::max(areaA + areaB - inter, 1e-9f);
+}
+
+// 单类 NMS, 返回在入参里的下标
+inline std::vector<int> nmsOne(const std::vector<float>& boxes, int count,
+                               const std::vector<float>& scores, float thr) {
+    std::vector<int> order(count);
+    for (int k = 0; k < count; ++k) order[k] = k;
+    std::stable_sort(order.begin(), order.end(),
+                     [&scores](int a, int b) { return scores[a] > scores[b]; });
+    std::vector<int> keep;
+    while (!order.empty()) {
+        int i = order[0];
+        keep.push_back(i);
+        if (order.size() == 1) break;
+        std::vector<int> next;
+        for (size_t k = 1; k < order.size(); ++k)
+            if (boxIoU(boxes, i, boxes, order[k]) <= thr) next.push_back(order[k]);
+        order.swap(next);
+    }
+    return keep;
+}
+
+// 检测输出 output0 解码成原图像素框.
+// rows x cols 里前 4 行是 (cx, cy, w, h) 像素值(相对 letterbox 后的输入图), 之后每行
+// 一个类别分数(导出时已过 sigmoid, 不用再算); cols 是原生 anchor 点, 同一目标会命中
+// 多个, 必须自己按类去重. Det.query 记的是 anchor 下标, 分割按它取掩码.
+inline std::vector<Det> decodeYolo(const float* det, int rows, int cols, int ncls,
+                                   const LetterBox& geo, int imgW, int imgH,
+                                   float scoreThr, float iouThr) {
+    (void)rows;
+    std::vector<Det> res;
+    std::vector<int> picked, clsId;
+    std::vector<float> scores;
+    for (int i = 0; i < cols; ++i) {
+        int best = 0;
+        float bs = det[yoloIdx(4, i, cols)];
+        for (int c = 1; c < ncls; ++c) {
+            float p = det[yoloIdx(4 + c, i, cols)];
+            if (p > bs) {
+                bs = p;
+                best = c;
+            }
+        }
+        if (bs >= scoreThr) {
+            picked.push_back(i);
+            clsId.push_back(best);
+            scores.push_back(bs);
+        }
+    }
+    if (picked.empty()) return res;
+
+    // 先还原到原图坐标, 下面的 NMS 在还原后的框上算
+    std::vector<float> xyxy(picked.size() * 4);
+    for (size_t k = 0; k < picked.size(); ++k) {
+        int i = picked[k];
+        float cx = det[yoloIdx(0, i, cols)], cy = det[yoloIdx(1, i, cols)];
+        float bw = det[yoloIdx(2, i, cols)], bh = det[yoloIdx(3, i, cols)];
+        xyxy[k * 4 + 0] = clampf((cx - bw / 2 - geo.left) / geo.ratio, 0, (float)imgW);
+        xyxy[k * 4 + 1] = clampf((cy - bh / 2 - geo.top) / geo.ratio, 0, (float)imgH);
+        xyxy[k * 4 + 2] = clampf((cx + bw / 2 - geo.left) / geo.ratio, 0, (float)imgW);
+        xyxy[k * 4 + 3] = clampf((cy + bh / 2 - geo.top) / geo.ratio, 0, (float)imgH);
+    }
+
+    // 按类别各做一次 NMS, 最后按下标升序回排, 与 Python/C# 示例同序
+    std::vector<int> classes(clsId);
+    std::sort(classes.begin(), classes.end());
+    classes.erase(std::unique(classes.begin(), classes.end()), classes.end());
+    std::vector<int> keep;
+    for (size_t ci = 0; ci < classes.size(); ++ci) {
+        std::vector<int> subset;
+        for (size_t k = 0; k < clsId.size(); ++k)
+            if (clsId[k] == classes[ci]) subset.push_back((int)k);
+        std::vector<float> subBoxes(subset.size() * 4), subScores(subset.size());
+        for (size_t k = 0; k < subset.size(); ++k) {
+            for (int d = 0; d < 4; ++d)
+                subBoxes[k * 4 + d] = xyxy[subset[k] * 4 + d];
+            subScores[k] = scores[subset[k]];
+        }
+        std::vector<int> kk = nmsOne(subBoxes, (int)subset.size(), subScores, iouThr);
+        for (size_t k = 0; k < kk.size(); ++k) keep.push_back(subset[kk[k]]);
+    }
+    std::sort(keep.begin(), keep.end());
+    for (size_t k = 0; k < keep.size(); ++k) {
+        int kk = keep[k];
+        Det d;
+        d.x1 = xyxy[kk * 4 + 0];
+        d.y1 = xyxy[kk * 4 + 1];
+        d.x2 = xyxy[kk * 4 + 2];
+        d.y2 = xyxy[kk * 4 + 3];
+        d.score = scores[kk];
+        d.cls = clsId[kk];
+        d.query = picked[kk];
+        res.push_back(d);
+    }
+    return res;
+}
+
+// 分割输出的第二路: 原图尺寸的掩码(前景 255).
+// 掩码由 output0 尾部 MASK_DIM 行系数与 output1 那 MASK_DIM 张低分辨率原型图线性组合
+// 再补 sigmoid 得到(尾部系数没经过 sigmoid); 组合后要按 letterbox 的补边裁掉再缩回原图,
+// 直接拉伸会整体位移.
+inline std::vector<cv::Mat> decodeYoloMasks(
+        const float* det, int cols, const float* proto, int dim, int mh, int mw,
+        int ncls, const LetterBox& geo, const std::vector<Det>& dets, int imgW,
+        int imgH, float maskThr) {
+    std::vector<cv::Mat> masks;
+    if (dets.empty()) return masks;
+    int plane = mh * mw;
+    for (size_t n = 0; n < dets.size(); ++n) {
+        int q = dets[n].query;
+        std::vector<float> combined(plane, 0.0f);
+        for (int k = 0; k < dim; ++k) {
+            float w = det[yoloIdx(4 + ncls + k, q, cols)];
+            if (w == 0.0f) continue;
+            int off = k * plane;
+            for (int p = 0; p < plane; ++p) combined[p] += w * proto[off + p];
+        }
+        for (int p = 0; p < plane; ++p) combined[p] = sigmoid(combined[p]);
+
+        // 变量名不能叫 small: rpcndr.h 里 small 是 char 的宏
+        cv::Mat planeImg(mh, mw, CV_32F, combined.data());
+        cv::Mat up, back;
+        cv::resize(planeImg, up, cv::Size(geo.size, geo.size), 0, 0, cv::INTER_LINEAR);
+        cv::Mat crop = up(cv::Rect(geo.left, geo.top, geo.innerW, geo.innerH));
+        cv::resize(crop, back, cv::Size(imgW, imgH), 0, 0, cv::INTER_LINEAR);
+
+        cv::Mat keep = cv::Mat::zeros(imgH, imgW, CV_8U);
+        int ys = std::max((int)dets[n].y1, 0);
+        int ye = std::min((int)std::ceil(dets[n].y2), imgH);
+        int xs = std::max((int)dets[n].x1, 0);
+        int xe = std::min((int)std::ceil(dets[n].x2), imgW);
+        if (ye > ys && xe > xs) {
+            // 阈值比较用 CMP_GE, 与 Python 的 >= 对齐(OpenCV 的 threshold 是严格大于)
+            cv::Mat roi = back(cv::Rect(xs, ys, xe - xs, ye - ys));
+            cv::Mat bin;
+            cv::compare(roi, maskThr, bin, cv::CMP_GE);
+            bin.copyTo(keep(cv::Rect(xs, ys, xe - xs, ye - ys)));
+        }
+        masks.push_back(keep);
+    }
+    return masks;
 }
 
 // 以下路径/IO 一律以 UTF-8 字符串为准, 需要系统 API 时再转宽字符。
@@ -277,7 +491,7 @@ inline std::string readJsonString(const std::string& t, size_t& i, bool& ok) {
     return out;
 }
 
-// {"类名": id} → 按 id 下标展开的类名列表(缺号留空串, 保证 names[id] 取得到)
+// {"类名": id} 转成按 id 下标展开的类名列表(缺号留空串, 保证 names[id] 取得到)
 inline std::vector<std::string> parseLabelMapJson(const std::string& t) {
     std::vector<std::pair<int, std::string> > items;
     size_t i = t.find('{');
