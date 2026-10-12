@@ -30,6 +30,11 @@ MAX_ROWS = 10       # 单个项目最多铺开的行数, 超出后在卡片内�
 ROLE = Qt.UserRole
 
 
+def _is_placeholder(item):
+    """空项目的占位行, 不响应点击/双击/右键."""
+    return bool((item.data(ROLE) or {}).get("placeholder"))
+
+
 DOT_SIZE = 6        # 数据集行缓存状态圆点直径
 DOT_GAP = 5         # 圆点与进度色块的间距
 
@@ -88,6 +93,20 @@ class DatasetRowDelegate(QStyledItemDelegate):
 
         p.save()
         p.setRenderHint(QPainter.Antialiasing)
+        # 空项目的占位行: 只留一句灰字, 图标/数值/状态点都不画
+        if data.get("placeholder"):
+            f = QFont()
+            f.setPixelSize(theme.px(12))
+            p.setFont(f)
+            p.setPen(theme.color("text_faint"))
+            # 这句在别的语言里比中文长, 别撑出卡片
+            avail = row.width() - 28
+            text = QFontMetrics(f).elidedText(data.get("text") or "",
+                                              Qt.ElideRight, max(avail, 30))
+            p.drawText(QRectF(row.x() + 28, row.y(), avail, row.height()),
+                       Qt.AlignVCenter | Qt.AlignLeft, text)
+            p.restore()
+            return
         path = QPainterPath()
         path.addRoundedRect(QRectF(row), 6, 6)
         if selected:
@@ -335,11 +354,21 @@ class ProjectCard(QFrame):
         # 上下留白走 list 的 viewport margin 而不是占位 QWidget:
         # 全局 QWidget 底色(#181a20)会把占位块染成一条黑缝
         self.list = DatasetListWidget(self)
-        for ds_name, labeled, total in datasets:
+        if datasets:
+            for ds_name, labeled, total in datasets:
+                item = QListWidgetItem()
+                item.setData(ROLE, {"project": project, "dataset": ds_name,
+                                    "labeled": labeled, "total": total,
+                                    "task": None,
+                                    "loaded": (project, ds_name) in (loaded or set())})
+                self.list.addItem(item)
+        else:
+            # 空项目不能什么都不摆: list 固定留 LIST_PAD_Y*2 的高度, 展开后
+            # 卡片只会多出一条空白. 摆一行灰字, 也顺带说明展开箭头为何是空的
             item = QListWidgetItem()
-            item.setData(ROLE, {"project": project, "dataset": ds_name,
-                                "labeled": labeled, "total": total, "task": None,
-                                "loaded": (project, ds_name) in (loaded or set())})
+            item.setData(ROLE, {"placeholder": True,
+                                "text": self.tr("暂无数据集")})
+            item.setFlags(Qt.ItemIsEnabled)
             self.list.addItem(item)
         self.list.sync_height()
         v.addWidget(self.list)
@@ -434,18 +463,22 @@ class ProjectSidebar(QWidget):
         self.adjustSize()
 
     def _on_row_context(self, item, global_pos):
-        if item is None:
+        if item is None or _is_placeholder(item):
             return
         d = item.data(ROLE)
         self.datasetContextMenu.emit(d["project"], d["dataset"], global_pos)
 
     def _on_row_clicked(self, item):
+        if _is_placeholder(item):
+            return
         # 各卡片是独立列表, 需手动清掉其它卡片的高亮, 保证全局只有一个选中项
         self.clear_selection(exclude=item.listWidget())
         d = item.data(ROLE)
         self.datasetClicked.emit(d["project"], d["dataset"])
 
     def _on_row_double_clicked(self, item):
+        if _is_placeholder(item):
+            return
         d = item.data(ROLE)
         self.datasetDoubleClicked.emit(d["project"], d["dataset"])
 
@@ -475,7 +508,7 @@ class ProjectSidebar(QWidget):
             return None
         for i in range(card.list.count()):
             item = card.list.item(i)
-            if item.data(ROLE)["dataset"] == dataset:
+            if item.data(ROLE).get("dataset") == dataset:
                 return item
         return None
 
@@ -527,7 +560,7 @@ class ProjectSidebar(QWidget):
     def current_dataset(self):
         for card in self.cards.values():
             item = card.list.currentItem()
-            if item is not None:
+            if item is not None and not _is_placeholder(item):
                 d = item.data(ROLE)
                 return d["project"], d["dataset"]
         return None

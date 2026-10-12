@@ -3196,6 +3196,14 @@ Bao gồm: {}</translation>
     </message>
 </context>
 <context>
+    <name>ProjectCard</name>
+    <message>
+        <location filename="../app/widgets/project_sidebar.py" line="370"/>
+        <source>暂无数据集</source>
+        <translation>Chưa có bộ dữ liệu</translation>
+    </message>
+</context>
+<context>
     <name>ProjectMixin</name>
     <message>
         <location filename="../app/mixins/project_mixin.py" line="32"/>
@@ -3400,7 +3408,7 @@ Bộ dữ liệu nguồn sẽ bị xóa hết sau khi di chuyển.</translation>
 <context>
     <name>ProjectSidebar</name>
     <message>
-        <location filename="../app/widgets/project_sidebar.py" line="424"/>
+        <location filename="../app/widgets/project_sidebar.py" line="453"/>
         <source>{} 个项目 · {} 个数据集</source>
         <translation>{} dự án · {} bộ dữ liệu</translation>
     </message>
