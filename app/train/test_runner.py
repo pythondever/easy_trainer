@@ -184,7 +184,7 @@ def _read_labelme_label(js_path):
     return out
 
 
-def _read_label_label(label_dir, img_path):
+def _read_label_label(label_dir, img_path, iw=None, ih=None):
     """
     按图片同名找标签, 优先 .txt (YOLO) 其次 .json (labelme).
     返回 (gts, from_yolo): gts 为 [(cls, 像素[x1,y1,x2,y2], poly)], poly 是
@@ -193,8 +193,9 @@ def _read_label_label(label_dir, img_path):
     误检, 看着像模型崩了其实是读不到标注.
     """
     base = os.path.splitext(os.path.basename(img_path))[0]
-    with Image.open(img_path) as im:
-        iw, ih = im.size
+    if iw is None or ih is None:
+        with Image.open(img_path) as im:
+            iw, ih = im.size
     txt = os.path.join(label_dir, base + ".txt")
     if os.path.exists(txt):
         return _read_yolo_label(txt, iw, ih), True
@@ -237,15 +238,17 @@ def _largest_ring(poly):
         return None
 
 
-def _write_labelme_json(img_path, items):
+def _write_labelme_json(img_path, items, width=None, height=None):
     """
     写 labelme JSON 到图像同目录, 文件名与图片同名.
     items: [([x1,y1,x2,y2], cls, poly)], poly 非空时写 polygon, 否则 rectangle.
     分割模型导成矩形会把 mask 轮廓丢掉, 回到标注工具里只剩个框没法用.
     labelme 一个 shape 只能带一个多边形, 多连通的 mask 取面积最大的那块.
     """
-    with Image.open(img_path) as im:
-        iw, ih = im.size
+    iw, ih = width, height
+    if iw is None or ih is None:
+        with Image.open(img_path) as im:
+            iw, ih = im.size
     shapes = []
     for b, cn, poly in items:
         ring = _largest_ring(poly)
@@ -500,20 +503,24 @@ def main():
             preds = []
             class_names = []
             preds_are_ids = False
+        need_size = has_label or (output_labels and preds)
+        iw = ih = 0
+        if need_size:
+            with Image.open(img_path) as im:
+                iw, ih = im.size
         if output_labels and preds:
             try:
                 _write_labelme_json(
                     img_path,
                     [(b, class_names[i] if i < len(class_names) else "", p)
-                     for i, (_, b, _, p) in enumerate(preds)])
+                     for i, (_, b, _, p) in enumerate(preds)],
+                    width=iw, height=ih)
             except Exception as exc:
                 print("[test] " + QC.translate(
                     "TestRunner", "输出标注失败 {}: {}").format(
                         os.path.basename(img_path), exc), flush=True)
         if has_label:
-            with Image.open(img_path) as im:
-                iw, ih = im.size
-            gts, gts_are_ids = _read_label_label(label_dir, img_path)
+            gts, gts_are_ids = _read_label_label(label_dir, img_path, iw=iw, ih=ih)
             if not gts:
                 _miss += 1
             if use_cls is None and gts and preds:
