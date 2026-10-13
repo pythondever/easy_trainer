@@ -124,11 +124,17 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("-t", "--target", default=os.path.join(ROOT, "dist", "program"),
                     help="输出目录(默认 dist/program)")
+    ap.add_argument("--clean", action="store_true",
+                    help="连build/ 中间目录一起删, 从零全量编译(默认保留以走增量)")
     args = ap.parse_args()
 
     target = os.path.abspath(args.target)
+    # 保留 build/ 才能让 cythonize 与 build_ext 都跳过没改过的模块.
+    # dist/program 是最终产物目录, 必须每次清, 否则残留上次的旧 pyd.
     if os.path.exists(target):
         shutil.rmtree(target)
+    if args.clean and os.path.isdir(BUILD_DIR):
+        shutil.rmtree(BUILD_DIR, ignore_errors=True)
 
     exts = []
     for pkg in ("app", "ui"):
@@ -144,10 +150,9 @@ def main():
     copy_plain(os.path.join(ROOT, "ui"), target)
     copy_data(target)
 
-    compile_args = [] if platform.system() == "Windows" else ["-Os"]
     cy_modules = cythonize(
         exts,
-        nthreads=max(4, os.cpu_count() or 4),
+        nthreads=0,
         build_dir=BUILD_DIR,
         quiet=False,
         compiler_directives={
@@ -156,10 +161,12 @@ def main():
         },
     )
     sys.argv = [sys.argv[0]]
+    jobs = max(4, os.cpu_count() or 4)
     setup(name="easy_trainer_pyd", ext_modules=cy_modules,
           script_args=["build_ext"],
           options={
-              "build_ext": {"inplace": False},
+              # parallel 让 distutils 并行编译 .c -> .obj, 这是耗时大头
+              "build_ext": {"inplace": False, "parallel": jobs},
               "build": {"build_base": BUILD_DIR},
           })
 
@@ -183,7 +190,8 @@ def main():
             shutil.copy2(src, dst)
             print("  pyd:", os.path.relpath(dst, target))
 
-    shutil.rmtree(BUILD_DIR, ignore_errors=True)
+    # 中间目录留着: 下次编译靠它做增量, 只改一个模块时不用重编全部 114 个.
+    # 真想彻底重来用 build.py --clean.
     print("program 根目录就绪: {}".format(target))
     zip_out = os.path.join(os.path.dirname(target), "program.zip")
     count = 0
