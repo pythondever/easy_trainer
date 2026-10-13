@@ -687,6 +687,9 @@ class CompareDialog(QDialog):
         QTimer.singleShot(0, self._fit_diff_height)
 
     def eventFilter(self, obj, event):
+        # PySide6 6.9.1 偶尔把 QStandardItem 当 event 投过来, 直接 event.type() 是空指针解引用
+        if not isinstance(event, QEvent):
+            return False
         if obj is self.ui.diff_scroll.viewport() \
                 and event.type() == QEvent.Resize:
             QTimer.singleShot(0, self._fit_diff_height)

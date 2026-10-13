@@ -63,6 +63,9 @@ class DialogChrome(QObject):
         self._dimmed = set()   # 加过遮罩的对话框, 取消时靠它配对
 
     def eventFilter(self, obj, event):
+        # PySide6 6.9.1 偶尔把 QStandardItem 当 event 投过来, 直接 event.type() 是空指针解引用
+        if not isinstance(event, QEvent):
+            return False
         kind = event.type()
         if isinstance(obj, QDialog):
             if kind == QEvent.Show:

@@ -105,6 +105,9 @@ class _ClickToggleFilter(QObject):
         self._combo = combo
 
     def eventFilter(self, obj, event):
+        # PySide6 6.9.1 偶尔把 QStandardItem 当 event 投过来, 直接 event.type() 是空指针解引用
+        if not isinstance(event, QEvent):
+            return False
         if event.type() == QEvent.MouseButtonPress and event.button() == Qt.LeftButton:
             view = self._combo.view()
             if view is not None:

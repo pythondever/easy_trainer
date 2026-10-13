@@ -103,6 +103,9 @@ class MetricTabs(QWidget):
             self._scroll.setFixedHeight(h)
 
     def eventFilter(self, obj, event):
+        # PySide6 6.9.1 偶尔把 QStandardItem 当 event 投过来, 直接 event.type() 是空指针解引用
+        if not isinstance(event, QEvent):
+            return False
         if obj is self._scroll.viewport():
             if event.type() == QEvent.Wheel:
                 bar = self._scroll.horizontalScrollBar()

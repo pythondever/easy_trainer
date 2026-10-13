@@ -1028,6 +1028,9 @@ class TrainDialog(QDialog):
 
     def eventFilter(self, obj, event):
         """标题行整行可点: 只有左边箭头是小按钮, 点标题或分隔线在这里补一次切换."""
+        # PySide6 6.9.1 偶尔把 QStandardItem 当 event 投过来, 直接 event.type() 是空指针解引用
+        if not isinstance(event, QEvent):
+            return False
         if (obj is getattr(self.ui, "section_aug_wrap", None)
                 and event.type() == QEvent.MouseButtonRelease):
             btn = getattr(self.ui, "aug_toggle_btn", None)

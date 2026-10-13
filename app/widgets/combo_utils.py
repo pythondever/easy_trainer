@@ -28,6 +28,9 @@ class ClickToPopupFilter(QObject):
         self._combo = combo
 
     def eventFilter(self, obj, event):
+        # PySide6 6.9.1 偶尔把 QStandardItem 当 event 投过来, 直接 event.type() 是空指针解引用
+        if not isinstance(event, QEvent):
+            return False
         if event.type() == QEvent.MouseButtonPress and event.button() == Qt.LeftButton:
             # 事件过滤器跑在 Qt 的禁用判定之前, 不自己挡一下的话置灰的下拉照样能点开
             if not self._combo.isEnabled():
