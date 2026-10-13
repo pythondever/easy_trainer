@@ -84,6 +84,11 @@ _CSV_FIELDS = ("epoch", "time", "val/mAP_50", "val/mAP_50_95",
                "val/segm_mAP_50", "val/segm_mAP_50_95",
                "train/loss", "val/loss")
 
+# 每类指标的列名沿用 rf-detr 那套 val/<字段>/<类名>: train_worker 的 CSV 通道是
+# 按前缀认列的, 所以这边只要把列写出来, 从指标面板到落盘一整条下游都不用动
+_PER_CLASS_FIELDS = (("Precision", "val/Precision/"), ("Recall", "val/Recall/"),
+                     ("F1", "val/F1/"), ("AP50-95", "val/AP/"))
+
 # ultralytics 列映射到内部列. (B)=box, (M)=mask; 内部沿用 rf-detr 那套名字
 _BOX_MAP = (("metrics/mAP50(B)", "val/mAP_50"),
             ("metrics/mAP50-95(B)", "val/mAP_50_95"),
@@ -120,6 +125,36 @@ def _f1(row):
     return round(2 * p * r / (p + r), 6) if (p + r) > 0 else 0.0
 
 
+def _collect_per_class(trainer, task):
+    """
+    当前这一轮的每类指标: {类名: {字段: 值}}, 取不到给 {}.
+
+    只能从 validator 的 metrics 对象上抄: ultralytics 训练期只把汇总列写进
+    results.csv, 逐类明细既不入表也不打屏(进度条那行只有表头), 事后无从补救.
+    分割取 mask 那一组, 与主指标 mask_mAP@50 的口径一致; Metric 里没有 AR,
+    那一列只能留空. 出任何意外都返回空, 不能让它挡住指标刷新.
+    """
+    try:
+        metrics = trainer.validator.metrics
+        names = getattr(metrics, "names", None) or {}
+        group = metrics.seg if task == "segment" else metrics.box
+        index = list(group.ap_class_index)
+    except AttributeError:
+        return {}
+    out = {}
+    for i, cid in enumerate(index):
+        try:
+            out[str(names.get(int(cid), cid))] = {
+                "Precision": round(float(group.p[i]), 6),
+                "Recall": round(float(group.r[i]), 6),
+                "F1": round(float(group.f1[i]), 6),
+                "AP50-95": round(float(group.ap[i]), 6),
+            }
+        except (IndexError, TypeError, ValueError):
+            continue
+    return out
+
+
 def _to_internal(row, task):
     """results.csv 的一行转成内部 metrics.csv 的一行(time 原样带过, 供下游看耗时)."""
     out = {"time": row.get("time", "")}
@@ -148,15 +183,29 @@ def _read_results(path):
         return []
 
 
+def _per_class_columns(rows):
+    """行里出现过的每类列; 按字段顺序排, 同类指标挨在一起, 类名按字典序."""
+    order = {f: i for i, (f, _) in enumerate(_PER_CLASS_FIELDS)}
+    hit = set()
+    for row in rows:
+        for key in row:
+            if key.startswith(tuple(p for _, p in _PER_CLASS_FIELDS)):
+                hit.add(key)
+    return sorted(hit, key=lambda k: (order.get(k.split("/")[1], 99), k))
+
+
 def _write_metrics(rows, dst):
     """
     整体重写 metrics.csv(临时文件 + replace).
     下游 train_worker 每 5 秒全量重解析这个文件, 按 mtime 判变化; 半截文件会被
     它的"末行没有换行"检查挡掉, 这里再保证替换是原子的.
+    每类列是动态的(训练类型、采集到哪些类都算, 详见 _collect_per_class),
+    所以表头按本批实际出现的列拼, 固定表头会把它们当多余列丢掉.
     """
     tmp = dst + ".tmp"
     with open(tmp, "w", encoding="utf-8", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=_CSV_FIELDS,
+        writer = csv.DictWriter(f, fieldnames=list(_CSV_FIELDS)
+                                + _per_class_columns(rows),
                                 extrasaction="ignore")
         writer.writeheader()
         for i, row in enumerate(rows):
@@ -167,11 +216,21 @@ def _write_metrics(rows, dst):
     os.replace(tmp, dst)
 
 
-def _sync_metrics(csv_path, metrics_path, task):
-    """把 ultralytics 的 results.csv 转写成内部 metrics.csv, 返回行数."""
+def _sync_metrics(csv_path, metrics_path, task, per_class=None):
+    """
+    把 ultralytics 的 results.csv 转写成内部 metrics.csv, 返回行数.
+    per_class 是 {epoch(1 起): {类名: {字段: 值}}}; 行序与 results.csv 一致
+    (第 i 行就是第 i+1 轮), 所以按 i+1 取. 有则补成 val/<字段>/<类名> 列.
+    """
     rows = [_to_internal(r, task) for r in _read_results(csv_path)]
     if not rows:
         return 0
+    for i, row in enumerate(rows):
+        for label, vals in (per_class or {}).get(i + 1, {}).items():
+            for field, prefix in _PER_CLASS_FIELDS:
+                v = _f(vals.get(field))
+                if v is not None:
+                    row[prefix + label] = round(v, 6)
     _write_metrics(rows, metrics_path)
     return len(rows)
 
@@ -218,15 +277,25 @@ def main():
 
     metrics_path = os.path.join(ts_dir, "metrics.csv")
     yolo_csv = os.path.join(ts_dir, "results.csv")
+    # 逐类指标攒在这里, 每次刷盘跟着全量重写; 键是 epoch(1 起), 与 results.csv 对齐
+    per_class_by_epoch = {}
 
     def _flush_metrics(trainer=None):
-        n = _sync_metrics(yolo_csv, metrics_path, task)
+        n = _sync_metrics(yolo_csv, metrics_path, task, per_class_by_epoch)
         if n and trainer is not None:
             # 收尾那轮 final_eval 也会回调, trainer.epoch 已经走到总轮数之上
             done = min(trainer.epoch + 1, trainer.epochs)
             print("[train] EPOCH {}/{}".format(done, trainer.epochs), flush=True)
 
     def _on_fit_epoch_end(trainer):
+        epoch = int(trainer.epoch) + 1
+        # 收尾的 final_eval 会再回调一次, 那时 trainer.epoch 已经越过总轮数,
+        # 这一轮在 results.csv 里没有行, 收进去只会在合并时错位
+        if 0 < epoch <= int(trainer.epochs):
+            pc = _collect_per_class(trainer, task)
+            if pc:
+                # save_metrics 先于本回调, 此刻结果表的 epoch 那一行已经写好了
+                per_class_by_epoch[epoch] = pc
         _flush_metrics(trainer)
 
     model = YOLO(weights)
