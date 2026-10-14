@@ -589,7 +589,8 @@ class TrainDialog(QDialog):
         # 内容高是按 sizeHint 估的, 真排下来会差一两像素, 不留余量默认尺寸下就平白多出滚动条
         want = (ui.scrollAreaWidgetContents.sizeHint().height() + fixed + spacing
                 + margin.top() + margin.bottom() + 6)
-        self.resize(740, max(520, want))
+        # 宽度沿用当前值: 写死 740 的话, 用户拉宽后一展开"数据增强"就弹回去
+        self.resize(self.width(), max(520, want))
         # 展开是往下长高的: 底边越过可用区会把按钮压到任务栏下面, 按溢出量往回收
         scr = self.screen()
         if self.isVisible() and scr is not None:
@@ -644,26 +645,63 @@ class TrainDialog(QDialog):
                     QComboBox.SizeAdjustPolicy
                     .AdjustToMinimumContentsLengthWithIcon)
                 combo.setMinimumContentsLength(12)
+        # "32 的倍数"留在行内会把该框挤窄 62px, 与同列兄弟对不齐; 挪进框右内侧当单位
+        img_edit = getattr(self.ui, "img_size_line_txt", None)
+        note = getattr(self.ui, "img_note", None)
+        if img_edit is not None and note is not None:
+            note.setParent(img_edit)
+            note.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+            img_edit.setTextMargins(0, 0, note.sizeHint().width() + 12, 0)
+            img_edit.installEventFilter(self)
+            self._place_img_note()
+            note.show()
         self._align_grid_labels()
 
     def _align_grid_labels(self):
-        """网格的左右两组标签列各自同宽, 否则两侧输入框左边界对不齐."""
-        for grid_name in ("grid_data", "grid_hyper"):
-            grid = getattr(self.ui, grid_name, None)
-            if grid is None:
-                continue
+        """两段网格的标签列必须同宽: 各自对齐的话, 标签更短的那段会把富余宽度
+        吃进标签列, 两段的输入框左边界就差一截(实测 46px)."""
+        grids = [g for g in (getattr(self.ui, n, None)
+                             for n in ("grid_data", "grid_hyper"))
+                 if g is not None]
+        if not grids:
+            return
+        width = 0
+        for grid in grids:
             for col in (0, 2):
-                labels = []
                 for row in range(grid.rowCount()):
                     item = grid.itemAtPosition(row, col)
                     w = item.widget() if item is not None else None
                     if isinstance(w, QLabel):
-                        labels.append(w)
-                if not labels:
-                    continue
-                width = max(lbl.sizeHint().width() for lbl in labels)
-                for lbl in labels:
-                    lbl.setMinimumWidth(width)
+                        width = max(width, w.sizeHint().width())
+        if not width:
+            return
+        for grid in grids:
+            for col in (0, 2):
+                for row in range(grid.rowCount()):
+                    item = grid.itemAtPosition(row, col)
+                    w = item.widget() if item is not None else None
+                    if isinstance(w, QLabel):
+                        w.setMinimumWidth(width)
+            # 标签列按最小宽度定死, 富余宽度全给输入框列, 两段的输入框列才会等宽
+            grid.setColumnStretch(0, 0)
+            grid.setColumnStretch(2, 0)
+            grid.setColumnStretch(1, 1)
+            grid.setColumnStretch(3, 1)
+            # 左边单元带提示行时比右边高, 裸控件会被网格垂直居中, 钉到顶才与左列齐平
+            for col in (1, 3):
+                for row in range(grid.rowCount()):
+                    item = grid.itemAtPosition(row, col)
+                    if item is not None and item.widget() is not None:
+                        item.setAlignment(Qt.AlignTop)
+
+    def _place_img_note(self):
+        """单位提示不在布局里, 输入框宽度变了要自己跟着挪."""
+        field = getattr(self.ui, "img_size_line_txt", None)
+        note = getattr(self.ui, "img_note", None)
+        if field is None or note is None:
+            return
+        w = note.sizeHint().width()
+        note.setGeometry(field.width() - w - 8, 0, w, field.height())
 
     def _define_fields(self):
         # name 会拼进校验提示(""批次"不能为空"), 所以跟着界面语言走
@@ -1045,6 +1083,9 @@ class TrainDialog(QDialog):
             if (btn is not None and btn.isEnabled()
                     and obj.childAt(event.position().toPoint()) is not btn):
                 btn.setChecked(not btn.isChecked())
+        elif (obj is getattr(self.ui, "img_size_line_txt", None)
+                and event.type() == QEvent.Resize):
+            self._place_img_note()
         return super().eventFilter(obj, event)
 
     def _on_aug_toggled(self):
