@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from PySide6.QtGui import QTextCursor
 from PySide6.QtWidgets import QDialog
 
 from app.core.log import LOG_FILE, MAX_LINES, register_log_dialog
@@ -9,8 +8,7 @@ from ui.log import Ui_LogDialog
 
 class LogDialog(QDialog):
     """
-    日志查看对话框直接写入 textEdit.
-    超过 MAX_LINES(1000)条自动删除最老的再追加最新的.
+    日志查看对话框直接写入 textEdit; 段落数上限由文档自己维护.
     """
 
     def __init__(self, parent=None):
@@ -20,6 +18,8 @@ class LogDialog(QDialog):
         # 走 .ui 的 windowTitle(带翻译), 代码里再写一遍硬编码会把翻译覆盖掉
         self.setWindowTitle(self.tr("日志"))
         self.ui.textEdit.setReadOnly(True)
+        # 段落上限必须交给文档维护: 手动逐段删的代价随段落数线性增长(一次几千段=十几秒)
+        self.ui.textEdit.document().setMaximumBlockCount(MAX_LINES)
         self.ui.clr_log_btn.clicked.connect(self.clear_log)
         self._load_history()
         register_log_dialog(self)
@@ -31,25 +31,12 @@ class LogDialog(QDialog):
                 lines = f.read().splitlines()
             for line in lines[-MAX_LINES:]:
                 self.ui.textEdit.append(line)
-            self._trim()
         except FileNotFoundError:
             pass
 
     def append(self, line):
-        """直接写入 textEdit; 超 1000 行删除最老."""
-        edit = self.ui.textEdit
-        edit.append(line)
-        self._trim()
-
-    def _trim(self):
-        """超过 MAX_LINES 行删除最老的."""
-        edit = self.ui.textEdit
-        while edit.document().blockCount() > MAX_LINES:
-            c = edit.textCursor()
-            c.movePosition(QTextCursor.Start)
-            c.select(QTextCursor.LineUnderCursor)
-            c.removeSelectedText()
-            c.deleteChar()   # 删除行尾换行
+        """直接写入 textEdit; 超出上限由文档自动丢最老段落."""
+        self.ui.textEdit.append(line)
 
     def clear_log(self):
         self.ui.textEdit.clear()

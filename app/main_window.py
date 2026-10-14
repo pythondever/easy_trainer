@@ -156,7 +156,7 @@ class App(QWidget, MainUI, LabelMixin, ProjectMixin, ImportExportMixin,
         self._reset_page_info()
 
     def _setup_header_groups(self):
-        """首页顶部工具栏分组: 标签区/统计区/训练区 用竖线分隔"""
+        """首页顶部工具栏分组: 训练状态/标签筛选/入口按钮 用竖线分隔"""
         self._tighten_gpu_pair()
 
         def vline():
@@ -168,8 +168,7 @@ class App(QWidget, MainUI, LabelMixin, ProjectMixin, ImportExportMixin,
 
         lay = self.datasetHeaderLayout
         # 按锚点控件定位: 硬编码索引会随顶部控件的增删错位
-        for anchor in (self.label_filter_btn, self.dataset_properties_btn,
-                       self.train_btn):
+        for anchor in (self.label_filter_btn, self.dataset_properties_btn):
             idx = lay.indexOf(anchor)
             if idx > 0:
                 lay.insertWidget(idx, vline())

@@ -11,6 +11,7 @@ WORKSPACE_DIRECTORY = project_root()
 LOG_FILE = os.path.join(WORKSPACE_DIRECTORY, "logs", "app.log")
 
 MAX_LINES = 1000   # 日志界面最多保留行数(超过删除最老)
+MAX_LINE_CHARS = 4000   # 单条日志上限: 进度条整段攒成一条能到几百 KB
 
 _logger = None
 _log_dialog = None
@@ -39,8 +40,23 @@ def register_log_dialog(dlg):
     _log_dialog = dlg
 
 
+def _shrink(msg):
+    """进度条用 \r 原地刷新, 一整段攒成一条能有几百 KB; 每行只留最后一次刷新的状态."""
+    if "\r" in msg:
+        kept = []
+        for ln in msg.split("\n"):
+            segs = [s for s in ln.split("\r") if s.strip()]
+            kept.append(segs[-1] if segs else "")
+        msg = "\n".join(kept)
+    if len(msg) > MAX_LINE_CHARS:
+        msg = msg[:MAX_LINE_CHARS] + " …(截断 {} 字符)".format(
+            len(msg) - MAX_LINE_CHARS)
+    return msg
+
+
 def write_log(msg):
     """写文件 + 写入常驻日志界面(无论是否显示)."""
+    msg = _shrink(msg)
     line = "[{}] {}".format(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), msg)
     get_logger().info(msg)
     dlg = _log_dialog

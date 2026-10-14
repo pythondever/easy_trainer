@@ -590,6 +590,13 @@ class TrainDialog(QDialog):
         want = (ui.scrollAreaWidgetContents.sizeHint().height() + fixed + spacing
                 + margin.top() + margin.bottom() + 6)
         self.resize(740, max(520, want))
+        # 展开是往下长高的: 底边越过可用区会把按钮压到任务栏下面, 按溢出量往回收
+        scr = self.screen()
+        if self.isVisible() and scr is not None:
+            avail = scr.availableGeometry()
+            over = self.frameGeometry().bottom() - avail.bottom()
+            if over > 0:
+                self.move(self.x(), max(avail.top(), self.y() - over))
 
     def _tag_task_combo(self):
         """任务下拉挂 itemData. 按文本找的话, 界面切英文后 _task() 会全部落空."""
@@ -922,6 +929,7 @@ class TrainDialog(QDialog):
 
         for gid, gname, gtip in AUG_GROUPS:
             head = QWidget(body)
+            head.setObjectName("aug_group_head")
             hl = QHBoxLayout(head)
             hl.setContentsMargins(0, 0, 0, 0)
             hl.setSpacing(8)

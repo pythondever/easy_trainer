@@ -941,6 +941,7 @@ QDialog#TrainDialog QWidget#grad_wrap,
 QDialog#TrainDialog QWidget#section_out_wrap,
 QDialog#TrainDialog QWidget#section_aug_wrap,
 QDialog#TrainDialog QWidget#aug_body,
+QDialog#TrainDialog QWidget#aug_group_head,
 QDialog#TestDialog QWidget#conf_wrap,
 QDialog#TestDialog QWidget#iou_wrap,
 QDialog#TestDialog QWidget#out_wrap {

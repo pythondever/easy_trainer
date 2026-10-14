@@ -124,7 +124,9 @@ def _better_than(value, other, rec):
 def _status(rec):
     st = str(rec.get("status") or "").strip()
     if not st:
-        return "训练中" if not rec.get("model_path") else "已完成"
+        # 开训时就预填了 model_path(预期权重路径, 训练中途 best.pt 也可能已存在),
+        # 拿它判跑没跑完会把在训的记录记成已完成; 结束时间/耗时只有收尾那步才写
+        return "已完成" if (rec.get("end_time") or rec.get("duration")) else "训练中"
     if st in ("失败", "已停止", "失败/已停止"):
         return st      # "失败/已停止" 是旧记录, 区分不出停止还是报错
     if "失败" in st or "停止" in st:
