@@ -12,8 +12,8 @@ from app.core.utils import (setup_matplotlib_chinese, load_style_sheet,
                             project_root)
 from app.core.log import write_log
 from app.core.db import DataBase, default_db_dir, migrate_legacy_db
-from PySide6.QtGui import QIcon, QPixmap
-from PySide6.QtCore import Qt, QSize, QTimer, QEvent
+from PySide6.QtGui import QIcon
+from PySide6.QtCore import QSize, QTimer, QEvent
 from PySide6.QtCore import QCoreApplication as QC
 from PySide6.QtWidgets import QWidget, QApplication, QTimeEdit, QFrame, QHBoxLayout
 
@@ -133,10 +133,8 @@ class App(QWidget, MainUI, LabelMixin, ProjectMixin, ImportExportMixin,
         if os.path.exists(icon_path):
             self.setWindowIcon(QIcon(icon_path))
 
-        logo_path = os.path.join(project_root(), "resources", "icon.png")
-        if os.path.exists(logo_path):
-            pix = QPixmap(logo_path).scaled(28, 28, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-            self.appLogoLabel.setPixmap(pix)
+        # 应用名原生标题栏已经在显示, 这条窗口内的品牌行只是重复, 隐掉(同 sidebarTitle)
+        self.headerBar.setVisible(False)
         self.sidebarTitle.setVisible(False)
         self.tabWidget.setCurrentIndex(0)
         self._init_image_view()
