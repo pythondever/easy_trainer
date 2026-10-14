@@ -32,9 +32,9 @@ from app.widgets.status_style import task_text
 from app.train.dialogs import (CONTROL_H, _TrainStartDialog, detach_device_probe,
                                fill_device_combo_async, fill_device_items)
 from app.train.ocr_common import is_ocr
-from app.train.test_result_dialog import TestResultDialog
-from app.train.test_worker import TestWorker
-from ui.test_dialog import Ui_TestDialog
+from app.train.eval_result_dialog import TestResultDialog
+from app.train.eval_worker import TestWorker
+from ui.eval_dialog import Ui_TestDialog
 
 
 # 字条是矮扁的窄条: 抽这么多张看高度, 中位高度超过下面这个值就当给的是整幅原图
@@ -612,7 +612,7 @@ class TestDialog(QDialog):
         return task if is_ocr(task) else ""
 
     def _test_task(self, cls_mode):
-        """交给 test_worker 的任务键: 它按这个挑 runner, 与数据集格式无关.
+        """交给 eval_worker 的任务键: 它按这个挑 runner, 与数据集格式无关.
 
         异常检测的数据集也是 cls 格式, 靠 cls_mode 分不开, 得看模型的 task.
         """

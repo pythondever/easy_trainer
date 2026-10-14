@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 CNN(ultralytics) 后端的公共件: 后端判定 + 设备参数转换 + 推理结果适配.
-测试流程(test_runner)与导出(onnx_export)吃的都是 rf-detr 的形状: predict
+测试流程(eval_runner)与导出(onnx_export)吃的都是 rf-detr 的形状: predict
 返回 .xyxy / .confidence / .class_id / .mask / .data['class_name']. 这里把
 YOLO 的 Results 包成同样的形状, 下游那两个后端就能共用同一套代码.
 """
@@ -47,7 +47,7 @@ def device_arg(device):
 
 def _polys_to_masks(polys, width, height):
     """
-    多边形顶点转成原图尺寸的二值 mask, 喂给 test_runner 的 _mask_to_rings.
+    多边形顶点转成原图尺寸的二值 mask, 喂给 eval_runner 的 _mask_to_rings.
 
     不用 Results.masks.data: 那是 letterbox 之后推理尺寸上的 mask, 直接当原图用
     会整体偏缩. masks.xy 已经还原到原图坐标, 按它填回来最省事也最准.

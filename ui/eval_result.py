@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'test_result.ui'
+## Form generated from reading UI file 'eval_result.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.11.1
 ##

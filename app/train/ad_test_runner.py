@@ -2,7 +2,7 @@
 """
 异常检测(AD)测试执行脚本(由 UI 以子进程方式启动).
 
-用法: main(), 由 test_worker 以 -c 导入后调用(打包后是 pyd, 不能 python -m 启动)
+用法: main(), 由 eval_worker 以 -c 导入后调用(打包后是 pyd, 不能 python -m 启动)
 config: model_path(ad_model.pt), items[{image_path,...}], device, task="ad"
 输出:
   - [test] PROGRESS N/M

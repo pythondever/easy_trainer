@@ -21,7 +21,7 @@ from PySide6.QtCore import QCoreApplication as QC
 
 from app.core import i18n
 from app.core.utils import cjk_font_choice, setup_matplotlib_chinese
-from app.train.test_errors import CONFUSE_IOU, pair_confusions
+from app.train.eval_errors import CONFUSE_IOU, pair_confusions
 
 
 C_MISSING = "#e03131"

@@ -233,7 +233,7 @@ easy_trainer/
 │   │   ├── queue_dialog.py # 训练队列弹窗
 │   │   ├── log_dialog.py   # 日志查看弹窗
 │   │   ├── model_dialog.py # 模型管理（历史记录、精度、测试、导出）
-│   │   ├── test_dialog.py  # 测试参数弹窗
+│   │   ├── eval_dialog.py  # 测试参数弹窗
 │   │   └── metrics_dialog.py   # 训练指标折线图
 │   ├── mixins/             # 主窗口功能扩展（项目/数据集/标注/训练/队列/导入导出）
 │   └── train/              # 训练与测试执行
@@ -252,12 +252,12 @@ easy_trainer/
 │       ├── ocr_common.py / ocr_data.py / ocr_weights.py   # OCR 架构表 / 数据铺设 / 权重预置
 │       ├── ocr_train_runner.py / ocr_test_runner.py       # OCR 两段训练 / 测试
 │       ├── data_prep.py    # 训练数据准备（转 yolo 格式、类别收集）
-│       ├── test_worker.py  # 测试子进程线程
-│       ├── test_runner.py  # 检测/分割测试脚本
+│       ├── eval_worker.py  # 测试子进程线程
+│       ├── eval_runner.py  # 检测/分割测试脚本
 │       ├── classify_test_runner.py   # 分类测试脚本
-│       ├── test_errors.py  # 漏检/误检分析
-│       ├── test_report.py  # 评估报告 PDF 生成
-│       ├── test_result_dialog.py  # 评估结果弹窗
+│       ├── eval_errors.py  # 漏检/误检分析
+│       ├── eval_report.py  # 评估报告 PDF 生成
+│       ├── eval_result_dialog.py  # 评估结果弹窗
 │       ├── onnx_export.py  # ONNX 导出（检测/分割走 rfdetr，分类与 OCR 走 torch.onnx）
 │       ├── export_worker.py  # 导出后台线程
 │       └── dialogs.py      # 训练/测试弹窗

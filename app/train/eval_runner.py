@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """测试执行脚本(由 UI 以子进程方式启动).
 
-用法: main(), 由 test_worker 以 -c 导入后调用(打包后是 pyd, 不能 python -m 启动)
+用法: main(), 由 eval_worker 以 -c 导入后调用(打包后是 pyd, 不能 python -m 启动)
 config 字段(dialogs.py _on_start_test 组装):
   model_path   训练输出的 best checkpoint(rf-detr 是 .pth, CNN 是 .pt)
   family       网络架构(transformer/cnn), 决定用哪套后端加载 model_path
@@ -34,7 +34,7 @@ from PySide6.QtCore import QCoreApplication as QC
 from PIL import Image
 
 from app.core import i18n
-from app.train.test_errors import pair_confusions
+from app.train.eval_errors import pair_confusions
 from app.core.constants import IMAGE_EXTS as _IMG_EXTS
 
 try:

@@ -468,7 +468,7 @@ QRadioButton, QCheckBox {
     spacing: 12px;
     color: {{text}};
     /* Qt 在 QCheckBox/QFormLayout 等场景会把 ::indicator 的 background-color
-       当作 widget 的 background 涂到整行（见 test_dialog 复现），
+       当作 widget 的 background 涂到整行（见 eval_dialog 复现），
        显式置 transparent 让背景跟随父 widget */
     background-color: transparent;
 }

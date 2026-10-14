@@ -33,9 +33,9 @@ from app.widgets.message_box import MessageBox, ProgressDialog
 from app.widgets.status_style import status_color, status_text, task_text
 from app.widgets.compare_dialog import CompareDialog
 from app.widgets.metrics_dialog import MetricsDialog, load_run_series
-from app.widgets.test_dialog import TestDialog
+from app.widgets.eval_dialog import TestDialog
 from app.train.dialogs import TrainDialog
-from app.train.test_worker import TestWorker
+from app.train.eval_worker import TestWorker
 from app.train.export_worker import (AdPackageWorker, OnnxExportWorker,
                                      ReportWorker, examples_dir)
 from ui.model import Ui_ModelDialog
@@ -1001,7 +1001,7 @@ class ModelDialog(QDialog):
     def _export_start_eval(self):
         """用验证集跑一次评估, 结果交给 build_report 出 PDF."""
         if self._exp["task"] == "classify":
-            # test_report 是检测/分割的漏检误检报告, 分类任务不适用
+            # eval_report 是检测/分割的漏检误检报告, 分类任务不适用
             write_log(QC.translate("ModelDialog", "导出模型报告跳过: 分类任务不出评估报告"))
             self._export_finish(self.tr("分类任务不生成评估报告"))
             return

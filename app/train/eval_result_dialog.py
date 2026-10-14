@@ -16,7 +16,7 @@ from app.train.export_worker import ReportWorker
 from app.widgets.message_box import MessageBox
 from app.widgets.dialog_buttons import apply_icon
 from app.widgets.dialog_fit import fit_dialog_height
-from ui.test_result import Ui_TestResultDialog
+from ui.eval_result import Ui_TestResultDialog
 
 
 # 错误字条明细里真值/预测列的限宽: 一行字条几十个字, 不限宽会撑爆窗口

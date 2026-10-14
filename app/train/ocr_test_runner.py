@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 字符检测/识别测试执行脚本(由 UI 以子进程方式启动).
-用法: main(), 由 test_worker 以 -c 导入后调用(打包后是 pyd, 不能 python -m 启动)
-config 字段(与 test_dialog 组装的一致):
+用法: main(), 由 eval_worker 以 -c 导入后调用(打包后是 pyd, 不能 python -m 启动)
+config 字段(与 eval_dialog 组装的一致):
   model_path    训练产出的 checkpoint_best.pth
   task          ocr_det / ocr_rec
   items         [{image_path, label_path, project, dataset}]
@@ -267,7 +267,7 @@ def _open_detail(cfg):
 
 
 def _write_detail(path, img_path, missing, spurious, hits):
-    """照 test_runner 的口径: 只写有漏检或误检的图, 全对的图不落盘."""
+    """照 eval_runner 的口径: 只写有漏检或误检的图, 全对的图不落盘."""
     def item(box, conf=None):
         d = {"cls": text_label(),
              "box": [round(float(v), 1) for v in box]}

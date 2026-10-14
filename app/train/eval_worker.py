@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""测试工作线程: 以子进程方式运行 test_runner, 转发日志/进度/结果."""
+"""测试工作线程: 以子进程方式运行 eval_runner, 转发日志/进度/结果."""
 
 import json
 import os
@@ -19,7 +19,7 @@ from app.train.proc_utils import SubprocessWorker, runner_bootstrap
 WORKSPACE = os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__))))
 
-TEST_RUNNER = "app.train.test_runner"
+TEST_RUNNER = "app.train.eval_runner"
 CLASSIFY_TEST_RUNNER = "app.train.classify_test_runner"
 AD_TEST_RUNNER = "app.train.ad_test_runner"
 OCR_TEST_RUNNER = "app.train.ocr_test_runner"
@@ -64,7 +64,7 @@ class TestWorker(SubprocessWorker):
 
     log = Signal(str)
     progress = Signal(int, int)
-    finished_ok = Signal(dict)           # test_runner 的 RESULT 内容
+    finished_ok = Signal(dict)           # eval_runner 的 RESULT 内容
     failed = Signal(str)                 # traceback
 
     def run(self):

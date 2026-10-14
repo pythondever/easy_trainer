@@ -233,7 +233,7 @@ easy_trainer/
 │   │   ├── queue_dialog.py # Training queue dialog
 │   │   ├── log_dialog.py   # Log viewer dialog
 │   │   ├── model_dialog.py # Model management (history, metrics, test, export)
-│   │   ├── test_dialog.py  # Test parameter dialog
+│   │   ├── eval_dialog.py  # Test parameter dialog
 │   │   └── metrics_dialog.py   # Training metric charts
 │   ├── mixins/             # Main-window mixins (projects/datasets/annotation/training/queue/import-export)
 │   └── train/              # Training & testing execution
@@ -252,12 +252,12 @@ easy_trainer/
 │       ├── ocr_common.py / ocr_data.py / ocr_weights.py   # OCR architecture table / data layout / weight provisioning
 │       ├── ocr_train_runner.py / ocr_test_runner.py       # OCR two-stage training / testing
 │       ├── data_prep.py    # Training data prep (YOLO conversion, class collection)
-│       ├── test_worker.py  # Test subprocess thread
-│       ├── test_runner.py  # Detect/segment test script
+│       ├── eval_worker.py  # Test subprocess thread
+│       ├── eval_runner.py  # Detect/segment test script
 │       ├── classify_test_runner.py   # Classification test script
-│       ├── test_errors.py  # Missed/false-positive analysis
-│       ├── test_report.py  # Evaluation report (PDF)
-│       ├── test_result_dialog.py  # Evaluation result dialog
+│       ├── eval_errors.py  # Missed/false-positive analysis
+│       ├── eval_report.py  # Evaluation report (PDF)
+│       ├── eval_result_dialog.py  # Evaluation result dialog
 │       ├── onnx_export.py  # ONNX export (rfdetr for detect/segment, torch.onnx for classify/OCR)
 │       ├── export_worker.py  # Export background thread
 │       └── dialogs.py      # Training/testing dialogs

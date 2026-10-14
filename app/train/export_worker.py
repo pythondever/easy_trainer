@@ -77,7 +77,7 @@ class ReportWorker(QThread):
     def run(self):
         try:
             # matplotlib 较重, 只在真的要出报告时才导入
-            from app.train.test_report import build_report
+            from app.train.eval_report import build_report
             kwargs = {}
             if self._out_pdf:
                 kwargs["out_pdf"] = self._out_pdf
