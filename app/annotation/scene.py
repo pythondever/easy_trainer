@@ -9,6 +9,8 @@ from PySide6.QtGui import (QPen, QColor, QBrush, QPolygonF, QPainterPath,
 from PySide6.QtWidgets import (QGraphicsScene, QGraphicsPixmapItem, QGraphicsItem,
                                QGraphicsPathItem, QGraphicsPolygonItem)
 from app.annotation.blend import blend_patch
+from app.annotation.paste_regions import (AutoPasteMark, PasteRegionItem,
+                                          regions_payload, scaled_regions)
 from app.annotation.box_item import AnnotationBoxItem, AnnotationPolygonItem, label_color
 from app.core import theme
 from app.core.label_utils import is_text_label
@@ -57,6 +59,7 @@ class AnnotationScene(QGraphicsScene):
     fp_mode_changed = Signal(str)
     image_pixels_changed = Signal()
     draw_cancel_requested = Signal()   # Esc 退出绘制模式
+    image_changed = Signal()           # 换了图(自动粘贴据此重新倒计时)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -96,6 +99,11 @@ class AnnotationScene(QGraphicsScene):
         self.label_colors = {}
         # "显示标注"开关状态(由标注界面同步): 只影响粘贴出来的框, 手绘的照常显示
         self.show_annotations = True
+        # 粘贴区域模板: 不是标注, 只圈定"缺陷可以贴在哪里"(见 paste_regions 模块)
+        self.template_mode = False
+        self._region_points = []      # 权威数据: 换图/清空标注都不该丢
+        self.paste_regions = []       # 对应 item, 一律由 _region_points 重建
+        self.auto_marks = []          # 自动粘贴留下的虚线标记框(每贴一次一个)
         self.selectionChanged.connect(self._on_selection_changed)
 
     def set_image(self, pixmap):
@@ -115,6 +123,12 @@ class AnnotationScene(QGraphicsScene):
         self.addItem(self.image_item)
         self.image_rect = QRectF(0, 0, pixmap.width(), pixmap.height())
         self.setSceneRect(self.image_rect.adjusted(-50, -50, 50, 50))
+        # clear() 把区域 item 一并删掉了(它们不归 all_items 管), 这里按存下的点重建:
+        # 一套区域复用一个数据集, 换图不该丢
+        self._rebuild_paste_region_items()
+        # 标记框不能跨图留: 上一张的像素已经落盘, 那个"可撤的一次"不再成立
+        self.auto_marks = []
+        self.image_changed.emit()
 
     def set_draw_mode(self, draw, shape=None):
         self.draw_mode = draw
@@ -129,6 +143,8 @@ class AnnotationScene(QGraphicsScene):
         for item in self.all_items():
             item.setFlag(flag, not draw)
             item.unsetCursor()
+        # 区域不在 all_items 里, 得单独同步(画模式下左键要留给"拉多边形")
+        self.refresh_paste_region_selectability()
 
     # ---------------- 格式刷(轨迹描边, 模板, 刷子粘贴)----------------
     def set_format_painter(self, on):
@@ -757,8 +773,21 @@ class AnnotationScene(QGraphicsScene):
         if not self._fp_undo_stack:
             return False
         rec = self._fp_undo_stack.pop()
+        # 若这次粘贴留了标记框, 一起摘掉: 否则框还在、记录已没了, 点它会把
+        # 过期快照再糊一次到图上
+        for mk in list(self.auto_marks):
+            if mk.record is rec:
+                self.auto_marks.remove(mk)
+                self.removeItem(mk)
+        self._restore_paste_record(rec)
+        self.image_modified = bool(self._fp_undo_stack)
+        self.boxes_changed.emit()
+        return True
+
+    def _restore_paste_record(self, rec):
+        """还原一条粘贴记录(恢复像素 + 删掉那次贴出来的标注), 返回是否动过像素."""
         before = rec.get("before")
-        pix = self.image_item.pixmap()
+        pix = self.image_item.pixmap() if self.image_item is not None else None
         restored = False
         if before is not None and not before.isNull() and pix is not None:
             p = QPainter(pix)
@@ -770,19 +799,17 @@ class AnnotationScene(QGraphicsScene):
         gone = None
         if item is not None and item.scene() is self:
             # 光 removeItem 不够: 视图(SmartViewportUpdate)可能保留旧轮廓, 表现为
-            # 表现为"图案撤销了但多边形还在", 与 delete_item 走同一套释放 + 整屏重绘
+            # "图案撤销了但多边形还在", 与 delete_item 走同一套释放 + 整屏重绘
             gone = item.sceneBoundingRect()
             self._dispose_item(item)
             if self._last_box is item:
                 self._last_box = None
         if restored or gone is not None:
             self._force_full_redraw(gone)
-        self.image_modified = bool(self._fp_undo_stack)
         # 每次真的改了像素都要通知(含撤销), 上层据此刷新缓存并写回磁盘
         if restored:
             self.image_pixels_changed.emit()
-        self.boxes_changed.emit()
-        return True
+        return restored
 
     def set_annotations_visible(self, show):
         """
@@ -848,6 +875,122 @@ class AnnotationScene(QGraphicsScene):
         self._last_box = item
         self.boxes_changed.emit()
         return item
+
+    # ---------------- 粘贴区域模板(不属于标注, 不进 labelme json) ----------------
+    def set_template_mode(self, on):
+        """区域模板模式: 这一模式下画出来的多边形进模板层, 不成标注."""
+        on = bool(on)
+        if self.template_mode == on:
+            return
+        self.template_mode = on
+        self._cancel_polygon()      # 切模式时丢掉画到一半的中间态
+
+    def add_paste_region(self, points):
+        """记一个粘贴区域. 只存点, item 交给 _rebuild_paste_region_items 统一建."""
+        if len(points) < 3:
+            return None
+        self._region_points.append([[float(x), float(y)] for x, y in points])
+        self._rebuild_paste_region_items()
+        return self.paste_regions[-1] if self.paste_regions else None
+
+    def remove_paste_region(self, item):
+        try:
+            idx = self.paste_regions.index(item)
+        except ValueError:
+            return False
+        self._region_points.pop(idx)
+        self._rebuild_paste_region_items()
+        return True
+
+    def clear_paste_regions(self):
+        if not self._region_points:
+            return False
+        self._region_points = []
+        self._rebuild_paste_region_items()
+        return True
+
+    def set_paste_regions(self, points_list):
+        """整体替换区域(载入模板/导出后回填都用它)."""
+        self._region_points = [[[float(x), float(y)] for x, y in p]
+                               for p in (points_list or []) if len(p) >= 3]
+        self._rebuild_paste_region_items()
+
+    def paste_region_payload(self):
+        """区域 -> 可存盘 dict. 参考尺寸取当前图, 因为区域就是在当前图上画的."""
+        size = (0, 0)
+        if self.image_rect is not None:
+            size = (int(self.image_rect.width()), int(self.image_rect.height()))
+        return regions_payload(self.paste_regions, size)
+
+    def paste_region_at(self, scene_pos):
+        """场景坐标落在哪个区域上. 倒序遍历: 后画的压在上面."""
+        for it in reversed(self.paste_regions):
+            try:
+                if it.shape().contains(it.mapFromScene(scene_pos)):
+                    return it
+            except RuntimeError:
+                continue
+        return None
+
+    # ---------------- 自动粘贴(阶段2) ----------------
+    def auto_paste_at(self, pos):
+        """把当前选中的剪切板模板贴到 pos 并立刻融合, 顺便返回一个轮廓项.
+
+        与手动粘贴的区别就是"不等 Ctrl+S": 自动粘贴要的就是贴完即生效,
+        每贴一次记一条, 点标记框可以只撤那一次.
+        返回标记框; 没贴上返回 None.
+        """
+        if self.fp_template is None:
+            return None
+        n0 = len(self._pending_pastes)
+        self._paste_template(pos)
+        if len(self._pending_pastes) == n0:
+            return None
+        item = self._pending_pastes[-1]
+        outline = QPolygonF(list(item.polygon()))
+        self.commit_pastes()
+        rec = self._fp_undo_stack[-1] if self._fp_undo_stack else None
+        if rec is None:
+            return None
+        mark = AutoPasteMark(outline, rec)
+        self.addItem(mark)
+        self.auto_marks.append(mark)
+        return mark
+
+
+    def clear_auto_marks(self):
+        """换图/关窗时清掉标记框: 那之后像素已经落盘, 不再是"可撤的一次"."""
+        for mark in list(self.auto_marks):
+            self.removeItem(mark)
+        self.auto_marks = []
+
+
+    def refresh_paste_region_selectability(self):
+        """把"能不能点选"同步给所有区域 item."""
+        for it in self.paste_regions:
+            try:
+                it.set_selectable(not self.draw_mode)
+            except RuntimeError:
+                pass
+
+    def _rebuild_paste_region_items(self):
+        """按 _region_points 重建 item: 序号取自下标, 删一个不必手工重编号."""
+        for it in self.paste_regions:
+            # set_image 里的 clear() 已经把 item 的 C++ 对象删了, 这时只剩 Python 壳,
+            # 拿它调 removeItem 会 RuntimeError(与 _dispose_item 同一处防御)
+            try:
+                if it.scene() is self:
+                    self.removeItem(it)
+            except RuntimeError:
+                pass
+        self.paste_regions = []
+        if self.image_item is None:
+            return
+        for i, pts in enumerate(self._region_points, 1):
+            item = PasteRegionItem(pts, i)
+            self.addItem(item)
+            self.paste_regions.append(item)
+        self.refresh_paste_region_selectability()
 
     def boxes(self):
         """返回标注列表: 矩形 {label,x1,y1,x2,y2,text} / 多边形
@@ -934,6 +1077,12 @@ class AnnotationScene(QGraphicsScene):
             self._force_full_redraw(gone)
             self.boxes_changed.emit()
             return True
+        # 标注优先(与左键命中的优先级一致): 标注也在选中态时, DEL 该删标注,
+        # 不能把底下那个区域删掉
+        for it in list(self.selectedItems()):
+            if isinstance(it, PasteRegionItem):
+                self.remove_paste_region(it)
+                return True
         return False
 
     def delete_item(self, item):
@@ -975,6 +1124,26 @@ class AnnotationScene(QGraphicsScene):
                 setattr(self, attr, None)
 
     def mousePressEvent(self, event):
+        # 区域不参与标注那套逻辑, 所以最先单独判: 点在区域上=选中它(再按 Delete 删),
+        # 不能落到下面"点空白处记粘贴锚点"那条分支去
+        if (event.button() == Qt.LeftButton and not self.draw_mode
+                and self.fp_mode is None and not self.template_mode):
+            # 标注压在上面时优先给标注(区域是大片范围, 不该抢标注的点击)
+            on_annot = any(isinstance(it, (AnnotationBoxItem,
+                                          AnnotationPolygonItem))
+                           for it in self.items(event.scenePos()))
+            hit_region = (None if on_annot
+                          else self.paste_region_at(event.scenePos()))
+            # 先清掉区域的选中态再判命中: 放在早返回之后的话, 点标注时
+            # 区域的高亮会一直留着(而且接着按 DEL 就容易删错)
+            for r in self.paste_regions:
+                if r.isSelected():
+                    r.setSelected(False)
+            if hit_region is not None:
+                self.clearSelection()
+                hit_region.setSelected(True)
+                event.accept()
+                return
         if self.fp_mode is not None and event.button() == Qt.LeftButton and self.image_rect is not None:
             pos = self._clamp_to_image(event.scenePos())
             if self.fp_mode == "trace":
@@ -1112,6 +1281,10 @@ class AnnotationScene(QGraphicsScene):
         pts = self._simplify_track(self._free_track)
         self._cancel_polygon()
         if len(pts) < 3:
+            return
+        if self.template_mode:
+            # 区域模板模式: 只记区域, 不成标注、不发 box_drawn(高亮归区域按钮)
+            self.add_paste_region(pts)
             return
         item = self.add_polygon(pts, self.current_label)
         if item is not None:

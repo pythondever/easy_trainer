@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """标注画布: 视图行为注入、绘制驱动、参数面板与剪切板面板."""
 
+import json
 import os
 import re
 from PySide6.QtCore import Qt, Signal, QPoint, QPointF, QTimer, QSize
@@ -11,11 +12,15 @@ from PySide6.QtGui import (QColor, QPixmap, QKeySequence, QShortcut, QPen,
 from PySide6.QtWidgets import (QDialog, QWidget, QApplication, QVBoxLayout,
                                QHBoxLayout, QLabel, QGridLayout, QLineEdit,
                                QSpinBox, QPushButton, QFrame, QSlider, QMenu,
-                               QGraphicsTextItem, QButtonGroup, QToolTip)
+                               QGraphicsTextItem, QButtonGroup, QToolTip,
+                               QFileDialog, QInputDialog, QListWidget,
+                               QListWidgetItem)
 
 
 from app.annotation.scene import AnnotationScene
 from app.annotation.box_item import AnnotationPolygonItem
+from app.annotation.paste_regions import (scaled_regions,
+                                          template_key)
 from app.core import theme
 from app.core.utils import project_root, ui_font_family
 from app.widgets.dialog_buttons import add_ok_cancel
@@ -26,6 +31,8 @@ from PySide6.QtWidgets import QGraphicsView
 BLEND_STRENGTH_DEFAULT = "0.7"     # 粘贴融合力度: 0=原始硬贴, 1=完全融合
 FILL_COLOR_DEFAULT = "#ffffff"     # 多边形右键"填充"用的默认颜色
 ANGLE_RANGE_DEFAULT = (-180, 180)  # 粘贴时随机旋转的角度范围
+PANEL_W = 244                      # 区域模板面板宽度
+LIST_H = 132                       # 模板列表高度(约 6 行, 再多就滚)
 BRIGHTNESS_DEFAULT = "0.50"        # 多边形亮度: 0.5=原样, 1=两倍, 0=全黑
 BRIGHTNESS_THROTTLE_MS = 40        # 亮度拖动节流: 每刻度都算一遍纯属浪费, 像素由预览层承担
 
@@ -752,6 +759,342 @@ class AnnotationCanvasMixin:
         self._clear_override_cursor()
         self.view.unsetCursor()
         self._set_draw_button_states(False)
+        # Esc/删图/切文本模式等出口也要一并退出区域模板模式, 否则按钮还亮着
+        # 但已经不在画区域了
+        if self.scene.template_mode:
+            self.scene.set_template_mode(False)
+            self.ui.draw_rect_btn.setEnabled(True)
+            btn = getattr(self.ui, "template_btn", None)
+            if btn is not None and btn.isChecked():
+                btn.blockSignals(True)
+                btn.setChecked(False)
+                btn.blockSignals(False)
+            self._sync_template_btn()
+
+    # ---------------- 粘贴区域模板(圈定"缺陷可以贴在哪里") ----------------
+    def _build_template_panel(self, u):
+        """
+        区域模板的展开面板: 不在布局里, 贴按钮下沿显示(与 paramsPanel 同一套做法).
+        模板用 QListWidget: 长名字由列表自己省略、超出由它自己滚, 滚动条也走应用
+        统一样式, 不必自己拼一列按钮(那样又长又难看出当前选的是哪个).
+        """
+        panel = QFrame(self)
+        panel.setObjectName("templatePanel")
+        panel.setFixedWidth(PANEL_W)
+        lay = QVBoxLayout(panel)
+        lay.setContentsMargins(10, 8, 10, 8)
+        lay.setSpacing(6)
+        self._template_draw_btn = QPushButton(panel)
+        self._template_draw_btn.setObjectName("template_draw_btn")
+        self._template_draw_btn.setCheckable(True)
+        self._template_draw_btn.toggled.connect(self._on_template_draw_toggled)
+        lay.addWidget(self._template_draw_btn)
+        lay.addWidget(self._template_sep(panel))
+        self._template_title = QLabel(panel)
+        self._template_title.setObjectName("template_title")
+        lay.addWidget(self._template_title)
+        self._template_list = QListWidget(panel)
+        self._template_list.setObjectName("template_list")
+        self._template_list.setFixedHeight(LIST_H)
+        self._template_list.itemClicked.connect(
+            lambda it: self._region_load(it.text()))
+        lay.addWidget(self._template_list)
+        self._template_empty = QLabel(
+            QC.translate("AnnotationDialog", "还没有保存过模板"), panel)
+        lay.addWidget(self._template_empty)
+        lay.addWidget(self._template_sep(panel))
+        grid = QGridLayout()
+        grid.setSpacing(6)
+        for i, (text, slot) in enumerate((
+                (QC.translate("AnnotationDialog", "保存"), self._region_save),
+                (QC.translate("AnnotationDialog", "删除"),
+                 self._region_delete_current),
+                (QC.translate("AnnotationDialog", "导入"), self._region_import),
+                (QC.translate("AnnotationDialog", "导出"), self._region_export))):
+            b = QPushButton(text, panel)
+            b.setObjectName("template_act_btn")
+            b.clicked.connect(slot)
+            grid.addWidget(b, i // 2, i % 2)
+        lay.addLayout(grid)
+        panel.hide()
+        u.template_panel = panel
+        self._template_current = None
+
+    @staticmethod
+    def _template_sep(parent):
+        sep = QFrame(parent)
+        sep.setObjectName("template_sep")
+        sep.setFixedHeight(1)
+        return sep
+
+    def _on_template_draw_toggled(self, checked):
+        self._toggle_template_mode(checked)
+
+    def _toggle_template_panel(self, checked):
+        """入口按钮: 勾上=就地展开面板(箭头朝下), 取消=收起(箭头朝右)."""
+        panel = getattr(self.ui, "template_panel", None)
+        if panel is None:
+            return
+        if not checked:
+            panel.hide()
+            self._sync_template_btn()
+            return
+        self._refresh_template_panel()
+        panel.show()
+        self._place_template_panel()
+        panel.raise_()
+        self._sync_template_btn()
+
+    def _hide_template_panel(self):
+        panel = getattr(self.ui, "template_panel", None)
+        if panel is None or panel.isHidden():
+            return
+        btn = getattr(self.ui, "template_btn", None)
+        if btn is not None and btn.isChecked():
+            btn.blockSignals(True)
+            btn.setChecked(False)
+            btn.blockSignals(False)
+        panel.hide()
+        self._sync_template_btn()
+
+    def _place_template_panel(self):
+        """左边缘对齐入口按钮, 顶边压在工具条下沿; 放不下就翻到按钮上方."""
+        u = self.ui
+        hint = u.template_panel.sizeHint()
+        at = u.template_btn.mapTo(self, QPoint(0, 0))
+        x = max(8, min(at.x(), self.width() - hint.width() - 8))
+        h = min(hint.height(), max(160, self.height() - 16))
+        y = at.y() + u.template_btn.height() + 6
+        if y + h > self.height() - 8:
+            above = at.y() - h - 6
+            y = above if above >= 8 else max(8, self.height() - h - 8)
+        u.template_panel.setGeometry(x, y, hint.width(), h)
+    def _hit_template_area(self, gpos):
+        for w in (getattr(self.ui, "template_panel", None),
+                  getattr(self.ui, "template_btn", None)):
+            if (w is not None and w.isVisible()
+                    and w.rect().contains(w.mapFromGlobal(gpos))):
+                return True
+        return False
+
+    def _refresh_template_panel(self):
+        """刷新模板列表与标题; 列表项文本就是模板名(长名字由列表自己省略)."""
+        lst = getattr(self, "_template_list", None)
+        if lst is None:
+            return
+        names = sorted(self._region_table())
+        cur = getattr(self, "_template_current", None)
+        lst.blockSignals(True)
+        lst.clear()
+        for nm in names:
+            it = QListWidgetItem(nm)
+            it.setToolTip(nm)
+            lst.addItem(it)
+            # 选中必须在 addItem 之后设: 加进列表会重置 item 自己的选中态,
+            # 先 setSelected 再加进去等于没选(于是看不出当前载入的是哪个)
+            if nm == cur:
+                lst.setCurrentItem(it)
+        lst.blockSignals(False)
+        title = getattr(self, "_template_title", None)
+        if title is not None:
+            title.setText(QC.translate("AnnotationDialog", "已存模板") if not names
+                          else QC.translate("AnnotationDialog", "已存模板 ({})")
+                          .format(len(names)))
+        lst.setVisible(bool(names))
+        empty = getattr(self, "_template_empty", None)
+        if empty is not None:
+            empty.setVisible(not names)
+        draw_btn = getattr(self, "_template_draw_btn", None)
+        if draw_btn is not None:
+            n_reg = len(self.scene.paste_regions)
+            draw_btn.setToolTip(QC.translate(
+                "AnnotationDialog", "当前 {} 个区域").format(n_reg))
+    def _sync_template_btn(self):
+        """一处同步入口按钮的箭头/高亮、面板里的绘制开关与模板列表."""
+        btn = getattr(self.ui, "template_btn", None)
+        if btn is None:
+            return
+        on = bool(self.scene.template_mode)
+        # 收起=右箭头, 展开=下箭头(同项目卡片的观感); 在画区域时就地高亮
+        btn.setIcon(QIcon(_resource_path("arrow_down.svg" if btn.isChecked()
+                                  else "arrow_right.svg")))
+        btn.setProperty("drawActive", "true" if on else "false")
+        btn.style().unpolish(btn)
+        btn.style().polish(btn)
+        n = len(self.scene.paste_regions)
+        btn.setToolTip(QC.translate(
+            "AnnotationDialog",
+            "画出缺陷可以贴的区域(可多个), 供自动粘贴使用\n当前 {} 个区域").format(n))
+        draw_btn = getattr(self, "_template_draw_btn", None)
+        if draw_btn is not None:
+            if draw_btn.isChecked() != on:
+                draw_btn.blockSignals(True)
+                draw_btn.setChecked(on)
+                draw_btn.blockSignals(False)
+            draw_btn.setText(QC.translate(
+                "AnnotationDialog",
+                "退出绘制区域" if on else "开始绘制区域"))
+        self._refresh_template_panel()
+
+    def _toggle_template_mode(self, checked):
+        """区域模板模式: 这一模式下画的多边形只记区域. 区域只能是多边形, 矩形按钮先禁掉."""
+        if checked:
+            if self.scene.fp_mode is not None:
+                self.scene.set_format_painter(False)
+            self._cancel_stamp_ghost()
+            self.scene.set_template_mode(True)
+            # 不调 _start_draw: 它会为"还没加标签"弹提示, 而画区域压根不需要标签
+            self._hide_params_panel()
+            self.scene.set_draw_mode(True, "polygon")
+            self._apply_draw_cursor()
+            # _start_draw 点亮的是多边形按钮, 这里换回"区域模板"高亮
+            self._set_draw_button_states(False)
+            self.ui.draw_rect_btn.setEnabled(False)
+        else:
+            self.scene.set_template_mode(False)
+            self.ui.draw_rect_btn.setEnabled(True)
+            self._cancel_draw_mode()
+        self._sync_template_btn()
+
+    def _image_size_of_scene(self):
+        rect = getattr(self.scene, "image_rect", None)
+        if rect is None:
+            return (0, 0)
+        return (int(rect.width()), int(rect.height()))
+
+    def _region_table(self):
+        """本 项目/数据集 下已存的模板 {名字: payload}."""
+        if self.db is None:
+            return {}
+        table = self.db.get_paste_region_templates() or {}
+        return dict(table.get(template_key(self.project, self.dataset)) or {})
+
+    def _region_store(self, table):
+        if self.db is None:
+            return
+        all_t = dict(self.db.get_paste_region_templates() or {})
+        all_t[template_key(self.project, self.dataset)] = dict(table)
+        self.db.save_paste_region_templates(all_t)
+
+    def _region_undo_last(self):
+        """撤销最后画的那个区域(画歪了不用整片清掉)."""
+        if not self.scene.paste_regions:
+            return False
+        self.scene.remove_paste_region(self.scene.paste_regions[-1])
+        self._sync_template_btn()
+        return True
+
+
+    def _region_save(self):
+        if not self.scene.paste_regions:
+            MessageBox.information(self, self.tr("区域模板"),
+                                   self.tr("还没有画区域"))
+            return
+        name, ok = QInputDialog.getText(self, self.tr("保存为模板"),
+                                        self.tr("模板名"))
+        name = (name or "").strip()
+        if not ok or not name:
+            return
+        table = self._region_table()
+        table[name] = self.scene.paste_region_payload()
+        self._region_store(table)
+        self._template_current = name
+        self._refresh_template_panel()
+        MessageBox.information(
+            self, self.tr("区域模板"),
+            self.tr("已保存模板 \"{}\" ({} 个区域)").format(
+                name, len(self.scene.paste_regions)))
+
+    def _region_load(self, name):
+        """点模板名即载入(列表就在展开面板里, 不再弹一层选择框)."""
+        payload = (self._region_table() or {}).get(name) or {}
+        if self._apply_region_payload(payload):
+            self._template_current = name
+            self._refresh_template_panel()
+
+    def _region_delete_current(self):
+        """删掉当前选中的那个模板(不动图上的区域)."""
+        name = getattr(self, "_template_current", None)
+        if not name:
+            MessageBox.information(self, self.tr("区域模板"),
+                                   self.tr("先在列表里点一个模板"))
+            return
+        if not MessageBox.question(
+                self, self.tr("区域模板"),
+                self.tr("删除模板 \"{}\"?").format(name)):
+            return
+        table = self._region_table()
+        table.pop(name, None)
+        self._region_store(table)
+        self._template_current = None
+        self._refresh_template_panel()
+
+    def _apply_region_payload(self, payload):
+        regions, warn = scaled_regions(payload, self._image_size_of_scene())
+        if not regions:
+            MessageBox.warning(self, self.tr("区域模板"),
+                               self.tr("模板里没有可用区域"))
+            return False
+        if warn:
+            # 长宽比不一致通常意味着不是同一种版面, 硬套会贴错位置, 让用户自己核对
+            MessageBox.warning(
+                self, self.tr("区域模板"),
+                self.tr("模板参考尺寸与当前图长宽比不一致, 区域已按比例缩放, 请核对位置"))
+        self.scene.set_paste_regions(regions)
+        self._sync_template_btn()
+        return True
+
+    def _region_export(self):
+        if not self.scene.paste_regions:
+            MessageBox.information(self, self.tr("区域模板"),
+                                   self.tr("还没有画区域"))
+            return
+        path, _f = QFileDialog.getSaveFileName(
+            self, self.tr("导出区域模板"), "paste_regions.json",
+            self.tr("JSON 文件 (*.json)"))
+        if not path:
+            return
+        name = os.path.splitext(os.path.basename(path))[0]
+        try:
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump({"version": 1,
+                           "templates": {name: self.scene.paste_region_payload()}},
+                          f, ensure_ascii=False, indent=2)
+        except OSError as exc:
+            MessageBox.warning(self, self.tr("区域模板"),
+                               self.tr("导出失败: {}").format(exc))
+            return
+        MessageBox.information(self, self.tr("区域模板"),
+                               self.tr("已导出到 {}").format(path))
+
+    def _region_import(self):
+        path, _f = QFileDialog.getOpenFileName(
+            self, self.tr("导入区域模板"), "",
+            self.tr("JSON 文件 (*.json)"))
+        if not path:
+            return
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except (OSError, ValueError) as exc:
+            MessageBox.warning(self, self.tr("区域模板"),
+                               self.tr("读取失败: {}").format(exc))
+            return
+        table = data.get("templates") if isinstance(data, dict) else None
+        if not isinstance(table, dict):
+            # 也认裸 payload(只有 ref_size/regions), 用文件名当模板名
+            table = {os.path.splitext(os.path.basename(path))[0]: data}
+        merged = self._region_table()
+        merged.update(table)
+        self._region_store(merged)
+        name = sorted(table)[0] if table else ""
+        if not name or not self._apply_region_payload(table[name]):
+            return
+        self._template_current = name
+        self._refresh_template_panel()
+        MessageBox.information(
+            self, self.tr("区域模板"),
+            self.tr("已导入 {} 个模板, 当前载入 \"{}\"").format(len(table), name))
 
     # ---------------- 复制/粘贴(格式刷改造: 右键复制多边形 + 随机旋转粘贴) ----------------
     def _toggle_show_boxes(self, checked):
@@ -905,8 +1248,28 @@ class AnnotationCanvasMixin:
             _clip_templates.clear()
             self._rebuild_clipboard(select=None)
 
+    def _toggle_auto_paste(self, checked):
+        """自动粘贴开关: 缺剪切板小图或缺区域时直接弹回来, 并说明缺什么."""
+        ctl = getattr(self, "auto_paste", None)
+        if ctl is None:
+            return
+        if not checked:
+            ctl.set_enabled(False)
+            return
+        if not ctl.set_enabled(True):
+            btn = getattr(self.ui, "auto_paste_switch", None)
+            if btn is not None and btn.isChecked():
+                btn.blockSignals(True)
+                btn.setChecked(False)
+                btn.blockSignals(False)
+            MessageBox.information(
+                self, self.tr("自动粘贴"),
+                self.tr("先准备两样东西: 剪切板里的小图条, 至少一个区域模板"))
+
     def _undo_fp_paste(self):
-        """Ctrl+Z: 撤浮动粘贴或最后一次像素改动(粘贴/填充)."""
+        """Ctrl+Z: 画区域时先撤区域, 否则撤浮动粘贴或最后一次像素改动(粘贴/填充)."""
+        if self.scene.template_mode and self._region_undo_last():
+            return
         if self.scene.undo_last_paste():
             self._refresh_labeled_list()
 

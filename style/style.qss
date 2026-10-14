@@ -1208,6 +1208,46 @@ QPushButton#headerMoreBtn {
 }
 QPushButton#headerMoreBtn::menu-indicator { image: none; width: 0px; }
 
+/* 区域模板的展开面板: 与 paramsPanel 同一套浮层语言(不在布局里, 贴按钮下沿) */
+#AnnotationDialog QFrame#templatePanel {
+    background-color: {{bg_panel}};
+    border: 1px solid {{border_strong}};
+    border-radius: {{r_xl}};
+}
+#AnnotationDialog QFrame#templatePanel QLabel#template_title {
+    color: {{text_3}};
+    font-size: {{font_md}};
+}
+/* 模板列表: 长名字自己省略、超出自己滚, 滚动条走应用统一样式 */
+#AnnotationDialog QFrame#templatePanel QListWidget#template_list {
+    background-color: {{bg_control}};
+    border: none;
+    border-radius: {{r_md}};
+    outline: none;
+    padding: 2px;
+}
+#AnnotationDialog QFrame#templatePanel QListWidget#template_list::item {
+    padding: 4px 6px;
+    border-radius: {{r_sm}};
+    color: {{text_2}};
+}
+#AnnotationDialog QFrame#templatePanel QListWidget#template_list::item:hover {
+    background-color: {{bg_hover}};
+}
+#AnnotationDialog QFrame#templatePanel QListWidget#template_list::item:selected {
+    background-color: {{accent_dim}};
+    color: {{accent_text}};
+}
+#AnnotationDialog QFrame#templatePanel QFrame#template_sep {
+    background-color: {{border_subtle}};
+    border: none;
+}
+/* 面板里的按钮比工具条那排小一档, 否则把面板撑得很大 */
+#AnnotationDialog QFrame#templatePanel QPushButton {
+    padding: 5px 8px;
+    min-height: 22px;
+}
+
 /* 训练/测试/结果框内容区可滚动: 框与视口都透出对话框底色, 只留右侧滚动条 */
 QDialog#TrainDialog QScrollArea,
 QDialog#TestDialog QScrollArea,
@@ -1286,7 +1326,8 @@ QPushButton#stop_train_btn:hover {
 }
 
 /* ---------------- 标注对话框标签列表 ---------------- */
-QLabel#show_boxes_label, QLabel#text_switch_label {
+QLabel#show_boxes_label, QLabel#text_switch_label,
+QLabel#auto_paste_label {
     color: {{text_2}};
     font-size: {{font_base}};
 }

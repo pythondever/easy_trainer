@@ -649,6 +649,28 @@ class DataBase:
         with self.mdb.begin(write=True) as txn:
             txn.put(keys.train_queue, blob)
 
+    # ---------- 粘贴区域模板 ----------
+    def get_paste_region_templates(self):
+        """
+        {"项目/数据集": {"模板名": {"ref_size": [w, h], "regions": [[[x, y], ...]]}}}.
+        损坏时返回空表, 不抛异常(与 get_train_queue 同一口径).
+        """
+        with self.mdb.begin(write=False) as txn:
+            data = txn.get(keys.paste_regions)
+        if not data:
+            return {}
+        try:
+            table = json.loads(data.decode())
+        except Exception:
+            return {}
+        return table if isinstance(table, dict) else {}
+
+    def save_paste_region_templates(self, table):
+        """整体覆盖(序列化在事务外, 与其他写操作同一取舍)."""
+        blob = json.dumps(dict(table), ensure_ascii=False).encode()
+        with self.mdb.begin(write=True) as txn:
+            txn.put(keys.paste_regions, blob)
+
     def get_models_dir(self):
         with self.mdb.begin(write=False) as txn:
             data = txn.get(keys.models_dir)

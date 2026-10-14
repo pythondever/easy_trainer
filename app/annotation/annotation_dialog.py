@@ -22,6 +22,7 @@ from PySide6.QtWidgets import (QDialog, QWidget, QApplication, QVBoxLayout,
 from ui.annotation import Ui_annotationDialog as AnnotationUI
 from ui.add_label import Ui_addLabelDialog as AddLabelUI
 
+from app.annotation.auto_paste import AutoPasteController
 from app.annotation.annotation_canvas import (ANGLE_RANGE_DEFAULT,
                                               AnnotationCanvasMixin,
                                               BLEND_STRENGTH_DEFAULT,
@@ -501,6 +502,35 @@ class AnnotationDialog(QDialog, AnnotationCanvasMixin, AnnotationIOMixin):
         u.horizontalLayout.insertSpacing(idx + 2, 10)
         u.horizontalLayout.insertWidget(idx + 3, u.text_switch)
         u.horizontalLayout.insertWidget(idx + 4, u.text_switch_label)
+        # 区域模板: 点一下就地展开面板(绘制开关 + 已存模板列表 + 管理动作),
+        # 箭头朝右=收起 / 朝下=展开, 与项目卡片同一套观感.
+        # 它本质是"另一种画模式", 所以跟 矩形/多边形/删除图像 同组.
+        u.template_btn = QPushButton(self.tr("区域模板"), self)
+        u.template_btn.setObjectName("template_btn")
+        u.template_btn.setCheckable(True)
+        u.template_btn.toggled.connect(self._toggle_template_panel)
+        idx2 = u.horizontalLayout.indexOf(u.delete_image_btn)
+        u.horizontalLayout.insertSpacing(idx2 + 1, 10)
+        u.horizontalLayout.insertWidget(idx2 + 2, u.template_btn)
+        self._build_template_panel(u)
+        self._sync_template_btn()
+        # 自动粘贴: 复用"显示标注/文本标注"那个开关控件, 放在文本标注后面
+        u.auto_paste_switch = SwitchButton(self)
+        u.auto_paste_switch.setObjectName("auto_paste_switch")
+        u.auto_paste_switch.setChecked(False)   # 默认关闭: 不该一进界面就自动贴
+        u.auto_paste_switch.setToolTip(self.tr(
+            "开启后每张图倒计时 3 秒, 自动在区域模板里随机粘贴剪切板小图"))
+        u.auto_paste_switch.toggled.connect(self._toggle_auto_paste)
+        u.auto_paste_label = QLabel(self.tr("自动粘贴"), self)
+        u.auto_paste_label.setObjectName("auto_paste_label")
+        idx3 = u.horizontalLayout.indexOf(u.settings_btn)
+        u.horizontalLayout.insertSpacing(idx3, 10)
+        u.horizontalLayout.insertWidget(idx3 + 1, u.auto_paste_switch)
+        u.horizontalLayout.insertWidget(idx3 + 2, u.auto_paste_label)
+        self.auto_paste = AutoPasteController(self)
+        self.scene.image_changed.connect(self.auto_paste.on_image_changed)
+        # 关窗要停表: 否则倒计时走完还会往图上贴、脉冲动画也照跑
+        self.finished.connect(lambda _r: self.auto_paste.set_enabled(False))
         u.settings_btn.clicked.connect(self._toggle_params_panel)
         u.close_params_btn.clicked.connect(self._hide_params_panel)
         u.reset_params_btn.clicked.connect(self._reset_params)
@@ -541,10 +571,15 @@ class AnnotationDialog(QDialog, AnnotationCanvasMixin, AnnotationIOMixin):
         if not isinstance(event, QEvent):
             return False
         if (event.type() == QEvent.Type.MouseButtonPress
-                and not self.ui.paramsPanel.isHidden()
-                and isinstance(obj, QWidget) and obj.window() is self
-                and not self._hit_params_area(event.globalPosition().toPoint())):
-            self._hide_params_panel()
+                and isinstance(obj, QWidget) and obj.window() is self):
+            gpos = event.globalPosition().toPoint()
+            if (not self.ui.paramsPanel.isHidden()
+                    and not self._hit_params_area(gpos)):
+                self._hide_params_panel()
+            panel = getattr(self.ui, "template_panel", None)
+            if (panel is not None and not panel.isHidden()
+                    and not self._hit_template_area(gpos)):
+                self._hide_template_panel()
         return False
 
     def _setup_shortcuts(self):
@@ -587,6 +622,12 @@ class AnnotationDialog(QDialog, AnnotationCanvasMixin, AnnotationIOMixin):
                   self.ui.clipboard_label, self.ui.clipboard_scroll):
             w.setEnabled(not on)
         self.ui.switchButton.setEnabled(not on)
+        # 文本标注模式下整张图就是一行字, 自动粘贴没意义: 一并关掉并禁用
+        auto_sw = getattr(self.ui, "auto_paste_switch", None)
+        if auto_sw is not None:
+            if on and auto_sw.isChecked():
+                auto_sw.setChecked(False)
+            auto_sw.setEnabled(not on)
         self.ui.show_boxes_label.setEnabled(not on)
         self.ui.textline_edit.setVisible(on)
         self._cancel_draw_mode()

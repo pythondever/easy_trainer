@@ -106,6 +106,14 @@ def blend_patch(dst_bgr, src_bgra, strength=0.7, feather_px=None):
         if ref_s.sum() < 50:
             ref_s = core_s
         d_s = bgr_to_lab(dst_bgr[::RING_STEP, ::RING_STEP][ref_s])[:, 0]
+        if d_s.size == 0:
+            # 细长小图条会被 RING_STEP 采样整个漏掉(core_s 全 False), d_s 成了
+            # 空切片: mean() 出 NaN, 一路传到 astype(uint8) 会写出垃圾像素.
+            # 取不到背景统计就只做硬贴, 不做亮度补偿
+            a = alpha[..., None]
+            out = (dst_bgr.astype(np.float32) * (1.0 - a)
+                   + src_bgr.astype(np.float32) * a)
+            return np.clip(out + 0.5, 0, 255).astype(np.uint8)
         offset = (float(d_s.mean()) - s_mean) * strength
         # 对比度只跟一部分: 全跟会改变缺陷自身的明暗幅度
         ratio = (float(d_s.std()) / max(float(s.std()), 1e-3)) ** (
