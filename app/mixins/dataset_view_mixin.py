@@ -493,15 +493,19 @@ class DatasetViewMixin(object):
                     idxs.append(box_idx)
         return recs, idxs
 
-    def show_dataset_images(self, project_name, dataset_name, update_stats=False):
+    def show_dataset_images(self, project_name, dataset_name, update_stats=False,
+                            keep_view=False):
         """
         从内存缓存取该数据集图像显示;无缓存则尝试后台加载(多路径合并).
         update_stats=True 时重扫完成会把 labeled/total 写回 db(双击载入场景,
         推理/标注新写的标签 json 重扫后同步统计).
+        keep_view=True 用于解码完成后的回渲: 内容与筛选都没变, 展开结果照用.
         """
         self._select_all_mode = False
-        # 数据集内容或筛选可能变了, 上一次展开的结果作废(翻页不走这里)
-        self._view_cache = None
+        # 内容或筛选可能变了就作废展开结果; 解码回渲每 120ms 一次, 跟着作废的话
+        # 每轮都要重跑一遍全量展开(实测 45 万图一轮 468ms)
+        if not keep_view:
+            self._view_cache = None
         # 换页只淘汰当前数据集(见 _evict_img_cache), 切走的那份永不释放;
         # 借切换这个低频时机回收最久未用的数据集.
         shown = (project_name, dataset_name)
@@ -518,7 +522,10 @@ class DatasetViewMixin(object):
                     "ds": (project_name, dataset_name),
                     "map": {r.get("image_path"): r for r in data.get("all", [])},
                 }
-            self._render_scene(self._filter_records(data))
+            if keep_view and getattr(self, "_view_cache", None) is not None:
+                self._render_scene()      # 复用展开结果, 只重画当前页
+            else:
+                self._render_scene(self._filter_records(data))
             return
         binding = self.db.get_dataset_import(project_name, dataset_name)
         if binding:
@@ -818,10 +825,10 @@ class DatasetViewMixin(object):
             self._evict_img_cache()
 
     def _roi_redraw(self):
-        """防抖重渲当前页(ROI 后台解码完成)."""
+        """防抖重渲当前页(缩略图/ROI 解码完成): 内容没变, 别作废展开结果."""
         cur_ds = getattr(self, "_current_dataset", None)
         if cur_ds:
-            self.show_dataset_images(cur_ds[0], cur_ds[1])
+            self.show_dataset_images(cur_ds[0], cur_ds[1], keep_view=True)
 
     def _img_clock_now(self):
         """单调递增访问时钟(无 time 精度问题)."""
