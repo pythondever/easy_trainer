@@ -38,16 +38,6 @@ from app.core import i18n, model_assets
 from app.core.metrics import best_map50_from_csv
 
 
-def _pretrained_path(cfg, task):
-    """训练起步用的预训练权重绝对路径; 缺文件返回空串(UI 已负责提示下载)."""
-    given = cfg.get("pretrained_path")
-    if given and os.path.isfile(given):
-        return given
-    return model_assets.resolve_path(
-        task, cfg.get("architecture", "nano"),
-        cfg.get("family") or "transformer")
-
-
 def _make_model(architecture, task="detect", pretrained_path=""):
     if task == "segment":
         variants = {
@@ -138,7 +128,7 @@ def main():
     labels = prepare_dataset(out_root, project, cfg["datasets"], task)
 
     # 2) 训练:
-    weights = _pretrained_path(cfg, task)
+    weights = model_assets.resolve_pretrained(cfg, task)
     if not weights:
         raise RuntimeError(QC.translate(
             "TrainRunner",

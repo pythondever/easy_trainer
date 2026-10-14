@@ -29,7 +29,7 @@ from PIL import Image
 from PySide6.QtCore import QCoreApplication as QC
 
 from app.core import i18n
-from app.core.constants import IMAGE_EXTS
+from app.train.eval_common import collect_pairs, dataset_list
 from app.core.label_utils import (is_text_label, load_json_shapes,
                                   shapes_to_labelme_json, text_label)
 from app.core.metrics import cer, cer_detail, edit_ops
@@ -52,36 +52,6 @@ REC_ARCH = "crnn_mobilenet_v3_small"
 
 # 结果面板的错误字条明细表最多列这么多行: 验证集上千条时窗口不会拖成长条
 ERR_LIMIT = 50
-
-
-def _list_images(img_dir):
-    if not os.path.isdir(img_dir):
-        return []
-    names = [n for n in os.listdir(img_dir)
-             if os.path.splitext(n)[1].lower() in IMAGE_EXTS]
-    return [os.path.join(img_dir, n) for n in sorted(names)]
-
-
-def _collect_pairs(cfg):
-    items = cfg.get("items") or [
-        {"image_path": cfg.get("image_path", ""),
-         "label_path": cfg.get("label_path", "")}]
-    pairs = []
-    for it in items:
-        label_dir = it.get("label_path") or ""
-        for img in _list_images(it.get("image_path") or ""):
-            pairs.append((img, label_dir))
-    return pairs
-
-
-def _dataset_list(cfg):
-    out, seen = [], set()
-    for it in cfg.get("items") or []:
-        key = (str(it.get("project") or ""), str(it.get("dataset") or ""))
-        if key[1] and key not in seen:
-            seen.add(key)
-            out.append({"project": key[0], "dataset": key[1]})
-    return out
 
 
 def _iou(a, b):
@@ -315,7 +285,7 @@ def _run_det(cfg, ckpt):
                 "OcrTestRunner", "识别模型不可用, 输出的标注只有框没有文字"),
                 flush=True)
 
-    pairs = _collect_pairs(cfg)
+    pairs = collect_pairs(cfg)
     if not pairs:
         raise RuntimeError(QC.translate("OcrTestRunner", "没有可用的图像, 请检查数据集"))
     print("[test] " + QC.translate(
@@ -393,7 +363,7 @@ def _run_det(cfg, ckpt):
     result = {"ok": True, "task": occ.DET_TASK, "total": len(pairs),
               "model": os.path.basename(cfg.get("model_path", "") or ""),
               "conf": conf_th, "iou": iou_th,
-              "datasets": _dataset_list(cfg)}
+              "datasets": dataset_list(cfg)}
     if detail_path and os.path.exists(detail_path):
         result["detail_path"] = detail_path
         result["report_dir"] = os.path.dirname(detail_path)
@@ -433,7 +403,7 @@ def _run_rec(cfg, ckpt):
     device = _device_of(cfg)
     predictor = _rec_predictor(ckpt, model, device)
 
-    pairs = _collect_pairs(cfg)
+    pairs = collect_pairs(cfg)
     if not pairs:
         raise RuntimeError(QC.translate("OcrTestRunner", "没有可用的图像, 请检查数据集"))
     print("[test] " + QC.translate(
@@ -522,7 +492,7 @@ def _run_rec(cfg, ckpt):
         result = {"ok": True, "task": occ.RECO_TASK, "total": len(refs),
                   "cer": value, "exact": exact, "no_label": len(infer),
                   "model": os.path.basename(cfg.get("model_path", "") or ""),
-                  "datasets": _dataset_list(cfg),
+                  "datasets": dataset_list(cfg),
                   "chars": chars["chars"], "correct": chars["correct"],
                   "sub": chars["sub"], "dele": chars["dele"],
                   "ins": chars["ins"], "err_total": len(errors),
@@ -534,7 +504,7 @@ def _run_rec(cfg, ckpt):
         result = {"ok": True, "task": occ.RECO_TASK, "total": 0, "cer": None,
                   "exact": 0, "no_label": len(infer),
                   "model": os.path.basename(cfg.get("model_path", "") or ""),
-                  "datasets": _dataset_list(cfg)}
+                  "datasets": dataset_list(cfg)}
     if infer:
         result["infer"] = len(infer)
         result["written"] = written

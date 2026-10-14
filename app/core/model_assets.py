@@ -393,6 +393,15 @@ def resolve_path(task, level, family="transformer"):
     return path_of(asset) if is_downloaded(asset) else ""
 
 
+def resolve_pretrained(cfg, task):
+    """训练起步用的预训练权重绝对路径; 缺文件返回空串(UI 已负责提示下载)."""
+    given = cfg.get("pretrained_path")
+    if given and os.path.isfile(given):
+        return given
+    return resolve_path(task, cfg.get("architecture", "nano"),
+                        cfg.get("family") or "transformer")
+
+
 def ensure_amp_weight(weights_dir):
     """
     ultralytics 训练前固定去 weights_dir 找 yolo26n.pt 做 AMP 自检, 缺了就联网下一份;

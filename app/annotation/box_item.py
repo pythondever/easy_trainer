@@ -106,7 +106,47 @@ def chip_text(item):
     return (item.text or item.label)[:12]
 
 
-class AnnotationBoxItem(QGraphicsRectItem):
+class _LabelChipMixin(object):
+    """矩形/多边形共用的"标签取色 + chip 缩放换算": 两份实现必须一致, 合并到一处."""
+
+    def set_label(self, label, color=None):
+        """
+        修改类别. 未显式传 color 时按新标签重新取色:
+        优先场景标签色映射(scene.label_colors, db 自定义色),
+        否则确定性哈希色 - 保证改类别后框和 chip 颜色跟随新标签.
+        """
+        self.label = label
+        if color is None:
+            scene = self.scene()
+            if scene is not None:
+                color = scene.label_colors.get(label)
+            if color is None:
+                color = label_color(label)
+        self._color = color
+        pen_color = color
+        self.setPen(QPen(pen_color, 2.0))
+        fill = QColor(pen_color)
+        fill.setAlpha(28)
+        self.setBrush(QBrush(fill))
+        self.update()
+
+    # ---------------- 标签 chip 点击(修改类别) ----------------
+    def _view_scale(self):
+        """
+        当前 view 的缩放系数(无 view 时 1.0).
+        chip 绘制在屏幕坐标(恒定像素大小), 点击检测在局部坐标,
+        必须把屏幕宽度按 scale 换算回局部坐标, 否则缩小视图时点不中.
+        """
+        scene = self.scene()
+        if scene is None:
+            return 1.0
+        views = scene.views()
+        if not views:
+            return 1.0
+        return views[0].transform().m11() or 1.0
+
+
+class AnnotationBoxItem(_LabelChipMixin, QGraphicsRectItem):
     """场景坐标下的标注框(rect 即像素坐标)."""
 
     # 八向缩放手柄
@@ -201,27 +241,6 @@ class AnnotationBoxItem(QGraphicsRectItem):
                 self.H_MR: QRectF(r.right() - s / 2, cy - s / 2, s, s),
             })
 
-    def set_label(self, label, color=None):
-        """
-        修改类别. 未显式传 color 时按新标签重新取色:
-        优先场景标签色映射(scene.label_colors, db 自定义色),
-        否则确定性哈希色 - 保证改类别后框和 chip 颜色跟随新标签.
-        """
-        self.label = label
-        if color is None:
-            scene = self.scene()
-            if scene is not None:
-                color = scene.label_colors.get(label)
-            if color is None:
-                color = label_color(label)
-        self._color = color
-        pen_color = color
-        self.setPen(QPen(pen_color, 2.0))
-        fill = QColor(pen_color)
-        fill.setAlpha(28)
-        self.setBrush(QBrush(fill))
-        self.update()
-
     def boxes(self):
         r = self.rect().translated(self.pos())
         return [r.left(), r.top(), r.right(), r.bottom()]
@@ -242,21 +261,6 @@ class AnnotationBoxItem(QGraphicsRectItem):
             if dx * dx + dy * dy <= radius * radius:
                 return key
         return None
-
-    # ---------------- 标签 chip 点击(修改类别) ----------------
-    def _view_scale(self):
-        """
-        当前 view 的缩放系数(无 view 时 1.0).
-        chip 绘制在屏幕坐标(恒定像素大小), 点击检测在局部坐标,
-        必须把屏幕宽度按 scale 换算回局部坐标, 否则缩小视图时点不中.
-        """
-        scene = self.scene()
-        if scene is None:
-            return 1.0
-        views = scene.views()
-        if not views:
-            return 1.0
-        return views[0].transform().m11() or 1.0
 
     def _chip_rect_local(self):
         """
@@ -454,7 +458,7 @@ class AnnotationBoxItem(QGraphicsRectItem):
 
 # ---------------- 多边形标注项 ----------------
 
-class AnnotationPolygonItem(QGraphicsPolygonItem):
+class AnnotationPolygonItem(_LabelChipMixin, QGraphicsPolygonItem):
     """场景坐标下的多边形标注(顶点即像素坐标). 与 BoxItem 共用 chip 渲染与配色."""
 
     HANDLE_SIZE = 8.0
@@ -555,27 +559,6 @@ class AnnotationPolygonItem(QGraphicsPolygonItem):
             s = max(1.2, min(s / scale, 20.0))
         return s
 
-    def set_label(self, label, color=None):
-        """
-        修改类别. 未显式传 color 时按新标签重新取色:
-        优先场景标签色映射(scene.label_colors, db 自定义色),
-        否则确定性哈希色 - 保证改类别后框和 chip 颜色跟随新标签.
-        """
-        self.label = label
-        if color is None:
-            scene = self.scene()
-            if scene is not None:
-                color = scene.label_colors.get(label)
-            if color is None:
-                color = label_color(label)
-        self._color = color
-        pen_color = color
-        self.setPen(QPen(pen_color, 2.0))
-        fill = QColor(pen_color)
-        fill.setAlpha(28)
-        self.setBrush(QBrush(fill))
-        self.update()
-
     def points(self):
         """
         返回 [[x, y], ...](场景/像素坐标, 含 pos 偏移).
@@ -583,17 +566,6 @@ class AnnotationPolygonItem(QGraphicsPolygonItem):
         """
         pos = self.pos()
         return [[p.x() + pos.x(), p.y() + pos.y()] for p in self.polygon()]
-
-    # ---------------- 标签 chip 点击(修改类别) ----------------
-    def _view_scale(self):
-        """当前 view 的缩放系数(无 view 时 1.0), 供 chip 点击区域换算."""
-        scene = self.scene()
-        if scene is None:
-            return 1.0
-        views = scene.views()
-        if not views:
-            return 1.0
-        return views[0].transform().m11() or 1.0
 
     def _chip_rect_local(self):
         """chip 点击区域, 锚定外接矩形中心, 尺寸按缩放换算(记忆化, 同矩形版)."""

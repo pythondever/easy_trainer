@@ -35,7 +35,7 @@ from PIL import Image
 
 from app.core import i18n
 from app.train.eval_errors import pair_confusions
-from app.core.constants import IMAGE_EXTS as _IMG_EXTS
+from app.train.eval_common import collect_pairs, dataset_list
 
 try:
     import cv2
@@ -72,33 +72,6 @@ _MAX_POLY_PTS = 60
 
 # rf-detr 把"无物体"槽命名成这个; 置信度压到 0 时它会被当成预测放出来
 _BG_CLASS = "__background__"
-
-
-def _list_images(img_dir):
-    """返回图片文件绝对路径列表(按名称排序, 稳定复现)."""
-    if not os.path.isdir(img_dir):
-        return []
-    names = [n for n in os.listdir(img_dir)
-             if n.lower().endswith(_IMG_EXTS)]
-    return [os.path.join(img_dir, n) for n in sorted(names)]
-
-
-def _collect_pairs(cfg):
-    """
-    展开成 [(图片路径, 标签目录), ...], 支持一次测多个数据集.
-    标签按文件名在"该图片所属数据集的"标签目录里找, 不同数据集的同名图片
-    不会串, 所以必须逐目录配对而不是共用一个 label_dir.
-    兼容旧 cfg: 没有 items 时退回单条 image_path/label_path.
-    """
-    items = cfg.get("items") or [
-        {"image_path": cfg.get("image_path", ""),
-         "label_path": cfg.get("label_path", "")}]
-    pairs = []
-    for it in items:
-        label_dir = it.get("label_path") or ""
-        for img in _list_images(it.get("image_path") or ""):
-            pairs.append((img, label_dir))
-    return pairs
 
 
 def _decimate(pts, max_pts):
@@ -349,17 +322,6 @@ def _write_detail(path, img_path, missing, spurious, hits):
             "TestRunner", "明细写入失败: {}").format(exc), flush=True)
 
 
-def _dataset_list(cfg):
-    """cfg 里去重后的 [(项目, 数据集)], 报告首页要显示"测的是哪个数据集"."""
-    out, seen = [], set()
-    for it in cfg.get("items") or []:
-        key = (str(it.get("project") or ""), str(it.get("dataset") or ""))
-        if key[1] and key not in seen:
-            seen.add(key)
-            out.append({"project": key[0], "dataset": key[1]})
-    return out
-
-
 def _decide_use_cls(gts_are_ids, preds_are_ids):
     """
     能不能按类别匹配: GT 与预测的类别体系必须一致.
@@ -445,7 +407,7 @@ def main():
     i18n.apply_cli(cfg.get("language", ""))
     model = _make_predictor(cfg)
 
-    pairs = _collect_pairs(cfg)
+    pairs = collect_pairs(cfg)
     print("[test] " + QC.translate(
         "TestRunner", "测试图片 {} 张").format(len(pairs)), flush=True)
     conf_th = float(cfg.get("confidence", 0.5))
@@ -555,7 +517,7 @@ def main():
     result = {"ok": True, "total": len(pairs),
               "model": os.path.basename(cfg.get("model_path", "") or ""),
               "conf": conf_th, "iou": iou_th,
-              "datasets": _dataset_list(cfg)}
+              "datasets": dataset_list(cfg)}
     if detail_path and os.path.exists(detail_path):
         result["detail_path"] = detail_path
         result["report_dir"] = os.path.dirname(detail_path)

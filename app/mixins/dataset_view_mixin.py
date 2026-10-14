@@ -23,12 +23,8 @@ from PySide6.QtCore import QCoreApplication as QC
 from PySide6.QtWidgets import QMenu, QGraphicsView, QGraphicsScene
 
 
-class _RoiDecodeWorker(QThread):
-    """
-    按类筛选的 ROI 后台解码: 避免首页 UI 线程同步 PIL 全尺寸解码卡顿.
-    提交 (image_path, label, box_idx, box) 任务, 后台逐张解码+crop,
-    整批完成后 emit (path, label, box_idx, qimg) 列表到主线程.
-    """
+class _DecodeWorkerBase(QThread):
+    """后台解码线程的公共骨架(队列 / 停止标志 / 取批), 具体解码交给子类 decode()."""
 
     batch_done = Signal(object)
 
@@ -46,64 +42,59 @@ class _RoiDecodeWorker(QThread):
         with QMutexLocker(self._mutex):
             self._stop = True
 
+    def _take_batch(self):
+        """取走当前整批; 返回 None 表示已请求停止."""
+        with QMutexLocker(self._mutex):
+            if self._stop:
+                return None
+            jobs, self._jobs = self._jobs, []
+        return jobs
+
     def run(self):
         while True:
-            with QMutexLocker(self._mutex):
-                if self._stop:
-                    return
-                jobs = self._jobs
-                self._jobs = []
+            jobs = self._take_batch()
+            if jobs is None:
+                return
             if not jobs:
                 QThread.msleep(30)
                 continue
-            results = []
-            for path, label, box_idx, box in jobs:
-                # _decode_roi 只解码标注框所在区域, 不必全图解码
-                results.append((path, label, box_idx, _decode_roi(path, box)))
-            self.batch_done.emit(results)
+            self.batch_done.emit(self.decode(jobs))
+
+    def decode(self, jobs):
+        raise NotImplementedError
 
 
-class _ThumbDecodeWorker(QThread):
+class _RoiDecodeWorker(_DecodeWorkerBase):
+    """
+    按类筛选的 ROI 后台解码: 避免首页 UI 线程同步 PIL 全尺寸解码卡顿.
+    提交 (image_path, label, box_idx, box) 任务, 后台逐张解码+crop,
+    整批完成后 emit (path, label, box_idx, qimg) 列表到主线程.
+    """
+
+    def decode(self, jobs):
+        results = []
+        for path, label, box_idx, box in jobs:
+            # _decode_roi 只解码标注框所在区域, 不必全图解码
+            results.append((path, label, box_idx, _decode_roi(path, box)))
+        return results
+
+
+class _ThumbDecodeWorker(_DecodeWorkerBase):
     """整图缩略图后台解码: 首页/全部/未标注筛选不阻塞 UI."""
 
-    batch_done = Signal(object)
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self._jobs = []
-        self._mutex = QMutex()
-        self._stop = False
-
-    def submit(self, paths):
-        with QMutexLocker(self._mutex):
-            self._jobs.extend(paths)
-
-    def stop(self):
-        with QMutexLocker(self._mutex):
-            self._stop = True
-
-    def run(self):
-        while True:
-            with QMutexLocker(self._mutex):
-                if self._stop:
-                    return
-                jobs = self._jobs
-                self._jobs = []
-            if not jobs:
-                QThread.msleep(30)
-                continue
-            results = []
-            for path in jobs:
-                qimg = None
-                try:
-                    im = PILImage.open(path)
-                    im.draft("RGB", (200, 200))
-                    im = im.convert("RGB")
-                    qimg = pil_to_qimage(make_uniform_thumb(im))
-                except Exception:
-                    pass
-                results.append((path, qimg))
-            self.batch_done.emit(results)
+    def decode(self, jobs):
+        results = []
+        for path in jobs:
+            qimg = None
+            try:
+                im = PILImage.open(path)
+                im.draft("RGB", (200, 200))
+                im = im.convert("RGB")
+                qimg = pil_to_qimage(make_uniform_thumb(im))
+            except Exception:
+                pass
+            results.append((path, qimg))
+        return results
 
 
 # 缓存里的 QImage 统一 200x200(见 _decode_roi 的 setScaledSize 与

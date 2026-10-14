@@ -235,16 +235,6 @@ def _sync_metrics(csv_path, metrics_path, task, per_class=None):
     return len(rows)
 
 
-def _pretrained_path(cfg, task):
-    """训练起步用的预训练权重绝对路径; 缺文件返回空串(UI 已负责提示下载)."""
-    given = cfg.get("pretrained_path")
-    if given and os.path.isfile(given):
-        return given
-    return model_assets.resolve_path(
-        task, cfg.get("architecture", "nano"),
-        cfg.get("family") or "transformer")
-
-
 def main():
     from ultralytics import YOLO
     from ultralytics.utils import WEIGHTS_DIR
@@ -263,7 +253,7 @@ def main():
 
     task = cfg.get("task", "detect")
     architecture = cfg.get("architecture", "nano")
-    weights = _pretrained_path(cfg, task)
+    weights = model_assets.resolve_pretrained(cfg, task)
     if not weights:
         raise RuntimeError(QC.translate(
             "TrainRunner",

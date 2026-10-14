@@ -36,10 +36,7 @@ class SelectablePixmapItem(QGraphicsPixmapItem):
         self._sel_color = theme.color("accent")
 
     def boundingRect(self):
-        pm = self.pixmap()
-        w = pm.width() + 2 * CARD_PAD
-        h = pm.height() + 2 * CARD_PAD + INFO_H
-        return QRectF(0, 0, w, h)
+        return self._card_rect()
 
     def hoverEnterEvent(self, event):
         self._hover = True
