@@ -6,15 +6,34 @@ from app.core.db import get_paths
 from app.core.label_utils import (display_label, is_text_label, normalize_label,
                                   label_sort_key, rec_is_labeled)
 from app.annotation.box_item import assign_label_color
+from app.widgets.combo_utils import CLOSE_GUARD_SECS
 from app.widgets.label_filter_popup import (ALL_COLOR, DIM_DOT,
                                             LabelFilterPanel)
 from app.widgets.message_box import MessageBox
 from app.tasks.merge_task import LabelJsonTask, MergeLabelsTask
-from PySide6.QtCore import QCoreApplication as QC
+from PySide6.QtCore import QCoreApplication as QC, QEvent, QObject
 
 # "未标注"不是真实类别, 用黑块占位, 与真实标签的彩色块对齐
 UNLABELED_COLOR = "#000000"
 UNLABELED_KEY = "__unlabeled__"
+
+
+class _PanelHideWatcher(QObject):
+    """记下面板最近一次收起的时刻, 供 _toggle_label_filter_panel 判这一次点击.
+
+    Qt 遇到"点在 popup 外"会先收起面板, 稍后才把这次点击投给按钮; 收到点击
+    时面板已经不可见了, 所以只能按时间判(实测同一轮事件派发判不住).
+    """
+
+    def __init__(self, panel):
+        super().__init__(panel)
+        self.closed_at = 0.0
+        panel.installEventFilter(self)
+
+    def eventFilter(self, obj, event):
+        if isinstance(event, QEvent) and event.type() == QEvent.Hide:
+            self.closed_at = time.monotonic()
+        return False
 
 
 class LabelMixin(object):
@@ -51,6 +70,7 @@ class LabelMixin(object):
         self.filter_labels = []
         self._label_filter_items = []
         self.label_filter_panel = LabelFilterPanel(self)
+        self._filter_hide_watcher = _PanelHideWatcher(self.label_filter_panel)
         self.label_filter_panel.filterChanged.connect(self._on_label_filter_changed)
         self.label_filter_btn.clicked.connect(self._toggle_label_filter_panel)
         self._sync_filter_ui()
@@ -60,13 +80,12 @@ class LabelMixin(object):
         panel = self.label_filter_panel
         if panel.isVisible():
             panel.hide()
-            self._filter_closed_at = time.monotonic()
             return
-        # popup 被点外部关掉时, 那一下点击有时会顺带落到按钮上, 别立刻再弹开
-        if time.monotonic() - getattr(self, "_filter_closed_at", 0.0) < 0.25:
+        # 面板刚被这次点击(点在面板外)收掉, 这一下就只是"收起", 别再弹开
+        if (time.monotonic() - self._filter_hide_watcher.closed_at
+                < CLOSE_GUARD_SECS):
             return
         panel.popup_below(self.label_filter_btn)
-        self._filter_closed_at = 0.0
 
     def _on_label_filter_changed(self, selected):
         """面板勾选变化: 重置分页并按新筛选重渲(分页数据跟着筛选走)."""

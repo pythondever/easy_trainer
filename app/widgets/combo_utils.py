@@ -1,9 +1,16 @@
 # -*- coding: utf-8 -*-
 """
-下拉框统一装扮: 文本居中 + 点击框内任意位置展开.
+下拉框统一装扮: 文本居中 + 点击框内任意位置展开 / 收起.
 """
 
+import time
+
 from PySide6.QtCore import QEvent, QObject, Qt, QTimer
+
+# 弹层收起后多久内的点击算"就是刚才收起的这一下". Qt 是先把弹层收掉, 稍后
+# (可能跨到下一轮事件循环)才把这次点击投给控件, 所以不能用"同一轮"判, 也
+# 不能只看可见性: 收到点击时弹层往往已经不可见了
+CLOSE_GUARD_SECS = 0.25
 
 # 勾选态判定: 同一个 CheckStateRole, 存进去的方式不同取出来的类型就不同.
 # item.setCheckState() 存进去, index.data() 给裸 int; model.setData(..., Qt.Checked)
@@ -21,19 +28,33 @@ def is_checked(state):
 
 
 class ClickToPopupFilter(QObject):
-    """点击下拉框(或其 lineEdit)任意位置就展开下拉."""
+    """点击下拉框(或其 lineEdit)任意位置展开 / 收起下拉."""
 
     def __init__(self, combo, parent=None):
         super().__init__(parent)
         self._combo = combo
+        self._closed_at = 0.0
+        view = combo.view()
+        if view is not None:
+            view.installEventFilter(self)
 
     def eventFilter(self, obj, event):
         # PySide6 6.9.1 偶尔把 QStandardItem 当 event 投过来, 直接 event.type() 是空指针解引用
         if not isinstance(event, QEvent):
             return False
-        if event.type() == QEvent.MouseButtonPress and event.button() == Qt.LeftButton:
+        t = event.type()
+        if t == QEvent.Hide and obj is self._combo.view():
+            self._closed_at = time.monotonic()
+            return False
+        if t == QEvent.MouseButtonPress and event.button() == Qt.LeftButton:
             # 事件过滤器跑在 Qt 的禁用判定之前, 不自己挡一下的话置灰的下拉照样能点开
             if not self._combo.isEnabled():
+                return True
+            view = self._combo.view()
+            if ((view is not None and view.isVisible())
+                    or time.monotonic() - self._closed_at < CLOSE_GUARD_SECS):
+                self._combo.hidePopup()
+                self._closed_at = 0.0
                 return True
             QTimer.singleShot(0, self._combo.showPopup)
             return True

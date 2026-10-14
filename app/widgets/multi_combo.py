@@ -6,13 +6,15 @@ QComboBox 撑不起这个样式 - item view 的 ::indicator 只能改尺寸和�
 编辑区换成自绘标签的 ChipLineEdit, 两者都直接读 model 的勾选状态, 不碰文本.
 """
 
+import time
+
 from PySide6.QtCore import QEvent, QObject, QPointF, QRectF, QSize, Qt, QTimer
 from PySide6.QtCore import QCoreApplication as QC
 from PySide6.QtGui import (QColor, QFont, QFontMetrics, QPainter, QPainterPath,
                            QPen, QPolygonF)
 from PySide6.QtWidgets import QLineEdit, QStyle, QStyledItemDelegate
 from app.core import theme
-from app.widgets.combo_utils import is_checked
+from app.widgets.combo_utils import CLOSE_GUARD_SECS, is_checked
 
 ROLE_DATASET = Qt.UserRole
 
@@ -225,11 +227,22 @@ class ChipLineEdit(QLineEdit):
         super().__init__(combo)
         self._combo = combo
         self._cross = []
+        self._closed_at = 0.0
         self.setObjectName("multiComboLineEdit")
         self.setReadOnly(True)
         self.setPlaceholderText(placeholder)
         # 标签是自己画的, 别显示出文本光标
         self.setCursor(Qt.ArrowCursor)
+        view = combo.view()
+        if view is not None:
+            view.installEventFilter(self)
+
+    def eventFilter(self, obj, event):
+        # 记下弹层收起时刻, 见 mousePressEvent
+        if (isinstance(event, QEvent) and event.type() == QEvent.Hide
+                and obj is self._combo.view()):
+            self._closed_at = time.monotonic()
+        return False
 
     def _chips(self):
         model = self._combo.model()
@@ -325,6 +338,14 @@ class ChipLineEdit(QLineEdit):
                     item.setCheckState(Qt.Unchecked)
                 event.accept()
                 return
+        # 已展开(或刚被这一下点击收掉)时这一下就是"收起", 不能再补 showPopup
+        view = self._combo.view()
+        if ((view is not None and view.isVisible())
+                or time.monotonic() - self._closed_at < CLOSE_GUARD_SECS):
+            self._combo.hidePopup()
+            self._closed_at = 0.0
+            event.accept()
+            return
         # 点框内任意位置展开: 没有事件过滤器接管, 这里手动补一次 showPopup
         QTimer.singleShot(0, self._combo.showPopup)
         event.accept()

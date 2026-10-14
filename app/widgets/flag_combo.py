@@ -89,10 +89,11 @@ class _ItemDelegate(QStyledItemDelegate):
             QPalette.HighlightedText if selected else QPalette.Text)
         painter.save()
         painter.setFont(option.font)
+        # 项没有 DecorationRole 时 data() 给 None, 直接喂给 _draw_icon_text 会崩
+        icon = index.data(Qt.DecorationRole) or QIcon()
         _draw_icon_text(painter, option.rect, option.rect.x() + ITEM_LEFT_PAD,
-                        index.data(Qt.DecorationRole),
-                        index.data(Qt.DisplayRole) or "", self._combo.iconSize(),
-                        color, self._gap)
+                        icon, index.data(Qt.DisplayRole) or "",
+                        self._combo.iconSize(), color, self._gap)
         painter.restore()
 
 
