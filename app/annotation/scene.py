@@ -103,6 +103,7 @@ class AnnotationScene(QGraphicsScene):
         self.template_mode = False
         self._region_points = []      # 权威数据: 换图/清空标注都不该丢
         self.paste_regions = []       # 对应 item, 一律由 _region_points 重建
+        self._region_drag = None      # 正在拖的顶点 (item, 下标): 拖完才回写
         self.auto_marks = []          # 自动粘贴留下的虚线标记框(每贴一次一个)
         self.selectionChanged.connect(self._on_selection_changed)
 
@@ -973,8 +974,21 @@ class AnnotationScene(QGraphicsScene):
             except RuntimeError:
                 pass
 
+    def _finish_region_drag(self):
+        """松手才把新顶点写回 _region_points: 拖动中途重建 item 会把正拖的手柄换掉."""
+        drag = self._region_drag
+        self._region_drag = None
+        if drag is None:
+            return
+        try:
+            idx = self.paste_regions.index(drag[0])
+        except ValueError:
+            return
+        self._region_points[idx] = drag[0].region_points()
+
     def _rebuild_paste_region_items(self):
         """按 _region_points 重建 item: 序号取自下标, 删一个不必手工重编号."""
+        self._region_drag = None      # 旧 item 即将作废, 拖动态一并丢掉
         for it in self.paste_regions:
             # set_image 里的 clear() 已经把 item 的 C++ 对象删了, 这时只剩 Python 壳,
             # 拿它调 removeItem 会 RuntimeError(与 _dispose_item 同一处防御)
@@ -1134,14 +1148,20 @@ class AnnotationScene(QGraphicsScene):
                            for it in self.items(event.scenePos()))
             hit_region = (None if on_annot
                           else self.paste_region_at(event.scenePos()))
-            # 先清掉区域的选中态再判命中: 放在早返回之后的话, 点标注时
+            # 手柄只在选中态存在, 所以顶点命中必须赶在清选中态之前判
+            handle = (None if hit_region is None else hit_region.handle_at(
+                hit_region.mapFromScene(event.scenePos())))
+            # 清掉其它区域的选中态: 放在早返回之后的话, 点标注时
             # 区域的高亮会一直留着(而且接着按 DEL 就容易删错)
             for r in self.paste_regions:
-                if r.isSelected():
+                if r.isSelected() and r is not hit_region:
                     r.setSelected(False)
             if hit_region is not None:
                 self.clearSelection()
                 hit_region.setSelected(True)
+                if handle is not None:
+                    # 拖顶点: 用 item 上那套(与标注同一个 mixin), 拖动期间不重建 item
+                    self._region_drag = (hit_region, handle)
                 event.accept()
                 return
         if self.fp_mode is not None and event.button() == Qt.LeftButton and self.image_rect is not None:
@@ -1338,6 +1358,14 @@ class AnnotationScene(QGraphicsScene):
         return True
 
     def mouseMoveEvent(self, event):
+        if self._region_drag is not None:
+            item, idx = self._region_drag
+            try:
+                item._resize_vertex(item.mapFromScene(event.scenePos()), idx)
+            except RuntimeError:
+                self._region_drag = None
+            event.accept()
+            return
         if self.fp_mode is not None and self.image_rect is not None:
             pos = self._clamp_to_image(event.scenePos())
             if self.fp_mode == "trace" and self.fp_track:
@@ -1372,6 +1400,10 @@ class AnnotationScene(QGraphicsScene):
         super().mouseMoveEvent(event)
 
     def mouseReleaseEvent(self, event):
+        if self._region_drag is not None:
+            self._finish_region_drag()
+            event.accept()
+            return
         if self.fp_mode == "trace" and event.button() == Qt.LeftButton:
             self._finish_fp_trace()
             event.accept()

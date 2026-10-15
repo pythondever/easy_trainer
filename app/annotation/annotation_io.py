@@ -549,7 +549,8 @@ class AnnotationIOMixin:
                               "label": label or self.scene.current_label})
         if new_items:
             _clip_templates[:0] = new_items
-            self._rebuild_clipboard(select=0)
+            # 导入后不替用户选中第一张: 跟随鼠标的虚线预览要等他点了小图才出现
+            self._rebuild_clipboard()
         msg = QC.translate("AnnotationDialog", "已导入 {} 个模板到剪切板").format(len(new_items))
         if rect_n:
             msg += QC.translate("AnnotationDialog", "\n其中 {} 个没有同名 json, 按矩形导入").format(rect_n)

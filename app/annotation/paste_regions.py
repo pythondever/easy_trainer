@@ -9,9 +9,11 @@ from PySide6.QtCore import QPointF, QRectF, Qt
 from PySide6.QtGui import (QBrush, QColor, QPainterPath,
                            QPainterPathStroker, QPen, QPolygonF)
 from PySide6.QtWidgets import (QGraphicsItem, QGraphicsPolygonItem,
-                               QGraphicsRectItem, QStyle)
+                               QGraphicsRectItem, QStyle,
+                               QStyleOptionGraphicsItem)
 
 
+from app.annotation.box_item import _VertexHandleMixin
 from app.core import theme
 
 FILL_ALPHA = 26         # 填充透明度: 只要看出范围, 别盖住缺陷本身
@@ -27,10 +29,11 @@ def _accent():
     return QColor(theme.color("accent"))
 
 
-class PasteRegionItem(QGraphicsPolygonItem):
+class PasteRegionItem(_VertexHandleMixin, QGraphicsPolygonItem):
     """一个可粘贴区域: 虚线描边 + 序号角标(不填充, 免得压住底下的缺陷).
 
-    不接鼠标: 命中与选中都走 scene.mousePressEvent, 免得抢掉画框/框选/拖顶点;
+    不接鼠标: 命中/选中/拖顶点都走 scene.mousePressEvent, 免得抢掉画框与框选;
+    顶点手柄与拖动复用多边形标注那一套(_VertexHandleMixin).
     """
 
     def __init__(self, points, index):
@@ -49,6 +52,7 @@ class PasteRegionItem(QGraphicsPolygonItem):
         self.setPen(pen)
         # 不填充: 区域只是"范围提示", 铺一层蓝底会把底下的缺陷和粘贴效果压住
         self.setBrush(QBrush(Qt.NoBrush))
+        self._update_handles()
 
     def set_selectable(self, on):
         """能不能用左键点选(命中由 scene 判, 这里只管选中标记).
@@ -75,29 +79,46 @@ class PasteRegionItem(QGraphicsPolygonItem):
         stroker.setWidth(HIT_PAD)
         # 必须与多边形本身求并: createStroke 只给"沿轮廓的一条环带", 不含内部,
         # 那样点区域中心反而命中不了(只剩细缝那种边上点才中)
-        return stroker.createStroke(path).united(path)
+        hit = stroker.createStroke(path).united(path)
+        if self.isSelected():
+            # 手柄中心就在顶点上, 命中范围要与 handle_at 一致, 否则点手柄边缘会漏过去.
+            # 要整体求并, 不能逐个 addEllipse: 后者只追加子路径, 默认奇偶填充下与轮廓
+            # 重叠的那块会变成"洞", 结果顶点上反而点不中
+            caps = QPainterPath()
+            for hrect in self._handles.values():
+                caps.addEllipse(hrect.adjusted(-3, -3, 3, 3))
+            hit = hit.united(caps)
+        return hit
 
     def region_points(self):
         return [[float(p.x()), float(p.y())] for p in self.polygon()]
 
     def boundingRect(self):
-        # 角标画在多边形外接框左上角外侧, 不扩边界会被裁掉
+        # 角标画在多边形外接框左上角外侧, 顶点手柄有一半凸在轮廓外: 不扩边界会被裁掉
+        pad = getattr(self, "_handle_size", 0.0) / 2.0 + 2.0
         return super().boundingRect().adjusted(
-            -BADGE_W - 4, -BADGE_H - 4, 0, 0)
+            -BADGE_W - 4, -BADGE_H - 4, pad, pad)
 
     def paint(self, painter, option, widget=None):
         # 选中只把描边加粗: 默认的 QGraphicsPolygonItem 只按 pen/brush 画, 不加粗
         # 就看不出点中的是哪个区域; 不填充(填充会压住底下的缺陷)
-        if option.state & QStyle.StateFlag.State_Selected:
+        selected = bool(option.state & QStyle.StateFlag.State_Selected)
+        # 选中提示交给顶点手柄: 基类看到 State_Selected 会另外套一个外接矩形虚线框
+        # (qt_graphicsItem_highlightSelected), 那框比区域本身还大, 也拖不动
+        opt = QStyleOptionGraphicsItem(option)
+        opt.state &= ~QStyle.StateFlag.State_Selected
+        if selected:
             old_pen = self.pen()
             pen = QPen(_accent(), 2.8)
             pen.setStyle(Qt.DashLine)
             pen.setDashPattern(DASH)
             self.setPen(pen)
-            super().paint(painter, option, widget)
+            super().paint(painter, opt, widget)
             self.setPen(old_pen)
         else:
-            super().paint(painter, option, widget)
+            super().paint(painter, opt, widget)
+        if selected:
+            self._paint_vertex_handles(painter)
         r = self.polygon().boundingRect()
         badge = QRectF(r.left() - BADGE_W - 2, r.top() - BADGE_H - 2,
                        BADGE_W, BADGE_H)

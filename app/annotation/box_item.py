@@ -106,7 +106,25 @@ def chip_text(item):
     return (item.text or item.label)[:12]
 
 
-class _LabelChipMixin(object):
+class _ViewScaleMixin(object):
+    """view 缩放系数: chip 尺寸与顶点手柄都要按它换算成屏幕恒定像素."""
+
+    def _view_scale(self):
+        """
+        当前 view 的缩放系数(无 view 时 1.0).
+        chip 绘制在屏幕坐标(恒定像素大小), 点击检测在局部坐标,
+        必须把屏幕宽度按 scale 换算回局部坐标, 否则缩小视图时点不中.
+        """
+        scene = self.scene()
+        if scene is None:
+            return 1.0
+        views = scene.views()
+        if not views:
+            return 1.0
+        return views[0].transform().m11() or 1.0
+
+
+class _LabelChipMixin(_ViewScaleMixin):
     """矩形/多边形共用的"标签取色 + chip 缩放换算": 两份实现必须一致, 合并到一处."""
 
     def set_label(self, label, color=None):
@@ -130,20 +148,71 @@ class _LabelChipMixin(object):
         self.setBrush(QBrush(fill))
         self.update()
 
-    # ---------------- 标签 chip 点击(修改类别) ----------------
-    def _view_scale(self):
-        """
-        当前 view 的缩放系数(无 view 时 1.0).
-        chip 绘制在屏幕坐标(恒定像素大小), 点击检测在局部坐标,
-        必须把屏幕宽度按 scale 换算回局部坐标, 否则缩小视图时点不中.
-        """
+
+class _VertexHandleMixin(_ViewScaleMixin):
+    """多边形顶点手柄: 选中后显示手柄、手柄尺寸随缩放保持屏幕恒定、拖手柄改顶点.
+
+    常规多边形标注与粘贴区域共用这一套, 免得两边的视觉和手感各走各的.
+    """
+
+    def _compute_handle_size(self):
+        """手柄直径 [2,6], 除以 view 缩放屏幕恒定, 上限 20 防异常."""
+        r = self.polygon().boundingRect()
+        area = max(1.0, r.width() * r.height())
+        s = max(2.0, min(6.0, area ** 0.5 * 0.25))
+        scale = self._view_scale()
+        if scale > 1e-6:
+            s = max(1.2, min(s / scale, 20.0))
+        return s
+
+    def _update_handles(self):
+        s = self._compute_handle_size()
+        self._handle_size = s
+        self._handles = {
+            i: QRectF(p.x() - s / 2, p.y() - s / 2, s, s)
+            for i, p in enumerate(self.polygon())
+        }
+
+    def handle_at(self, point):
+        if not self.isSelected():
+            return None
+        for idx, rect in self._handles.items():
+            center = rect.center()
+            radius = rect.width() / 2 + 3
+            dx = point.x() - center.x()
+            dy = point.y() - center.y()
+            if dx * dx + dy * dy <= radius * radius:
+                return idx
+        return None
+
+    def _resize_vertex(self, point, idx=None):
+        """把第 idx 个顶点拖到局部坐标 point(不传 = 拖 _vertex_idx), 限制在图像范围内."""
+        if idx is None:
+            idx = self._vertex_idx
+        if idx is None:
+            return
         scene = self.scene()
-        if scene is None:
-            return 1.0
-        views = scene.views()
-        if not views:
-            return 1.0
-        return views[0].transform().m11() or 1.0
+        if scene is None or scene.image_rect is None:
+            return
+        sp = self.mapToScene(point)
+        img = scene.image_rect
+        x = max(img.left(), min(img.right(), sp.x()))
+        y = max(img.top(), min(img.bottom(), sp.y()))
+        local = self.mapFromScene(QPointF(x, y))
+        pts = list(self.polygon())
+        pts[idx] = local
+        self.setPolygon(QPolygonF(pts))
+        self._update_handles()
+        self.update()
+
+    def _paint_vertex_handles(self, painter):
+        """手柄画法: 主题色描边 + 白点, 与矩形缩放手柄同一套观感."""
+        painter.setPen(QPen(theme.color("accent"), 1.0))
+        painter.setBrush(QBrush(QColor("#ffffff")))
+        s = self._compute_handle_size()
+        self._handle_size = s
+        for p in self.polygon():
+            painter.drawEllipse(QRectF(p.x() - s / 2, p.y() - s / 2, s, s))
 
 
 class AnnotationBoxItem(_LabelChipMixin, QGraphicsRectItem):
@@ -458,7 +527,8 @@ class AnnotationBoxItem(_LabelChipMixin, QGraphicsRectItem):
 
 # ---------------- 多边形标注项 ----------------
 
-class AnnotationPolygonItem(_LabelChipMixin, QGraphicsPolygonItem):
+class AnnotationPolygonItem(_LabelChipMixin, _VertexHandleMixin,
+                            QGraphicsPolygonItem):
     """场景坐标下的多边形标注(顶点即像素坐标). 与 BoxItem 共用 chip 渲染与配色."""
 
     HANDLE_SIZE = 8.0
@@ -526,38 +596,8 @@ class AnnotationPolygonItem(_LabelChipMixin, QGraphicsPolygonItem):
         self.pending_meta = None
         self.update()
 
-    def _update_handles(self):
-        s = self._compute_handle_size()
-        self._handle_size = s
-        self._handles = {
-            i: QRectF(p.x() - s / 2, p.y() - s / 2, s, s)
-            for i, p in enumerate(self.polygon())
-        }
-
-    def handle_at(self, point):
-        if not self.isSelected():
-            return None
-        for idx, rect in self._handles.items():
-            center = rect.center()
-            radius = rect.width() / 2 + 3
-            dx = point.x() - center.x()
-            dy = point.y() - center.y()
-            if dx * dx + dy * dy <= radius * radius:
-                return idx
-        return None
-
     def shape_type(self):
         return "polygon"
-
-    def _compute_handle_size(self):
-        """手柄直径 [2,6], 除以 view 缩放屏幕恒定, 上限 20 防异常."""
-        r = self.polygon().boundingRect()
-        area = max(1.0, r.width() * r.height())
-        s = max(2.0, min(6.0, area ** 0.5 * 0.25))
-        scale = self._view_scale()
-        if scale > 1e-6:
-            s = max(1.2, min(s / scale, 20.0))
-        return s
 
     def points(self):
         """
@@ -660,22 +700,6 @@ class AnnotationPolygonItem(_LabelChipMixin, QGraphicsPolygonItem):
             if scene is not None:
                 scene.boxes_changed.emit()
 
-    def _resize_vertex(self, point):
-        """把顶点拖到局部坐标 point, 限制在图像范围内."""
-        scene = self.scene()
-        if scene is None or scene.image_rect is None:
-            return
-        sp = self.mapToScene(point)
-        img = scene.image_rect
-        x = max(img.left(), min(img.right(), sp.x()))
-        y = max(img.top(), min(img.bottom(), sp.y()))
-        local = self.mapFromScene(QPointF(x, y))
-        pts = list(self.polygon())
-        pts[self._vertex_idx] = local
-        self.setPolygon(QPolygonF(pts))
-        self._update_handles()
-        self.update()
-
     def itemChange(self, change, value):
         if change == QGraphicsItem.ItemPositionChange and self.scene() is not None:
             img_rect = self.scene().image_rect
@@ -735,12 +759,7 @@ class AnnotationPolygonItem(_LabelChipMixin, QGraphicsPolygonItem):
         self._draw_label(painter, label_rect)
 
         if self.isSelected() and not self.is_floating():
-            painter.setPen(QPen(theme.color("accent"), 1.0))
-            painter.setBrush(QBrush(QColor("#ffffff")))
-            s = self._compute_handle_size()
-            self._handle_size = s
-            for p in self.polygon():
-                painter.drawEllipse(QRectF(p.x() - s / 2, p.y() - s / 2, s, s))
+            self._paint_vertex_handles(painter)
 
     def _draw_label(self, painter, label_rect):
         color = self._color if self._color is not None else label_color(self.label)

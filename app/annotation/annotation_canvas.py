@@ -897,9 +897,12 @@ class AnnotationCanvasMixin:
         lst.blockSignals(False)
         title = getattr(self, "_template_title", None)
         if title is not None:
-            title.setText(QC.translate("AnnotationDialog", "已存模板") if not names
-                          else QC.translate("AnnotationDialog", "已存模板 ({})")
-                          .format(len(names)))
+            base = (QC.translate("AnnotationDialog", "已存模板") if not names
+                    else QC.translate("AnnotationDialog", "已存模板 ({})")
+                    .format(len(names)))
+            # 带上当前模板名: 「保存」会覆盖它, 得让用户看得见覆盖的是哪个
+            cur = getattr(self, "_template_current", None)
+            title.setText("{} · {}".format(base, cur) if cur else base)
         lst.setVisible(bool(names))
         empty = getattr(self, "_template_empty", None)
         if empty is not None:
@@ -990,20 +993,27 @@ class AnnotationCanvasMixin:
             MessageBox.information(self, self.tr("区域模板"),
                                    self.tr("还没有画区域"))
             return
-        name, ok = QInputDialog.getText(self, self.tr("保存为模板"),
-                                        self.tr("模板名"))
-        name = (name or "").strip()
-        if not ok or not name:
-            return
+        # 已经载入过某个模板就直接覆盖它: 改完顶点还要重敲一遍名字纯属多余.
+        # 只有"当前没有模板"时才问名字(相当于新建一个)
+        name = getattr(self, "_template_current", None)
+        is_new = not name
+        if is_new:
+            name, ok = QInputDialog.getText(self, self.tr("保存为模板"),
+                                            self.tr("模板名"))
+            name = (name or "").strip()
+            if not ok or not name:
+                return
         table = self._region_table()
         table[name] = self.scene.paste_region_payload()
         self._region_store(table)
         self._template_current = name
         self._refresh_template_panel()
-        MessageBox.information(
-            self, self.tr("区域模板"),
-            self.tr("已保存模板 \"{}\" ({} 个区域)").format(
-                name, len(self.scene.paste_regions)))
+        if is_new:
+            # 覆盖不弹框: 面板标题上已经写着当前模板名, 反复保存时少一次打断
+            MessageBox.information(
+                self, self.tr("区域模板"),
+                self.tr("已保存模板 \"{}\" ({} 个区域)").format(
+                    name, len(self.scene.paste_regions)))
 
     def _region_load(self, name):
         """点模板名即载入(列表就在展开面板里, 不再弹一层选择框)."""
@@ -1155,7 +1165,8 @@ class AnnotationCanvasMixin:
         self._clip_group.idClicked.connect(self._on_clip_id)
         self._clip_btns = []
         self._clip_current = None
-        self._rebuild_clipboard(select=0 if _clip_templates else None)
+        # 不自动选中第一张: 一进界面就跟着鼠标飘虚线预览, 用户并没有要贴
+        self._rebuild_clipboard()
 
     def _update_clip_label(self):
         cur = self._clip_current + 1 if self._clip_current is not None else 0
