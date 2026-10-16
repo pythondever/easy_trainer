@@ -11,7 +11,9 @@ from PySide6.QtWidgets import (QGraphicsScene, QGraphicsPixmapItem, QGraphicsIte
 from app.annotation.blend import blend_patch
 from app.annotation.paste_regions import (AutoPasteMark, PasteRegionItem,
                                           regions_payload, scaled_regions)
-from app.annotation.box_item import AnnotationBoxItem, AnnotationPolygonItem, label_color
+from app.annotation.box_item import (AnnotationBoxItem, AnnotationPolygonItem,
+                                     STAMP_ROTATE_SNAP, label_color,
+                                     stamp_handle_cursor)
 from app.core import theme
 from app.core.label_utils import is_text_label
 
@@ -86,6 +88,10 @@ class AnnotationScene(QGraphicsScene):
         # 模板粘贴
         self._paste_pos = None           # 复制/粘贴: 左键点击空白处记录的粘贴锚点
         self._pending_pastes = []        # 浮动粘贴: 图案还没写进图像像素的多边形
+        # 浮动粘贴的手柄拖动: {"kind", "item", ...}. 手柄/图标是浮动项自绘的,
+        # Qt 的 items() 只在"点在轮廓多边形上"时才认得它, 所以命中与拖动状态都放场景里
+        self._stamp_drag = None
+        self._hover_cursor = None        # 悬停缩放手柄时的光标(见 _stamp_hover)
         # 剪切板选中后的落点预览: 跟鼠标走的多边形虚线, 角度此刻定死, 预览即落点
         self._stamp_ghost = None
         self._stamp_angle = None
@@ -367,9 +373,9 @@ class AnnotationScene(QGraphicsScene):
         return layer
 
     @staticmethod
-    def _render_stamp_layer(patch, angle):
-        """patch 按 angle 预渲染成紧凑 QImage(图心即旋转中心), 供浮动层直接绘制."""
-        pw, ph = patch.width(), patch.height()
+    def _render_stamp_layer(patch, angle, scale=1.0):
+        """patch 按 angle 旋转、按 scale 缩放后渲染成紧凑 QImage(图心即旋转中心), 供浮动层直接绘制."""
+        pw, ph = patch.width() * scale, patch.height() * scale
         rad = math.radians(angle)
         ca, sa = abs(math.cos(rad)), abs(math.sin(rad))
         # 减 eps 再取整: cos(90°) 不是精确 0 而是 6e-17, 不修正的话 30 会被 ceil 成 31
@@ -379,15 +385,28 @@ class AnnotationScene(QGraphicsScene):
         out.fill(Qt.transparent)
         p = QPainter(out)
         p.setRenderHint(QPainter.Antialiasing)
+        p.setRenderHint(QPainter.SmoothPixmapTransform)
         p.translate(w / 2.0, h / 2.0)
         p.rotate(angle)
-        p.drawImage(-pw / 2.0, -ph / 2.0, patch)
+        p.drawImage(QRectF(-pw / 2.0, -ph / 2.0, pw, ph), patch)
         p.end()
         return out
+
+    def _stamp_patch(self, meta):
+        """浮动层显示用的图案: 按 meta 的角度与倍数转好、缩放好的一份位图.
+
+        只走显示这条路; 落地走 _blend_stamp_at, 而它要的是"没转过"的那份
+        (旋转由它自己按 angle 施加一次, 见 commit_pastes).
+        """
+        return self._render_stamp_layer(meta["patch"],
+                                        float(meta.get("angle", 0.0)),
+                                        float(meta.get("scale", 1.0)))
 
     def _blend_stamp_at(self, patch, center, angle, pix=None):
         """
         把 patch 按 angle 围绕 center 融合进图像像素, 返回撤销所需的 (原图区域, ox, oy).
+        patch 必须是没转过、但已按倍数缩放好的那份: 旋转在这里只做一次,
+        传"已经转过"的位图进来就会变成两倍角(实测 40° 落成 80°).
         pix 由调用方传入时直接改写这一份: 一批粘贴共用同一个引用, 只有第一次会触发
         整图写时复制, 否则每贴一个都要把整幅像素拷一遍.
         """
@@ -419,6 +438,9 @@ class AnnotationScene(QGraphicsScene):
                 strength)
             p.drawImage(ox, oy, layer)
         else:
+            # 预览那份位图是带抗锯齿转出来的: 这里不抗锯齿的话, 落地边缘会比预览硬一圈,
+            # 看着"贴上去的和刚才预览的不是同一张"
+            p.setRenderHint(QPainter.Antialiasing)
             p.translate(center.x(), center.y())
             p.rotate(angle)
             p.drawImage(-pw / 2.0, -ph / 2.0, patch)
@@ -500,12 +522,11 @@ class AnnotationScene(QGraphicsScene):
             return
         patch = t.get("patch")
         if patch is not None:
-            img = self._render_stamp_layer(patch, angle)
+            meta = {"patch": patch, "center": center, "angle": angle, "scale": 1.0}
+            img = self._stamp_patch(meta)
             anchor = QPointF(center.x() - img.width() / 2.0,
                              center.y() - img.height() / 2.0)
-            item.set_pending_stamp(img, anchor,
-                                   {"patch": patch, "center": center,
-                                    "angle": angle})
+            item.set_pending_stamp(img, anchor, meta)
             self._pending_pastes.append(item)
         # 粘贴不享受"刚画完仍显示"的例外: 开关关着就不出框, 也不抢占选中态
         item.set_outline_visible(self.show_annotations)
@@ -521,7 +542,8 @@ class AnnotationScene(QGraphicsScene):
     def commit_pastes(self):
         """
         把浮动粘贴写进图像像素(显式保存 / 切图 / 关闭前调用), 返回落地个数.
-        拖动改的是 item.pos(), 落点要跟着平移, 否则图会落在原处、框跑别处.
+        拖动改的是 item.pos(), 落点要跟着平移, 否则图会落在原处、框跑别处;
+        缩放按 meta["scale"] 现算一份图案, 落到像素上的才是拖动时看到的那个大小.
         """
         if not self._pending_pastes:
             return 0
@@ -538,7 +560,13 @@ class AnnotationScene(QGraphicsScene):
             off = item.pos()
             center = QPointF(meta["center"].x() + off.x(),
                              meta["center"].y() + off.y())
-            res = self._blend_stamp_at(meta["patch"], center, meta["angle"], pix)
+            # 这里只能送"没转过"的图案: _blend_stamp_at 自己会按 angle 转一次.
+            # 送 _stamp_patch()(已按 angle 转好、只是用来显示的那份)会转成两倍角,
+            # 落地出来和预览不是一个朝向(实测 angle=40° 落下去是 80°).
+            res = self._blend_stamp_at(
+                self._render_stamp_layer(meta["patch"], 0.0,
+                                         float(meta.get("scale", 1.0))),
+                center, meta["angle"], pix)
             item.clear_pending_stamp()
             # 图案已进像素, 框从此只是框: 开关关着就该整体隐藏
             item.set_outline_visible(self.show_annotations)
@@ -1137,7 +1165,93 @@ class AnnotationScene(QGraphicsScene):
                 self.removeItem(it)
                 setattr(self, attr, None)
 
+    def _floating_pastes(self):
+        """当前所有选中的浮动粘贴(手柄/图标只长在选中的那个上)."""
+        return [it for it in self._pending_pastes
+                if it.scene() is self and it.is_floating() and it.isSelected()]
+
+    def _stamp_hit(self, scene_pos):
+        """该点命中的浮动粘贴手柄: (item, "scale"/"rotate", 手柄下标或 None).
+
+        不能靠 items() 找父项: 转过角度后外接框的角点落在轮廓多边形之外,
+        而手柄正是贴在外接框上的 —— 按 items() 判会刚好把手柄漏掉.
+        """
+        for it in self._floating_pastes():
+            hit = it.stamp_handle_hit(scene_pos)
+            if hit is not None:
+                return it, "scale", hit[0]
+            if it.stamp_rotate_hit(scene_pos):
+                return it, "rotate", None
+        return None
+
+    def _stamp_press(self, event):
+        """按优先级把左键交给浮动粘贴的手柄: 缩放手柄 > 旋转图标 > (不管, 交回图体)."""
+        scene_pos = event.scenePos()
+        found = self._stamp_hit(scene_pos)
+        if found is None:
+            return False
+        item, kind, idx = found
+        if kind == "scale":
+            drag = item.press_stamp_scale(scene_pos)
+            if drag is None:
+                return False
+            drag["item"] = item
+            self._stamp_drag = drag
+            self._set_hover_cursor(drag["cursor"])
+            return True
+        # 旋转: 记下按下时的角度与方位角, 之后按方位角增量累计(拖整圈也不会突然倒转)
+        self._stamp_drag = {"kind": "rotate", "item": item,
+                            "press_angle": float(item.pending_meta["angle"]),
+                            "last_azimuth": item.stamp_rotate_drag(scene_pos),
+                            "angle_acc": 0.0}
+        self._set_hover_cursor(Qt.CrossCursor)
+        return True
+
+    def _stamp_hover(self, scene_pos):
+        """没按键时的移动: 让缩放手柄上的光标跟着手柄方位变(手柄是手画的, 收不到悬停事件)."""
+        turn = None
+        found = self._stamp_hit(scene_pos)
+        if found is not None:
+            _item, kind, idx = found
+            turn = stamp_handle_cursor(idx) if kind == "scale" else Qt.CrossCursor
+        if turn is not None or self._hover_cursor is not None:
+            self._set_hover_cursor(turn)
+
+    def _set_hover_cursor(self, cursor):
+        """光标改给 view: 手柄/图标都是自绘的, 收不到悬停事件, 只能在这里设."""
+        self._hover_cursor = cursor
+        views = self.views()
+        if views:
+            if cursor is None:
+                views[0].unsetCursor()
+            else:
+                views[0].setCursor(cursor)
+
+    def _stamp_move(self, event):
+        """拖动中的浮动粘贴手柄: 只改图形项(图案/轮廓), 图像像素等 commit_pastes()."""
+        drag = self._stamp_drag
+        item = drag["item"]
+        if drag["kind"] == "scale":
+            item.drag_stamp_scale(event.scenePos(), drag["scale0"], drag["dist0"])
+            return
+        azimuth = item.stamp_rotate_drag(event.scenePos())
+        # 只累加这一小步(归一化到 ±180): 拖过一整圈也不会因取模突然倒转
+        drag["angle_acc"] += (azimuth - drag["last_azimuth"] + 180.0) % 360.0 - 180.0
+        drag["last_azimuth"] = azimuth
+        angle = drag["press_angle"] + drag["angle_acc"]
+        if event.modifiers() & Qt.ShiftModifier:
+            angle = round(angle / STAMP_ROTATE_SNAP) * STAMP_ROTATE_SNAP
+        item.rotate_stamp_to(angle)
+
     def mousePressEvent(self, event):
+        # 浮动粘贴的手柄优先级最高(缩放手柄 > 旋转图标 > 图体 > 标注/区域 > 空白):
+        # 必须赶在下面"清选中态/记粘贴锚点"之前判, 而且只能在这里判 ——
+        # 手柄/图标由浮动项自绘, Qt 的 items() 只在"点在轮廓上"时才认得父项
+        if (event.button() == Qt.LeftButton and not self.draw_mode
+                and self.fp_mode is None and not self.template_mode
+                and self._stamp_press(event)):
+            event.accept()
+            return
         # 区域不参与标注那套逻辑, 所以最先单独判: 点在区域上=选中它(再按 Delete 删),
         # 不能落到下面"点空白处记粘贴锚点"那条分支去
         if (event.button() == Qt.LeftButton and not self.draw_mode
@@ -1358,6 +1472,10 @@ class AnnotationScene(QGraphicsScene):
         return True
 
     def mouseMoveEvent(self, event):
+        if self._stamp_drag is not None:
+            self._stamp_move(event)
+            event.accept()
+            return
         if self._region_drag is not None:
             item, idx = self._region_drag
             try:
@@ -1380,6 +1498,7 @@ class AnnotationScene(QGraphicsScene):
                 event.accept()
                 return
         if not self.draw_mode:
+            self._stamp_hover(event.scenePos())
             super().mouseMoveEvent(event)
             return
         if self.draw_shape == "polygon" and self._free_track:
@@ -1400,6 +1519,11 @@ class AnnotationScene(QGraphicsScene):
         super().mouseMoveEvent(event)
 
     def mouseReleaseEvent(self, event):
+        if self._stamp_drag is not None:
+            self._stamp_drag = None
+            self._set_hover_cursor(None)
+            event.accept()
+            return
         if self._region_drag is not None:
             self._finish_region_drag()
             event.accept()

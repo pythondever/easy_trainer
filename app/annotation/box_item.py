@@ -2,9 +2,10 @@
 """标注图形项: 矩形框 + 多边形, 均支持选中, 拖动, 标签 chip 渲染."""
 from PySide6.QtCore import QPointF, QRectF, QSizeF, Qt
 from PySide6.QtGui import (QBrush, QColor, QPen, QFont, QFontMetrics, QPainter,
-                           QPolygonF, QPainterPath)
+                           QPainterPath, QPolygonF)
 import functools
 import hashlib
+import math
 from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsPolygonItem, QGraphicsItem
 from app.core import theme
 from app.core.utils import ui_font_family
@@ -525,6 +526,79 @@ class AnnotationBoxItem(_LabelChipMixin, QGraphicsRectItem):
         painter.restore()
 
 
+# ---------------- 浮动粘贴的旋转图标 ----------------
+# ---------------- 浮动粘贴的旋转图标 ----------------
+# 图标与缩放手柄都由浮动项自己在 paint 里画: 位置用本项局部坐标算, 直径用屏幕像素 /
+# view 缩放换算, 这样"画在哪"与"点在哪"永远是同一套坐标, 不再依赖 Qt 对
+# ItemIgnoresTransformations 子项的映射(那套在 view 缩放后落点对不上).
+STAMP_ROTATE_GAP = 28.0     # 图标离小图顶边中点的屏幕距离
+STAMP_ROTATE_R = 9.0        # 图标半径(屏幕像素)
+STAMP_ROTATE_PAD = 4.0      # 图标命中额外放宽(小圆点不好点)
+STAMP_ROTATE_SNAP = 15.0    # 按住 Shift 吸附的角度步长(度)
+# ---------------- 浮动粘贴的缩放手柄 ----------------
+# 手柄由浮动项自己在 paint 里画(不再用带 ItemIgnoresTransformations 的子项):
+# 那种子项在 view 缩放后, 绘制落点与 Qt/手工算的坐标都对不上, 也没法被稳定命中.
+# 直接画就没有这层歧义: 位置用本项局部坐标算, 直径用屏幕像素 / view 缩放换算.
+STAMP_SCALE_CORNER_R = 6.5   # 4 角手柄基准半径(屏幕像素): 略大, 一眼看出是角
+STAMP_SCALE_EDGE_R = 5.0     # 4 边中点手柄基准半径: 略小, 与角区分开
+STAMP_SCALE_PAD = 3.0        # 命中额外放宽(小圆点不好点)
+# 外接框线 + 手柄随框缩小: 固定半径在小图上挤成一团, 框线又让手柄没有归属感
+STAMP_FRAME_LINE_W = 1.5     # 外接框线宽(屏幕像素)
+STAMP_HANDLE_FULL_PX = 140.0 # 外接框短边到这个屏幕尺寸才用基准半径
+STAMP_HANDLE_MIN_FRAC = 0.55 # 手柄半径收缩下限: 再小就既看不清也点不中
+STAMP_HANDLE_MIN_HIT = 5.5   # 命中半径下限(屏幕像素)
+STAMP_EDGE_HANDLE_MIN_PX = 64.0  # 框短边小于它就不画边中点手柄(那个尺寸下没信息量)
+# 缩放上下限(与 C# 那个工具一致): 定义在这里, scene 反向引用,
+# 免得两个模块各写一份, 改一处漏一处
+STAMP_SCALE_MIN, STAMP_SCALE_MAX = 0.1, 5.0
+# 8 个手柄: 4 角 + 4 边中点. 偏移按 (半宽 u, 半高 v) 的组合给, 与旋转一起转
+STAMP_HANDLE_OFFSETS = ((-1, -1), (0, -1), (1, -1),
+                        (-1, 0), (1, 0),
+                        (-1, 1), (0, 1), (1, 1))
+STAMP_HANDLE_CORNERS = (0, 2, 5, 7)
+# 外接框 4 角的连线顺序(顺时针: 左上→右上→右下→左下), 写的是 STAMP_HANDLE_OFFSETS 的下标
+STAMP_FRAME_ORDER = (0, 2, 7, 5)
+# 光标: 两轴都压=斜向, 只压竖轴=上下, 只压横轴=左右
+STAMP_AXIS_CURSORS = {(-1, -1): Qt.SizeFDiagCursor, (1, 1): Qt.SizeFDiagCursor,
+                      (1, -1): Qt.SizeBDiagCursor, (-1, 1): Qt.SizeBDiagCursor,
+                      (0, -1): Qt.SizeVerCursor, (0, 1): Qt.SizeVerCursor,
+                      (-1, 0): Qt.SizeHorCursor, (1, 0): Qt.SizeHorCursor}
+
+
+
+def stamp_handle_offsets(center, frame):
+    """8 个手柄的本项局部坐标: 图心 + (半宽 u, 半高 v) 的 8 种组合, 与旋转一起转."""
+    u, v = frame
+    out = []
+    for su, sv in STAMP_HANDLE_OFFSETS:
+        out.append(QPointF(center.x() + u.x() * su + v.x() * sv,
+                           center.y() + u.y() * su + v.y() * sv))
+    return out
+
+
+def stamp_handle_radius(index):
+    """第 index 个手柄的基准半径(屏幕像素): 角上略大, 边中点略小, 便于区分."""
+    return (STAMP_SCALE_CORNER_R if index in STAMP_HANDLE_CORNERS
+            else STAMP_SCALE_EDGE_R)
+
+
+def stamp_handle_cursor(index):
+    """手柄光标: 按它压的是哪两条轴给(图上转了角度也仍是同一个手感)."""
+    return STAMP_AXIS_CURSORS[STAMP_HANDLE_OFFSETS[index]]
+
+
+def _point_near_segment(p, a, b, tol):
+    """p 到线段 ab 的距离是否在 tol 内(旋转图标的连线命中)."""
+    dx, dy = b.x() - a.x(), b.y() - a.y()
+    length2 = dx * dx + dy * dy
+    if length2 <= 1e-9:
+        return math.hypot(p.x() - a.x(), p.y() - a.y()) <= tol
+    t = ((p.x() - a.x()) * dx + (p.y() - a.y()) * dy) / length2
+    t = max(0.0, min(1.0, t))
+    return math.hypot(p.x() - (a.x() + t * dx),
+                      p.y() - (a.y() + t * dy)) <= tol
+
+
 # ---------------- 多边形标注项 ----------------
 
 class AnnotationPolygonItem(_LabelChipMixin, _VertexHandleMixin,
@@ -573,6 +647,8 @@ class AnnotationPolygonItem(_LabelChipMixin, _VertexHandleMixin,
         """
         show = bool(show)
         if self.pending_img is not None:
+            # 轮廓一藏, 框线/手柄/图标都不再画: 边界跟着变小, 必须先通知场景
+            self.prepareGeometryChange()
             self._outline_hidden = not show
             self.setVisible(True)
         else:
@@ -585,16 +661,320 @@ class AnnotationPolygonItem(_LabelChipMixin, _VertexHandleMixin,
         return self.pending_img is not None
 
     def set_pending_stamp(self, img, anchor, meta):
+        # 图案尺寸(缩放/换模板)直接决定边界大小, 换之前先让场景记住旧范围
+        self.prepareGeometryChange()
         self.pending_img = img
         self.pending_anchor = QPointF(anchor)
         self.pending_meta = meta
         self.update()
 
     def clear_pending_stamp(self):
+        self.prepareGeometryChange()
         self.pending_img = None
         self.pending_anchor = None
         self.pending_meta = None
         self.update()
+
+    # ---------------- 浮动粘贴的旋转/缩放 ----------------
+    def stamp_pivot(self):
+        """旋转中心(本项局部坐标): 绕它转才能保证轮廓与图案不错位."""
+        meta = self.pending_meta
+        if meta is not None and meta.get("center") is not None:
+            return QPointF(meta["center"])
+        img, anchor = self.pending_img, self.pending_anchor
+        if img is None or anchor is None:
+            return QPointF(0.0, 0.0)
+        return QPointF(anchor.x() + img.width() / 2.0,
+                       anchor.y() + img.height() / 2.0)
+
+    def stamp_frame_center(self):
+        """缩放的基准点(本项局部坐标)= 当前轮廓外接框中心.
+
+        不能用 meta["center"]: 那是"粘贴那一刻"的图心, 整体拖动或落地夹紧后
+        会与轮廓中心差半个偏移, 拿它当缩放基准会让图心在缩放中漂移,
+        进而让"鼠标到图心的距离比"对不上倍数.
+        """
+        return self.polygon().boundingRect().center()
+
+    def stamp_scale(self):
+        """浮动粘贴当前的缩放倍数(-1 表示此刻没有浮动层)."""
+        meta = self.pending_meta
+        if meta is None or self.pending_img is None:
+            return -1.0
+        return float(meta.get("scale", 1.0))
+
+    def rotated_frame(self):
+        """图案外接框按当前角度旋转后的 (半宽向量, 半高向量).
+
+        8 个缩放手柄的位置与命中范围都从这里算: 转过角度后手柄还贴着图边走,
+        而不是认死屏幕的正方向.
+        半轴长度只能取自轮廓自身在"图自身朝向"下的跨度: pending_img 是按旋转后的
+        包围盒裁出来的, 比图案本体大一圈(160x120 转 30° 会裁成 198x183), 拿它的
+        width/height 算手柄, 8 个圆点就整圈浮在图外 —— 用户实测"手柄散落在空中".
+        """
+        meta = self.pending_meta
+        if meta is None or self.pending_img is None:
+            return None
+        poly = self.polygon()
+        if poly.isEmpty():
+            return None
+        a = math.radians(float(meta.get("angle", 0.0)))
+        ca, sa = math.cos(a), math.sin(a)
+        cen = self.stamp_frame_center()
+        # u=(ca,sa) 是图的宽边方向, v=(-sa,ca) 是高边方向; 半轴 = 轮廓在两轴上的最大投影
+        hw = max(abs((p.x() - cen.x()) * ca + (p.y() - cen.y()) * sa) for p in poly)
+        hh = max(abs(-(p.x() - cen.x()) * sa + (p.y() - cen.y()) * ca) for p in poly)
+        return (QPointF(hw * ca, hw * sa),          # 图的宽边方向
+                QPointF(-hh * sa, hh * ca))         # 图的高边方向
+
+    def stamp_frame_corners(self):
+        """外接框 4 角的本项局部坐标(顺时针: 左上→右上→右下→左下), 没有浮动层时空列表.
+
+        框线与 boundingRect 都按它算: 两处必须同源, 否则框线会被自己的边界裁掉一角.
+        """
+        frame = self.rotated_frame()
+        if frame is None:
+            return []
+        pts = stamp_handle_offsets(self.stamp_frame_center(), frame)
+        return [pts[i] for i in STAMP_FRAME_ORDER]
+
+    def _stamp_frame_min_screen(self):
+        """外接框短边的屏幕像素(没有浮动层时 None)."""
+        frame = self.rotated_frame()
+        if frame is None:
+            return None
+        u, v = frame
+        k = max(self._view_scale(), 1e-6)
+        return min(math.hypot(u.x(), u.y()), math.hypot(v.x(), v.y())) * 2.0 * k
+
+    def stamp_handle_shrink(self):
+        """手柄半径的收缩系数: 框越小圆点越小(下限 STAMP_HANDLE_MIN_FRAC).
+
+        半径固定时, 缩小后的图案周围会被同样大的圆点糊满(用户实测"顶点也比较大").
+        """
+        min_px = self._stamp_frame_min_screen()
+        if min_px is None:
+            return 1.0
+        return max(STAMP_HANDLE_MIN_FRAC, min(1.0, min_px / STAMP_HANDLE_FULL_PX))
+
+    def stamp_handle_draw_radius(self, index):
+        """第 index 个手柄画出来的半径(屏幕像素) = 基准半径 × 收缩系数."""
+        return stamp_handle_radius(index) * self.stamp_handle_shrink()
+
+    def stamp_handle_hit_radius(self, index):
+        """命中半径(屏幕像素): 比画出来的略大, 小圆点才点得中."""
+        return max(self.stamp_handle_draw_radius(index) + STAMP_SCALE_PAD,
+                   STAMP_HANDLE_MIN_HIT)
+
+    def stamp_handle_indices(self):
+        """此刻该有哪些手柄: 框小到边中点没有信息量时只留 4 个角."""
+        min_px = self._stamp_frame_min_screen()
+        if min_px is not None and min_px < STAMP_EDGE_HANDLE_MIN_PX:
+            return list(STAMP_HANDLE_CORNERS)
+        return list(range(len(STAMP_HANDLE_OFFSETS)))
+
+    def rotate_stamp_to(self, angle):
+        """把浮动粘贴转到 angle 度(绕图心, 与 _paste_template 的坐标约定一致).
+
+        拖动中只重画小图位图和轮廓: 图像像素绝不在这里碰, 要等 commit_pastes()
+        才按 meta["angle"] 融合, 否则鼠标一动就是一次整图重采样.
+        """
+        meta = self.pending_meta
+        scene = self.scene()
+        if meta is None or self.pending_img is None or scene is None:
+            return
+        angle = float(angle)
+        delta = angle - float(meta["angle"])
+        if abs(delta) < 1e-9:      # Shift 吸附后常常是同一个角度, 白重算一遍不值
+            return
+        pivot = self.stamp_pivot()
+        rotated = scene._rotate_points(
+            [[p.x(), p.y()] for p in self.polygon()], pivot, delta)
+        self.prepareGeometryChange()
+        self.setPolygon(QPolygonF([QPointF(x, y) for x, y in rotated]))
+        # 图心恒等于旋转中心: 位图重渲染后把锚点摆回图心, 轮廓与图案才不会错位
+        meta["angle"] = angle
+        self._refresh_stamp_bitmap(pivot)
+        self._clamp_pos_into_image()
+        self.update()
+
+    def scale_stamp_to(self, scale):
+        """把浮动粘贴等比缩放到 scale 倍(绕图心), 并同步位图与轮廓.
+
+        基准取"轮廓外接框中心"而不是它的左上角: 轮廓点正是按它缩放的,
+        换个基准点缩放会让外接框中心跟着漂, 图体就越缩越偏.
+        与旋转同一条规矩: 当场只重排显示, 像素等 commit_pastes() 按 meta["scale"] 落地.
+        """
+        meta = self.pending_meta
+        scene = self.scene()
+        if meta is None or self.pending_img is None or scene is None:
+            return
+        scale = max(STAMP_SCALE_MIN, min(STAMP_SCALE_MAX, float(scale)))
+        base = float(meta.get("scale", 1.0))
+        if abs(scale - base) < 1e-9:
+            return               # 夹住上下限之后常常是同一个倍数, 白重算一遍不值
+        bounds = self.polygon().boundingRect()
+        pivot = bounds.center()
+        ratio = scale / base if base > 1e-9 else 1.0
+        meta["scale"] = scale
+        scaled = [[pivot.x() + (p.x() - pivot.x()) * ratio,
+                   pivot.y() + (p.y() - pivot.y()) * ratio]
+                  for p in self.polygon()]
+        self.prepareGeometryChange()
+        self.setPolygon(QPolygonF([QPointF(x, y) for x, y in scaled]))
+        self._refresh_stamp_bitmap(pivot)
+        self.update()
+
+    def _refresh_stamp_bitmap(self, pivot):
+        """按 meta 里的角度与倍数重新渲染图案, 并把它摆回图心."""
+        meta = self.pending_meta
+        scene = self.scene()
+        if meta is None or scene is None or not hasattr(scene, "_stamp_patch"):
+            return
+        img = scene._stamp_patch(meta)
+        self.pending_img = img
+        self.pending_anchor = QPointF(pivot.x() - img.width() / 2.0,
+                                      pivot.y() - img.height() / 2.0)
+
+    # ---------------- 浮动粘贴手柄的命中/拖动(由 scene 手动驱动) ----------------
+    # 位置全用本项局部坐标算(见 stamp_handle_offsets): 手柄就是本项 paint 画的圆点,
+    # 视图缩放只影响画出来的直径, 不影响它在局部坐标里的位置, 于是命中与绘制同一把尺子.
+    # 只有 scene 传进来的鼠标点是场景坐标, 命中前统一 mapFromScene 换算一次.
+    def stamp_frame_visible(self):
+        """浮动层的外框/手柄/图标此刻该不该画出来(与选中态无关).
+
+        与选中态无关是必须的: boundingRect 要是跟着选中态一起缩, 取消选中时
+        Qt 只重绘"变小之后"的范围, 刚消失的图标/手柄那块就没人擦, 留下残影
+        (用户实测"旋转按钮消失得不彻底, 残留一部分弧线/圆点").
+        """
+        return self.pending_img is not None and not self._outline_hidden
+
+    def stamp_handles_visible(self):
+        return self.stamp_frame_visible() and self.isSelected()
+
+    def stamp_handle_items(self):
+        """(下标, 本项局部坐标) 列表: 画/命中/扩边界都按它走, 免得多处各筛一遍筛不一致."""
+        if not self.stamp_frame_visible():
+            return []
+        frame = self.rotated_frame()
+        if frame is None:
+            return []
+        pts = stamp_handle_offsets(self.stamp_frame_center(), frame)
+        return [(i, pts[i]) for i in self.stamp_handle_indices()]
+
+    def stamp_handle_points(self):
+        """此刻该画的手柄的本项局部坐标列表(空列表 = 此刻没有手柄)."""
+        return [p for _i, p in self.stamp_handle_items()]
+
+    def stamp_handle_hit(self, scene_pos):
+        """缩放手柄命中: 返回 (手柄下标, 按下时该手柄到图心的场景距离).
+
+        传进来的是场景坐标, 而外接框算的是本项局部坐标: 图体拖动过(pos≠0)之后
+        两者差一个 pos, 不换算就整圈点不中(拖动前恰好 pos=(0,0), 所以以前看不出).
+        """
+        if not self.stamp_handles_visible():
+            return None
+        pos = self.mapFromScene(scene_pos)
+        cen = self.stamp_frame_center()
+        # 圆点直径是按屏幕像素画的, 命中半径也要回到屏幕像素去比
+        k = max(self._view_scale(), 1e-6)
+        for i, p in self.stamp_handle_items():
+            r = self.stamp_handle_hit_radius(i) / k
+            if math.hypot(pos.x() - p.x(), pos.y() - p.y()) <= r:
+                d = QPointF(p.x() - cen.x(), p.y() - cen.y())
+                return i, math.hypot(d.x(), d.y())
+        return None
+
+    def stamp_rotate_icon(self):
+        """旋转图标圆心的本项局部坐标(没有浮动层时返回 None).
+
+        挂点是"小图自身顶边中点"(跟着角度一起转), 图标再沿同一朝向往外 GAP.
+        GAP 与半径都是屏幕像素, 换算回局部尺度要除以 view 缩放; 小图时按固定 GAP 摆
+        会正好压在顶边中点那个缩放手柄上(手柄优先级更高), 图标就点不着了,
+        所以再兜一个下限: 离顶边中点至少隔开两个手柄的半径.
+        """
+        if not self.stamp_frame_visible():
+            return None
+        base = self._stamp_rotate_base()
+        if base is None:
+            return None
+        meta = self.pending_meta
+        a = math.radians(float(meta.get("angle", 0.0)))
+        k = max(self._view_scale(), 1e-6)
+        gap = max(STAMP_ROTATE_GAP,
+                  STAMP_ROTATE_R + STAMP_ROTATE_PAD
+                  + STAMP_SCALE_EDGE_R + STAMP_SCALE_PAD + 2.0) / k
+        return QPointF(base.x() + math.sin(a) * gap, base.y() - math.cos(a) * gap)
+
+    def _stamp_rotate_base(self):
+        """图标连线在小图上的起点(自身顶边中点, 本项局部坐标).
+
+        与手柄同一约定: 半轴 v 指"朝下", 所以顶边中点是 图心 - v(H_TM 正是这么摆的).
+        """
+        frame = self.rotated_frame()
+        if frame is None:
+            return None
+        cen = self.stamp_frame_center()
+        return QPointF(cen.x() - frame[1].x(), cen.y() - frame[1].y())
+
+    def stamp_rotate_hit(self, scene_pos):
+        """旋转图标命中: 圆点上或那根连线上都算(与绘制共用同一套局部坐标)."""
+        if not self.stamp_handles_visible():
+            return False
+        icon = self.stamp_rotate_icon()
+        base = self._stamp_rotate_base()
+        if icon is None or base is None:
+            return False
+        pos = self.mapFromScene(scene_pos)    # 理由同 stamp_handle_hit
+        k = max(self._view_scale(), 1e-6)
+        if math.hypot(pos.x() - icon.x(),
+                      pos.y() - icon.y()) <= (STAMP_ROTATE_R + STAMP_ROTATE_PAD) / k:
+            return True
+        return _point_near_segment(pos, base, icon, STAMP_ROTATE_PAD / k)
+
+    def stamp_rotate_drag(self, scene_pos):
+        """返回鼠标相对图心的方位角(度) - 旋转拖动按方位角增量累计."""
+        cen = self.mapToScene(self.stamp_frame_center())
+        return math.degrees(math.atan2(scene_pos.y() - cen.y(),
+                                       scene_pos.x() - cen.x()))
+
+    def press_stamp_scale(self, scene_pos):
+        """按下某个缩放手柄: 记下起始倍数与起始距离, 之后每帧按距离比换算倍数."""
+        hit = self.stamp_handle_hit(scene_pos)
+        if hit is None:
+            return None
+        idx, dist = hit
+        return {"kind": "scale", "idx": idx, "scale0": self.stamp_scale(),
+                "dist0": dist, "cursor": stamp_handle_cursor(idx)}
+
+    def drag_stamp_scale(self, scene_pos, scale0, dist0):
+        """拖动中: 新倍数 = 鼠标到图心的距离 / 按下时的距离 × 按下时的倍数."""
+        if dist0 <= 1e-6:
+            return
+        cen = self.mapToScene(self.polygon().boundingRect().center())
+        factor = math.hypot(scene_pos.x() - cen.x(),
+                            scene_pos.y() - cen.y()) / dist0
+        self.scale_stamp_to(scale0 * factor)
+
+    def _clamp_pos_into_image(self):
+        """转完可能顶出图外(轮廓和图案都会被裁), 整体平移回来: 只挪 pos, 角度不动."""
+        scene = self.scene()
+        img_rect = getattr(scene, "image_rect", None) if scene is not None else None
+        if img_rect is None:
+            return
+        r = self.polygon().boundingRect()
+        pos = self.pos()
+        x, y = pos.x(), pos.y()
+        if x + r.left() < img_rect.left():
+            x = img_rect.left() - r.left()
+        if y + r.top() < img_rect.top():
+            y = img_rect.top() - r.top()
+        if x + r.right() > img_rect.right():
+            x = img_rect.right() - r.right()
+        if y + r.bottom() > img_rect.bottom():
+            y = img_rect.bottom() - r.bottom()
+        if x != pos.x() or y != pos.y():
+            self.setPos(x, y)
 
     def shape_type(self):
         return "polygon"
@@ -632,8 +1012,14 @@ class AnnotationPolygonItem(_LabelChipMixin, _VertexHandleMixin,
 
     # ---------------- 交互(拖动 + 图像范围限制)----------------
     def shape(self):
-        """命中测试范围 = 多边形本体 + 标签 chip + 顶点手柄(选中且非浮动时)."""
+        """命中测试范围 = 多边形本体 + 标签 chip + 顶点手柄(选中且非浮动时).
+
+        WindingFill 不能省: 默认奇偶填充下, chip(锚在外接框中心)与本体重叠的那块
+        会互相抵消成"洞" —— 小图与浮动粘贴正好chip 盖满本体, 于是点在图上也判不中,
+        事件根本落不到本项和它的子项(旋转图标/缩放手柄).
+        """
         path = QPainterPath()
+        path.setFillRule(Qt.WindingFill)
         path.addPolygon(self.polygon())
         path.addRect(self._chip_rect_local())
         if self.isSelected() and not self.is_floating():
@@ -701,6 +1087,10 @@ class AnnotationPolygonItem(_LabelChipMixin, _VertexHandleMixin,
                 scene.boxes_changed.emit()
 
     def itemChange(self, change, value):
+        if change == QGraphicsItem.ItemSelectedHasChanged:
+            # 手柄/图标只画在选中态上, 但 boundingRect 不随选中态缩(见 boundingRect):
+            # 这样这里 update() 才顺手把刚消失的图标/框线那块一起重绘掉, 不留残影
+            self.update()
         if change == QGraphicsItem.ItemPositionChange and self.scene() is not None:
             img_rect = self.scene().image_rect
             if img_rect is not None:
@@ -719,6 +1109,13 @@ class AnnotationPolygonItem(_LabelChipMixin, _VertexHandleMixin,
 
     # ---------------- 绘制 ----------------
     def boundingRect(self):
+        """本项可能画到的全部像素范围(局部坐标): 必须覆盖 轮廓 ∪ 图案 ∪ 外接框线 ∪
+        8 个手柄 ∪ 旋转图标 ∪ 图标连线.
+
+        Qt 把 paint 裁到 boundingRect: 少一块就是"框线看不到"; 而且 Qt 的重绘范围
+        取自当前 boundingRect, 所以这个范围还不能随选中态一起缩 —— 否则取消选中时
+        刚消失的图标/手柄那圈没人擦, 留残影.
+        """
         r = self.polygon().boundingRect()
         o = getattr(self, "_handle_size", self.HANDLE_SIZE)
         base = r.adjusted(-o, -o - 24, o, o + 24)
@@ -726,6 +1123,32 @@ class AnnotationPolygonItem(_LabelChipMixin, _VertexHandleMixin,
             base = base.united(QRectF(self.pending_anchor,
                                       QSizeF(self.pending_img.width(),
                                              self.pending_img.height())))
+        if not self.stamp_frame_visible():
+            return base.united(self._chip_rect_local().adjusted(-o, -o, o, o))
+        k = max(self._view_scale(), 1e-6)
+        # 外接框线: 4 个角两两之间的线段, 用一个包住 4 角的矩形兜底(矩形是凸的)
+        corners = self.stamp_frame_corners()
+        if corners:
+            fr = QRectF(corners[0], corners[0])
+            for p in corners[1:]:
+                fr = fr.united(QRectF(p, p))
+            pad = (STAMP_FRAME_LINE_W + 2.0) / k
+            base = base.united(fr.adjusted(-pad, -pad, pad, pad))
+        for i, p in self.stamp_handle_items():
+            reach = (self.stamp_handle_draw_radius(i) + 2.0) / k
+            base = base.united(QRectF(p.x() - reach, p.y() - reach,
+                                      2 * reach, 2 * reach))
+        icon = self.stamp_rotate_icon()
+        if icon is not None:
+            reach = (STAMP_ROTATE_R + 2.0) / k
+            base = base.united(QRectF(icon.x() - reach, icon.y() - reach,
+                                      2 * reach, 2 * reach))
+            base_pt = self._stamp_rotate_base()
+            if base_pt is not None:
+                # 连线中段可能落在"图体"和"图标"两个盒子之间: 补一个跨住两端的矩形
+                seg = QRectF(base_pt, icon).normalized().adjusted(-1.0 / k, -1.0 / k,
+                                                                 1.0 / k, 1.0 / k)
+                base = base.united(seg)
         return base.united(self._chip_rect_local().adjusted(-o, -o, o, o))
 
     def paint(self, painter, option, widget=None):
@@ -760,6 +1183,79 @@ class AnnotationPolygonItem(_LabelChipMixin, _VertexHandleMixin,
 
         if self.isSelected() and not self.is_floating():
             self._paint_vertex_handles(painter)
+        elif self.stamp_handles_visible():
+            self._paint_stamp_frame(painter)
+            self._paint_stamp_handles(painter)
+            self._paint_rotate_icon(painter)
+
+    def _paint_stamp_frame(self, painter):
+        """外接框线: 把 4 个角手柄连成一个旋转后的矩形, 手柄才有归属感.
+
+        先描一层深色底再描主题色: 图案可能是亮的, 单描主题色在亮底上看不见
+        (与工程里标注的描边风格一致). 线宽按屏幕像素恒定, 放大视图不会变粗带.
+        """
+        corners = self.stamp_frame_corners()
+        if not corners:
+            return
+        k = max(self._view_scale(), 1e-6)
+        poly = QPolygonF(corners)
+        painter.setBrush(Qt.NoBrush)
+        painter.setPen(QPen(QColor(20, 22, 28, 190),
+                            (STAMP_FRAME_LINE_W + 2.0) / k))
+        painter.drawPolygon(poly)
+        painter.setPen(QPen(theme.color("accent"), STAMP_FRAME_LINE_W / k))
+        painter.drawPolygon(poly)
+
+    def _paint_stamp_handles(self, painter):
+        """缩放手柄: 位置是本项局部坐标, 直径按屏幕像素换算(与 chip 同一套做法).
+
+        半径随外接框缩小(见 stamp_handle_shrink), 小图上才不会糊满一圈.
+        直接在本项画而不是用带 ItemIgnoresTransformations 的子项: 那种子项在
+        view 缩放后绘制落点跟算出来的坐标对不上, 点也点不中.
+        """
+        k = max(self._view_scale(), 1e-6)
+        painter.setPen(QPen(theme.color("accent"), 1.4 / k))
+        painter.setBrush(QBrush(QColor(255, 255, 255, 235)))
+        for i, p in self.stamp_handle_items():
+            r = self.stamp_handle_draw_radius(i) / k
+            painter.drawEllipse(p, r, r)
+
+    def _paint_rotate_icon(self, painter):
+        """旋转图标 + 一根细连线: 位置/半径同样按屏幕像素换算成场景尺度."""
+        icon = self.stamp_rotate_icon()
+        base = self._stamp_rotate_base()
+        if icon is None or base is None:
+            return
+        k = max(self._view_scale(), 1e-6)
+        painter.setPen(QPen(QColor(255, 255, 255, 200), 1.2 / k))
+        painter.setBrush(Qt.NoBrush)
+        painter.drawLine(base, icon)
+        accent = theme.color("accent")
+        painter.setPen(QPen(accent, 1.6 / k))
+        painter.setBrush(QBrush(QColor(255, 255, 255, 235)))
+        r = STAMP_ROTATE_R / k
+        painter.drawEllipse(icon, r, r)
+        self._paint_rotate_arrow(painter, icon, accent, k)
+
+    @staticmethod
+    def _paint_rotate_arrow(painter, center, color, k):
+        """弧线加箭头才看得出是"转": 光一个圆点跟缩放手柄没区别."""
+        r = STAMP_ROTATE_R * 0.58 / k
+        rect = QRectF(center.x() - r, center.y() - r, 2 * r, 2 * r)
+        painter.setBrush(Qt.NoBrush)
+        painter.setPen(QPen(color, 1.3 / k))
+        painter.drawArc(rect, int(60 * 16), int(-270 * 16))
+        # 箭头落在弧末端(150°), 指向顺时针的切线方向
+        ang = math.radians(150.0)
+        ex = center.x() + r * math.cos(ang)
+        ey = center.y() - r * math.sin(ang)
+        dx, dy = math.sin(ang) * 4.5 / k, math.cos(ang) * 4.5 / k
+        painter.setPen(Qt.NoPen)
+        painter.setBrush(QBrush(color))
+        painter.drawPolygon(QPolygonF([
+            QPointF(ex + dx, ey + dy),
+            QPointF(ex - dy * 3.0 / 4.5, ey + dx * 3.0 / 4.5),
+            QPointF(ex + dy * 3.0 / 4.5, ey - dx * 3.0 / 4.5)]))
 
     def _draw_label(self, painter, label_rect):
         color = self._color if self._color is not None else label_color(self.label)
