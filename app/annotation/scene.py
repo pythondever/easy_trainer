@@ -1290,6 +1290,10 @@ class AnnotationScene(QGraphicsScene):
         if self.draw_mode and event.button() == Qt.LeftButton and self.image_rect is not None:
             for it in self.items(event.scenePos()):
                 if isinstance(it, (AnnotationBoxItem, AnnotationPolygonItem)):
+                    # 未选中的浮动粘贴不画 chip(见 chip_visible), 这里也不能认它:
+                    # 认了就是"看不见却点得中、还弹改标签菜单"
+                    if not it.chip_visible():
+                        continue
                     local = it.mapFromScene(event.scenePos())
                     p = it._chip_hit_pad()
                     if it._chip_rect_local().adjusted(-p, -p, p, p).contains(local):

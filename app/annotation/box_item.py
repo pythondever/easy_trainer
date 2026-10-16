@@ -128,6 +128,14 @@ class _ViewScaleMixin(object):
 class _LabelChipMixin(_ViewScaleMixin):
     """矩形/多边形共用的"标签取色 + chip 缩放换算": 两份实现必须一致, 合并到一处."""
 
+    def chip_visible(self):
+        """chip 此刻该不该画、该不该能点.
+
+        矩形没有浮层图案, chip 一直在(整项隐藏时连它一起没了, 不在这里管);
+        浮动粘贴要让未选中时"只剩图案", 由 AnnotationPolygonItem 覆盖本方法.
+        """
+        return True
+
     def set_label(self, label, color=None):
         """
         修改类别. 未显式传 color 时按新标签重新取色:
@@ -688,11 +696,11 @@ class AnnotationPolygonItem(_LabelChipMixin, _VertexHandleMixin,
                        anchor.y() + img.height() / 2.0)
 
     def stamp_frame_center(self):
-        """缩放的基准点(本项局部坐标)= 当前轮廓外接框中心.
+        """外接框(框线/8 手柄/旋转图标)的几何中心 = 当前轮廓外接框中心, 本项局部坐标.
 
-        不能用 meta["center"]: 那是"粘贴那一刻"的图心, 整体拖动或落地夹紧后
-        会与轮廓中心差半个偏移, 拿它当缩放基准会让图心在缩放中漂移,
-        进而让"鼠标到图心的距离比"对不上倍数.
+        这里只管"框画在哪": 手柄要贴着图边走, 就只能按轮廓自己的外接框摆.
+        它不是缩放基准(缩放绕 meta["center"], 见 scale_stamp_to): 两者在不对称轮廓
+        转过角度后就不再是同一个点了.
         """
         return self.polygon().boundingRect().center()
 
@@ -799,10 +807,12 @@ class AnnotationPolygonItem(_LabelChipMixin, _VertexHandleMixin,
         self.update()
 
     def scale_stamp_to(self, scale):
-        """把浮动粘贴等比缩放到 scale 倍(绕图心), 并同步位图与轮廓.
+        """把浮动粘贴等比缩放到 scale 倍(绕 meta["center"]), 并同步位图与轮廓.
 
-        基准取"轮廓外接框中心"而不是它的左上角: 轮廓点正是按它缩放的,
-        换个基准点缩放会让外接框中心跟着漂, 图体就越缩越偏.
+        基准必须与落地同源: commit_pastes() 记的位置就是 meta["center"] + item.pos(),
+        落地时也是绕 meta["center"] 缩放像素的. 绕"轮廓外接框中心"缩放的话,
+        不对称轮廓转过角度后外接框中心已经不在图心上了, 预览的轮廓/图案
+        与真正落下去的像素就会整体错位(实测差 45px).
         与旋转同一条规矩: 当场只重排显示, 像素等 commit_pastes() 按 meta["scale"] 落地.
         """
         meta = self.pending_meta
@@ -813,8 +823,7 @@ class AnnotationPolygonItem(_LabelChipMixin, _VertexHandleMixin,
         base = float(meta.get("scale", 1.0))
         if abs(scale - base) < 1e-9:
             return               # 夹住上下限之后常常是同一个倍数, 白重算一遍不值
-        bounds = self.polygon().boundingRect()
-        pivot = bounds.center()
+        pivot = self.stamp_pivot()
         ratio = scale / base if base > 1e-9 else 1.0
         meta["scale"] = scale
         scaled = [[pivot.x() + (p.x() - pivot.x()) * ratio,
@@ -852,6 +861,24 @@ class AnnotationPolygonItem(_LabelChipMixin, _VertexHandleMixin,
     def stamp_handles_visible(self):
         return self.stamp_frame_visible() and self.isSelected()
 
+    def outline_visible(self):
+        """轮廓(浅色底 + 实线 + 虚线)此刻该不该画.
+
+        浮动粘贴未选中时只留图案: 图案还没写进像素, 没选中还挂着那圈轮廓
+        就是挡着看这一贴的效果(与框线/手柄/图标一起只在选中时出现).
+        普通标注照旧, "显示标注"开关(_outline_hidden)的语义也不变.
+        """
+        return not self.is_floating() or self.isSelected()
+
+    def chip_visible(self):
+        """chip 此刻该不该画、该不该能点.
+
+        未选中的浮动粘贴连 chip 一起藏(与轮廓同一条规矩), 再加上"显示标注"关掉时
+        整项只剩图案(paint 开头就早返回了): 画不画与点不点得中必须同真,
+        否则就成了"看不见却点得中、还弹改标签菜单".
+        """
+        return not self._outline_hidden and self.outline_visible()
+
     def stamp_handle_items(self):
         """(下标, 本项局部坐标) 列表: 画/命中/扩边界都按它走, 免得多处各筛一遍筛不一致."""
         if not self.stamp_frame_visible():
@@ -871,11 +898,12 @@ class AnnotationPolygonItem(_LabelChipMixin, _VertexHandleMixin,
 
         传进来的是场景坐标, 而外接框算的是本项局部坐标: 图体拖动过(pos≠0)之后
         两者差一个 pos, 不换算就整圈点不中(拖动前恰好 pos=(0,0), 所以以前看不出).
+        距离量到 stamp_pivot(缩放基准)上, 与 drag_stamp_scale 用同一把尺子.
         """
         if not self.stamp_handles_visible():
             return None
         pos = self.mapFromScene(scene_pos)
-        cen = self.stamp_frame_center()
+        cen = self.stamp_pivot()
         # 圆点直径是按屏幕像素画的, 命中半径也要回到屏幕像素去比
         k = max(self._view_scale(), 1e-6)
         for i, p in self.stamp_handle_items():
@@ -933,8 +961,12 @@ class AnnotationPolygonItem(_LabelChipMixin, _VertexHandleMixin,
         return _point_near_segment(pos, base, icon, STAMP_ROTATE_PAD / k)
 
     def stamp_rotate_drag(self, scene_pos):
-        """返回鼠标相对图心的方位角(度) - 旋转拖动按方位角增量累计."""
-        cen = self.mapToScene(self.stamp_frame_center())
+        """返回鼠标相对图心的方位角(度) - 旋转拖动按方位角增量累计.
+
+        方位角量到旋转基准(图心)上: 形状就是绕它转的, 量到"轮廓外接框中心"的话
+        那个点自己会跟着转走, 鼠标转过的角度和形状转过的角度对不上(不对称轮廓更明显).
+        """
+        cen = self.mapToScene(self.stamp_pivot())
         return math.degrees(math.atan2(scene_pos.y() - cen.y(),
                                        scene_pos.x() - cen.x()))
 
@@ -948,10 +980,14 @@ class AnnotationPolygonItem(_LabelChipMixin, _VertexHandleMixin,
                 "dist0": dist, "cursor": stamp_handle_cursor(idx)}
 
     def drag_stamp_scale(self, scene_pos, scale0, dist0):
-        """拖动中: 新倍数 = 鼠标到图心的距离 / 按下时的距离 × 按下时的倍数."""
+        """拖动中: 新倍数 = 鼠标到图心的距离 / 按下时的距离 × 按下时的倍数.
+
+        距离必须量到缩放基准(图心)上: 轮廓就是绕它缩的, 量到外接框中心的话
+        比值与真实倍数对不上(基准随框一起漂), 手柄会追不住鼠标.
+        """
         if dist0 <= 1e-6:
             return
-        cen = self.mapToScene(self.polygon().boundingRect().center())
+        cen = self.mapToScene(self.stamp_pivot())
         factor = math.hypot(scene_pos.x() - cen.x(),
                             scene_pos.y() - cen.y()) / dist0
         self.scale_stamp_to(scale0 * factor)
@@ -1021,6 +1057,9 @@ class AnnotationPolygonItem(_LabelChipMixin, _VertexHandleMixin,
         path = QPainterPath()
         path.setFillRule(Qt.WindingFill)
         path.addPolygon(self.polygon())
+        # chip 矩形就算不画(chip_visible() 为假)也要留在命中区里: 那块正落在图心一带,
+        # 留着点击才会落到本项上按"点图体 = 选中 + 拖动"处理, 而不是漏给下层场景
+        # (漏下去会清掉选中态、顺手记一个格式刷锚点). 发不发改标签是 mousePressEvent 的事.
         path.addRect(self._chip_rect_local())
         if self.isSelected() and not self.is_floating():
             for hrect in self._handles.values():
@@ -1038,7 +1077,8 @@ class AnnotationPolygonItem(_LabelChipMixin, _VertexHandleMixin,
             super().hoverMoveEvent(event)
             return
         p = self._chip_hit_pad()
-        if self._chip_rect_local().adjusted(-p, -p, p, p).contains(event.pos()):
+        if (self.chip_visible()
+                and self._chip_rect_local().adjusted(-p, -p, p, p).contains(event.pos())):
             self.setCursor(Qt.PointingHandCursor)
         else:
             self.setCursor(Qt.ArrowCursor)
@@ -1049,7 +1089,10 @@ class AnnotationPolygonItem(_LabelChipMixin, _VertexHandleMixin,
             self._press_geom = (self.pos(), self.polygon())
             scene = self.scene()
             p = self._chip_hit_pad(2.0)
-            if scene is not None and self._chip_rect_local().adjusted(-p, -p, p, p).contains(event.pos()):
+            # chip 不画时不认这处点击(见 chip_visible): 让它落到下面的图体分支,
+            # 按"点图体 = 选中 + 拖动"处理, 绝不在这里弹改标签菜单
+            if (self.chip_visible() and scene is not None
+                    and self._chip_rect_local().adjusted(-p, -p, p, p).contains(event.pos())):
                 scene.label_change_requested.emit(self)
                 event.accept()
                 return
@@ -1164,22 +1207,26 @@ class AnnotationPolygonItem(_LabelChipMixin, _VertexHandleMixin,
             painter.restore()
         if self._outline_hidden:
             return
-        pen = QPen(self.pen())
-        pen.setCosmetic(True)
-        painter.setPen(pen)
-        painter.setBrush(self.brush())
-        painter.drawPolygon(self.polygon())
-        if self.pending_img is not None:
-            # 虚线圈出范围: 还能拖, 还没落地
-            dash = QPen(QColor(255, 255, 255, 210), 1.3)
-            dash.setCosmetic(True)
-            dash.setStyle(Qt.DashLine)
-            painter.setPen(dash)
-            painter.setBrush(Qt.NoBrush)
+        # 未选中的浮动粘贴只留图案: 轮廓(连同浅色底与虚线)跟框线/手柄/图标一起藏
+        if self.outline_visible():
+            pen = QPen(self.pen())
+            pen.setCosmetic(True)
+            painter.setPen(pen)
+            painter.setBrush(self.brush())
             painter.drawPolygon(self.polygon())
+            if self.pending_img is not None:
+                # 虚线圈出范围: 还能拖, 还没落地
+                dash = QPen(QColor(255, 255, 255, 210), 1.3)
+                dash.setCosmetic(True)
+                dash.setStyle(Qt.DashLine)
+                painter.setPen(dash)
+                painter.setBrush(Qt.NoBrush)
+                painter.drawPolygon(self.polygon())
 
         label_rect = self._chip_rect_local()
-        self._draw_label(painter, label_rect)
+        if self.chip_visible():
+            # 未选中的浮动粘贴连 chip 一起藏(见 chip_visible)
+            self._draw_label(painter, label_rect)
 
         if self.isSelected() and not self.is_floating():
             self._paint_vertex_handles(painter)
