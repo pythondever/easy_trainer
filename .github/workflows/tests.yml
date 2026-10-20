@@ -17,10 +17,11 @@ jobs:
           python-version: "3.10"
 
       # 只装被测模块的依赖: PySide6-Essentials(界面链)/lmdb(数据库)/
-      # matplotlib(app.core.utils)/typing_extensions(app 包初始化).
+      # matplotlib(app.core.utils)/typing_extensions(app 包初始化)/
+      # scikit-learn(dialogs 导入 ad_common 算 AD 指标的 roc_auc_score).
       # 不装 torch: 纯逻辑测试不碰训练.
       - name: 安装依赖
-        run: pip install pytest PySide6-Essentials lmdb matplotlib typing_extensions
+        run: pip install pytest PySide6-Essentials lmdb matplotlib typing_extensions scikit-learn
 
       # 编译不等于导入: 全量过一遍语法, 改坏任何文件这里就红
       - name: 全量语法检查
