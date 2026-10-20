@@ -20,7 +20,7 @@ from PIL import Image
 from app.core import i18n
 from app.core.ckpt_paths import resolve_ckpt
 from app.core.constants import IMAGE_EXTS
-from app.core.db import get_paths
+from app.core.db import get_path_pairs
 from app.core.log import write_log
 from app.core.metrics import primary_for
 from app.widgets.combo_utils import style_combo
@@ -439,20 +439,19 @@ class TestDialog(QDialog):
             MessageBox.warning(self, self.tr("测试"),
                                self.tr("模型文件不存在, 请重新选择"))
             return
-        # 多个数据集一起测:图像目录逐个展开,标签目录与图像目录按索引配对
+        # 多个数据集一起测:图像目录逐个展开,标签目录与图像目录按导入轮次配对
         items = []
         total = 0
         base_cls = None
         base_labeled = None
         for proj, ds_name in checked:
             binding = self.app.db.get_dataset_import(proj, ds_name) or {}
-            image_paths = get_paths(binding, "image")
-            if not image_paths:
+            dir_pairs = get_path_pairs(binding)
+            if not any(img for img, _lbl in dir_pairs):
                 MessageBox.warning(
                     self, self.tr("测试"),
                     self.tr("数据集 {}/{} 未导入图像").format(proj, ds_name))
                 return
-            label_paths = get_paths(binding, "label")
             this_cls = binding.get("label_fmt", "") == "cls"
             this_labeled = int(binding.get("labeled") or 0) > 0
             if base_cls is None:
@@ -469,12 +468,13 @@ class TestDialog(QDialog):
                     self.tr("已标注与未标注的数据集不能同时测试: {}/{}")
                     .format(proj, ds_name))
                 return
-            for i, image_path in enumerate(image_paths):
+            for image_path, label_path in dir_pairs:
+                if not image_path:
+                    continue
                 items.append({
                     "project": proj, "dataset": ds_name,
                     "image_path": image_path,
-                    "label_path": (label_paths[i] if i < len(label_paths)
-                                   else (label_paths[0] if label_paths else "")),
+                    "label_path": label_path,
                 })
             total += int(binding.get("total") or 0)
         has_label = bool(base_labeled)

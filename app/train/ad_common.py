@@ -27,6 +27,7 @@ import numpy as np
 from sklearn.metrics import roc_auc_score
 from app.core.constants import IMAGE_EXTS
 from app.core.db import get_paths
+from app.core.filelink import clone_file
 from app.train.task_spec import (
     QT_TRANSLATE_NOOP, NeedsClsSpec)
 
@@ -317,7 +318,7 @@ def _rebuild(dst, paths, mapping=None):
         used.add(fn)
         copy = os.path.join(dst, fn)
         try:
-            shutil.copy2(src, copy)
+            clone_file(src, copy)
         except OSError:
             continue
         if mapping is not None:

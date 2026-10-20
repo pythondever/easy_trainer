@@ -2,7 +2,7 @@
 import os
 import json
 from app.core import theme
-from app.core.db import get_paths
+from app.core.db import get_path_pairs, get_paths
 from app.annotation.annotation_dialog import AnnotationDialog
 from app.core.constants import (PAGE_SIZE, THUMB_CACHE_MAX,
                                 ROI_CACHE_MAX, IMG_CACHE_BYTES_MAX,
@@ -373,32 +373,33 @@ class DatasetViewMixin(object):
 
     def _sync_label_paths_from_json(self, project_name, dataset_name):
         """
-        标注后扫描: 哪些 image_path 目录含 labelme json, 把这些目录追加到 db label_paths.
+        标注后扫描: 把"图旁边已有 labelme json"的图像目录补进它自己那一槽的
+        label_paths(按下标填充, 不追加). 追加会破坏轮次对齐——多轮导入后
+        第 1 轮的图会配上第 2 轮的标签目录.
         仅 labelme 模式(.json)有效; yolo/cls 模式不扫描.
         """
         binding = self.db.get_dataset_import(project_name, dataset_name)
         if not binding or binding.get("label_fmt", "") != ".json":
             return
-        img_paths = get_paths(binding, "image")
-        old_lbls = get_paths(binding, "label")
-        new_lbls = list(old_lbls)
-        added = False
-        for ip in img_paths:
-            if not ip or not os.path.isdir(ip) or ip in new_lbls:
+        pairs = get_path_pairs(binding)
+        changed = False
+        for k, (img, lbl) in enumerate(pairs):
+            if lbl or not img or not os.path.isdir(img):
                 continue
             try:
-                has_json = any(fn.lower().endswith('.json')
-                                for fn in os.listdir(ip))
+                if not any(fn.lower().endswith('.json')
+                           for fn in os.listdir(img)):
+                    continue
             except OSError:
                 continue
-            if has_json:
-                new_lbls.append(ip)
-                added = True
-        if added:
-            self.db.update_dataset_import(project_name, dataset_name,
-                                          img_paths, new_lbls,
-                                          binding.get("label_fmt", ""),
-                                          labeled=None, total=None)
+            pairs[k] = (img, img)
+            changed = True
+        if changed:
+            self.db.update_dataset_import(
+                project_name, dataset_name,
+                [p[0] for p in pairs], [p[1] for p in pairs],
+                binding.get("label_fmt", ""),
+                labeled=None, total=None)
 
     def _reload_dataset(self, project, dataset):
         """清缓存重扫, 让推理写在图像同目录的 json 回流成标签."""
@@ -1186,24 +1187,25 @@ class DatasetViewMixin(object):
             labeled = total if cls_mode else sum(
                 1 for r in result if rec_is_labeled(r))
             if update_stats:
-                new_label_path = label_path
+                # db 记账只按轮次配对回填: 把绑定里的现有配对原样写回(统计以
+                # 本次全量扫描为准). 以前把扫描用的目录列表按位置拼成 (图像,
+                # 标签) 再传, 两个列表长度不齐时标签目录会配到别的图像目录上
+                binding = self.db.get_dataset_import(project_name, dataset_name)
+                pairs = get_path_pairs(binding)
                 new_fmt = fmt
                 # 只有 labelme 要补这一步: 它的标签写在图旁边, 没填标签路径
                 # 也能被 same_dir_json 认出来; yolo 的标签是 .txt, 记成 .json
                 # 会让删图不连带删标签
-                if labeled > 0 and not cls_mode and fmt == ".json":
-                    binding = self.db.get_dataset_import(
-                        project_name, dataset_name)
-                    old_label = get_paths(binding, "label")
-                    if not old_label:
-                        new_label_path = image_path
-                        new_fmt = ".json"
+                if (labeled > 0 and not cls_mode and fmt == ".json"
+                        and not any(lbl for _img, lbl in pairs)):
+                    pairs = [(img, img) for img, _lbl in pairs]
+                    new_fmt = ".json"
 
                 if write_db:
-                    self.db.update_dataset_import(project_name, dataset_name,
-                                                  image_path, new_label_path,
-                                                  new_fmt,
-                                                  labeled=labeled, total=total)
+                    self.db.update_dataset_import(
+                        project_name, dataset_name,
+                        [p[0] for p in pairs], [p[1] for p in pairs],
+                        new_fmt, labeled=labeled, total=total)
             else:
                 binding = self.db.get_dataset_import(project_name, dataset_name)
                 labeled = binding.get("labeled", labeled)

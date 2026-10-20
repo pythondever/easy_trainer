@@ -2,7 +2,7 @@
 import os
 
 from app.core import name_rules
-from app.core.db import get_paths
+from app.core.db import get_path_pairs, merge_path_pairs
 from app.core.label_utils import label_sort_key, rec_is_labeled
 from app.widgets.dialog_buttons import add_ok_cancel
 from app.widgets.message_box import MessageBox
@@ -282,16 +282,15 @@ class ProjectMixin(object):
         # ---- 2. db: 目标合并导入绑定 + 重算统计 ----
         src_binding = self.db.get_dataset_import(src_proj, src_ds) or {}
         dst_binding = self.db.get_dataset_import(dst_proj, dst_ds) or {}
-        dst_img = get_paths(dst_binding, "image")
-        src_img = get_paths(src_binding, "image")
-        dst_lbl = get_paths(dst_binding, "label")
-        src_lbl = get_paths(src_binding, "label")
-        img_paths = dst_img + [p for p in src_img if p not in dst_img]
-        lbl_paths = dst_lbl + [p for p in src_lbl if p not in dst_lbl]
+        # 按 (图像, 标签) 轮次配对合并: 两个列表各自去重再拼会对不齐,
+        # 移动后目标数据集的图会配上源数据集另一个目录的标签
+        pairs = merge_path_pairs(get_path_pairs(dst_binding),
+                                 get_path_pairs(src_binding))
         total_new = len(dst_recs)
         labeled_new = sum(1 for r in dst_recs if rec_is_labeled(r))
         self.db.update_dataset_import(
-            dst_proj, dst_ds, img_paths, lbl_paths,
+            dst_proj, dst_ds,
+            [p[0] for p in pairs], [p[1] for p in pairs],
             dst_binding.get("label_fmt", ""),
             labeled=labeled_new, total=total_new)
 

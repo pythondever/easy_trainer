@@ -43,6 +43,7 @@ except Exception as e:
 
 from app.core import i18n
 from app.core.constants import IMAGE_EXTS as _IMG_EXTS
+from app.core.filelink import clone_file
 from app.core.db import get_paths
 
 
@@ -104,7 +105,7 @@ def _collect_images(datasets, split, dest):
                     src = os.path.join(sub, fn)
                     dst = os.path.join(d, fn)
                     if not os.path.exists(dst):
-                        shutil.copy2(src, dst)
+                        clone_file(src, dst)
                         n_total += 1
     # 删除空类别目录
     if os.path.isdir(dest):

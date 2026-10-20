@@ -2,7 +2,7 @@
 import os
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from app.core import i18n
-from app.core.db import get_paths
+from app.core.db import get_path_pairs, get_paths
 from app.core.label_utils import rec_is_labeled
 from app.widgets.charts import render_label_chart
 from app.widgets.flag_combo import install_flag_combo
@@ -265,9 +265,12 @@ class MiscMixin(object):
             labeled = total
         if counts:
             self.db.save_dataset_label_counts(project_name, dataset_name, counts)
+        # 路径按轮次配对原样回填: 以前传单值(最新一轮), 合并时空串不覆盖、
+        # 非空即替换的规则会把老记录的标签目录补到错误的图像目录上
+        pairs = get_path_pairs(binding)
         self.db.update_dataset_import(
             project_name, dataset_name,
-            binding.get("image_path", ""), binding.get("label_path", ""),
+            [p[0] for p in pairs], [p[1] for p in pairs],
             binding.get("label_fmt", ""), labeled=labeled, total=total)
         self._update_dataset_row_progress(project_name, dataset_name, labeled, total)
 

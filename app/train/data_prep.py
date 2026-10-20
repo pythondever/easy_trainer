@@ -15,9 +15,10 @@ from datetime import datetime
 from PIL import Image
 from PySide6.QtCore import QCoreApplication as QC
 from app.core.constants import IMAGE_EXTS
-from app.core.db import get_paths
+from app.core.db import get_path_pairs, get_paths
+from app.core.filelink import clone_file
 from app.core.label_utils import (load_json_shapes, load_yolo_shapes,
-                                  looks_like_labelme, shapes_to_yolo_text)
+                                  load_json_shapes_checked, shapes_to_yolo_text)
 
 
 def timestamp_dir():
@@ -99,15 +100,12 @@ def _copy_dataset_labels(src_label_path, fmt, dst_labels, label_to_id, img_dirs,
 def _paired_dirs(info):
     """
     多路径导入的图像/标签目录配对 [(图像目录, 标签目录), ...].
-    每次导入往 image_paths / label_paths 各追加一项, 按下标成对.
-    只读 image_path / label_path 单值的话, 多次导入后训练只吃得到最后
-    一次导入的那个目录, 之前的全被静默丢掉.
+    按导入轮次对齐(空串 = 该轮没导标签目录, 标签是图旁边同路径 json,
+    由 _override_by_same_dir_json 兜底). 必须走 get_path_pairs 读原始
+    占位: get_paths 滤掉空串后两个列表长度不齐, 第 1 轮的图会配上
+    第 2 轮的标签目录.
     """
-    imgs = get_paths(info, "image")
-    lbls = get_paths(info, "label")
-    n = max(len(imgs), len(lbls))
-    return [(imgs[i] if i < len(imgs) else "",
-             lbls[i] if i < len(lbls) else "") for i in range(n)]
+    return get_path_pairs(info)
 
 
 def _label_img_dirs(img_dir, all_img_dirs):
@@ -150,29 +148,15 @@ def _collect_labels(datasets):
                 for fn in sorted(os.listdir(img_dir)):
                     if not fn.lower().endswith(".json"):
                         continue
-                    jp = os.path.join(img_dir, fn)
-                    if not looks_like_labelme(jp):
+                    # looks_like_labelme + load_json_shapes 会把这个 json 读
+                    # 两遍, 而这里只差标签名; checked 一次同时给出两者
+                    shapes, is_labelme, _ocr = load_json_shapes_checked(
+                        os.path.join(img_dir, fn))
+                    if not is_labelme:
                         continue
-                    for lb, _pts, _txt in load_json_shapes(jp):
+                    for lb, _pts, _txt in shapes:
                         _add(lb)
     return labels
-
-
-def _clone_file(src, dst):
-    """
-    硬链接优先: 同卷时两份路径指向同一份数据, 不用把整份像素再写一遍; 源与输出
-    不同卷(或文件系统不支持)就退回复制. 源图是只读素材, 训练读的是输出目录.
-    """
-    if os.path.exists(dst):
-        # 目标可能是先前的图像建的硬链接, 就地覆盖会顺着同一个数据块改到那份源图
-        try:
-            os.remove(dst)
-        except OSError:
-            pass
-    try:
-        os.link(src, dst)
-    except OSError:
-        shutil.copy2(src, dst)
 
 
 def _copy_images(src_img_path, dst_images):
@@ -182,8 +166,8 @@ def _copy_images(src_img_path, dst_images):
         return copied
     for fn in os.listdir(src_img_path):
         if fn.lower().endswith(IMAGE_EXTS):
-            _clone_file(os.path.join(src_img_path, fn),
-                        os.path.join(dst_images, fn))
+            clone_file(os.path.join(src_img_path, fn),
+                       os.path.join(dst_images, fn))
             copied.add(fn)
     return copied
 
@@ -241,9 +225,9 @@ def _override_by_same_dir_json(img_dir, dst_labels, label_to_id, as_polygon):
         if not (iw and ih):
             continue
         jp = os.path.join(img_dir, fn)
-        if not looks_like_labelme(jp):
+        shapes, is_labelme, _ocr = load_json_shapes_checked(jp)
+        if not is_labelme:
             continue
-        shapes = load_json_shapes(jp)
         txt = shapes_to_yolo_text(shapes, iw, ih, label_to_id, as_polygon)
         # 空 shapes 也要写(清空), 否则界面删掉的框会在训练里复活
         with open(os.path.join(dst_labels, stem + ".txt"), "w",
@@ -309,7 +293,7 @@ def merge_split(out_root, datasets):
                 used_names[key] = set(os.listdir(d))
             used = used_names[key]
             for fn in os.listdir(s):
-                _clone_file(os.path.join(s, fn), _unique_dst(d, fn, used))
+                clone_file(os.path.join(s, fn), _unique_dst(d, fn, used))
                 merged += 1
         print("[train] " + QC.translate("DataPrep", "合并 {} 数据集 → {} ({} 个文件)").format(
             info["dataset_name"], info["split"], merged), flush=True)

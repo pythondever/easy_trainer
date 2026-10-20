@@ -13,8 +13,8 @@ from PIL import Image
 
 from app.core.constants import IMAGE_EXTS
 from app.core.db import get_paths
-from app.core.label_utils import (is_text_label, load_json_shapes,
-                                  looks_like_labelme)
+from app.core.filelink import clone_file
+from app.core.label_utils import is_text_label, load_json_shapes_checked
 from app.train.data_prep import _unique_dst
 
 
@@ -24,14 +24,21 @@ def _image_files(img_dir):
 
 
 def _find_json(img_path, label_dirs):
-    """标注 json 有两个落点: 图像同目录(标注界面产物)与导入时选的标签目录."""
+    """标注 json 有两个落点: 图像同目录(标注界面产物)与导入时选的标签目录.
+
+    返回 (json 路径, shapes); 没有标注文件时返回 ("", []). shapes 一并带出来
+    是为了不让调用方再读一遍: looks_like_labelme 与 load_json_shapes 各自
+    open+json.load, 两次合起来才是这个文件的完整代价.
+    """
     stem = os.path.splitext(os.path.basename(img_path))[0]
     cands = [os.path.join(os.path.dirname(img_path), stem + ".json")]
     cands += [os.path.join(d, stem + ".json") for d in label_dirs if d]
     for p in cands:
-        if os.path.isfile(p) and looks_like_labelme(p):
-            return p
-    return ""
+        if os.path.isfile(p):
+            shapes, is_labelme, _ocr = load_json_shapes_checked(p)
+            if is_labelme:
+                return p, shapes
+    return "", []
 
 
 def _image_size(img_path):
@@ -85,10 +92,10 @@ def collect(datasets, split):
             if not img_dir or not os.path.isdir(img_dir):
                 continue
             for img_path in _image_files(img_dir):
-                jp = _find_json(img_path, label_dirs)
+                jp, shapes = _find_json(img_path, label_dirs)
                 if jp:
                     polys, texts = [], []
-                    for label, pts, text in load_json_shapes(jp):
+                    for label, pts, text in shapes:
                         if not is_text_label(label) or len(pts) < 2:
                             continue
                         polys.append(_to_quad(pts))
@@ -130,7 +137,7 @@ def write_det(root, samples):
     for s in samples:
         name = os.path.basename(s["image"])
         dst = _unique_dst(img_dir, name, used)
-        shutil.copy2(s["image"], dst)
+        clone_file(s["image"], dst)
         used.add(os.path.basename(dst))
         with Image.open(dst) as im:
             w, h = im.size

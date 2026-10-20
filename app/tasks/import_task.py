@@ -7,8 +7,7 @@ from app.core.constants import IMAGE_EXTS
 from app.core.image_utils import pil_open
 from app.core.label_utils import (label_file_has_content,
                                   load_json_shapes_checked,
-                                  load_yolo_shapes, same_dir_json,
-                                  shapes_to_xywh)
+                                  load_yolo_shapes, shapes_to_xywh)
 from app.core.log import write_log
 
 
@@ -150,22 +149,22 @@ class ImportTask(QThread):
         一致; 没有才回退 label_paths 的导入标签(txt/json). 否则重启后首页
         缩略图会显示标注界面修改前的旧标签.
         """
-        same_path_json = same_dir_json(img_path)
-        if same_path_json:
-            label_file = same_path_json
-            fmt = ".json"
-            from_same = True
-        elif label_path:
-            label_file = label_path
-            fmt = self.fmt
-            from_same = False
+        # 同路径 json 只读一次: same_dir_json 为了判"是不是 labelme"就整份
+        # 解析, 拿到的 shapes 直接复用, 不再让 checked 读第二遍
+        same = os.path.splitext(img_path)[0] + ".json"
+        shapes = []
+        ocr_json = False
+        from_same = False
+        if os.path.isfile(same):
+            shapes, from_same, ocr_json = load_json_shapes_checked(same)
+        if from_same:
+            label_file, fmt = same, ".json"
+        elif label_path and os.path.exists(label_path):
+            label_file, fmt = label_path, self.fmt
         else:
-            return None, [], False, False, False
-        if not os.path.exists(label_file):
             return None, [], False, False, False
         boxes = []
         labels = []
-        ocr_json = False
         if fmt == ".txt":
             try:
                 with pil_open(img_path) as im:
@@ -176,12 +175,17 @@ class ImportTask(QThread):
             # 解析统一走 label_utils, id 到名的映射同时被记进 _seen_ids
             shapes = load_yolo_shapes(label_file, iw, ih, self._id_names,
                                       self._seen_ids)
-        else:
+        elif not from_same:
             shapes, _is_labelme, ocr_json = load_json_shapes_checked(
                 label_file)
         for x, y, w, h, txt, lbl in shapes_to_xywh(shapes):
             boxes.append((x, y, w, h, txt, lbl))
             labels.append(lbl)
-        return (boxes, labels, from_same,
-                bool(boxes) or label_file_has_content(label_file, fmt),
-                ocr_json)
+        # json 已在上面整份解析过(checked 里 <2 点的 shape 早就滤掉), 空 shapes
+        # 就是无内容; 再调 label_file_has_content 只是把同一个文件重读一遍.
+        # txt 不能这么省: 字条集的真值在 is_text_line_label, 与 shapes 两套判据.
+        if fmt == ".txt":
+            has_label = bool(boxes) or label_file_has_content(label_file, fmt)
+        else:
+            has_label = bool(boxes)
+        return boxes, labels, from_same, has_label, ocr_json

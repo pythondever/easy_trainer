@@ -31,7 +31,7 @@ from app.widgets.dialog_fit import fit_dialog_height
 from app.core import i18n
 from app.core import theme
 from app.core.constants import IMAGE_EXTS
-from app.core.db import get_paths
+from app.core.db import get_path_pairs, get_paths
 from app.core.log import write_log
 from app.train import ad_common as adc
 from app.train import classify_common, detect_common, segment_common
@@ -242,23 +242,33 @@ def _has_label_beside(img_dir, fmt):
 def check_dataset_imported(name, info):
     """
     校验数据集已导入且路径有效(防止未导入/加载中的数据集直接训练).
+    多路径导入后只认最后一个目录会误拦: 最新目录被移走时报"尚未导入",
+    而早期导入目录的数据完好, 训不动. 这里按轮次遍历全部配对, 只要还有
+    有效图像目录就放行, 失效目录写日志告警(数据准备层会跳过它们).
     分类数据集(fmt=="cls")标签即子文件夹名,无需单独 label_path 目录,
     所以跳过标签目录存在性检查. 标签目录没填/失效时, 再看图旁边有没有同名标签.
     """
-    img = info.get("image_path", "")
-    lab = info.get("label_path", "")
     fmt = info.get("label_fmt", "")
-    if not img or not os.path.isdir(img):
+    pairs = get_path_pairs(info)
+    alive = [(img, lbl) for img, lbl in pairs if img and os.path.isdir(img)]
+    if not alive:
         raise ValueError(QC.translate(
             "TrainDialog",
             "数据集\"{}\"尚未导入图像或路径无效, 请先导入该数据集再训练")
             .format(name))
+    dead = [img for img, _lbl in pairs if img and not os.path.isdir(img)]
+    if dead:
+        write_log(QC.translate(
+            "TrainDialog",
+            "数据集\"{}\"有 {} 个导入目录已失效, 本次训练将跳过: {}").format(
+                name, len(dead), "; ".join(dead)))
     if fmt == "cls":
         return
     # 标签目录没填/失效时再看图旁边: 导入时通常还没有标签(标注是后面的事),
-    # 只要图旁边有同名标签文件就允许开始训练
-    if ((not lab or not os.path.isdir(lab))
-            and not _has_label_beside(img, fmt)):
+    # 只要任一有效目录旁有同名标签文件就允许开始训练
+    has_label = any(lbl and os.path.isdir(lbl) for _img, lbl in alive) or any(
+        _has_label_beside(img, fmt) for img, _lbl in alive)
+    if not has_label:
         raise ValueError(QC.translate(
             "TrainDialog",
             "数据集\"{}\"尚未导入标签或路径无效, 请先导入该数据集再训练")

@@ -103,6 +103,49 @@ def get_paths(binding, kind):
     return [single] if single else []
 
 
+def get_path_pairs(binding):
+    """
+    取导入绑定的 (图像目录, 标签目录) 配对, 按导入轮次对齐.
+    标签槽为空串表示该轮导入没给标签目录(标注产物在图旁边, 读取侧
+    优先同路径 json). 必须读原始列表: get_paths 会滤掉空串占位,
+    拿滤后的短列表按下标配对, 会把"第 1 轮无标签"错位成
+    "第 1 轮的图吃第 2 轮的标签目录".
+    老记录没有 *_paths 时退化为单值配对; 已经错位的老记录无法自动
+    修复, 保持按下标配对的旧行为.
+    """
+    binding = binding or {}
+    imgs = list(binding.get("image_paths") or [])
+    lbls = list(binding.get("label_paths") or [])
+    if not imgs and not lbls:
+        single_img = binding.get("image_path") or ""
+        single_lbl = binding.get("label_path") or ""
+        return [(single_img, single_lbl)] if single_img else []
+    n = max(len(imgs), len(lbls))
+    return [(imgs[i] if i < len(imgs) else "",
+             lbls[i] if i < len(lbls) else "") for i in range(n)]
+
+
+def merge_path_pairs(existing, new):
+    """
+    按导入轮次合并 (图像, 标签) 配对: 图像目录已见过时只把它那一槽的
+    标签补上或换成本次的值(空串不覆盖已有标签目录), 新图像目录开新槽.
+    两个列表各自去重再拼会对不齐——第 1 轮的图会配上第 2 轮的标签目录,
+    标签转换按源目录尺寸算归一化坐标, 贴到别的图上全错.
+    """
+    pairs = [(img or "", lbl or "") for img, lbl in existing]
+    for img, lbl in new:
+        if not img:
+            continue
+        for j, (eimg, _elbl) in enumerate(pairs):
+            if eimg == img:
+                if lbl:
+                    pairs[j] = (img, lbl)
+                break
+        else:
+            pairs.append((img, lbl or ""))
+    return pairs
+
+
 class DataBase:
     def __init__(self, db_path, db_size=DEFAULT_MAP_SIZE):
         self.db_path = db_path
@@ -393,18 +436,21 @@ class DataBase:
                               label_fmt='', labeled=None, total=None, append=False):
         """
         保存(或更新)某数据集的导入路径绑定; labeled/total 为标注/总数统计.
-        支持多次导入: image_paths / label_paths 为历史路径列表(去重保留),
+        支持多次导入: 每次调用视为一次导入轮次, image_path/label_path 传 str
+        (单轮)或等长 list(多轮合并); 内部按轮次对齐存 image_paths/label_paths,
+        标签侧缺轮次补空串占位, 保证第 i 个图像目录永远配第 i 个标签目录
+        (两个列表各自去重保序的时代会对不齐, 见 merge_path_pairs).
         单值字段 image_path/label_path 保持最新(向后兼容).
-        参数兼容 str 或 list(多路径合并导入)
         append=False(默认): labeled/total 直接覆盖(适合全量重算)
         append=True: labeled/total 累加到原值(适合追加新图, 不覆盖已有统计)
         """
         img_list = ([image_path] if isinstance(image_path, str) else list(image_path or []))
         lbl_list = ([label_path] if isinstance(label_path, str) else list(label_path or []))
-        img_list = [p for p in img_list if p]
-        lbl_list = [p for p in lbl_list if p]
-        single_img = img_list[-1] if img_list else ''
-        single_lbl = lbl_list[-1] if lbl_list else ''
+        # 输入按位置配对: 短的一侧补空串, 空串 = 该轮没有标签目录
+        n = max(len(img_list), len(lbl_list))
+        new_pairs = [(img_list[i] if i < len(img_list) else "",
+                      lbl_list[i] if i < len(lbl_list) else "")
+                     for i in range(n)]
         info_list = self.get_project_info()
         target = None
         for info in info_list:
@@ -413,31 +459,25 @@ class DataBase:
                 target = info
                 break
         if target is None:
+            pairs = merge_path_pairs([], new_pairs)
             self.add_project_info({
                 'project_name': project_name,
                 'dataset_name': dataset_name,
-                'image_path': single_img,
-                'label_path': single_lbl,
+                'image_path': pairs[-1][0] if pairs else '',
+                'label_path': pairs[-1][1] if pairs else '',
                 'label_fmt': label_fmt,
-                'image_paths': img_list,
-                'label_paths': lbl_list,
+                'image_paths': [p[0] for p in pairs],
+                'label_paths': [p[1] for p in pairs],
                 'labeled': labeled if labeled is not None else 0,
                 'total': total if total is not None else 0,
             })
             return True
-        target['image_path'] = single_img
-        target['label_path'] = single_lbl
+        pairs = merge_path_pairs(get_path_pairs(target), new_pairs)
+        target['image_path'] = pairs[-1][0] if pairs else ''
+        target['label_path'] = pairs[-1][1] if pairs else ''
         target['label_fmt'] = label_fmt
-        img_paths = list(target.get('image_paths') or [])
-        for p in img_list:
-            if p not in img_paths:
-                img_paths.append(p)
-        target['image_paths'] = img_paths
-        lbl_paths = list(target.get('label_paths') or [])
-        for p in lbl_list:
-            if p not in lbl_paths:
-                lbl_paths.append(p)
-        target['label_paths'] = lbl_paths
+        target['image_paths'] = [p[0] for p in pairs]
+        target['label_paths'] = [p[1] for p in pairs]
         if labeled is not None:
             target['labeled'] = ((target.get('labeled') or 0) + labeled) if append else labeled
         if total is not None:

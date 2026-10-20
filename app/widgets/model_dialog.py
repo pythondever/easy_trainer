@@ -23,7 +23,7 @@ from PySide6.QtCore import QTimer
 from app.core import i18n
 from app.core import theme
 from app.core.ckpt_paths import resolve_ckpt
-from app.core.db import get_paths
+from app.core.db import get_path_pairs
 from app.core.label_utils import text_label
 from app.core.log import write_log
 from app.core.utils import fmt_duration
@@ -1059,19 +1059,19 @@ class ModelDialog(QDialog):
         has_label, cls_mode = False, False
         for i, (proj, ds_name) in enumerate(pairs):
             binding = db.get_dataset_import(proj, ds_name) or {}
-            image_paths = get_paths(binding, "image")
-            if not image_paths:
+            dir_pairs = get_path_pairs(binding)
+            if not any(img for img, _lbl in dir_pairs):
                 continue
-            label_paths = get_paths(binding, "label")
             if i == 0:
                 has_label = int(binding.get("labeled") or 0) > 0
                 cls_mode = binding.get("label_fmt", "") == "cls"
-            for i, image_path in enumerate(image_paths):
+            for image_path, label_path in dir_pairs:
+                if not image_path:
+                    continue
                 items.append({
                     "project": proj, "dataset": ds_name,
                     "image_path": image_path,
-                    "label_path": (label_paths[i] if i < len(label_paths)
-                                   else (label_paths[0] if label_paths else "")),
+                    "label_path": label_path,
                 })
             total += int(binding.get("total") or 0)
         if not items:

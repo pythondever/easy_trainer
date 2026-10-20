@@ -10,8 +10,9 @@ from app.core.constants import IMAGE_EXTS
 from ui.import_data import Ui_ImportData
 from ui.export_data import Ui_Dialog as ExportDataUI
 from app.core.label_utils import (count_images_labeled, label_sort_key,
-                             load_json_shapes, load_yolo_shapes, same_dir_json,
-                             shapes_to_yolo_text, shapes_to_labelme_json)
+                             load_json_shapes, load_json_shapes_checked,
+                             load_yolo_shapes, shapes_to_yolo_text,
+                             shapes_to_labelme_json)
 from app.tasks.import_scan_task import ImportScanTask
 from app.widgets.dialog_buttons import (apply_icon, resource_icon, ICON_SIZE,
                                         BTN_WIDTH, BTN_HEIGHT)
@@ -252,7 +253,11 @@ class ImportExportMixin(object):
                 else:
                     _scanned = count_images_labeled(image_path, label_path, fmt)
                     _total, _labeled = _scanned if _scanned else (0, 0)
-            # 合并历史路径 + 本次新路径(去重保序), 保证多次导入不同文件夹都能累计
+            # 合并历史路径 + 本次新路径(去重保序), 保证多次导入不同文件夹都能累计;
+            # db 记账只传本轮这一个 (图像, 标签) 配对, 轮次对齐交给
+            # update_dataset_import——以前把合并后的两个列表一起传, 本轮没给
+            # 标签目录时 label_paths 不补位, 之后的轮次会把第 1 轮的图配到
+            # 第 2 轮的标签目录上
             binding = self.db.get_dataset_import(project_name, dataset_name)
             old_imgs = get_paths(binding, "image")
             merged_imgs = list(dict.fromkeys(old_imgs + [image_path]))
@@ -263,12 +268,12 @@ class ImportExportMixin(object):
                 merged_lbls = old_lbls
             if image_path not in old_imgs:
                 self.db.update_dataset_import(project_name, dataset_name,
-                                              merged_imgs, merged_lbls, fmt,
+                                              image_path, label_path, fmt,
                                               labeled=_labeled, total=_total,
                                               append=True)
             else:
                 self.db.update_dataset_import(project_name, dataset_name,
-                                              merged_imgs, merged_lbls, fmt,
+                                              image_path, label_path, fmt,
                                               labeled=None, total=None)
             self._refresh_dataset_row_progress(project_name, dataset_name)
             self._start_import_thread(project_name, dataset_name,
@@ -441,12 +446,15 @@ class ImportExportMixin(object):
                            project_name, dataset_name))
         recs = self._collect_export_recs(project_name, dataset_name)
         labels = set(self.db.get_dataset_labels(project_name, dataset_name))
-        for rec in recs:
-            src_path = rec.get("image_path", "")
-            if src_path and os.path.exists(src_path):
-                labels.update(
-                    lb for lb, _pts in
-                    self._read_export_shapes(src_path, binding, 1, 1)[0])
+        # labelme 导出只复制原始 json(_export_label_file 早退), 用不上类别表,
+        # 预扫纯属把每张图的标注白读一遍
+        if fmt != "labelme":
+            for rec in recs:
+                src_path = rec.get("image_path", "")
+                if src_path and os.path.exists(src_path):
+                    labels.update(
+                        lb for lb, _pts in
+                        self._read_export_shapes(src_path, binding, 1, 1)[0])
         label_to_id = {name: i for i, name in
                        enumerate(sorted(labels, key=label_sort_key))}
 
@@ -517,9 +525,13 @@ class ImportExportMixin(object):
         优先同路径 labelme json(标注产物),否则 label_paths 同名标签.
         has_source 用于区分"标注为空"和"压根没标过": 前者要写空文件, 后者不写.
         """
-        same_json = same_dir_json(img_src)
-        if same_json:
-            return load_json_shapes(same_json), True
+        # same_dir_json + load_json_shapes 会把这个 json 读两遍; checked 一次
+        # 同时给出 shapes 和"是不是 labelme"的判定
+        same = os.path.splitext(img_src)[0] + ".json"
+        if os.path.isfile(same):
+            shapes, is_labelme, _ocr = load_json_shapes_checked(same)
+            if is_labelme:
+                return shapes, True
         label_fmt = binding.get("label_fmt", "")
         if not label_fmt:
             return [], False
