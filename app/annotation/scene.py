@@ -54,34 +54,32 @@ class AnnotationScene(FormatPainterMixin, StampMixin,
         self._last_box = None
         self._preview_item = None
         self._preview_close_item = None   # 轨迹首尾靠拢时的闭合提示虚线
-        # 格式刷
+        # 格式刷(消费方见 scene_fp)
         self.fp_mode = None
         self.fp_track = []
         self.fp_template = None
         self.fp_preview_item = None
         self.fp_ghost_item = None
         self._fp_undo_stack = []
-        # 模板粘贴
-        self._paste_pos = None           # 复制/粘贴: 左键点击空白处记录的粘贴锚点
-        self._pending_pastes = []        # 浮动粘贴: 图案还没写进图像像素的多边形
-        # 浮动粘贴的手柄拖动: {"kind", "item", ...}. 手柄/图标是浮动项自绘的,
-        # Qt 的 items() 只在"点在轮廓多边形上"时才认得它, 所以命中与拖动状态都放场景里
+        # 模板粘贴(消费方见 scene_stamp)
+        self._paste_pos = None
+        self._pending_pastes = []
+        # 手柄/图标是浮动项自绘的, Qt 的 items() 只在"点在轮廓多边形上"时才认得它,
+        # 所以命中与拖动状态都放场景里
         self._stamp_drag = None
-        self._hover_cursor = None        # 悬停缩放手柄时的光标(见 _stamp_hover)
-        # 剪切板选中后的落点预览: 跟鼠标走的多边形虚线, 角度此刻定死, 预览即落点
+        self._hover_cursor = None   # 悬停缩放手柄时的光标
         self._stamp_ghost = None
         self._stamp_angle = None
-        self.angle_range = (-180, 180)   # 粘贴随机旋转角度范围(由标注界面输入框设置)
-        self.blend_strength = 0.7        # 粘贴融合力度 0~1(由标注界面输入框设置)
-        # 亮度编辑: 拖动中只画预览层, 松手才写进图像像素
-        self._bright_cache = {}          # 多边形对应亮度基准, 切回同一个框再调时不叠加
-        self._bright_overlay = None      # 亮度预览层: 显示还没落盘的调亮结果
-        self._bright_buf = None          # 重算亮度时的临时缓冲, 见 _bright_scratch
+        self.angle_range = (-180, 180)   # 默认值, 标注界面输入框可改
+        self.blend_strength = 0.7        # 默认值, 标注界面输入框可改
+        # 亮度编辑(消费方见 scene_brightness): 拖动中只画预览层, 松手才写进图像像素
+        self._bright_cache = {}
+        self._bright_overlay = None
+        self._bright_buf = None
         # 外观
         self.label_colors = {}
-        # "显示标注"开关状态(由标注界面同步): 只影响粘贴出来的框, 手绘的照常显示
-        self.show_annotations = True
-        # 粘贴区域模板: 不是标注, 只圈定"缺陷可以贴在哪里"(见 paste_regions 模块)
+        self.show_annotations = True   # 只影响粘贴出来的框, 手绘的照常显示
+        # 粘贴区域模板: 不是标注, 只圈定"缺陷可以贴在哪里"(消费方见 scene_regions)
         self.template_mode = False
         self._region_points = []      # 权威数据: 换图/清空标注都不该丢
         self.paste_regions = []       # 对应 item, 一律由 _region_points 重建

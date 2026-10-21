@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
-"""标注场景-粘贴区域模板 mixin: 圈定"缺陷可以贴在哪里".
-
-区域不是标注, 不进 labelme json(原 scene.py 节注释原话). 机械拆分,
-方法体一字未改. 宿主提供 image_item/_region_points/paste_regions/
-draw_mode/addItem/removeItem 等.
+"""
+标注场景-粘贴区域模板 mixin: 圈定"缺陷可以贴在哪里".
 """
 from app.annotation.paste_regions import PasteRegionItem, regions_payload
 

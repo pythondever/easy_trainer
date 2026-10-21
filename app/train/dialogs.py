@@ -30,6 +30,7 @@ from app.train.device_probe import (PROBE_FAILED_TEXT, PROBING_TEXT,
                                     fill_device_items)
 from app.train.dialogs_aug import AugMixin
 from app.train.train_config import (DISABLEABLE_FIELDS, TASK_SPECS,
+                                    check_dataset_imported,
                                     make_train_config, make_train_record,
                                     spec_for)
 from ui.train import Ui_TrainDialog

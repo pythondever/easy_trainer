@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
-"""标注场景-贴图/盖章 mixin: 浮动粘贴(预览/手柄拖动/落盘)与自动粘贴.
-
-机械拆分自 scene.py: 方法体一字未改. _bgra_view 已提为
-image_buf.bgra_view(与亮度簇共用). 宿主提供 image_item/image_rect/
-_pending_pastes/_stamp_*/_fp_undo_stack/auto_marks/add_polygon 等.
+"""
+标注场景-贴图/盖章 mixin: 浮动粘贴(预览/手柄拖动/落盘)与自动粘贴.
 """
 import math
 import random
@@ -18,6 +15,7 @@ from app.annotation.blend import blend_patch
 from app.annotation.box_item import STAMP_ROTATE_SNAP, stamp_handle_cursor
 from app.annotation.image_buf import bgra_view
 from app.annotation.paste_regions import AutoPasteMark
+from app.annotation.scene_geometry import rotate_points
 from app.core import theme
 
 

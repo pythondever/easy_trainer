@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
-"""标注场景-多边形亮度 mixin: 拖动只画预览层, 松手一次落盘.
-
-机械拆分自 scene.py: 方法体一字未改. _bgra_view 已提为
-image_buf.bgra_view, 与贴图簇共用. 基准按多边形各存一份, 宿主提供
-image_item/image_rect/_bright_*/_fp_undo_stack/_force_full_redraw 等.
+"""
+标注场景-多边形亮度 mixin: 拖动只画预览层, 松手一次落盘.
 """
 import numpy as np
 
+from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor, QImage, QPainter, QPainterPath, QPixmap
 from PySide6.QtWidgets import QGraphicsPixmapItem
 
