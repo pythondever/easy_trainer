@@ -9,15 +9,15 @@
 
 import pytest
 
-from app.train import dialogs
+from app.train import train_config
 
 
 @pytest.fixture
 def check(monkeypatch):
     """接管 write_log: 校验里的目录失效告警收进列表, 不落盘."""
     logs = []
-    monkeypatch.setattr(dialogs, "write_log", logs.append)
-    return dialogs.check_dataset_imported, logs
+    monkeypatch.setattr(train_config, "write_log", logs.append)
+    return train_config.check_dataset_imported, logs
 
 
 def _mk_img(path, stem="img1"):

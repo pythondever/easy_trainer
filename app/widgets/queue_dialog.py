@@ -12,7 +12,8 @@ from PySide6.QtWidgets import (QDialog, QTableWidgetItem, QAbstractItemView,
 
 from app.mixins.queue_mixin import DONE_STATUS
 from app.widgets.message_box import MessageBox
-from app.train.dialogs import TrainDialog, params_to_record
+from app.train.dialogs import TrainDialog
+from app.train.train_config import params_to_record
 from app.widgets.status_style import status_color, status_text, task_text
 from app.widgets.dialog_fit import fit_dialog_height
 from ui.train_queue import Ui_TrainQueueDialog

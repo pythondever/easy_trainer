@@ -29,8 +29,10 @@ from app.widgets.message_box import MessageBox
 from app.widgets.multi_combo import install_multi_combo
 from app.widgets.dialog_fit import fit_dialog_height
 from app.widgets.status_style import task_text
-from app.train.dialogs import (CONTROL_H, _TrainStartDialog, detach_device_probe,
-                               fill_device_combo_async, fill_device_items)
+from app.train.dialogs import CONTROL_H, _TrainStartDialog
+from app.train.device_probe import (detach_device_probe,
+                                    fill_device_combo_async,
+                                    fill_device_items)
 from app.train.ocr_common import is_ocr
 from app.train.eval_result_dialog import TestResultDialog
 from app.train.eval_worker import TestWorker

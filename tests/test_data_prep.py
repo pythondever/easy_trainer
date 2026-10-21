@@ -253,13 +253,13 @@ class TestWriteDataYaml:
 
 class TestDialogsHandoff:
     """
-    dialogs.make_train_config → data_prep 的接缝回归(③ 的收尾):
+    train_config.make_train_config → data_prep 的接缝回归(③ 的收尾):
     info 里的 image_paths/label_paths 必须是原始列表(带空串占位),
     否则 _paired_dirs 按位置配对会把第 1 轮的图配到第 2 轮的标签目录.
     """
 
     def test_滤空串的短列表会错位(self):
-        # 钉住 bug 入口: dialogs 曾经把 get_paths 滤后的短列表递给
+        # 钉住 bug 入口: train_config 曾经把 get_paths 滤后的短列表递给
         # data_prep, "第 1 轮只导图像 + 第 2 轮带标签"就配成了这样
         binding = {"image_paths": ["d1", "d2"], "label_paths": ["", "lb"]}
         bad = {"image_paths": get_paths(binding, "image"),

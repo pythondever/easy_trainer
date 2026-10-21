@@ -21,7 +21,7 @@ from PySide6.QtWidgets import (QAbstractItemView, QApplication, QDialog,
 from app.core import theme
 from app.core.metrics import (SCORE_GOOD, SCORE_MID, metric_key,
                               primary_for, score_of)
-from app.train.dialogs import AUG_ITEMS
+from app.train.dialogs_aug import AUG_ITEMS
 from app.widgets.combo_utils import is_checked, style_combo
 from app.widgets.compare_chart import CompareChart, series_color
 from app.widgets.compare_diff import DiffPanel

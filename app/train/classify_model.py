@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 分类 runner 的模型构造: 分类训练脚本与分类测试脚本共用一份.
-主进程刻意不碰 torch(见 dialogs.collect_devices 的说明), 这里只被两个分类
+主进程刻意不碰 torch(见 device_probe.collect_devices 的说明), 这里只被两个分类
 runner 在子进程里导入, 不影响 GUI 启动.
 """
 

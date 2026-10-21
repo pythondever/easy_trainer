@@ -2,13 +2,7 @@
 """训练对话框(统一):任务类型下拉 检测/分割/分类/AD/OCR,数据集跨项目选择."""
 
 import os
-import json
-import subprocess
-import sys
-import tempfile
 import traceback
-import uuid
-from datetime import datetime
 from importlib.util import find_spec
 
 from PySide6.QtCore import Qt, QTimer, QThread, Signal, QEvent
@@ -20,7 +14,6 @@ from PySide6.QtWidgets import (QDialog, QLabel, QFileDialog, QComboBox,
                                QGridLayout, QWidget)
 from PySide6.QtGui import QStandardItem
 
-from app.widgets.check_chip import CheckChip
 from app.widgets.combo_utils import style_combo
 from app.widgets.dialog_buttons import apply_icon
 from app.widgets.message_box import MessageBox
@@ -28,351 +21,20 @@ from app.widgets.multi_combo import install_multi_combo
 from app.widgets.status_style import task_text
 from app.widgets.model_manager_dialog import ensure_weight
 from app.widgets.dialog_fit import fit_dialog_height
-from app.core import i18n
-from app.core import theme
-from app.core.constants import IMAGE_EXTS
-from app.core.db import get_path_pairs
 from app.core.log import write_log
-from app.train import ad_common as adc
-from app.train import classify_common, detect_common, segment_common
+from app.train import device_probe
 from app.train import ocr_common as occ
-from app.train.data_prep import timestamp_dir
+from app.train.device_probe import (PROBE_FAILED_TEXT, PROBING_TEXT,
+                                    detach_device_probe,
+                                    fill_device_combo_async,
+                                    fill_device_items)
+from app.train.dialogs_aug import AugMixin
+from app.train.train_config import (DISABLEABLE_FIELDS, TASK_SPECS,
+                                    make_train_config, make_train_record,
+                                    spec_for)
 from ui.train import Ui_TrainDialog
 
 CONTROL_H = 36
-
-PROBING_TEXT = QT_TRANSLATE_NOOP("TrainDialog", "正在检测显卡...")
-PROBE_FAILED_TEXT = QT_TRANSLATE_NOOP(
-    "TrainDialog", "本机训练库(torch)加载失败, 只能使用 CPU; 训练很可能起不来")
-
-# 与任务下拉的顺序一致
-TASK_SPECS = (detect_common.SPEC, segment_common.SPEC, classify_common.SPEC,
-              adc.SPEC, occ.SPEC)
-_SPEC_BY_CODE = {spec.code: spec for spec in TASK_SPECS}
-# 各任务用不上的控件并集: 切任务时要逐个恢复可用性, 得知道全集
-DISABLEABLE_FIELDS = tuple(sorted(
-    {name for spec in TASK_SPECS for name in spec.disabled_fields}))
-
-
-def spec_for(task):
-    """任务代号对应的任务规格. 字符检测的记录里是 ocr_det/ocr_rec 两条, 都归到 ocr."""
-    if occ.is_ocr(task):
-        return occ.SPEC
-    return _SPEC_BY_CODE.get(str(task or ""), detect_common.SPEC)
-
-
-def _td(text):
-    """TrainDialog 上下文的翻译: 队列出队那条路没有对话框实例, 取不到 self.tr."""
-    return QC.translate("TrainDialog", text)
-
-
-def collect_dataset_labels(db, ds_pairs):
-    """勾选数据集的标签并集(跨项目,训练启动时已知,指标界面下拉无需等验证)."""
-    labels = set()
-    for proj, name in ds_pairs:
-        try:
-            for lb in db.get_dataset_labels(proj, name):
-                labels.add(str(lb))
-        except Exception:
-            pass
-    return sorted(labels)
-
-
-AUG_GROUPS = (
-    ("geo", QT_TRANSLATE_NOOP("TrainDialog", "几何变换"),
-     QT_TRANSLATE_NOOP("TrainDialog", "标注框会跟着一起变换")),
-    ("pix", QT_TRANSLATE_NOOP("TrainDialog", "像素变换"),
-     QT_TRANSLATE_NOOP("TrainDialog", "只改画面，标注框不动")),
-)
-AUG_ITEMS = (
-    ("geo", "hflip", QT_TRANSLATE_NOOP("TrainDialog", "水平翻转"),
-     QT_TRANSLATE_NOOP("TrainDialog", "0.5")),
-    ("geo", "vflip", QT_TRANSLATE_NOOP("TrainDialog", "垂直翻转"),
-     QT_TRANSLATE_NOOP("TrainDialog", "0.5")),
-    ("geo", "rotate", QT_TRANSLATE_NOOP("TrainDialog", "旋转"),
-     QT_TRANSLATE_NOOP("TrainDialog", "±15°")),
-    ("geo", "affine", QT_TRANSLATE_NOOP("TrainDialog", "仿射"),
-     QT_TRANSLATE_NOOP("TrainDialog", "±20%")),
-    ("geo", "mosaic", QT_TRANSLATE_NOOP("TrainDialog", "马赛克"),
-     QT_TRANSLATE_NOOP("TrainDialog", "4 图拼接")),
-    ("pix", "brightness", QT_TRANSLATE_NOOP("TrainDialog", "亮度/对比度"),
-     QT_TRANSLATE_NOOP("TrainDialog", "±0.1")),
-    ("pix", "colorjitter", QT_TRANSLATE_NOOP("TrainDialog", "颜色抖动"),
-     QT_TRANSLATE_NOOP("TrainDialog", "饱和/色相")),
-    ("pix", "blur", QT_TRANSLATE_NOOP("TrainDialog", "高斯模糊"),
-     QT_TRANSLATE_NOOP("TrainDialog", "核 3")),
-    ("pix", "noise", QT_TRANSLATE_NOOP("TrainDialog", "高斯噪声"),
-     QT_TRANSLATE_NOOP("TrainDialog", "σ 0.05")),
-)
-AUG_COUNT_FMT = QT_TRANSLATE_NOOP("TrainDialog", "已启用 {} 项")
-AUG_UNAVAILABLE = QT_TRANSLATE_NOOP(
-    "TrainDialog", "该任务不支持配置数据增强")
-AUG_ITEM_UNAVAILABLE = QT_TRANSLATE_NOOP(
-    "TrainDialog", "当前网络架构不支持该增强")
-
-
-AUG_BOTH = ("transformer", "cnn")
-AUG_FAMILIES = {
-    "mosaic": ("cnn",),
-    "blur": ("transformer",),
-    "noise": ("transformer",),
-}
-
-AUG_HIDE_WHEN_UNSUPPORTED = ("mosaic",)
-
-AUG_TINT = {"geo": "accent", "pix": "st_info"}
-
-
-AUG_LEGACY = {
-    "off": (),
-    "default": ("hflip",),
-    "conservative": ("hflip", "brightness"),
-    "industrial": ("hflip", "brightness", "blur", "noise"),
-    "aggressive": ("hflip", "vflip", "rotate", "affine", "colorjitter"),
-}
-
-
-def parse_aug_codes(value):
-    """记录里的增强值转成勾选代号集合: 新值是逗号串, 旧值是单档预设代号."""
-    text = str(value or "").strip().lower()
-    if not text:
-        return set()
-    if text in AUG_LEGACY:
-        return set(AUG_LEGACY[text])
-    known = {code for _g, code, _n, _p in AUG_ITEMS}
-    return {c for c in (x.strip() for x in text.split(",")) if c in known}
-
-
-def best_ckpt_name(config):
-    """训练期间先按这个填记录的 model_path, 跑完由 runner 的 RESULT 覆盖."""
-    return spec_for(config.get("task", "")).checkpoint_name(
-        config.get("family", ""))
-
-
-def make_train_record(config, db, project_fallback=""):
-    """
-    按 config 组装训练记录(供训练界面回填); 不落库, 调用方在启动成功后写入.
-    与 TrainDialog 解耦: 队列出队时没有对话框实例, 也走这个函数.
-    """
-    ds_pairs = [(d["project"], d["dataset_name"]) for d in config["datasets"]
-                if d.get("split") == "train"]
-    val_pairs = [(d["project"], d["dataset_name"]) for d in config["datasets"]
-                 if d.get("split") == "val"]
-    ds_names = ", ".join("{}/{}".format(p, d) for p, d in ds_pairs)
-    val_names = ", ".join("{}/{}".format(p, d) for p, d in val_pairs)
-    # dataset_info 包含训练集+验证集," / " 分隔两组;组内多个用逗号
-    dataset_info = (ds_names + " / " + val_names) if val_names else ds_names
-    first_proj = ds_pairs[0][0] if ds_pairs else project_fallback
-    return {
-        "id": str(uuid.uuid4()),
-        "project": first_proj,
-        "task": config.get("task", ""),
-        "dataset": ds_names,
-        "val_dataset": val_names,
-        "start_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "end_time": "",
-        "duration": "",
-        "model_size": config.get("model_size", ""),
-        "family": config.get("family", ""),
-        "map50": "",
-        "img_size": config.get("img_size", ""),
-        "model_path": os.path.join(
-            config.get("timestamp_dir", ""), best_ckpt_name(config)),
-        "dataset_info": dataset_info,
-        "output_path": config.get("out_root", ""),
-        "epochs": config.get("epochs", ""),
-        "batch_size": config.get("batch_size", ""),
-        "lr": config.get("lr", ""),
-        "grad_accum": config.get("grad_accum", ""),
-        "num_workers": config.get("num_workers", ""),
-        "early_stop": config.get("early_stop", ""),
-        "optimizer": config.get("optimizer", ""),
-        "metrics_file": "",   # 指标外置为 metrics/<id>.json, 记录里只留文件名
-        "metrics_epochs": 0,
-        "labels": collect_dataset_labels(db, ds_pairs),
-        "device": config.get("device", ""),
-        "aug": config.get("aug", ""),
-    }
-
-
-def params_to_record(params):
-    """队列项参数快照转成训练对话框 preset_record 的字段格式(用于"编辑"回填)."""
-    def _names(pairs):
-        return ", ".join("{}/{}".format(p[0], p[1]) for p in (pairs or []))
-    return {
-        "task": params.get("task", ""),
-        "dataset": _names(params.get("train_ds")),
-        "val_dataset": _names(params.get("val_ds")),
-        "epochs": params.get("epochs", ""),
-        "batch_size": params.get("batch_size", ""),
-        "lr": params.get("lr", ""),
-        "grad_accum": params.get("grad_accum", ""),
-        "num_workers": params.get("num_workers", ""),
-        "early_stop": params.get("early_stop", ""),
-        "img_size": params.get("img_size", ""),
-        "model_size": params.get("architecture", ""),
-        "family": params.get("family", ""),
-        "device": params.get("device", ""),
-        "optimizer": params.get("optimizer", ""),
-        "output_path": params.get("out_root", ""),
-        "aug": params.get("aug", ""),
-    }
-
-
-def _has_label_beside(img_dir, fmt):
-    """
-    图像目录里有没有与图同名的标签文件.
-
-    字条集把 .txt 跟图放一起, 自己标注出来的 json 也落在图旁边;
-    读取侧本来就优先看图同目录, 校验跟上这一步, 免得"导入时还没标注"被当成错误.
-    """
-    exts = {".txt": (".txt",), ".json": (".json",)}.get(fmt, (".json", ".txt"))
-    try:
-        entries = os.listdir(img_dir)
-    except OSError:
-        return False
-    stems = {os.path.splitext(fn)[0] for fn in entries
-             if os.path.splitext(fn)[1].lower() in exts}
-    if not stems:
-        return False
-    return any(os.path.splitext(fn)[0] in stems for fn in entries
-               if os.path.splitext(fn)[1].lower() in IMAGE_EXTS)
-
-
-def check_dataset_imported(name, info):
-    """
-    校验数据集已导入且路径有效(防止未导入/加载中的数据集直接训练).
-    多路径导入后只认最后一个目录会误拦: 最新目录被移走时报"尚未导入",
-    而早期导入目录的数据完好, 训不动. 这里按轮次遍历全部配对, 只要还有
-    有效图像目录就放行, 失效目录写日志告警(数据准备层会跳过它们).
-    分类数据集(fmt=="cls")标签即子文件夹名,无需单独 label_path 目录,
-    所以跳过标签目录存在性检查. 标签目录没填/失效时, 再看图旁边有没有同名标签.
-    """
-    fmt = info.get("label_fmt", "")
-    pairs = get_path_pairs(info)
-    alive = [(img, lbl) for img, lbl in pairs if img and os.path.isdir(img)]
-    if not alive:
-        raise ValueError(QC.translate(
-            "TrainDialog",
-            "数据集\"{}\"尚未导入图像或路径无效, 请先导入该数据集再训练")
-            .format(name))
-    dead = [img for img, _lbl in pairs if img and not os.path.isdir(img)]
-    if dead:
-        write_log(QC.translate(
-            "TrainDialog",
-            "数据集\"{}\"有 {} 个导入目录已失效, 本次训练将跳过: {}").format(
-                name, len(dead), "; ".join(dead)))
-    if fmt == "cls":
-        return
-    # 标签目录没填/失效时再看图旁边: 导入时通常还没有标签(标注是后面的事),
-    # 只要任一有效目录旁有同名标签文件就允许开始训练
-    has_label = any(lbl and os.path.isdir(lbl) for _img, lbl in alive) or any(
-        _has_label_beside(img, fmt) for img, _lbl in alive)
-    if not has_label:
-        raise ValueError(QC.translate(
-            "TrainDialog",
-            "数据集\"{}\"尚未导入标签或路径无效, 请先导入该数据集再训练")
-            .format(name))
-
-
-def _unique_ts_dir(out_root, ts):
-    """时间戳只到秒: 队列里上一个任务秒退时下一个会撞名, 两个训练的输出会互相覆盖."""
-    path = os.path.join(out_root, ts)
-    if not os.path.isdir(path):
-        os.makedirs(path, exist_ok=True)
-        return path
-    i = 2
-    while os.path.isdir("{}_{}".format(path, i)):
-        i += 1
-    path = "{}_{}".format(path, i)
-    os.makedirs(path, exist_ok=True)
-    return path
-
-
-def make_train_config(db, params):
-    """
-    把参数快照落盘成子进程配置. 队列出队与开始训练共用同一条路径.
-    timestamp_dir 只在这里算一次: 训练记录的 model_path 必须复用它,
-    否则两次调用跨秒会指向一个不存在的目录.
-    """
-    task = params.get("task") or "detect"
-    out_root = (params.get("out_root") or "").strip()
-    if not out_root:
-        raise ValueError(QC.translate("TrainDialog", "请先选择输出路径"))
-    os.makedirs(out_root, exist_ok=True)
-    spec = spec_for(task)
-    datasets = []
-    for split, pairs in (("train", params.get("train_ds") or []),
-                         ("val", params.get("val_ds") or [])):
-        for pair in pairs:
-            proj, name = pair[0], pair[1]
-            info = db.get_dataset_import(proj, name)
-            check_dataset_imported(name, info)
-            fmt = info.get("label_fmt", "")
-            # 入队后数据集可能被重新导入成别的格式, 出队时再校验一次
-            # (队列可能挂着几个小时, 中间改了数据集这里才发现)
-            problem = spec.dataset_problem(proj, name, info,
-                                           task_text(task), _td)
-            if problem:
-                raise ValueError(problem)
-            datasets.append({
-                "dataset_name": name, "project": proj, "split": split,
-                "image_path": info.get("image_path", ""),
-                "label_path": info.get("label_path", ""),
-                # 必须给原始列表(带空串占位): get_paths 会滤掉空串,
-                # data_prep._paired_dirs 拿滤后的短列表按位置配对, 会把
-                # "第 1 轮只导图像"错位成"第 1 轮的图吃第 2 轮的标签目录".
-                # 其余消费者(候选目录/统计)走 get_paths 自己会滤, 不受影响
-                "image_paths": list(info.get("image_paths") or []),
-                "label_paths": list(info.get("label_paths") or []),
-                "fmt": fmt,
-                "label_ids": db.get_dataset_label_ids(proj, name),
-            })
-    if not any(d["split"] == "train" for d in datasets):
-        raise ValueError(QC.translate("TrainDialog", "请至少选择一个训练集数据集"))
-    if not any(d["split"] == "val" for d in datasets):
-        raise ValueError(QC.translate("TrainDialog", "请至少选择一个验证集数据集"))
-    ts_dir = _unique_ts_dir(out_root, timestamp_dir())
-    architecture = spec.resolve_architecture(params.get("architecture"))
-    config = {
-        "task": task,
-        "out_root": out_root,
-        "project": datasets[0]["project"],
-        "timestamp_dir": ts_dir,
-        "architecture": architecture,
-        "family": spec.resolve_family(params.get("family")),
-        "model_size": params.get("architecture") or "nano",
-        "device": params.get("device") or "",
-        "epochs": params.get("epochs", 100),
-        "batch_size": params.get("batch_size", 8),
-        "num_workers": params.get("num_workers", 8),
-        "optimizer": params.get("optimizer") or "adamw",
-        # 早停: >0 启用(值即 patience), <=0 禁用
-        "early_stop": params.get("early_stop", 20),
-        "lr": params.get("lr", 1e-4),
-        "img_size": params.get("img_size", 640),
-        "aug": params.get("aug", ""),
-        "datasets": datasets,
-        "language": i18n.current(),
-    }
-    # 分类不传梯度累积(runner),检测/分割才传
-    if spec.uses_grad_accum():
-        config["grad_accum"] = params.get("grad_accum", 4)
-    cfg_path = os.path.join(ts_dir, "train_config.json")
-    with open(cfg_path, "w", encoding="utf-8") as f:
-        json.dump(config, f, ensure_ascii=False)
-    config["_cfg_path"] = cfg_path
-    return config
-
-
-def params_summary(params):
-    """队列项的一行摘要文本(任务/网络/数据集)."""
-    task = params.get("task", "")
-    shown = task_text(task)
-    # 带项目名:不同项目下常有同名数据集(如 test1/train, test2/train)
-    names = ["{}/{}".format(p[0], p[1]) for p in (params.get("train_ds") or [])]
-    ds = ", ".join(names) if names else QC.translate("TrainDialog", "未选数据集")
-    return "{} · {} · {}".format(shown, params.get("architecture", ""), ds)
 
 
 class _TrainStartDialog(QDialog):
@@ -415,145 +77,7 @@ class _TrainStartDialog(QDialog):
         super().closeEvent(event)
 
 
-_DEVICES = None
-_DEVICES_ERROR = ""       # torch 探测失败的原因(空 = 正常)
-
-
-# 子进程侧脚本: 不依赖工程内任何代码, 结果写进 argv[1] 指定的 json.
-# 探测必须隔一层子进程: torch 的加载在个别机器上是硬崩(非法指令/访问冲突), Python 接不住
-# 那种崩, 留在界面进程里就是整个窗口跟着消失, 而打包后跑的是 pythonw, 连提示都没有.
-DEVICE_PROBE_SCRIPT = """
-import json, sys
-
-out = {"ok": True, "err": "", "devices": []}
-try:
-    import torch
-    if torch.cuda.is_available():
-        for i in range(torch.cuda.device_count()):
-            try:
-                # 下拉宽度放不下全名, 而 ElideLeft 先吃掉的正是前缀, 反倒把型号挤没
-                name = torch.cuda.get_device_name(i).removeprefix("NVIDIA ")
-                total = torch.cuda.get_device_properties(i).total_memory
-                text = "{} ({:.0f} GB)".format(name, total / 1024 ** 3)
-            except Exception:
-                text = "GPU {}".format(i)
-            out["devices"].append([text, "cuda:{}".format(i)])
-except BaseException as exc:
-    # Windows 上 DLL 加载失败抛的是 OSError 而不是 ImportError, 所以连 BaseException 一起收
-    out["ok"] = False
-    out["err"] = "{}: {}".format(type(exc).__name__, exc)
-out["devices"].append(["CPU", "CPU"])
-with open(sys.argv[1], "w", encoding="utf-8") as f:
-    json.dump(out, f)
-"""
-
-PROBE_TIMEOUT = 180        # 含 import torch, 机械盘老机器上要几十秒
-_CREATE_NO_WINDOW = 0x08000000
-
-
-def _probe_in_subprocess():
-    """
-    跑一次探测子进程, 返回 (设备列表, 失败原因).
-    结果走临时文件而不是管道: 打包后宿主是 pythonw.exe, sys.stdout 是 None, 管道里拿不到东西.
-    """
-    fd, path = tempfile.mkstemp(suffix=".json", prefix="devprobe_")
-    os.close(fd)
-    try:
-        proc = subprocess.run(
-            [sys.executable, "-c", DEVICE_PROBE_SCRIPT, path],
-            cwd=tempfile.gettempdir(), capture_output=True,
-            creationflags=_CREATE_NO_WINDOW if sys.platform == "win32" else 0,
-            timeout=PROBE_TIMEOUT)
-        try:
-            with open(path, "r", encoding="utf-8") as f:
-                payload = json.load(f)
-        except (OSError, ValueError):
-            # 硬崩时临时文件是空的, 只有退出码能当线索
-            return ([("CPU", "CPU")],
-                    "探测进程异常退出(0x%08X)" % (proc.returncode & 0xFFFFFFFF))
-        devices = [(str(t), str(v)) for t, v in payload.get("devices") or []]
-        err = "" if payload.get("ok") else str(payload.get("err") or "探测失败")
-        return devices or [("CPU", "CPU")], err
-    except (OSError, subprocess.SubprocessError) as exc:
-        return [("CPU", "CPU")], "探测进程起不来: {}".format(exc)
-    finally:
-        try:
-            os.remove(path)
-        except OSError:
-            pass
-
-
-def collect_devices():
-    """
-    [(显示名, 设备串)]: 列表显示 GPU 型号, 实际下发的是 cuda:0 这类设备串.
-    探测放子进程做, 结果缓存, 同一进程只探一次.
-    """
-    global _DEVICES, _DEVICES_ERROR
-    if _DEVICES is None:
-        _DEVICES, _DEVICES_ERROR = _probe_in_subprocess()
-        if _DEVICES_ERROR:
-            write_log("设备探测未通过: {}".format(_DEVICES_ERROR))
-    return list(_DEVICES)
-
-
-class _DeviceProbe(QThread):
-    """后台探测显卡. 探测要走子进程(见 collect_devices), 同步做会把弹窗卡住."""
-
-    ready = Signal(list)
-
-    def run(self):
-        try:
-            self.ready.emit(collect_devices())
-        except Exception:
-            self.ready.emit([("CPU", "CPU")])
-
-
-_PROBES = []                    # 运行中的探测线程, 防止被 GC
-
-
-def fill_device_items(combo, devices):
-    combo.clear()
-    for text, value in devices:
-        combo.addItem(text, value)
-        combo.setItemData(combo.count() - 1, text, Qt.ToolTipRole)
-
-
-def fill_device_combo_async(dialog, combo, start_button):
-    """
-    设备下拉先填占位值, 后台探测完回调 dialog._on_devices_ready(devices).
-    就绪前禁掉下拉与开始按钮, 免得占位值 CPU 被当成用户选择跑出去.
-    """
-    combo.clear()
-    combo.addItem(QC.translate("TrainDialog", PROBING_TEXT), "CPU")
-    if _DEVICES is not None:        # 本进程已探测过, 不用再起线程
-        dialog._on_devices_ready(_DEVICES)
-        return
-    combo.setEnabled(False)
-    start_button.setEnabled(False)
-    # 前一个弹窗关掉后探测可能还在跑, 搭它的车, 免得再导一次 torch
-    probe = next((p for p in _PROBES if p.isRunning()), None)
-    if probe is None:
-        probe = _DeviceProbe()
-        _PROBES.append(probe)
-        probe.finished.connect(
-            lambda: _PROBES.remove(probe) if probe in _PROBES else None)
-        probe.start()
-    probe.ready.connect(dialog._on_devices_ready)
-    dialog._device_probe = probe
-
-
-def detach_device_probe(dialog):
-    """关窗时摘掉探测回调. 线程让它自己跑完, 关窗不该等它那 2s."""
-    probe = getattr(dialog, "_device_probe", None)
-    if probe is None or not probe.isRunning():
-        return
-    try:
-        probe.ready.disconnect(dialog._on_devices_ready)
-    except (RuntimeError, TypeError):
-        pass
-
-
-class TrainDialog(QDialog):
+class TrainDialog(AugMixin, QDialog):
     IMG_NOTE_FMT = QT_TRANSLATE_NOOP("TrainDialog", "{} 的倍数")
 
     def __init__(self, app, project="", dataset="", preset_record=None):
@@ -915,10 +439,10 @@ class TrainDialog(QDialog):
         combo.setEnabled(True)
         combo.setCurrentIndex(0)
         self._center_combo_items(combo)
-        if _DEVICES_ERROR:
+        if device_probe._DEVICES_ERROR:
             # 探测失败时列表只剩 CPU, 不说清楚用户只会当成"这台机器没显卡"
             combo.setToolTip("{}:\n{}".format(
-                self.tr(PROBE_FAILED_TEXT), _DEVICES_ERROR))
+                self.tr(PROBE_FAILED_TEXT), device_probe._DEVICES_ERROR))
         write_log("设备检测完成: {}".format([text for text, _v in devices]))
         self._sync_start_enabled()
         if self._pending_device:
@@ -931,15 +455,15 @@ class TrainDialog(QDialog):
         if btn is None:
             return
         busy = hasattr(self.app, "is_training") and self.app.is_training()
-        ready = _DEVICES is not None
+        ready = device_probe._DEVICES is not None
         btn.setEnabled(ready and not busy)
         if not ready:
             btn.setToolTip(QC.translate("TrainDialog", PROBING_TEXT))
         elif busy:
             btn.setToolTip(self.tr("已有训练在进行中, 请先停止"))
-        elif _DEVICES_ERROR:
+        elif device_probe._DEVICES_ERROR:
             btn.setToolTip("{}:\n{}".format(
-                self.tr(PROBE_FAILED_TEXT), _DEVICES_ERROR))
+                self.tr(PROBE_FAILED_TEXT), device_probe._DEVICES_ERROR))
         else:
             btn.setToolTip("")
 
@@ -966,126 +490,6 @@ class TrainDialog(QDialog):
             if it is not None:
                 it.setTextAlignment(Qt.AlignHCenter)
 
-    def _build_aug_items(self):
-        """按 AUG_ITEMS 现场搭勾选项: 文案全部走 tr(), 换语言不用重排 XML."""
-        body = getattr(self.ui, "aug_body", None)
-        if body is None:
-            return
-        lay = body.layout()
-        while lay.count():
-            item = lay.takeAt(0)
-            w = item.widget()
-            if w is not None:
-                w.setParent(None)
-        self._aug_checks = {}
-
-        for gid, gname, gtip in AUG_GROUPS:
-            head = QWidget(body)
-            head.setObjectName("aug_group_head")
-            hl = QHBoxLayout(head)
-            hl.setContentsMargins(0, 0, 0, 0)
-            hl.setSpacing(8)
-            title = QLabel(self.tr(gname), head)
-            title.setProperty("class", "augGroupTitle")
-            tip = QLabel(self.tr(gtip), head)
-            tip.setProperty("class", "augGroupTip")
-            hl.addWidget(title)
-            hl.addWidget(tip)
-            hl.addStretch(1)
-            lay.addWidget(head)
-
-            grid = QGridLayout()
-            grid.setHorizontalSpacing(7)
-            grid.setVerticalSpacing(7)
-            lay.addLayout(grid)
-            row = 0
-            col = 0
-            for g, code, name, param in AUG_ITEMS:
-                if g != gid:
-                    continue
-                chk = CheckChip(body, check=theme.color(AUG_TINT[gid]))
-                chk.setText("{}({})".format(self.tr(name),
-                                            self.tr(param)))
-                chk.toggled.connect(self._on_aug_toggled)
-                # 不撑满格子: 拉满的话悬停底色会横铺大半行
-                grid.addWidget(chk, row, col, Qt.AlignLeft | Qt.AlignVCenter)
-                self._aug_checks[code] = chk
-                col += 1
-                if col >= 2:
-                    col = 0
-                    row += 1
-
-        self._set_aug_enabled()
-        self._refresh_aug_badge()
-
-    def _aug_backend(self):
-        """增强交给哪套后端: Transformer 是 rf-detr(kornia), CNN 是 YOLO(ultralytics)."""
-        return "cnn" if self._arch() == "cnn" else "transformer"
-
-    def _aug_available(self):
-        """分类(resnet)/异常检测(anomalib)/OCR(docTR) 的训练 runner 都不读增强代号."""
-        return self._spec().aug_supported()
-
-    def _aug_item_ok(self, code):
-        return self._aug_backend() in AUG_FAMILIES.get(code, AUG_BOTH)
-
-    def _checked_aug_codes(self):
-        """只留当前后端吃得下的代号, 存进记录的和实际生效的才是同一份."""
-        return [c for c, chk in self._aug_checks.items()
-                if chk.isChecked() and self._aug_item_ok(c)]
-
-    def _aug_value(self):
-        """勾选代号串(逗号分隔); 整块不可用时按"不增强"记录."""
-        if not self._aug_available():
-            return ""
-        return ",".join(self._checked_aug_codes())
-
-    def _set_aug_checks(self, value):
-        """回填勾选: 新记录是逗号串, 改造前的老记录是单档预设代号, 两种都认."""
-        codes = parse_aug_codes(value)
-        for code, chk in self._aug_checks.items():
-            chk.blockSignals(True)
-            chk.setChecked(code in codes)
-            chk.blockSignals(False)
-        self._refresh_aug_badge()
-
-    def _set_aug_enabled(self):
-        """
-        整块不可用(任务不吃)就全灰; 整块可用时再按后端逐项分.
-        不可用只改可用性和可见性, 勾选留着, 切回原来那套还是原样.
-        """
-        body = getattr(self.ui, "aug_body", None)
-        if body is None:
-            return
-        ok = self._aug_available()
-        tip = "" if ok else self.tr(AUG_UNAVAILABLE)
-        # 折叠态下 body 是隐藏的, 提示得同时挂在标题行上
-        for name in ("aug_body", "section_aug_wrap", "aug_toggle_btn",
-                     "group_aug_title", "aug_count_label"):
-            w = getattr(self.ui, name, None)
-            if w is not None:
-                w.setEnabled(ok)
-                w.setToolTip(tip)
-        for code, chk in self._aug_checks.items():
-            usable = ok and self._aug_item_ok(code)
-            chk.setVisible(code not in AUG_HIDE_WHEN_UNSUPPORTED
-                           or self._aug_item_ok(code))
-            chk.setEnabled(usable)
-            chk.setToolTip("" if usable else self.tr(AUG_ITEM_UNAVAILABLE))
-        self._refresh_aug_badge()
-        # 马赛克卡片会随架构显示/隐藏, 内容高度跟着变
-        self._fit_content()
-
-    def _toggle_aug(self, expand):
-        """折叠只改可见性, 勾选状态留着."""
-        body = getattr(self.ui, "aug_body", None)
-        btn = getattr(self.ui, "aug_toggle_btn", None)
-        if body is None or btn is None:
-            return
-        body.setVisible(bool(expand))
-        btn.setArrowType(Qt.DownArrow if expand else Qt.RightArrow)
-        self._fit_content()
-
     def eventFilter(self, obj, event):
         """标题行整行可点: 只有左边箭头是小按钮, 点标题或分隔线在这里补一次切换."""
         # PySide6 6.9.1 偶尔把 QStandardItem 当 event 投过来, 直接 event.type() 是空指针解引用
@@ -1101,26 +505,6 @@ class TrainDialog(QDialog):
                 and event.type() == QEvent.Resize):
             self._place_img_note()
         return super().eventFilter(obj, event)
-
-    def _on_aug_toggled(self):
-        # 勾选态由 CheckChip 自绘, 这里只管计数
-        self._refresh_aug_badge()
-
-    def _refresh_aug_badge(self):
-        label = getattr(self.ui, "aug_count_label", None)
-        if label is None:
-            return
-        count = len(self._checked_aug_codes())
-        label.setText(self.tr(AUG_COUNT_FMT).format(count))
-        label.setProperty("on", "true" if count else "false")
-        self._repolish(label)
-
-    @staticmethod
-    def _repolish(widget):
-        """动态属性改完要让样式重算, 否则得等下一次重绘才变."""
-        widget.style().unpolish(widget)
-        widget.style().polish(widget)
-        widget.update()
 
     def _on_task_changed(self):
         self.ui.task_badge.setText(self._task_text())

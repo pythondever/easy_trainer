@@ -14,8 +14,8 @@ from PySide6.QtCore import QCoreApplication as QC
 from app.core import model_assets
 from app.core.log import write_log
 from app.widgets.status_style import task_text
-from app.train.dialogs import (make_train_config, make_train_record,
-                               params_summary)
+from app.train.train_config import (make_train_config, make_train_record,
+                                    params_summary)
 
 try:
     import pynvml
