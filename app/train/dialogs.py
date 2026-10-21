@@ -31,7 +31,7 @@ from app.widgets.dialog_fit import fit_dialog_height
 from app.core import i18n
 from app.core import theme
 from app.core.constants import IMAGE_EXTS
-from app.core.db import get_path_pairs, get_paths
+from app.core.db import get_path_pairs
 from app.core.log import write_log
 from app.train import ad_common as adc
 from app.train import classify_common, detect_common, segment_common
@@ -319,8 +319,12 @@ def make_train_config(db, params):
                 "dataset_name": name, "project": proj, "split": split,
                 "image_path": info.get("image_path", ""),
                 "label_path": info.get("label_path", ""),
-                "image_paths": get_paths(info, "image"),
-                "label_paths": get_paths(info, "label"),
+                # 必须给原始列表(带空串占位): get_paths 会滤掉空串,
+                # data_prep._paired_dirs 拿滤后的短列表按位置配对, 会把
+                # "第 1 轮只导图像"错位成"第 1 轮的图吃第 2 轮的标签目录".
+                # 其余消费者(候选目录/统计)走 get_paths 自己会滤, 不受影响
+                "image_paths": list(info.get("image_paths") or []),
+                "label_paths": list(info.get("label_paths") or []),
                 "fmt": fmt,
                 "label_ids": db.get_dataset_label_ids(proj, name),
             })
