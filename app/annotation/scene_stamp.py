@@ -286,8 +286,8 @@ class StampMixin:
         return done
 
     def auto_paste_at(self, pos):
-        """把当前选中的剪切板模板贴到 pos 并立刻融合, 顺便返回一个轮廓项.
-
+        """
+        把当前选中的剪切板模板贴到 pos 并立刻融合, 顺便返回一个轮廓项.
         与手动粘贴的区别就是"不等 Ctrl+S": 自动粘贴要的就是贴完即生效,
         每贴一次记一条, 点标记框可以只撤那一次.
         返回标记框; 没贴上返回 None.
@@ -321,8 +321,8 @@ class StampMixin:
                 if it.scene() is self and it.is_floating() and it.isSelected()]
 
     def _stamp_hit(self, scene_pos):
-        """该点命中的浮动粘贴手柄: (item, "scale"/"rotate", 手柄下标或 None).
-
+        """
+        该点命中的浮动粘贴手柄: (item, "scale"/"rotate", 手柄下标或 None).
         不能靠 items() 找父项: 转过角度后外接框的角点落在轮廓多边形之外,
         而手柄正是贴在外接框上的 —— 按 items() 判会刚好把手柄漏掉.
         """
