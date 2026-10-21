@@ -94,8 +94,8 @@ class StampMixin:
         return out
 
     def _stamp_patch(self, meta):
-        """浮动层显示用的图案: 按 meta 的角度与倍数转好、缩放好的一份位图.
-
+        """
+        浮动层显示用的图案: 按 meta 的角度与倍数转好、缩放好的一份位图.
         只走显示这条路; 落地走 _blend_stamp_at, 而它要的是"没转过"的那份
         (旋转由它自己按 angle 施加一次, 见 commit_pastes).
         """
