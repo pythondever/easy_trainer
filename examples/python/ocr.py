@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-OCR 推理示例（字符检测 + 字符识别）。
-导出的是两段模型：检测段找文字框，识别段读框里的字。只做检测就不给 --rec。
+OCR 推理示例（字符识别）。
+
+新导出的模型只有识别段：不给 --det 时整张图当作一条字条直接识别（与软件内
+纯图像推理的口径一致）。早期版本的两段记录仍可给出 --det，先检测再逐框识别。
 
 用法:
-  python ocr.py --det 检测.onnx --image test.jpg
+  python ocr.py --rec 识别.onnx --image test.jpg
   python ocr.py --det 检测.onnx --rec 识别.onnx --image test.jpg --save out.jpg
 """
 
@@ -130,8 +132,9 @@ def write_json(img_path, iw, ih, rows):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--det", required=True, help="字符检测模型 onnx")
-    ap.add_argument("--rec", default="", help="字符识别模型 onnx，给了才出文字")
+    ap.add_argument("--rec", required=True, help="字符识别模型 onnx")
+    ap.add_argument("--det", default="",
+                    help="字符检测模型 onnx（早期两段记录才给），给了先检测再逐框识别")
     ap.add_argument("--vocab", default="",
                     help="词表文件，默认取识别模型同目录的 vocab.txt")
     ap.add_argument("--image", required=True)
@@ -148,37 +151,38 @@ def main():
         raise SystemExit("读图失败: {}".format(args.image))
     h, w = img.shape[:2]
 
-    det = ort.InferenceSession(args.det, providers=["CPUExecutionProvider"])
-    size = args.size or input_size(det, DET_SIZE)
-    logits = det.run(None, {"images": preprocess(img, size)})[0]
-    boxes = det_boxes(logits, (w, h), args.bin_thr, args.box_thr)
+    if args.det:
+        det = ort.InferenceSession(args.det, providers=["CPUExecutionProvider"])
+        size = args.size or input_size(det, DET_SIZE)
+        logits = det.run(None, {"images": preprocess(img, size)})[0]
+        boxes = det_boxes(logits, (w, h), args.bin_thr, args.box_thr)
+    else:
+        # 没有检测段: 整张图当一条字条, 与软件内纯图像推理一致
+        boxes = [(0.0, 0.0, float(w), float(h), 1.0)]
 
-    rec, vocab, rec_wh = None, "", (768, 32)
-    if args.rec:
-        vocab = read_vocab(args.vocab or os.path.join(
-            os.path.dirname(os.path.abspath(args.rec)), "vocab.txt"))
-        if not vocab:
-            raise SystemExit(
-                "识别段要词表：用 --vocab 指定，或把 vocab.txt 放到识别模型同目录")
-        rec = ort.InferenceSession(args.rec, providers=["CPUExecutionProvider"])
-        shape = rec.get_inputs()[0].shape
-        rec_wh = (int(shape[3]), int(shape[2]))
+    vocab = read_vocab(args.vocab or os.path.join(
+        os.path.dirname(os.path.abspath(args.rec)), "vocab.txt"))
+    if not vocab:
+        raise SystemExit(
+            "识别段要词表：用 --vocab 指定，或把 vocab.txt 放到识别模型同目录")
+    rec = ort.InferenceSession(args.rec, providers=["CPUExecutionProvider"])
+    shape = rec.get_inputs()[0].shape
+    rec_wh = (int(shape[3]), int(shape[2]))
 
     rows = []
     for x1, y1, x2, y2, score in boxes:
+        crop = img[max(int(y1), 0):max(int(y2), 0),
+                   max(int(x1), 0):max(int(x2), 0)]
         text = ""
-        if rec is not None:
-            crop = img[max(int(y1), 0):max(int(y2), 0),
-                       max(int(x1), 0):max(int(x2), 0)]
-            if crop.size:
-                out = rec.run(None, {"images": rec_input(crop, *rec_wh)})[0]
-                text, _conf = ctc_decode(out[0], vocab, len(vocab))
+        if crop.size:
+            out = rec.run(None, {"images": rec_input(crop, *rec_wh)})[0]
+            text, _conf = ctc_decode(out[0], vocab, len(vocab))
         rows.append((x1, y1, x2, y2, score, text))
         print("{}  {:.3f}  ({:.0f},{:.0f})-({:.0f},{:.0f})".format(
             text or "-", score, x1, y1, x2, y2))
         cv2.rectangle(img, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 2)
         cap = "{} {:.2f}".format(text, score) if text else "{:.2f}".format(score)
-        cv2.putText(img, cap, (int(x1), int(y1) - 6),
+        cv2.putText(img, cap, (int(x1), max(int(y1) - 6, 14)),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
 
     if args.json:

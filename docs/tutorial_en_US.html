@@ -144,7 +144,7 @@
 
 <div class="note">
   For a <strong>classification dataset</strong>, choose "Import as classification (subfolders)": each subfolder name is one class, and <strong>no label files are needed</strong>.<br>
-  OCR uses Labelme json; the text box label is always "text", and after import the dataset is automatically marked as a text detection dataset.
+  OCR uses Labelme json; the text box label is always "text", and after import each image is flagged as text annotation. From then on, only datasets with text annotation show up in the OCR train set dropdown.
 </div>
 
 <figure>
@@ -362,7 +362,7 @@
 
 <ul>
   <li><strong>Search box</strong> — filters by keyword on project / dataset / label</li>
-  <li><strong>Task / Status dropdowns</strong> — for Task you can pick Detection / Segmentation / Classification / Anomaly Detection / Text Detection / Text Recognition; for Status you can pick Training / Finished / Failed / Stopped</li>
+  <li><strong>Task / Status dropdowns</strong> — for Task you can pick Detection / Segmentation / Classification / Anomaly Detection / Text Recognition (early Text Detection records are folded into this filter too); for Status you can pick Training / Finished / Failed / Stopped</li>
   <li><strong>Best per dataset only</strong> — keeps only the highest-accuracy record of each dataset</li>
   <li>List columns: Task, Dataset / Labels, Accuracy, Trained at, Duration, Image Size, Actions</li>
   <li><strong>The Accuracy column has a color bar</strong> — green ≥ 0.8, yellow 0.5 ~ 0.8, red &lt; 0.5. Failed or stopped records show status text in this column instead, and hovering over it shows the failure reason</li>
@@ -414,11 +414,11 @@
   <li><strong>Confidence</strong> — predictions below this score are dropped</li>
   <li><strong>IoU threshold</strong> — a prediction only counts as a correct detection when its overlap with the ground-truth box reaches this value</li>
   <li><strong>Write label files</strong> — check it to write the predicted boxes out as labelme json, which makes manual review easy</li>
-  <li><strong>OCR</strong> — Text Detection has two paths, inference and evaluation: inference writes the results out as annotation json, evaluation measures P/R. Text Recognition writes no annotation files and only reports the crop recognition rate</li>
+  <li><strong>OCR</strong> — Text Recognition is tested on the crops cut out with the annotation boxes; it reports the total number of crops, the CER (character error rate) and the number of fully correct crops. Plain images (no labels) go through inference, which writes the recognized text as labelme json back into the image folder. Text Detection inference / evaluation is kept for historical records only</li>
 </ul>
 
 <div class="note">
-  When the dataset has labels it automatically goes into <strong>evaluation mode</strong>, measuring Recall / Missed / False pos. If Text Detection is set to inference mode, the labels are ignored and the predicted boxes are written straight out as json.
+  When the dataset has labels it automatically goes into <strong>evaluation mode</strong>, measuring Recall / Missed / False pos. (If a Text Detection record is set to inference mode, the labels are ignored and the predicted boxes are written straight out as json — historical records only.)
 </div>
 
 <figure>
@@ -459,7 +459,7 @@
 
 <h2 id="ocr">6. OCR</h2>
 
-<p>OCR is different from the other tasks: it is done by chaining <strong>two models</strong> — Text Detection finds the text boxes, and Text Recognition reads the characters inside them. Training, testing and export are all done in two separate stages, and Model Manager ends up with two records.</p>
+<p>OCR trains only the <strong>Text Recognition</strong> stage (docTR CRNN): the character positions come from the annotation boxes, so no detection model is trained. Training, testing and export all target the recognition stage only, and one record in Model Manager corresponds to one recognition model; Text Detection records left by early versions can still be tested and exported.</p>
 
 <h3>6.1 Annotate text</h3>
 
@@ -467,7 +467,7 @@
 
 <p>Always draw text boxes as rectangles: for tilted text a horizontal box is enough to cover it, because during training a polygon is treated as its horizontal bounding box and tracing the outline brings no extra benefit.</p>
 
-<p>When a labelme json with text boxes is imported, the dataset is automatically marked as a <strong>text detection dataset</strong>. From then on, only datasets of this kind show up in the OCR train set dropdown.</p>
+<p>When a labelme json with text boxes is imported, each image is flagged as text annotation. From then on, only datasets with text annotation show up in the OCR train set dropdown.</p>
 
 <figure>
   <img src="images/ocr标注.png" alt="OCR 文本标注">
@@ -487,32 +487,32 @@
 
 <p>Image Size is not used when training character recognition (the recognition stage is fixed at <code>32×768</code>; the field is greyed out and shows 768).</p>
 
-<p>After you click "Start Training" it is automatically split into two queued items: Text Detection first, then Text Recognition. When the first one finishes, the next one only starts after VRAM has fallen back to the level it was at before training began; during that time the progress area shows "Waiting for VRAM release · next:Text Recognition", so there is no idle gap in between.</p>
+<p>After you click "Start Training" it trains the Text Recognition stage directly, and only that one item is queued.</p>
 
 <figure>
   <img src="images/ocr训练.png" alt="OCR 训练参数">
-  <figcaption>OCR training parameters (marked as the "Text Detection" stage in the image); Model is the tier, nano ~ large, and the Architecture field is decided by the algorithm and greyed out, so it cannot be changed</figcaption>
+  <figcaption>OCR training parameters; Model is the tier, nano ~ large, and the Architecture field is decided by the algorithm and greyed out, so it cannot be changed</figcaption>
 </figure>
 
 <div class="note">
   The vocabulary of the recognition stage is taken straight from the characters that appear in the labels. So the annotated text has to cover the character set you actually meet on site — characters that occur on site but never appear in the labels will not be recognized by the model.
 </div>
 
-<h3>6.3 Testing: two paths for detection, one for recognition</h3>
+<h3>6.3 Testing</h3>
 
 <ul>
-  <li><strong>Text Detection · inference</strong> — does not compare against the labels; it writes the predicted boxes (together with the recognized text) straight out as labelme json. The json carries an OCR flag, so dragging it back into the software makes it a text detection dataset that you can use to check the results or fill in labels</li>
-  <li><strong>Text Detection · evaluation</strong> — entered automatically when the dataset has labels; it measures Correct detections / Missed / False pos. and per-class P/R, the same as the detection task</li>
-  <li><strong>Text Recognition</strong> — tested on the crops cut out with the annotation boxes; it reports the total number of crops, the CER (character error rate) and the number of fully correct crops, and writes no annotation files</li>
+  <li><strong>Text Recognition · evaluation</strong> — entered automatically when the dataset has labels; it compares the crops cut out with the annotation boxes, reporting the total number of crops, the CER (character error rate) and the number of fully correct crops</li>
+  <li><strong>Text Recognition · inference</strong> — entered for plain images (no labels); it writes the recognized text as labelme json back into the image folder, ready to check after a home-page reload</li>
+  <li><strong>Text Detection · inference / evaluation</strong> — available for detection-stage records left by early versions only: inference writes the predicted boxes as json, evaluation measures Correct detections / Missed / False pos. and per-class P/R</li>
 </ul>
 
 <h3>6.4 Export</h3>
 
-<p>Each of the two stages exports its own ONNX: <code>项目_字符检测_尺寸_规模.onnx</code> and <code>项目_字符识别_尺寸_规模.onnx</code>, with the recognition stage carrying an extra <code>vocab.txt</code> vocabulary.</p>
+<p>Exports one ONNX: <code>项目_字符识别_尺寸_规模.onnx</code>, plus a <code>vocab.txt</code> vocabulary (one character per line). Text Detection records from early versions can still export the detection-stage ONNX.</p>
 
-<p>Text Detection produces an evaluation report as usual; Text Recognition has only CER as its conclusion and produces no report.</p>
+<p>Text Recognition has only CER as its conclusion and produces no evaluation report.</p>
 
-<p>The calling example is in <code>examples/python/ocr.py</code> in the export folder. Note that the logits output by the detection stage have not been through sigmoid, so you have to write the post-processing yourself — the example already has it all written.</p>
+<p>The calling example is in <code>examples/python/ocr.py</code> in the export folder.</p>
 
 <h2 id="log">7. Log</h2>
 

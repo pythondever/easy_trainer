@@ -144,7 +144,7 @@
 
 <div class="note">
   <strong>Bộ dữ liệu phân loại</strong> chọn “Nhập phân loại theo thư mục con”: mỗi tên thư mục con là một lớp, <strong>không cần tệp chú thích</strong>.<br>
-  OCR dùng Labelme json, nhãn của ô văn bản cố định là “text”, sau khi nhập sẽ tự động được đánh dấu thành bộ dữ liệu phát hiện văn bản.
+  OCR dùng Labelme json, nhãn của ô văn bản cố định là “text”, sau khi nhập mỗi ảnh được gắn cờ chú thích văn bản. Về sau chỉ những bộ dữ liệu có chú thích văn bản mới xuất hiện trong hộp thả xuống tập huấn luyện của OCR.
 </div>
 
 <figure>
@@ -362,7 +362,7 @@
 
 <ul>
   <li><strong>Ô tìm kiếm</strong> — lọc theo từ khóa dự án / bộ dữ liệu / nhãn</li>
-  <li><strong>Thả xuống Tác vụ / Trạng thái</strong> — tác vụ chọn được Phát hiện / Phân đoạn / Phân loại / Phát hiện bất thường / Phát hiện văn bản / Nhận dạng văn bản; trạng thái chọn được Đang huấn luyện / Hoàn thành / Thất bại / Đã dừng</li>
+  <li><strong>Thả xuống Tác vụ / Trạng thái</strong> — tác vụ chọn được Phát hiện / Phân đoạn / Phân loại / Phát hiện bất thường / Nhận dạng văn bản (các bản ghi Phát hiện văn bản của bản cũ cũng được gộp vào bộ lọc này); trạng thái chọn được Đang huấn luyện / Hoàn thành / Thất bại / Đã dừng</li>
   <li><strong>Chỉ xem cái tốt nhất của mỗi bộ dữ liệu</strong> — cùng một bộ dữ liệu chỉ giữ bản ghi có độ chính xác cao nhất</li>
   <li>Các cột danh sách: Tác vụ, Bộ dữ liệu·Nhãn, Độ chính xác, Thời gian huấn luyện, Thời gian, Kích thước ảnh, Thao tác</li>
   <li><strong>Cột độ chính xác có thanh màu</strong> — xanh ≥ 0.8, vàng 0.5 ~ 0.8, đỏ &lt; 0.5. Bản ghi thất bại hoặc đã dừng thì ở cột này hiển thị chữ trạng thái, đưa chuột lên sẽ thấy nguyên nhân thất bại</li>
@@ -414,11 +414,11 @@
   <li><strong>Độ tin cậy</strong> — dự đoán dưới điểm này bị loại thẳng</li>
   <li><strong>Ngưỡng IoU</strong> — khung dự đoán và khung chú thích phải đủ mức trùng khớp mới tính là phát hiện đúng</li>
   <li><strong>Ghi tệp nhãn</strong> — tích vào thì ghi khung dự đoán thành labelme json, tiện cho người kiểm tra lại</li>
-  <li><strong>OCR</strong> — phát hiện văn bản có hai đường là suy luận và đánh giá: suy luận ghi kết quả thành json chú thích, đánh giá thống kê P/R. Nhận dạng văn bản không xuất tệp chú thích, chỉ báo cáo tỉ lệ nhận dạng của đoạn văn bản đã cắt</li>
+  <li><strong>OCR</strong> — nhận dạng văn bản lấy đoạn văn bản được cắt ra từ khung chú thích để kiểm thử, báo tổng số đoạn văn bản, CER (tỉ lệ lỗi ký tự) và số đoạn đúng hoàn toàn; ảnh thuần (không có chú thích) thì đi theo suy luận, ghi chữ nhận dạng được thành labelme json trả lại cùng thư mục ảnh. Suy luận / đánh giá của phát hiện văn bản chỉ còn giữ cho các bản ghi cũ</li>
 </ul>
 
 <div class="note">
-  Khi bộ dữ liệu có chú thích sẽ tự động vào <strong>chế độ đánh giá</strong>, thống kê tỉ lệ phát hiện / phát hiện sót / phát hiện nhầm. Phát hiện văn bản nếu chọn chế độ suy luận thì bỏ qua chú thích, ghi thẳng khung dự đoán thành json.
+  Khi bộ dữ liệu có chú thích sẽ tự động vào <strong>chế độ đánh giá</strong>, thống kê tỉ lệ phát hiện / phát hiện sót / phát hiện nhầm. (Bản ghi phát hiện văn bản nếu chọn chế độ suy luận thì bỏ qua chú thích, ghi thẳng khung dự đoán thành json — chỉ dành cho bản ghi cũ.)
 </div>
 
 <figure>
@@ -459,7 +459,7 @@
 
 <h2 id="ocr">6. OCR</h2>
 
-<p>OCR khác các tác vụ khác: nó được hoàn thành bằng <strong>hai mô hình</strong> nối tiếp nhau — phát hiện văn bản tìm ra ô chữ, nhận dạng văn bản đọc ra chữ trong ô. Huấn luyện, kiểm thử, xuất đều làm riêng hai giai đoạn, trong Quản lý mô hình sẽ để lại hai bản ghi.</p>
+<p>OCR chỉ huấn luyện <strong>nhận dạng văn bản</strong> một giai đoạn (docTR CRNN): vị trí ký tự do khung chú thích cung cấp, không còn huấn luyện mô hình phát hiện nữa. Huấn luyện, kiểm thử, xuất đều chỉ nhắm vào giai đoạn nhận dạng, trong Quản lý mô hình một bản ghi tương ứng một mô hình nhận dạng; các bản ghi phát hiện văn bản để lại từ bản cũ vẫn có thể kiểm thử và xuất được.</p>
 
 <h3>6.1 Chú thích văn bản</h3>
 
@@ -467,7 +467,7 @@
 
 <p>Ô văn bản luôn vẽ bằng hình chữ nhật: chữ nghiêng cũng chỉ cần lấy khung ngang trùm lên là được, khi huấn luyện đa giác sẽ bị coi như khung bao ngang, vẽ men theo đường viền không mang lại thêm lợi ích.</p>
 
-<p>labelme json có ô văn bản khi nhập sẽ tự động đánh dấu bộ dữ liệu thành <strong>bộ dữ liệu phát hiện văn bản</strong>. Về sau chỉ những bộ dữ liệu loại này mới xuất hiện trong hộp thả xuống tập huấn luyện của OCR.</p>
+<p>labelme json có ô văn bản khi nhập sẽ gắn cờ chú thích văn bản cho từng ảnh. Về sau chỉ những bộ dữ liệu có chú thích văn bản mới xuất hiện trong hộp thả xuống tập huấn luyện của OCR.</p>
 
 <figure>
   <img src="images/ocr标注.png" alt="OCR 文本标注">
@@ -487,32 +487,32 @@
 
 <p>Kích thước ảnh không được dùng khi huấn luyện nhận dạng ký tự (giai đoạn nhận dạng cố định <code>32×768</code>; ô nhập đã bị làm mờ và hiển thị 768).</p>
 
-<p>Sau khi bấm “Bắt đầu huấn luyện” sẽ tự động tách thành hai mục xếp hàng: phát hiện văn bản trước, rồi nhận dạng văn bản. Mục trước chạy xong, phải đợi bộ nhớ GPU hạ về mức trước khi huấn luyện mới khởi động mục kế tiếp, trong khoảng thời gian đó vùng tiến độ hiển thị “Đang đợi giải phóng bộ nhớ GPU · Mục tiếp theo: Nhận dạng văn bản”, ở giữa không bị bỏ trống.</p>
+<p>Sau khi bấm “Bắt đầu huấn luyện” sẽ huấn luyện trực tiếp giai đoạn nhận dạng văn bản, hàng chờ chỉ xếp một mục này.</p>
 
 <figure>
   <img src="images/ocr训练.png" alt="OCR 训练参数">
-  <figcaption>Tham số huấn luyện của OCR (trong hình đánh dấu là giai đoạn “Phát hiện văn bản”); Mô hình tức là mức nano ~ large, cột Kiến trúc do thuật toán tự quyết định, bị làm xám không sửa được</figcaption>
+  <figcaption>Tham số huấn luyện của OCR; Mô hình tức là mức nano ~ large, cột Kiến trúc do thuật toán tự quyết định, bị làm xám không sửa được</figcaption>
 </figure>
 
 <div class="note">
   Từ vựng của giai đoạn nhận dạng lấy trực tiếp các ký tự đã xuất hiện trong chú thích. Vì vậy chú thích văn bản phải bao phủ bộ ký tự thực tế sẽ gặp ngoài hiện trường — ký tự có ngoài hiện trường mà chưa từng xuất hiện trong chú thích thì mô hình không nhận ra được.
 </div>
 
-<h3>6.3 Kiểm thử: phát hiện hai đường, nhận dạng một đường</h3>
+<h3>6.3 Kiểm thử</h3>
 
 <ul>
-  <li><strong>Phát hiện văn bản · Suy luận</strong> — không đối chiếu chú thích, ghi thẳng khung dự đoán (kèm chữ nhận dạng được) thành labelme json. Json ghi ra mang cờ OCR, kéo trở lại phần mềm sẽ được nhận là bộ dữ liệu phát hiện văn bản, dùng được để đối chiếu kết quả hoặc chú thích bổ sung</li>
-  <li><strong>Phát hiện văn bản · Đánh giá</strong> — tự động vào khi bộ dữ liệu có chú thích, thống kê phát hiện đúng / phát hiện sót / phát hiện nhầm và P/R theo lớp, giống tác vụ phát hiện</li>
-  <li><strong>Nhận dạng văn bản</strong> — lấy đoạn văn bản được cắt ra từ khung chú thích để kiểm thử, báo tổng số đoạn văn bản, CER (tỉ lệ lỗi ký tự) và số đoạn đúng hoàn toàn, không xuất tệp chú thích</li>
+  <li><strong>Nhận dạng văn bản · Đánh giá</strong> — tự động vào khi bộ dữ liệu có chú thích, đối chiếu đoạn văn bản cắt ra từ khung chú thích, báo tổng số đoạn văn bản, CER (tỉ lệ lỗi ký tự) và số đoạn đúng hoàn toàn</li>
+  <li><strong>Nhận dạng văn bản · Suy luận</strong> — vào khi chỉ có ảnh thuần (không có chú thích), ghi chữ nhận dạng được thành labelme json trả lại cùng thư mục ảnh, tải lại trang chính là đối chiếu được</li>
+  <li><strong>Phát hiện văn bản · Suy luận / Đánh giá</strong> — chỉ dùng cho các bản ghi giai đoạn phát hiện để lại từ bản cũ: suy luận ghi khung dự đoán thành json, đánh giá thống kê phát hiện đúng / phát hiện sót / phát hiện nhầm và P/R theo lớp</li>
 </ul>
 
 <h3>6.4 Xuất</h3>
 
-<p>Hai giai đoạn mỗi giai đoạn xuất một bản ONNX: <code>项目_字符检测_尺寸_规模.onnx</code> và <code>项目_字符识别_尺寸_规模.onnx</code>, giai đoạn nhận dạng mang thêm một từ vựng <code>vocab.txt</code>.</p>
+<p>Xuất một bản ONNX: <code>项目_字符识别_尺寸_规模.onnx</code>, cùng thêm một từ vựng <code>vocab.txt</code> (mỗi dòng một ký tự). Các bản ghi phát hiện văn bản của bản cũ vẫn xuất được ONNX giai đoạn phát hiện.</p>
 
-<p>Phát hiện văn bản vẫn tạo báo cáo đánh giá như thường; nhận dạng văn bản chỉ có một kết luận là CER, không tạo báo cáo.</p>
+<p>Nhận dạng văn bản chỉ có một kết luận là CER, không tạo báo cáo đánh giá.</p>
 
-<p>Ví dụ gọi nằm ở <code>examples/python/ocr.py</code> trong thư mục xuất. Lưu ý logits đầu ra của giai đoạn phát hiện chưa qua sigmoid, phần hậu xử lý phải tự viết, trong ví dụ đã viết sẵn hết.</p>
+<p>Ví dụ gọi nằm ở <code>examples/python/ocr.py</code> trong thư mục xuất.</p>
 
 <h2 id="log">7. Nhật ký</h2>
 

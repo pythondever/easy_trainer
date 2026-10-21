@@ -144,7 +144,7 @@
 
 <div class="note">
   <strong>Jeu de données de classification</strong> : choisissez « Importer comme classification (sous-dossiers) » ; chaque nom de sous-dossier correspond à une classe, <strong>aucun fichier d'annotation n'est nécessaire</strong>.<br>
-  L'OCR utilise Labelme json ; l'étiquette des zones de texte est fixée à « text » et, après l'import, le jeu de données est automatiquement marqué comme jeu de données de détection de texte.
+  L'OCR utilise Labelme json ; l'étiquette des zones de texte est fixée à « text » et, après l'import, chaque image reçoit le marqueur d'annotation de texte. Ensuite, seuls les jeux de données portant ce marqueur apparaissent dans la liste déroulante du jeu d'entraînement OCR.
 </div>
 
 <figure>
@@ -362,7 +362,7 @@
 
 <ul>
   <li><strong>Champ de recherche</strong> — filtre par mot-clé sur le projet / le jeu de données / l'étiquette</li>
-  <li><strong>Listes Tâche / État</strong> — pour la tâche : Détection / Segmentation / Classification / Détection d'anomalies / Détection de texte / Reconnaissance de texte ; pour l'état : Entraînement / Terminé / Échec / Arrêté</li>
+  <li><strong>Listes Tâche / État</strong> — pour la tâche : Détection / Segmentation / Classification / Détection d'anomalies / Reconnaissance de texte (les enregistrements anciens de Détection de texte sont aussi repliés dans ce filtre) ; pour l'état : Entraînement / Terminé / Échec / Arrêté</li>
   <li><strong>Meilleur par jeu de données uniquement</strong> — ne conserve que l'entrée la plus précise pour chaque jeu de données</li>
   <li>Colonnes de la liste : Tâche, Jeu de données · Étiquette, Précision, Date d'entraînement, Durée, Taille d'image, Actions</li>
   <li><strong>La colonne Précision comporte une barre de couleur</strong> — vert ≥ 0.8, jaune 0.5 ~ 0.8, rouge &lt; 0.5. Pour les enregistrements en échec ou arrêtés, cette colonne affiche le texte d'état ; en laissant le curseur dessus, vous voyez la cause de l'échec</li>
@@ -414,11 +414,11 @@
   <li><strong>Confiance</strong> — les prédictions en dessous de ce score sont écartées directement</li>
   <li><strong>Seuil IoU</strong> — une détection n'est comptée correcte que si le recouvrement entre la zone prédite et la zone annotée atteint le seuil</li>
   <li><strong>Écrire les fichiers d'étiquettes</strong> — coché, les zones prédites sont écrites en labelme json, pour faciliter la vérification manuelle</li>
-  <li><strong>OCR</strong> — la détection de texte propose deux voies, inférence et évaluation : l'inférence écrit les résultats en json d'annotation, l'évaluation calcule P/R. La reconnaissance de texte ne produit pas de fichier d'annotation, elle rapporte seulement le taux de reconnaissance des extraits de texte</li>
+  <li><strong>OCR</strong> — la reconnaissance de texte se teste sur les extraits découpés à partir des zones annotées ; elle indique le nombre total d'extraits, le CER (taux d'erreur de caractères) et le nombre d'extraits entièrement corrects. Les images seules (sans annotation) passent par l'inférence, qui réécrit le texte reconnu en labelme json dans le dossier de l'image. L'inférence / évaluation de détection de texte n'est conservée que pour les enregistrements anciens</li>
 </ul>
 
 <div class="note">
-  Quand le jeu de données est annoté, le logiciel passe automatiquement en <strong>mode d'évaluation</strong> et calcule le taux de détection / les oublis / les fausses détections. Pour la détection de texte, si le mode inférence est choisi, les annotations sont ignorées et les zones prédites sont écrites directement en json.
+  Quand le jeu de données est annoté, le logiciel passe automatiquement en <strong>mode d'évaluation</strong> et calcule le taux de détection / les oublis / les fausses détections. (Pour un enregistrement de détection de texte, si le mode inférence est choisi, les annotations sont ignorées et les zones prédites sont écrites directement en json — enregistrements anciens uniquement.)
 </div>
 
 <figure>
@@ -459,7 +459,7 @@
 
 <h2 id="ocr">6. OCR</h2>
 
-<p>L'OCR diffère des autres tâches : il est réalisé par <strong>deux modèles</strong> enchaînés — la détection de texte localise les zones de texte, la reconnaissance de texte lit les caractères dans ces zones. L'entraînement, le test et l'export se font en deux segments séparés, et deux enregistrements apparaissent dans le gestionnaire de modèles.</p>
+<p>L'OCR n'entraîne que la <strong>reconnaissance de texte</strong> (docTR CRNN) : la position des caractères est donnée par les zones d'annotation, aucun modèle de détection n'est plus entraîné. L'entraînement, le test et l'export ne portent que sur le segment de reconnaissance, et un enregistrement du gestionnaire de modèles correspond à un modèle de reconnaissance ; les enregistrements de détection de texte laissés par les versions anciennes peuvent encore être testés et exportés.</p>
 
 <h3>6.1 Annoter du texte</h3>
 
@@ -467,7 +467,7 @@
 
 <p>Les zones de texte se dessinent toujours avec le rectangle : pour du texte incliné, une zone horizontale suffit ; à l'entraînement, un polygone est traité comme sa boîte englobante horizontale, donc suivre le contour n'apporte rien de plus.</p>
 
-<p>À l'import, un labelme json contenant des zones de texte marque automatiquement le jeu de données comme <strong>jeu de données de détection de texte</strong>. Ensuite, seuls ces jeux de données apparaissent dans la liste déroulante du jeu d'entraînement OCR.</p>
+<p>À l'import, un labelme json contenant des zones de texte attribue à chaque image le marqueur d'annotation de texte. Ensuite, seuls les jeux de données portant ce marqueur apparaissent dans la liste déroulante du jeu d'entraînement OCR.</p>
 
 <figure>
   <img src="images/ocr标注.png" alt="OCR 文本标注">
@@ -487,32 +487,32 @@
 
 <p>La taille d'image n'est pas utilisée lors de l'entraînement de la reconnaissance de caractères (l'étape de reconnaissance est fixée à <code>32×768</code> ; le champ est désactivé et affiche 768).</p>
 
-<p>Après avoir cliqué sur « Démarrer l'entraînement », le travail est automatiquement scindé en deux tâches mises en file : d'abord la détection de texte, puis la reconnaissance de texte. Une fois la première terminée, la suivante ne démarre qu'après le retour de la VRAM à son niveau d'avant l'entraînement ; pendant ce temps, la zone de progression affiche « Attente de la libération de la VRAM · suivant : Reconnaissance de texte », sans temps mort.</p>
+<p>Après avoir cliqué sur « Démarrer l'entraînement », le segment de reconnaissance de texte est entraîné directement ; un seul élément est mis en file.</p>
 
 <figure>
   <img src="images/ocr训练.png" alt="OCR 训练参数">
-  <figcaption>Paramètres d'entraînement OCR (identifiés dans l'image par le segment « Détection de texte ») ; le Modèle correspond au palier nano ~ large, la colonne architecture est décidée automatiquement par l'algorithme et grisée, non modifiable</figcaption>
+  <figcaption>Paramètres d'entraînement OCR ; le Modèle correspond au palier nano ~ large, la colonne architecture est décidée automatiquement par l'algorithme et grisée, non modifiable</figcaption>
 </figure>
 
 <div class="note">
   Le vocabulaire du segment de reconnaissance reprend directement les caractères apparus dans les annotations. Le texte annoté doit donc couvrir le jeu de caractères réellement rencontré sur le terrain — un caractère présent sur site mais absent des annotations ne sera pas reconnu par le modèle.
 </div>
 
-<h3>6.3 Test : deux voies pour la détection, une pour la reconnaissance</h3>
+<h3>6.3 Test</h3>
 
 <ul>
-  <li><strong>Détection de texte · Inférence</strong> — ne compare pas les annotations et écrit directement les zones prédites (avec le texte reconnu) en labelme json. Le json produit porte un marqueur OCR et, une fois glissé dans le logiciel, il est reconnu comme jeu de données de détection de texte, ce qui permet de vérifier les résultats ou de compléter les annotations</li>
-  <li><strong>Détection de texte · Évaluation</strong> — activée automatiquement quand le jeu de données est annoté ; calcule les détections correctes / oublis / fausses détections et les P/R par classe, comme pour la tâche de détection</li>
-  <li><strong>Reconnaissance de texte</strong> — se teste sur les extraits de texte découpés à partir des zones annotées ; indique le nombre total d'extraits, le CER (taux d'erreur de caractères) et le nombre d'extraits entièrement corrects, sans produire de fichier d'annotation</li>
+  <li><strong>Reconnaissance de texte · Évaluation</strong> — activée automatiquement quand le jeu de données est annoté ; compare les extraits de texte découpés à partir des zones annotées et indique le nombre total d'extraits, le CER (taux d'erreur de caractères) et le nombre d'extraits entièrement corrects</li>
+  <li><strong>Reconnaissance de texte · Inférence</strong> — activée pour les images seules (sans annotation) ; réécrit le texte reconnu en labelme json dans le dossier de l'image, à vérifier après rechargement de la page d'accueil</li>
+  <li><strong>Détection de texte · Inférence / Évaluation</strong> — réservée aux enregistrements du segment de détection laissés par les versions anciennes : l'inférence écrit les zones prédites en json, l'évaluation calcule les détections correctes / oublis / fausses détections et les P/R par classe</li>
 </ul>
 
 <h3>6.4 Export</h3>
 
-<p>Les deux segments exportent chacun un ONNX : <code>项目_字符检测_尺寸_规模.onnx</code> et <code>项目_字符识别_尺寸_规模.onnx</code> ; le segment de reconnaissance inclut en plus un vocabulaire <code>vocab.txt</code>.</p>
+<p>L'export produit un seul ONNX : <code>项目_字符识别_尺寸_规模.onnx</code>, accompagné d'un vocabulaire <code>vocab.txt</code> (un caractère par ligne). Les enregistrements de détection de texte des versions anciennes peuvent encore exporter l'ONNX du segment de détection.</p>
 
-<p>La détection de texte génère un rapport d'évaluation comme d'habitude ; la reconnaissance de texte n'a que le CER comme conclusion et ne génère pas de rapport.</p>
+<p>La reconnaissance de texte n'a que le CER comme conclusion et ne génère pas de rapport d'évaluation.</p>
 
-<p>Un exemple d'appel se trouve dans <code>examples/python/ocr.py</code> du dossier d'export. Attention : les logits produits par le segment de détection ne passent pas par une sigmoïde, le post-traitement est à écrire soi-même ; tout est déjà écrit dans l'exemple.</p>
+<p>Un exemple d'appel se trouve dans <code>examples/python/ocr.py</code> du dossier d'export.</p>
 
 <h2 id="log">7. Journal</h2>
 

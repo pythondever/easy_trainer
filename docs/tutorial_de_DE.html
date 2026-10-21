@@ -144,7 +144,7 @@
 
 <div class="note">
   <strong>Klassifizierungsdatensätze</strong> nutzen „Als Klassifizierung importieren (Unterordner)": jeder Unterordnername ist eine Klasse, <strong>Labeldateien sind nicht nötig</strong>.<br>
-  Für OCR wird Labelme json verwendet; das Label der Textfelder ist fest „text"; nach dem Import wird der Datensatz automatisch als Textdetektions-Datensatz markiert.
+  Für OCR wird Labelme json verwendet; das Label der Textfelder ist fest „text"; nach dem Import wird jedes Bild mit einem Textannotations-Merkmal versehen. Künftig erscheinen im OCR-Dropdown für das Trainingsset nur noch Datensätze mit Textannotation.
 </div>
 
 <figure>
@@ -362,7 +362,7 @@
 
 <ul>
   <li><strong>Suchfeld</strong> – filtert nach Stichwörtern aus Projekt / Datensatz / Label</li>
-  <li><strong>Dropdown für Aufgabe / Status</strong> – als Aufgabe wählbar: Erkennung / Segmentierung / Klassifizierung / Anomalieerkennung / TextDetektion / Texterkennung; als Status: Training / Abgeschlossen / Fehlgeschlagen / Gestoppt</li>
+  <li><strong>Dropdown für Aufgabe / Status</strong> – als Aufgabe wählbar: Erkennung / Segmentierung / Klassifizierung / Anomalieerkennung / Texterkennung (Einträge der früheren TextDetektion werden in diesen Filter mit einbezogen); als Status: Training / Abgeschlossen / Fehlgeschlagen / Gestoppt</li>
   <li><strong>Nur beste je Datensatz</strong> – pro Datensatz bleibt nur der Eintrag mit der höchsten Genauigkeit</li>
   <li>Spalten der Liste: Aufgabe, Datensatz / Labels, Genauigkeit, Trainiert am, Dauer, Bildgröße, Aktionen</li>
   <li><strong>Die Spalte Genauigkeit hat einen Farbbalken</strong> – grün ≥ 0.8, gelb 0.5 ~ 0.8, rot &lt; 0.5. Bei fehlgeschlagenen oder gestoppten Läufen steht in dieser Spalte der Statustext; mit dem Mauszeiger darüber sehen Sie die Fehlerursache</li>
@@ -414,11 +414,11 @@
   <li><strong>Konfidenz</strong> – Vorhersagen unterhalb dieses Werts werden verworfen</li>
   <li><strong>IoU-Schwelle</strong> – nur wenn die Überdeckung von Vorhersage- und Annotationsrahmen den Wert erreicht, gilt es als korrekt erkannt</li>
   <li><strong>Labeldateien schreiben</strong> – wenn aktiviert, werden die Vorhersagerahmen als labelme json geschrieben, praktisch für die manuelle Kontrolle</li>
-  <li><strong>OCR</strong> – die TextDetektion kennt zwei Wege: Inferenz und Auswertung. Die Inferenz schreibt die Ergebnisse als Annotations-JSON, die Auswertung ermittelt P/R. Die Texterkennung gibt keine Annotationsdatei aus, sondern meldet nur die Erkennungsrate der Textausschnitte</li>
+  <li><strong>OCR</strong> – die Texterkennung wird mit den aus Annotationsrahmen zugeschnittenen Textausschnitten getestet und meldet Gesamtzahl, CER (Zeichenfehlerrate) und Anzahl vollständig richtiger; reine Bilder (ohne Annotationen) laufen über die Inferenz, die die erkannten Texte als labelme json zurück in den Bildordner schreibt. Inferenz / Auswertung der TextDetektion sind nur für historische Einträge erhalten</li>
 </ul>
 
 <div class="note">
-  Hat der Datensatz Annotationen, wird automatisch der <strong>Auswertungsmodus</strong> verwendet; gezählt werden Trefferquote / Übersehen / Fehlalarm. Wurde bei der TextDetektion der Inferenzmodus gewählt, werden die Annotationen ignoriert und die Vorhersagerahmen direkt als JSON geschrieben.
+  Hat der Datensatz Annotationen, wird automatisch der <strong>Auswertungsmodus</strong> verwendet; gezählt werden Trefferquote / Übersehen / Fehlalarm. (Wurde bei einem Eintrag der TextDetektion der Inferenzmodus gewählt, werden die Annotationen ignoriert und die Vorhersagerahmen direkt als JSON geschrieben – nur für historische Einträge.)
 </div>
 
 <figure>
@@ -459,7 +459,7 @@
 
 <h2 id="ocr">6. OCR</h2>
 
-<p>OCR ist anders als die übrigen Aufgaben: Es wird von <strong>zwei Modellen</strong> nacheinander erledigt – die TextDetektion findet die Textfelder, die Texterkennung liest die Zeichen im Feld. Training, Test und Export laufen jeweils in zwei getrennten Stufen, und in der Modellverwaltung bleiben zwei Läufe stehen.</p>
+<p>OCR trainiert nur die <strong>Texterkennung</strong> (docTR CRNN): Die Position der Zeichen geben die Annotationsrahmen vor, ein Detektionsmodell wird nicht mehr trainiert. Training, Test und Export richten sich allein auf die Erkennungsstufe, und in der Modellverwaltung entspricht ein Eintrag einem Erkennungsmodell; Einträge der TextDetektion aus früheren Versionen lassen sich weiterhin testen und exportieren.</p>
 
 <h3>6.1 Text annotieren</h3>
 
@@ -467,7 +467,7 @@
 
 <p>Textfelder werden immer als Rechteck gezeichnet: Auch schräger Text wird einfach mit einem horizontalen Rahmen überdeckt; beim Training wird ein Polygon als horizontales Hüllrechteck behandelt, das Nachfahren der Kontur bringt nichts.</p>
 
-<p>Beim Import von labelme json mit Textfeldern wird der Datensatz automatisch als <strong>Textdetektions-Datensatz</strong> markiert. Künftig erscheinen im OCR-Dropdown für das Trainingsset nur noch solche Datensätze.</p>
+<p>Beim Import von labelme json mit Textfeldern wird jedes Bild mit einem Textannotations-Merkmal versehen. Künftig erscheinen im OCR-Dropdown für das Trainingsset nur noch Datensätze mit Textannotation.</p>
 
 <figure>
   <img src="images/ocr标注.png" alt="OCR 文本标注">
@@ -487,32 +487,32 @@
 
 <p>Die Bildgröße wird beim Training der Zeichenerkennung nicht verwendet (die Erkennungsstufe ist fest auf <code>32×768</code>; das Feld ist deaktiviert und zeigt 768).</p>
 
-<p>Nach dem Klick auf „Training starten" wird automatisch in zwei Warteschlangen-Aufgaben aufgeteilt: zuerst TextDetektion, dann Texterkennung. Erst wenn die vorige Aufgabe fertig ist und der VRAM wieder auf das Niveau vor dem Start gefallen ist, beginnt die nächste; währenddessen zeigt der Fortschrittsbereich „Warte auf freien VRAM · Nächstes:Texterkennung", es bleibt also keine Lücke.</p>
+<p>Nach dem Klick auf „Training starten" wird direkt die Texterkennung trainiert; in der Warteschlange steht nur dieser eine Eintrag.</p>
 
 <figure>
   <img src="images/ocr训练.png" alt="OCR 训练参数">
-  <figcaption>Trainingsparameter für OCR (im Bild als Stufe „TextDetektion" gekennzeichnet); Modell = die Stufe nano ~ large, die Spalte Architektur legt der Algorithmus automatisch fest und ist ausgegraut, nicht änderbar</figcaption>
+  <figcaption>Trainingsparameter für OCR; Modell = die Stufe nano ~ large, die Spalte Architektur legt der Algorithmus automatisch fest und ist ausgegraut, nicht änderbar</figcaption>
 </figure>
 
 <div class="note">
   Das Vokabular der Erkennungsstufe übernimmt direkt die Zeichen, die in den Annotationen vorkommen. Die annotierten Texte müssen daher den Zeichensatz abdecken, der im Einsatz tatsächlich auftritt – Zeichen, die im Einsatz vorkommen, aber in den Annotationen fehlen, erkennt das Modell nicht.
 </div>
 
-<h3>6.3 Test: zwei Wege für die Detektion, einer für die Erkennung</h3>
+<h3>6.3 Test</h3>
 
 <ul>
-  <li><strong>TextDetektion · Inferenz</strong> – vergleicht nicht mit den Annotationen, sondern schreibt die Vorhersagerahmen (samt erkanntem Text) direkt als labelme json. Die JSON-Datei trägt ein OCR-Merkmal; zieht man sie zurück in die Software, gilt sie als Textdetektions-Datensatz und eignet sich zum Abgleichen der Ergebnisse oder zum Nachannotieren</li>
-  <li><strong>TextDetektion · Auswertung</strong> – wird bei annotierten Datensätzen automatisch verwendet und zählt Korrekt / Übersehen / Fehlalarm sowie P/R je Klasse, genau wie bei der Erkennungsaufgabe</li>
-  <li><strong>Texterkennung</strong> – getestet wird mit den aus Annotationsrahmen zugeschnittenen Textausschnitten; gemeldet werden Gesamtzahl, CER (Zeichenfehlerrate) und Anzahl vollständig richtiger, ohne Annotationsdatei</li>
+  <li><strong>Texterkennung · Auswertung</strong> – wird bei annotierten Datensätzen automatisch verwendet; verglichen werden die aus Annotationsrahmen zugeschnittenen Textausschnitte, gemeldet werden Gesamtzahl, CER (Zeichenfehlerrate) und Anzahl vollständig richtiger</li>
+  <li><strong>Texterkennung · Inferenz</strong> – wird bei reinen Bildern (ohne Annotationen) verwendet und schreibt die erkannten Texte als labelme json zurück in den Bildordner; nach dem Neuladen der Startseite lässt sich alles abgleichen</li>
+  <li><strong>TextDetektion · Inferenz / Auswertung</strong> – nur für Einträge der Detektionsstufe aus früheren Versionen verfügbar: die Inferenz schreibt die Vorhersagerahmen als json, die Auswertung zählt Korrekt / Übersehen / Fehlalarm sowie P/R je Klasse</li>
 </ul>
 
 <h3>6.4 Export</h3>
 
-<p>Beide Stufen exportieren jeweils ein ONNX: <code>项目_字符检测_尺寸_规模.onnx</code> und <code>项目_字符识别_尺寸_规模.onnx</code>; die Erkennungsstufe bringt zusätzlich ein Vokabular <code>vocab.txt</code> mit.</p>
+<p>Exportiert wird ein ONNX: <code>项目_字符识别_尺寸_规模.onnx</code>, dazu ein Vokabular <code>vocab.txt</code> (eine Zeile pro Zeichen). Einträge der TextDetektion aus früheren Versionen können weiterhin das ONNX der Detektionsstufe exportieren.</p>
 
-<p>Die TextDetektion erzeugt wie gewohnt einen Auswertungsbericht; die Texterkennung hat nur den CER als Ergebnis und erzeugt keinen Bericht.</p>
+<p>Die Texterkennung hat nur den CER als Ergebnis und erzeugt keinen Auswertungsbericht.</p>
 
-<p>Das Aufrufbeispiel liegt im Exportordner unter <code>examples/python/ocr.py</code>. Beachten Sie: Die von der Detektionsstufe ausgegebenen logits sind nicht durch sigmoid gegangen; die Nachbearbeitung müssen Sie selbst schreiben – im Beispiel ist sie fertig enthalten.</p>
+<p>Das Aufrufbeispiel liegt im Exportordner unter <code>examples/python/ocr.py</code>.</p>
 
 <h2 id="log">7. Protokoll</h2>
 

@@ -1,5 +1,7 @@
 # EasyTrainer 代码库迁移规划
 
+> ⚠️ **历史存档（2026-10-21）**：本次迁移已实施完成，本文仅留档备查。当前代码结构以 [README 的「目录结构」节](../README.md) 为准，不要再按本文的目录树对齐。
+>
 > 2026-08-06 | 从 D:\code\easy2yolo（旧库）迁移到 D:\code\easy_trainer\easy_trainer（新库）
 > 技术栈：PySide6 + Qt Designer（.ui 为设计器真源，pyside6-uic 生成 .py）
 

@@ -144,7 +144,7 @@
 
 <div class="note">
   Para un <strong>conjunto de datos de clasificación</strong>, elija «Importar como clasificación (subcarpetas)»: el nombre de cada subcarpeta es una clase y <strong>no hacen falta archivos de etiquetas</strong>.<br>
-  Para OCR se usa Labelme json; la etiqueta de los cuadros de texto es siempre «text» y, tras importar, el conjunto de datos se marca automáticamente como de detección de texto.
+  Para OCR se usa Labelme json; la etiqueta de los cuadros de texto es siempre «text» y, tras importar, cada imagen recibe la marca de anotación de texto. A partir de ahí, solo los conjuntos de datos con anotación de texto aparecerán en el desplegable de conjunto de entrenamiento del OCR.
 </div>
 
 <figure>
@@ -362,7 +362,7 @@
 
 <ul>
   <li><strong>Cuadro de búsqueda</strong>: filtra por palabras clave de proyecto / conjunto de datos / etiqueta</li>
-  <li><strong>Desplegables de Tarea / Estado</strong>: en Tarea se puede elegir Detección / Segmentación / Clasificación / Detección de anomalías / Detección de texto / Reconocimiento de texto; en Estado, En entrenamiento / Finalizado / Fallido / Detenido</li>
+  <li><strong>Desplegables de Tarea / Estado</strong>: en Tarea se puede elegir Detección / Segmentación / Clasificación / Detección de anomalías / Reconocimiento de texto (los registros antiguos de Detección de texto también se incluyen en este filtro); en Estado, En entrenamiento / Finalizado / Fallido / Detenido</li>
   <li><strong>Solo el mejor de cada conjunto de datos</strong>: de cada conjunto de datos solo se conserva el registro con mayor precisión</li>
   <li>Columnas de la lista: Tarea, Conjunto de datos·Etiqueta, Precisión, Hora de entrenamiento, Duración, Tamaño de imagen, Acciones</li>
   <li><strong>La columna de precisión lleva una barra de color</strong>: verde ≥ 0.8, amarilla 0.5 ~ 0.8 y roja &lt; 0.5. En los registros fallidos o detenidos, esta columna muestra el texto del estado; si deja el ratón encima, verá el motivo del fallo</li>
@@ -414,11 +414,11 @@
   <li><strong>Confianza</strong>: las predicciones por debajo de esta puntuación se descartan directamente</li>
   <li><strong>Umbral IoU</strong>: solo si el solapamiento entre el cuadro predicho y el cuadro anotado alcanza el valor se cuenta como detección correcta</li>
   <li><strong>Escribir archivos de etiquetas</strong>: si se marca, los cuadros predichos se escriben en labelme json para facilitar la revisión manual</li>
-  <li><strong>OCR</strong>: la Detección de texto tiene dos vías, inferencia y evaluación: la inferencia escribe los resultados como json de anotaciones y la evaluación calcula P/R. El Reconocimiento de texto no genera archivos de anotaciones, solo informa de la tasa de acierto de las tiras de texto</li>
+  <li><strong>OCR</strong>: el Reconocimiento de texto se prueba con las tiras de texto recortadas de los cuadros anotados e informa del número total de tiras, el CER (tasa de error de caracteres) y el número de tiras totalmente correctas; las imágenes sin anotar pasan por la inferencia, que escribe el texto reconocido como labelme json en la misma carpeta de la imagen. La inferencia / evaluación de Detección de texto se conserva solo para los registros antiguos</li>
 </ul>
 
 <div class="note">
-  Cuando el conjunto de datos tiene anotaciones, se entra automáticamente en <strong>modo evaluación</strong>, que calcula la tasa de detección / los omitidos / los falsos positivos. Si en la Detección de texto se elige el modo de inferencia, se ignoran las anotaciones y los cuadros predichos se escriben directamente en json.
+  Cuando el conjunto de datos tiene anotaciones, se entra automáticamente en <strong>modo evaluación</strong>, que calcula la tasa de detección / los omitidos / los falsos positivos. (Si en un registro de Detección de texto se elige el modo de inferencia, se ignoran las anotaciones y los cuadros predichos se escriben directamente en json; solo para registros antiguos.)
 </div>
 
 <figure>
@@ -459,7 +459,7 @@
 
 <h2 id="ocr">6. OCR</h2>
 
-<p>El OCR es distinto de las demás tareas: se realiza encadenando <strong>dos modelos</strong>: la Detección de texto localiza los cuadros de texto y el Reconocimiento de texto lee los caracteres de esos cuadros. El entrenamiento, la prueba y la exportación se hacen en dos tramos separados, y en Gestión de modelos quedarán dos registros.</p>
+<p>El OCR solo entrena el <strong>Reconocimiento de texto</strong> (docTR CRNN): la posición de los caracteres la dan los cuadros de anotación, así que ya no se entrena un modelo de detección. El entrenamiento, la prueba y la exportación se dirigen solo al tramo de reconocimiento, y en Gestión de modelos un registro corresponde a un modelo de reconocimiento; los registros de Detección de texto dejados por versiones antiguas siguen pudiendo probarse y exportarse.</p>
 
 <h3>6.1 Anotar texto</h3>
 
@@ -467,7 +467,7 @@
 
 <p>Los cuadros de texto se dibujan siempre con rectángulos: para el texto inclinado basta con cubrirlo con un cuadro horizontal; durante el entrenamiento los polígonos se tratan como el rectángulo horizontal que los envuelve, así que dibujar el contorno no aporta ninguna ventaja.</p>
 
-<p>Cuando se importa un labelme json con cuadros de texto, el conjunto de datos se marca automáticamente como <strong>conjunto de datos de detección de texto</strong>. A partir de ahí, solo este tipo de conjuntos de datos aparecerá en el desplegable de conjunto de entrenamiento del OCR.</p>
+<p>Cuando se importa un labelme json con cuadros de texto, cada imagen recibe la marca de anotación de texto. A partir de ahí, solo los conjuntos de datos con anotación de texto aparecerán en el desplegable de conjunto de entrenamiento del OCR.</p>
 
 <figure>
   <img src="images/ocr标注.png" alt="OCR 文本标注">
@@ -487,32 +487,32 @@
 
 <p>El Tamaño de imagen no se utiliza al entrenar el reconocimiento de caracteres (la etapa de reconocimiento está fija en <code>32×768</code>; el campo está deshabilitado y muestra 768).</p>
 
-<p>Al pulsar «Iniciar entrenamiento», la tarea se divide automáticamente en dos elementos en cola: primero la Detección de texto y luego el Reconocimiento de texto. Cuando termina el primero, hay que esperar a que la VRAM baje al nivel previo al inicio del entrenamiento para arrancar el siguiente; durante ese tiempo, la zona de progreso muestra «Esperando liberar VRAM · siguiente:Reconocimiento de texto» y no queda vacía.</p>
+<p>Al pulsar «Iniciar entrenamiento» se entrena directamente el Reconocimiento de texto; en la cola solo se pone este único elemento.</p>
 
 <figure>
   <img src="images/ocr训练.png" alt="OCR 训练参数">
-  <figcaption>Parámetros de entrenamiento del OCR (en la imagen se indica el tramo «Detección de texto»); el modelo es el nivel, de nano a large, y el campo de arquitectura lo decide automáticamente el algoritmo: está en gris y no se puede cambiar</figcaption>
+  <figcaption>Parámetros de entrenamiento del OCR; el modelo es el nivel, de nano a large, y el campo de arquitectura lo decide automáticamente el algoritmo: está en gris y no se puede cambiar</figcaption>
 </figure>
 
 <div class="note">
   El vocabulario del tramo de reconocimiento se toma directamente de los caracteres que aparecen en las anotaciones. Por eso el texto anotado debe cubrir el conjunto de caracteres que realmente se encontrará en la planta: los caracteres que existan en la planta pero no aparezcan en las anotaciones no los reconocerá el modelo.
 </div>
 
-<h3>6.3 Prueba: la detección tiene dos vías y el reconocimiento, una</h3>
+<h3>6.3 Prueba</h3>
 
 <ul>
-  <li><strong>Detección de texto · Inferencia</strong>: no compara con las anotaciones, sino que escribe directamente los cuadros predichos (junto con el texto reconocido) en labelme json. El json generado lleva la marca de OCR y, al arrastrarlo de vuelta al programa, se reconocerá como conjunto de datos de detección de texto; sirve para comprobar los resultados o completar la anotación</li>
-  <li><strong>Detección de texto · Evaluación</strong>: se activa automáticamente cuando el conjunto de datos tiene anotaciones; calcula Correctos / Omitidos / Falsos pos. y la P/R por clase, igual que en la tarea de detección</li>
-  <li><strong>Reconocimiento de texto</strong>: se prueba con las tiras de texto recortadas de los cuadros anotados e informa del número total de tiras, el CER (tasa de error de caracteres) y el número de tiras totalmente correctas; no genera archivos de anotaciones</li>
+  <li><strong>Reconocimiento de texto · Evaluación</strong>: se activa automáticamente cuando el conjunto de datos tiene anotaciones; compara las tiras de texto recortadas de los cuadros anotados e informa del número total de tiras, el CER (tasa de error de caracteres) y el número de tiras totalmente correctas</li>
+  <li><strong>Reconocimiento de texto · Inferencia</strong>: se activa con imágenes sin anotar; escribe el texto reconocido como labelme json en la misma carpeta de la imagen, y tras recargar la página de inicio se puede comprobar</li>
+  <li><strong>Detección de texto · Inferencia / Evaluación</strong>: solo disponible para los registros del tramo de detección dejados por versiones antiguas: la inferencia escribe los cuadros predichos como json y la evaluación calcula Correctos / Omitidos / Falsos pos. y la P/R por clase</li>
 </ul>
 
 <h3>6.4 Exportación</h3>
 
-<p>Cada tramo exporta su propio ONNX: <code>项目_字符检测_尺寸_规模.onnx</code> y <code>项目_字符识别_尺寸_规模.onnx</code>; el tramo de reconocimiento incluye además un vocabulario <code>vocab.txt</code>.</p>
+<p>Se exporta un ONNX: <code>项目_字符识别_尺寸_规模.onnx</code>, más un vocabulario <code>vocab.txt</code> (un carácter por línea). Los registros de Detección de texto de versiones antiguas siguen pudiendo exportar el ONNX del tramo de detección.</p>
 
-<p>La Detección de texto genera el informe de evaluación como de costumbre; el Reconocimiento de texto solo tiene el CER como conclusión y no genera informe.</p>
+<p>El Reconocimiento de texto solo tiene el CER como conclusión y no genera informe de evaluación.</p>
 
-<p>El ejemplo de uso está en <code>examples/python/ocr.py</code>, dentro de la carpeta de exportación. Tenga en cuenta que los logits que produce el tramo de detección no pasan por la sigmoide, así que el posprocesado hay que escribirlo usted mismo; en el ejemplo ya está hecho.</p>
+<p>El ejemplo de uso está en <code>examples/python/ocr.py</code>, dentro de la carpeta de exportación.</p>
 
 <h2 id="log">7. Registro</h2>
 

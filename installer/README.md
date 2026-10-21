@@ -19,7 +19,7 @@ installer.exe   双击打开 → 勾选 → 联网下载安装
 | 程序本体 program | 构建期 csproj 嵌入 exe | 直接解压，**不联网** |
 | 运行时 | 官方 python 3.10 embeddable zip（国内镜像） | 下载 → 解压即用（绿色，不写注册表） |
 | torch 等依赖 | PyPI 国内镜像（清华）+ torch 专用源 | pip 现场安装（约 3.3GB 下载） |
-| 预训练权重 | 官方源（Google 存储 + HuggingFace 镜像） | 下载 16 个 .pth/.pt 到 `pretrained\`（约 1.6GB） |
+| 预训练权重 | 官方源（Google 存储 + HuggingFace 镜像） | 下载 17 个 .pth/.pt 到 `pretrained\`（约 1.6GB） |
 
 Python、pip 依赖是国内可直连的公开地址，**无需自建服务器/OSS**：
 - Python：`https://mirrors.huaweicloud.com/python/3.10.11/python-3.10.11-embed-amd64.zip`

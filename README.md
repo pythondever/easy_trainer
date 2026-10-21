@@ -17,7 +17,7 @@
 </p>
 
 ### 📥 数据导入
-支持单图或批量导入，检测/分割/OCR 选图像目录 + 标签目录（labelme / YOLO txt），分类勾选"按子文件夹分类导入"（子文件夹名即类别）。OCR 的标注靠 labelme json 里的文本标志位认，导入后自动把数据集标成字符检测类型。大数据集懒加载缩略图，秒级呈现。
+支持单图或批量导入，检测/分割/OCR 选图像目录 + 标签目录（labelme / YOLO txt），分类勾选"按子文件夹分类导入"（子文件夹名即类别）。同一数据集可多次导入（如按天分目录采集），每次导入的图像目录与标签目录按轮次配对叠加。OCR 的标注靠 labelme json 里的文本标志位逐图认。大数据集懒加载缩略图，秒级呈现。
 
 <p align="center">
   <img src="docs/images/导入数据.png" width="60%" />
@@ -43,6 +43,8 @@
 - **多边形**：轨迹描边 + 自动抽稀闭合（轨迹颜色跟随所选标签）
 - **文本**：OCR 用，画完框填文字内容（标签固定为"文本"，不进类别表）。文本一律用**矩形**标：倾斜文字也用水平框盖住即可，OCR 会把多边形按水平外接框处理，描贴合轮廓没有额外收益
 - **格式刷**：圈选模板 → 任意位置刷子粘贴（像素复制，可撤销）
+- **贴图**：右键粘贴复制的内容（默认带随机旋转），贴后可拖动、可旋转
+- **自动粘贴**：开启后每张图倒计时 3 秒，往「区域模板」圈定的范围随机贴 1~3 张剪切板小图（融合动画只动图形项，不重算像素）
 - **缩放 / 平移**：滚轮缩放、Space + 拖拽平移、缩放手柄、删除、显示标注开关
 - A/D 翻页、Q/Ctrl+Z 等快捷键
 
@@ -65,7 +67,7 @@
 </p>
 
 ### 🚀 训练
-**子进程执行不阻塞 UI**，实时进度条、剩余时间、显存占用，支持手动停止（5 秒倒计时）。检测/分割可选 RF-DETR（Transformer）或 ultralytics YOLO（CNN）两套后端，分类走 ResNet（18/34/50/101），异常检测走 PatchCore（只用正常样本，无需标注），OCR 走 docTR 两段（检测 DB / LinkNet + 识别 CRNN），所有网络尺寸下拉映射。支持**训练队列**：多组配置排队串行执行，可随时停止，中断或失败后可一键重新入队；OCR 一次入队两项（字符检测 + 字符识别），前一项跑完等显存回落到开训前水平再起下一项。
+**子进程执行不阻塞 UI**，实时进度条、剩余时间、显存占用，支持手动停止（5 秒倒计时）。检测/分割可选 RF-DETR（Transformer）或 ultralytics YOLO（CNN）两套后端，分类走 ResNet（18/34/50/101），异常检测走 PatchCore（只用正常样本，无需标注），OCR 走 docTR 识别段（CRNN，字符位置由标注框提供，不再训练检测段），所有网络尺寸下拉映射。支持**训练队列**：多组配置排队串行执行，可随时停止，中断或失败后可一键重新入队。
 
 <p align="center">
   <img src="docs/images/训练参数与队列.png" width="48%" />
@@ -87,7 +89,7 @@
 </p>
 
 ### 🧪 模型测试
-配置数据 / 设备 / 模型 / 置信度 / IoU 阈值，运行评估。检测/分割输出每类 P/R + 整体漏检误检分析；分类输出每类正确/错误统计；异常检测输出图像级异常判定；OCR 分两条路——字符检测可只推理（结果写成标注 json）或跑评估（P/R + 漏检误检），字符识别输出 CER 与字条全对率。
+配置数据 / 设备 / 模型 / 置信度 / IoU 阈值，运行评估。检测/分割输出每类 P/R + 整体漏检误检分析；分类输出每类正确/错误统计；异常检测输出图像级异常判定；OCR（字符识别）有标注时评估，输出字条总数、CER 与字条全对率；纯图像走推理，把识别文本写成标注 json 落回图像目录（字符检测的推理/评估仅历史记录保留）。
 
 <p align="center">
   <img src="docs/images/测试参数设置.png" width="48%" />
@@ -115,12 +117,15 @@
 | matplotlib | ≥ 3.5 | 指标曲线绘制 |
 | numpy | ≥ 1.21 | 数值计算 |
 | opencv-python-headless | ≥ 4.8 | 图像读取与尺寸处理 |
+| nvidia-ml-py | ≥ 11.5 | 显卡探测（显存占用） |
+| scikit-learn | ≥ 1.3 | 异常检测评估（roc_auc_score） |
+| onnx / onnxsim / onnxruntime | ≥ 1.16 | 模型导出 ONNX（可选） |
 
 **训练 / 推理额外依赖**（需在 Python 3.10+ 环境安装）：
 
 ```bash
 pip install torch torchvision
-pip install "rfdetr[train]>=1.9.2" kornia   # 检测 / 分割（train extra 带 pytorch-lightning，增强需 kornia）
+pip install "rfdetr[train]>=1.9.2" kornia   # 检测 / 分割（train extra 带 pytorch-lightning，增强需 kornia 或 albumentations，二选一）
 pip install "ultralytics>=8.3.0"            # 检测 / 分割（CNN 后端，可选）
 pip install "anomalib>=2.6.2" scikit-learn  # 异常检测（ROC-AUC 评估用 roc_auc_score）
 pip install "python-doctr>=1.0.1"           # OCR（字符检测 + 字符识别）
@@ -211,31 +216,69 @@ easy_trainer/
 │   │   ├── image_utils.py  # 图像加载/缩略图/格式转换
 │   │   ├── label_utils.py  # 标签归一化/排序/颜色，labelme 与 YOLO 互转
 │   │   ├── log.py          # 滚动日志（按天归档）
-│   │   └── keys.py         # LMDB 键名常量
-│   ├── tasks/              # 后台任务（导入/合并）
-│   │   ├── import_task.py  # 数据集扫描导入（检测/分割/分类）
+│   │   ├── keys.py         # LMDB 键名常量
+│   │   ├── ckpt_paths.py   # 训练权重路径回找（记录名失效时按候选名兜底）
+│   │   ├── filelink.py     # 数据铺设搬运（同卷硬链接，跨卷复制）
+│   │   ├── i18n.py         # 界面语言切换
+│   │   ├── model_assets.py # 预训练权重清单与存放目录
+│   │   ├── model_download.py  # 权重下载器（按块下载，进度发信号）
+│   │   ├── name_rules.py   # 项目/数据集/标签名合法性校验
+│   │   ├── theme.py        # 界面设计令牌（颜色与尺寸的唯一来源）
+│   │   └── window_chrome.py  # 模态对话框外观统一（压暗底窗 + 深色标题栏）
+│   ├── tasks/              # 后台任务
+│   │   ├── import_task.py  # 后台导入线程（扫描图像目录，可选读标签）
+│   │   ├── import_scan_task.py  # 导入对话框实时统计（张数 / 已标注数）
 │   │   └── merge_task.py   # 标签合并
 │   ├── annotation/         # 标注画布与标注弹窗
-│   │   ├── scene.py        # 标注场景（拖拽绘制、命中判定、撤销栈）
+│   │   ├── scene.py        # 标注场景（事件分发、绘制中间态、撤销栈）
 │   │   ├── box_item.py     # 标注图形项（矩形框 / 多边形 + 标签 chip）
 │   │   ├── annotation_dialog.py  # 标注弹窗（弹窗骨架、左右两侧标签/标注列表）
 │   │   ├── annotation_canvas.py  # 标注画布（缩放平移、画框/多边形/格式刷、参数与剪切板面板）
-│   │   ├── annotation_io.py      # 标注读写（图像装载与像素缓存、labelme json 存取、模板导入导出）
+│   │   ├── annotation_io.py  # 标注读写（图像装载与像素缓存、labelme json 存取、模板导入导出）
+│   │   ├── scene_geometry.py  # 轨迹抽稀/旋转等纯几何函数（无 Qt，可单测）
+│   │   ├── scene_fp.py     # 格式刷（轨迹抠模板 → 刷子粘贴）
+│   │   ├── scene_stamp.py  # 贴图（小图粘贴、拖动、旋转手柄）
+│   │   ├── scene_brightness.py  # 亮度调节（预览/落盘两段式）
+│   │   ├── scene_regions.py  # 区域模板 mixin
+│   │   ├── paste_regions.py  # 粘贴区域模板（缺陷可以贴在哪里，与标注分开）
+│   │   ├── auto_paste.py   # 自动粘贴（倒计时随机贴剪切板小图）
 │   │   ├── blend.py        # 格式刷粘贴融合（Lab 亮度补偿 + 边缘羽化）
+│   │   ├── image_buf.py    # 贴图/亮度共用的 BGRA 视图缓冲
 │   │   └── scene_items.py  # 场景辅助图形项
 │   ├── widgets/            # 通用 UI 组件
 │   │   ├── message_box.py  # 统一消息框/进度对话框
-│   │   ├── dialog_buttons.py     # 弹窗按钮与图标统一样式
+│   │   ├── dialog_buttons.py  # 弹窗按钮与图标统一样式
 │   │   ├── name_input_dialog.py  # 命名输入弹窗
-│   │   ├── project_sidebar.py    # 首页项目/数据集侧栏（卡片式树）
+│   │   ├── project_sidebar.py  # 首页项目/数据集侧栏（卡片式树）
 │   │   ├── charts.py       # 自绘图表（标签分布柱状图）
 │   │   ├── status_style.py # 任务状态文案与配色
 │   │   ├── queue_dialog.py # 训练队列弹窗
 │   │   ├── log_dialog.py   # 日志查看弹窗
 │   │   ├── model_dialog.py # 模型管理（历史记录、精度、测试、导出）
+│   │   ├── model_manager_dialog.py  # 模型权重管理（清单/现场下载、训练前预检）
 │   │   ├── eval_dialog.py  # 测试参数弹窗
-│   │   └── metrics_dialog.py   # 训练指标折线图
-│   ├── mixins/             # 主窗口功能扩展（项目/数据集/标注/训练/队列/导入导出）
+│   │   ├── metrics_dialog.py  # 训练指标折线图
+│   │   ├── metric_tabs.py  # 指标分段按钮（pill 导航）
+│   │   ├── compare_dialog.py  # 多次训练结果对比（记录/曲线/差异三栏）
+│   │   ├── compare_chart.py  # 对比曲线（自绘，不用 matplotlib）
+│   │   ├── compare_diff.py # 对比右栏（参数差异与结论）
+│   │   ├── multi_combo.py  # 多选下拉（标签筛选）
+│   │   ├── combo_utils.py  # 下拉框统一装扮
+│   │   ├── flag_combo.py   # 语言下拉（国旗 + 语言名）
+│   │   ├── label_filter_popup.py  # 首页标签筛选浮层
+│   │   ├── check_chip.py   # 勾选条目（圆形对勾 + 文案）
+│   │   ├── collapsible_text.py  # 可折叠长文本块
+│   │   ├── dialog_fit.py   # 弹窗高度自适应
+│   │   └── popup_flat.py   # 下拉弹层贴合边圆角处理
+│   ├── mixins/             # 主窗口功能扩展
+│   │   ├── project_mixin.py  # 项目 CRUD
+│   │   ├── dataset_view_mixin.py  # 数据集浏览/筛选/分页/统计
+│   │   ├── label_mixin.py  # 标签管理（增删改、跨数据集导入）
+│   │   ├── import_export_mixin.py  # 数据集导入/导出
+│   │   ├── train_mixin.py  # 训练启动与收尾
+│   │   ├── queue_mixin.py  # 训练队列调度（串行执行 db 任务快照）
+│   │   ├── responsive_mixin.py  # 窄窗口自适应（顶栏入口收起）
+│   │   └── misc_mixin.py   # 零碎杂项
 │   └── train/              # 训练与测试执行
 │       ├── proc_utils.py   # 训练/测试子进程公共底座（启动表达式、收尾）
 │       ├── train_worker.py # 训练子进程线程（进度/指标/结果信号转发）
@@ -243,6 +286,10 @@ easy_trainer/
 │       ├── transformer_train_runner.py  # 检测/分割训练（RF-DETR）
 │       ├── cnn_train_runner.py          # 检测/分割训练（ultralytics YOLO）
 │       ├── transformer_backend.py / cnn_backend.py  # 两套后端的适配层（推理加载 / 设备解析 / 结果归一）
+│       ├── train_config.py # 训练配置纯逻辑（spec/校验/记录，不碰 Qt Widgets）
+│       ├── dialogs_aug.py  # 数据增强（AugMixin）
+│       ├── device_probe.py # 显卡探测（子进程 + QThread）
+│       ├── eval_common.py  # 测试脚本共用的取数小工具
 │       ├── task_spec.py    # 任务规格基类（各任务差异的唯一落点）
 │       ├── detect_common.py / segment_common.py     # 检测 / 分割的任务规格
 │       ├── classify_common.py / classify_model.py   # 分类架构表 / 模型构建（ResNet）
@@ -250,7 +297,7 @@ easy_trainer/
 │       ├── ad_common.py / ad_package.py    # 异常检测骨干缓存与模型打包
 │       ├── ad_train_runner.py / ad_test_runner.py     # 异常检测训练 / 测试
 │       ├── ocr_common.py / ocr_data.py / ocr_weights.py   # OCR 架构表 / 数据铺设 / 权重预置
-│       ├── ocr_train_runner.py / ocr_test_runner.py       # OCR 两段训练 / 测试
+│       ├── ocr_train_runner.py / ocr_test_runner.py       # OCR 识别段训练 / 测试（检测段仅历史记录）
 │       ├── data_prep.py    # 训练数据准备（转 yolo 格式、类别收集）
 │       ├── eval_worker.py  # 测试子进程线程
 │       ├── eval_runner.py  # 检测/分割测试脚本
@@ -275,7 +322,7 @@ easy_trainer/
 │   ├── installer.sh        # Linux 安装脚本（venv + 解压 + pip + 桌面启动项）
 │   └── README.md           # 安装器与发布流程细节
 ├── ui/                     # PySide6 UI 类（.py 由 .ui 编译生成）
-├── docs/                   # 设计文档 + README 截图
+├── docs/                   # 设计文档 + 使用教程 + README 截图
 ├── resources/              # 图标等资源
 ├── style/                  # QSS 样式表
 ├── requirements.txt
@@ -291,9 +338,9 @@ easy_trainer/
 4. **训练**：工具栏"训练" → 选任务类型（检测/分割/分类/异常检测/OCR）→ 配置参数 → 开始训练（5 秒倒计时后进入后台执行）
 5. **测试**：模型管理 → 某条记录"测试" → 配置 → 运行评估
 6. **回看指标**：模型管理 → "指标" 打开精度曲线
-7. **导出模型**：模型管理 → 某条记录"导出"。检测/分割/分类导出 `项目_任务_尺寸_规模.onnx` + `label_map.json` + 评估报告 PDF + 调用示例；OCR 的检测段与识别段各导一份 ONNX（识别段额外带 `vocab.txt`）；异常检测导不出 ONNX，交付 `.pt` 模型包（`threshold.txt` / `result.json`）
+7. **导出模型**：模型管理 → 某条记录"导出"。检测/分割/分类导出 `项目_任务_尺寸_规模.onnx` + `label_map.json` + 评估报告 PDF + 调用示例；OCR（字符识别）导出 ONNX + `vocab.txt` 词表（检测段 ONNX 仅历史记录可导）；异常检测导不出 ONNX，交付 `.pt` 模型包（`threshold.txt` / `result.json`）
 
-> 💡 训练图像尺寸：检测默认 **640**（32 的倍数）、分割默认 **648**（nano 档 12 的倍数，其余三档 24 的倍数）、分类默认 **224**、字符识别默认 **128**（这一项不参与识别段训练，界面已置灰；识别段固定 32×128）。输入框右侧与悬停提示按当前档位显示可用值。
+> 💡 训练图像尺寸：检测默认 **640**（32 的倍数）、分割默认 **648**（nano 档 12 的倍数，其余三档 24 的倍数）、分类默认 **224**、字符识别默认 **768**（这一项不参与识别段训练，界面已置灰；识别段输入固定 32×768 高×宽）。输入框右侧与悬停提示按当前档位显示可用值。
 
 ## 💾 数据存储
 
@@ -303,6 +350,6 @@ easy_trainer/
 
 ## 📝 文档
 
-- [迁移计划 / 设计文档](docs/migration_plan.md)
+- [迁移计划 / 设计文档（历史存档）](docs/migration_plan.md)
 - [使用教程](docs/使用教程.pdf)
 - [安装器与发布流程](installer/README.md)

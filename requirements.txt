@@ -12,6 +12,7 @@ scikit-learn>=1.3
 # torchvision>=0.15
 # rfdetr[train]>=1.9.2
 # kornia>=0.8
+# albumentations  # 可选, 与 kornia 二选一(Transformer 数据增强后端, 有其一即可)
 # ultralytics>=8.3.0
 # ultralytics-thop>=2.0
 # polars>=1.0

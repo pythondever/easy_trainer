@@ -36,6 +36,17 @@ def find_browser():
     return ""
 
 
+def _print_pdf(browser, url, dst_path, headless):
+    cmd = [browser,
+           headless, "--disable-gpu", "--no-sandbox",
+           "--no-pdf-header-footer",
+           "--print-to-pdf-no-header",
+           '--print-to-pdf={}'.format(dst_path),
+           url]
+    return subprocess.run(cmd, capture_output=True, text=True,
+                          encoding="utf-8", errors="replace", timeout=120)
+
+
 def main(in_html, out_pdf):
     base_dir = os.path.dirname(os.path.abspath(__file__))
     src_arg = in_html
@@ -55,23 +66,31 @@ def main(in_html, out_pdf):
         sys.exit(1)
 
     url = "file:///" + src_path.replace("\\", "/")
-    cmd = [browser,
-           "--headless", "--disable-gpu", "--no-sandbox",
-           "--no-pdf-header-footer",
-           "--print-to-pdf-no-header",
-           '--print-to-pdf={}'.format(dst_path),
-           url]
-    try:
-        r = subprocess.run(cmd, capture_output=True, text=True,
-                           encoding="utf-8", errors="replace", timeout=120)
-    except subprocess.TimeoutExpired:
-        print("生成超时(120s)")
-        sys.exit(1)
-    if os.path.exists(dst_path):
-        print("已生成: {}".format(dst_path))
-    else:
-        print("生成失败:\n{}".format((r.stdout or r.stderr)[-2000:]))
-        sys.exit(1)
+    # 浏览器打印失败时也退出码 0 且不写文件, 存在性检查会把旧文件误报成成功;
+    # 以时间戳是否推进判断真伪
+    before = os.path.getmtime(dst_path) if os.path.exists(dst_path) else None
+
+    def fresh():
+        if not os.path.exists(dst_path):
+            return False
+        return before is None or os.path.getmtime(dst_path) != before
+
+    last = None
+    # 新版 headless 的 --print-to-pdf 有静默不产出的版本, 旧模式兜底
+    for headless in ("--headless", "--headless=old"):
+        try:
+            last = _print_pdf(browser, url, dst_path, headless)
+        except subprocess.TimeoutExpired:
+            print("生成超时(120s)")
+            sys.exit(1)
+        if fresh():
+            print("已生成: {}".format(dst_path))
+            return
+    tail = ""
+    if last is not None:
+        tail = ((last.stdout or "") + (last.stderr or ""))[-2000:]
+    print("生成失败(浏览器未写出 PDF):\n{}".format(tail))
+    sys.exit(1)
 
 
 if __name__ == "__main__":

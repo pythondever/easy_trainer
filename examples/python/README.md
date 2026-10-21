@@ -21,7 +21,7 @@ pip install anomalib==2.6.2 torch
 | `detect_cnn.py` | 目标检测（架构选 CNN） |
 | `segment_cnn.py` | 实例分割（架构选 CNN，画框 + 掩码叠加） |
 | `classify.py` | 图像分类（输出 top-k） |
-| `ocr.py` | OCR（字符检测 + 字符识别，两段模型） |
+| `ocr.py` | OCR 字符识别（整图当字条；早期两段记录可加 `--det`） |
 | `ad.py` | 异常检测（anomalib 直接加载模型文件，不走 ONNX） |
 
 ```bash
@@ -30,7 +30,8 @@ python segment.py  --model 模型.onnx --image test.jpg --classes ../label_map.j
 python detect_cnn.py  --model 模型.onnx --image test.jpg --classes ../label_map.json --save out.jpg
 python segment_cnn.py --model 模型.onnx --image test.jpg --classes ../label_map.json --save out.jpg
 python classify.py --model 模型.onnx --image test.jpg --classes ../label_map.json
-python ocr.py      --det 检测.onnx   --rec 识别.onnx --image test.jpg --save out.jpg
+python ocr.py      --rec 识别.onnx --image test.jpg --save out.jpg
+python ocr.py      --det 检测.onnx --rec 识别.onnx --image test.jpg   # 早期两段记录
 python ad.py       --model 模型.pt   --images D:/待测图像
 ```
 
@@ -41,6 +42,8 @@ python ad.py       --model 模型.pt   --images D:/待测图像
 用 `detect.py` / `segment.py`，选 CNN（YOLO）用 `detect_cnn.py` / `segment_cnn.py`。
 两者的预处理（方形缩放 / 保比例补边）与输出格式都不同，**不能互换**。
 
-OCR 的检测段与识别段是两份模型，只做检测时不给 `--rec` 就行。识别段要读词表
-（默认取识别模型同目录的 `vocab.txt`，可用 `--vocab` 指定）。加 `--json` 会把
-结果写成 labelme 标注（带 OCR 标志位），可以直接拖回软件当标注用。
+OCR 新导出的模型只有识别段：不给 `--det` 时整张图当作一条字条直接识别（与
+软件内纯图像推理的口径一致）。早期版本的两段记录才给 `--det`，先检测再逐框
+识别。识别段要读词表（默认取识别模型同目录的 `vocab.txt`，可用 `--vocab`
+指定）。加 `--json` 会把结果写成 labelme 标注（带 OCR 标志位），可以直接
+拖回软件当标注用。
