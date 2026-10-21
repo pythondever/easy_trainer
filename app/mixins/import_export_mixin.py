@@ -255,7 +255,7 @@ class ImportExportMixin(object):
                     _total, _labeled = _scanned if _scanned else (0, 0)
             # 合并历史路径 + 本次新路径(去重保序), 保证多次导入不同文件夹都能累计;
             # db 记账只传本轮这一个 (图像, 标签) 配对, 轮次对齐交给
-            # update_dataset_import——以前把合并后的两个列表一起传, 本轮没给
+            # update_dataset_import——若把合并后的两个列表一起传, 本轮没给
             # 标签目录时 label_paths 不补位, 之后的轮次会把第 1 轮的图配到
             # 第 2 轮的标签目录上
             binding = self.db.get_dataset_import(project_name, dataset_name)

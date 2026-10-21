@@ -95,7 +95,7 @@ def toggle_row(index):
 class _ClickToggleFilter(QObject):
     """列表里按下就切换这一行的勾选.
 
-    三条路都试过, 只有这条稳:
+    三条候选路线都不行, 只有按下事件这条稳:
     - delegate.editorEvent: 基类实现只认点在勾选框那个小方框内, 而勾选圈画在行右端, 位置对不上;
       重写它也不行 - 松开鼠标的事件被下拉容器吞掉(它拿这个事件去关列表), 根本走不到 release.
     - view.pressed 信号: 首次展开列表的那一次按下不发这个信号, 用户要点两次才生效.

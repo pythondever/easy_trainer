@@ -745,7 +745,7 @@ class AnnotationCanvasMixin:
             btn.style().polish(btn)
 
     def _on_box_drawn(self, item=None):
-        """画完一个框: 保持画模式(需求: 只有 ESC 才退出), 维持对应光标与按钮高亮."""
+        """画完一个框: 保持画模式(只有 ESC 才退出), 维持对应光标与按钮高亮."""
         self._apply_draw_cursor()
         self._set_draw_button_states(True)
 

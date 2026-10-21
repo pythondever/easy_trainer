@@ -3,7 +3,7 @@
 训练数据准备: 复制图像/标签到输出路径, labelme json 转 yolo txt, 生成 data.yaml.
 目录结构(输出路径根):
   data.yaml                      # yolo 配置(train/val 指向合并目录, names 类别)
-  <项目>/<数据集>/images|labels    # 原始副本(需求: 项目/数据集 结构)
+  <项目>/<数据集>/images|labels    # 原始副本(项目/数据集 结构)
   train/images|labels            # 训练集合并(RF-DETR 单路径 train)
   val/images|labels              # 验证集合并
   <时间戳>/                       # 本次训练输出(模型, metrics.csv)

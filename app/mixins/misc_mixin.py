@@ -265,7 +265,7 @@ class MiscMixin(object):
             labeled = total
         if counts:
             self.db.save_dataset_label_counts(project_name, dataset_name, counts)
-        # 路径按轮次配对原样回填: 以前传单值(最新一轮), 合并时空串不覆盖、
+        # 路径按轮次配对原样回填: 若传单值(最新一轮), 合并时空串不覆盖、
         # 非空即替换的规则会把老记录的标签目录补到错误的图像目录上
         pairs = get_path_pairs(binding)
         self.db.update_dataset_import(

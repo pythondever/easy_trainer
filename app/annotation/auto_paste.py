@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """自动粘贴: 开开关后每张图倒计时 3 秒, 往模板区域里随机贴 1~3 张剪切板小图.
 
-计时全部走 QTimer: 之前有过"GUI 线程里干重活卡 16 秒"的教训, 这里每一拍都很轻,
-融合动画只动图形项(虚线/颜色), 绝不每帧重新混合像素.
+计时全部走 QTimer, 每一拍都很轻: 融合动画只动图形项(虚线/颜色),
+绝不每帧重新混合像素.
 """
 
 import math
@@ -121,7 +121,7 @@ class AutoPasteController(QObject):
         idx = random.randrange(len(templates))
         try:
             # 必须走 _apply_clip_template: 它除了放模板还准备了粘贴要用的状态,
-            # 只塞 scene.fp_template 会贴不出来(试过, 标记数为 0)
+            # 只塞 scene.fp_template 会贴不出来(标记数为 0)
             self.dlg._apply_clip_template(idx)
             tpl = self.dlg.scene.fp_template
             # 它会顺手起一个跟着鼠标的虚线预览, 自动粘贴没鼠标跟着, 立刻收掉.

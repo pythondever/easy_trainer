@@ -61,8 +61,8 @@ class TrainMixin(object):
         return True
 
     def kill_training_worker(self, timeout_ms=10000):
-        """杀掉训练进程树并等它真正退出, 返回是否已退出.
-
+        """
+        杀掉训练进程树并等它真正退出, 返回是否已退出.
         孙进程(dataloader)没退干净就启动下一个任务会直接 OOM,
         所以这里必须等, 等不到就返回 False 让调用方放弃推进.
         """

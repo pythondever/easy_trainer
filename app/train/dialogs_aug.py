@@ -2,9 +2,8 @@
 """
 训练对话框-数据增强 mixin: 勾选项现场搭建 / 可用性分级 / 计数徽标.
 
-机械拆分自 dialogs.py: 常量与方法体一字未改. eventFilter 故意留在
-TrainDialog(它还管 img_size 输入框的 Resize), 标题行点击切换由
-_toggle_aug 承担. 宿主提供 ui/aug_body 等控件与 _spec()/_arch()/
+eventFilter 故意留在 TrainDialog(它还管 img_size 输入框的 Resize),
+标题行点击切换由 _toggle_aug 承担. 宿主提供 ui/aug_body 等控件与 _spec()/_arch()/
 _fit_content() 能力.
 """
 from PySide6.QtCore import Qt, QT_TRANSLATE_NOOP

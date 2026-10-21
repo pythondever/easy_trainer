@@ -86,8 +86,8 @@ class ResponsiveMixin(object):
             act.setEnabled(src.isEnabled())
 
     def _fit_header(self):
-        """顶栏装不下就收起那 4 个入口按钮和「…」.
-
+        """
+        顶栏装不下就收起那 4 个入口按钮和「…」.
         宽度按各控件自己的 sizeHint 求和(与可见性无关): 若按当前可见项算, 收起后需求
         变小、下一拍又该放开, 会来回抖.
         """

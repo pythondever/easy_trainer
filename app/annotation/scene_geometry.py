@@ -2,8 +2,7 @@
 """
 标注场景的纯几何计算: 无 Qt 依赖, 可直接单测(见 tests/test_scene_geometry.py).
 
-原 scene.py 里有两个同名不同签名的 _simplify_track(模块级均匀采样版 /
-类内静态方法 RDP 版), 搬到这里时按语义分开命名:
+两个语义不同的抽稀, 按用途分开命名:
 - resample_track:  均匀采样抽稀(首尾必保), 供格式刷轨迹抠图用
 - simplify_track:  间隔采样 + Douglas-Peucker, 供手绘多边形成图用
 """

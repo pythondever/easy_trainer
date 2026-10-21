@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""训练队列调度: 串行执行 db 里的任务快照, 逐个走与手工训练完全相同的启动链路.
+"""
+训练队列调度: 串行执行 db 里的任务快照, 逐个走与手工训练完全相同的启动链路.
 
 依赖 TrainMixin 提供 is_training / start_training / on_train_finished / db / _log /
 _show_train_waiting / _hide_train_task.
@@ -265,8 +266,8 @@ class QueueMixin(object):
         self.db.save_train_queue(items)
 
     def on_queue_train_finished(self, record_id, result, stopped=False):
-        """训练收尾(由 TrainMixin.on_train_finished 调用).
-
+        """
+        训练收尾(由 TrainMixin.on_train_finished 调用).
         幂等: finished 信号与 finished_ok/failed 可能都触发, 靠 record_id 去重,
         否则队列会一次连跳两个任务.
         """

@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
-"""标注场景-格式刷 mixin: 轨迹描边抠模板, 再拿模板当刷子贴.
-
-机械拆分自 scene.py: 方法体一字未改, 宿主(AnnotationScene)提供
-image_item/image_rect/fp_* 状态与 addItem/removeItem 能力.
+"""
+标注场景-格式刷 mixin: 轨迹描边抠模板, 再拿模板当刷子贴.
+宿主(AnnotationScene)提供 image_item/image_rect/fp_* 状态与 addItem/removeItem 能力.
 """
 
 from PySide6.QtCore import QPointF, Qt

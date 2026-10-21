@@ -897,7 +897,7 @@ class AnnotationPolygonItem(_LabelChipMixin, _VertexHandleMixin,
         """缩放手柄命中: 返回 (手柄下标, 按下时该手柄到图心的场景距离).
 
         传进来的是场景坐标, 而外接框算的是本项局部坐标: 图体拖动过(pos≠0)之后
-        两者差一个 pos, 不换算就整圈点不中(拖动前恰好 pos=(0,0), 所以以前看不出).
+        两者差一个 pos, 不换算就整圈点不中(pos 非 0 之后才暴露出来).
         距离量到 stamp_pivot(缩放基准)上, 与 drag_stamp_scale 用同一把尺子.
         """
         if not self.stamp_handles_visible():

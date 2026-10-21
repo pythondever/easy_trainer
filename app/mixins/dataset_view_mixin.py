@@ -1188,7 +1188,7 @@ class DatasetViewMixin(object):
                 1 for r in result if rec_is_labeled(r))
             if update_stats:
                 # db 记账只按轮次配对回填: 把绑定里的现有配对原样写回(统计以
-                # 本次全量扫描为准). 以前把扫描用的目录列表按位置拼成 (图像,
+                # 本次全量扫描为准). 若把扫描用的目录列表按位置拼成 (图像,
                 # 标签) 再传, 两个列表长度不齐时标签目录会配到别的图像目录上
                 binding = self.db.get_dataset_import(project_name, dataset_name)
                 pairs = get_path_pairs(binding)
