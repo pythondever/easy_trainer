@@ -1073,7 +1073,7 @@ QLabel[class~="augCardTitle"] {
     font-weight: 600;
 }
 QLabel[class~="augSampleTip"] { color: {{accent_text}}; font-size: {{font_md}}; }
-QLabel[class~="augPane"] {
+QFrame[class~="augPane"] {
     background-color: {{bg_deep}};
     border-radius: {{r_sm}};
 }

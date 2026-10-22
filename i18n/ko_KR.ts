@@ -1000,109 +1000,109 @@
 <context>
     <name>AugPreviewDialog</name>
     <message>
-        <location filename="../app/train/aug_preview_dialog.py" line="61"/>
+        <location filename="../app/train/aug_preview_dialog.py" line="241"/>
         <source>数据增强预览</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../app/train/aug_preview_dialog.py" line="98"/>
+        <location filename="../app/train/aug_preview_dialog.py" line="279"/>
         <source>换图</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../app/train/aug_preview_dialog.py" line="99"/>
+        <location filename="../app/train/aug_preview_dialog.py" line="280"/>
         <source>换一批</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../app/train/aug_preview_dialog.py" line="105"/>
+        <location filename="../app/train/aug_preview_dialog.py" line="286"/>
         <source>原图</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../app/train/aug_preview_dialog.py" line="114"/>
+        <location filename="../app/train/aug_preview_dialog.py" line="295"/>
         <source>增强后</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../app/train/aug_preview_dialog.py" line="128"/>
+        <location filename="../app/train/aug_preview_dialog.py" line="309"/>
         <source>每次采样独立随机, 概率项不一定每次都生效</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../app/train/aug_preview_dialog.py" line="135"/>
+        <location filename="../app/train/aug_preview_dialog.py" line="316"/>
         <source>显示标注</source>
         <translation type="unfinished">어노테이션 표시</translation>
     </message>
     <message>
-        <location filename="../app/train/aug_preview_dialog.py" line="143"/>
-        <source>关闭</source>
-        <translation type="unfinished">닫기</translation>
+        <location filename="../app/train/aug_preview_dialog.py" line="323"/>
+        <source>滚轮缩放 · 双击复位</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../app/train/aug_preview_dialog.py" line="191"/>
+        <location filename="../app/train/aug_preview_dialog.py" line="371"/>
         <source>实际下发的参数</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../app/train/aug_preview_dialog.py" line="207"/>
+        <location filename="../app/train/aug_preview_dialog.py" line="387"/>
         <source>未启用任何增强</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../app/train/aug_preview_dialog.py" line="217"/>
+        <location filename="../app/train/aug_preview_dialog.py" line="397"/>
         <source>与训练端同一份解析</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../app/train/aug_preview_dialog.py" line="235"/>
-        <location filename="../app/train/aug_preview_dialog.py" line="246"/>
+        <location filename="../app/train/aug_preview_dialog.py" line="415"/>
+        <location filename="../app/train/aug_preview_dialog.py" line="428"/>
         <source>训练集里没有可读的图像</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../app/train/aug_preview_dialog.py" line="236"/>
+        <location filename="../app/train/aug_preview_dialog.py" line="416"/>
         <source>没有可预览的图像</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../app/train/aug_preview_dialog.py" line="268"/>
-        <source>{} · 可选 {} 张 · {} 架构 → {}</source>
+        <location filename="../app/train/aug_preview_dialog.py" line="453"/>
+        <source>{} · 可选 {} 张</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../app/train/aug_preview_dialog.py" line="272"/>
-        <location filename="../app/train/aug_preview_dialog.py" line="319"/>
+        <location filename="../app/train/aug_preview_dialog.py" line="456"/>
+        <location filename="../app/train/aug_preview_dialog.py" line="503"/>
         <source>种子 {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../app/train/aug_preview_dialog.py" line="296"/>
+        <location filename="../app/train/aug_preview_dialog.py" line="480"/>
         <source>模糊</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../app/train/aug_preview_dialog.py" line="296"/>
+        <location filename="../app/train/aug_preview_dialog.py" line="480"/>
         <source>噪声</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../app/train/aug_preview_dialog.py" line="297"/>
+        <location filename="../app/train/aug_preview_dialog.py" line="481"/>
         <source>马赛克</source>
         <translation type="unfinished">모자이크</translation>
     </message>
     <message>
-        <location filename="../app/train/aug_preview_dialog.py" line="298"/>
+        <location filename="../app/train/aug_preview_dialog.py" line="482"/>
         <source>当前架构不支持: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../app/train/aug_preview_dialog.py" line="351"/>
+        <location filename="../app/train/aug_preview_dialog.py" line="539"/>
         <source>采样 #{}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../app/train/aug_preview_dialog.py" line="353"/>
+        <location filename="../app/train/aug_preview_dialog.py" line="541"/>
         <source> · {} 图拼接</source>
         <translation type="unfinished"></translation>
     </message>

@@ -10,24 +10,23 @@ import random
 
 import cv2
 import numpy as np
-from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QImage, QPixmap
+from PySide6.QtCore import QPointF, QRectF, Qt, Signal
+from PySide6.QtGui import QColor, QImage, QPainter, QPixmap
 from PySide6.QtWidgets import (QApplication, QCheckBox, QDialog, QFrame,
                                QGridLayout, QHBoxLayout, QLabel, QPushButton,
-                               QVBoxLayout, QWidget)
+                               QSizePolicy, QStyle, QStyleOption,
+                               QStylePainter, QVBoxLayout, QWidget)
 
 from app.train import aug_preview as ap
 from app.train.aug_params import (AUG_BOTH, AUG_FAMILIES,
                                   resolve_aug_config, resolve_yolo_aug)
 
-SIDE = 232          # 对照图边长
-CARD_H = SIDE + 40  # 卡片外框高: 标题行 + 内边距, 两侧必须等高才不显得谁被拉长
+SIDE = 232          # 对照图最小边长, 窗口拉大时跟着变大
+CARD_H = SIDE + 40  # 卡片最小高度: 标题行 + 内边距
 THUMB = 74          # 采样缩略图边长
 SAMPLES = 6         # 一次给几个采样
 MOSAIC_POOL = 8     # 马赛克另外三格的候选张数
-
-ARCH_TEXT = {"cnn": "CNN", "transformer": "Transformer"}
-BACKEND_TEXT = {"cnn": "ultralytics", "transformer": "rfdetr"}
+PREVIEW_MAX = 1600  # 预览渲染的长边上限; 原图往往比训练输入的 img_size 大得多
 
 
 class _Thumb(QLabel):
@@ -54,6 +53,190 @@ class _Thumb(QLabel):
         self.style().polish(self)
 
 
+class _ZoomPane(QFrame):
+    """
+    主视图: 滚轮以光标为锚点缩放, 放大后按住左键平移, 双击回到适应窗口.
+
+    1.0 是"整图塞进控件"而不是像素 1:1: letterbox 后的图比控件大得多, 按像素
+    1:1 打开等于一上来就看局部, 对照反而无从下手.
+    """
+
+    STEP = 1.18        # 滚轮一格(120)的倍率
+    ZOOM_CAP = 10.0    # 相对"适应窗口"的上限. 不按源像素折算, 那样窗口越大上限越小
+
+    def __init__(self, side, parent=None):
+        super().__init__(parent)
+        self.setProperty("class", "augPane")
+        self._pix = QPixmap()
+        self._zoom = 1.0
+        self._center = QPointF()
+        self._drag_from = None      # (按下处, 按下时的中心)
+        # 窗口最大化时这两块跟着长, 固定尺寸会把多出来的空间全让给空白
+        self.setMinimumSize(side, side)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self._reset()
+
+    # ---------- 给外部 ----------
+    def set_image(self, pixmap):
+        """换采样时保持当前视口, 方便同一处对照; 图尺寸变了才复位."""
+        same = (not self._pix.isNull() and not pixmap.isNull()
+                and pixmap.size() == self._pix.size())
+        self._pix = pixmap
+        if same:
+            self._clamp()
+        else:
+            self._reset()
+        self.update()
+
+    def reset_view(self):
+        self._reset()
+        self.update()
+
+    # ---------- 几何 ----------
+    def _fit(self):
+        if self._pix.isNull():
+            return 1.0
+        return min(self.width() / self._pix.width(),
+                   self.height() / self._pix.height())
+
+    def _scale(self):
+        return self._fit() * self._zoom
+
+    def _max_zoom(self):
+        return self.ZOOM_CAP
+
+    def _reset(self):
+        self._zoom = 1.0
+        self._center = QPointF(self.width() / 2.0, self.height() / 2.0)
+        self._drag_from = None
+        self._update_cursor()
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        # 控件尺寸一变 fit 比例就变, 视口要重新夹一遍才不会露白
+        self._clamp()
+
+    def _clamp(self):
+        """图比控件小就居中, 比控件大就不许把边拖进控件里面."""
+        if self._pix.isNull():
+            return
+        scale = self._scale()
+        half_w = self._pix.width() * scale / 2.0
+        half_h = self._pix.height() * scale / 2.0
+        cx, cy = self._center.x(), self._center.y()
+        if half_w * 2 <= self.width():
+            cx = self.width() / 2.0
+        else:
+            cx = min(max(cx, self.width() - half_w), half_w)
+        if half_h * 2 <= self.height():
+            cy = self.height() / 2.0
+        else:
+            cy = min(max(cy, self.height() - half_h), half_h)
+        self._center = QPointF(cx, cy)
+
+    def _apply_zoom(self, target, anchor):
+        target = max(1.0, min(self._max_zoom(), target))
+        if abs(target - self._zoom) < 1e-3:
+            return
+        ratio = target / self._zoom
+        # 光标下的那个像素保持不动
+        self._center = anchor + (self._center - anchor) * ratio
+        self._zoom = target
+        self._clamp()
+        self._update_cursor()
+        self.update()
+
+    def _update_cursor(self):
+        if self._drag_from is not None:
+            self.setCursor(Qt.ClosedHandCursor)
+        elif self._zoom > 1.001:
+            self.setCursor(Qt.OpenHandCursor)
+        else:
+            self.setCursor(Qt.ArrowCursor)
+
+    # ---------- 绘制 ----------
+    def paintEvent(self, event):
+        painter = QStylePainter(self)
+        opt = QStyleOption()
+        opt.initFrom(self)
+        painter.drawPrimitive(QStyle.PE_Widget, opt)
+        if self._pix.isNull():
+            return
+        # 图外那圈填 letterbox 同色: 不然方形图上下会各露一条近黑底, 和图像
+        # 自带的灰边拼成三层, 看着像图被切了
+        painter.fillRect(self.rect(), QColor(ap.PAD_VAL, ap.PAD_VAL, ap.PAD_VAL))
+        scale = self._scale()
+        width = self._pix.width() * scale
+        height = self._pix.height() * scale
+        target = QRectF(self._center.x() - width / 2.0,
+                        self._center.y() - height / 2.0, width, height)
+        # 缩小显示时平滑, 放大超过 1:1 就切最近邻: 双线性只会把像素拉成一团糊,
+        # 最近邻至少能看清真实像素块(和标注画布放大一样)
+        painter.setRenderHint(QPainter.SmoothPixmapTransform, scale < 1.0)
+        painter.drawPixmap(target, self._pix, QRectF(self._pix.rect()))
+        if self._zoom > 1.001:
+            self._paint_zoom_badge(painter)
+
+    def _paint_zoom_badge(self, painter):
+        text = "{}%".format(int(round(self._zoom * 100)))
+        font = painter.font()
+        # 界面字号是像素制的, 混用 setPointSizeF 会让角标忽大忽小
+        if font.pixelSize() > 0:
+            font.setPixelSize(max(9, font.pixelSize() - 1))
+        else:
+            font.setPointSizeF(max(7.5, font.pointSizeF() - 1.0))
+        painter.setFont(font)
+        metrics = painter.fontMetrics()
+        room = metrics.horizontalAdvance(text) + 10
+        box = QRectF(self.width() - room - 5,
+                     self.height() - metrics.height() - 13,
+                     room, metrics.height() + 6)
+        painter.setPen(Qt.NoPen)
+        painter.setBrush(QColor(0, 0, 0, 150))
+        painter.drawRoundedRect(box, 3, 3)
+        painter.setPen(QColor(255, 255, 255, 230))
+        painter.drawText(box, Qt.AlignCenter, text)
+
+    # ---------- 交互 ----------
+    def wheelEvent(self, event):
+        delta = event.angleDelta().y()
+        if self._pix.isNull() or not delta:
+            event.ignore()
+            return
+        self._apply_zoom(self._zoom * self.STEP ** (delta / 120.0),
+                         event.position())
+        event.accept()
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton and self._zoom > 1.001:
+            self._drag_from = (event.position(), QPointF(self._center))
+            self._update_cursor()
+            event.accept()
+            return
+        super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event):
+        if self._drag_from is None:
+            super().mouseMoveEvent(event)
+            return
+        start, center = self._drag_from
+        self._center = center + (event.position() - start)
+        self._clamp()
+        self.update()
+
+    def mouseReleaseEvent(self, event):
+        if self._drag_from is not None and event.button() == Qt.LeftButton:
+            self._drag_from = None
+            self._update_cursor()
+            event.accept()
+            return
+        super().mouseReleaseEvent(event)
+
+    def mouseDoubleClickEvent(self, event):
+        self.reset_view()
+        event.accept()
+
+
 class AugPreviewDialog(QDialog):
     def __init__(self, parent, db, ds_pairs, codes, backend, task, img_size):
         super().__init__(parent)
@@ -61,7 +244,7 @@ class AugPreviewDialog(QDialog):
         self.setWindowTitle(self.tr("数据增强预览"))
         self._db = db
         self._codes = list(codes)
-        self._backend = backend if backend in ARCH_TEXT else "transformer"
+        self._backend = backend if backend in AUG_BOTH else "transformer"
         self._task = task
         self._size = max(160, int(img_size or 640))
         # 解析函数吃的是记录里那种逗号串, 别把 list 直接喂进去
@@ -70,6 +253,7 @@ class AugPreviewDialog(QDialog):
                         else resolve_aug_config(codes_text))
         self._entries = []
         self._primary = None
+        self._render = self._size
         self._base_img = None
         self._base_shapes = []
         self._pool = []
@@ -81,7 +265,8 @@ class AugPreviewDialog(QDialog):
         self._build()
         self._collect(ds_pairs)
         self._next_image()
-        self.adjustSize()
+        # 232 的对照图看细节不够, 默认就开大一点; 再大由最大化按钮接管
+        self.resize(1040, 600)
 
     # ---------- 界面 ----------
     def _build(self):
@@ -102,7 +287,7 @@ class AugPreviewDialog(QDialog):
         body = QHBoxLayout()
         body.setSpacing(12)
         self._pane_orig = self._pane()
-        body.addWidget(self._card(self.tr("原图"), self._pane_orig))
+        body.addWidget(self._card(self.tr("原图"), self._pane_orig), 1)
         arrow = QLabel("→", self)
         arrow.setProperty("class", "augArrow")
         arrow.setAlignment(Qt.AlignCenter)
@@ -112,9 +297,9 @@ class AugPreviewDialog(QDialog):
         self._sample_title = QLabel("", self)
         self._sample_title.setProperty("class", "augSampleTip")
         body.addWidget(self._card(self.tr("增强后"), self._pane_aug,
-                                  self._sample_title))
-        body.addWidget(self._params_panel(), 1)
-        lay.addLayout(body)
+                                  self._sample_title), 1)
+        body.addWidget(self._params_panel())
+        lay.addLayout(body, 1)
 
         strips = QHBoxLayout()
         strips.setSpacing(6)
@@ -139,13 +324,16 @@ class AugPreviewDialog(QDialog):
         self._seed_label = QLabel("", self)
         self._seed_label.setProperty("class", "augMeta")
         foot.addWidget(self._seed_label)
+        zoom_hint = QLabel(self.tr("滚轮缩放 · 双击复位"), self)
+        zoom_hint.setProperty("class", "augFine")
+        foot.addWidget(zoom_hint)
         foot.addStretch(1)
-        close_btn = QPushButton(self.tr("关闭"), self)
-        close_btn.clicked.connect(self.accept)
-        foot.addWidget(close_btn)
         lay.addLayout(foot)
 
+        # 高度交给布局算: 硬写最小值会比内容所需更矮, 缩略图行会压到卡片上
         self.setMinimumWidth(880)
+        # QDialog 默认没有最大化按钮, 图要大看得清就得能拉满屏
+        self.setWindowFlags(self.windowFlags() | Qt.WindowMaximizeButtonHint)
 
     def _tool_button(self, text, slot):
         btn = QPushButton(text, self)
@@ -154,16 +342,12 @@ class AugPreviewDialog(QDialog):
         return btn
 
     def _pane(self):
-        label = QLabel(self)
-        label.setFixedSize(SIDE, SIDE)
-        label.setAlignment(Qt.AlignCenter)
-        label.setProperty("class", "augPane")
-        return label
+        return _ZoomPane(SIDE, self)
 
     def _card(self, title, pane, subtitle=None):
         card = QFrame(self)
         card.setProperty("class", "augCard")
-        card.setFixedHeight(CARD_H)
+        card.setMinimumHeight(CARD_H)
         box = QVBoxLayout(card)
         box.setContentsMargins(8, 7, 8, 8)
         box.setSpacing(6)
@@ -183,7 +367,7 @@ class AugPreviewDialog(QDialog):
         panel = QFrame(self)
         panel.setProperty("class", "augParams")
         panel.setFixedWidth(236)
-        panel.setFixedHeight(CARD_H)
+        panel.setMinimumHeight(CARD_H)
         box = QVBoxLayout(panel)
         box.setContentsMargins(10, 9, 10, 10)
         box.setSpacing(7)
@@ -248,7 +432,8 @@ class AugPreviewDialog(QDialog):
             self._meta.setText(self.tr("训练集里没有可读的图像"))
             return
         self._primary = primary
-        boxed = ap.letterbox(primary["image"], primary["shapes"], self._size)
+        self._render = self._render_size(primary["image"])
+        boxed = ap.letterbox(primary["image"], primary["shapes"], self._render)
         self._base_img, self._base_shapes = boxed
         self._source = (primary["image"], primary["shapes"])
         self._pool = []
@@ -264,12 +449,24 @@ class AugPreviewDialog(QDialog):
             self._pool.append((sample["image"], sample["shapes"]))
         self._describe()
         self._resample()
+        # 换了源图就不该继承上一张的放大位置, 换采样才需要保持
+        self._pane_orig.reset_view()
+        self._pane_aug.reset_view()
+
+    def _render_size(self, img):
+        """
+        预览用的画布边长: 取原图长边, 上限 PREVIEW_MAX.
+
+        训练输入会被压到 img_size(通常 640), 线扫图动辄 3713 宽, 压完只剩 640,
+        放大看就是一片糊 —— 预览要看清缺陷就得按原图分辨率渲染.
+        """
+        long_edge = max(img.shape[:2])
+        return max(320, min(PREVIEW_MAX, max(self._size, long_edge)) // 2 * 2)
 
     def _describe(self):
         name = self._primary["name"] if self._primary else ""
-        self._meta.setText(self.tr("{} · 可选 {} 张 · {} 架构 → {}").format(
-            name, len(self._entries), ARCH_TEXT[self._backend],
-            BACKEND_TEXT[self._backend]))
+        self._meta.setText(self.tr("{} · 可选 {} 张").format(
+            name, len(self._entries)))
         self._fill_params()
         self._seed_label.setText(self.tr("种子 {}").format(self._seed))
 
@@ -311,7 +508,8 @@ class AugPreviewDialog(QDialog):
                 rng = random.Random(self._seed * 101 + i)
                 img, boxes = ap.augment(self._base_img, self._base_shapes,
                                         self._params, self._backend, rng,
-                                        others=others, source=self._source)
+                                        others=others, source=self._source,
+                                        ref_size=self._size)
                 self._results.append((img, boxes))
         finally:
             QApplication.restoreOverrideCursor()
@@ -327,24 +525,31 @@ class AugPreviewDialog(QDialog):
     def _paint(self, img, shapes):
         return ap.draw(img, shapes, self._task, self._show_labels)
 
-    def _to_pixmap(self, img, side):
+    def _to_pixmap(self, img, side=None):
         rgb = np.ascontiguousarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
         h, w = rgb.shape[:2]
         qimg = QImage(rgb.data, w, h, w * 3, QImage.Format_RGB888).copy()
-        return QPixmap.fromImage(qimg).scaled(
-            side, side, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        pix = QPixmap.fromImage(qimg)
+        if side is None:
+            # 主视图留着原尺寸, 放大时才不会一开始就糊
+            return pix
+        return pix.scaled(side, side, Qt.KeepAspectRatio,
+                          Qt.SmoothTransformation)
 
     def _refresh(self):
         if self._base_img is None:
             return
-        self._pane_orig.setPixmap(self._to_pixmap(
-            self._paint(self._base_img, self._base_shapes), SIDE))
+        self._pane_orig.set_image(self._to_pixmap(
+            self._paint(self._base_img, self._base_shapes)))
         for i, thumb in enumerate(self._thumbs):
             if i >= len(self._results):
                 thumb.clear()
                 continue
             img, boxes = self._results[i]
-            thumb.setPixmap(self._to_pixmap(self._paint(img, boxes), THUMB))
+            # 缩略图先缩到两倍边长再画标注: 1600 的图直接画 6 遍纯属浪费
+            small, small_boxes = ap.letterbox(img, boxes, THUMB * 2)
+            thumb.setPixmap(self._to_pixmap(self._paint(small, small_boxes),
+                                            THUMB))
             thumb.set_active(i == self._current)
         self._show_current()
         self._sample_title.setText(self._sample_caption())
@@ -359,7 +564,7 @@ class AugPreviewDialog(QDialog):
         if not self._results:
             return
         img, boxes = self._results[self._current]
-        self._pane_aug.setPixmap(self._to_pixmap(self._paint(img, boxes), SIDE))
+        self._pane_aug.set_image(self._to_pixmap(self._paint(img, boxes)))
 
     def _select(self, index):
         if index >= len(self._results):

@@ -317,12 +317,20 @@ def _compose_mosaic(items, size):
     return canvas, merged
 
 
-def augment(img, shapes, params, backend, rng, others=None, source=None):
+def augment(img, shapes, params, backend, rng, others=None, source=None,
+            ref_size=None):
     """
     按参数做一遍增强. others/source 是未 letterbox 的原图: 勾了马赛克就用它们拼图,
     其余项叠在拼好的图上. 返回 (图像, 标注), 标注与图像同一坐标系.
+
+    ref_size 是训练输入的画布边长. 预览为了看清细节会按更大的分辨率渲染, 高斯核
+    得按比例放大, 否则同一档模糊在大图上几乎看不出来.
     """
     ops = _ops(params, backend)
+    if ops["blur"] is not None and ref_size:
+        k, p = ops["blur"]
+        ratio = min(img.shape[:2]) / float(ref_size)
+        ops["blur"] = (max(3, int(round(k * ratio)) | 1), p)
     height, width = img.shape[:2]
     out, boxes = img, shapes
     if others and ops["mosaic"] and rng.random() < ops["mosaic"]:
@@ -361,6 +369,8 @@ def augment(img, shapes, params, backend, rng, others=None, source=None):
 def draw(img, shapes, task, show_labels=True):
     """把标注画上去: 分割画多边形填充+轮廓, 检测(或三点以下)画外接框."""
     out = img.copy()
+    # 线宽跟着分辨率走: 预览按原图长边渲染后再缩小显示, 固定 2px 会淡成一条灰线
+    thickness = max(1, int(round(min(img.shape[:2]) / 320.0)))
     texts = []
     for label, pts, _text in shapes:
         arr = np.asarray(pts, np.float32).reshape(-1, 2)
@@ -372,12 +382,12 @@ def draw(img, shapes, task, show_labels=True):
             overlay = out.copy()
             cv2.fillPoly(overlay, [poly], color)
             cv2.addWeighted(overlay, 0.30, out, 0.70, 0, out)
-            cv2.polylines(out, [poly], True, color, 2, cv2.LINE_AA)
+            cv2.polylines(out, [poly], True, color, thickness, cv2.LINE_AA)
             x, y = int(arr[:, 0].min()), int(arr[:, 1].min())
         else:
             x, y = int(arr[:, 0].min()), int(arr[:, 1].min())
             x2, y2 = int(arr[:, 0].max()), int(arr[:, 1].max())
-            cv2.rectangle(out, (x, y), (x2, y2), color, 2, cv2.LINE_AA)
+            cv2.rectangle(out, (x, y), (x2, y2), color, thickness, cv2.LINE_AA)
         if show_labels:
             texts.append((str(label), x, y, color))
     if texts:
