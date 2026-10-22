@@ -106,6 +106,8 @@ class ProjectMixin(object):
         act_export = menu.addAction(QC.translate("ProjectMixin", "导出项目"))
         act_rename = menu.addAction(QC.translate("ProjectMixin", "修改名称"))
         act_del = menu.addAction(QC.translate("ProjectMixin", "删除项目"))
+        act_backup = menu.addAction(QC.translate("ProjectMixin", "备份项目"))
+        act_restore = menu.addAction(QC.translate("ProjectMixin", "恢复项目"))
         act = menu.exec(global_pos)
         if act is None:
             return
@@ -117,6 +119,10 @@ class ProjectMixin(object):
             self._rename_project(project)
         elif act == act_del:
             self._delete_project(project)
+        elif act == act_backup:
+            self._on_backup_restore(project, mode="backup")
+        elif act == act_restore:
+            self._on_backup_restore(project, mode="restore")
 
     def _on_sidebar_dataset_menu(self, project, dataset, global_pos):
         menu = QMenu(self)

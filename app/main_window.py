@@ -20,7 +20,7 @@ from PySide6.QtWidgets import QWidget, QApplication, QTimeEdit, QFrame, QHBoxLay
 
 from app.mixins import (LabelMixin, ProjectMixin, ImportExportMixin,
                         DatasetViewMixin, TrainMixin, QueueMixin, MiscMixin,
-                        ResponsiveMixin)
+                        ResponsiveMixin, BackupMixin)
 
 
 _pretrained_dir = os.path.join(project_root(), "pretrained")
@@ -36,7 +36,8 @@ DB_DIR = default_db_dir()
 
 
 class App(QWidget, MainUI, LabelMixin, ProjectMixin, ImportExportMixin,
-          DatasetViewMixin, TrainMixin, QueueMixin, MiscMixin, ResponsiveMixin):
+          DatasetViewMixin, TrainMixin, QueueMixin, MiscMixin, ResponsiveMixin,
+          BackupMixin):
     def __init__(self, db=None):
         super().__init__()
         self.db = db if db is not None else DataBase(DB_DIR)

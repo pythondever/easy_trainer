@@ -375,7 +375,7 @@ class TestDialog(QDialog):
                 box.setChecked(True)
                 box.setToolTip(self.tr(
                     "没有真值的图会把识别出的文字写成 <同名>.json 到图像同目录, "
-                    "可重载数据集查看;有真值算 CER 时不写"))
+                    "跑完自动重载查看;有真值算 CER 时不写"))
             elif labeled == 0:
                 # 推理模式: 没有真值可比, 写出的标注是这次唯一产物
                 box.setEnabled(False)
@@ -638,7 +638,8 @@ class TestDialog(QDialog):
                                self.tr("测试未正常完成"))
             return
         # 异常检测没有框也没有"P", 但同样该弹结果面板. 字符检测有标注时才有
-        # "P": 无标注的推理路线留给它走 else 分支重载, 让写出的 json 回流
+        # "P": 无标注的推理路线(检测/分割/OCR 识别)都走自动重载回首页,
+        # 让写出的 json 回流成标签
         if "P" in res or res.get("task") in ("classify", "ad"):
             self._fill_label_stats(res)
             TestResultDialog(res, parent=self.app).exec()
@@ -647,11 +648,13 @@ class TestDialog(QDialog):
                 # 有真值: 字条维度看读对多少, 字符维度看错在替换/漏字/多字
                 TestResultDialog(res, parent=self.app).exec()
             else:
-                # 推理模式没有真值, 算不了 CER; 识别文本已写成标注落在图像同目录
-                MessageBox.information(
-                    self, self.tr("测试结果"),
-                    self.tr("推理模式: 已识别 {} 张图, 文本标注已写到图像同目录:\n{}\n可在首页重载该数据集查看").format(
+                # 推理模式没有真值, 算不了 CER; 识别文本已写成标注落在图像同目录,
+                # 与检测/分割纯推理同路: 自动重载回首页, 让写出的 json 回流成标签
+                write_log(QC.translate(
+                    "TestDialog",
+                    "[test-dialog] OCR 推理 {} 张, 标注目录: {}").format(
                         res.get("infer", 0), res.get("infer_dir", "")))
+                self.app._load_dataset_view(self._project, self._dataset)
         else:
             self.app._load_dataset_view(self._project, self._dataset)
 
