@@ -16,9 +16,38 @@ from app.widgets.message_box import MessageBox
 from app.widgets.dialog_buttons import apply_icon
 from app.core.log import write_log
 from PySide6.QtGui import QIcon, QPixmap, QImage, QStandardItem
-from PySide6.QtCore import QSize, Qt
+from PySide6.QtCore import QEvent, QObject, QSize, Qt
 from PySide6.QtCore import QCoreApplication as QC
-from PySide6.QtWidgets import QApplication, QDialog, QGraphicsScene
+from PySide6.QtWidgets import (QApplication, QDialog, QGraphicsScene,
+                              QGraphicsView)
+
+
+# 滚轮缩放倍率与限幅: 每次滚动一档 15%, 缩放比例限制在 20%~800%; 图是
+# 位图, 放太大只是插值模糊, 限幅够用就行
+_ZOOM_STEP = 1.15
+_ZOOM_MIN, _ZOOM_MAX = 0.2, 8.0
+
+
+class _ChartZoomFilter(QObject):
+    """统计图表的滚轮缩放与拖动平移. 图按固定尺寸渲染, 默认只能靠 view
+    自带的滚动条看局部; 装上这个过滤器后滚轮以鼠标位置为锚缩放(事件被
+    消费, 不再滚滚动条), 左键变抓手可拖动, 方便放大看细节."""
+
+    def __init__(self, view):
+        super().__init__(view)
+        view.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)
+        view.setDragMode(QGraphicsView.ScrollHandDrag)
+        view.viewport().installEventFilter(self)
+
+    def eventFilter(self, obj, event):
+        if event.type() == QEvent.Wheel:
+            factor = (_ZOOM_STEP if event.angleDelta().y() > 0
+                      else 1.0 / _ZOOM_STEP)
+            cur = obj.parent().transform().m11()
+            if _ZOOM_MIN <= cur * factor <= _ZOOM_MAX:
+                obj.parent().scale(factor, factor)
+            return True   # 消费掉: 缩放时不让 view 默认去滚滚动条
+        return False
 
 
 class MiscMixin(object):
@@ -237,6 +266,14 @@ class MiscMixin(object):
         view.setScene(scene)
         if view.sceneRect().isEmpty():
             view.setSceneRect(scene.itemsBoundingRect())
+        # 图按 2 倍像素渲染(charts._RENDER_DPI), 显示缩回 0.5: 视觉
+        # 与 1:1 一致, 滚轮放大 2 倍以内文字不糊; 每次重挂图都把缩放
+        # 复位, 不留着上次放大后的比例
+        view.resetTransform()
+        view.scale(0.5, 0.5)
+        # 滚轮缩放/拖动平移: 过滤器只装一次, 存 view 上防被 GC
+        if getattr(view, "_chart_zoom", None) is None:
+            view._chart_zoom = _ChartZoomFilter(view)
 
     def _refresh_dataset_stats(self, project_name, dataset_name):
         """

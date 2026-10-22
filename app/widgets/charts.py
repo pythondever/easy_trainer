@@ -12,6 +12,10 @@ from app.core.utils import setup_matplotlib_chinese
 TEXT_NO_LABEL = QT_TRANSLATE_NOOP("Charts", "暂无标注")
 TEXT_LABEL = QT_TRANSLATE_NOOP("Charts", "标签")
 TEXT_LABEL_COUNT = QT_TRANSLATE_NOOP("Charts", "标签数量")
+# 渲染 dpi: 2 倍超采样. 统计界面把图缩回 0.5 显示(见 misc_mixin), 
+# 滚轮放大 2 倍以内文字都是 1:1 的清晰像素; PDF 侧 savefig 显式
+# 传 dpi, 不受这个常量影响
+_RENDER_DPI = 200
 
 
 def _tr(text):
@@ -31,10 +35,11 @@ def render_label_chart(label_counts, label_colors=None, dark=True,
     if figsize is None:
         figsize = (max(4.0, num_bars * 0.3), 6.0)
     if dark:
-        fig = Figure(figsize=figsize, dpi=100, facecolor=theme.hexof("bg_panel"))
+        fig = Figure(figsize=figsize, dpi=_RENDER_DPI,
+                     facecolor=theme.hexof("bg_panel"))
         axes = fig.add_subplot(111, facecolor=theme.hexof("bg_panel"))
     else:
-        fig = Figure(figsize=figsize, dpi=100, facecolor="white")
+        fig = Figure(figsize=figsize, dpi=_RENDER_DPI, facecolor="white")
         axes = fig.add_subplot(111, facecolor="white")
     if not label_counts:
         axes.text(0.5, 0.5, _tr(TEXT_NO_LABEL), ha="center",
