@@ -666,6 +666,19 @@
               </widget>
             </item>
             <item>
+              <widget class="QPushButton" name="aug_preview_btn">
+                <property name="cursor">
+                 <cursorShape>PointingHandCursor</cursorShape>
+                </property>
+                <property name="text">
+                 <string>预览</string>
+                </property>
+                <property name="class" stdset="0">
+                 <string notr="true">augPreview</string>
+                </property>
+              </widget>
+            </item>
+            <item>
               <widget class="QLabel" name="aug_count_label">
                 <property name="text">
                   <string />

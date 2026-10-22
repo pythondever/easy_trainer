@@ -10,7 +10,11 @@ from PySide6.QtCore import Qt, QT_TRANSLATE_NOOP
 from PySide6.QtWidgets import QWidget, QLabel, QHBoxLayout, QGridLayout
 
 from app.widgets.check_chip import CheckChip
+from app.widgets.message_box import MessageBox
 from app.core import theme
+from app.train.aug_params import (AUG_BOTH, AUG_FAMILIES,
+                                  AUG_HIDE_WHEN_UNSUPPORTED, aug_codes)
+from app.train.aug_preview_dialog import AugPreviewDialog
 
 
 AUG_GROUPS = (
@@ -46,35 +50,13 @@ AUG_ITEM_UNAVAILABLE = QT_TRANSLATE_NOOP(
     "TrainDialog", "当前网络架构不支持该增强")
 
 
-AUG_BOTH = ("transformer", "cnn")
-AUG_FAMILIES = {
-    "mosaic": ("cnn",),
-    "blur": ("transformer",),
-    "noise": ("transformer",),
-}
-
-AUG_HIDE_WHEN_UNSUPPORTED = ("mosaic",)
-
 AUG_TINT = {"geo": "accent", "pix": "st_info"}
 
 
-AUG_LEGACY = {
-    "off": (),
-    "default": ("hflip",),
-    "conservative": ("hflip", "brightness"),
-    "industrial": ("hflip", "brightness", "blur", "noise"),
-    "aggressive": ("hflip", "vflip", "rotate", "affine", "colorjitter"),
-}
-
 def parse_aug_codes(value):
     """记录里的增强值转成勾选代号集合: 新值是逗号串, 旧值是单档预设代号."""
-    text = str(value or "").strip().lower()
-    if not text:
-        return set()
-    if text in AUG_LEGACY:
-        return set(AUG_LEGACY[text])
     known = {code for _g, code, _n, _p in AUG_ITEMS}
-    return {c for c in (x.strip() for x in text.split(",")) if c in known}
+    return {c for c in (x.strip() for x in aug_codes(value)) if c in known}
 
 
 class AugMixin:
@@ -173,7 +155,7 @@ class AugMixin:
         tip = "" if ok else self.tr(AUG_UNAVAILABLE)
         # 折叠态下 body 是隐藏的, 提示得同时挂在标题行上
         for name in ("aug_body", "section_aug_wrap", "aug_toggle_btn",
-                     "group_aug_title", "aug_count_label"):
+                     "group_aug_title", "aug_count_label", "aug_preview_btn"):
             w = getattr(self.ui, name, None)
             if w is not None:
                 w.setEnabled(ok)
@@ -210,6 +192,21 @@ class AugMixin:
         label.setText(self.tr(AUG_COUNT_FMT).format(count))
         label.setProperty("on", "true" if count else "false")
         self._repolish(label)
+
+    def _open_aug_preview(self):
+        """
+        增强预览: 勾选项/架构/图像尺寸都取界面当前值, 与开训时下发的同一份.
+        不勾任何项也允许打开 — 空参数正好让人确认"不勾就是不增强".
+        """
+        ds = list(self._selected_datasets())
+        if not ds:
+            MessageBox.information(self, self.tr("数据增强预览"),
+                                   self.tr("请先在训练集里选择数据集"))
+            return
+        dlg = AugPreviewDialog(self, self.app.db, ds,
+                               self._checked_aug_codes(), self._aug_backend(),
+                               self._task(), self._img_size())
+        dlg.exec()
 
     @staticmethod
     def _repolish(widget):

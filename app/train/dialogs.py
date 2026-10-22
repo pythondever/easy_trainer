@@ -261,6 +261,7 @@ class TrainDialog(AugMixin, QDialog):
         self.ui.add_queue_btn.clicked.connect(self._on_add_to_queue)
         self.ui.select_output_path_btn.clicked.connect(self._select_output_dir)
         self.ui.aug_toggle_btn.toggled.connect(self._toggle_aug)
+        self.ui.aug_preview_btn.clicked.connect(self._open_aug_preview)
         self.ui.section_aug_wrap.installEventFilter(self)
         apply_icon(self.ui.cancel_btn, self.tr("取消"))
         self.ui.cancel_btn.clicked.connect(self.reject)

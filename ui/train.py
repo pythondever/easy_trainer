@@ -400,6 +400,13 @@ class Ui_TrainDialog(object):
 
         self.section_aug_layout.addWidget(self.group_aug_line)
 
+        self.aug_preview_btn = QPushButton(self.section_aug_wrap)
+        self.aug_preview_btn.setObjectName(u"aug_preview_btn")
+        self.aug_preview_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.aug_preview_btn.setProperty(u"class", u"augPreview")
+
+        self.section_aug_layout.addWidget(self.aug_preview_btn)
+
         self.aug_count_label = QLabel(self.section_aug_wrap)
         self.aug_count_label.setObjectName(u"aug_count_label")
         self.aug_count_label.setProperty(u"class", u"augCount")
@@ -580,6 +587,7 @@ class Ui_TrainDialog(object):
         self.grad_note.setText(QCoreApplication.translate("TrainDialog", u"\u663e\u5b58\u4e0d\u8db3\u65f6\u8c03\u5927\uff0c\u7b49\u6548\u6279\u6b21 \u00d7 N", None))
         self.loader_num_label.setText(QCoreApplication.translate("TrainDialog", u"\u7ebf\u7a0b\u6570", None))
         self.group_aug_title.setText(QCoreApplication.translate("TrainDialog", u"\u6570\u636e\u589e\u5f3a", None))
+        self.aug_preview_btn.setText(QCoreApplication.translate("TrainDialog", u"\u9884\u89c8", None))
         self.aug_count_label.setText("")
         self.group_out_title.setText(QCoreApplication.translate("TrainDialog", u"\u8f93\u51fa", None))
         self.output_label.setText(QCoreApplication.translate("TrainDialog", u"\u8f93\u51fa\u8def\u5f84", None))

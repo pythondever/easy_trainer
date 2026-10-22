@@ -33,6 +33,7 @@ from rfdetr import (RFDETRNano, RFDETRSmall, RFDETRMedium, RFDETRLarge,
                     RFDETRSegNano, RFDETRSegSmall, RFDETRSegMedium,
                     RFDETRSegLarge)
 
+from app.train.aug_params import resolve_aug_config as _resolve_aug_config
 from app.train.data_prep import prepare_dataset
 from app.core import i18n, model_assets
 from app.core.metrics import best_map50_from_csv
@@ -53,46 +54,6 @@ def _make_model(architecture, task="detect", pretrained_path=""):
     # 必须显式给路径: rfdetr 只在拿到纯文件名时才去 RF_HOME 找, 而我们的文件按档位命名,
     # 官方名在那边根本不存在. 给了完整路径它就直接用, 不看 RF_HOME
     return cls(pretrain_weights=pretrained_path)
-
-
-# 勾选代号对应 rfdetr 的 aug_config 片段. 界面只存代号串, 到这里才展开成字典:
-# GUI 进程不导入 rfdetr, 免得为了几个字面量让启动多等一两秒
-AUG_TRANSFORMS = {
-    "hflip": {"HorizontalFlip": {"p": 0.5}},
-    "vflip": {"VerticalFlip": {"p": 0.5}},
-    "rotate": {"Rotate": {"limit": 15, "p": 0.5}},
-    "affine": {"Affine": {"scale": (0.8, 1.2), "translate_percent": (-0.1, 0.1),
-                          "rotate": (-15, 15), "shear": (-5, 5), "p": 0.5}},
-    "brightness": {"RandomBrightnessContrast": {"brightness_limit": 0.1,
-                                                "contrast_limit": 0.1, "p": 0.3}},
-    "colorjitter": {"ColorJitter": {"brightness": 0.2, "contrast": 0.2,
-                                    "saturation": 0.2, "hue": 0.1, "p": 0.5}},
-    "blur": {"GaussianBlur": {"blur_limit": 3, "p": 0.3}},
-    "noise": {"GaussNoise": {"std_range": (0.01, 0.05), "p": 0.3}},
-}
-
-# 改造前的记录存的是单档预设代号, 展开成勾选组合才能对上
-AUG_LEGACY_CODES = {
-    "off": (),
-    "default": ("hflip",),
-    "conservative": ("hflip", "brightness"),
-    "industrial": ("hflip", "brightness", "blur", "noise"),
-    "aggressive": ("hflip", "vflip", "rotate", "affine", "colorjitter"),
-}
-
-
-def _resolve_aug_config(value):
-    """勾选代号串转成 aug_config 字典. 空值/没勾/代号全不认识都给 {} (空字典即不增强)."""
-    text = str(value or "").strip().lower()
-    if not text:
-        return {}
-    codes = AUG_LEGACY_CODES.get(text, text.split(","))
-    out = {}
-    for code in codes:
-        frag = AUG_TRANSFORMS.get(str(code).strip())
-        if frag:
-            out.update(frag)
-    return out
 
 
 def _check_aug_available(aug_config):

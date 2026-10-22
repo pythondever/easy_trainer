@@ -23,6 +23,7 @@ from PySide6.QtCore import QCoreApplication as QC
 
 from app.core import i18n, model_assets
 from app.core.metrics import best_map50_from_csv
+from app.train.aug_params import resolve_yolo_aug as _resolve_yolo_aug
 from app.train.cnn_backend import device_arg
 from app.train.data_prep import prepare_dataset
 
@@ -31,51 +32,6 @@ _LEVELS = {"nano": "n", "small": "s", "medium": "m", "large": "l", "x-large": "x
 
 # UI 的优化器名对应 ultralytics 认的写法
 _OPTIMIZERS = {"adamw": "AdamW", "adam": "Adam", "sgd": "SGD"}
-
-# ultralytics 的增强默认值全是开着的(马赛克 1.0、hsv_s 0.7、fliplr 0.5...), 所以先把
-# 这批全置 0, 再按勾选覆盖: 界面上"不勾选"才等于真的不增强
-YOLO_AUG_OFF = {
-    "mosaic": 0.0, "mixup": 0.0, "cutmix": 0.0, "copy_paste": 0.0,
-    "perspective": 0.0, "bgr": 0.0,
-    "hsv_h": 0.0, "hsv_s": 0.0, "hsv_v": 0.0,
-    "degrees": 0.0, "translate": 0.0, "scale": 0.0, "shear": 0.0,
-    "flipud": 0.0, "fliplr": 0.0,
-}
-
-# 勾选代号对应 ultralytics 超参. 模糊/噪声没有原生参数(ultralytics 自己那两项是靠
-# albumentations 实现的), 界面在 CNN 下把这两项置灰; 亮度也只有 hsv_v 一项可对应
-YOLO_AUG_PARAMS = {
-    "hflip": {"fliplr": 0.5},
-    "vflip": {"flipud": 0.5},
-    "rotate": {"degrees": 15.0},
-    "affine": {"scale": 0.2, "translate": 0.1, "shear": 5.0},
-    "mosaic": {"mosaic": 1.0},
-    "brightness": {"hsv_v": 0.1},
-    "colorjitter": {"hsv_h": 0.1, "hsv_s": 0.2},
-}
-
-# 改造前的记录存的是单档预设代号, 展开成勾选组合才能对上(同 train_runner)
-AUG_LEGACY_CODES = {
-    "off": (),
-    "default": ("hflip",),
-    "conservative": ("hflip", "brightness"),
-    "industrial": ("hflip", "brightness", "blur", "noise"),
-    "aggressive": ("hflip", "vflip", "rotate", "affine", "colorjitter"),
-}
-
-
-def _resolve_yolo_aug(value):
-    """勾选代号串转成 ultralytics 增强超参; 空值/没勾/代号全不认识都给全 0."""
-    out = dict(YOLO_AUG_OFF)
-    text = str(value or "").strip().lower()
-    if not text:
-        return out
-    codes = AUG_LEGACY_CODES.get(text, text.split(","))
-    for code in codes:
-        frag = YOLO_AUG_PARAMS.get(str(code).strip())
-        if frag:
-            out.update(frag)
-    return out
 
 
 # 转写出来的列; 顺序固定, 缺的值留空
