@@ -155,6 +155,11 @@ QPushButton[class~="ghost"]:hover {
     background-color: {{bg_control}};
     border-color: {{border_hover}};
 }
+QPushButton[class~="ghost"][on="true"] {
+    background-color: {{bg_control}};
+    border-color: {{accent}};
+    color: {{accent_text}};
+}
 
 /* 工具栏按钮 */
 QToolButton {
@@ -1083,6 +1088,28 @@ QLabel[class~="augThumb"] {
     border-radius: {{r_sm}};
 }
 QLabel[class~="augThumb"][on="true"] { border: 2px solid {{accent}}; }
+
+/* 错图检视：左列表 / 右大图 */
+QDialog#PredictionViewerDialog { background-color: {{bg_panel}}; }
+QFrame[class~="predPane"] {
+    background-color: {{bg_deep}};
+    border-radius: {{r_sm}};
+}
+QListWidget[class~="predList"] {
+    background-color: {{bg_raised}};
+    border: 1px solid {{border_subtle}};
+    border-radius: {{r_lg}};
+    color: {{text}};
+    outline: none;
+}
+QListWidget[class~="predList"]::item {
+    padding: 4px 6px;
+    border-radius: {{r_sm}};
+}
+QListWidget[class~="predList"]::item:selected {
+    background-color: {{bg_control}};
+    color: {{accent_text}};
+}
 QFrame[class~="augParams"] {
     background-color: {{bg_base}};
     border: 1px solid {{border_subtle}};

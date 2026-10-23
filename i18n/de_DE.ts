@@ -1000,109 +1000,109 @@ Trotzdem löschen?</translation>
 <context>
     <name>AugPreviewDialog</name>
     <message>
-        <location filename="../app/train/aug_preview_dialog.py" line="241"/>
+        <location filename="../app/train/aug_preview_dialog.py" line="59"/>
         <source>数据增强预览</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../app/train/aug_preview_dialog.py" line="279"/>
+        <location filename="../app/train/aug_preview_dialog.py" line="98"/>
         <source>换图</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../app/train/aug_preview_dialog.py" line="280"/>
+        <location filename="../app/train/aug_preview_dialog.py" line="99"/>
         <source>换一批</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../app/train/aug_preview_dialog.py" line="286"/>
+        <location filename="../app/train/aug_preview_dialog.py" line="105"/>
         <source>原图</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../app/train/aug_preview_dialog.py" line="295"/>
+        <location filename="../app/train/aug_preview_dialog.py" line="114"/>
         <source>增强后</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../app/train/aug_preview_dialog.py" line="309"/>
+        <location filename="../app/train/aug_preview_dialog.py" line="128"/>
         <source>每次采样独立随机, 概率项不一定每次都生效</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../app/train/aug_preview_dialog.py" line="316"/>
+        <location filename="../app/train/aug_preview_dialog.py" line="135"/>
         <source>显示标注</source>
         <translation type="unfinished">Annotationen anzeigen</translation>
     </message>
     <message>
-        <location filename="../app/train/aug_preview_dialog.py" line="323"/>
+        <location filename="../app/train/aug_preview_dialog.py" line="142"/>
         <source>滚轮缩放 · 双击复位</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../app/train/aug_preview_dialog.py" line="371"/>
+        <location filename="../app/train/aug_preview_dialog.py" line="190"/>
         <source>实际下发的参数</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../app/train/aug_preview_dialog.py" line="387"/>
+        <location filename="../app/train/aug_preview_dialog.py" line="206"/>
         <source>未启用任何增强</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../app/train/aug_preview_dialog.py" line="397"/>
+        <location filename="../app/train/aug_preview_dialog.py" line="216"/>
         <source>与训练端同一份解析</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../app/train/aug_preview_dialog.py" line="415"/>
-        <location filename="../app/train/aug_preview_dialog.py" line="428"/>
+        <location filename="../app/train/aug_preview_dialog.py" line="234"/>
+        <location filename="../app/train/aug_preview_dialog.py" line="247"/>
         <source>训练集里没有可读的图像</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../app/train/aug_preview_dialog.py" line="416"/>
+        <location filename="../app/train/aug_preview_dialog.py" line="235"/>
         <source>没有可预览的图像</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../app/train/aug_preview_dialog.py" line="453"/>
+        <location filename="../app/train/aug_preview_dialog.py" line="283"/>
         <source>{} · 可选 {} 张</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../app/train/aug_preview_dialog.py" line="456"/>
-        <location filename="../app/train/aug_preview_dialog.py" line="503"/>
+        <location filename="../app/train/aug_preview_dialog.py" line="286"/>
+        <location filename="../app/train/aug_preview_dialog.py" line="334"/>
         <source>种子 {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../app/train/aug_preview_dialog.py" line="480"/>
+        <location filename="../app/train/aug_preview_dialog.py" line="310"/>
         <source>模糊</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../app/train/aug_preview_dialog.py" line="480"/>
+        <location filename="../app/train/aug_preview_dialog.py" line="310"/>
         <source>噪声</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../app/train/aug_preview_dialog.py" line="481"/>
+        <location filename="../app/train/aug_preview_dialog.py" line="311"/>
         <source>马赛克</source>
         <translation type="unfinished">Mosaik</translation>
     </message>
     <message>
-        <location filename="../app/train/aug_preview_dialog.py" line="482"/>
+        <location filename="../app/train/aug_preview_dialog.py" line="312"/>
         <source>当前架构不支持: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../app/train/aug_preview_dialog.py" line="539"/>
+        <location filename="../app/train/aug_preview_dialog.py" line="373"/>
         <source>采样 #{}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../app/train/aug_preview_dialog.py" line="541"/>
+        <location filename="../app/train/aug_preview_dialog.py" line="375"/>
         <source> · {} 图拼接</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2422,7 +2422,7 @@ Dies überschreibt die Quell-Labeldateien des Datensatzes und kann nicht rückg�
     </message>
     <message>
         <location filename="../app/core/metrics.py" line="44"/>
-        <location filename="../app/train/eval_result_dialog.py" line="348"/>
+        <location filename="../app/train/eval_result_dialog.py" line="377"/>
         <source>CER</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3732,6 +3732,103 @@ Trotzdem schließen?</translation>
     </message>
 </context>
 <context>
+    <name>PredictionViewerDialog</name>
+    <message>
+        <location filename="../app/train/pred_viewer_dialog.py" line="33"/>
+        <source>错图检视</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../app/train/pred_viewer_dialog.py" line="56"/>
+        <source>全部</source>
+        <translation type="unfinished">Alle</translation>
+    </message>
+    <message>
+        <location filename="../app/train/pred_viewer_dialog.py" line="57"/>
+        <location filename="../app/train/pred_viewer_dialog.py" line="111"/>
+        <location filename="../app/train/pred_viewer_dialog.py" line="177"/>
+        <source>漏检</source>
+        <translation type="unfinished">Übersehen</translation>
+    </message>
+    <message>
+        <location filename="../app/train/pred_viewer_dialog.py" line="58"/>
+        <location filename="../app/train/pred_viewer_dialog.py" line="112"/>
+        <location filename="../app/train/pred_viewer_dialog.py" line="177"/>
+        <source>误检</source>
+        <translation type="unfinished">Fehlalarm</translation>
+    </message>
+    <message>
+        <location filename="../app/train/pred_viewer_dialog.py" line="80"/>
+        <source>这次测试没有漏检和误检</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../app/train/pred_viewer_dialog.py" line="94"/>
+        <source>上一张</source>
+        <translation type="unfinished">Zurück</translation>
+    </message>
+    <message>
+        <location filename="../app/train/pred_viewer_dialog.py" line="98"/>
+        <source>下一张</source>
+        <translation type="unfinished">Weiter</translation>
+    </message>
+    <message>
+        <location filename="../app/train/pred_viewer_dialog.py" line="90"/>
+        <source>滚轮缩放 · 拖动平移 · 双击复位</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../app/train/pred_viewer_dialog.py" line="111"/>
+        <source>真值框, 模型没有检出 (实线填充)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../app/train/pred_viewer_dialog.py" line="112"/>
+        <source>模型多检出来的框 (虚线)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../app/train/pred_viewer_dialog.py" line="113"/>
+        <source>检出</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../app/train/pred_viewer_dialog.py" line="113"/>
+        <source>与真值匹配上的预测框 (虚线)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../app/train/pred_viewer_dialog.py" line="162"/>
+        <source>漏检 {}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../app/train/pred_viewer_dialog.py" line="164"/>
+        <source>误检 {}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../app/train/pred_viewer_dialog.py" line="170"/>
+        <source>没有漏检和误检</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../app/train/pred_viewer_dialog.py" line="171"/>
+        <source>没有{}的图</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../app/train/pred_viewer_dialog.py" line="173"/>
+        <source>{} 张有问题 · 漏检 {} 框 · 误检 {} 框</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../app/train/pred_viewer_dialog.py" line="206"/>
+        <source>这张图读不出来: {}</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>ProjectCard</name>
     <message>
         <location filename="../app/widgets/project_sidebar.py" line="370"/>
@@ -4818,8 +4915,8 @@ Der Quell-Datensatz wird danach geleert.</translation>
     </message>
     <message>
         <location filename="../ui/eval_result.ui" line="163"/>
-        <location filename="../app/train/eval_result_dialog.py" line="302"/>
-        <location filename="../app/train/eval_result_dialog.py" line="437"/>
+        <location filename="../app/train/eval_result_dialog.py" line="331"/>
+        <location filename="../app/train/eval_result_dialog.py" line="466"/>
         <source>测试张数</source>
         <translation>Getestete Bilder</translation>
     </message>
@@ -4835,7 +4932,7 @@ Der Quell-Datensatz wird danach geleert.</translation>
     </message>
     <message>
         <location filename="../ui/eval_result.ui" line="331"/>
-        <location filename="../app/train/eval_result_dialog.py" line="271"/>
+        <location filename="../app/train/eval_result_dialog.py" line="300"/>
         <source>有误检图像</source>
         <translation>Bilder mit Fehlalarm</translation>
     </message>
@@ -4852,22 +4949,22 @@ Der Quell-Datensatz wird danach geleert.</translation>
     <message>
         <location filename="../ui/eval_result.ui" line="455"/>
         <location filename="../ui/eval_result.ui" line="664"/>
-        <location filename="../app/train/eval_result_dialog.py" line="279"/>
-        <location filename="../app/train/eval_result_dialog.py" line="513"/>
+        <location filename="../app/train/eval_result_dialog.py" line="308"/>
+        <location filename="../app/train/eval_result_dialog.py" line="542"/>
         <source>正确检出</source>
         <translation>Korrekt</translation>
     </message>
     <message>
         <location filename="../ui/eval_result.ui" line="511"/>
         <location filename="../ui/eval_result.ui" line="669"/>
-        <location filename="../app/train/eval_result_dialog.py" line="514"/>
+        <location filename="../app/train/eval_result_dialog.py" line="543"/>
         <source>漏检</source>
         <translation>Übersehen</translation>
     </message>
     <message>
         <location filename="../ui/eval_result.ui" line="567"/>
         <location filename="../ui/eval_result.ui" line="674"/>
-        <location filename="../app/train/eval_result_dialog.py" line="514"/>
+        <location filename="../app/train/eval_result_dialog.py" line="543"/>
         <source>误检</source>
         <translation>Fehlalarm</translation>
     </message>
@@ -4879,27 +4976,27 @@ Der Quell-Datensatz wird danach geleert.</translation>
     <message>
         <location filename="../ui/eval_result.ui" line="623"/>
         <location filename="../ui/eval_result.ui" line="684"/>
-        <location filename="../app/train/eval_result_dialog.py" line="515"/>
+        <location filename="../app/train/eval_result_dialog.py" line="544"/>
         <source>准确率</source>
         <translation>Genauigkeit</translation>
     </message>
     <message>
         <location filename="../ui/eval_result.ui" line="654"/>
-        <location filename="../app/train/eval_result_dialog.py" line="460"/>
-        <location filename="../app/train/eval_result_dialog.py" line="481"/>
-        <location filename="../app/train/eval_result_dialog.py" line="513"/>
+        <location filename="../app/train/eval_result_dialog.py" line="489"/>
+        <location filename="../app/train/eval_result_dialog.py" line="510"/>
+        <location filename="../app/train/eval_result_dialog.py" line="542"/>
         <source>类别</source>
         <translation>Klasse</translation>
     </message>
     <message>
         <location filename="../ui/eval_result.ui" line="659"/>
-        <location filename="../app/train/eval_result_dialog.py" line="513"/>
+        <location filename="../app/train/eval_result_dialog.py" line="542"/>
         <source>标注数</source>
         <translation>Rahmen</translation>
     </message>
     <message>
         <location filename="../ui/eval_result.ui" line="679"/>
-        <location filename="../app/train/eval_result_dialog.py" line="514"/>
+        <location filename="../app/train/eval_result_dialog.py" line="543"/>
         <source>检出率</source>
         <translation>Trefferquote</translation>
     </message>
@@ -4927,332 +5024,337 @@ Der Bericht umfasst ca. 120 KB pro Bild; bei vielen Stichproben verkleinert ein 
     </message>
     <message>
         <location filename="../ui/eval_result.ui" line="751"/>
-        <location filename="../app/train/eval_result_dialog.py" line="204"/>
+        <source>查看错图</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/eval_result.ui" line="758"/>
+        <location filename="../app/train/eval_result_dialog.py" line="225"/>
         <source>导出 PDF 报告</source>
         <translation>PDF-Bericht exportieren</translation>
     </message>
     <message>
-        <location filename="../ui/eval_result.ui" line="758"/>
-        <location filename="../app/train/eval_result_dialog.py" line="106"/>
+        <location filename="../ui/eval_result.ui" line="765"/>
+        <location filename="../app/train/eval_result_dialog.py" line="108"/>
         <source>确定</source>
         <translation>OK</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="166"/>
+        <location filename="../app/train/eval_result_dialog.py" line="187"/>
         <source>把漏检/误检的图逐张画框导出成 PDF</source>
         <translation>Alle Bilder mit Übersehenem oder Fehlalarm mit Rahmen in ein PDF exportieren</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="169"/>
+        <location filename="../app/train/eval_result_dialog.py" line="190"/>
         <source>异常检测的逐图结果已写成 CSV, 不支持导出画框 PDF</source>
         <translation>Die Ergebnisse der Anomalieerkennung pro Bild wurden als CSV geschrieben; der Export als PDF mit Rahmen wird nicht unterstützt</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="172"/>
+        <location filename="../app/train/eval_result_dialog.py" line="193"/>
         <source>字符识别的逐图明细是文本对照, 不支持导出画框 PDF</source>
         <translation>Die Zeichenerkennung liefert Textpaare statt Rahmen; PDF-Export wird nicht unterstützt</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="174"/>
+        <location filename="../app/train/eval_result_dialog.py" line="195"/>
         <source>本次测试没有逐图错误明细, 无法导出</source>
         <translation>Dieser Test enthält keine Fehlerdetails pro Bild; Export nicht möglich</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="186"/>
+        <location filename="../app/train/eval_result_dialog.py" line="207"/>
         <source>保存 PDF 报告</source>
         <translation>PDF-Bericht speichern</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="187"/>
+        <location filename="../app/train/eval_result_dialog.py" line="208"/>
         <source>PDF 文件 (*.pdf)</source>
         <translation>PDF-Dateien (*.pdf)</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="193"/>
+        <location filename="../app/train/eval_result_dialog.py" line="214"/>
         <source>正在生成...</source>
         <translation>Wird erstellt...</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="211"/>
+        <location filename="../app/train/eval_result_dialog.py" line="232"/>
         <source>无需导出</source>
         <translation>Nichts zu exportieren</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="212"/>
+        <location filename="../app/train/eval_result_dialog.py" line="233"/>
         <source>本次测试没有漏检也没有误检, 没有内容可写.</source>
         <translation>Dieser Test hat weder Übersehenes noch Fehlalarme; nichts zu schreiben.</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="215"/>
+        <location filename="../app/train/eval_result_dialog.py" line="236"/>
         <source>导出完成</source>
         <translation>Export abgeschlossen</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="216"/>
+        <location filename="../app/train/eval_result_dialog.py" line="237"/>
         <source>PDF 报告已保存到:
 {}</source>
         <translation>PDF-Bericht gespeichert unter:
 {}</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="220"/>
+        <location filename="../app/train/eval_result_dialog.py" line="241"/>
         <source>导出失败</source>
         <translation>Export fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="258"/>
+        <location filename="../app/train/eval_result_dialog.py" line="287"/>
         <source>按&quot;张&quot;统计 · 检出 1 个即算检出</source>
         <translation>Nach Bild · ein erkannter Rahmen zählt als erkannt</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="260"/>
+        <location filename="../app/train/eval_result_dialog.py" line="289"/>
         <source> · 有标注 {} 张</source>
         <translation> · {} Bilder mit Labels</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="264"/>
+        <location filename="../app/train/eval_result_dialog.py" line="293"/>
         <source>检出图像</source>
         <translation>Erkannte Bilder</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="265"/>
-        <location filename="../app/train/eval_result_dialog.py" line="280"/>
+        <location filename="../app/train/eval_result_dialog.py" line="294"/>
+        <location filename="../app/train/eval_result_dialog.py" line="309"/>
         <source>检出率 </source>
         <translation>Trefferquote </translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="267"/>
+        <location filename="../app/train/eval_result_dialog.py" line="296"/>
         <source>未检出图像</source>
         <translation>Nicht erkannte Bilder</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="268"/>
+        <location filename="../app/train/eval_result_dialog.py" line="297"/>
         <source>未检出率 </source>
         <translation>Übersehensquote </translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="272"/>
+        <location filename="../app/train/eval_result_dialog.py" line="301"/>
         <source>误检率 </source>
         <translation>Fehlalarmquote </translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="277"/>
+        <location filename="../app/train/eval_result_dialog.py" line="306"/>
         <source>按&quot;标注框&quot;统计 · 标注总数 {}</source>
         <translation>Nach Rahmen · {} Rahmen insgesamt</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="300"/>
+        <location filename="../app/train/eval_result_dialog.py" line="329"/>
         <source>按&quot;张&quot;统计 · 每张图判一个类别</source>
         <translation>Nach Bild · eine Klasse pro Bild</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="305"/>
+        <location filename="../app/train/eval_result_dialog.py" line="334"/>
         <source>判断正确</source>
         <translation>Richtig</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="307"/>
+        <location filename="../app/train/eval_result_dialog.py" line="336"/>
         <source>判断错误</source>
         <translation>Falsch</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="310"/>
-        <location filename="../app/train/eval_result_dialog.py" line="482"/>
+        <location filename="../app/train/eval_result_dialog.py" line="339"/>
+        <location filename="../app/train/eval_result_dialog.py" line="511"/>
         <source>精度</source>
         <translation>Genauigkeit</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="336"/>
+        <location filename="../app/train/eval_result_dialog.py" line="365"/>
         <source>字条维度</source>
         <translation>Nach Textzeile</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="337"/>
+        <location filename="../app/train/eval_result_dialog.py" line="366"/>
         <source>按&quot;字条&quot;统计 · 整条读对才算全对</source>
         <translation>Nach &quot;Textzeile&quot; gezählt · eine Zeile zählt nur bei exakter Erkennung</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="339"/>
+        <location filename="../app/train/eval_result_dialog.py" line="368"/>
         <source>测试字条</source>
         <translation>Getestete Zeilen</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="342"/>
+        <location filename="../app/train/eval_result_dialog.py" line="371"/>
         <source>全对字条</source>
         <translation>Exakt erkannte Zeilen</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="343"/>
+        <location filename="../app/train/eval_result_dialog.py" line="372"/>
         <source>全对率 </source>
         <translation>Exaktquote </translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="345"/>
+        <location filename="../app/train/eval_result_dialog.py" line="374"/>
         <source>有错字条</source>
         <translation>Zeilen mit Fehlern</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="346"/>
+        <location filename="../app/train/eval_result_dialog.py" line="375"/>
         <source>有错率 </source>
         <translation>Fehlerquote </translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="355"/>
+        <location filename="../app/train/eval_result_dialog.py" line="384"/>
         <source>字符维度</source>
         <translation>Nach Zeichen</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="357"/>
+        <location filename="../app/train/eval_result_dialog.py" line="386"/>
         <source>按&quot;字符&quot;统计 · 共 {} 个字符</source>
         <translation>Nach &quot;Zeichen&quot; gezählt · {} Zeichen insgesamt</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="360"/>
+        <location filename="../app/train/eval_result_dialog.py" line="389"/>
         <source>正确字符</source>
         <translation>Korrekte Zeichen</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="361"/>
+        <location filename="../app/train/eval_result_dialog.py" line="390"/>
         <source>字符正确率 </source>
         <translation>Zeichenquote </translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="364"/>
-        <location filename="../app/train/eval_result_dialog.py" line="408"/>
+        <location filename="../app/train/eval_result_dialog.py" line="393"/>
+        <location filename="../app/train/eval_result_dialog.py" line="437"/>
         <source>替换</source>
         <translation>Ersetzung</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="365"/>
+        <location filename="../app/train/eval_result_dialog.py" line="394"/>
         <source>替换率 </source>
         <translation>Ersetzungsquote </translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="368"/>
-        <location filename="../app/train/eval_result_dialog.py" line="409"/>
+        <location filename="../app/train/eval_result_dialog.py" line="397"/>
+        <location filename="../app/train/eval_result_dialog.py" line="438"/>
         <source>漏字</source>
         <translation>Fehlende Zeichen</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="369"/>
+        <location filename="../app/train/eval_result_dialog.py" line="398"/>
         <source>漏字率 </source>
         <translation>Fehlquote </translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="373"/>
-        <location filename="../app/train/eval_result_dialog.py" line="410"/>
+        <location filename="../app/train/eval_result_dialog.py" line="402"/>
+        <location filename="../app/train/eval_result_dialog.py" line="439"/>
         <source>多字</source>
         <translation>Zusätzliche Zeichen</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="374"/>
+        <location filename="../app/train/eval_result_dialog.py" line="403"/>
         <source>多字率 </source>
         <translation>Zusatzquote </translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="383"/>
+        <location filename="../app/train/eval_result_dialog.py" line="412"/>
         <source>图像</source>
         <translation>Bild</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="383"/>
+        <location filename="../app/train/eval_result_dialog.py" line="412"/>
         <source>真值</source>
         <translation>Sollwert</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="383"/>
+        <location filename="../app/train/eval_result_dialog.py" line="412"/>
         <source>预测</source>
         <translation>Vorhersage</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="383"/>
+        <location filename="../app/train/eval_result_dialog.py" line="412"/>
         <source>错字</source>
         <translation>Fehler</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="407"/>
+        <location filename="../app/train/eval_result_dialog.py" line="436"/>
         <source>{} 条字条全部读对, 没有错字.</source>
         <translation>Alle {} Textzeilen wurden korrekt gelesen; keine Zeichenfehler.</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="412"/>
+        <location filename="../app/train/eval_result_dialog.py" line="441"/>
         <source>共 {} 条字条, {} 条全对, CER {:.4f}; {} 条有错, 错误以&quot;{}&quot;为主({} 个字符).</source>
         <translation>{} Textzeilen, {} exakt erkannt, CER {:.4f}; {} Zeilen mit Fehlern, überwiegend &quot;{}&quot; ({} Zeichen).</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="417"/>
+        <location filename="../app/train/eval_result_dialog.py" line="446"/>
         <source> 其次是&quot;{}&quot;, {} 个字符.</source>
         <translation> Als Nächstes &quot;{}&quot; ({} Zeichen).</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="420"/>
+        <location filename="../app/train/eval_result_dialog.py" line="449"/>
         <source> 表格只列出错字最多的前 {} 条.</source>
         <translation> Die Tabelle zeigt nur die obersten {} Zeilen nach Fehlerzahl.</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="435"/>
+        <location filename="../app/train/eval_result_dialog.py" line="464"/>
         <source>按&quot;张&quot;统计 · 整图判良品/不良品</source>
         <translation>Zählung pro Bild · ganzes Bild als Gutteil/Schlechtteil bewertet</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="449"/>
-        <location filename="../app/train/eval_result_dialog.py" line="460"/>
+        <location filename="../app/train/eval_result_dialog.py" line="478"/>
+        <location filename="../app/train/eval_result_dialog.py" line="489"/>
         <source>检出异常</source>
         <translation>Erkannte Anomalien</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="460"/>
-        <location filename="../app/train/eval_result_dialog.py" line="481"/>
+        <location filename="../app/train/eval_result_dialog.py" line="489"/>
+        <location filename="../app/train/eval_result_dialog.py" line="510"/>
         <source>总图数</source>
         <translation>Bilder gesamt</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="465"/>
+        <location filename="../app/train/eval_result_dialog.py" line="494"/>
         <source>异常</source>
         <translation>Anomalie</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="481"/>
+        <location filename="../app/train/eval_result_dialog.py" line="510"/>
         <source>正确</source>
         <translation>Richtig</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="482"/>
+        <location filename="../app/train/eval_result_dialog.py" line="511"/>
         <source>错误</source>
         <translation>Falsch</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="503"/>
+        <location filename="../app/train/eval_result_dialog.py" line="532"/>
         <source>模型里没有判定阈值, 只报告分数, 逐图分数见 CSV 明细.</source>
         <translation>Modell ohne Entscheidungsschwelle, nur Scores; Scores je Bild siehe CSV-Details.</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="504"/>
+        <location filename="../app/train/eval_result_dialog.py" line="533"/>
         <source>判定阈值 {:.4f}. 本次 {} 张, 检出异常 {} 张.</source>
         <translation>Entscheidungsschwelle {:.4f}. {} Bilder getestet, {} Anomalien erkannt.</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="317"/>
+        <location filename="../app/train/eval_result_dialog.py" line="346"/>
         <source>整体精度 {:.1f}%, &quot;{}&quot;类错误最多({} 张), 是拉低精度的主要原因.</source>
         <translation>Gesamtgenauigkeit {:.1f}%. Klasse „{}&quot; hat die meisten Fehler ({} Bilder) und ist die Hauptursache für die niedrigere Genauigkeit.</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="542"/>
+        <location filename="../app/train/eval_result_dialog.py" line="571"/>
         <source>整体漏检偏多(漏检 {} 个, 多于误检 {} 个).&quot;{}&quot;类漏检最多({} 个), 是检出率低的主要原因.</source>
         <translation>Insgesamt überwiegt Übersehenes ({} übersehen gegenüber {} Fehlalarmen). Klasse „{}&quot; hat die meisten übersehenen Objekte ({}) und ist die Hauptursache für die niedrige Trefferquote.</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="548"/>
+        <location filename="../app/train/eval_result_dialog.py" line="577"/>
         <source>整体误检偏多(误检 {} 个, 多于漏检 {} 个).&quot;{}&quot;类误检最多({} 个), 是准确率低的主要原因.</source>
         <translation>Insgesamt überwiegen Fehlalarme ({} Fehlalarme gegenüber {} übersehenen). Klasse „{}&quot; hat die meisten Fehlalarme ({}) und ist die Hauptursache für die niedrige Genauigkeit.</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="552"/>
+        <location filename="../app/train/eval_result_dialog.py" line="581"/>
         <source>模型表现良好: 无漏检, 无误检.</source>
         <translation>Das Modell ist gut: kein Übersehenes und keine Fehlalarme.</translation>
     </message>
     <message>
-        <location filename="../app/train/eval_result_dialog.py" line="554"/>
+        <location filename="../app/train/eval_result_dialog.py" line="583"/>
         <source>另有 {} 处位置对但类别判错(报告里用紫框标出),属分类能力不足, 需补易混淆类别的区分性样本.</source>
         <translation>Weitere {} Rahmen sind korrekt positioniert, aber falsch klassifiziert (im Bericht violett markiert). Das deutet auf zu schwache Klassifizierung hin; mehr unterscheidbare Beispiele für leicht verwechselbare Klassen ergänzen.</translation>
     </message>

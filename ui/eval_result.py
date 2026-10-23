@@ -556,6 +556,11 @@ class Ui_TestResultDialog(object):
 
         self.btn_row.addItem(self.btn_spacer)
 
+        self.view_detail_btn = QPushButton(TestResultDialog)
+        self.view_detail_btn.setObjectName(u"view_detail_btn")
+
+        self.btn_row.addWidget(self.view_detail_btn)
+
         self.export_pdf_btn = QPushButton(TestResultDialog)
         self.export_pdf_btn.setObjectName(u"export_pdf_btn")
 
@@ -627,6 +632,7 @@ class Ui_TestResultDialog(object):
 #endif // QT_CONFIG(tooltip)
         self.sample_spin.setSuffix(QCoreApplication.translate("TestResultDialog", u" \u5f20", None))
         self.sample_spin.setSpecialValueText(QCoreApplication.translate("TestResultDialog", u"\u5168\u90e8", None))
+        self.view_detail_btn.setText(QCoreApplication.translate("TestResultDialog", u"\u67e5\u770b\u9519\u56fe", None))
         self.export_pdf_btn.setText(QCoreApplication.translate("TestResultDialog", u"\u5bfc\u51fa PDF \u62a5\u544a", None))
         self.ok_btn.setText(QCoreApplication.translate("TestResultDialog", u"\u786e\u5b9a", None))
     # retranslateUi

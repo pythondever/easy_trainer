@@ -5,14 +5,16 @@ import datetime
 import os
 import re
 
-from PySide6.QtCore import Qt, QTimer
+from PySide6.QtCore import Qt, QEvent, QTimer
 from PySide6.QtCore import QCoreApplication as QC
 from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, \
     QSizePolicy, QTableWidgetItem
 from app.core import theme
 from app.core.label_utils import label_sort_key
 from app.core.metrics import SCORE_GOOD, SCORE_MID
+from app.train import pred_viewer as pv
 from app.train.export_worker import ReportWorker
+from app.train.pred_viewer_dialog import PredictionViewerDialog
 from app.widgets.message_box import MessageBox
 from app.widgets.dialog_buttons import apply_icon
 from app.widgets.dialog_fit import fit_dialog_height
@@ -106,6 +108,11 @@ class TestResultDialog(QDialog):
         apply_icon(self._ui.ok_btn, self.tr("确定"))
         self._ui.ok_btn.clicked.connect(self.accept)
         self._ui.export_pdf_btn.clicked.connect(self._on_export)
+        self._ui.view_detail_btn.clicked.connect(self._open_viewer)
+        # 漏检/误检卡片点了直接进检视, 比去按钮行找入口更顺手
+        for card in (self._ui.card_img_fn, self._ui.card_img_fp,
+                     self._ui.card_fn, self._ui.card_fp):
+            card.installEventFilter(self)
         self._res = res
         self._worker = None
         self._fitted = False
@@ -115,6 +122,20 @@ class TestResultDialog(QDialog):
         self._sync_export_btn()
         self._fit_content()
         fit_dialog_height(self)
+
+    def _open_viewer(self, kind="all"):
+        if not self._res.get("detail_path"):
+            return
+        PredictionViewerDialog(self, self._res, self._res.get("task") or "",
+                               kind).exec()
+
+    def eventFilter(self, obj, event):
+        if event.type() == QEvent.MouseButtonPress and obj.isVisible():
+            kind = obj.property("detailKind")
+            if kind:
+                self._open_viewer(kind)
+                return True
+        return super().eventFilter(obj, event)
 
     def _fit_content(self):
         """开窗尺寸按结果区实际内容定, 屏装不下时由 fit_dialog_height 收窗、滚动条接管."""
@@ -232,6 +253,14 @@ class TestResultDialog(QDialog):
         # 复用同一实例填别的任务时要放回来
         u.card_img_fn.setVisible(True)
         u.card_img_fp.setVisible(True)
+        # 只有检测/分割写了明细, 别的任务没有错图可看
+        can_view = bool(res.get("detail_path"))
+        u.view_detail_btn.setVisible(can_view)
+        for card, kind in ((u.card_img_fn, pv.MISS), (u.card_img_fp, pv.FP),
+                           (u.card_fn, pv.MISS), (u.card_fp, pv.FP)):
+            card.setCursor(Qt.PointingHandCursor if can_view
+                           else Qt.ArrowCursor)
+            card.setProperty("detailKind", kind if can_view else "")
         u.sample_lbl.setVisible(True)
         u.sample_spin.setVisible(True)
         for w in (u.section_img, u.conclusion_label):
