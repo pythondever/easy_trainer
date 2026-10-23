@@ -191,9 +191,84 @@ def _sync_metrics(csv_path, metrics_path, task, per_class=None):
     return len(rows)
 
 
+def _patch_amp_check(weights):
+    """
+    ultralytics 的 check_amp 无视传入的模型, 固定去 WEIGHTS_DIR 另加载一个
+    yolo26n.pt 做 AMP 数值自检, 缺文件就联网下载. 而 WEIGHTS_DIR 是相对路径
+    "weights", 在项目根启动时每次 GPU 训练都会落一个 weights/yolo26n.pt 在仓库里.
+    改成加载训练自己的权重文件: 同一份权重, 文件本来就在 pretrained/ 里, 不下载
+    也不落新文件. 注意只能传文件路径——trainer 给的 model 是裸 nn.Module, 不吃
+    ultralytics 那套 imgsz/device 预测参数, 必须经 YOLO 高层对象调用.
+    """
+    try:
+        import re
+
+        import torch
+        from ultralytics import YOLO
+        from ultralytics.engine import trainer
+        from ultralytics.utils import ASSETS, LOGGER
+        from ultralytics.utils.checks import colorstr
+        from ultralytics.utils.torch_utils import autocast
+    except Exception:
+        return
+
+    def check_amp(model):
+        device = next(model.parameters()).device
+        prefix = colorstr("AMP: ")
+        if device.type in {"cpu", "mps"}:
+            return False
+        elif device.type == "cuda":
+            pattern = re.compile(
+                r"(nvidia|geforce|quadro|tesla).*?(1660|1650|1630|t400|t550|"
+                r"t600|t1000|t1200|t2000|k40m)", re.IGNORECASE)
+            gpu = torch.cuda.get_device_name(device)
+            if bool(pattern.search(gpu)):
+                LOGGER.warning(
+                    f"{prefix}checks failed. AMP training on {gpu} GPU may "
+                    f"cause NaN losses or zero-mAP results, so AMP will be "
+                    f"disabled during training.")
+                return False
+
+        def amp_allclose(m, im):
+            batch = [im] * 8
+            imgsz = max(256, int(m.stride.max() * 4))
+            a = m(batch, imgsz=imgsz, device=device, verbose=False)[0].boxes.data
+            with autocast(enabled=True, device=device.type):
+                b = m(batch, imgsz=imgsz, device=device,
+                      verbose=False)[0].boxes.data
+            return a.shape == b.shape and torch.allclose(a, b.float(), atol=0.5)
+
+        im = ASSETS / "bus.jpg"
+        LOGGER.info(f"{prefix}running Automatic Mixed Precision (AMP) checks...")
+        try:
+            assert amp_allclose(YOLO(weights), im)
+            LOGGER.info(f"{prefix}checks passed")
+        except AssertionError:
+            LOGGER.error(
+                f"{prefix}checks failed. Anomalies were detected with AMP on "
+                f"your system that may lead to NaN losses or zero-mAP results, "
+                f"so AMP will be disabled during training.")
+            return False
+        except Exception:
+            # 检查本身出问题(缺素材/显存不够)不拦训练, 与 ultralytics 对
+            # ConnectionError 的处理一致: 跳过检查, AMP 保持原样
+            LOGGER.warning(f"{prefix}checks skipped. {exc_note()}")
+            return True
+        return True
+
+    def exc_note():
+        return "{}: {}".format(sys.exc_info()[0].__name__,
+                               sys.exc_info()[1])
+
+    try:
+        trainer.check_amp = check_amp
+    except Exception:
+        # patch 不上就照 ultralytics 原行为跑, 不拦训练
+        print("[train] AMP 自检替换失败, 使用 ultralytics 原版逻辑", flush=True)
+
+
 def main():
     from ultralytics import YOLO
-    from ultralytics.utils import WEIGHTS_DIR
 
     cfg_path = sys.argv[1]
     with open(cfg_path, "r", encoding="utf-8") as f:
@@ -215,8 +290,6 @@ def main():
             "TrainRunner",
             "预训练权重缺失: 请先在权重管理里下载 {} 档的模型").format(
             architecture))
-
-    model_assets.ensure_amp_weight(WEIGHTS_DIR)
 
     labels = prepare_dataset(out_root, project=cfg["project"],
                              datasets=cfg["datasets"], task=task)
@@ -243,6 +316,8 @@ def main():
                 # save_metrics 先于本回调, 此刻结果表的 epoch 那一行已经写好了
                 per_class_by_epoch[epoch] = pc
         _flush_metrics(trainer)
+
+    _patch_amp_check(weights)
 
     model = YOLO(weights)
     model.add_callback("on_fit_epoch_end", _on_fit_epoch_end)
