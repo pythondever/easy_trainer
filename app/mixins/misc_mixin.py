@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 import os
-from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from app.core import i18n
 from app.core.db import get_path_pairs, get_paths
 from app.core.label_utils import rec_is_labeled
-from app.widgets.charts import render_label_chart
+from app.widgets.label_stats_view import LabelBarsWidget
 from app.widgets.flag_combo import install_flag_combo
 from app.widgets.log_dialog import LogDialog
 from app.widgets.model_dialog import ModelDialog
@@ -15,39 +14,10 @@ from ui.dataset_properties import Ui_Dialog as DatasetPropertiesUI
 from app.widgets.message_box import MessageBox
 from app.widgets.dialog_buttons import apply_icon
 from app.core.log import write_log
-from PySide6.QtGui import QIcon, QPixmap, QImage, QStandardItem
-from PySide6.QtCore import QEvent, QObject, QSize, Qt
+from PySide6.QtGui import QIcon, QStandardItem
+from PySide6.QtCore import QSize, Qt, QTimer
 from PySide6.QtCore import QCoreApplication as QC
-from PySide6.QtWidgets import (QApplication, QDialog, QGraphicsScene,
-                              QGraphicsView)
-
-
-# 滚轮缩放倍率与限幅: 每次滚动一档 15%, 缩放比例限制在 20%~800%; 图是
-# 位图, 放太大只是插值模糊, 限幅够用就行
-_ZOOM_STEP = 1.15
-_ZOOM_MIN, _ZOOM_MAX = 0.2, 8.0
-
-
-class _ChartZoomFilter(QObject):
-    """统计图表的滚轮缩放与拖动平移. 图按固定尺寸渲染, 默认只能靠 view
-    自带的滚动条看局部; 装上这个过滤器后滚轮以鼠标位置为锚缩放(事件被
-    消费, 不再滚滚动条), 左键变抓手可拖动, 方便放大看细节."""
-
-    def __init__(self, view):
-        super().__init__(view)
-        view.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)
-        view.setDragMode(QGraphicsView.ScrollHandDrag)
-        view.viewport().installEventFilter(self)
-
-    def eventFilter(self, obj, event):
-        if event.type() == QEvent.Wheel:
-            factor = (_ZOOM_STEP if event.angleDelta().y() > 0
-                      else 1.0 / _ZOOM_STEP)
-            cur = obj.parent().transform().m11()
-            if _ZOOM_MIN <= cur * factor <= _ZOOM_MAX:
-                obj.parent().scale(factor, factor)
-            return True   # 消费掉: 缩放时不让 view 默认去滚滚动条
-        return False
+from PySide6.QtWidgets import QApplication, QDialog
 
 
 class MiscMixin(object):
@@ -160,6 +130,9 @@ class MiscMixin(object):
         self._fill_stats_dataset_multi(ui.dataset_comboBox, checked)
         ui.select_dataset_btn.clicked.connect(
             lambda: self._apply_stats_selection(ui))
+        # 默认勾选当前数据集时打开即出图, 不用先点一次"确定";
+        # singleShot 等 exec() 起事件循环后控件才有真实宽度(路径截断要用)
+        QTimer.singleShot(0, lambda: self._apply_stats_selection(ui))
         dlg.exec()
 
     def _setup_stats_multi_combo(self, combo):
@@ -215,10 +188,19 @@ class MiscMixin(object):
         return out
 
     def _apply_stats_selection(self, ui):
-        """点击"确定":刷新路径框 + 合并多个数据集的标签统计画柱状图."""
+        """点击"确定":刷新路径框 + 合并多个数据集的标签统计画横向条形图."""
         checked = self._selected_stats_datasets(ui.dataset_comboBox)
-        ui.image_path_line_txt.setText(self._format_stats_paths(checked, "image"))
-        ui.label_path_line_txt.setText(self._format_stats_paths(checked, "label"))
+        self._set_stats_path(ui.image_path_line_txt,
+                             self._format_stats_paths(checked, "image"))
+        self._set_stats_path(ui.label_path_line_txt,
+                             self._format_stats_paths(checked, "label"))
+        if not checked:
+            # 没选数据集时别画"暂无标注"(那是选了但真没标注), 明确引导去选
+            self._render_label_stats(ui.label_stats_view, "", "", {},
+                                     empty_text=QC.translate(
+                                         "MiscMixin", "请先选择数据集"))
+            ui.stats_summary_label.setText("")
+            return
         counts = {}
         label_colors = {}
         for proj, ds in checked:
@@ -228,6 +210,23 @@ class MiscMixin(object):
                 label_colors = self.db.get_dataset_labels(proj, ds)
         self._render_label_stats(ui.label_stats_view, "", "", counts,
                                  label_colors=label_colors)
+        summary = QC.translate(
+            "MiscMixin", "共 {} 类 · 合计 {} 个标注").format(
+                len(counts), sum(counts.values()))
+        if counts:
+            # 补一句极值: 哪个类一家独大, 滚动看长尾前先有个总览
+            top_name, top_v = max(counts.items(), key=lambda kv: kv[1])
+            summary += QC.translate(
+                "MiscMixin", " · 最多 {}({} 个, {:.1f}%)").format(
+                    top_name, top_v,
+                    top_v * 100.0 / max(1, sum(counts.values())))
+        ui.stats_summary_label.setText(summary if counts else "")
+
+    def _set_stats_path(self, line_edit, full_text):
+        """路径框只读显示中间截断的文本, 悬停 tooltip 给全路径原文."""
+        line_edit.setToolTip(full_text)
+        line_edit.setText(line_edit.fontMetrics().elidedText(
+            full_text, Qt.ElideMiddle, max(80, line_edit.width() - 12)))
 
     def _format_stats_paths(self, checked, kind):
         """
@@ -249,31 +248,21 @@ class MiscMixin(object):
         return " | ".join(blocks) or QC.translate("MiscMixin", "(未选择数据集)")
 
     def _render_label_stats(self, view, project, dataset, label_counts,
-                             label_colors=None):
+                             label_colors=None, empty_text=None):
+        """标签分布: 自绘明细列表(每类一行), 不是静态位图.
+
+        类别多时(COCO 80 类)位图会把每类行高压成几个像素, 数据没法读;
+        自绘列表矢量清晰, 滚动看全部, 每行都是真实数值.
+        """
         if label_colors is None:
             label_colors = self.db.get_dataset_labels(project, dataset)
-        fig = render_label_chart(label_counts, label_colors=label_colors,
-                                 dark=True)
-        scene = QGraphicsScene()
-        canvas = FigureCanvasQTAgg(fig)
-        canvas.draw()
-        width, height = fig.get_size_inches() * fig.get_dpi()
-        image = QImage(canvas.buffer_rgba(), int(width), int(height),
-                       QImage.Format_ARGB32)
-        pixmap = QPixmap.fromImage(image)
-        scene.addPixmap(pixmap)
-        scene.update()
-        view.setScene(scene)
-        if view.sceneRect().isEmpty():
-            view.setSceneRect(scene.itemsBoundingRect())
-        # 图按 2 倍像素渲染(charts._RENDER_DPI), 显示缩回 0.5: 视觉
-        # 与 1:1 一致, 滚轮放大 2 倍以内文字不糊; 每次重挂图都把缩放
-        # 复位, 不留着上次放大后的比例
-        view.resetTransform()
-        view.scale(0.5, 0.5)
-        # 滚轮缩放/拖动平移: 过滤器只装一次, 存 view 上防被 GC
-        if getattr(view, "_chart_zoom", None) is None:
-            view._chart_zoom = _ChartZoomFilter(view)
+        bars = LabelBarsWidget()
+        bars.set_data(label_counts, label_colors,
+                      empty_text or QC.translate("MiscMixin", "暂无标注"))
+        old = view.widget()
+        if old is not None:
+            old.deleteLater()
+        view.setWidget(bars)
 
     def _refresh_dataset_stats(self, project_name, dataset_name):
         """

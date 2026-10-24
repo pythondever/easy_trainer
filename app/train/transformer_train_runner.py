@@ -123,6 +123,34 @@ def main():
         print("[train] " + QC.translate("TrainRunner", "数据增强: 未启用"), flush=True)
 
     def _patch_training_hooks():
+        class _MemProbe(Callback):
+            """训练中周期性打印显存占用.
+
+            c10_cuda 层的崩溃(0xC0000005)不打任何 Python 异常就退出, 事后只剩
+            一个退出码; 有这条曲线才能分清崩前是显存吃紧还是缓慢泄漏.
+            """
+
+            def on_train_batch_end(self, trainer, pl_module, outputs, batch,
+                                   batch_idx):
+                if torch is None or batch_idx % 20:
+                    return
+                self._dump("train")
+
+            def on_validation_epoch_end(self, trainer, pl_module):
+                self._dump("val")
+
+            @staticmethod
+            def _dump(stage):
+                if torch is None:
+                    return
+                try:
+                    print("[train] MEM {} alloc={:.0f}MiB reserved={:.0f}MiB"
+                          .format(stage, torch.cuda.memory_allocated() / 2 ** 20,
+                                  torch.cuda.memory_reserved() / 2 ** 20),
+                          flush=True)
+                except Exception:
+                    pass
+
         class _FlushCsv(Callback):
             def on_train_epoch_end(self, trainer, pl_module):
                 for lg in trainer.loggers:
@@ -162,7 +190,7 @@ def main():
 
         def _patched(config, model_config, **kwargs):
             trainer = _orig(config, model_config, **kwargs)
-            trainer.callbacks.extend([_FlushCsv()])
+            trainer.callbacks.extend([_FlushCsv(), _MemProbe()])
             return trainer
 
         T.build_trainer = _patched

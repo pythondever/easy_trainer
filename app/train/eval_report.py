@@ -43,7 +43,9 @@ _PAGE_W = int(round(_A4_W_IN * _DPI))
 _PAGE_H = int(round(_A4_H_IN * _DPI))
 _MARGIN = int(round(0.42 * _DPI))
 _CONTENT_W = _PAGE_W - 2 * _MARGIN
-_CHART_H = 240                     # 标注分布柱状图占位高度
+def _chart_h(counts):
+    """标注分布图占位高度: 横向条形每类至少 ~22px, 类别多时加高."""
+    return max(240, min(560, max(1, len(counts)) * 22 + 60))
 
 PER_CLASS_LIMIT = 10
 
@@ -331,8 +333,8 @@ def _render_label_chart_png(counts, colors, out_png, width_px, height_px):
     fig = render_label_chart(
         counts, label_colors=colors, dark=False,
         figsize=(width_px / float(_DPI), height_px / float(_DPI)))
-    # 留出 x 轴标签旋转空间, 防底部文字被裁
-    fig.subplots_adjust(left=0.085, right=0.985, top=0.9, bottom=0.34)
+    # 横向条形: 左边距留给类别名, 底部只需 x 轴数量标签
+    fig.subplots_adjust(left=0.18, right=0.97, top=0.96, bottom=0.1)
     fig.savefig(out_png, dpi=_DPI, facecolor="white")
     plt.close(fig)
     return True
@@ -1011,7 +1013,7 @@ def build_report(res, out_pdf=None, thumb_w=480, summary_png=None,
                   for c, d in (res.get("per_class") or {}).items()
                   if int((d or {}).get("gt", 0)) > 0}
     if not _render_label_chart_png(counts, res.get("label_colors"),
-                                   chart_png, _CONTENT_W, _CHART_H):
+                                   chart_png, _CONTENT_W, _chart_h(counts)):
         chart_png = None
     _render_summary_png(res, summary_png, stat, chart_png)
 

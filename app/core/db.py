@@ -103,6 +103,35 @@ def get_paths(binding, kind):
     return [single] if single else []
 
 
+def display_path(path):
+    """路径书写统一成正斜杠.
+
+    训练输出目录是用户手输的(常带 "/"), 时间戳目录与权重名再由
+    os.path.join 拼: Windows 上 join 只认 os.sep, 拼出来就是
+    "D:/x\\y" 这种混排, 模型详情里尤其明显. 存库与显示前都过这里.
+    只统一书写口径, 不做文件系统操作 - 两种写法 Windows 都认;
+    Linux 下 join 本来就是 "/", 原样返回, 免得把文件名里合法的
+    反斜杠改掉.
+    """
+    s = str(path)
+    return s.replace("\\", "/") if os.sep != "/" else s
+
+
+def _norm_rec_paths(recs):
+    """读出来的训练/模型记录把路径字段折成正斜杠(见 display_path).
+
+    老数据是混排写法时, 在读取口统一掉: 界面/备份/导出拿到的都是
+    干净值; 且任何一条记录被 update 写回时干净值自然落库,
+    不需要单独跑一次迁移.
+    """
+    for r in recs:
+        for k in ("model_path", "output_path"):
+            v = r.get(k)
+            if isinstance(v, str) and "\\" in v:
+                r[k] = v.replace("\\", "/")
+    return recs
+
+
 def get_path_pairs(binding):
     """
     取导入绑定的 (图像目录, 标签目录) 配对, 按导入轮次对齐.
@@ -597,7 +626,7 @@ class DataBase:
         if recs is None:
             return []
         try:
-            return json.loads(recs.decode())
+            return _norm_rec_paths(json.loads(recs.decode()))
         except Exception:
             return []
 
@@ -650,7 +679,7 @@ class DataBase:
         if recs is None:
             return []
         try:
-            return json.loads(recs.decode())
+            return _norm_rec_paths(json.loads(recs.decode()))
         except Exception:
             return []
 

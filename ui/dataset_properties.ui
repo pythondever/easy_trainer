@@ -121,6 +121,13 @@
         </widget>
        </item>
        <item>
+        <widget class="QLabel" name="stats_summary_label">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item>
         <spacer name="horizontalSpacer">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -137,8 +144,21 @@
      </item>
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_4">
+       <property name="topMargin">
+        <number>8</number>
+       </property>
        <item>
-        <widget class="QGraphicsView" name="label_stats_view"/>
+        <widget class="QScrollArea" name="label_stats_view">
+         <property name="frameShape">
+          <enum>QFrame::NoFrame</enum>
+         </property>
+         <property name="widgetResizable">
+          <bool>true</bool>
+         </property>
+         <property name="horizontalScrollBarPolicy">
+          <enum>Qt::ScrollBarAlwaysOff</enum>
+         </property>
+        </widget>
        </item>
       </layout>
      </item>

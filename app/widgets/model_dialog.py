@@ -52,6 +52,26 @@ TASK_FILTER_KEYS = ((), ("detect",), ("segment",), ("classify",), ("ad",),
                     ("ocr_rec", "ocr_det", "ocr"))
 
 
+def _task_label(rec):
+    """
+    详情面板"任务"行的值: 任务 · 档位 · 架构族.
+
+    检测/分割有两套后端(transformer / cnn), 权重同档同名, 只写"检测 · small"
+    分不出训的是哪套; 分类/异常检测/字符识别的 model_size 本身就是具体网络名
+    (resnet18 / patchcore / db_mobilenet_v3_large), 没有再拼架构族的必要.
+    """
+    task = str(rec.get("task", "") or "")
+    label = task_text(task or "-")
+    size = rec.get("model_size", "") or "-"
+    if task in ("detect", "segment"):
+        fam = str(rec.get("family") or "")
+        if fam in ("cnn", "transformer"):
+            fam_text = QC.translate("ModelDialog", "CNN" if fam == "cnn"
+                                    else "Transformer")
+            return "{} · {} · {}".format(label, size, fam_text)
+    return "{} · {}".format(label, size)
+
+
 def _parse_classes_txt(path):
     """classes.txt 解析成 [(id, 类名)]. 兼容 "id 类名" 与 只有类名(行号即 id) 两种."""
     out = []
@@ -622,9 +642,7 @@ class ModelDialog(QDialog):
             batch = self.tr("{} × {} 累积").format(batch, rec.get("grad_accum"))
         status_key = self.tr("状态")
         rows = [
-            (self.tr("任务"),
-             "{} · {}".format(task_text(rec.get("task", "") or "-"),
-                              rec.get("model_size", "-"))),
+            (self.tr("任务"), _task_label(rec)),
             (status_key, status_text(_status(rec))),
             (self.tr("精度"), "{:.{}f}".format(
                 m, p.decimals if p is not None else 3)

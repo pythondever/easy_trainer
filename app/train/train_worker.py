@@ -54,6 +54,26 @@ LOG_FLUSH_SECS = 0.1
 _PC_FIELDS = ("AP50-95", "AR", "F1", "Precision", "Recall")
 
 
+# Windows NTSTATUS 退出码: 训练子进程若是 C++ 层崩溃(PyTorch CUDA 最常见),
+# Python 的 traceback 根本来不及打, 用户只看到一个裸数字. 这里翻译成能执行的话.
+_WIN_CRASH_CODES = {
+    0xC0000005: "GPU 访问冲突(CUDA 层崩溃), 多为显存不足或显卡驱动异常. "
+                "可尝试: 减小批大小或梯度累积、降低图像尺寸、更新显卡驱动",
+    0xC0000409: "栈缓冲区溢出(C++ 层安全检查失败)",
+    0xC0000094: "整数除零",
+    0xC0000135: "缺少必要的 DLL 文件",
+    0xC0000142: "DLL 初始化失败",
+}
+
+
+def _exit_code_text(rc):
+    """退出码 → (十六进制形式, 可读原因); 未登记的码原样返回."""
+    if rc is None:
+        return "-", ""
+    code = rc & 0xFFFFFFFF
+    return "0x%08X" % code, _WIN_CRASH_CODES.get(code, "")
+
+
 def _is_float(s):
     try:
         float(s)
@@ -491,7 +511,13 @@ class TrainWorker(SubprocessWorker):
                         result_path, e))
                 result_emitted = True
         elif not self._stop_flag and rc != 0:
-            detail = self.tr(
-                "训练进程异常退出 (code={})\n\n--- 子进程输出(尾部) ---\n{}"
-            ).format(rc, "\n".join(last_lines))
+            hexs, reason = _exit_code_text(rc)
+            if reason:
+                detail = self.tr(
+                    "训练进程异常退出 (code={}, {})\n{}\n\n--- 子进程输出(尾部) ---\n{}"
+                ).format(rc, hexs, reason, "\n".join(last_lines))
+            else:
+                detail = self.tr(
+                    "训练进程异常退出 (code={}, {})\n\n--- 子进程输出(尾部) ---\n{}"
+                ).format(rc, hexs, "\n".join(last_lines))
             self.failed.emit(detail)

@@ -6,6 +6,7 @@ from app.train.train_worker import TrainWorker
 from app.widgets.message_box import MessageBox
 from app.core.log import write_log
 from app.core.metrics import best_value, primary_for, primary_of
+from app.core.db import display_path
 from app.core.utils import fmt_duration
 from app.core import theme
 from PySide6.QtCore import QTimer, QTime
@@ -24,6 +25,7 @@ class TrainMixin(object):
     _metrics_saved_ts = 0.0
     _best_map50 = None
     _progress_tip = ""
+    _metric_label = ""
     _metric_decimals = 3
 
     def is_training(self):
@@ -53,6 +55,11 @@ class TrainMixin(object):
         self._progress_tip = ""
         self._pending_metrics = None
         self._metrics_saved_ts = 0.0   # 0 = 首次指标立即落盘
+        # 指标名先于指标落定: 任务定了就知道尾缀该标 mAP@50 还是 CER
+        p0 = primary_for(config.get("task"))
+        if p0 is not None:
+            self._metric_label = QC.translate("MetricLabel", p0.label)
+            self._metric_decimals = p0.decimals
         self._apply_progress_format()
         if self._eta_total_epochs > 0:
             self._eta_remain = self._eta_total_epochs * 300
@@ -144,6 +151,7 @@ class TrainMixin(object):
         best = best_value(s, p.base, p.direction)
         if best is not None:
             self._best_map50 = best
+            self._metric_label = QC.translate("MetricLabel", p.label)
             self._metric_decimals = p.decimals
             # 方向跟着指标走: mAP/准确率这类越大越好, CER 这类错误率越小越好
             if p.direction < 0:
@@ -262,7 +270,8 @@ class TrainMixin(object):
                             r["accuracy"] = "{:.4f}".format(
                                 float(result["accuracy"]))
                     if result.get("model_path"):
-                        r["model_path"] = result["model_path"]
+                        r["model_path"] = display_path(
+                            result["model_path"])
                 else:
                     r["status"] = "已停止" if stopped else "失败"
                     if error:
@@ -309,6 +318,7 @@ class TrainMixin(object):
 
     def _show_train_waiting(self, name):
         self._best_map50 = None          # 上一段的最好值不带到下一项
+        self._metric_label = ""          # 指标名同理, 下一项的任务定了才有
         self._apply_progress_format()
         # 冷却期没有训练进程, 挂个停止按钮只会点了没反应
         self._show_train_task(
@@ -316,10 +326,12 @@ class TrainMixin(object):
             stoppable=False)
 
     def _apply_progress_format(self):
-        """进度条文本:`30% | 0.556` 进度 | 当前最好精度 """
+        """进度条文本:`30% | mAP@50 0.556`; 裸数字看不出口径, 尾缀带指标名"""
         m = self._best_map50
-        tail = ("{:.{}f}".format(m, self._metric_decimals) if m is not None
-                else "--")
+        label = self._metric_label
+        value = ("{:.{}f}".format(m, self._metric_decimals) if m is not None
+                 else "--")
+        tail = "{} {}".format(label, value) if label else value
         self.train_progress.setFormat("%p% | " + tail)
         self.train_progress.setToolTip(self._progress_tip)
 
