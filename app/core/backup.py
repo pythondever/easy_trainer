@@ -25,7 +25,7 @@ import zipfile
 from datetime import datetime
 
 from app.core.constants import IMAGE_EXTS
-from app.core.db import display_path, get_path_pairs
+from app.core.db import get_path_pairs
 
 FORMAT_VERSION = 1
 MANIFEST_NAME = "manifest.json"
@@ -294,10 +294,10 @@ def _remap_record(record, models_root, project):
         return new
     rid = new.get("id", "")
     if new.get("output_path"):
-        new["output_path"] = display_path(os.path.join(models_root, rid))
+        new["output_path"] = os.path.join(models_root, rid)
     if new.get("model_path"):
-        new["model_path"] = display_path(os.path.join(
-            models_root, rid, os.path.basename(new["model_path"])))
+        new["model_path"] = os.path.join(
+            models_root, rid, os.path.basename(new["model_path"]))
     return new
 
 

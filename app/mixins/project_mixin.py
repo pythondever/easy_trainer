@@ -1,16 +1,23 @@
 # -*- coding: utf-8 -*-
 import os
 
-from app.core import name_rules
+from app.core import name_rules, theme
 from app.core.db import get_path_pairs, merge_path_pairs
 from app.core.label_utils import label_sort_key, rec_is_labeled
-from app.widgets.dialog_buttons import add_ok_cancel
+from app.widgets.dialog_buttons import add_ok_cancel, resource_icon
 from app.widgets.message_box import MessageBox
 from app.widgets.name_input_dialog import NameInputDialog
 from app.widgets.project_sidebar import ProjectSidebar
 from PySide6.QtCore import QCoreApplication as QC
 from PySide6.QtWidgets import (QDialog, QMenu, QVBoxLayout, QHBoxLayout,
                                QLabel, QComboBox)
+
+
+def _menu_action(menu, text, icon, color=None):
+    """带图标的菜单项. 删除一类传 color(危险色)染红."""
+    act = menu.addAction(QC.translate("ProjectMixin", text))
+    act.setIcon(resource_icon(icon + ".svg", color))
+    return act
 
 
 class ProjectMixin(object):
@@ -99,54 +106,75 @@ class ProjectMixin(object):
             data.append((name, rows))
         self.project_tree.rebuild(data)
 
-    def _on_sidebar_project_menu(self, project, global_pos):
+    def _build_project_menu(self, project):
+        """项目右键菜单: 图标 + 语义分组 + 删除危险红.
+
+        构建与执行分开: exec 是模态阻塞的, 拆开后离屏验收可以直接拿
+        菜单对象截图, 不必进模态循环.
+        """
         menu = QMenu(self)
-        act_add_ds = menu.addAction(QC.translate("ProjectMixin", "添加数据集"))
+        danger = theme.hexof("danger_text")
+        acts = {}
+        acts["add_ds"] = _menu_action(menu, "添加数据集", "plus")
         menu.addSeparator()
-        act_export = menu.addAction(QC.translate("ProjectMixin", "导出项目"))
-        act_rename = menu.addAction(QC.translate("ProjectMixin", "修改名称"))
-        act_del = menu.addAction(QC.translate("ProjectMixin", "删除项目"))
-        act_backup = menu.addAction(QC.translate("ProjectMixin", "备份项目"))
-        act_restore = menu.addAction(QC.translate("ProjectMixin", "恢复项目"))
+        acts["export"] = _menu_action(menu, "导出项目", "upload")
+        acts["backup"] = _menu_action(menu, "备份项目", "archive")
+        acts["restore"] = _menu_action(menu, "恢复项目", "restore")
+        menu.addSeparator()
+        acts["rename"] = _menu_action(menu, "修改名称", "pencil")
+        acts["del"] = _menu_action(menu, "删除项目", "trash", danger)
+        return menu, acts
+
+    def _on_sidebar_project_menu(self, project, global_pos):
+        menu, acts = self._build_project_menu(project)
         act = menu.exec(global_pos)
         if act is None:
             return
-        if act == act_add_ds:
+        if act == acts["add_ds"]:
             self._add_dataset(project)
-        elif act == act_export:
+        elif act == acts["export"]:
             self._on_export_clicked(project, None)
-        elif act == act_rename:
+        elif act == acts["rename"]:
             self._rename_project(project)
-        elif act == act_del:
+        elif act == acts["del"]:
             self._delete_project(project)
-        elif act == act_backup:
+        elif act == acts["backup"]:
             self._on_backup_restore(project, mode="backup")
-        elif act == act_restore:
+        elif act == acts["restore"]:
             self._on_backup_restore(project, mode="restore")
 
-    def _on_sidebar_dataset_menu(self, project, dataset, global_pos):
+    def _build_dataset_menu(self, project, dataset):
+        """数据集右键菜单: 导入导出 / 维护 / 删除 三段式, 删除危险红."""
         menu = QMenu(self)
-        act_import = menu.addAction(QC.translate("ProjectMixin", "导入"))
-        act_export = menu.addAction(QC.translate("ProjectMixin", "导出"))
-        act_reload = menu.addAction(QC.translate("ProjectMixin", "重载"))
-        act_move = menu.addAction(QC.translate("ProjectMixin", "移动"))
-        act_rename = menu.addAction(QC.translate("ProjectMixin", "修改"))
-        act_del = menu.addAction(QC.translate("ProjectMixin", "删除"))
+        danger = theme.hexof("danger_text")
+        acts = {}
+        acts["import"] = _menu_action(menu, "导入", "download")
+        acts["export"] = _menu_action(menu, "导出", "upload")
+        menu.addSeparator()
+        acts["reload"] = _menu_action(menu, "重载", "refresh")
+        acts["move"] = _menu_action(menu, "移动", "move")
+        acts["rename"] = _menu_action(menu, "修改", "pencil")
+        menu.addSeparator()
+        acts["del"] = _menu_action(menu, "删除", "trash", danger)
+        return menu, acts
+
+    def _on_sidebar_dataset_menu(self, project, dataset, global_pos):
+        menu, acts = self._build_dataset_menu(project, dataset)
         act = menu.exec(global_pos)
         if act is None:
             return
-        if act == act_import:
+        if act == acts["import"]:
             self._import_dataset(project, dataset)
-        elif act == act_export:
+        elif act == acts["export"]:
             self.project_tree.select_dataset(project, dataset)
             self._on_export_clicked()
-        elif act == act_reload:
+        elif act == acts["reload"]:
             self._reload_dataset(project, dataset)
-        elif act == act_move:
+        elif act == acts["move"]:
             self._on_dataset_move(project, dataset)
-        elif act == act_rename:
+        elif act == acts["rename"]:
             self._rename_dataset(project, dataset)
-        elif act == act_del:
+        elif act == acts["del"]:
             self._delete_dataset(project, dataset)
 
     def _show_add_dataset(self, preset_name="", title=None):

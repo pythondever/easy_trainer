@@ -6,7 +6,6 @@ from app.train.train_worker import TrainWorker
 from app.widgets.message_box import MessageBox
 from app.core.log import write_log
 from app.core.metrics import best_value, primary_for, primary_of
-from app.core.db import display_path
 from app.core.utils import fmt_duration
 from app.core import theme
 from PySide6.QtCore import QTimer, QTime
@@ -270,8 +269,7 @@ class TrainMixin(object):
                             r["accuracy"] = "{:.4f}".format(
                                 float(result["accuracy"]))
                     if result.get("model_path"):
-                        r["model_path"] = display_path(
-                            result["model_path"])
+                        r["model_path"] = result["model_path"]
                 else:
                     r["status"] = "已停止" if stopped else "失败"
                     if error:

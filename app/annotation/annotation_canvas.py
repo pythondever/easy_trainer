@@ -13,7 +13,7 @@ from PySide6.QtWidgets import (QDialog, QWidget, QApplication, QVBoxLayout,
                                QHBoxLayout, QLabel, QGridLayout, QLineEdit,
                                QSpinBox, QPushButton, QFrame, QSlider, QMenu,
                                QGraphicsTextItem, QButtonGroup, QToolTip,
-                               QFileDialog, QInputDialog, QListWidget,
+                               QInputDialog, QListWidget,
                                QListWidgetItem)
 
 
@@ -22,7 +22,7 @@ from app.annotation.box_item import AnnotationPolygonItem
 from app.annotation.paste_regions import (scaled_regions,
                                           template_key)
 from app.core import theme
-from app.core.utils import project_root, ui_font_family
+from app.core.utils import pick_file, pick_save_path, project_root, ui_font_family
 from app.widgets.dialog_buttons import add_ok_cancel
 from app.widgets.message_box import MessageBox
 from PySide6.QtWidgets import QGraphicsView
@@ -1059,7 +1059,7 @@ class AnnotationCanvasMixin:
             MessageBox.information(self, self.tr("区域模板"),
                                    self.tr("还没有画区域"))
             return
-        path, _f = QFileDialog.getSaveFileName(
+        path = pick_save_path(
             self, self.tr("导出区域模板"), "paste_regions.json",
             self.tr("JSON 文件 (*.json)"))
         if not path:
@@ -1078,8 +1078,8 @@ class AnnotationCanvasMixin:
                                self.tr("已导出到 {}").format(path))
 
     def _region_import(self):
-        path, _f = QFileDialog.getOpenFileName(
-            self, self.tr("导入区域模板"), "",
+        path = pick_file(
+            self, self.tr("导入区域模板"),
             self.tr("JSON 文件 (*.json)"))
         if not path:
             return

@@ -9,9 +9,10 @@ import os
 import traceback
 
 from PySide6.QtCore import QCoreApplication as QC
-from PySide6.QtWidgets import QDialog, QFileDialog
+from PySide6.QtWidgets import QDialog
 
 from app.core import backup as bk
+from app.core.utils import pick_file, pick_folder
 from app.widgets.dialog_buttons import apply_icon
 from app.widgets.message_box import MessageBox, ProgressDialog
 from ui.backup_restore import Ui_Dialog
@@ -60,7 +61,7 @@ class BackupMixin:
             self._do_restore_project(ui, project)
 
     def _bk_pick_dir(self, line_edit, title):
-        path = QFileDialog.getExistingDirectory(self, title)
+        path = pick_folder(self, title)
         if path:
             line_edit.setText(path)
 
@@ -68,9 +69,9 @@ class BackupMixin:
         """选备份包并回填摘要(只读 manifest, 不解包).
 
         project 为右键项目: 恢复内容将归属到它(与包内项目名可以不同)."""
-        path, _ = QFileDialog.getOpenFileName(
+        path = pick_file(
             self, QC.translate("BackupMixin", "选择备份包"),
-            "", QC.translate("BackupMixin", "备份包 (*.etbak)"))
+            QC.translate("BackupMixin", "备份包 (*.etbak)"))
         if not path:
             return
         try:

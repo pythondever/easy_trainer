@@ -5,6 +5,7 @@ import os
 import sys
 
 from PySide6.QtCore import QCoreApplication as QC
+from PySide6.QtWidgets import QFileDialog
 
 from app.core.theme import substitute
 
@@ -199,3 +200,27 @@ def load_style_sheet():
     # QSS 里的 url 按 cwd 解析, 素材路径必须给绝对路径
     res_dir = os.path.join(here, "resources").replace("\\", "/")
     return substitute(qss, {"RES_DIR": res_dir})
+
+
+def pick_folder(parent, title):
+    """选文件夹. 强制非原生对话框: 原生 Windows 对话框是亮色的, 在深色界面里
+    弹一个白窗最出戏, 且样式统一不起来(内部视图见 style.qss 的文件对话框段)."""
+    return QFileDialog.getExistingDirectory(
+        parent, title, "",
+        options=QFileDialog.DontUseNativeDialog | QFileDialog.ShowDirsOnly)
+
+
+def pick_file(parent, caption, filter_text):
+    """选单个文件(备份包/区域模板等), 同上走非原生对话框."""
+    path, _selected = QFileDialog.getOpenFileName(
+        parent, caption, "", filter_text,
+        options=QFileDialog.DontUseNativeDialog)
+    return path
+
+
+def pick_save_path(parent, caption, default_name, filter_text):
+    """选保存路径, 同上走非原生对话框."""
+    path, _selected = QFileDialog.getSaveFileName(
+        parent, caption, default_name, filter_text,
+        options=QFileDialog.DontUseNativeDialog)
+    return path

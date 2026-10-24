@@ -6,6 +6,7 @@ import traceback
 from PySide6.QtGui import QFontMetrics
 from app.core import theme
 from app.core.db import get_paths
+from app.core.utils import pick_folder
 from app.core.constants import IMAGE_EXTS
 from ui.import_data import Ui_ImportData
 from ui.export_data import Ui_Dialog as ExportDataUI
@@ -19,7 +20,7 @@ from app.widgets.dialog_buttons import (apply_icon, resource_icon, ICON_SIZE,
 from app.widgets.message_box import MessageBox, ProgressDialog
 from PySide6.QtCore import QSize
 from PySide6.QtCore import QCoreApplication as QC
-from PySide6.QtWidgets import QDialog, QFileDialog, QButtonGroup
+from PySide6.QtWidgets import QDialog, QButtonGroup
 
 try:
     import PIL.Image as PILImage
@@ -64,7 +65,6 @@ class ImportExportMixin(object):
         _fm = QFontMetrics(ui.yolo_fmt.font())
         for rb in (ui.yolo_fmt, ui.labelme_fmt):
             rb.setMinimumWidth(_fm.horizontalAdvance(rb.text()) + 28)  # indicator+spacing
-        ui.tips_lbl.setText(QC.translate("ImportExportMixin", "请选择图像文件夹"))
         # progress_bar 已从 .ui 移除(导入进度走首页进度条)
         ui.done_import_btn.setEnabled(False)
         ui.image_path_txt.setEnabled(False)
@@ -164,12 +164,12 @@ class ImportExportMixin(object):
                 return
             fmt = ".txt" if ui.yolo_fmt.isChecked() else ".json"
             if not img_path or not os.path.isdir(img_path):
-                ui.tips_lbl.setText(QC.translate("ImportExportMixin", "请选择图像文件夹"))
+                ui.tips_lbl.clear()
                 return
             start_scan(img_path, lbl_path, fmt)
 
         def choose_folder(operator_name):
-            folder = QFileDialog.getExistingDirectory(
+            folder = pick_folder(
                 self, QC.translate("ImportExportMixin", "选择文件夹"))
             if not folder:
                 return
@@ -387,7 +387,7 @@ class ImportExportMixin(object):
             MessageBox.critical(self, QC.translate("ImportExportMixin", "导出失败"), str(e))
 
     def _pick_export_path(self, dlg, ui):
-        path = QFileDialog.getExistingDirectory(dlg, QC.translate("ImportExportMixin", "选择导出保存位置"))
+        path = pick_folder(dlg, QC.translate("ImportExportMixin", "选择导出保存位置"))
         if path:
             ui.export_path_txt.setText(path)
 

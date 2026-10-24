@@ -104,31 +104,38 @@ def get_paths(binding, kind):
 
 
 def display_path(path):
-    """路径书写统一成正斜杠.
+    """把混排路径(同时含 "/" 和 "\\")折成正斜杠.
 
     训练输出目录是用户手输的(常带 "/"), 时间戳目录与权重名再由
     os.path.join 拼: Windows 上 join 只认 os.sep, 拼出来就是
     "D:/x\\y" 这种混排, 模型详情里尤其明显. 存库与显示前都过这里.
-    只统一书写口径, 不做文件系统操作 - 两种写法 Windows 都认;
-    Linux 下 join 本来就是 "/", 原样返回, 免得把文件名里合法的
-    反斜杠改掉.
+    只统一书写口径, 不做文件系统操作 - 两种写法 Windows 都认.
+
+    只修混排是有意的: 纯反斜杠是 os.path.join 的原生产物(Windows
+    上的标准形式), 纯正斜杠是用户手输/Linux 风格, 都不动 - 无条件
+    全折会把数据层的正常路径也改掉, 备份恢复一类的调用拿到的就不
+    是 os.path.join 的预期值了. Linux 下反斜杠是合法文件名字符,
+    同样不猜, 原样返回.
     """
     s = str(path)
-    return s.replace("\\", "/") if os.sep != "/" else s
+    if os.sep == "/":
+        return s
+    return s.replace("\\", "/") if ("/" in s and "\\" in s) else s
 
 
 def _norm_rec_paths(recs):
-    """读出来的训练/模型记录把路径字段折成正斜杠(见 display_path).
+    """读出来的训练/模型记录把混排路径折成正斜杠(见 display_path).
 
     老数据是混排写法时, 在读取口统一掉: 界面/备份/导出拿到的都是
     干净值; 且任何一条记录被 update 写回时干净值自然落库,
-    不需要单独跑一次迁移.
+    不需要单独跑一次迁移. 纯反斜杠(os.path.join 原生)不动 -
+    备份恢复一类的调用要按 os.path.join 的预期值比对路径.
     """
     for r in recs:
         for k in ("model_path", "output_path"):
             v = r.get(k)
-            if isinstance(v, str) and "\\" in v:
-                r[k] = v.replace("\\", "/")
+            if isinstance(v, str) and v:
+                r[k] = display_path(v)
     return recs
 
 

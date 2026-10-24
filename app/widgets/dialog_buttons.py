@@ -38,12 +38,15 @@ def _icon_path(name):
     return p if os.path.exists(p) else ""
 
 
-def resource_icon(name):
+def resource_icon(name, color=None):
     """
-    绝对路径取 resources 图标
+    绝对路径取 resources 图标. color 非空时按该颜色染色(菜单删除项
+    一类需要跟着主题语义变色的场合).
     """
     path = _icon_path(name)
-    return QIcon(path) if path else QIcon()
+    if not path:
+        return QIcon()
+    return _tinted(path, color) if color else QIcon(path)
 
 
 @lru_cache(maxsize=128)

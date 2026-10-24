@@ -7,9 +7,6 @@ from PIL import Image
 from PySide6.QtCore import Signal, QTimer, QThread, QMutex, QMutexLocker
 from PySide6.QtCore import QCoreApplication as QC
 from PySide6.QtGui import QColor, QPixmap, QImage, QImageReader
-from PySide6.QtWidgets import QFileDialog
-
-
 from app.annotation.scene import AnnotationScene
 from app.annotation.box_item import assign_label_color, label_color
 from app.core.label_utils import (OCR_JSON_FLAG, is_text_label,
@@ -17,6 +14,7 @@ from app.core.label_utils import (OCR_JSON_FLAG, is_text_label,
                                   normalize_label, same_dir_json,
                                   shapes_to_boxes, shapes_to_labelme_json,
                                   text_label)
+from app.core.utils import pick_folder
 from app.widgets.message_box import MessageBox, ProgressDialog
 from app.core.log import write_log
 
@@ -472,7 +470,7 @@ class AnnotationIOMixin:
             MessageBox.warning(self, QC.translate("AnnotationDialog", "导出剪切板"),
                                QC.translate("AnnotationDialog", "剪切板是空的, 没有可导出的模板"))
             return
-        folder = QFileDialog.getExistingDirectory(
+        folder = pick_folder(
             self, QC.translate("AnnotationDialog", "选择导出目录"))
         if not folder:
             return
@@ -509,7 +507,7 @@ class AnnotationIOMixin:
 
     def _clip_import(self):
         """从目录读回 png: 有同名 json 就按顶点重裁 alpha, 没有才回落成矩形."""
-        folder = QFileDialog.getExistingDirectory(
+        folder = pick_folder(
             self, QC.translate("AnnotationDialog", "选择导入目录"))
         if not folder:
             return

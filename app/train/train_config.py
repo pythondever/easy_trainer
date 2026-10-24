@@ -14,7 +14,7 @@ from PySide6.QtCore import QCoreApplication as QC
 
 from app.core import i18n
 from app.core.constants import IMAGE_EXTS
-from app.core.db import display_path, get_path_pairs
+from app.core.db import get_path_pairs
 from app.core.log import write_log
 from app.train import ad_common as adc
 from app.train import classify_common, detect_common, segment_common
@@ -88,8 +88,8 @@ def make_train_record(config, db, project_fallback=""):
         "family": config.get("family", ""),
         "map50": "",
         "img_size": config.get("img_size", ""),
-        "model_path": display_path(os.path.join(
-            config.get("timestamp_dir", ""), best_ckpt_name(config))),
+        "model_path": os.path.join(
+            config.get("timestamp_dir", ""), best_ckpt_name(config)),
         "dataset_info": dataset_info,
         "output_path": config.get("out_root", ""),
         "epochs": config.get("epochs", ""),
@@ -126,7 +126,7 @@ def params_to_record(params):
         "family": params.get("family", ""),
         "device": params.get("device", ""),
         "optimizer": params.get("optimizer", ""),
-        "output_path": display_path(params.get("out_root", "")),
+        "output_path": params.get("out_root", ""),
         "aug": params.get("aug", ""),
     }
 
@@ -208,7 +208,7 @@ def make_train_config(db, params):
     否则两次调用跨秒会指向一个不存在的目录.
     """
     task = params.get("task") or "detect"
-    out_root = display_path((params.get("out_root") or "").strip())
+    out_root = (params.get("out_root") or "").strip()
     if not out_root:
         raise ValueError(QC.translate("TrainDialog", "请先选择输出路径"))
     os.makedirs(out_root, exist_ok=True)

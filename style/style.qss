@@ -211,6 +211,36 @@ QComboBox:disabled QLineEdit {
     color: {{text_disabled}};
 }
 
+/* ---------------- 数字框步进按钮 ---------------- */
+/* 原生 up/down 是灰色立体小按钮, 深色界面里最扎眼; 换成扁平 chevron, 常态透明, 悬停才显底色 */
+QSpinBox::up-button, QSpinBox::down-button,
+QDoubleSpinBox::up-button, QDoubleSpinBox::down-button,
+QDateTimeEdit::up-button, QDateTimeEdit::down-button {
+    background-color: transparent;
+    border: none;
+    width: 20px;
+}
+QSpinBox::up-button:hover, QSpinBox::down-button:hover,
+QDoubleSpinBox::up-button:hover, QDoubleSpinBox::down-button:hover,
+QDateTimeEdit::up-button:hover, QDateTimeEdit::down-button:hover {
+    background-color: {{bg_control_2}};
+}
+QSpinBox::up-button:pressed, QSpinBox::down-button:pressed,
+QDoubleSpinBox::up-button:pressed, QDoubleSpinBox::down-button:pressed,
+QDateTimeEdit::up-button:pressed, QDateTimeEdit::down-button:pressed {
+    background-color: {{accent_dim}};
+}
+QSpinBox::up-arrow, QDoubleSpinBox::up-arrow, QDateTimeEdit::up-arrow {
+    image: url({{RES_DIR}}/chevron_up.svg);
+    width: 11px;
+    height: 7px;
+}
+QSpinBox::down-arrow, QDoubleSpinBox::down-arrow, QDateTimeEdit::down-arrow {
+    image: url({{RES_DIR}}/chevron_down.svg);
+    width: 11px;
+    height: 7px;
+}
+
 /* ---------------- 下拉框 ---------------- */
 QComboBox {
     background-color: {{bg_base}};
@@ -861,6 +891,106 @@ QMenu::separator,
     margin: 4px 8px;
 }
 
+/* 菜单图标槽位: QMenu/QAction 都没有 setIconSize, 尺寸只能在这里定;
+   不设的话有的平台给 0, 图标直接不显示 */
+QMenu::icon {
+    width: 16px;
+    height: 16px;
+}
+
+/* 可勾选项与子菜单箭头: 不画的话复选框是原生黑勾, 深色底上几乎看不见 */
+QMenu::indicator {
+    width: 12px;
+    height: 12px;
+    margin-left: 4px;
+    image: none;
+}
+QMenu::indicator:checked {
+    image: url({{RES_DIR}}/check_mark.png);
+}
+QMenu::right-arrow {
+    image: url({{RES_DIR}}/arrow_right.svg);
+    width: 12px;
+    height: 12px;
+    margin-right: 4px;
+}
+
+/* ---------------- 文件对话框 ---------------- */
+/* 原生 Windows 对话框是亮色的, 深色界面里"啪"地弹出个白窗最出戏;
+   非原生对话框的树/列表/工具按钮全在这里收进同一套语言(调用见 core/utils.pick_*) */
+QFileDialog QListView, QFileDialog QTreeView {
+    background-color: {{bg_base}};
+    border: 1px solid {{border}};
+    border-radius: {{r_md}};
+    color: {{text_2}};
+    outline: none;
+}
+QFileDialog QListView::item, QFileDialog QTreeView::item {
+    padding: 4px 6px;
+    border-radius: {{r_sm}};
+    color: {{text_2}};
+}
+QFileDialog QListView::item:hover, QFileDialog QTreeView::item:hover {
+    background-color: {{bg_hover}};
+    color: {{text_strong}};
+}
+QFileDialog QListView::item:selected, QFileDialog QTreeView::item:selected {
+    background-color: {{accent_dim}};
+    color: {{text_strong}};
+}
+QFileDialog QToolButton {
+    background-color: transparent;
+    border: none;
+    border-radius: {{r_sm}};
+    padding: 4px;
+    color: {{text_2}};
+}
+QFileDialog QToolButton:hover {
+    background-color: {{bg_hover}};
+    color: {{text_strong}};
+}
+QFileDialog QSplitter::handle {
+    background-color: {{border_subtle}};
+}
+/* 路径框与类型框是 QFileDialog 内部的组合框: 全局 QComboBox 规则不设底色(应用自己的
+   组合框靠 combo_utils 逐个样式化), 不补这条它们就是两块亮斑 */
+QFileDialog QComboBox {
+    background-color: {{bg_base}};
+    border: 1px solid {{border}};
+    border-radius: {{r_md}};
+    padding: {{pad_field}};
+    color: {{text_2}};
+    min-height: {{h_ctrl}};
+}
+QFileDialog QComboBox:hover {
+    border-color: {{border_hover}};
+}
+QFileDialog QComboBox:focus {
+    border-color: {{accent}};
+}
+QFileDialog QComboBox::drop-down {
+    border: none;
+    width: 20px;
+}
+QFileDialog QComboBox QAbstractItemView {
+    background-color: {{bg_control}};
+    border: 1px solid {{border_strong}};
+    border-radius: {{r_md}};
+    color: {{text_2}};
+    outline: none;
+}
+QFileDialog QComboBox QAbstractItemView::item {
+    padding: 4px 6px;
+    border-radius: {{r_sm}};
+}
+QFileDialog QComboBox QAbstractItemView::item:selected {
+    background-color: {{accent_dim}};
+    color: {{text_strong}};
+}
+QFileDialog QLabel {
+    color: {{text_3}};
+}
+
 /* ================ 训练对话框 ================ */
 QDialog#TrainDialog,
 QDialog#TrainQueueDialog { background-color: {{bg_panel}}; }
@@ -1302,6 +1432,37 @@ QPushButton#headerMoreBtn {
     padding: 6px 10px;
 }
 QPushButton#headerMoreBtn::menu-indicator { image: none; width: 0px; }
+
+/* 顶栏主次分级: 训练是主操作给实色, 统计/模型/队列/日志退成 ghost, 一屏只留一个视觉重心 */
+QPushButton#train_btn {
+    background-color: {{accent}};
+    border: 1px solid {{accent}};
+    color: {{text_strong}};
+    font-weight: bold;
+}
+QPushButton#train_btn:hover {
+    background-color: {{accent_hover}};
+    border-color: {{accent_hover}};
+}
+QPushButton#train_btn:pressed {
+    background-color: {{accent_pressed}};
+}
+QPushButton#dataset_properties_btn,
+QPushButton#model_btn,
+QPushButton#queue_btn,
+QPushButton#log_btn {
+    background-color: transparent;
+    border-color: transparent;
+    color: {{text_2}};
+}
+QPushButton#dataset_properties_btn:hover,
+QPushButton#model_btn:hover,
+QPushButton#queue_btn:hover,
+QPushButton#log_btn:hover {
+    background-color: {{bg_control}};
+    border-color: {{border_hover}};
+    color: {{text_strong}};
+}
 
 /* 区域模板的展开面板: 与 paramsPanel 同一套浮层语言(不在布局里, 贴按钮下沿) */
 #AnnotationDialog QFrame#templatePanel {
