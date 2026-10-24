@@ -16,9 +16,9 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QComboBox, QDialog, QFrame,
-    QHBoxLayout, QLabel, QProgressBar, QPushButton,
-    QScrollArea, QSizePolicy, QSpacerItem, QTabWidget,
-    QTimeEdit, QVBoxLayout, QWidget)
+    QHBoxLayout, QLabel, QLineEdit, QProgressBar,
+    QPushButton, QScrollArea, QSizePolicy, QSpacerItem,
+    QTabWidget, QVBoxLayout, QWidget)
 
 from app.widgets.label_filter_popup import LabelFilterButton
 
@@ -171,8 +171,9 @@ class Ui_AppUI(object):
 
         self.datasetHeaderLayout.addWidget(self.time_count_label)
 
-        self.time_count_edit = QTimeEdit(self.datasetHeader)
+        self.time_count_edit = QLineEdit(self.datasetHeader)
         self.time_count_edit.setObjectName(u"time_count_edit")
+        self.time_count_edit.setReadOnly(True)
 
         self.datasetHeaderLayout.addWidget(self.time_count_edit)
 

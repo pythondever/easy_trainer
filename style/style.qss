@@ -388,7 +388,7 @@ QProgressBar::chunk {
 }
 
 /* ---------------- 剩余时间 / 显存（训练时显示） ---------------- */
-QTimeEdit#time_count_edit {
+QLineEdit#time_count_edit {
     background-color: {{bg_sunken}};
     border: 1px solid {{border_subtle}};
     border-radius: {{r_md}};
@@ -397,10 +397,11 @@ QTimeEdit#time_count_edit {
     font-weight: 600;
     padding: 2px 8px;
     min-height: 18px;
+    min-width: 72px;
     selection-background-color: {{accent}};
 }
 
-QTimeEdit#time_count_edit:focus {
+QLineEdit#time_count_edit:focus {
     border-color: {{accent}};
 }
 

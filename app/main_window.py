@@ -15,7 +15,7 @@ from app.core.db import DataBase, default_db_dir, migrate_legacy_db
 from PySide6.QtGui import QIcon
 from PySide6.QtCore import QSize, QTimer, QEvent
 from PySide6.QtCore import QCoreApplication as QC
-from PySide6.QtWidgets import QWidget, QApplication, QTimeEdit, QFrame, QHBoxLayout
+from PySide6.QtWidgets import QWidget, QApplication, QFrame, QHBoxLayout
 
 
 from app.mixins import (LabelMixin, ProjectMixin, ImportExportMixin,
@@ -114,9 +114,6 @@ class App(QWidget, MainUI, LabelMixin, ProjectMixin, ImportExportMixin,
         self.gpu_memory_label.show()
         self.gpu_memory_use_btn.show()
         self.time_count_edit.setReadOnly(True)
-        self.time_count_edit.setButtonSymbols(QTimeEdit.NoButtons)
-        self.time_count_edit.setDisplayFormat("hh:mm:ss")
-        self.time_count_edit.setTime(self.time_count_edit.time().fromString("00:00:00", "hh:mm:ss"))
         self._train_start_ts = 0.0
         self._eta_remain = 0
         self._test_start_ts = 0  # 测试开始时间, 用于推算剩余时间

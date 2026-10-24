@@ -8,7 +8,7 @@ from app.core.log import write_log
 from app.core.metrics import best_value, primary_for, primary_of
 from app.core.utils import fmt_duration
 from app.core import theme
-from PySide6.QtCore import QTimer, QTime
+from PySide6.QtCore import QTimer
 from PySide6.QtCore import QCoreApplication as QC
 
 try:
@@ -376,9 +376,10 @@ class TrainMixin(object):
         self._show_eta()
 
     def _show_eta(self):
+        # 小时不封顶: QTime 合法域只到 23:59:59, 超过 24h 会被 Qt 钳位成 00:00:00
         h, remain = divmod(self._eta_remain, 3600)
         m, s = divmod(remain, 60)
-        self.time_count_edit.setTime(QTime(h, m, s))
+        self.time_count_edit.setText("{:d}:{:02d}:{:02d}".format(h, m, s))
 
     def _refresh_gpu_memory(self):
         """2s定时:查询显存使用率,>55% 显示红色. 用 pynvml 避免每 2s 拉起子进程."""

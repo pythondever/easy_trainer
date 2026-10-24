@@ -374,7 +374,11 @@
               </widget>
              </item>
              <item>
-              <widget class="QTimeEdit" name="time_count_edit"/>
+              <widget class="QLineEdit" name="time_count_edit">
+               <property name="readOnly">
+                <bool>true</bool>
+               </property>
+              </widget>
              </item>
              <item>
               <widget class="QLabel" name="gpu_memory_label">
