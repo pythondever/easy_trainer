@@ -14,6 +14,8 @@ from PySide6.QtWidgets import (QDialog, QLabel, QFileDialog, QComboBox,
                                QGridLayout, QWidget)
 from PySide6.QtGui import QStandardItem
 
+from app.widgets.combo_delegate import (ROLE_BADGE, ROLE_ICON, ROLE_SUB,
+                                        decorate_combo)
 from app.widgets.combo_utils import style_combo
 from app.widgets.dialog_buttons import apply_icon
 from app.widgets.message_box import MessageBox
@@ -21,8 +23,10 @@ from app.widgets.multi_combo import install_multi_combo
 from app.widgets.status_style import task_text
 from app.widgets.model_manager_dialog import ensure_weight
 from app.widgets.dialog_fit import fit_dialog_height
+from app.core import model_assets
 from app.core.log import write_log
 from app.train import device_probe
+from app.train.combo_labels import size_icon_name, split_device_label
 from app.train import ocr_common as occ
 from app.train.device_probe import (PROBE_FAILED_TEXT, PROBING_TEXT,
                                     detach_device_probe,
@@ -36,6 +40,26 @@ from app.train.train_config import (DISABLEABLE_FIELDS, TASK_SPECS,
 from ui.train import Ui_TrainDialog
 
 CONTROL_H = 36
+
+# 任务下拉的图标与一句话说明, 键是 task_spec 的 code
+TASK_MARKS = {
+    "detect": ("task_detect", "输出检测框"),
+    "segment": ("task_segment", "输出像素掩码"),
+    "classify": ("task_classify", "输出整图类别"),
+    "ad": ("task_ad", "异常检测"),
+    "ocr": ("task_ocr", "文字识别"),
+}
+
+ARCH_MARKS = {
+    "transformer": "全局注意力, 精度高",
+    "cnn": "卷积下采样, 训练快",
+}
+
+OPTIMIZER_MARKS = {
+    "adamw": ("opt_adamw", "自适应学习率"),
+    "sgd": ("opt_sgd", "带动量"),
+    "adam": ("opt_adam", "自适应"),
+}
 
 
 class _TrainStartDialog(QDialog):
@@ -142,6 +166,18 @@ class TrainDialog(AugMixin, QDialog):
         """任务下拉挂 itemData. 按文本找的话, 界面切英文后 _task() 会全部落空."""
         for i, spec in enumerate(TASK_SPECS):
             self.ui.task_combo.setItemData(i, spec.code)
+        self._mark_task_items()
+
+    def _mark_task_items(self):
+        """任务项挂图标与一句话说明; 副标只出现在弹层里, 关闭态仍是一行文字."""
+        combo = self.ui.task_combo
+        for i in range(combo.count()):
+            icon_name, sub = TASK_MARKS.get(str(combo.itemData(i) or ""),
+                                           ("", ""))
+            if icon_name:
+                combo.setItemData(i, icon_name, ROLE_ICON)
+            if sub:
+                combo.setItemData(i, self.tr(sub), ROLE_SUB)
 
     def _spec(self):
         """当前任务的规格."""
@@ -268,12 +304,16 @@ class TrainDialog(AugMixin, QDialog):
 
     # ---------- 填充 ----------
     def _style_all_combos(self):
-        # 多选下拉的编辑区自己画标签(见 _setup_multi_combo), 不套这里的居中和点击展开
+        # 多选下拉的编辑区自己画标签(见 _setup_multi_combo), 不套这里的装扮
         for name in ("task_combo", "network_combo", "device_combo", "arch_combo",
-                     "img_size_comboBox", "optimizer_comboBox"):
+                     "optimizer_comboBox"):
             combo = getattr(self.ui, name, None)
             if combo is not None:
-                style_combo(combo, self._combo_filters)
+                decorate_combo(combo, self._combo_filters)
+        # 尺寸下拉没有图标也没有副标, 保持原来的居中样式
+        combo = getattr(self.ui, "img_size_comboBox", None)
+        if combo is not None:
+            style_combo(combo, self._combo_filters)
 
     def _setup_multi_combo(self, combo, placeholder=None):
         install_multi_combo(combo, placeholder)
@@ -376,7 +416,6 @@ class TrainDialog(AugMixin, QDialog):
         self._fill_dataset_multi(self.ui.val_combo, [])
         self.ui.dataset_label.setText(self.tr("训练集"))
         self._fill_device_combo()
-        self._center_combo_items(self.ui.task_combo)
         self._fill_arch_combo()
         self._fill_network_combo()
         self._fill_optimizer()
@@ -438,9 +477,9 @@ class TrainDialog(AugMixin, QDialog):
         """后台探测完成: 填列表, 解禁, 把探测期间没铺上的设备回填上."""
         combo = self.ui.device_combo
         fill_device_items(combo, devices)
+        self._mark_device_items(combo)
         combo.setEnabled(True)
         combo.setCurrentIndex(0)
-        self._center_combo_items(combo)
         if device_probe._DEVICES_ERROR:
             # 探测失败时列表只剩 CPU, 不说清楚用户只会当成"这台机器没显卡"
             combo.setToolTip("{}:\n{}".format(
@@ -450,6 +489,20 @@ class TrainDialog(AugMixin, QDialog):
         if self._pending_device:
             pending, self._pending_device = self._pending_device, None
             self._set_device(pending)
+
+    def _mark_device_items(self, combo):
+        """设备项拆两行: 主标题是型号, 副标写显存; CPU 单独一句说明."""
+        for i in range(combo.count()):
+            title, mem = split_device_label(combo.itemText(i))
+            is_cpu = title.upper() == "CPU"
+            combo.setItemData(i, "device_cpu" if is_cpu else "device_gpu",
+                              ROLE_ICON)
+            if is_cpu:
+                combo.setItemData(i, self.tr("无显卡时使用, 很慢"), ROLE_SUB)
+            elif mem:
+                # 主标题只留型号, 显存挪到副标; 完整文本仍留在 tooltip 里
+                combo.setItemData(i, title, Qt.DisplayRole)
+                combo.setItemData(i, self.tr("{} 显存").format(mem), ROLE_SUB)
 
     def _sync_start_enabled(self):
         """设备列表就绪且没有训练在跑, 才允许点开始."""
@@ -478,19 +531,18 @@ class TrainDialog(AugMixin, QDialog):
         combo.clear()
         items, recommended = self._spec().optimizer_options(self._arch())
         combo.addItems(items)
+        for i, code in enumerate(items):
+            icon_name, sub = OPTIMIZER_MARKS.get(code, ("", ""))
+            if icon_name:
+                combo.setItemData(i, icon_name, ROLE_ICON)
+            if sub:
+                combo.setItemData(i, self.tr(sub), ROLE_SUB)
+            if code == recommended:
+                # 推荐项原来是静默选中的, 标出来用户才知道默认值凭什么
+                combo.setItemData(i, self.tr("推荐"), ROLE_BADGE)
         idx = combo.findText(recommended)
         if idx >= 0:
             combo.setCurrentIndex(idx)
-        self._center_combo_items(combo)
-
-    @staticmethod
-    def _center_combo_items(combo):
-        """下拉列表项文字居中(单选下拉:任务类型/网络/设备/优化器)."""
-        model = combo.model()
-        for i in range(model.rowCount()):
-            it = model.item(i)
-            if it is not None:
-                it.setTextAlignment(Qt.AlignHCenter)
 
     def eventFilter(self, obj, event):
         """标题行整行可点: 只有左边箭头是小按钮, 点标题或分隔线在这里补一次切换."""
@@ -518,8 +570,10 @@ class TrainDialog(AugMixin, QDialog):
         combo.clear()
         for text, code in (("Transformer", "transformer"), ("CNN", "cnn")):
             combo.addItem(text, code)
+            row = combo.count() - 1
+            combo.setItemData(row, "arch_" + code, ROLE_ICON)
+            combo.setItemData(row, self.tr(ARCH_MARKS[code]), ROLE_SUB)
         combo.setCurrentIndex(0)
-        self._center_combo_items(combo)
 
     def _arch(self):
         return self.ui.arch_combo.currentData() or "transformer"
@@ -711,9 +765,32 @@ class TrainDialog(AugMixin, QDialog):
                 combo.addItem(text)
             else:
                 combo.addItem(text, data)
-        self._center_combo_items(combo)
+            row = combo.count() - 1
+            level = str(data if data is not None else text)
+            combo.setItemData(row, size_icon_name(level), ROLE_ICON)
+            sub = self._network_sub(level)
+            if sub:
+                combo.setItemData(row, sub, ROLE_SUB)
         if combo.count():
             combo.setCurrentIndex(0)
+
+    def _network_sub(self, level):
+        """
+        型号副标: 分类换成 resnet 型号, 检测/分割复用权重表里已有的档位说明
+        (那批文案本来就存在权重的 desc 里, 别再抄一份), 其余任务没有副标.
+        """
+        spec = self._spec()
+        code = str(spec.code or "")
+        if code == "classify":
+            arch = str(spec.resolve_architecture(level) or "")
+            return arch.replace("resnet", "ResNet-")
+        if code not in ("detect", "segment"):
+            return ""
+        task = "segment" if code == "segment" else "detect"
+        asset = model_assets.find(model_assets.asset_task(task, self._arch()),
+                                  level)
+        desc = str(getattr(asset, "desc", "") or "")
+        return QC.translate("ModelAssets", desc) if desc else ""
 
     def _setup_img_size_tip(self):
         """尺寸提示按任务/架构/档位现算: 同一任务不同档位的步长不一样(分割只有

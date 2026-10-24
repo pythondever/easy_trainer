@@ -129,7 +129,7 @@ MODELS = (
     # 只差默认分辨率(704 vs 576)
     ModelAsset(DETECT, "large", "large.pt", 135954129,
                "5cb72153541cbcb9aa6efa26222acc75",
-               QT_TRANSLATE_NOOP("ModelAssets", "结构与 medium 相同"),
+               QT_TRANSLATE_NOOP("ModelAssets", "精度最高, 显存占用大"),
                _BASE + "rf-detr-large-2026.pth"),
     ModelAsset(SEGMENT, "nano", "nano-seg.pt", 134545398,
                "9995497791d0ff1664a1d9ddee9cfd20",

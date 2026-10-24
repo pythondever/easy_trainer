@@ -294,13 +294,18 @@ QComboBox QAbstractItemView {
     border-top-right-radius: 0;
     selection-background-color: {{accent_dim}};
     selection-color: {{text_strong}};
-    padding: 4px;
+    padding: 6px;
 }
 
 QComboBox QAbstractItemView::item {
     min-height: 28px;
     border-radius: {{r_sm}};
     padding-left: 8px;
+}
+
+/* 悬停必须写在选中之前: 两者同权重, 后写的赢, 否则划过选中行时高亮会被盖掉 */
+QComboBox QAbstractItemView::item:hover {
+    background-color: rgba(255, 255, 255, 16);
 }
 
 QComboBox QAbstractItemView::item:selected {
@@ -1546,6 +1551,15 @@ QComboBox[multiCombo="true"] {
 
 QComboBox[multiCombo="true"] QLineEdit#multiComboLineEdit,
 QComboBox[multiCombo="true"] QLineEdit#multiComboLineEdit:focus {
+    background: transparent;
+    border: none;
+    padding: 0;
+}
+
+/* 富条目下拉(图标 + 副标)内部的 lineEdit 只负责显示一行文字, 边框与内边距都
+   交给外层下拉: 不抹掉的话文字会比同一排的输入框多缩进 10px, 边框也会叠成双线 */
+QComboBox QLineEdit#richComboLineEdit,
+QComboBox QLineEdit#richComboLineEdit:focus {
     background: transparent;
     border: none;
     padding: 0;
