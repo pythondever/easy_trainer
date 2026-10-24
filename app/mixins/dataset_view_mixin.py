@@ -16,6 +16,7 @@ from app.core.image_utils import pil_to_qimage, make_uniform_thumb
 from app.annotation.scene_items import SelectablePixmapItem
 from app.tasks.import_task import ImportTask
 from app.widgets.message_box import MessageBox
+from app.widgets.empty_hint_overlay import EmptyHintOverlay
 from PySide6.QtGui import QPixmap, QPainter, QColor, QImage, QImageReader
 from PySide6.QtCore import (Qt, Signal, QThread, QMutex, QMutexLocker, QTimer,
                             QRect, QRectF, QSize)
@@ -185,6 +186,7 @@ class DatasetViewMixin(object):
         self.graphics_view = QGraphicsView(self)
         self.graphics_view.setObjectName("imageGraphicsView")
         self.graphics_view.setScene(QGraphicsScene(self.graphics_view))
+        self._empty_hint = EmptyHintOverlay(self.graphics_view.viewport())
         self.graphics_view.setRenderHint(QPainter.Antialiasing)
         self.graphics_view.setRenderHint(QPainter.SmoothPixmapTransform)
         self.graphics_view.setBackgroundBrush(theme.color("bg_deep"))
@@ -531,6 +533,7 @@ class DatasetViewMixin(object):
                                           update_stats=update_stats)
                 return
         self._clear_scene()
+        self._reset_page_info(hint="no_image")
 
     @staticmethod
     def _build_dataset_index(result):
@@ -1092,8 +1095,16 @@ class DatasetViewMixin(object):
         """底栏只放"第 N / M 页", 当前页数字化亮; 总数与量词进 tooltip, 免得居中那组随内容横移."""
         self._page_info_state = (by_box, total_pages, count)
         if not count:
-            self._reset_page_info(empty_by_filter=not self.filter_labels)
+            # 空态分两种: 数据集本身没图, 有图但被筛掉(含一个标签都没勾).
+            # 不能只看 filter_labels: 没标签可勾的数据集它也是空的.
+            cur = getattr(self, "_current_dataset", None)
+            data = (self.dataset_cache.get(cur[0], {}).get(cur[1])
+                    if cur else None)
+            hint = "no_filter" if (data and data.get("all")) else "no_image"
+            self._reset_page_info(empty_by_filter=not self.filter_labels,
+                                  hint=hint)
             return
+        self._hide_empty_hint()
         self.pageInfoLabel.setText(
             QC.translate("DatasetViewMixin", "第 {} / {} 页").format(
                 '<span style="color:' + theme.hexof("text") + '">{}</span>'.format(self.current_page + 1),
@@ -1107,12 +1118,13 @@ class DatasetViewMixin(object):
         self.pre_page_btn.setEnabled(self.current_page > 0)
         self.next_page_btn.setEnabled(self.current_page < total_pages - 1)
 
-    def _reset_page_info(self, empty_by_filter=False):
+    def _reset_page_info(self, empty_by_filter=False, hint="no_dataset"):
         """图像区清空 / 空数据集: 没有页可翻, 文案与两个按钮一起复位.
 
         empty_by_filter=True 是"有图但一个标签都没勾", 与"数据集本来就没图"分开说.
+        hint 决定图像区空态浮层显示哪种引导(见 EmptyHintOverlay.HINTS).
         """
-        self._page_info_state = ("empty", bool(empty_by_filter))
+        self._page_info_state = ("empty", bool(empty_by_filter), hint)
         if empty_by_filter:
             text = QC.translate("DatasetViewMixin", "未选择标签")
         else:
@@ -1121,6 +1133,17 @@ class DatasetViewMixin(object):
         self.pageInfoLabel.setToolTip("")
         self.pre_page_btn.setEnabled(False)
         self.next_page_btn.setEnabled(False)
+        self._apply_empty_hint(hint)
+
+    def _apply_empty_hint(self, key):
+        hint = getattr(self, "_empty_hint", None)
+        if hint is not None:
+            hint.set_hint(key)
+
+    def _hide_empty_hint(self):
+        hint = getattr(self, "_empty_hint", None)
+        if hint is not None:
+            hint.clear_hint()
 
     def _refresh_page_info(self):
         """换语言后重刷底栏分页文案(retranslateUi 管不到运行时拼的这行)."""
@@ -1128,7 +1151,7 @@ class DatasetViewMixin(object):
         if state is None:
             self._reset_page_info()
         elif state[0] == "empty":
-            self._reset_page_info(state[1])
+            self._reset_page_info(state[1], state[2])
         else:
             self._set_page_info(*state)
 
